@@ -1,155 +1,272 @@
-0..61 @16 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "A",
-    ),
-    variables: [
-        8..30 @16 VariableDefinition {
-            name: "atOtherHomes",
-            ty: 23..30 @16 Named(
-                "Boolean",
-            ),
-            default_value: None,
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
-    directives: [],
-    selection_set: [
-        FragmentSpread(
-            36..59 @16 FragmentSpread {
-                fragment_name: "HouseTrainedFragment",
-                directives: [],
+        16: SourceFile {
+            path: "0016_same_variables_in_multiple_operations.graphql",
+            source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "Query",
             },
         ),
-    ],
-}
-63..124 @16 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "B",
-    ),
-    variables: [
-        71..93 @16 VariableDefinition {
-            name: "atOtherHomes",
-            ty: 86..93 @16 Named(
-                "Boolean",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-    directives: [],
-    selection_set: [
-        FragmentSpread(
-            99..122 @16 FragmentSpread {
-                fragment_name: "HouseTrainedFragment",
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            230..255 @16 ObjectType {
+                description: None,
+                implements_interfaces: {},
                 directives: [],
+                fields: {
+                    "dog": Component {
+                        origin: Definition,
+                        node: 245..253 @16 FieldDefinition {
+                            description: None,
+                            name: "dog",
+                            arguments: [],
+                            ty: Named(
+                                "Dog",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
             },
         ),
-    ],
-}
-126..228 @16 FragmentDefinition {
-    name: "HouseTrainedFragment",
-    type_condition: "Query",
-    directives: [],
-    selection_set: [
-        Field(
-            169..226 @16 Field {
-                alias: None,
-                name: "dog",
-                arguments: [],
+        "Dog": Object(
+            257..372 @16 ObjectType {
+                description: None,
+                implements_interfaces: {},
                 directives: [],
-                selection_set: [
-                    Field(
-                        179..222 @16 Field {
-                            alias: None,
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 270..283 @16 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "nickname": Component {
+                        origin: Definition,
+                        node: 286..302 @16 FieldDefinition {
+                            description: None,
+                            name: "nickname",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "barkVolume": Component {
+                        origin: Definition,
+                        node: 305..320 @16 FieldDefinition {
+                            description: None,
+                            name: "barkVolume",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "isHouseTrained": Component {
+                        origin: Definition,
+                        node: 323..370 @16 FieldDefinition {
+                            description: None,
                             name: "isHouseTrained",
                             arguments: [
-                                194..221 @16 Argument {
+                                338..359 @16 InputValueDefinition {
+                                    description: None,
                                     name: "atOtherHomes",
-                                    value: 208..221 @16 Variable(
-                                        "atOtherHomes",
+                                    ty: 352..359 @16 Named(
+                                        "Boolean",
                                     ),
+                                    default_value: None,
+                                    directives: [],
                                 },
                             ],
+                            ty: NonNullNamed(
+                                "Boolean",
+                            ),
                             directives: [],
-                            selection_set: [],
                         },
-                    ),
-                ],
+                    },
+                },
             },
         ),
-    ],
+    },
 }
-230..255 @16 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        245..253 @16 FieldDefinition {
-            description: None,
-            name: "dog",
-            arguments: [],
-            ty: Named(
-                "Dog",
-            ),
-            directives: [],
-        },
-    ],
-}
-257..372 @16 ObjectTypeDefinition {
-    description: None,
-    name: "Dog",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        270..283 @16 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: NonNullNamed(
-                "String",
-            ),
-            directives: [],
-        },
-        286..302 @16 FieldDefinition {
-            description: None,
-            name: "nickname",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-        305..320 @16 FieldDefinition {
-            description: None,
-            name: "barkVolume",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        323..370 @16 FieldDefinition {
-            description: None,
-            name: "isHouseTrained",
-            arguments: [
-                338..359 @16 InputValueDefinition {
-                    description: None,
+ExecutableDocument {
+    source: Some(
+        (
+            16,
+            SourceFile {
+                path: "0016_same_variables_in_multiple_operations.graphql",
+                source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
+                parse_errors: [],
+            },
+        ),
+    ),
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "A": 0..61 @16 Operation {
+            operation_type: Query,
+            variables: [
+                8..30 @16 VariableDefinition {
                     name: "atOtherHomes",
-                    ty: 352..359 @16 Named(
+                    ty: 23..30 @16 Named(
                         "Boolean",
                     ),
                     default_value: None,
                     directives: [],
                 },
             ],
-            ty: NonNullNamed(
-                "Boolean",
-            ),
             directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    FragmentSpread(
+                        36..59 @16 FragmentSpread {
+                            fragment_name: "HouseTrainedFragment",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
         },
-    ],
+        "B": 63..124 @16 Operation {
+            operation_type: Query,
+            variables: [
+                71..93 @16 VariableDefinition {
+                    name: "atOtherHomes",
+                    ty: 86..93 @16 Named(
+                        "Boolean",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    FragmentSpread(
+                        99..122 @16 FragmentSpread {
+                            fragment_name: "HouseTrainedFragment",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+    fragments: {
+        "HouseTrainedFragment": 126..228 @16 Fragment {
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        169..226 @16 Field {
+                            definition: 245..253 @16 FieldDefinition {
+                                description: None,
+                                name: "dog",
+                                arguments: [],
+                                ty: Named(
+                                    "Dog",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "dog",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    Field(
+                                        179..222 @16 Field {
+                                            definition: 323..370 @16 FieldDefinition {
+                                                description: None,
+                                                name: "isHouseTrained",
+                                                arguments: [
+                                                    338..359 @16 InputValueDefinition {
+                                                        description: None,
+                                                        name: "atOtherHomes",
+                                                        ty: 352..359 @16 Named(
+                                                            "Boolean",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: NonNullNamed(
+                                                    "Boolean",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "isHouseTrained",
+                                            arguments: [
+                                                194..221 @16 Argument {
+                                                    name: "atOtherHomes",
+                                                    value: 208..221 @16 Variable(
+                                                        "atOtherHomes",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Boolean",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
 }
-

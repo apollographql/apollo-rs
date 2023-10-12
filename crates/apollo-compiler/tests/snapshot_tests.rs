@@ -32,8 +32,8 @@ use std::path::PathBuf;
 #[serial]
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
-        let ast = ast::Document::parse(text, path.file_name().unwrap());
-        let (schema, executable) = ast.to_mixed();
+        let file_name = path.file_name().unwrap();
+        let (schema, executable) = apollo_compiler::parse_mixed(text, file_name);
 
         let schema_validation_errors = schema.validate().err();
         let executable_validation_errors = executable.validate(&schema).err();
@@ -43,7 +43,7 @@ fn validation() {
             path,
         );
 
-        format!("{ast:#?}")
+        format!("{schema:#?}\n{executable:#?}")
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {

@@ -1,251 +1,395 @@
-0..106 @17 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "takesBoolean",
-    ),
-    variables: [
-        19..41 @17 VariableDefinition {
-            name: "atOtherHomes",
-            ty: 34..41 @17 Named(
-                "Boolean",
-            ),
-            default_value: None,
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
-    directives: [],
-    selection_set: [
-        Field(
-            47..104 @17 Field {
-                alias: None,
-                name: "dog",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    Field(
-                        57..100 @17 Field {
-                            alias: None,
-                            name: "isHouseTrained",
-                            arguments: [
-                                72..99 @17 Argument {
-                                    name: "atOtherHomes",
-                                    value: 86..99 @17 Variable(
-                                        "atOtherHomes",
-                                    ),
-                                },
-                            ],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                ],
+        17: SourceFile {
+            path: "0017_variables_are_input_types.graphql",
+            source_text: "query takesBoolean($atOtherHomes: Boolean) {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\nquery takesComplexInput($complexInput: ComplexInput) {\n  findDog(complex: $complexInput) {\n    name\n  }\n}\n\nquery TakesListOfBooleanBang($booleans: [Boolean!]) {\n  booleanList(booleanListArg: $booleans)\n}\n\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}\n\ninput ComplexInput {\n  name: String\n  owner: String\n}\n\ntype Query {\n  dog: Dog\n  findDog(complex: ComplexInput): Dog\n  booleanList(booleanListArg: [Boolean!]): Boolean\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "Query",
             },
         ),
-    ],
-}
-108..213 @17 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "takesComplexInput",
-    ),
-    variables: [
-        132..159 @17 VariableDefinition {
-            name: "complexInput",
-            ty: 147..159 @17 Named(
-                "ComplexInput",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-    directives: [],
-    selection_set: [
-        Field(
-            165..211 @17 Field {
-                alias: None,
-                name: "findDog",
-                arguments: [
-                    173..195 @17 Argument {
-                        name: "complex",
-                        value: 182..195 @17 Variable(
-                            "complexInput",
-                        ),
-                    },
-                ],
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Dog": Object(
+            314..429 @17 ObjectType {
+                description: None,
+                implements_interfaces: {},
                 directives: [],
-                selection_set: [
-                    Field(
-                        203..207 @17 Field {
-                            alias: None,
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 327..340 @17 FieldDefinition {
+                            description: None,
                             name: "name",
                             arguments: [],
+                            ty: NonNullNamed(
+                                "String",
+                            ),
                             directives: [],
-                            selection_set: [],
                         },
-                    ),
-                ],
-            },
-        ),
-    ],
-}
-215..311 @17 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "TakesListOfBooleanBang",
-    ),
-    variables: [
-        244..265 @17 VariableDefinition {
-            name: "booleans",
-            ty: 255..265 @17 List(
-                NonNullNamed(
-                    "Boolean",
-                ),
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-    directives: [],
-    selection_set: [
-        Field(
-            271..309 @17 Field {
-                alias: None,
-                name: "booleanList",
-                arguments: [
-                    283..308 @17 Argument {
-                        name: "booleanListArg",
-                        value: 299..308 @17 Variable(
-                            "booleans",
-                        ),
                     },
-                ],
-                directives: [],
-                selection_set: [],
+                    "nickname": Component {
+                        origin: Definition,
+                        node: 343..359 @17 FieldDefinition {
+                            description: None,
+                            name: "nickname",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "barkVolume": Component {
+                        origin: Definition,
+                        node: 362..377 @17 FieldDefinition {
+                            description: None,
+                            name: "barkVolume",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "isHouseTrained": Component {
+                        origin: Definition,
+                        node: 380..427 @17 FieldDefinition {
+                            description: None,
+                            name: "isHouseTrained",
+                            arguments: [
+                                395..416 @17 InputValueDefinition {
+                                    description: None,
+                                    name: "atOtherHomes",
+                                    ty: 409..416 @17 Named(
+                                        "Boolean",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: NonNullNamed(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
             },
         ),
-    ],
+        "ComplexInput": InputObject(
+            431..484 @17 InputObjectType {
+                description: None,
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 454..466 @17 InputValueDefinition {
+                            description: None,
+                            name: "name",
+                            ty: 460..466 @17 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "owner": Component {
+                        origin: Definition,
+                        node: 469..482 @17 InputValueDefinition {
+                            description: None,
+                            name: "owner",
+                            ty: 476..482 @17 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            486..600 @17 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "dog": Component {
+                        origin: Definition,
+                        node: 501..509 @17 FieldDefinition {
+                            description: None,
+                            name: "dog",
+                            arguments: [],
+                            ty: Named(
+                                "Dog",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "findDog": Component {
+                        origin: Definition,
+                        node: 512..547 @17 FieldDefinition {
+                            description: None,
+                            name: "findDog",
+                            arguments: [
+                                520..541 @17 InputValueDefinition {
+                                    description: None,
+                                    name: "complex",
+                                    ty: 529..541 @17 Named(
+                                        "ComplexInput",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Dog",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "booleanList": Component {
+                        origin: Definition,
+                        node: 550..598 @17 FieldDefinition {
+                            description: None,
+                            name: "booleanList",
+                            arguments: [
+                                562..588 @17 InputValueDefinition {
+                                    description: None,
+                                    name: "booleanListArg",
+                                    ty: 578..588 @17 List(
+                                        NonNullNamed(
+                                            "Boolean",
+                                        ),
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-314..429 @17 ObjectTypeDefinition {
-    description: None,
-    name: "Dog",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        327..340 @17 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: NonNullNamed(
-                "String",
-            ),
-            directives: [],
-        },
-        343..359 @17 FieldDefinition {
-            description: None,
-            name: "nickname",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-        362..377 @17 FieldDefinition {
-            description: None,
-            name: "barkVolume",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        380..427 @17 FieldDefinition {
-            description: None,
-            name: "isHouseTrained",
-            arguments: [
-                395..416 @17 InputValueDefinition {
-                    description: None,
+ExecutableDocument {
+    source: Some(
+        (
+            17,
+            SourceFile {
+                path: "0017_variables_are_input_types.graphql",
+                source_text: "query takesBoolean($atOtherHomes: Boolean) {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\nquery takesComplexInput($complexInput: ComplexInput) {\n  findDog(complex: $complexInput) {\n    name\n  }\n}\n\nquery TakesListOfBooleanBang($booleans: [Boolean!]) {\n  booleanList(booleanListArg: $booleans)\n}\n\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}\n\ninput ComplexInput {\n  name: String\n  owner: String\n}\n\ntype Query {\n  dog: Dog\n  findDog(complex: ComplexInput): Dog\n  booleanList(booleanListArg: [Boolean!]): Boolean\n}",
+                parse_errors: [],
+            },
+        ),
+    ),
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "takesBoolean": 0..106 @17 Operation {
+            operation_type: Query,
+            variables: [
+                19..41 @17 VariableDefinition {
                     name: "atOtherHomes",
-                    ty: 409..416 @17 Named(
+                    ty: 34..41 @17 Named(
                         "Boolean",
                     ),
                     default_value: None,
                     directives: [],
                 },
             ],
-            ty: NonNullNamed(
-                "Boolean",
-            ),
             directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        47..104 @17 Field {
+                            definition: 501..509 @17 FieldDefinition {
+                                description: None,
+                                name: "dog",
+                                arguments: [],
+                                ty: Named(
+                                    "Dog",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "dog",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    Field(
+                                        57..100 @17 Field {
+                                            definition: 380..427 @17 FieldDefinition {
+                                                description: None,
+                                                name: "isHouseTrained",
+                                                arguments: [
+                                                    395..416 @17 InputValueDefinition {
+                                                        description: None,
+                                                        name: "atOtherHomes",
+                                                        ty: 409..416 @17 Named(
+                                                            "Boolean",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: NonNullNamed(
+                                                    "Boolean",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "isHouseTrained",
+                                            arguments: [
+                                                72..99 @17 Argument {
+                                                    name: "atOtherHomes",
+                                                    value: 86..99 @17 Variable(
+                                                        "atOtherHomes",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Boolean",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
         },
-    ],
-}
-431..484 @17 InputObjectTypeDefinition {
-    description: None,
-    name: "ComplexInput",
-    directives: [],
-    fields: [
-        454..466 @17 InputValueDefinition {
-            description: None,
-            name: "name",
-            ty: 460..466 @17 Named(
-                "String",
-            ),
-            default_value: None,
-            directives: [],
-        },
-        469..482 @17 InputValueDefinition {
-            description: None,
-            name: "owner",
-            ty: 476..482 @17 Named(
-                "String",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-}
-486..600 @17 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        501..509 @17 FieldDefinition {
-            description: None,
-            name: "dog",
-            arguments: [],
-            ty: Named(
-                "Dog",
-            ),
-            directives: [],
-        },
-        512..547 @17 FieldDefinition {
-            description: None,
-            name: "findDog",
-            arguments: [
-                520..541 @17 InputValueDefinition {
-                    description: None,
-                    name: "complex",
-                    ty: 529..541 @17 Named(
+        "takesComplexInput": 108..213 @17 Operation {
+            operation_type: Query,
+            variables: [
+                132..159 @17 VariableDefinition {
+                    name: "complexInput",
+                    ty: 147..159 @17 Named(
                         "ComplexInput",
                     ),
                     default_value: None,
                     directives: [],
                 },
             ],
-            ty: Named(
-                "Dog",
-            ),
             directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        165..211 @17 Field {
+                            definition: 512..547 @17 FieldDefinition {
+                                description: None,
+                                name: "findDog",
+                                arguments: [
+                                    520..541 @17 InputValueDefinition {
+                                        description: None,
+                                        name: "complex",
+                                        ty: 529..541 @17 Named(
+                                            "ComplexInput",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Dog",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "findDog",
+                            arguments: [
+                                173..195 @17 Argument {
+                                    name: "complex",
+                                    value: 182..195 @17 Variable(
+                                        "complexInput",
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    Field(
+                                        203..207 @17 Field {
+                                            definition: 327..340 @17 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
         },
-        550..598 @17 FieldDefinition {
-            description: None,
-            name: "booleanList",
-            arguments: [
-                562..588 @17 InputValueDefinition {
-                    description: None,
-                    name: "booleanListArg",
-                    ty: 578..588 @17 List(
+        "TakesListOfBooleanBang": 215..311 @17 Operation {
+            operation_type: Query,
+            variables: [
+                244..265 @17 VariableDefinition {
+                    name: "booleans",
+                    ty: 255..265 @17 List(
                         NonNullNamed(
                             "Boolean",
                         ),
@@ -254,11 +398,53 @@
                     directives: [],
                 },
             ],
-            ty: Named(
-                "Boolean",
-            ),
             directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        271..309 @17 Field {
+                            definition: 550..598 @17 FieldDefinition {
+                                description: None,
+                                name: "booleanList",
+                                arguments: [
+                                    562..588 @17 InputValueDefinition {
+                                        description: None,
+                                        name: "booleanListArg",
+                                        ty: 578..588 @17 List(
+                                            NonNullNamed(
+                                                "Boolean",
+                                            ),
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "booleanList",
+                            arguments: [
+                                283..308 @17 Argument {
+                                    name: "booleanListArg",
+                                    value: 299..308 @17 Variable(
+                                        "booleans",
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
         },
-    ],
+    },
+    fragments: {},
 }
-

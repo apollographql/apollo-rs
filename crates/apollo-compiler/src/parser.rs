@@ -22,7 +22,7 @@ pub struct Parser {
 }
 
 /// Records for validation information about a file that was parsed
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SourceFile {
     pub(crate) path: PathBuf,
     pub(crate) source_text: String,
@@ -276,5 +276,26 @@ impl SourceFile {
             };
             errors.push(location, details)
         }
+    }
+}
+
+impl std::fmt::Debug for SourceFile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Self {
+            path,
+            source_text,
+            parse_errors,
+        } = self;
+        let mut debug_struct = f.debug_struct("SourceFile");
+        debug_struct.field("path", path);
+        if path != std::path::Path::new("built_in.graphql") {
+            debug_struct.field("source_text", source_text);
+        } else {
+            debug_struct.field(
+                "source_text",
+                &format_args!("include_str!(\"built_in.graphql\")"),
+            );
+        }
+        debug_struct.field("parse_errors", parse_errors).finish()
     }
 }
