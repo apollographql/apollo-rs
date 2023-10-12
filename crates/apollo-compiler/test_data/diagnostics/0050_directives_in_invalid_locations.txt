@@ -26,7 +26,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "skip",
             dir_loc: Interface,
             directive_def: DiagnosticLocation {
@@ -75,7 +75,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: FieldDefinition,
             directive_def: DiagnosticLocation {
@@ -114,7 +114,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "include",
             dir_loc: InputObject,
             directive_def: DiagnosticLocation {
@@ -153,7 +153,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "include",
             dir_loc: InputFieldDefinition,
             directive_def: DiagnosticLocation {
@@ -202,7 +202,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: Union,
             directive_def: DiagnosticLocation {
@@ -251,7 +251,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: Enum,
             directive_def: DiagnosticLocation {
@@ -300,7 +300,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: EnumValue,
             directive_def: DiagnosticLocation {
@@ -339,7 +339,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "deprecated",
             dir_loc: Object,
             directive_def: DiagnosticLocation {
@@ -378,7 +378,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "specifiedBy",
             dir_loc: ArgumentDefinition,
             directive_def: DiagnosticLocation {
@@ -417,7 +417,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "include",
             dir_loc: Schema,
             directive_def: DiagnosticLocation {
@@ -466,7 +466,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: Scalar,
             directive_def: DiagnosticLocation {
@@ -505,7 +505,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "skip",
             dir_loc: VariableDefinition,
             directive_def: DiagnosticLocation {
@@ -544,7 +544,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "skip",
             dir_loc: Query,
             directive_def: DiagnosticLocation {
@@ -583,7 +583,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "deprecated",
             dir_loc: Field,
             directive_def: DiagnosticLocation {
@@ -632,7 +632,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: FragmentSpread,
             directive_def: DiagnosticLocation {
@@ -681,7 +681,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: FragmentDefinition,
             directive_def: DiagnosticLocation {
@@ -730,7 +730,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: InlineFragment,
             directive_def: DiagnosticLocation {
@@ -779,7 +779,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: Subscription,
             directive_def: DiagnosticLocation {
@@ -818,7 +818,7 @@
         help: Some(
             "the directive must be used in a location that the service has declared support for",
         ),
-        data: UnsupportedDirectiveLocation {
+        data: UnsupportedLocation {
             name: "skip",
             dir_loc: Mutation,
             directive_def: DiagnosticLocation {

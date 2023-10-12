@@ -34,10 +34,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "price",
-            ty: "Int",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {

@@ -193,7 +193,7 @@ pub fn validate_input_values(
                 diagnostics.push(
                     ApolloDiagnostic::new(db, loc.into(), DiagnosticData::InputType {
                         name: input_value.name().into(),
-                        ty: input_value.ty().name(),
+                        ty: field_ty.kind(),
                     })
                         .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
                         .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to take one of these input types.", input_value.name())),

@@ -24,8 +24,6 @@
             },
         ],
         help: None,
-        data: ScalarSpecificationURL {
-            ty: "URL",
-        },
+        data: ScalarSpecificationURL,
     },
 ]

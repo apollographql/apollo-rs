@@ -132,8 +132,6 @@ pub fn validate_interface_definition(
                         db,
                         interface_def.loc().into(),
                         DiagnosticData::MissingField {
-                            name: interface_def.name().to_string(),
-                            interface: super_interface.name().to_string(),
                             field: name.clone(),
                         },
                     )
@@ -234,7 +232,6 @@ pub fn validate_implements_interfaces(
                 db,
                 loc.into(),
                 DiagnosticData::TransitiveImplementedInterfaces {
-                    ty: implementor_name.clone(),
                     missing_interface: undefined.name.clone(),
                 },
             )

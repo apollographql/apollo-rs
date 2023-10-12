@@ -37,8 +37,6 @@
             "An interface must be a super-set of all interfaces it implements",
         ),
         data: MissingField {
-            name: "Image",
-            interface: "Resource",
             field: "width",
         },
     },
@@ -68,7 +66,6 @@
         ],
         help: None,
         data: TransitiveImplementedInterfaces {
-            ty: "Image",
             missing_interface: "Node",
         },
     },

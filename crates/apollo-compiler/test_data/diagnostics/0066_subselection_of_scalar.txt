@@ -34,10 +34,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "url1",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -74,10 +71,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "url2",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -114,10 +108,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "url3",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -154,10 +145,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "url4",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -194,10 +182,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "url5",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -234,9 +219,6 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            field: "url6",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
 ]

@@ -36,7 +36,6 @@
         help: None,
         data: UndefinedArgument {
             name: "arg2",
-            coordinate: "Field.field",
         },
     },
     ApolloDiagnostic {
@@ -76,7 +75,6 @@
         help: None,
         data: UndefinedArgument {
             name: "arg3",
-            coordinate: "Field.field",
         },
     },
     ApolloDiagnostic {
@@ -116,7 +114,6 @@
         help: None,
         data: UndefinedArgument {
             name: "arg2",
-            coordinate: "Query.field",
         },
     },
 ]

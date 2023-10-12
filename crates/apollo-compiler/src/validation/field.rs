@@ -58,13 +58,6 @@ pub fn validate_field(
                             arg.loc.into(),
                             DiagnosticData::UndefinedArgument {
                                 name: arg.name().into(),
-                                coordinate: format!(
-                                    "{}.{}",
-                                    // Guaranteed to exist because `field.field_definition()`
-                                    // worked.
-                                    field.parent_obj.as_ref().unwrap(),
-                                    field.name.src(),
-                                ),
                             },
                         )
                         .labels(labels),
@@ -91,14 +84,7 @@ pub fn validate_field(
                     db,
                     field.loc.into(),
                     DiagnosticData::RequiredArgument {
-                        coordinate: format!(
-                            "{}.{}({}:)",
-                            // Guaranteed to exist as we wouldn't know about the expected arguments
-                            // for this field otherwise.
-                            field.parent_obj.as_ref().unwrap(),
-                            field.name(),
-                            arg_def.name()
-                        ),
+                        name: arg_def.name().into(),
                     },
                 );
                 diagnostic = diagnostic.label(Label::new(
@@ -288,17 +274,11 @@ pub fn validate_leaf_field_selection(
                 format!("field `{fname}` type `{tname}` is an interface and must select fields")
             }
             hir::TypeDefinition::UnionTypeDefinition(_) => {
-                format!("field `{fname}` type `{tname}` is a union and must select fields")
+                format!("field `{fname}` type `{tname}` is an union and must select fields")
             }
             _ => return Ok(()),
         };
-        (
-            label,
-            DiagnosticData::MissingSubselection {
-                field: fname,
-                ty: tname.clone(),
-            },
-        )
+        (label, DiagnosticData::MissingSubselection)
     } else {
         let label = match type_def {
             hir::TypeDefinition::EnumTypeDefinition(_) => {
@@ -309,13 +289,7 @@ pub fn validate_leaf_field_selection(
             ),
             _ => return Ok(()),
         };
-        (
-            label,
-            DiagnosticData::DisallowedSubselection {
-                field: fname,
-                ty: tname.clone(),
-            },
-        )
+        (label, DiagnosticData::DisallowedSubselection)
     };
 
     Err(ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)

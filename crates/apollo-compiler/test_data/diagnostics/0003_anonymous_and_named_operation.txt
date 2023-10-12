@@ -93,7 +93,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "Mutation.addPet(name:)",
+            name: "name",
         },
     },
 ]

@@ -240,8 +240,6 @@
             "An object must provide all fields required by the interfaces it implements",
         ),
         data: MissingField {
-            name: "ImplementsBaseButNotExtension",
-            interface: "ExtendedInterface",
             field: "fail",
         },
     },
