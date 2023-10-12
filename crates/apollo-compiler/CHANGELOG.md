@@ -115,6 +115,42 @@ They are also mutable, and can be created programmatically out of thin air.
 `Node<T>` is a thread-safe reference-counted smart pointer
 that provides structural sharing and copy-on-write semantics.
 
+# [0.11.3](https://crates.io/crates/apollo-compiler/0.11.3) - 2023-10-06
+
+## Features
+- expose line/column location and JSON format from diagnostics, by [goto-bus-stop] in [pull/668]
+
+  You can now use `diagnostic.get_line_column()` to access the line/column number where a validation error occurred.
+
+  `diagnostic.to_json()` returns a GraphQL error structure that's serializable with serde, matching the [JSON error format].
+
+  ```rust
+  let diagnostics = compiler.db.validate();
+  let errors = diagnostics.into_iter().map(ApolloDiagnostic::to_json).collect::<Vec<_>>();
+
+  let error_response = serde_json::to_string(&serde_json::json!({
+      "errors": errors,
+  }))?;
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
+- improve validation error summaries, by [goto-bus-stop] in [pull/674]
+
+  Adds more context and a more consistent voice to the "main" message for validation errors. They are now concise,
+  matter-of-fact descriptions of the problem. Information about how to solve the problem is usually already provided
+  by labels and notes on the diagnostic.
+
+  > - operation `getName` is defined multiple times
+  > - interface `NamedEntity` implements itself
+
+  The primary use case for this is to make `diagnostic.data.to_string()` return a useful message for text-only error
+  reports, like in JSON responses. The JSON format for diagnostics uses these new messages.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/674]: https://github.com/apollographql/apollo-rs/pull/674
 
 # [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
 

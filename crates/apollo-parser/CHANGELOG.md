@@ -51,6 +51,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This renames it to Concrete Syntax Tree (CST) and renames various APIs accordingly.
   This leaves the name available for a new AST in apollo-compiler 1.0.
 
+# [0.6.3](https://crates.io/crates/apollo-parser/0.6.3) - 2023-10-06
+
 ## Fixes
 - **apply recursion limit where needed, reduce its default from 4096 to 500 - [SimonSapin], [pull/662]**
   The limit was only tracked for nested selection sets, but the parser turns out
