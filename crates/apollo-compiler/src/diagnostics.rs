@@ -5,32 +5,24 @@ use crate::database::{InputDatabase, SourceCache};
 use crate::FileId;
 use thiserror::Error;
 
-/// A source location (line + column) for a GraphQL error.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLLocation {
-    /// The line number for this location, starting at 1 for the first line.
-    pub line: usize,
-    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
-    /// Values) like [str::chars].
-    pub column: usize,
-}
-
-/// A serializable GraphQL error.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLError {
-    /// The error message.
-    pub message: String,
-
-    /// Locations relevant to the error, if any.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub locations: Vec<GraphQLLocation>,
-}
-
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct DiagnosticLocation {
     file_id: FileId,
     offset: usize,
     length: usize,
+}
+
+impl ariadne::Span for DiagnosticLocation {
+    type SourceId = FileId;
+    fn source(&self) -> &FileId {
+        &self.file_id
+    }
+    fn start(&self) -> usize {
+        self.offset
+    }
+    fn end(&self) -> usize {
+        self.offset + self.length
+    }
 }
 
 impl DiagnosticLocation {
@@ -130,17 +122,6 @@ impl ApolloDiagnostic {
     pub fn label(mut self, label: Label) -> Self {
         self.labels.push(label);
         self
-    }
-
-    /// Get the line and column number where this diagnostic was raised.
-    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        self.cache
-            .get_line_column(self.location.file_id, self.location.offset)
-            // Make 1-indexed
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
     }
 }
 
@@ -436,17 +417,14 @@ impl DiagnosticData {
     }
 }
 
-type AriadneSpan = (FileId, std::ops::Range<usize>);
-impl ApolloDiagnostic {
-    fn map_location(&self, location: DiagnosticLocation) -> AriadneSpan {
-        let id = location.file_id();
-        let source = self.cache.get_source(id).unwrap();
-        let start = source.map_index(location.offset);
-        let end = source.map_index(location.offset + location.length);
-        (id, start..end)
+impl From<Label> for ariadne::Label<DiagnosticLocation> {
+    fn from(label: Label) -> Self {
+        Self::new(label.location).with_message(label.text)
     }
+}
 
-    pub fn to_report(&self) -> ariadne::Report<'static, AriadneSpan> {
+impl ApolloDiagnostic {
+    pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let severity = if self.data.is_advice() {
@@ -456,33 +434,17 @@ impl ApolloDiagnostic {
         } else {
             ReportKind::Error
         };
-
-        let span = self.map_location(self.location);
-
         let mut colors = ColorGenerator::new();
-        let mut builder =
-            Report::build(severity, self.location.file_id(), span.1.start).with_message(&self.data);
-        builder.add_labels(self.labels.iter().map(|label| {
-            ariadne::Label::new(self.map_location(label.location))
-                .with_message(&label.text)
-                .with_color(colors.next())
-        }));
+        let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
+            .with_message(&self.data);
+        builder.add_labels(
+            self.labels
+                .iter()
+                .map(|label| ariadne::Label::from(label.clone()).with_color(colors.next())),
+        );
         if let Some(help) = &self.help {
             builder = builder.with_help(help);
         }
         builder.finish()
-    }
-
-    pub fn to_json(&self) -> GraphQLError {
-        let mut locations = vec![];
-
-        if let Some(location) = self.get_line_column() {
-            locations.push(location);
-        }
-
-        GraphQLError {
-            message: self.data.to_string(),
-            locations,
-        }
     }
 }
