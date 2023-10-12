@@ -41,10 +41,10 @@ impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::FragmentDefinition> for FragmentDef {
+impl TryFrom<apollo_parser::cst::FragmentDefinition> for FragmentDef {
     type Error = crate::FromError;
 
-    fn try_from(fragment_def: apollo_parser::ast::FragmentDefinition) -> Result<Self, Self::Error> {
+    fn try_from(fragment_def: apollo_parser::cst::FragmentDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             name: fragment_def.fragment_name().unwrap().name().unwrap().into(),
             directives: fragment_def
@@ -83,10 +83,10 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::FragmentSpread> for FragmentSpread {
+impl TryFrom<apollo_parser::cst::FragmentSpread> for FragmentSpread {
     type Error = crate::FromError;
 
-    fn try_from(fragment_spread: apollo_parser::ast::FragmentSpread) -> Result<Self, Self::Error> {
+    fn try_from(fragment_spread: apollo_parser::cst::FragmentSpread) -> Result<Self, Self::Error> {
         Ok(Self {
             name: fragment_spread
                 .fragment_name()
@@ -130,10 +130,10 @@ impl From<InlineFragment> for apollo_encoder::InlineFragment {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InlineFragment> for InlineFragment {
+impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
     type Error = crate::FromError;
 
-    fn try_from(inline_fragment: apollo_parser::ast::InlineFragment) -> Result<Self, Self::Error> {
+    fn try_from(inline_fragment: apollo_parser::cst::InlineFragment) -> Result<Self, Self::Error> {
         Ok(Self {
             directives: inline_fragment
                 .directives()
@@ -164,8 +164,8 @@ impl From<TypeCondition> for apollo_encoder::TypeCondition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::TypeCondition> for TypeCondition {
-    fn from(type_condition: apollo_parser::ast::TypeCondition) -> Self {
+impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
+    fn from(type_condition: apollo_parser::cst::TypeCondition) -> Self {
         Self {
             name: type_condition.named_type().unwrap().name().unwrap().into(),
         }

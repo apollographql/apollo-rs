@@ -1,114 +1,89 @@
-- DOCUMENT@0..210
-    - SCHEMA_DEFINITION@0..31
-        - schema_KW@0..6 "schema"
-        - WHITESPACE@6..7 " "
-        - L_CURLY@7..8 "{"
-        - WHITESPACE@8..11 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@11..29
-            - OPERATION_TYPE@11..16
-                - query_KW@11..16 "query"
-            - COLON@16..17 ":"
-            - WHITESPACE@17..18 " "
-            - NAMED_TYPE@18..29
-                - NAME@18..29
-                    - IDENT@18..29 "SearchQuery"
-        - WHITESPACE@29..30 "\n"
-        - R_CURLY@30..31 "}"
-    - WHITESPACE@31..33 "\n\n"
-    - UNION_TYPE_DEFINITION@33..68
-        - union_KW@33..38 "union"
-        - WHITESPACE@38..39 " "
-        - NAME@39..51
-            - IDENT@39..51 "SearchResult"
-        - WHITESPACE@51..52 " "
-        - UNION_MEMBER_TYPES@52..68
-            - EQ@52..53 "="
-            - WHITESPACE@53..54 " "
-            - NAMED_TYPE@54..59
-                - NAME@54..59
-                    - IDENT@54..59 "Photo"
-            - WHITESPACE@59..60 " "
-            - PIPE@60..61 "|"
-            - WHITESPACE@61..62 " "
-            - NAMED_TYPE@62..68
-                - NAME@62..68
-                    - IDENT@62..68 "Person"
-    - WHITESPACE@68..70 "\n\n"
-    - OBJECT_TYPE_DEFINITION@70..111
-        - type_KW@70..74 "type"
-        - WHITESPACE@74..75 " "
-        - NAME@75..81
-            - IDENT@75..81 "Person"
-        - WHITESPACE@81..82 " "
-        - FIELDS_DEFINITION@82..111
-            - L_CURLY@82..83 "{"
-            - WHITESPACE@83..86 "\n  "
-            - FIELD_DEFINITION@86..98
-                - NAME@86..90
-                    - IDENT@86..90 "name"
-                - COLON@90..91 ":"
-                - WHITESPACE@91..92 " "
-                - NAMED_TYPE@92..98
-                    - NAME@92..98
-                        - IDENT@92..98 "String"
-            - WHITESPACE@98..101 "\n  "
-            - FIELD_DEFINITION@101..109
-                - NAME@101..104
-                    - IDENT@101..104 "age"
-                - COLON@104..105 ":"
-                - WHITESPACE@105..106 " "
-                - NAMED_TYPE@106..109
-                    - NAME@106..109
-                        - IDENT@106..109 "Int"
-            - WHITESPACE@109..110 "\n"
-            - R_CURLY@110..111 "}"
-    - WHITESPACE@111..113 "\n\n"
-    - OBJECT_TYPE_DEFINITION@113..154
-        - type_KW@113..117 "type"
-        - WHITESPACE@117..118 " "
-        - NAME@118..123
-            - IDENT@118..123 "Photo"
-        - WHITESPACE@123..124 " "
-        - FIELDS_DEFINITION@124..154
-            - L_CURLY@124..125 "{"
-            - WHITESPACE@125..128 "\n  "
-            - FIELD_DEFINITION@128..139
-                - NAME@128..134
-                    - IDENT@128..134 "height"
-                - COLON@134..135 ":"
-                - WHITESPACE@135..136 " "
-                - NAMED_TYPE@136..139
-                    - NAME@136..139
-                        - IDENT@136..139 "Int"
-            - WHITESPACE@139..142 "\n  "
-            - FIELD_DEFINITION@142..152
-                - NAME@142..147
-                    - IDENT@142..147 "width"
-                - COLON@147..148 ":"
-                - WHITESPACE@148..149 " "
-                - NAMED_TYPE@149..152
-                    - NAME@149..152
-                        - IDENT@149..152 "Int"
-            - WHITESPACE@152..153 "\n"
-            - R_CURLY@153..154 "}"
-    - WHITESPACE@154..156 "\n\n"
-    - OBJECT_TYPE_DEFINITION@156..210
-        - type_KW@156..160 "type"
-        - WHITESPACE@160..161 " "
-        - NAME@161..172
-            - IDENT@161..172 "SearchQuery"
-        - WHITESPACE@172..173 " "
-        - FIELDS_DEFINITION@173..210
-            - L_CURLY@173..174 "{"
-            - WHITESPACE@174..177 "\n  "
-            - FIELD_DEFINITION@177..208
-                - NAME@177..194
-                    - IDENT@177..194 "firstSearchResult"
-                - COLON@194..195 ":"
-                - WHITESPACE@195..196 " "
-                - NAMED_TYPE@196..208
-                    - NAME@196..208
-                        - IDENT@196..208 "SearchResult"
-            - WHITESPACE@208..209 "\n"
-            - R_CURLY@209..210 "}"
-recursion limit: 500, high: 1
+0..31 @6 SchemaDefinition {
+    description: None,
+    directives: [],
+    root_operations: [
+        11..29 @6 (
+            Query,
+            "SearchQuery",
+        ),
+    ],
+}
+33..68 @6 UnionTypeDefinition {
+    description: None,
+    name: "SearchResult",
+    directives: [],
+    members: [
+        "Photo",
+        "Person",
+    ],
+}
+70..111 @6 ObjectTypeDefinition {
+    description: None,
+    name: "Person",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        86..98 @6 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+        101..109 @6 FieldDefinition {
+            description: None,
+            name: "age",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
+113..154 @6 ObjectTypeDefinition {
+    description: None,
+    name: "Photo",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        128..139 @6 FieldDefinition {
+            description: None,
+            name: "height",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+        142..152 @6 FieldDefinition {
+            description: None,
+            name: "width",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
+156..210 @6 ObjectTypeDefinition {
+    description: None,
+    name: "SearchQuery",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        177..208 @6 FieldDefinition {
+            description: None,
+            name: "firstSearchResult",
+            arguments: [],
+            ty: Named(
+                "SearchResult",
+            ),
+            directives: [],
+        },
+    ],
+}
+

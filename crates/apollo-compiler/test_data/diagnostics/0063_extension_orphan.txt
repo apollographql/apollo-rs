@@ -1,176 +1,50 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            63: "0063_extension_orphan.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 25,
-            length: 52,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 39,
-                    length: 1,
-                },
-                text: "`A` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "A",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            63: "0063_extension_orphan.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 78,
-            length: 29,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 90,
-                    length: 1,
-                },
-                text: "`B` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "B",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            63: "0063_extension_orphan.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 141,
-            length: 23,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 154,
-                    length: 1,
-                },
-                text: "`C` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "C",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            63: "0063_extension_orphan.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 165,
-            length: 35,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 182,
-                    length: 1,
-                },
-                text: "`D` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "D",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            63: "0063_extension_orphan.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 201,
-            length: 31,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 214,
-                    length: 1,
-                },
-                text: "`E` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "E",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            63: "0063_extension_orphan.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 233,
-            length: 26,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 245,
-                    length: 1,
-                },
-                text: "`F` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "F",
-        },
-    },
-]
+Error: type extension for undefined type `A`
+   ╭─[0063_extension_orphan.graphql:5:15]
+   │
+ 5 │ extend scalar A @deprecated(reason: "Use B instead")
+   │               ┬  
+   │               ╰── extension here
+───╯
+Error: type extension for undefined type `B`
+   ╭─[0063_extension_orphan.graphql:6:13]
+   │
+ 6 │ extend type B { field: Int! }
+   │             ┬  
+   │             ╰── extension here
+───╯
+Error: duplicate definitions for the `query` root operation type
+   ╭─[0063_extension_orphan.graphql:8:3]
+   │
+ 8 │   query: Query
+   │   ──────┬─────  
+   │         ╰─────── `query` redefined here
+───╯
+Error: type extension for undefined type `C`
+    ╭─[0063_extension_orphan.graphql:10:14]
+    │
+ 10 │ extend union C = String
+    │              ┬  
+    │              ╰── extension here
+────╯
+Error: type extension for undefined type `D`
+    ╭─[0063_extension_orphan.graphql:11:18]
+    │
+ 11 │ extend interface D {
+    │                  ┬  
+    │                  ╰── extension here
+────╯
+Error: type extension for undefined type `E`
+    ╭─[0063_extension_orphan.graphql:14:14]
+    │
+ 14 │ extend input E {
+    │              ┬  
+    │              ╰── extension here
+────╯
+Error: type extension for undefined type `F`
+    ╭─[0063_extension_orphan.graphql:17:13]
+    │
+ 17 │ extend enum F {
+    │             ┬  
+    │             ╰── extension here
+────╯
+

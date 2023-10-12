@@ -1,31 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            11: "0011_syntactic_errors_from_parser.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 11,
-            },
-            offset: 15,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 11,
-                    },
-                    offset: 15,
-                    length: 1,
-                },
-                text: "expected at least one Selection in Selection Set",
-            },
-        ],
-        help: None,
-        data: SyntaxError {
-            message: "expected at least one Selection in Selection Set",
-        },
-    },
-]
+Error: syntax error: expected at least one Selection in Selection Set
+   ╭─[0011_syntactic_errors_from_parser.graphql:1:16]
+   │
+ 1 │ query getName {}
+   │                ┬  
+   │                ╰── expected at least one Selection in Selection Set
+───╯
+

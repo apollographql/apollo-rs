@@ -1,57 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            49: "0049_duplicate_directive_argument_definition_names.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 49,
-            },
-            offset: 19,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 49,
-                    },
-                    offset: 19,
-                    length: 12,
-                },
-                text: "previous definition of `arg` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 49,
-                    },
-                    offset: 33,
-                    length: 12,
-                },
-                text: "`arg` redefined here",
-            },
-        ],
-        help: Some(
-            "`arg` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueInputValue {
-            name: "arg",
-            original_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 49,
-                },
-                offset: 19,
-                length: 12,
-            },
-            redefined_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 49,
-                },
-                offset: 33,
-                length: 12,
-            },
-        },
-    },
-]
+Error: the value `arg` is defined multiple times
+   ╭─[0049_duplicate_directive_argument_definition_names.graphql:1:20]
+   │
+ 1 │ directive @example(arg: Boolean, arg: Boolean) on FIELD
+   │                    ──────┬─────  ──────┬─────  
+   │                          ╰───────────────────── previous definition of `arg` here
+   │                                        │       
+   │                                        ╰─────── `arg` redefined here
+   │ 
+   │ Help: `arg` field must only be defined once in this input object definition.
+───╯
+

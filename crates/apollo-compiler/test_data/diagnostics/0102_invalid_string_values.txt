@@ -1,1875 +1,493 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1507,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1507,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1591,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1591,
-                    length: 3,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1679,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1679,
-                    length: 4,
-                },
-                text: "argument declared here is of Boolean type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Boolean",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1775,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1775,
-                    length: 3,
-                },
-                text: "argument declared here is of Enum type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Enum",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1853,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1853,
-                    length: 3,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1931,
-            length: 27,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1931,
-                    length: 27,
-                },
-                text: "cannot be coerced to an 32-bit integer",
-            },
-        ],
-        help: None,
-        data: IntCoercionError {
-            value: "829384293849283500000000000",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2041,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2041,
-                    length: 3,
-                },
-                text: "argument declared here is of Enum type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Enum",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2124,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2124,
-                    length: 3,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2201,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2201,
-                    length: 5,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2287,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 318,
-                    length: 5,
-                },
-                text: "field declared here as Float type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2287,
-                    length: 7,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Float",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2376,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 318,
-                    length: 5,
-                },
-                text: "field declared here as Float type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2376,
-                    length: 4,
-                },
-                text: "argument declared here is of Boolean type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Boolean",
-            ty: "Float",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2463,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 318,
-                    length: 5,
-                },
-                text: "field declared here as Float type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2463,
-                    length: 3,
-                },
-                text: "argument declared here is of Enum type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Enum",
-            ty: "Float",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2550,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2550,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2637,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2637,
-                    length: 3,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2727,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2727,
-                    length: 6,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2822,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2822,
-                    length: 4,
-                },
-                text: "argument declared here is of Enum type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Enum",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2897,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 353,
-                    length: 2,
-                },
-                text: "field declared here as ID type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2897,
-                    length: 3,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "ID",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2973,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 353,
-                    length: 2,
-                },
-                text: "field declared here as ID type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2973,
-                    length: 4,
-                },
-                text: "argument declared here is of Boolean type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Boolean",
-            ty: "ID",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3051,
-            length: 9,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 353,
-                    length: 2,
-                },
-                text: "field declared here as ID type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3051,
-                    length: 9,
-                },
-                text: "argument declared here is of Enum type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Enum",
-            ty: "ID",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3150,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
-                text: "field declared here as DogCommand type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3150,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "DogCommand",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3222,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
-                text: "field declared here as DogCommand type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3222,
-                    length: 3,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "DogCommand",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3297,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
-                text: "field declared here as DogCommand type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3297,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "DogCommand",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3375,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
-                text: "field declared here as DogCommand type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3375,
-                    length: 4,
-                },
-                text: "argument declared here is of Boolean type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Boolean",
-            ty: "DogCommand",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3461,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3461,
-                    length: 6,
-                },
-                text: "does not exist on `DogCommand` type",
-            },
-        ],
-        help: None,
-        data: UndefinedValue {
-            value: "JUGGLE",
-            definition: "DogCommand",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3555,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3555,
-                    length: 3,
-                },
-                text: "does not exist on `DogCommand` type",
-            },
-        ],
-        help: None,
-        data: UndefinedValue {
-            value: "sit",
-            definition: "DogCommand",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3663,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 401,
-                    length: 8,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3663,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3767,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 401,
-                    length: 8,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3767,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3876,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 573,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3876,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3889,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 561,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3889,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3968,
-            length: 25,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3968,
-                    length: 25,
-                },
-                text: "missing value for argument `req2`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 567,
-                    length: 10,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req2:)",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3987,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 561,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3987,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4043,
-            length: 24,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4043,
-                    length: 24,
-                },
-                text: "missing value for argument `req1`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 555,
-                    length: 10,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req1:)",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4043,
-            length: 24,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4043,
-                    length: 24,
-                },
-                text: "missing value for argument `req2`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 567,
-                    length: 10,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req2:)",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4187,
-            length: 15,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4187,
-                    length: 15,
-                },
-                text: "missing value for argument `requiredField`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 882,
-                    length: 7,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "ComplexInput.requiredField",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4334,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1005,
-                    length: 8,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4334,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4678,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4678,
-                    length: 7,
-                },
-                text: "does not exist on `ComplexInput` type",
-            },
-        ],
-        help: None,
-        data: UndefinedValue {
-            value: "invalidField",
-            definition: "ComplexInput",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4781,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2290,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4781,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4809,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2089,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4809,
-                    length: 4,
-                },
-                text: "argument declared here is of Enum type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Enum",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4906,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4899,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4906,
-                    length: 4,
-                },
-                text: "argument declared here is of Null type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Null",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4928,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4918,
-                    length: 6,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4928,
-                    length: 4,
-                },
-                text: "argument declared here is of Null type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Null",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4955,
-            length: 39,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4955,
-                    length: 39,
-                },
-                text: "missing value for argument `requiredField`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 882,
-                    length: 7,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "ComplexInput.requiredField",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5177,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5171,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5177,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5199,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5190,
-                    length: 6,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5199,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "String",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5223,
-            length: 16,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5208,
-                    length: 12,
-                },
-                text: "field declared here as ComplexInput type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5223,
-                    length: 16,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "ComplexInput",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5455,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 882,
-                    length: 7,
-                },
-                text: "field declared here as Boolean type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5455,
-                    length: 3,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "Boolean",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5470,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 936,
-                    length: 3,
-                },
-                text: "field declared here as Int type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5470,
-                    length: 5,
-                },
-                text: "argument declared here is of String type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5610,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5610,
-                    length: 13,
-                },
-                text: "missing value for argument `requiredField`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 882,
-                    length: 7,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "ComplexInput.requiredField",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5753,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5734,
-                    length: 8,
-                },
-                text: "field declared here as String type",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5753,
-                    length: 1,
-                },
-                text: "argument declared here is of Int type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Int",
-            ty: "String",
-        },
-    },
-]
+Error: String cannot be represented by a Int value
+    ╭─[0102_invalid_string_values.graphql:71:31]
+    │
+  8 │   stringArgField(stringArg: String): String
+    │                             ───┬──  
+    │                                ╰──── field declared here as String type
+    │ 
+ 71 │     stringArgField(stringArg: 1)
+    │                               ┬  
+    │                               ╰── argument declared here is of Int type
+────╯
+Error: String cannot be represented by a Float value
+    ╭─[0102_invalid_string_values.graphql:77:31]
+    │
+  8 │   stringArgField(stringArg: String): String
+    │                             ───┬──  
+    │                                ╰──── field declared here as String type
+    │ 
+ 77 │     stringArgField(stringArg: 1.0)
+    │                               ─┬─  
+    │                                ╰─── argument declared here is of Float type
+────╯
+Error: String cannot be represented by a Boolean value
+    ╭─[0102_invalid_string_values.graphql:83:31]
+    │
+  8 │   stringArgField(stringArg: String): String
+    │                             ───┬──  
+    │                                ╰──── field declared here as String type
+    │ 
+ 83 │     stringArgField(stringArg: true)
+    │                               ──┬─  
+    │                                 ╰─── argument declared here is of Boolean type
+────╯
+Error: String cannot be represented by a Enum value
+    ╭─[0102_invalid_string_values.graphql:89:31]
+    │
+  8 │   stringArgField(stringArg: String): String
+    │                             ───┬──  
+    │                                ╰──── field declared here as String type
+    │ 
+ 89 │     stringArgField(stringArg: BAR)
+    │                               ─┬─  
+    │                                ╰─── argument declared here is of Enum type
+────╯
+Error: Int cannot be represented by a String value
+    ╭─[0102_invalid_string_values.graphql:95:25]
+    │
+  6 │   intArgField(intArg: Int): String
+    │                       ─┬─  
+    │                        ╰─── field declared here as Int type
+    │ 
+ 95 │     intArgField(intArg: "3")
+    │                         ─┬─  
+    │                          ╰─── argument declared here is of String type
+────╯
+Error: int cannot represent non 32-bit signed integer value
+     ╭─[0102_invalid_string_values.graphql:101:25]
+     │
+ 101 │     intArgField(intArg: 829384293849283498239482938)
+     │                         ─────────────┬─────────────  
+     │                                      ╰─────────────── cannot be coerced to an 32-bit integer
+─────╯
+Error: Int cannot be represented by a Enum value
+     ╭─[0102_invalid_string_values.graphql:107:25]
+     │
+   6 │   intArgField(intArg: Int): String
+     │                       ─┬─  
+     │                        ╰─── field declared here as Int type
+     │ 
+ 107 │     intArgField(intArg: FOO)
+     │                         ─┬─  
+     │                          ╰─── argument declared here is of Enum type
+─────╯
+Error: Int cannot be represented by a Float value
+     ╭─[0102_invalid_string_values.graphql:113:25]
+     │
+   6 │   intArgField(intArg: Int): String
+     │                       ─┬─  
+     │                        ╰─── field declared here as Int type
+     │ 
+ 113 │     intArgField(intArg: 3.0)
+     │                         ─┬─  
+     │                          ╰─── argument declared here is of Float type
+─────╯
+Error: Int cannot be represented by a Float value
+     ╭─[0102_invalid_string_values.graphql:119:25]
+     │
+   6 │   intArgField(intArg: Int): String
+     │                       ─┬─  
+     │                        ╰─── field declared here as Int type
+     │ 
+ 119 │     intArgField(intArg: 3.333)
+     │                         ──┬──  
+     │                           ╰──── argument declared here is of Float type
+─────╯
+Error: Float cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:125:29]
+     │
+  11 │   floatArgField(floatArg: Float): String
+     │                           ──┬──  
+     │                             ╰──── field declared here as Float type
+     │ 
+ 125 │     floatArgField(floatArg: "3.333")
+     │                             ───┬───  
+     │                                ╰───── argument declared here is of String type
+─────╯
+Error: Float cannot be represented by a Boolean value
+     ╭─[0102_invalid_string_values.graphql:131:29]
+     │
+  11 │   floatArgField(floatArg: Float): String
+     │                           ──┬──  
+     │                             ╰──── field declared here as Float type
+     │ 
+ 131 │     floatArgField(floatArg: true)
+     │                             ──┬─  
+     │                               ╰─── argument declared here is of Boolean type
+─────╯
+Error: Float cannot be represented by a Enum value
+     ╭─[0102_invalid_string_values.graphql:137:29]
+     │
+  11 │   floatArgField(floatArg: Float): String
+     │                           ──┬──  
+     │                             ╰──── field declared here as Float type
+     │ 
+ 137 │     floatArgField(floatArg: FOO)
+     │                             ─┬─  
+     │                              ╰─── argument declared here is of Enum type
+─────╯
+Error: Boolean cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:143:33]
+     │
+   9 │   booleanArgField(booleanArg: Boolean): String
+     │                               ───┬───  
+     │                                  ╰───── field declared here as Boolean type
+     │ 
+ 143 │     booleanArgField(booleanArg: 2)
+     │                                 ┬  
+     │                                 ╰── argument declared here is of Int type
+─────╯
+Error: Boolean cannot be represented by a Float value
+     ╭─[0102_invalid_string_values.graphql:149:33]
+     │
+   9 │   booleanArgField(booleanArg: Boolean): String
+     │                               ───┬───  
+     │                                  ╰───── field declared here as Boolean type
+     │ 
+ 149 │     booleanArgField(booleanArg: 1.0)
+     │                                 ─┬─  
+     │                                  ╰─── argument declared here is of Float type
+─────╯
+Error: Boolean cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:155:33]
+     │
+   9 │   booleanArgField(booleanArg: Boolean): String
+     │                               ───┬───  
+     │                                  ╰───── field declared here as Boolean type
+     │ 
+ 155 │     booleanArgField(booleanArg: "true")
+     │                                 ───┬──  
+     │                                    ╰──── argument declared here is of String type
+─────╯
+Error: Boolean cannot be represented by a Enum value
+     ╭─[0102_invalid_string_values.graphql:161:33]
+     │
+   9 │   booleanArgField(booleanArg: Boolean): String
+     │                               ───┬───  
+     │                                  ╰───── field declared here as Boolean type
+     │ 
+ 161 │     booleanArgField(booleanArg: TRUE)
+     │                                 ──┬─  
+     │                                   ╰─── argument declared here is of Enum type
+─────╯
+Error: ID cannot be represented by a Float value
+     ╭─[0102_invalid_string_values.graphql:167:23]
+     │
+  12 │   idArgField(idArg: ID): String
+     │                     ─┬  
+     │                      ╰── field declared here as ID type
+     │ 
+ 167 │     idArgField(idArg: 1.0)
+     │                       ─┬─  
+     │                        ╰─── argument declared here is of Float type
+─────╯
+Error: ID cannot be represented by a Boolean value
+     ╭─[0102_invalid_string_values.graphql:173:23]
+     │
+  12 │   idArgField(idArg: ID): String
+     │                     ─┬  
+     │                      ╰── field declared here as ID type
+     │ 
+ 173 │     idArgField(idArg: true)
+     │                       ──┬─  
+     │                         ╰─── argument declared here is of Boolean type
+─────╯
+Error: ID cannot be represented by a Enum value
+     ╭─[0102_invalid_string_values.graphql:179:23]
+     │
+  12 │   idArgField(idArg: ID): String
+     │                     ─┬  
+     │                      ╰── field declared here as ID type
+     │ 
+ 179 │     idArgField(idArg: SOMETHING)
+     │                       ────┬────  
+     │                           ╰────── argument declared here is of Enum type
+─────╯
+Error: DogCommand cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:186:33]
+     │
+  47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+     │                               ─────┬────  
+     │                                    ╰────── field declared here as DogCommand type
+     │ 
+ 186 │     doesKnowCommand(dogCommand: 2)
+     │                                 ┬  
+     │                                 ╰── argument declared here is of Int type
+─────╯
+Error: DogCommand cannot be represented by a Float value
+     ╭─[0102_invalid_string_values.graphql:192:33]
+     │
+  47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+     │                               ─────┬────  
+     │                                    ╰────── field declared here as DogCommand type
+     │ 
+ 192 │     doesKnowCommand(dogCommand: 1.0)
+     │                                 ─┬─  
+     │                                  ╰─── argument declared here is of Float type
+─────╯
+Error: DogCommand cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:198:33]
+     │
+  47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+     │                               ─────┬────  
+     │                                    ╰────── field declared here as DogCommand type
+     │ 
+ 198 │     doesKnowCommand(dogCommand: "SIT")
+     │                                 ──┬──  
+     │                                   ╰──── argument declared here is of String type
+─────╯
+Error: DogCommand cannot be represented by a Boolean value
+     ╭─[0102_invalid_string_values.graphql:204:33]
+     │
+  47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+     │                               ─────┬────  
+     │                                    ╰────── field declared here as DogCommand type
+     │ 
+ 204 │     doesKnowCommand(dogCommand: true)
+     │                                 ──┬─  
+     │                                   ╰─── argument declared here is of Boolean type
+─────╯
+Error: value `JUGGLE` does not exist on `DogCommand` type
+     ╭─[0102_invalid_string_values.graphql:210:33]
+     │
+ 210 │     doesKnowCommand(dogCommand: JUGGLE)
+     │                                 ───┬──  
+     │                                    ╰──── does not exist on `DogCommand` type
+─────╯
+Error: value `sit` does not exist on `DogCommand` type
+     ╭─[0102_invalid_string_values.graphql:216:33]
+     │
+ 216 │     doesKnowCommand(dogCommand: sit)
+     │                                 ─┬─  
+     │                                  ╰─── does not exist on `DogCommand` type
+─────╯
+Error: [String] cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:222:47]
+     │
+  13 │   stringListArgField(stringListArg: [String]): String
+     │                                     ────┬───  
+     │                                         ╰───── field declared here as [String] type
+     │ 
+ 222 │     stringListArgField(stringListArg: ["one", 2])
+     │                                               ┬  
+     │                                               ╰── argument declared here is of Int type
+─────╯
+Error: [String] cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:228:39]
+     │
+  13 │   stringListArgField(stringListArg: [String]): String
+     │                                     ────┬───  
+     │                                         ╰───── field declared here as [String] type
+     │ 
+ 228 │     stringListArgField(stringListArg: 1)
+     │                                       ┬  
+     │                                       ╰── argument declared here is of Int type
+─────╯
+Error: Int! cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:235:24]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                                  ──┬─  
+     │                                    ╰─── field declared here as Int! type
+     │ 
+ 235 │     multipleReqs(req2: "two", req1: "one")
+     │                        ──┬──  
+     │                          ╰──── argument declared here is of String type
+─────╯
+Error: Int! cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:235:37]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                      ──┬─  
+     │                        ╰─── field declared here as Int! type
+     │ 
+ 235 │     multipleReqs(req2: "two", req1: "one")
+     │                                     ──┬──  
+     │                                       ╰──── argument declared here is of String type
+─────╯
+Error: the required argument `req2` is not provided
+     ╭─[0102_invalid_string_values.graphql:241:5]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                            ─────┬────  
+     │                                 ╰────── argument defined here
+     │ 
+ 241 │     multipleReqs(req1: "one")
+     │     ────────────┬────────────  
+     │                 ╰────────────── missing value for argument `req2`
+─────╯
+Error: Int! cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:241:24]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                      ──┬─  
+     │                        ╰─── field declared here as Int! type
+     │ 
+ 241 │     multipleReqs(req1: "one")
+     │                        ──┬──  
+     │                          ╰──── argument declared here is of String type
+─────╯
+Error: the required argument `req1` is not provided
+     ╭─[0102_invalid_string_values.graphql:247:5]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                ─────┬────  
+     │                     ╰────── argument defined here
+     │ 
+ 247 │     multipleReqs(req1: null)
+     │     ────────────┬───────────  
+     │                 ╰───────────── missing value for argument `req1`
+─────╯
+Error: the required argument `req2` is not provided
+     ╭─[0102_invalid_string_values.graphql:247:5]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                            ─────┬────  
+     │                                 ╰────── argument defined here
+     │ 
+ 247 │     multipleReqs(req1: null)
+     │     ────────────┬───────────  
+     │                 ╰───────────── missing value for argument `req2`
+─────╯
+Error: the required argument `requiredField` is not provided
+     ╭─[0102_invalid_string_values.graphql:254:33]
+     │
+  32 │   requiredField: Boolean!
+     │   ───────────┬───────────  
+     │              ╰───────────── argument defined here
+     │ 
+ 254 │     complexArgField(complexArg: { intField: 4 })
+     │                                 ───────┬───────  
+     │                                        ╰───────── missing value for argument `requiredField`
+─────╯
+Error: [String] cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:261:32]
+     │
+  37 │   stringListField: [String]
+     │                    ────┬───  
+     │                        ╰───── field declared here as [String] type
+     │ 
+ 261 │       stringListField: ["one", 2],
+     │                                ┬  
+     │                                ╰── argument declared here is of Int type
+─────╯
+Error: value `invalidField` does not exist on `ComplexInput` type
+     ╭─[0102_invalid_string_values.graphql:280:7]
+     │
+ 280 │       invalidField: "value"
+     │       ──────────┬──────────  
+     │                 ╰──────────── does not exist on `ComplexInput` type
+─────╯
+Error: Boolean! cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:287:20]
+     │
+ 287 │   dog @include(if: "yes") {
+     │                    ──┬──  
+     │                      ╰──── argument declared here is of String type
+─────╯
+Error: Boolean! cannot be represented by a Enum value
+     ╭─[0102_invalid_string_values.graphql:288:20]
+     │
+ 288 │     name @skip(if: ENUM)
+     │                    ──┬─  
+     │                      ╰─── argument declared here is of Enum type
+─────╯
+Error: Int! cannot be represented by a Null value
+     ╭─[0102_invalid_string_values.graphql:294:14]
+     │
+ 294 │   $a: Int! = null,
+     │       ──┬─   ──┬─  
+     │         ╰────────── field declared here as Int! type
+     │                │   
+     │                ╰─── argument declared here is of Null type
+─────╯
+Error: String! cannot be represented by a Null value
+     ╭─[0102_invalid_string_values.graphql:295:17]
+     │
+ 295 │   $b: String! = null,
+     │       ───┬───   ──┬─  
+     │          ╰──────────── field declared here as String! type
+     │                   │   
+     │                   ╰─── argument declared here is of Null type
+─────╯
+Error: the required argument `requiredField` is not provided
+     ╭─[0102_invalid_string_values.graphql:296:22]
+     │
+  32 │   requiredField: Boolean!
+     │   ───────────┬───────────  
+     │              ╰───────────── argument defined here
+     │ 
+ 296 │   $c: ComplexInput = { requiredField: null, intField: null }
+     │                      ───────────────────┬───────────────────  
+     │                                         ╰───────────────────── missing value for argument `requiredField`
+─────╯
+Error: Int cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:306:13]
+     │
+ 306 │   $a: Int = "one",
+     │       ─┬─   ──┬──  
+     │        ╰─────────── field declared here as Int type
+     │               │    
+     │               ╰──── argument declared here is of String type
+─────╯
+Error: String cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:307:16]
+     │
+ 307 │   $b: String = 4,
+     │       ───┬──   ┬  
+     │          ╰──────── field declared here as String type
+     │                │  
+     │                ╰── argument declared here is of Int type
+─────╯
+Error: ComplexInput cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:308:22]
+     │
+ 308 │   $c: ComplexInput = "NotVeryComplex"
+     │       ──────┬─────   ────────┬───────  
+     │             ╰────────────────────────── field declared here as ComplexInput type
+     │                              │         
+     │                              ╰───────── argument declared here is of String type
+─────╯
+Error: Boolean! cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:318:24]
+     │
+  32 │   requiredField: Boolean!
+     │                  ────┬───  
+     │                      ╰───── field declared here as Boolean! type
+     │ 
+ 318 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
+     │                        ─────────┬────────  
+     │                                 ╰────────── argument declared here is of Int type
+─────╯
+Error: Int cannot be represented by a String value
+     ╭─[0102_invalid_string_values.graphql:318:44]
+     │
+  34 │   intField: Int
+     │             ─┬─  
+     │              ╰─── field declared here as Int type
+     │ 
+ 318 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
+     │                                            ───────┬───────  
+     │                                                   ╰───────── argument declared here is of String type
+─────╯
+Error: the required argument `requiredField` is not provided
+     ╭─[0102_invalid_string_values.graphql:326:22]
+     │
+  32 │   requiredField: Boolean!
+     │   ───────────┬───────────  
+     │              ╰───────────── argument defined here
+     │ 
+ 326 │   $a: ComplexInput = {intField: 3}
+     │                      ──────┬──────  
+     │                            ╰──────── missing value for argument `requiredField`
+─────╯
+Error: [String] cannot be represented by a Int value
+     ╭─[0102_invalid_string_values.graphql:335:26]
+     │
+ 335 │   $a: [String] = ["one", 2]
+     │       ────┬───           ┬  
+     │           ╰───────────────── field declared here as [String] type
+     │                          │  
+     │                          ╰── argument declared here is of Int type
+─────╯
+

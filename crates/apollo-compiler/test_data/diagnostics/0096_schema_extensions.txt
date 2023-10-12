@@ -1,55 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            93: "0096_schema_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 93,
-            },
-            offset: 213,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 93,
-                    },
-                    offset: 165,
-                    length: 14,
-                },
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 93,
-                    },
-                    offset: 213,
-                    length: 14,
-                },
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 93,
-                },
-                offset: 165,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 93,
-                },
-                offset: 213,
-                length: 14,
-            },
-        },
-    },
-]
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0096_schema_extensions.graphql:11:15]
+    │
+  8 │ schema @nonRepeatable {
+    │        ───────┬──────  
+    │               ╰──────── directive nonRepeatable first called here
+    │ 
+ 11 │ extend schema @nonRepeatable
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable called again here
+────╯
+

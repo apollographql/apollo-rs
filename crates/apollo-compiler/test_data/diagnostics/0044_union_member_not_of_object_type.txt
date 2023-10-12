@@ -1,34 +1,10 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            44: "0044_union_member_not_of_object_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 44,
-            },
-            offset: 219,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 44,
-                    },
-                    offset: 219,
-                    length: 3,
-                },
-                text: "This is of `InterfaceTypeDefinition` type",
-            },
-        ],
-        help: Some(
-            "Union members must be of base Object Type.",
-        ),
-        data: ObjectType {
-            name: "Pet",
-            ty: "InterfaceTypeDefinition",
-        },
-    },
-]
+Error: `Pet` field must return an object type
+    ╭─[0044_union_member_not_of_object_type.graphql:17:24]
+    │
+ 17 │ union CatOrDog = Cat | Pet
+    │                        ─┬─  
+    │                         ╰─── This is a an interface
+    │ 
+    │ Help: Union members must be of base Object Type.
+────╯
+

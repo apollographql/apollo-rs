@@ -1,480 +1,655 @@
-- DOCUMENT@0..1265
-    - OPERATION_DEFINITION@0..271
-        - OPERATION_TYPE@0..5
-            - query_KW@0..5 "query"
-        - WHITESPACE@5..6 " "
-        - NAME@6..24
-            - IDENT@6..24 "IntrospectionQuery"
-        - WHITESPACE@24..25 " "
-        - SELECTION_SET@25..271
-            - L_CURLY@25..26 "{"
-            - WHITESPACE@26..29 "\n  "
-            - FIELD@29..269
-                - NAME@29..37
-                    - IDENT@29..37 "__schema"
-                - WHITESPACE@37..38 " "
-                - SELECTION_SET@38..269
-                    - L_CURLY@38..39 "{"
-                    - WHITESPACE@39..44 "\n    "
-                    - FIELD@44..62
-                        - NAME@44..53
-                            - IDENT@44..53 "queryType"
-                        - WHITESPACE@53..54 " "
-                        - SELECTION_SET@54..62
-                            - L_CURLY@54..55 "{"
-                            - WHITESPACE@55..56 " "
-                            - FIELD@56..60
-                                - NAME@56..60
-                                    - IDENT@56..60 "name"
-                            - WHITESPACE@60..61 " "
-                            - R_CURLY@61..62 "}"
-                    - WHITESPACE@62..67 "\n    "
-                    - FIELD@67..88
-                        - NAME@67..79
-                            - IDENT@67..79 "mutationType"
-                        - WHITESPACE@79..80 " "
-                        - SELECTION_SET@80..88
-                            - L_CURLY@80..81 "{"
-                            - WHITESPACE@81..82 " "
-                            - FIELD@82..86
-                                - NAME@82..86
-                                    - IDENT@82..86 "name"
-                            - WHITESPACE@86..87 " "
-                            - R_CURLY@87..88 "}"
-                    - WHITESPACE@88..93 "\n    "
-                    - FIELD@93..118
-                        - NAME@93..109
-                            - IDENT@93..109 "subscriptionType"
-                        - WHITESPACE@109..110 " "
-                        - SELECTION_SET@110..118
-                            - L_CURLY@110..111 "{"
-                            - WHITESPACE@111..112 " "
-                            - FIELD@112..116
-                                - NAME@112..116
-                                    - IDENT@112..116 "name"
-                            - WHITESPACE@116..117 " "
-                            - R_CURLY@117..118 "}"
-                    - WHITESPACE@118..123 "\n    "
-                    - FIELD@123..154
-                        - NAME@123..128
-                            - IDENT@123..128 "types"
-                        - WHITESPACE@128..129 " "
-                        - SELECTION_SET@129..154
-                            - L_CURLY@129..130 "{"
-                            - WHITESPACE@130..137 "\n      "
-                            - FRAGMENT_SPREAD@137..148
-                                - SPREAD@137..140 "..."
-                                - FRAGMENT_NAME@140..148
-                                    - NAME@140..148
-                                        - IDENT@140..148 "FullType"
-                            - WHITESPACE@148..153 "\n    "
-                            - R_CURLY@153..154 "}"
-                    - WHITESPACE@154..159 "\n    "
-                    - FIELD@159..265
-                        - NAME@159..169
-                            - IDENT@159..169 "directives"
-                        - WHITESPACE@169..170 " "
-                        - SELECTION_SET@170..265
-                            - L_CURLY@170..171 "{"
-                            - WHITESPACE@171..178 "\n      "
-                            - FIELD@178..182
-                                - NAME@178..182
-                                    - IDENT@178..182 "name"
-                            - WHITESPACE@182..189 "\n      "
-                            - FIELD@189..200
-                                - NAME@189..200
-                                    - IDENT@189..200 "description"
-                            - WHITESPACE@200..207 "\n      "
-                            - FIELD@207..216
-                                - NAME@207..216
-                                    - IDENT@207..216 "locations"
-                            - WHITESPACE@216..223 "\n      "
-                            - FIELD@223..259
-                                - NAME@223..227
-                                    - IDENT@223..227 "args"
-                                - WHITESPACE@227..228 " "
-                                - SELECTION_SET@228..259
-                                    - L_CURLY@228..229 "{"
-                                    - WHITESPACE@229..238 "\n        "
-                                    - FRAGMENT_SPREAD@238..251
-                                        - SPREAD@238..241 "..."
-                                        - FRAGMENT_NAME@241..251
-                                            - NAME@241..251
-                                                - IDENT@241..251 "InputValue"
-                                    - WHITESPACE@251..258 "\n      "
-                                    - R_CURLY@258..259 "}"
-                            - WHITESPACE@259..264 "\n    "
-                            - R_CURLY@264..265 "}"
-                    - WHITESPACE@265..268 "\n  "
-                    - R_CURLY@268..269 "}"
-            - WHITESPACE@269..270 "\n"
-            - R_CURLY@270..271 "}"
-    - WHITESPACE@271..272 "\n"
-    - FRAGMENT_DEFINITION@272..723
-        - fragment_KW@272..280 "fragment"
-        - WHITESPACE@280..281 " "
-        - FRAGMENT_NAME@281..289
-            - NAME@281..289
-                - IDENT@281..289 "FullType"
-        - WHITESPACE@289..290 " "
-        - TYPE_CONDITION@290..299
-            - on_KW@290..292 "on"
-            - WHITESPACE@292..293 " "
-            - NAMED_TYPE@293..299
-                - NAME@293..299
-                    - IDENT@293..299 "__Type"
-        - WHITESPACE@299..300 " "
-        - SELECTION_SET@300..723
-            - L_CURLY@300..301 "{"
-            - WHITESPACE@301..304 "\n  "
-            - FIELD@304..308
-                - NAME@304..308
-                    - IDENT@304..308 "kind"
-            - WHITESPACE@308..311 "\n  "
-            - FIELD@311..315
-                - NAME@311..315
-                    - IDENT@311..315 "name"
-            - WHITESPACE@315..318 "\n  "
-            - FIELD@318..329
-                - NAME@318..329
-                    - IDENT@318..329 "description"
-            - WHITESPACE@329..332 "\n  "
-            - FIELD@332..504
-                - NAME@332..338
-                    - IDENT@332..338 "fields"
-                - ARGUMENTS@338..363
-                    - L_PAREN@338..339 "("
-                    - ARGUMENT@339..362
-                        - NAME@339..356
-                            - IDENT@339..356 "includeDeprecated"
-                        - COLON@356..357 ":"
-                        - WHITESPACE@357..358 " "
-                        - BOOLEAN_VALUE@358..362
-                            - true_KW@358..362 "true"
-                    - R_PAREN@362..363 ")"
-                - WHITESPACE@363..364 " "
-                - SELECTION_SET@364..504
-                    - L_CURLY@364..365 "{"
-                    - WHITESPACE@365..370 "\n    "
-                    - FIELD@370..374
-                        - NAME@370..374
-                            - IDENT@370..374 "name"
-                    - WHITESPACE@374..379 "\n    "
-                    - FIELD@379..390
-                        - NAME@379..390
-                            - IDENT@379..390 "description"
-                    - WHITESPACE@390..395 "\n    "
-                    - FIELD@395..427
-                        - NAME@395..399
-                            - IDENT@395..399 "args"
-                        - WHITESPACE@399..400 " "
-                        - SELECTION_SET@400..427
-                            - L_CURLY@400..401 "{"
-                            - WHITESPACE@401..408 "\n      "
-                            - FRAGMENT_SPREAD@408..421
-                                - SPREAD@408..411 "..."
-                                - FRAGMENT_NAME@411..421
-                                    - NAME@411..421
-                                        - IDENT@411..421 "InputValue"
-                            - WHITESPACE@421..426 "\n    "
-                            - R_CURLY@426..427 "}"
-                    - WHITESPACE@427..432 "\n    "
-                    - FIELD@432..461
-                        - NAME@432..436
-                            - IDENT@432..436 "type"
-                        - WHITESPACE@436..437 " "
-                        - SELECTION_SET@437..461
-                            - L_CURLY@437..438 "{"
-                            - WHITESPACE@438..445 "\n      "
-                            - FRAGMENT_SPREAD@445..455
-                                - SPREAD@445..448 "..."
-                                - FRAGMENT_NAME@448..455
-                                    - NAME@448..455
-                                        - IDENT@448..455 "TypeRef"
-                            - WHITESPACE@455..460 "\n    "
-                            - R_CURLY@460..461 "}"
-                    - WHITESPACE@461..466 "\n    "
-                    - FIELD@466..478
-                        - NAME@466..478
-                            - IDENT@466..478 "isDeprecated"
-                    - WHITESPACE@478..483 "\n    "
-                    - FIELD@483..500
-                        - NAME@483..500
-                            - IDENT@483..500 "deprecationReason"
-                    - WHITESPACE@500..503 "\n  "
-                    - R_CURLY@503..504 "}"
-            - WHITESPACE@504..507 "\n  "
-            - FIELD@507..542
-                - NAME@507..518
-                    - IDENT@507..518 "inputFields"
-                - WHITESPACE@518..519 " "
-                - SELECTION_SET@519..542
-                    - L_CURLY@519..520 "{"
-                    - WHITESPACE@520..525 "\n    "
-                    - FRAGMENT_SPREAD@525..538
-                        - SPREAD@525..528 "..."
-                        - FRAGMENT_NAME@528..538
-                            - NAME@528..538
-                                - IDENT@528..538 "InputValue"
-                    - WHITESPACE@538..541 "\n  "
-                    - R_CURLY@541..542 "}"
-            - WHITESPACE@542..545 "\n  "
-            - FIELD@545..576
-                - NAME@545..555
-                    - IDENT@545..555 "interfaces"
-                - WHITESPACE@555..556 " "
-                - SELECTION_SET@556..576
-                    - L_CURLY@556..557 "{"
-                    - WHITESPACE@557..562 "\n    "
-                    - FRAGMENT_SPREAD@562..572
-                        - SPREAD@562..565 "..."
-                        - FRAGMENT_NAME@565..572
-                            - NAME@565..572
-                                - IDENT@565..572 "TypeRef"
-                    - WHITESPACE@572..575 "\n  "
-                    - R_CURLY@575..576 "}"
-            - WHITESPACE@576..579 "\n  "
-            - FIELD@579..684
-                - NAME@579..589
-                    - IDENT@579..589 "enumValues"
-                - ARGUMENTS@589..614
-                    - L_PAREN@589..590 "("
-                    - ARGUMENT@590..613
-                        - NAME@590..607
-                            - IDENT@590..607 "includeDeprecated"
-                        - COLON@607..608 ":"
-                        - WHITESPACE@608..609 " "
-                        - BOOLEAN_VALUE@609..613
-                            - true_KW@609..613 "true"
-                    - R_PAREN@613..614 ")"
-                - WHITESPACE@614..615 " "
-                - SELECTION_SET@615..684
-                    - L_CURLY@615..616 "{"
-                    - WHITESPACE@616..621 "\n    "
-                    - FIELD@621..625
-                        - NAME@621..625
-                            - IDENT@621..625 "name"
-                    - WHITESPACE@625..630 "\n    "
-                    - FIELD@630..641
-                        - NAME@630..641
-                            - IDENT@630..641 "description"
-                    - WHITESPACE@641..646 "\n    "
-                    - FIELD@646..658
-                        - NAME@646..658
-                            - IDENT@646..658 "isDeprecated"
-                    - WHITESPACE@658..663 "\n    "
-                    - FIELD@663..680
-                        - NAME@663..680
-                            - IDENT@663..680 "deprecationReason"
-                    - WHITESPACE@680..683 "\n  "
-                    - R_CURLY@683..684 "}"
-            - WHITESPACE@684..687 "\n  "
-            - FIELD@687..721
-                - NAME@687..700
-                    - IDENT@687..700 "possibleTypes"
-                - WHITESPACE@700..701 " "
-                - SELECTION_SET@701..721
-                    - L_CURLY@701..702 "{"
-                    - WHITESPACE@702..707 "\n    "
-                    - FRAGMENT_SPREAD@707..717
-                        - SPREAD@707..710 "..."
-                        - FRAGMENT_NAME@710..717
-                            - NAME@710..717
-                                - IDENT@710..717 "TypeRef"
-                    - WHITESPACE@717..720 "\n  "
-                    - R_CURLY@720..721 "}"
-            - WHITESPACE@721..722 "\n"
-            - R_CURLY@722..723 "}"
-    - WHITESPACE@723..724 "\n"
-    - FRAGMENT_DEFINITION@724..821
-        - fragment_KW@724..732 "fragment"
-        - WHITESPACE@732..733 " "
-        - FRAGMENT_NAME@733..743
-            - NAME@733..743
-                - IDENT@733..743 "InputValue"
-        - WHITESPACE@743..744 " "
-        - TYPE_CONDITION@744..759
-            - on_KW@744..746 "on"
-            - WHITESPACE@746..747 " "
-            - NAMED_TYPE@747..759
-                - NAME@747..759
-                    - IDENT@747..759 "__InputValue"
-        - WHITESPACE@759..760 " "
-        - SELECTION_SET@760..821
-            - L_CURLY@760..761 "{"
-            - WHITESPACE@761..764 "\n  "
-            - FIELD@764..768
-                - NAME@764..768
-                    - IDENT@764..768 "name"
-            - WHITESPACE@768..771 "\n  "
-            - FIELD@771..782
-                - NAME@771..782
-                    - IDENT@771..782 "description"
-            - WHITESPACE@782..785 "\n  "
-            - FIELD@785..804
-                - NAME@785..789
-                    - IDENT@785..789 "type"
-                - WHITESPACE@789..790 " "
-                - SELECTION_SET@790..804
-                    - L_CURLY@790..791 "{"
-                    - WHITESPACE@791..792 " "
-                    - FRAGMENT_SPREAD@792..802
-                        - SPREAD@792..795 "..."
-                        - FRAGMENT_NAME@795..802
-                            - NAME@795..802
-                                - IDENT@795..802 "TypeRef"
-                    - WHITESPACE@802..803 " "
-                    - R_CURLY@803..804 "}"
-            - WHITESPACE@804..807 "\n  "
-            - FIELD@807..819
-                - NAME@807..819
-                    - IDENT@807..819 "defaultValue"
-            - WHITESPACE@819..820 "\n"
-            - R_CURLY@820..821 "}"
-    - WHITESPACE@821..822 "\n"
-    - FRAGMENT_DEFINITION@822..1265
-        - fragment_KW@822..830 "fragment"
-        - WHITESPACE@830..831 " "
-        - FRAGMENT_NAME@831..838
-            - NAME@831..838
-                - IDENT@831..838 "TypeRef"
-        - WHITESPACE@838..839 " "
-        - TYPE_CONDITION@839..848
-            - on_KW@839..841 "on"
-            - WHITESPACE@841..842 " "
-            - NAMED_TYPE@842..848
-                - NAME@842..848
-                    - IDENT@842..848 "__Type"
-        - WHITESPACE@848..849 " "
-        - SELECTION_SET@849..1265
-            - L_CURLY@849..850 "{"
-            - WHITESPACE@850..853 "\n  "
-            - FIELD@853..857
-                - NAME@853..857
-                    - IDENT@853..857 "kind"
-            - WHITESPACE@857..860 "\n  "
-            - FIELD@860..864
-                - NAME@860..864
-                    - IDENT@860..864 "name"
-            - WHITESPACE@864..867 "\n  "
-            - FIELD@867..1263
-                - NAME@867..873
-                    - IDENT@867..873 "ofType"
-                - WHITESPACE@873..874 " "
-                - SELECTION_SET@874..1263
-                    - L_CURLY@874..875 "{"
-                    - WHITESPACE@875..880 "\n    "
-                    - FIELD@880..884
-                        - NAME@880..884
-                            - IDENT@880..884 "kind"
-                    - WHITESPACE@884..889 "\n    "
-                    - FIELD@889..893
-                        - NAME@889..893
-                            - IDENT@889..893 "name"
-                    - WHITESPACE@893..898 "\n    "
-                    - FIELD@898..1259
-                        - NAME@898..904
-                            - IDENT@898..904 "ofType"
-                        - WHITESPACE@904..905 " "
-                        - SELECTION_SET@905..1259
-                            - L_CURLY@905..906 "{"
-                            - WHITESPACE@906..913 "\n      "
-                            - FIELD@913..917
-                                - NAME@913..917
-                                    - IDENT@913..917 "kind"
-                            - WHITESPACE@917..924 "\n      "
-                            - FIELD@924..928
-                                - NAME@924..928
-                                    - IDENT@924..928 "name"
-                            - WHITESPACE@928..935 "\n      "
-                            - FIELD@935..1253
-                                - NAME@935..941
-                                    - IDENT@935..941 "ofType"
-                                - WHITESPACE@941..942 " "
-                                - SELECTION_SET@942..1253
-                                    - L_CURLY@942..943 "{"
-                                    - WHITESPACE@943..952 "\n        "
-                                    - FIELD@952..956
-                                        - NAME@952..956
-                                            - IDENT@952..956 "kind"
-                                    - WHITESPACE@956..965 "\n        "
-                                    - FIELD@965..969
-                                        - NAME@965..969
-                                            - IDENT@965..969 "name"
-                                    - WHITESPACE@969..978 "\n        "
-                                    - FIELD@978..1245
-                                        - NAME@978..984
-                                            - IDENT@978..984 "ofType"
-                                        - WHITESPACE@984..985 " "
-                                        - SELECTION_SET@985..1245
-                                            - L_CURLY@985..986 "{"
-                                            - WHITESPACE@986..997 "\n          "
-                                            - FIELD@997..1001
-                                                - NAME@997..1001
-                                                    - IDENT@997..1001 "kind"
-                                            - WHITESPACE@1001..1012 "\n          "
-                                            - FIELD@1012..1016
-                                                - NAME@1012..1016
-                                                    - IDENT@1012..1016 "name"
-                                            - WHITESPACE@1016..1027 "\n          "
-                                            - FIELD@1027..1235
-                                                - NAME@1027..1033
-                                                    - IDENT@1027..1033 "ofType"
-                                                - WHITESPACE@1033..1034 " "
-                                                - SELECTION_SET@1034..1235
-                                                    - L_CURLY@1034..1035 "{"
-                                                    - WHITESPACE@1035..1048 "\n            "
-                                                    - FIELD@1048..1052
-                                                        - NAME@1048..1052
-                                                            - IDENT@1048..1052 "kind"
-                                                    - WHITESPACE@1052..1065 "\n            "
-                                                    - FIELD@1065..1069
-                                                        - NAME@1065..1069
-                                                            - IDENT@1065..1069 "name"
-                                                    - WHITESPACE@1069..1082 "\n            "
-                                                    - FIELD@1082..1223
-                                                        - NAME@1082..1088
-                                                            - IDENT@1082..1088 "ofType"
-                                                        - WHITESPACE@1088..1089 " "
-                                                        - SELECTION_SET@1089..1223
-                                                            - L_CURLY@1089..1090 "{"
-                                                            - WHITESPACE@1090..1105 "\n              "
-                                                            - FIELD@1105..1109
-                                                                - NAME@1105..1109
-                                                                    - IDENT@1105..1109 "kind"
-                                                            - WHITESPACE@1109..1124 "\n              "
-                                                            - FIELD@1124..1128
-                                                                - NAME@1124..1128
-                                                                    - IDENT@1124..1128 "name"
-                                                            - WHITESPACE@1128..1143 "\n              "
-                                                            - FIELD@1143..1209
-                                                                - NAME@1143..1149
-                                                                    - IDENT@1143..1149 "ofType"
-                                                                - WHITESPACE@1149..1150 " "
-                                                                - SELECTION_SET@1150..1209
-                                                                    - L_CURLY@1150..1151 "{"
-                                                                    - WHITESPACE@1151..1168 "\n                "
-                                                                    - FIELD@1168..1172
-                                                                        - NAME@1168..1172
-                                                                            - IDENT@1168..1172 "kind"
-                                                                    - WHITESPACE@1172..1189 "\n                "
-                                                                    - FIELD@1189..1193
-                                                                        - NAME@1189..1193
-                                                                            - IDENT@1189..1193 "name"
-                                                                    - WHITESPACE@1193..1208 "\n              "
-                                                                    - R_CURLY@1208..1209 "}"
-                                                            - WHITESPACE@1209..1222 "\n            "
-                                                            - R_CURLY@1222..1223 "}"
-                                                    - WHITESPACE@1223..1234 "\n          "
-                                                    - R_CURLY@1234..1235 "}"
-                                            - WHITESPACE@1235..1244 "\n        "
-                                            - R_CURLY@1244..1245 "}"
-                                    - WHITESPACE@1245..1252 "\n      "
-                                    - R_CURLY@1252..1253 "}"
-                            - WHITESPACE@1253..1258 "\n    "
-                            - R_CURLY@1258..1259 "}"
-                    - WHITESPACE@1259..1262 "\n  "
-                    - R_CURLY@1262..1263 "}"
-            - WHITESPACE@1263..1264 "\n"
-            - R_CURLY@1264..1265 "}"
-recursion limit: 500, high: 8
+0..271 @12 OperationDefinition {
+    operation_type: Query,
+    name: Some(
+        "IntrospectionQuery",
+    ),
+    variables: [],
+    directives: [],
+    selection_set: [
+        Field(
+            29..269 @12 Field {
+                alias: None,
+                name: "__schema",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    Field(
+                        44..62 @12 Field {
+                            alias: None,
+                            name: "queryType",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    56..60 @12 Field {
+                                        alias: None,
+                                        name: "name",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Field(
+                        67..88 @12 Field {
+                            alias: None,
+                            name: "mutationType",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    82..86 @12 Field {
+                                        alias: None,
+                                        name: "name",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Field(
+                        93..118 @12 Field {
+                            alias: None,
+                            name: "subscriptionType",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    112..116 @12 Field {
+                                        alias: None,
+                                        name: "name",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Field(
+                        123..154 @12 Field {
+                            alias: None,
+                            name: "types",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                FragmentSpread(
+                                    137..148 @12 FragmentSpread {
+                                        fragment_name: "FullType",
+                                        directives: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Field(
+                        159..265 @12 Field {
+                            alias: None,
+                            name: "directives",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    178..182 @12 Field {
+                                        alias: None,
+                                        name: "name",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                                Field(
+                                    189..200 @12 Field {
+                                        alias: None,
+                                        name: "description",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                                Field(
+                                    207..216 @12 Field {
+                                        alias: None,
+                                        name: "locations",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                                Field(
+                                    223..259 @12 Field {
+                                        alias: None,
+                                        name: "args",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [
+                                            FragmentSpread(
+                                                238..251 @12 FragmentSpread {
+                                                    fragment_name: "InputValue",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+272..723 @12 FragmentDefinition {
+    name: "FullType",
+    type_condition: "__Type",
+    directives: [],
+    selection_set: [
+        Field(
+            304..308 @12 Field {
+                alias: None,
+                name: "kind",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            311..315 @12 Field {
+                alias: None,
+                name: "name",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            318..329 @12 Field {
+                alias: None,
+                name: "description",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            332..504 @12 Field {
+                alias: None,
+                name: "fields",
+                arguments: [
+                    339..362 @12 Argument {
+                        name: "includeDeprecated",
+                        value: 358..362 @12 Boolean(
+                            true,
+                        ),
+                    },
+                ],
+                directives: [],
+                selection_set: [
+                    Field(
+                        370..374 @12 Field {
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        379..390 @12 Field {
+                            alias: None,
+                            name: "description",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        395..427 @12 Field {
+                            alias: None,
+                            name: "args",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                FragmentSpread(
+                                    408..421 @12 FragmentSpread {
+                                        fragment_name: "InputValue",
+                                        directives: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Field(
+                        432..461 @12 Field {
+                            alias: None,
+                            name: "type",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                FragmentSpread(
+                                    445..455 @12 FragmentSpread {
+                                        fragment_name: "TypeRef",
+                                        directives: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    Field(
+                        466..478 @12 Field {
+                            alias: None,
+                            name: "isDeprecated",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        483..500 @12 Field {
+                            alias: None,
+                            name: "deprecationReason",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+        Field(
+            507..542 @12 Field {
+                alias: None,
+                name: "inputFields",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    FragmentSpread(
+                        525..538 @12 FragmentSpread {
+                            fragment_name: "InputValue",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+        Field(
+            545..576 @12 Field {
+                alias: None,
+                name: "interfaces",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    FragmentSpread(
+                        562..572 @12 FragmentSpread {
+                            fragment_name: "TypeRef",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+        Field(
+            579..684 @12 Field {
+                alias: None,
+                name: "enumValues",
+                arguments: [
+                    590..613 @12 Argument {
+                        name: "includeDeprecated",
+                        value: 609..613 @12 Boolean(
+                            true,
+                        ),
+                    },
+                ],
+                directives: [],
+                selection_set: [
+                    Field(
+                        621..625 @12 Field {
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        630..641 @12 Field {
+                            alias: None,
+                            name: "description",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        646..658 @12 Field {
+                            alias: None,
+                            name: "isDeprecated",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        663..680 @12 Field {
+                            alias: None,
+                            name: "deprecationReason",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+        Field(
+            687..721 @12 Field {
+                alias: None,
+                name: "possibleTypes",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    FragmentSpread(
+                        707..717 @12 FragmentSpread {
+                            fragment_name: "TypeRef",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+724..821 @12 FragmentDefinition {
+    name: "InputValue",
+    type_condition: "__InputValue",
+    directives: [],
+    selection_set: [
+        Field(
+            764..768 @12 Field {
+                alias: None,
+                name: "name",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            771..782 @12 Field {
+                alias: None,
+                name: "description",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            785..804 @12 Field {
+                alias: None,
+                name: "type",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    FragmentSpread(
+                        792..802 @12 FragmentSpread {
+                            fragment_name: "TypeRef",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+        Field(
+            807..819 @12 Field {
+                alias: None,
+                name: "defaultValue",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+    ],
+}
+822..1265 @12 FragmentDefinition {
+    name: "TypeRef",
+    type_condition: "__Type",
+    directives: [],
+    selection_set: [
+        Field(
+            853..857 @12 Field {
+                alias: None,
+                name: "kind",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            860..864 @12 Field {
+                alias: None,
+                name: "name",
+                arguments: [],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            867..1263 @12 Field {
+                alias: None,
+                name: "ofType",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    Field(
+                        880..884 @12 Field {
+                            alias: None,
+                            name: "kind",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        889..893 @12 Field {
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    Field(
+                        898..1259 @12 Field {
+                            alias: None,
+                            name: "ofType",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    913..917 @12 Field {
+                                        alias: None,
+                                        name: "kind",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                                Field(
+                                    924..928 @12 Field {
+                                        alias: None,
+                                        name: "name",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                                Field(
+                                    935..1253 @12 Field {
+                                        alias: None,
+                                        name: "ofType",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [
+                                            Field(
+                                                952..956 @12 Field {
+                                                    alias: None,
+                                                    name: "kind",
+                                                    arguments: [],
+                                                    directives: [],
+                                                    selection_set: [],
+                                                },
+                                            ),
+                                            Field(
+                                                965..969 @12 Field {
+                                                    alias: None,
+                                                    name: "name",
+                                                    arguments: [],
+                                                    directives: [],
+                                                    selection_set: [],
+                                                },
+                                            ),
+                                            Field(
+                                                978..1245 @12 Field {
+                                                    alias: None,
+                                                    name: "ofType",
+                                                    arguments: [],
+                                                    directives: [],
+                                                    selection_set: [
+                                                        Field(
+                                                            997..1001 @12 Field {
+                                                                alias: None,
+                                                                name: "kind",
+                                                                arguments: [],
+                                                                directives: [],
+                                                                selection_set: [],
+                                                            },
+                                                        ),
+                                                        Field(
+                                                            1012..1016 @12 Field {
+                                                                alias: None,
+                                                                name: "name",
+                                                                arguments: [],
+                                                                directives: [],
+                                                                selection_set: [],
+                                                            },
+                                                        ),
+                                                        Field(
+                                                            1027..1235 @12 Field {
+                                                                alias: None,
+                                                                name: "ofType",
+                                                                arguments: [],
+                                                                directives: [],
+                                                                selection_set: [
+                                                                    Field(
+                                                                        1048..1052 @12 Field {
+                                                                            alias: None,
+                                                                            name: "kind",
+                                                                            arguments: [],
+                                                                            directives: [],
+                                                                            selection_set: [],
+                                                                        },
+                                                                    ),
+                                                                    Field(
+                                                                        1065..1069 @12 Field {
+                                                                            alias: None,
+                                                                            name: "name",
+                                                                            arguments: [],
+                                                                            directives: [],
+                                                                            selection_set: [],
+                                                                        },
+                                                                    ),
+                                                                    Field(
+                                                                        1082..1223 @12 Field {
+                                                                            alias: None,
+                                                                            name: "ofType",
+                                                                            arguments: [],
+                                                                            directives: [],
+                                                                            selection_set: [
+                                                                                Field(
+                                                                                    1105..1109 @12 Field {
+                                                                                        alias: None,
+                                                                                        name: "kind",
+                                                                                        arguments: [],
+                                                                                        directives: [],
+                                                                                        selection_set: [],
+                                                                                    },
+                                                                                ),
+                                                                                Field(
+                                                                                    1124..1128 @12 Field {
+                                                                                        alias: None,
+                                                                                        name: "name",
+                                                                                        arguments: [],
+                                                                                        directives: [],
+                                                                                        selection_set: [],
+                                                                                    },
+                                                                                ),
+                                                                                Field(
+                                                                                    1143..1209 @12 Field {
+                                                                                        alias: None,
+                                                                                        name: "ofType",
+                                                                                        arguments: [],
+                                                                                        directives: [],
+                                                                                        selection_set: [
+                                                                                            Field(
+                                                                                                1168..1172 @12 Field {
+                                                                                                    alias: None,
+                                                                                                    name: "kind",
+                                                                                                    arguments: [],
+                                                                                                    directives: [],
+                                                                                                    selection_set: [],
+                                                                                                },
+                                                                                            ),
+                                                                                            Field(
+                                                                                                1189..1193 @12 Field {
+                                                                                                    alias: None,
+                                                                                                    name: "name",
+                                                                                                    arguments: [],
+                                                                                                    directives: [],
+                                                                                                    selection_set: [],
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                        },
+                                                                    ),
+                                                                ],
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+1266..1293 @12 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        1281..1291 @12 FieldDefinition {
+            description: None,
+            name: "field",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
+

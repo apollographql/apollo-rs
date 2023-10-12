@@ -17,7 +17,42 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.7.1](https://crates.io/crates/apollo-parser/0.7.1) - 2023-10-10
+
+## Features
+- **`parse_field_set` parses a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
+  This returns a `SyntaxTree<SelectionSet>` which instead of `.document() -> cst::Document`
+  has `.field_set() -> cst::SelectionSet`.
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
+  used in some Apollo Federation directives.
+  ```rust
+  let source = r#"a { a }"#;
+
+  let parser = Parser::new(source);
+  let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+  let errors = cst.errors().collect::<Vec<_>>();
+  assert_eq!(errors.len(), 0);
+  ```
+
+[lrlna]: https://github.com/lrlna
+[pull/685]: https://github.com/apollographql/apollo-rs/pull/685
+[issue/681]: https://github.com/apollographql/apollo-rs/issues/681
+[fieldset]: https://www.apollographql.com/docs/federation/subgraph-spec/#scalar-fieldset
+
+
+# [0.7.0](https://crates.io/crates/apollo-parser/0.7.0) - 2023-10-05
+
+## BREAKING
+
+- **rename `ast` to `cst` - [SimonSapin], [pull/???]**
+  The Rowan-based typed syntax tree emitted by the parser used to be called
+  Abstract Syntax Tree (AST) but is in fact not very abstract: it preserves
+  text input losslessly, and all tree leaves are string-based tokens.
+  This renames it to Concrete Syntax Tree (CST) and renames various APIs accordingly.
+  This leaves the name available for a new AST in apollo-compiler 1.0.
+
 # [0.6.3](https://crates.io/crates/apollo-parser/0.6.3) - 2023-10-06
+
 ## Fixes
 - **apply recursion limit where needed, reduce its default from 4096 to 500 - [SimonSapin], [pull/662]**
   The limit was only tracked for nested selection sets, but the parser turns out

@@ -1,122 +1,30 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            92: "0095_interface_implementation_declared_once.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
-            offset: 66,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 59,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation previously declared here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 66,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation declared again here",
-            },
-        ],
-        help: None,
-        data: DuplicateImplementsInterface {
-            ty: "Object",
-            interface: "Intf",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            92: "0095_interface_implementation_declared_once.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
-            offset: 174,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 117,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation previously declared here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 174,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation declared again here",
-            },
-        ],
-        help: None,
-        data: DuplicateImplementsInterface {
-            ty: "Extended",
-            interface: "Intf",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            92: "0095_interface_implementation_declared_once.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
-            offset: 216,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 209,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation previously declared here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 216,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation declared again here",
-            },
-        ],
-        help: None,
-        data: DuplicateImplementsInterface {
-            ty: "SubIntf",
-            interface: "Intf",
-        },
-    },
-]
+Error: object type `Object` implements interface `Intf` more than once
+   ╭─[0095_interface_implementation_declared_once.graphql:5:31]
+   │
+ 5 │ type Object implements Intf & Intf {
+   │                        ──┬─   ──┬─  
+   │                          ╰────────── previous implementation of `Intf` here
+   │                                 │   
+   │                                 ╰─── `Intf` implemented again here
+───╯
+Error: object type `Extended` implements interface `Intf` more than once
+    ╭─[0095_interface_implementation_declared_once.graphql:12:33]
+    │
+  9 │ type Extended implements Intf {
+    │                          ──┬─  
+    │                            ╰─── previous implementation of `Intf` here
+    │ 
+ 12 │ extend type Extended implements Intf
+    │                                 ──┬─  
+    │                                   ╰─── `Intf` implemented again here
+────╯
+Error: interface type `SubIntf` implements interface `Intf` more than once
+    ╭─[0095_interface_implementation_declared_once.graphql:14:37]
+    │
+ 14 │ interface SubIntf implements Intf & Intf {
+    │                              ──┬─   ──┬─  
+    │                                ╰────────── previous implementation of `Intf` here
+    │                                       │   
+    │                                       ╰─── `Intf` implemented again here
+────╯
+

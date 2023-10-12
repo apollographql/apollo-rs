@@ -1,4 +1,4 @@
-use apollo_parser::{ast, Lexer};
+use apollo_parser::{cst, Lexer};
 use criterion::*;
 
 fn parse_query(query: &str) {
@@ -12,12 +12,12 @@ fn parse_query(query: &str) {
 
     // Simulate a basic selection set traversal operation.
     for definition in document.definitions() {
-        if let ast::Definition::OperationDefinition(operation) = definition {
+        if let cst::Definition::OperationDefinition(operation) = definition {
             let selection_set = operation
                 .selection_set()
                 .expect("the node SelectionSet is not optional in the spec; qed");
             for selection in selection_set.selections() {
-                if let ast::Selection::Field(field) = selection {
+                if let cst::Selection::Field(field) = selection {
                     black_box(field.selection_set());
                 }
             }

@@ -1,31 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            18: "0018_schema_with_specified_scalar_missing_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 18,
-            },
-            offset: 46,
-            length: 10,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 18,
-                    },
-                    offset: 46,
-                    length: 10,
-                },
-                text: "consider adding a @specifiedBy directive to this scalar definition",
-            },
-        ],
-        help: None,
-        data: ScalarSpecificationURL {
-            ty: "URL",
-        },
-    },
-]
+Advice: custom scalars should provide a scalar specification URL via the @specifiedBy directive
+   ╭─[0018_schema_with_specified_scalar_missing_values.graphql:6:1]
+   │
+ 6 │ scalar URL
+   │ ─────┬────  
+   │      ╰────── consider adding a @specifiedBy directive to this scalar definition
+───╯
+

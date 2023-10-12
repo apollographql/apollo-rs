@@ -14,7 +14,7 @@ fragment Y on ComplicatedArgs {
     multipleReqs
 }
 fragment Z on ComplicatedArgs {
-    multipleReqs(req2: 1)
+    onlyOneArg: multipleReqs(req2: 1)
 }
 
 query complicatedArgs {

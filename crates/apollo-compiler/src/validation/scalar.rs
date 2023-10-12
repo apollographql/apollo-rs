@@ -1,25 +1,25 @@
-use std::sync::Arc;
-
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, DirectiveLocation},
-    ValidationDatabase,
+    schema, Node, ValidationDatabase,
 };
 
-pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    let defs = &db.type_system_definitions().scalars;
-    for def in defs.values() {
-        diagnostics.extend(db.validate_scalar_definition(def.clone()));
+    let schema = db.schema();
+    for def in schema.types.values() {
+        if let schema::ExtendedType::Scalar(scalar) = def {
+            diagnostics.extend(db.validate_scalar_definition(scalar.clone()));
+        }
     }
 
     diagnostics
 }
 
-pub fn validate_scalar_definition(
+pub(crate) fn validate_scalar_definition(
     db: &dyn ValidationDatabase,
-    scalar_def: Arc<hir::ScalarTypeDefinition>,
+    scalar_def: Node<schema::ScalarType>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -27,30 +27,28 @@ pub fn validate_scalar_definition(
     if !scalar_def.is_built_in() {
         // Custom scalars must provide a scalar specification URL via the
         // @specifiedBy directive
-        if !scalar_def
-            .directives()
-            .any(|directive| directive.name() == "specifiedBy")
-        {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    scalar_def.loc.into(),
-                    DiagnosticData::ScalarSpecificationURL {
-                        ty: scalar_def.name().into(),
-                    },
-                )
-                .label(Label::new(
-                    scalar_def.loc,
-                    "consider adding a @specifiedBy directive to this scalar definition",
-                )),
-            )
+        let has_specified_by = scalar_def.directives.has("specifiedBy");
+        if !has_specified_by {
+            if let Some(location) = scalar_def.location() {
+                diagnostics.push(
+                    ApolloDiagnostic::new(db, location, DiagnosticData::ScalarSpecificationURL)
+                        .label(Label::new(
+                            location,
+                            "consider adding a @specifiedBy directive to this scalar definition",
+                        )),
+                );
+            }
         }
 
-        diagnostics.extend(db.validate_directives(
-            scalar_def.directives().cloned().collect(),
-            DirectiveLocation::Scalar,
+        diagnostics.extend(super::directive::validate_directives(
+            db,
+            scalar_def
+                .directives
+                .iter()
+                .map(|component| &component.node),
+            ast::DirectiveLocation::Scalar,
             // scalars don't use variables
-            Arc::new(Vec::new()),
+            Default::default(),
         ));
     }
 

@@ -1,0 +1,6 @@
+type Query {
+  website: URL
+  amount: Int
+}
+
+scalar URL

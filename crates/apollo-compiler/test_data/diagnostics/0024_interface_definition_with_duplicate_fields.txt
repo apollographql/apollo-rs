@@ -1,57 +1,11 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            24: "0024_interface_definition_with_duplicate_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 24,
-            },
-            offset: 80,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 24,
-                    },
-                    offset: 80,
-                    length: 12,
-                },
-                text: "previous definition of `name` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 24,
-                    },
-                    offset: 95,
-                    length: 12,
-                },
-                text: "`name` redefined here",
-            },
-        ],
-        help: Some(
-            "`name` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueField {
-            field: "name",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 24,
-                },
-                offset: 80,
-                length: 12,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 24,
-                },
-                offset: 95,
-                length: 12,
-            },
-        },
-    },
-]
+Error: duplicate definitions for the `name` field of interface type `NamedEntity`
+   ╭─[0024_interface_definition_with_duplicate_fields.graphql:7:3]
+   │
+ 6 │   name: String
+   │   ──┬─  
+   │     ╰─── previous definition of `name` here
+ 7 │   name: String
+   │   ──────┬─────  
+   │         ╰─────── `name` redefined here
+───╯
+

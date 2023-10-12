@@ -1,0 +1,11 @@
+directive @nonRepeatable on SCHEMA
+
+type Query {
+  viewCount: Int!
+}
+
+schema @nonRepeatable {
+  query: Query
+}
+
+extend schema @nonRepeatable

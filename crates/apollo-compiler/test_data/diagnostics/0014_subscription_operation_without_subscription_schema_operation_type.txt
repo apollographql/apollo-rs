@@ -1,41 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            14: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 14,
-            },
-            offset: 0,
-            length: 75,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 14,
-                    },
-                    offset: 0,
-                    length: 75,
-                },
-                text: "Subscription operation is not defined in the schema and is therefore not supported",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 14,
-                    },
-                    offset: 77,
-                    length: 35,
-                },
-                text: "Consider defining a `subscription` root operation type here",
-            },
-        ],
-        help: None,
-        data: UnsupportedOperation {
-            ty: "subscription",
-        },
-    },
-]
+Error: `subscription` root operation type is not defined
+   ╭─[0014_subscription_operation_without_subscription_schema_operation_type.graphql:1:1]
+   │
+ 1 │ ╭─▶ subscription messageSubscription {
+   ┆ ┆   
+ 6 │ ├─▶ }
+   │ │       
+   │ ╰─────── `subscription` is not defined in the schema and is therefore not supported
+   │     
+   │     Help: consider defining a `subscription` root operation type in your schema
+───╯
+

@@ -1,99 +1,25 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            3: "0003_anonymous_and_named_operation.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 3,
-            },
-            offset: 147,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 147,
-                    length: 7,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "petType",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            3: "0003_anonymous_and_named_operation.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 3,
-            },
-            offset: 0,
-            length: 15,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 0,
-                    length: 15,
-                },
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
-        ),
-        data: MissingIdent,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            3: "0003_anonymous_and_named_operation.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 3,
-            },
-            offset: 38,
-            length: 25,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 38,
-                    length: 25,
-                },
-                text: "missing value for argument `name`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 123,
-                    length: 13,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            coordinate: "Mutation.addPet(name:)",
-        },
-    },
-]
+Error: anonymous operation cannot be selected when the document contains other operations
+   ╭─[0003_anonymous_and_named_operation.graphql:1:1]
+   │
+ 1 │ ╭─▶ query {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── provide a name for this definition
+   │     
+   │     Help: GraphQL requires operations to be named if the document has more than one
+───╯
+Error: the required argument `name` is not provided
+    ╭─[0003_anonymous_and_named_operation.graphql:6:3]
+    │
+  6 │ ╭─▶   addPet {
+    ┆ ┆   
+  8 │ ├─▶   }
+    │ │         
+    │ ╰───────── missing value for argument `name`
+    │ 
+ 16 │       addPet (name: String!, petType: PetType): Result!
+    │               ──────┬──────  
+    │                     ╰──────── argument defined here
+────╯
+

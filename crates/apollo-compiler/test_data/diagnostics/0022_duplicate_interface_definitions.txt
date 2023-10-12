@@ -1,58 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            22: "0022_duplicate_interface_definitions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 22,
-            },
-            offset: 106,
-            length: 11,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 22,
-                    },
-                    offset: 64,
-                    length: 11,
-                },
-                text: "previous definition of `NamedEntity` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 22,
-                    },
-                    offset: 106,
-                    length: 11,
-                },
-                text: "`NamedEntity` redefined here",
-            },
-        ],
-        help: Some(
-            "`NamedEntity` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "NamedEntity",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 22,
-                },
-                offset: 64,
-                length: 11,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 22,
-                },
-                offset: 106,
-                length: 11,
-            },
-        },
-    },
-]
+Error: the type `NamedEntity` is defined multiple times in the schema
+   ╭─[0022_duplicate_interface_definitions.graphql:9:11]
+   │
+ 5 │ interface NamedEntity {
+   │           ─────┬─────  
+   │                ╰─────── previous definition of `NamedEntity` here
+   │ 
+ 9 │ interface NamedEntity {
+   │           ─────┬─────  
+   │                ╰─────── `NamedEntity` redefined here
+   │ 
+   │ Help: remove or rename one of the definitions, or use `extend`
+───╯
+

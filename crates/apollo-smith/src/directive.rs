@@ -49,11 +49,11 @@ impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
+impl TryFrom<apollo_parser::cst::DirectiveDefinition> for DirectiveDef {
     type Error = crate::FromError;
 
     fn try_from(
-        directive_def: apollo_parser::ast::DirectiveDefinition,
+        directive_def: apollo_parser::cst::DirectiveDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             description: directive_def
@@ -103,10 +103,10 @@ impl From<Directive> for apollo_encoder::Directive {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Directive> for Directive {
+impl TryFrom<apollo_parser::cst::Directive> for Directive {
     type Error = crate::FromError;
 
-    fn try_from(directive: apollo_parser::ast::Directive) -> Result<Self, Self::Error> {
+    fn try_from(directive: apollo_parser::cst::Directive) -> Result<Self, Self::Error> {
         Ok(Self {
             name: directive.name().unwrap().into(),
             arguments: directive
@@ -125,7 +125,7 @@ impl TryFrom<apollo_parser::ast::Directive> for Directive {
 #[cfg(feature = "parser-impl")]
 impl Directive {
     pub(crate) fn convert_directives(
-        directives: apollo_parser::ast::Directives,
+        directives: apollo_parser::cst::Directives,
     ) -> Result<HashMap<Name, Directive>, crate::FromError> {
         directives
             .directives()

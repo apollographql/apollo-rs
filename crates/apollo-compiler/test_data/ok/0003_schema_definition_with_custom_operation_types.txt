@@ -1,176 +1,132 @@
-- DOCUMENT@0..361
-    - SCHEMA_DEFINITION@0..103
-        - schema_KW@0..6 "schema"
-        - WHITESPACE@6..7 " "
-        - L_CURLY@7..8 "{"
-        - WHITESPACE@8..11 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@11..32
-            - OPERATION_TYPE@11..16
-                - query_KW@11..16 "query"
-            - COLON@16..17 ":"
-            - WHITESPACE@17..18 " "
-            - NAMED_TYPE@18..32
-                - NAME@18..32
-                    - IDENT@18..32 "customPetQuery"
-        - COMMA@32..33 ","
-        - WHITESPACE@33..36 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@36..71
-            - OPERATION_TYPE@36..48
-                - subscription_KW@36..48 "subscription"
-            - COLON@48..49 ":"
-            - WHITESPACE@49..50 " "
-            - NAMED_TYPE@50..71
-                - NAME@50..71
-                    - IDENT@50..71 "customPetSubscription"
-        - WHITESPACE@71..74 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@74..101
-            - OPERATION_TYPE@74..82
-                - mutation_KW@74..82 "mutation"
-            - COLON@82..83 ":"
-            - WHITESPACE@83..84 " "
-            - NAMED_TYPE@84..101
-                - NAME@84..101
-                    - IDENT@84..101 "customPetMutation"
-        - WHITESPACE@101..102 "\n"
-        - R_CURLY@102..103 "}"
-    - WHITESPACE@103..105 "\n\n"
-    - ENUM_TYPE_DEFINITION@105..135
-        - enum_KW@105..109 "enum"
-        - WHITESPACE@109..110 " "
-        - NAME@110..117
-            - IDENT@110..117 "PetType"
-        - WHITESPACE@117..118 " "
-        - ENUM_VALUES_DEFINITION@118..135
-            - L_CURLY@118..119 "{"
-            - WHITESPACE@119..122 "\n  "
-            - ENUM_VALUE_DEFINITION@122..125
-                - ENUM_VALUE@122..125
-                    - NAME@122..125
-                        - IDENT@122..125 "CAT"
-            - COMMA@125..126 ","
-            - WHITESPACE@126..129 "\n  "
-            - ENUM_VALUE_DEFINITION@129..132
-                - ENUM_VALUE@129..132
-                    - NAME@129..132
-                        - IDENT@129..132 "DOG"
-            - COMMA@132..133 ","
-            - WHITESPACE@133..134 "\n"
-            - R_CURLY@134..135 "}"
-    - WHITESPACE@135..137 "\n\n"
-    - OBJECT_TYPE_DEFINITION@137..187
-        - type_KW@137..141 "type"
-        - WHITESPACE@141..142 " "
-        - NAME@142..156
-            - IDENT@142..156 "customPetQuery"
-        - WHITESPACE@156..157 " "
-        - FIELDS_DEFINITION@157..187
-            - L_CURLY@157..158 "{"
-            - WHITESPACE@158..161 "\n  "
-            - FIELD_DEFINITION@161..173
-                - NAME@161..165
-                    - IDENT@161..165 "name"
-                - COLON@165..166 ":"
-                - WHITESPACE@166..167 " "
-                - NAMED_TYPE@167..173
-                    - NAME@167..173
-                        - IDENT@167..173 "String"
-            - COMMA@173..174 ","
-            - WHITESPACE@174..177 "\n  "
-            - FIELD_DEFINITION@177..185
-                - NAME@177..180
-                    - IDENT@177..180 "age"
-                - COLON@180..181 ":"
-                - WHITESPACE@181..182 " "
-                - NAMED_TYPE@182..185
-                    - NAME@182..185
-                        - IDENT@182..185 "Int"
-            - WHITESPACE@185..186 "\n"
-            - R_CURLY@186..187 "}"
-    - WHITESPACE@187..189 "\n\n"
-    - OBJECT_TYPE_DEFINITION@189..250
-        - type_KW@189..193 "type"
-        - WHITESPACE@193..194 " "
-        - NAME@194..215
-            - IDENT@194..215 "customPetSubscription"
-        - WHITESPACE@215..216 " "
-        - FIELDS_DEFINITION@216..250
-            - L_CURLY@216..217 "{"
-            - WHITESPACE@217..220 "\n  "
-            - FIELD_DEFINITION@220..248
-                - NAME@220..240
-                    - IDENT@220..240 "changeInPetHousehold"
-                - COLON@240..241 ":"
-                - WHITESPACE@241..242 " "
-                - NAMED_TYPE@242..248
-                    - NAME@242..248
-                        - IDENT@242..248 "Result"
-            - WHITESPACE@248..249 "\n"
-            - R_CURLY@249..250 "}"
-    - WHITESPACE@250..252 "\n\n"
-    - OBJECT_TYPE_DEFINITION@252..330
-        - type_KW@252..256 "type"
-        - WHITESPACE@256..257 " "
-        - NAME@257..274
-            - IDENT@257..274 "customPetMutation"
-        - WHITESPACE@274..275 " "
-        - FIELDS_DEFINITION@275..330
-            - L_CURLY@275..276 "{"
-            - WHITESPACE@276..279 "\n  "
-            - FIELD_DEFINITION@279..328
-                - NAME@279..285
-                    - IDENT@279..285 "addPet"
-                - WHITESPACE@285..286 " "
-                - ARGUMENTS_DEFINITION@286..319
-                    - L_PAREN@286..287 "("
-                    - INPUT_VALUE_DEFINITION@287..300
-                        - NAME@287..291
-                            - IDENT@287..291 "name"
-                        - COLON@291..292 ":"
-                        - WHITESPACE@292..293 " "
-                        - NON_NULL_TYPE@293..300
-                            - NAMED_TYPE@293..299
-                                - NAME@293..299
-                                    - IDENT@293..299 "String"
-                            - BANG@299..300 "!"
-                    - COMMA@300..301 ","
-                    - WHITESPACE@301..302 " "
-                    - INPUT_VALUE_DEFINITION@302..318
-                        - NAME@302..309
-                            - IDENT@302..309 "petType"
-                        - COLON@309..310 ":"
-                        - WHITESPACE@310..311 " "
-                        - NAMED_TYPE@311..318
-                            - NAME@311..318
-                                - IDENT@311..318 "PetType"
-                    - R_PAREN@318..319 ")"
-                - COLON@319..320 ":"
-                - WHITESPACE@320..321 " "
-                - NON_NULL_TYPE@321..328
-                    - NAMED_TYPE@321..327
-                        - NAME@321..327
-                            - IDENT@321..327 "Result"
-                    - BANG@327..328 "!"
-            - WHITESPACE@328..329 "\n"
-            - R_CURLY@329..330 "}"
-    - WHITESPACE@330..332 "\n\n"
-    - OBJECT_TYPE_DEFINITION@332..360
-        - type_KW@332..336 "type"
-        - WHITESPACE@336..337 " "
-        - NAME@337..343
-            - IDENT@337..343 "Result"
-        - WHITESPACE@343..344 " "
-        - FIELDS_DEFINITION@344..360
-            - L_CURLY@344..345 "{"
-            - WHITESPACE@345..348 "\n  "
-            - FIELD_DEFINITION@348..358
-                - NAME@348..350
-                    - IDENT@348..350 "id"
-                - COLON@350..351 ":"
-                - WHITESPACE@351..352 " "
-                - NAMED_TYPE@352..358
-                    - NAME@352..358
-                        - IDENT@352..358 "String"
-            - WHITESPACE@358..359 "\n"
-            - R_CURLY@359..360 "}"
-    - WHITESPACE@360..361 "\n"
-recursion limit: 500, high: 3
+0..103 @3 SchemaDefinition {
+    description: None,
+    directives: [],
+    root_operations: [
+        11..32 @3 (
+            Query,
+            "customPetQuery",
+        ),
+        36..71 @3 (
+            Subscription,
+            "customPetSubscription",
+        ),
+        74..101 @3 (
+            Mutation,
+            "customPetMutation",
+        ),
+    ],
+}
+105..135 @3 EnumTypeDefinition {
+    description: None,
+    name: "PetType",
+    directives: [],
+    values: [
+        122..125 @3 EnumValueDefinition {
+            description: None,
+            value: "CAT",
+            directives: [],
+        },
+        129..132 @3 EnumValueDefinition {
+            description: None,
+            value: "DOG",
+            directives: [],
+        },
+    ],
+}
+137..187 @3 ObjectTypeDefinition {
+    description: None,
+    name: "customPetQuery",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        161..173 @3 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+        177..185 @3 FieldDefinition {
+            description: None,
+            name: "age",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
+189..250 @3 ObjectTypeDefinition {
+    description: None,
+    name: "customPetSubscription",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        220..248 @3 FieldDefinition {
+            description: None,
+            name: "changeInPetHousehold",
+            arguments: [],
+            ty: Named(
+                "Result",
+            ),
+            directives: [],
+        },
+    ],
+}
+252..330 @3 ObjectTypeDefinition {
+    description: None,
+    name: "customPetMutation",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        279..328 @3 FieldDefinition {
+            description: None,
+            name: "addPet",
+            arguments: [
+                287..300 @3 InputValueDefinition {
+                    description: None,
+                    name: "name",
+                    ty: 293..300 @3 NonNullNamed(
+                        "String",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+                302..318 @3 InputValueDefinition {
+                    description: None,
+                    name: "petType",
+                    ty: 311..318 @3 Named(
+                        "PetType",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            ty: NonNullNamed(
+                "Result",
+            ),
+            directives: [],
+        },
+    ],
+}
+332..360 @3 ObjectTypeDefinition {
+    description: None,
+    name: "Result",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        348..358 @3 FieldDefinition {
+            description: None,
+            name: "id",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+

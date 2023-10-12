@@ -74,10 +74,10 @@ impl From<Document> for apollo_encoder::Document {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Document> for Document {
+impl TryFrom<apollo_parser::cst::Document> for Document {
     type Error = crate::FromError;
 
-    fn try_from(doc: apollo_parser::ast::Document) -> Result<Self, Self::Error> {
+    fn try_from(doc: apollo_parser::cst::Document) -> Result<Self, Self::Error> {
         let mut enum_defs = Vec::new();
         let mut object_defs = Vec::new();
         let mut schema_def = None;
@@ -91,55 +91,55 @@ impl TryFrom<apollo_parser::ast::Document> for Document {
 
         for definition in doc.definitions() {
             match definition {
-                apollo_parser::ast::Definition::EnumTypeDefinition(enum_def) => {
+                apollo_parser::cst::Definition::EnumTypeDefinition(enum_def) => {
                     enum_defs.push(EnumTypeDef::try_from(enum_def)?);
                 }
-                apollo_parser::ast::Definition::EnumTypeExtension(enum_def) => {
+                apollo_parser::cst::Definition::EnumTypeExtension(enum_def) => {
                     enum_defs.push(EnumTypeDef::try_from(enum_def)?);
                 }
-                apollo_parser::ast::Definition::ObjectTypeDefinition(obj_def) => {
+                apollo_parser::cst::Definition::ObjectTypeDefinition(obj_def) => {
                     object_defs.push(ObjectTypeDef::try_from(obj_def)?);
                 }
-                apollo_parser::ast::Definition::ObjectTypeExtension(obj_def) => {
+                apollo_parser::cst::Definition::ObjectTypeExtension(obj_def) => {
                     object_defs.push(ObjectTypeDef::try_from(obj_def)?);
                 }
-                apollo_parser::ast::Definition::SchemaDefinition(schema_definition) => {
+                apollo_parser::cst::Definition::SchemaDefinition(schema_definition) => {
                     schema_def = Some(SchemaDef::try_from(schema_definition)?);
                 }
-                apollo_parser::ast::Definition::SchemaExtension(schema_definition) => {
+                apollo_parser::cst::Definition::SchemaExtension(schema_definition) => {
                     schema_def = Some(SchemaDef::try_from(schema_definition)?);
                 }
-                apollo_parser::ast::Definition::DirectiveDefinition(dir_def) => {
+                apollo_parser::cst::Definition::DirectiveDefinition(dir_def) => {
                     directive_defs.push(DirectiveDef::try_from(dir_def)?);
                 }
-                apollo_parser::ast::Definition::ScalarTypeDefinition(scalar_def) => {
+                apollo_parser::cst::Definition::ScalarTypeDefinition(scalar_def) => {
                     scalar_defs.push(ScalarTypeDef::try_from(scalar_def)?)
                 }
-                apollo_parser::ast::Definition::ScalarTypeExtension(scalar_def) => {
+                apollo_parser::cst::Definition::ScalarTypeExtension(scalar_def) => {
                     scalar_defs.push(ScalarTypeDef::try_from(scalar_def)?)
                 }
-                apollo_parser::ast::Definition::OperationDefinition(operation_def) => {
+                apollo_parser::cst::Definition::OperationDefinition(operation_def) => {
                     operation_defs.push(OperationDef::try_from(operation_def)?)
                 }
-                apollo_parser::ast::Definition::InterfaceTypeDefinition(interface_def) => {
+                apollo_parser::cst::Definition::InterfaceTypeDefinition(interface_def) => {
                     interface_defs.push(InterfaceTypeDef::try_from(interface_def)?)
                 }
-                apollo_parser::ast::Definition::InterfaceTypeExtension(interface_def) => {
+                apollo_parser::cst::Definition::InterfaceTypeExtension(interface_def) => {
                     interface_defs.push(InterfaceTypeDef::try_from(interface_def)?)
                 }
-                apollo_parser::ast::Definition::UnionTypeDefinition(union_def) => {
+                apollo_parser::cst::Definition::UnionTypeDefinition(union_def) => {
                     union_defs.push(UnionTypeDef::try_from(union_def)?)
                 }
-                apollo_parser::ast::Definition::UnionTypeExtension(union_def) => {
+                apollo_parser::cst::Definition::UnionTypeExtension(union_def) => {
                     union_defs.push(UnionTypeDef::try_from(union_def)?)
                 }
-                apollo_parser::ast::Definition::InputObjectTypeDefinition(input_object_def) => {
+                apollo_parser::cst::Definition::InputObjectTypeDefinition(input_object_def) => {
                     input_object_defs.push(InputObjectTypeDef::try_from(input_object_def)?)
                 }
-                apollo_parser::ast::Definition::InputObjectTypeExtension(input_object_def) => {
+                apollo_parser::cst::Definition::InputObjectTypeExtension(input_object_def) => {
                     input_object_defs.push(InputObjectTypeDef::try_from(input_object_def)?)
                 }
-                apollo_parser::ast::Definition::FragmentDefinition(fragment_def) => {
+                apollo_parser::cst::Definition::FragmentDefinition(fragment_def) => {
                     fragment_defs.push(FragmentDef::try_from(fragment_def)?)
                 }
             }

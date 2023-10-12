@@ -51,11 +51,11 @@ impl From<OperationDef> for String {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::OperationDefinition> for OperationDef {
+impl TryFrom<apollo_parser::cst::OperationDefinition> for OperationDef {
     type Error = crate::FromError;
 
     fn try_from(
-        operation_def: apollo_parser::ast::OperationDefinition,
+        operation_def: apollo_parser::cst::OperationDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: operation_def.name().map(Name::from),
@@ -99,8 +99,8 @@ impl From<OperationType> for apollo_encoder::OperationType {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::OperationType> for OperationType {
-    fn from(op_type: apollo_parser::ast::OperationType) -> Self {
+impl From<apollo_parser::cst::OperationType> for OperationType {
+    fn from(op_type: apollo_parser::cst::OperationType) -> Self {
         if op_type.query_token().is_some() {
             Self::Query
         } else if op_type.mutation_token().is_some() {

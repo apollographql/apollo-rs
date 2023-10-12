@@ -1,87 +1,15 @@
-use std::{fmt, sync::Arc};
-
-use crate::database::hir::{DirectiveLocation, HirNodeLocation};
-use crate::database::{InputDatabase, SourceCache};
-use crate::FileId;
+use crate::ast::DirectiveLocation;
+use crate::NodeLocation;
+use std::fmt;
 use thiserror::Error;
-
-/// A source location (line + column) for a GraphQL error.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLLocation {
-    /// The line number for this location, starting at 1 for the first line.
-    pub line: usize,
-    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
-    /// Values) like [str::chars].
-    pub column: usize,
-}
-
-/// A serializable GraphQL error.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLError {
-    /// The error message.
-    pub message: String,
-
-    /// Locations relevant to the error, if any.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub locations: Vec<GraphQLLocation>,
-}
-
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub struct DiagnosticLocation {
-    file_id: FileId,
-    offset: usize,
-    length: usize,
-}
-
-impl DiagnosticLocation {
-    pub fn file_id(&self) -> FileId {
-        self.file_id
-    }
-    pub fn offset(&self) -> usize {
-        self.offset
-    }
-    pub fn node_len(&self) -> usize {
-        self.length
-    }
-}
-
-impl From<(FileId, rowan::TextRange)> for DiagnosticLocation {
-    fn from((file_id, range): (FileId, rowan::TextRange)) -> Self {
-        Self {
-            file_id,
-            offset: range.start().into(),
-            length: range.len().into(),
-        }
-    }
-}
-
-impl From<(FileId, usize, usize)> for DiagnosticLocation {
-    fn from((file_id, offset, length): (FileId, usize, usize)) -> Self {
-        Self {
-            file_id,
-            offset,
-            length,
-        }
-    }
-}
-
-impl From<HirNodeLocation> for DiagnosticLocation {
-    fn from(location: HirNodeLocation) -> Self {
-        Self {
-            file_id: location.file_id(),
-            offset: location.offset(),
-            length: location.node_len(),
-        }
-    }
-}
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Label {
-    pub location: DiagnosticLocation,
+    pub location: NodeLocation,
     pub text: String,
 }
 impl Label {
-    pub fn new(location: impl Into<DiagnosticLocation>, text: impl Into<String>) -> Self {
+    pub fn new(location: impl Into<NodeLocation>, text: impl Into<String>) -> Self {
         Self {
             location: location.into(),
             text: text.into(),
@@ -91,21 +19,15 @@ impl Label {
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub struct ApolloDiagnostic {
-    cache: Arc<SourceCache>,
-    pub location: DiagnosticLocation,
+    pub location: NodeLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
     pub data: Box<DiagnosticData>,
 }
 
 impl ApolloDiagnostic {
-    pub fn new<DB: InputDatabase + ?Sized>(
-        db: &DB,
-        location: DiagnosticLocation,
-        data: DiagnosticData,
-    ) -> Self {
+    pub fn new<DB: ?Sized>(_db: &DB, location: NodeLocation, data: DiagnosticData) -> Self {
         Self {
-            cache: db.source_cache(),
             location,
             labels: vec![],
             help: None,
@@ -131,26 +53,11 @@ impl ApolloDiagnostic {
         self.labels.push(label);
         self
     }
-
-    /// Get the line and column number where this diagnostic was raised.
-    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        self.cache
-            .get_line_column(self.location.file_id, self.location.offset)
-            // Make 1-indexed
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
-    }
 }
 
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-        self.to_report()
-            .write(self.cache.as_ref(), &mut buf)
-            .unwrap();
-        writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
+        self.data.fmt(f)
     }
 }
 
@@ -158,74 +65,40 @@ impl fmt::Display for ApolloDiagnostic {
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum DiagnosticData {
-    #[error("syntax error: {message}")]
-    SyntaxError { message: String },
-    #[error("limit exceeded: {message}")]
-    LimitExceeded { message: String },
-    #[error("expected identifier")]
-    MissingIdent,
-    #[error(
-        "executable documents can only contain executable definitions, {}",
-        name.as_ref().map(|name| format!("but `{name}` is a(n) {kind}"))
-            .unwrap_or_else(|| format!("got {kind}"))
-    )]
-    ExecutableDefinition {
-        name: Option<String>,
-        kind: &'static str,
-    },
-    #[error("{ty} `{name}` is defined multiple times")]
+    #[error("the {ty} `{name}` is defined multiple times in the document")]
     UniqueDefinition {
         ty: &'static str,
         name: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
+        original_definition: NodeLocation,
+        redefined_definition: NodeLocation,
     },
-    #[error("argument `{name}` is defined multiple times")]
+    #[error("the argument `{name}` is defined multiple times")]
     UniqueArgument {
         name: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
+        original_definition: NodeLocation,
+        redefined_definition: NodeLocation,
     },
-    #[error("value `{name}` is defined multiple times")]
+    #[error("the value `{name}` is defined multiple times")]
     UniqueInputValue {
         name: String,
-        original_value: DiagnosticLocation,
-        redefined_value: DiagnosticLocation,
+        original_value: NodeLocation,
+        redefined_value: NodeLocation,
     },
-    #[error("enum member `{name}` is defined multiple times in `{coordinate}`")]
-    UniqueEnumValue {
-        name: String,
-        coordinate: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
-    },
-    #[error("subscription operation has multiple root fields")]
+    #[error("subscription operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
         // Else just remove as the labeling is done separately.
         fields: usize,
-        subscription: DiagnosticLocation,
+        subscription: NodeLocation,
     },
-    #[error("operation type {ty} is not defined")]
-    UnsupportedOperation {
-        // current operation type: subscription, mutation, query
-        ty: &'static str,
-    },
-    #[error("cannot query field `{field}` on type `{ty}`")]
-    UndefinedField {
-        /// Field name
-        field: String,
-        /// Type name being queried
-        ty: String,
-    },
-    #[error("the argument `{name}` is not supported by {coordinate}")]
-    UndefinedArgument { name: String, coordinate: String },
-    #[error("type `{name}` is not defined")]
+    #[error("the argument `{name}` is not supported")]
+    UndefinedArgument { name: String },
+    #[error("cannot find type `{name}` in this document")]
     UndefinedDefinition {
         /// Name of the type not in scope
         name: String,
     },
-    #[error("directive `@{name}` is not defined")]
+    #[error("cannot find directive `{name}` in this document")]
     UndefinedDirective {
         /// Name of the missing directive
         name: String,
@@ -235,7 +108,7 @@ pub enum DiagnosticData {
         /// Name of the variable not in scope
         name: String,
     },
-    #[error("fragment `{name}` is not defined")]
+    #[error("cannot find fragment `{name}` in this document")]
     UndefinedFragment {
         /// Name of the fragment not in scope
         name: String,
@@ -247,102 +120,66 @@ pub enum DiagnosticData {
         /// type definition
         definition: String,
     },
-    #[error("type extension for `{name}` is the wrong kind")]
-    WrongTypeExtension {
-        /// Name of the type being extended
-        name: String,
-        /// Location of the original definition. This may be None when extending a builtin GraphQL type.
-        definition: DiagnosticLocation,
-        /// Location of the extension
-        extension: DiagnosticLocation,
-    },
-    #[error("directive definition `{name}` references itself")]
+    #[error("`{name}` directive definition cannot reference itself")]
     RecursiveDirectiveDefinition { name: String },
-    #[error("interface `{name}` implements itself")]
+    #[error("interface {name} cannot implement itself")]
     RecursiveInterfaceDefinition { name: String },
-    #[error("input object `{name}` references itself")]
+    #[error("`{name}` input object cannot reference itself")]
     RecursiveInputObjectDefinition { name: String },
-    #[error("fragment `{name}` references itself")]
+    #[error("`{name}` fragment cannot reference itself")]
     RecursiveFragmentDefinition { name: String },
-    #[error("enum value `{value}` does not have a conventional all-caps name")]
+    #[error("values in an Enum Definition should be capitalized")]
     CapitalizedValue { value: String },
-    #[error("field `{field}` is declared multiple times")]
-    UniqueField {
-        /// Name of the non-unique field.
-        field: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
-    },
-    #[error("type `{name}` does not satisfy interface `{interface}` because it is missing field `{field}`")]
-    MissingField {
-        name: String,
-        interface: String,
-        // current field that should be defined
-        field: String,
-    },
-    #[error("required argument `{coordinate}` is not provided")]
-    RequiredArgument { coordinate: String },
-    #[error("type `{ty}` implements interface `{interface}` multiple times")]
-    DuplicateImplementsInterface { ty: String, interface: String },
-    // XXX(@goto-bus-stop): This error message would be better if it listed which other interface
-    // is responsible for `missing_interface` being required. It would require code changes in
-    // validation to pass that information on, so not doing it in 0.11.x--we should do it in 1.0 :)
-    #[error("type `{ty}` must implement `{missing_interface}`")]
+    #[error("type does not satisfy interface `{interface}`: missing field `{field}`")]
+    MissingInterfaceField { interface: String, field: String },
+    #[error("the required argument `{name}` is not provided")]
+    RequiredArgument { name: String },
+    #[error(
+        "Transitively implemented interfaces must also be defined on an implementing interface or object"
+    )]
     TransitiveImplementedInterfaces {
-        /// Name of the affected type
-        ty: String,
         // interface that should be defined
         missing_interface: String,
     },
-    #[error("`{name}` field does not return an output type")]
+    #[error("`{name}` field must return an output type")]
     OutputType {
         // field name
         name: String,
         // field type
         ty: &'static str,
     },
-    #[error("type `{ty}` for input field or argument `{name}` is not an input type")]
+    #[error("`{name}` field must be of an input type")]
     InputType {
         /// Field name.
         name: String,
-        /// Declared type.
-        ty: String,
+        /// The kind of type that the field is declared with.
+        ty: &'static str,
     },
-    #[error("custom scalar `{ty}` does not have an @specifiedBy directive")]
-    ScalarSpecificationURL {
-        /// Name of the scalar.
-        ty: String,
-    },
+    #[error(
+        "custom scalars should provide a scalar specification URL via the @specifiedBy directive"
+    )]
+    ScalarSpecificationURL,
     #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
-    #[error("built-in scalars must be omitted for brevity")]
-    BuiltInScalarDefinition,
-    #[error("type `{ty}` for variable `${name}` is not an input type")]
-    VariableInputType {
-        /// Variable name.
-        name: String,
-        /// Declared type.
-        ty: String,
-    },
-    #[error("variable `{name}` is unused")]
+    #[error("unused variable: `{name}`")]
     UnusedVariable { name: String },
-    #[error("field `{name}` does not return an object type")]
+    #[error("`{name}` field must return an object type")]
     ObjectType {
         // union member
         name: String,
         // actual type
         ty: &'static str,
     },
-    #[error("directive `@{name}` can not be used on {dir_loc}")]
-    UnsupportedDirectiveLocation {
-        /// name of the directive
+    #[error("{name} directive is not supported for {dir_loc} location")]
+    UnsupportedLocation {
+        /// current directive definition
         name: String,
         /// current location where the directive is used
         dir_loc: DirectiveLocation,
         /// The source location where the directive that's being used was defined.
-        directive_def: DiagnosticLocation,
+        directive_def: NodeLocation,
     },
-    #[error("`{value}` cannot be assigned to type `{ty}`")]
+    #[error("{ty} cannot be represented by a {value} value")]
     UnsupportedValueType {
         // input value
         value: String,
@@ -354,61 +191,45 @@ pub enum DiagnosticData {
         /// The int value that cannot be coerced
         value: String,
     },
+    #[error("float cannot represent non-finite 64-bit floating point value")]
+    FloatCoercionError {
+        /// The float value that cannot be coerced
+        value: String,
+    },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {
         /// Name of the non-unique directive.
         name: String,
-        original_call: DiagnosticLocation,
-        conflicting_call: DiagnosticLocation,
+        original_call: NodeLocation,
+        conflicting_call: NodeLocation,
     },
-    #[error("subscription operation uses introspection field `{field}` as a root field")]
+    #[error("subscription operations can not have an introspection field as a root field")]
     IntrospectionField {
         /// Name of the field
         field: String,
     },
-    #[error("field `{field}` has a subselection but its type `{ty}` is not a composite type")]
-    DisallowedSubselection {
-        /// Name of the field
-        field: String,
-        /// Name of the type
-        ty: String,
-    },
-    #[error("field `{field}` selects a composite type `{ty}` but does not have a subselection")]
-    MissingSubselection {
-        /// Name of the field
-        field: String,
-        /// Name of the type
-        ty: String,
-    },
-    #[error("operation selects different types into the same field name `{field}`")]
+    #[error("interface, union and object types must have a subselection set")]
+    MissingSubselection,
+    #[error("operation must not select different types using the same field name `{field}`")]
     ConflictingField {
         /// Name of the non-unique field.
         field: String,
-        original_selection: DiagnosticLocation,
-        redefined_selection: DiagnosticLocation,
+        original_selection: NodeLocation,
+        redefined_selection: NodeLocation,
     },
-    #[error("fragments must be specified on types that exist in the schema")]
-    InvalidFragment {
-        /// Name of the type on which the fragment is declared
-        ty: Option<String>,
-    },
-    #[error("type condition `{ty}` is not a composite type")]
+    #[error("fragments can not be declared on primitive types")]
     InvalidFragmentTarget {
         /// Name of the type on which the fragment is declared
         ty: String,
     },
-    #[error(
-        "{} cannot be applied to type `{type_name}`",
-        name.as_ref().map(|name| format!("fragment `{name}`"))
-            .unwrap_or_else(|| "anonymous fragment".to_string()),
-    )]
+    #[error("fragment cannot be applied to this type")]
     InvalidFragmentSpread {
         /// Fragment name or None if it's an inline fragment
         name: Option<String>,
         /// Type name the fragment is being applied to
         type_name: String,
     },
-    #[error("fragment `{name}` is unused")]
+    #[error("fragment `{name}` must be used in an operation")]
     UnusedFragment {
         /// Name of the fragment
         name: String,
@@ -432,21 +253,21 @@ impl DiagnosticData {
         matches!(self, Self::CapitalizedValue { .. })
     }
     pub fn is_advice(&self) -> bool {
-        matches!(self, Self::ScalarSpecificationURL { .. })
+        matches!(self, Self::ScalarSpecificationURL)
     }
 }
 
-type AriadneSpan = (FileId, std::ops::Range<usize>);
-impl ApolloDiagnostic {
-    fn map_location(&self, location: DiagnosticLocation) -> AriadneSpan {
-        let id = location.file_id();
-        let source = self.cache.get_source(id).unwrap();
-        let start = source.map_index(location.offset);
-        let end = source.map_index(location.offset + location.length);
-        (id, start..end)
+impl From<Label> for ariadne::Label<NodeLocation> {
+    fn from(label: Label) -> Self {
+        Self::new(label.location).with_message(label.text)
     }
+}
 
-    pub fn to_report(&self) -> ariadne::Report<'static, AriadneSpan> {
+impl ApolloDiagnostic {
+    pub(crate) fn to_report(
+        &self,
+        config: ariadne::Config,
+    ) -> ariadne::Report<'static, NodeLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let severity = if self.data.is_advice() {
@@ -456,33 +277,18 @@ impl ApolloDiagnostic {
         } else {
             ReportKind::Error
         };
-
-        let span = self.map_location(self.location);
-
         let mut colors = ColorGenerator::new();
-        let mut builder =
-            Report::build(severity, self.location.file_id(), span.1.start).with_message(&self.data);
-        builder.add_labels(self.labels.iter().map(|label| {
-            ariadne::Label::new(self.map_location(label.location))
-                .with_message(&label.text)
-                .with_color(colors.next())
-        }));
+        let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
+            .with_config(config)
+            .with_message(&self.data);
+        builder.add_labels(
+            self.labels
+                .iter()
+                .map(|label| ariadne::Label::from(label.clone()).with_color(colors.next())),
+        );
         if let Some(help) = &self.help {
             builder = builder.with_help(help);
         }
         builder.finish()
-    }
-
-    pub fn to_json(&self) -> GraphQLError {
-        let mut locations = vec![];
-
-        if let Some(location) = self.get_line_column() {
-            locations.push(location);
-        }
-
-        GraphQLError {
-            message: self.data.to_string(),
-            locations,
-        }
     }
 }

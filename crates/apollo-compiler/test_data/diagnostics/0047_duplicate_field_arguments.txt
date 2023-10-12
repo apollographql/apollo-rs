@@ -1,57 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            47: "0047_duplicate_field_arguments.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 47,
-            },
-            offset: 84,
-            length: 10,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 47,
-                    },
-                    offset: 73,
-                    length: 9,
-                },
-                text: "previously provided `arg` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 47,
-                    },
-                    offset: 84,
-                    length: 10,
-                },
-                text: "`arg` provided again here",
-            },
-        ],
-        help: Some(
-            "`arg` argument must only be provided once.",
-        ),
-        data: UniqueArgument {
-            name: "arg",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 47,
-                },
-                offset: 73,
-                length: 9,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 47,
-                },
-                offset: 84,
-                length: 10,
-            },
-        },
-    },
-]
+Error: the argument `arg` is defined multiple times
+   ╭─[0047_duplicate_field_arguments.graphql:5:21]
+   │
+ 5 │   single(arg: true, arg: false)
+   │          ────┬────  ─────┬────  
+   │              ╰────────────────── previously provided `arg` here
+   │                          │      
+   │                          ╰────── `arg` provided again here
+   │ 
+   │ Help: `arg` argument must only be provided once.
+───╯
+

@@ -50,10 +50,10 @@ impl From<UnionTypeDef> for UnionDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
+impl TryFrom<apollo_parser::cst::UnionTypeDefinition> for UnionTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(union_def: apollo_parser::ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(union_def: apollo_parser::cst::UnionTypeDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             name: union_def
                 .name()
@@ -80,10 +80,10 @@ impl TryFrom<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
+impl TryFrom<apollo_parser::cst::UnionTypeExtension> for UnionTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(union_def: apollo_parser::ast::UnionTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(union_def: apollo_parser::cst::UnionTypeExtension) -> Result<Self, Self::Error> {
         Ok(Self {
             name: union_def
                 .name()

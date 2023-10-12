@@ -1,173 +1,27 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 235,
-            length: 11,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 235,
-                    length: 11,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "graph",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 258,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 258,
-                    length: 14,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "requires",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 284,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 284,
-                    length: 14,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "provides",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 21,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 21,
-                    length: 4,
-                },
-                text: "`size` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 38,
-                    length: 52,
-                },
-                text: "`Query` declared here",
-            },
-        ],
-        help: Some(
-            "`size` is not defined on `Query` type",
-        ),
-        data: UndefinedField {
-            field: "size",
-            ty: "Query",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 28,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 28,
-                    length: 6,
-                },
-                text: "`weight` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 38,
-                    length: 52,
-                },
-                text: "`Query` declared here",
-            },
-        ],
-        help: Some(
-            "`weight` is not defined on `Query` type",
-        ),
-        data: UndefinedField {
-            field: "weight",
-            ty: "Query",
-        },
-    },
-]
+Error: type `Query` does not have a field `size`
+   ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:2:3]
+   │
+ 2 │   size
+   │   ──┬─  
+   │     ╰─── field `size` selected here
+   │ 
+ 6 │ type Query {
+   │      ──┬──  
+   │        ╰──── type `Query` defined here
+   │ 
+   │ Note: path to the field: `query getProduct → size`
+───╯
+Error: type `Query` does not have a field `weight`
+   ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:3:3]
+   │
+ 3 │   weight
+   │   ───┬──  
+   │      ╰──── field `weight` selected here
+   │ 
+ 6 │ type Query {
+   │      ──┬──  
+   │        ╰──── type `Query` defined here
+   │ 
+   │ Note: path to the field: `query getProduct → weight`
+───╯
+

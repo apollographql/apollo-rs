@@ -1,101 +1,33 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 93,
-            length: 40,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 93,
-                    length: 40,
-                },
-                text: "`MissingSecondType` is defined here but not declared in the schema",
-            },
-        ],
-        help: Some(
-            "consider defining `MissingSecondType` in the schema",
-        ),
-        data: InvalidFragment {
-            ty: Some(
-                "MissingSecondType",
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 267,
-            length: 30,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 267,
-                    length: 30,
-                },
-                text: "`MissingType` is defined here but not declared in the schema",
-            },
-        ],
-        help: Some(
-            "consider defining `MissingType` in the schema",
-        ),
-        data: InvalidFragment {
-            ty: Some(
-                "MissingType",
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 301,
-            length: 55,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 301,
-                    length: 55,
-                },
-                text: "`Interface2` is defined here but not declared in the schema",
-            },
-        ],
-        help: Some(
-            "consider defining `Interface2` in the schema",
-        ),
-        data: InvalidFragment {
-            ty: Some(
-                "Interface2",
-            ),
-        },
-    },
-]
+Error: cannot find fragment `invalidFragmentCondition` in this document
+   ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:3:5]
+   │
+ 3 │     ...invalidFragmentCondition
+   │     ─────────────┬─────────────  
+   │                  ╰─────────────── fragment `invalidFragmentCondition` is not defined
+───╯
+Error: type condition `MissingSecondType` of inline fragment is not a type defined in the schema
+   ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:5:12]
+   │
+ 5 │     ... on MissingSecondType {
+   │            ────────┬────────  
+   │                    ╰────────── type condition here
+   │ 
+   │ Note: path to the inline fragment: `query Query → interface → ...`
+───╯
+Error: type condition `MissingType` of inline fragment is not a type defined in the schema
+    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:23:10]
+    │
+ 23 │   ... on MissingType {
+    │          ─────┬─────  
+    │               ╰─────── type condition here
+    │ 
+    │ Note: path to the inline fragment: `fragment invalidInlineFragment → ...`
+────╯
+Error: type condition `Interface2` of fragment `invalidFragmentCondition` is not a type defined in the schema
+    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:28:38]
+    │
+ 28 │ fragment invalidFragmentCondition on Interface2 {
+    │                                      ─────┬────  
+    │                                           ╰────── type condition here
+────╯
+

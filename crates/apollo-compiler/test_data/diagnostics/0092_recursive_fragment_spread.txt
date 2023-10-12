@@ -1,41 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            89: "0092_recursive_fragment_spread.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 89,
-            },
-            offset: 104,
-            length: 42,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 89,
-                    },
-                    offset: 104,
-                    length: 14,
-                },
-                text: "recursive fragment definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 89,
-                    },
-                    offset: 222,
-                    length: 8,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveFragmentDefinition {
-            name: "fragA",
-        },
-    },
-]
+Error: `fragA` fragment cannot reference itself
+    ╭─[0092_recursive_fragment_spread.graphql:13:1]
+    │
+ 13 │ fragment fragA on Human { name, ...fragB }
+    │ ───────┬──────  
+    │        ╰──────── recursive fragment definition
+    │ 
+ 15 │ fragment fragC on Human { name, ...fragA }
+    │                                 ────┬───  
+    │                                     ╰───── refers to itself here
+────╯
+

@@ -1,32 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            26: "0026_interface_definition_with_missing_implemetns_interface.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 26,
-            },
-            offset: 176,
-            length: 8,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 26,
-                    },
-                    offset: 176,
-                    length: 8,
-                },
-                text: "Node must also be implemented here",
-            },
-        ],
-        help: None,
-        data: TransitiveImplementedInterfaces {
-            ty: "Image",
-            missing_interface: "Node",
-        },
-    },
-]
+Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+    ╭─[0026_interface_definition_with_missing_implemetns_interface.graphql:15:1]
+    │
+  9 │     interface Resource implements Node {
+    │                                   ──┬─  
+    │                                     ╰─── implementation of Node declared by Resource here
+    │ 
+ 15 │ ╭─▶ interface Image implements Resource {
+    ┆ ┆   
+ 20 │ ├─▶ }
+    │ │      
+    │ ╰────── Node must also be implemented here
+────╯
+

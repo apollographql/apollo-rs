@@ -1,62 +1,27 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            35: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 35,
-            },
-            offset: 22,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 35,
-                    },
-                    offset: 22,
-                    length: 5,
-                },
-                text: "Resource must also be implemented here",
-            },
-        ],
-        help: None,
-        data: TransitiveImplementedInterfaces {
-            ty: "Query",
-            missing_interface: "Resource",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            35: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 35,
-            },
-            offset: 239,
-            length: 8,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 35,
-                    },
-                    offset: 239,
-                    length: 8,
-                },
-                text: "Node must also be implemented here",
-            },
-        ],
-        help: None,
-        data: TransitiveImplementedInterfaces {
-            ty: "Image",
-            missing_interface: "Node",
-        },
-    },
-]
+Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+    ╭─[0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:1:1]
+    │
+  1 │ ╭─▶ type Query implements Image {
+    ┆ ┆   
+  7 │ ├─▶ }
+    │ │       
+    │ ╰─────── Resource must also be implemented here
+    │ 
+ 19 │     interface Image implements Resource {
+    │                                ────┬───  
+    │                                    ╰───── implementation of Resource declared by Image here
+────╯
+Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+    ╭─[0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:19:1]
+    │
+ 13 │     interface Resource implements Node {
+    │                                   ──┬─  
+    │                                     ╰─── implementation of Node declared by Resource here
+    │ 
+ 19 │ ╭─▶ interface Image implements Resource {
+    ┆ ┆   
+ 24 │ ├─▶ }
+    │ │      
+    │ ╰────── Node must also be implemented here
+────╯
+

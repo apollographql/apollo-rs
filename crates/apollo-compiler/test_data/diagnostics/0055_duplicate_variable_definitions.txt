@@ -1,58 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            55: "0055_duplicate_variable_definitions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 55,
-            },
-            offset: 48,
-            length: 22,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 55,
-                    },
-                    offset: 24,
-                    length: 22,
-                },
-                text: "previous definition of `atOtherHomes` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 55,
-                    },
-                    offset: 48,
-                    length: 22,
-                },
-                text: "`atOtherHomes` redefined here",
-            },
-        ],
-        help: Some(
-            "atOtherHomes must only be defined once in this enum.",
-        ),
-        data: UniqueDefinition {
-            ty: "enum",
-            name: "atOtherHomes",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 55,
-                },
-                offset: 24,
-                length: 22,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 55,
-                },
-                offset: 48,
-                length: 22,
-            },
-        },
-    },
-]
+Error: the variable `atOtherHomes` is defined multiple times in the document
+   ╭─[0055_duplicate_variable_definitions.graphql:1:49]
+   │
+ 1 │ query houseTrainedQuery($atOtherHomes: Boolean, $atOtherHomes: Boolean) {
+   │                         ───────────┬──────────  ───────────┬──────────  
+   │                                    ╰──────────────────────────────────── previous definition of `atOtherHomes` here
+   │                                                            │            
+   │                                                            ╰──────────── `atOtherHomes` redefined here
+   │ 
+   │ Help: atOtherHomes must only be defined once in this enum.
+───╯
+

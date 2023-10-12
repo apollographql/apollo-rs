@@ -1,118 +1,99 @@
-- DOCUMENT@0..272
-    - OBJECT_TYPE_DEFINITION@0..56
-        - type_KW@0..4 "type"
-        - WHITESPACE@4..5 " "
-        - NAME@5..10
-            - IDENT@5..10 "Query"
-        - WHITESPACE@10..11 " "
-        - FIELDS_DEFINITION@11..56
-            - L_CURLY@11..12 "{"
-            - WHITESPACE@12..15 "\n  "
-            - FIELD_DEFINITION@15..54
-                - NAME@15..19
-                    - IDENT@15..19 "name"
-                - ARGUMENTS_DEFINITION@19..46
-                    - L_PAREN@19..20 "("
-                    - INPUT_VALUE_DEFINITION@20..45
-                        - NAME@20..23
-                            - IDENT@20..23 "arg"
-                        - COLON@23..24 ":"
-                        - WHITESPACE@24..25 " "
-                        - NAMED_TYPE@25..45
-                            - NAME@25..45
-                                - IDENT@25..45 "WithAllKindsOfFloats"
-                    - R_PAREN@45..46 ")"
-                - COLON@46..47 ":"
-                - WHITESPACE@47..48 " "
-                - NAMED_TYPE@48..54
-                    - NAME@48..54
-                        - IDENT@48..54 "String"
-            - WHITESPACE@54..55 "\n"
-            - R_CURLY@55..56 "}"
-    - WHITESPACE@56..58 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@58..271
-        - input_KW@58..63 "input"
-        - WHITESPACE@63..64 " "
-        - NAME@64..84
-            - IDENT@64..84 "WithAllKindsOfFloats"
-        - WHITESPACE@84..85 " "
-        - INPUT_FIELDS_DEFINITION@85..271
-            - L_CURLY@85..86 "{"
-            - WHITESPACE@86..89 "\n  "
-            - INPUT_VALUE_DEFINITION@89..117
-                - NAME@89..104
-                    - IDENT@89..104 "a_regular_float"
-                - COLON@104..105 ":"
-                - WHITESPACE@105..106 " "
-                - NAMED_TYPE@106..111
-                    - NAME@106..111
-                        - IDENT@106..111 "Float"
-                - WHITESPACE@111..112 " "
-                - DEFAULT_VALUE@112..117
-                    - EQ@112..113 "="
-                    - WHITESPACE@113..114 " "
-                    - FLOAT_VALUE@114..117
-                        - FLOAT@114..117 "1.2"
-            - WHITESPACE@117..120 "\n  "
-            - INPUT_VALUE_DEFINITION@120..150
-                - NAME@120..136
-                    - IDENT@120..136 "an_integer_float"
-                - COLON@136..137 ":"
-                - WHITESPACE@137..138 " "
-                - NAMED_TYPE@138..143
-                    - NAME@138..143
-                        - IDENT@138..143 "Float"
-                - WHITESPACE@143..144 " "
-                - DEFAULT_VALUE@144..150
-                    - EQ@144..145 "="
-                    - WHITESPACE@145..146 " "
-                    - INT_VALUE@146..150
-                        - INT@146..150 "1234"
-            - WHITESPACE@150..153 "\n  "
-            - INPUT_VALUE_DEFINITION@153..203
-                - NAME@153..183
-                    - IDENT@153..183 "a_float_that_doesnt_fit_an_int"
-                - COLON@183..184 ":"
-                - WHITESPACE@184..185 " "
-                - NAMED_TYPE@185..190
-                    - NAME@185..190
-                        - IDENT@185..190 "Float"
-                - WHITESPACE@190..191 " "
-                - DEFAULT_VALUE@191..203
-                    - EQ@191..192 "="
-                    - WHITESPACE@192..193 " "
-                    - INT_VALUE@193..203
-                        - INT@193..203 "9876543210"
-            - WHITESPACE@203..206 "\n  "
-            - INPUT_VALUE_DEFINITION@206..269
-                - NAME@206..220
-                    - IDENT@206..220 "list_of_floats"
-                - COLON@220..221 ":"
-                - WHITESPACE@221..222 " "
-                - LIST_TYPE@222..229
-                    - L_BRACK@222..223 "["
-                    - NAMED_TYPE@223..228
-                        - NAME@223..228
-                            - IDENT@223..228 "Float"
-                    - R_BRACK@228..229 "]"
-                - WHITESPACE@229..230 " "
-                - DEFAULT_VALUE@230..269
-                    - EQ@230..231 "="
-                    - WHITESPACE@231..232 " "
-                    - LIST_VALUE@232..269
-                        - L_BRACK@232..233 "["
-                        - INT_VALUE@233..234
-                            - INT@233..234 "4"
-                        - COMMA@234..235 ","
-                        - WHITESPACE@235..236 " "
-                        - INT_VALUE@236..246
-                            - INT@236..246 "9876543210"
-                        - COMMA@246..247 ","
-                        - WHITESPACE@247..248 " "
-                        - INT_VALUE@248..268
-                            - INT@248..268 "98765432109876543210"
-                        - R_BRACK@268..269 "]"
-            - WHITESPACE@269..270 "\n"
-            - R_CURLY@270..271 "}"
-    - WHITESPACE@271..272 "\n"
-recursion limit: 500, high: 4
+0..56 @14 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        15..54 @14 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [
+                20..45 @14 InputValueDefinition {
+                    description: None,
+                    name: "arg",
+                    ty: 25..45 @14 Named(
+                        "WithAllKindsOfFloats",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+58..271 @14 InputObjectTypeDefinition {
+    description: None,
+    name: "WithAllKindsOfFloats",
+    directives: [],
+    fields: [
+        89..117 @14 InputValueDefinition {
+            description: None,
+            name: "a_regular_float",
+            ty: 106..111 @14 Named(
+                "Float",
+            ),
+            default_value: Some(
+                114..117 @14 Float(
+                    1.2,
+                ),
+            ),
+            directives: [],
+        },
+        120..150 @14 InputValueDefinition {
+            description: None,
+            name: "an_integer_float",
+            ty: 138..143 @14 Named(
+                "Float",
+            ),
+            default_value: Some(
+                146..150 @14 Int(
+                    1234,
+                ),
+            ),
+            directives: [],
+        },
+        153..203 @14 InputValueDefinition {
+            description: None,
+            name: "a_float_that_doesnt_fit_an_int",
+            ty: 185..190 @14 Named(
+                "Float",
+            ),
+            default_value: Some(
+                193..203 @14 Int(
+                    9876543210,
+                ),
+            ),
+            directives: [],
+        },
+        206..269 @14 InputValueDefinition {
+            description: None,
+            name: "list_of_floats",
+            ty: 222..229 @14 List(
+                Named(
+                    "Float",
+                ),
+            ),
+            default_value: Some(
+                232..269 @14 List(
+                    [
+                        233..234 @14 Int(
+                            4,
+                        ),
+                        236..246 @14 Int(
+                            9876543210,
+                        ),
+                        248..268 @14 Int(
+                            98765432109876543210,
+                        ),
+                    ],
+                ),
+            ),
+            directives: [],
+        },
+    ],
+}
+

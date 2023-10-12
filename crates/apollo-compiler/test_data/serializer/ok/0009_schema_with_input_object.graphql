@@ -1,0 +1,11 @@
+type Query {
+  website: URL
+  amount: Int
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+
+input Point2D {
+  x: Float
+  y: Float
+}

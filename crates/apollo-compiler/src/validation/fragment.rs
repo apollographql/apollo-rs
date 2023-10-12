@@ -1,147 +1,124 @@
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
-    validation::RecursionStack,
-    FileId, ValidationDatabase,
+    schema,
+    validation::{RecursionGuard, RecursionStack},
+    FileId, Node, NodeLocation, ValidationDatabase,
 };
-use std::{collections::HashSet, sync::Arc};
+use std::collections::{HashMap, HashSet};
 
 use super::operation::OperationValidationConfig;
 
-/// Given a type definition, find all the types that can be used for fragment spreading.
+/// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
-pub fn get_possible_types(
-    db: &dyn ValidationDatabase,
-    ty: hir::TypeDefinition,
-) -> Vec<hir::TypeDefinition> {
-    fn get_possible_types_impl(
-        db: &dyn ValidationDatabase,
-        ty: hir::TypeDefinition,
-        seen: &mut RecursionStack<'_>,
-        output: &mut Vec<hir::TypeDefinition>,
-    ) {
-        match &ty {
-            // 1. If `type` is an object type, return a set containing `type`.
-            hir::TypeDefinition::ObjectTypeDefinition(_) => output.push(ty),
-            // 2. If `type` is an interface type, return the set of types implementing `type`.
-            hir::TypeDefinition::InterfaceTypeDefinition(intf) => {
-                // Prevent stack overflow if interface implements itself
-                if seen.contains(intf.name()) {
-                    return;
-                }
+pub(crate) fn get_possible_types<'a>(
+    schema: &'a schema::Schema,
+    type_name: &'a ast::Name,
+) -> HashSet<&'a ast::NamedType> {
+    match schema.types.get(type_name) {
+        // 1. If `type` is an object type, return a set containing `type`.
+        Some(schema::ExtendedType::Object(_)) => std::iter::once(type_name).collect(),
+        // 2. If `type` is an interface type, return the set of types implementing `type`.
+        Some(schema::ExtendedType::Interface(_)) => {
+            // TODO(@goto-bus-stop): use db.implementers_map()
+            schema
+                .types
+                .iter()
+                .filter_map(|(name, ty)| {
+                    let implements = match ty {
+                        schema::ExtendedType::Object(object) => &object.implements_interfaces,
+                        _ => return None,
+                    };
 
-                let subtype_map = db.subtype_map();
-                if let Some(names) = subtype_map.get(intf.name()) {
-                    let mut seen = seen.push(intf.name().to_string());
-                    names
-                        .iter()
-                        .filter_map(|name| db.find_type_definition_by_name(name.to_string()))
-                        .for_each(|ty| get_possible_types_impl(db, ty, &mut seen, output))
-                }
-                output.push(ty);
-            }
-            // 3. If `type` is a union type, return the set of possible types of `type`.
-            hir::TypeDefinition::UnionTypeDefinition(union_) => {
-                // Prevent stack overflow if union is a member of itself
-                if seen.contains(union_.name()) {
-                    return;
-                }
-
-                let subtype_map = db.subtype_map();
-                if let Some(names) = subtype_map.get(union_.name()) {
-                    let mut seen = seen.push(union_.name().to_string());
-                    names
-                        .iter()
-                        .filter_map(|name| db.find_type_definition_by_name(name.to_string()))
-                        .for_each(|ty| get_possible_types_impl(db, ty, &mut seen, output))
-                }
-
-                output.push(ty);
-            }
-            _ => (),
+                    if implements.contains(type_name) {
+                        Some(name)
+                    } else {
+                        None
+                    }
+                })
+                .collect()
         }
+        // 3. If `type` is a union type, return the set of possible types of `type`.
+        Some(schema::ExtendedType::Union(union_)) => union_
+            .members
+            .iter()
+            .map(|component| &component.node)
+            .collect(),
+        _ => Default::default(),
     }
-
-    let mut output = vec![];
-    get_possible_types_impl(db, ty, &mut RecursionStack(&mut vec![]), &mut output);
-    output
 }
 
-pub fn validate_fragment_selection(
+fn validate_fragment_spread_type(
     db: &dyn ValidationDatabase,
-    spread: hir::FragmentSelection,
+    file_id: FileId,
+    against_type: &ast::NamedType,
+    type_condition: &ast::NamedType,
+    selection: &ast::Selection,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+    let schema = db.schema();
 
-    let Some(cond) = spread.type_condition(db.upcast()) else {
-        // Returns None on invalid documents only
+    // Another diagnostic will be raised if the type condition was wrong.
+    // We reduce noise by silencing other issues with the fragment.
+    if !schema.types.contains_key(type_condition) {
         return diagnostics;
     };
-    let Some(parent_type) = spread.parent_type(db.upcast()) else {
+
+    let Some(against_type_definition) = schema.types.get(against_type) else {
         // We cannot check anything if the parent type is unknown.
         return diagnostics;
     };
-    let Some(cond_type) = db.find_type_definition_by_name(cond.clone()) else {
-        // We cannot check anything if the type condition refers to an unknown type.
-        return diagnostics;
-    };
 
-    let concrete_parent_types = db
-        .get_possible_types(parent_type.clone())
-        .into_iter()
-        .map(|ty| ty.name().to_string())
-        .collect::<HashSet<_>>();
-    let concrete_condition_types = db
-        .get_possible_types(cond_type)
-        .into_iter()
-        .map(|ty| ty.name().to_string())
-        .collect::<HashSet<_>>();
+    let concrete_parent_types = get_possible_types(&schema, against_type);
+    let concrete_condition_types = get_possible_types(&schema, type_condition);
 
     let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
     if applicable_types.next().is_none() {
         // Report specific errors for the different kinds of fragments.
-        let diagnostic = match spread {
-            hir::FragmentSelection::FragmentSpread(spread) => {
-                // This unwrap is safe because the fragment definition must exist for `cond_type` to be `Some()`.
-                let fragment_definition = spread.fragment(db.upcast()).unwrap();
+        let diagnostic = match selection {
+            ast::Selection::Field(_) => unreachable!(),
+            ast::Selection::FragmentSpread(spread) => {
+                let named_fragments = db.ast_named_fragments(file_id);
+                // TODO(@goto-bus-stop) Can we guarantee this unwrap()?
+                let fragment_definition = named_fragments.get(&spread.fragment_name).unwrap();
 
                 ApolloDiagnostic::new(
                     db,
-                    spread.loc().into(),
+                    spread.location().unwrap(),
                     DiagnosticData::InvalidFragmentSpread {
-                        name: Some(spread.name().to_string()),
-                        type_name: parent_type.name().to_string(),
+                        name: Some(spread.fragment_name.to_string()),
+                        type_name: against_type.to_string(),
                     },
                 )
                 .label(Label::new(
-                    spread.loc(),
-                    format!("fragment `{}` cannot be applied", spread.name()),
+                    spread.location().unwrap(),
+                    format!("fragment `{}` cannot be applied", spread.fragment_name),
                 ))
                 .label(Label::new(
-                    fragment_definition.loc(),
-                    format!("fragment declared with type condition `{cond}` here"),
+                    fragment_definition.location().unwrap(),
+                    format!("fragment declared with type condition `{type_condition}` here"),
                 ))
                 .label(Label::new(
-                    parent_type.loc(),
-                    format!("type condition `{cond}` is not assignable to this type"),
+                    against_type_definition.location().unwrap(),
+                    format!("type condition `{type_condition}` is not assignable to this type"),
                 ))
             }
-            hir::FragmentSelection::InlineFragment(inline) => ApolloDiagnostic::new(
+            ast::Selection::InlineFragment(inline) => ApolloDiagnostic::new(
                 db,
-                inline.loc().into(),
+                inline.location().unwrap(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
-                    type_name: parent_type.name().to_string(),
+                    type_name: against_type.to_string(),
                 },
             )
             .label(Label::new(
-                inline.loc(),
-                format!("fragment applied with type condition `{cond}` here"),
+                inline.location().unwrap(),
+                format!("fragment applied with type condition `{type_condition}` here"),
             ))
             .label(Label::new(
-                parent_type.loc(),
-                format!("type condition `{cond}` is not assignable to this type"),
+                against_type_definition.location().unwrap(),
+                format!("type condition `{type_condition}` is not assignable to this type"),
             )),
         };
 
@@ -151,22 +128,25 @@ pub fn validate_fragment_selection(
     diagnostics
 }
 
-pub fn validate_inline_fragment(
+pub(crate) fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
-    inline: Arc<hir::InlineFragment>,
-    context: OperationValidationConfig,
+    file_id: FileId,
+    against_type: Option<&ast::NamedType>,
+    inline: Node<ast::InlineFragment>,
+    context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.validate_directives(
-        inline.directives().to_vec(),
-        hir::DirectiveLocation::InlineFragment,
-        context.variables.clone(),
+    diagnostics.extend(super::directive::validate_directives(
+        db,
+        inline.directives.iter(),
+        ast::DirectiveLocation::InlineFragment,
+        context.variables,
     ));
 
     let has_type_error = if context.has_schema {
-        let type_cond_diagnostics = if let Some(t) = inline.type_condition() {
-            db.validate_fragment_type_condition(t.to_string(), inline.loc())
+        let type_cond_diagnostics = if let Some(t) = &inline.type_condition {
+            validate_fragment_type_condition(db, t, inline.location().unwrap())
         } else {
             Default::default()
         };
@@ -180,46 +160,74 @@ pub fn validate_inline_fragment(
     // If there was an error with the type condition, it makes no sense to validate the selection,
     // as every field would be an error.
     if !has_type_error {
-        diagnostics.extend(db.validate_selection_set(inline.selection_set.clone(), context));
-        diagnostics
-            .extend(db.validate_fragment_selection(hir::FragmentSelection::InlineFragment(inline)));
+        if let (Some(against_type), Some(type_condition)) = (against_type, &inline.type_condition) {
+            diagnostics.extend(validate_fragment_spread_type(
+                db,
+                file_id,
+                against_type,
+                type_condition,
+                &ast::Selection::InlineFragment(inline.clone()),
+            ));
+        }
+        diagnostics.extend(super::selection::validate_selection_set2(
+            db,
+            file_id,
+            inline.type_condition.as_ref().or(against_type),
+            &inline.selection_set,
+            context,
+        ));
     }
 
     diagnostics
 }
 
-pub fn validate_fragment_spread(
+pub(crate) fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
-    spread: Arc<hir::FragmentSpread>,
-    context: OperationValidationConfig,
+    file_id: FileId,
+    against_type: Option<&ast::NamedType>,
+    spread: Node<ast::FragmentSpread>,
+    context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.validate_directives(
-        spread.directives().to_vec(),
-        hir::DirectiveLocation::FragmentSpread,
-        context.variables.clone(),
+    diagnostics.extend(super::directive::validate_directives(
+        db,
+        spread.directives.iter(),
+        ast::DirectiveLocation::FragmentSpread,
+        context.variables,
     ));
 
-    match spread.fragment(db.upcast()) {
+    let named_fragments = db.ast_named_fragments(file_id);
+    match named_fragments.get(&spread.fragment_name) {
         Some(def) => {
-            diagnostics.extend(
-                db.validate_fragment_selection(hir::FragmentSelection::FragmentSpread(spread)),
-            );
-            diagnostics.extend(db.validate_fragment_definition(def, context));
+            if let Some(against_type) = against_type {
+                diagnostics.extend(validate_fragment_spread_type(
+                    db,
+                    file_id,
+                    against_type,
+                    &def.type_condition,
+                    &ast::Selection::FragmentSpread(spread.clone()),
+                ));
+            }
+            diagnostics.extend(validate_fragment_definition(
+                db,
+                file_id,
+                def.clone(),
+                context,
+            ));
         }
         None => {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    spread.loc().into(),
+                    spread.location().unwrap(),
                     DiagnosticData::UndefinedFragment {
-                        name: spread.name().to_string(),
+                        name: spread.fragment_name.to_string(),
                     },
                 )
                 .labels(vec![Label::new(
-                    spread.loc(),
-                    format!("fragment `{}` is not defined", spread.name()),
+                    spread.location().unwrap(),
+                    format!("fragment `{}` is not defined", spread.fragment_name),
                 )]),
             );
         }
@@ -228,21 +236,28 @@ pub fn validate_fragment_spread(
     diagnostics
 }
 
-pub fn validate_fragment_definition(
+pub(crate) fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
-    def: Arc<hir::FragmentDefinition>,
-    context: OperationValidationConfig,
+    file_id: FileId,
+    fragment: Node<ast::FragmentDefinition>,
+    context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    diagnostics.extend(db.validate_directives(
-        def.directives().to_vec(),
-        hir::DirectiveLocation::FragmentDefinition,
-        context.variables.clone(),
+    let schema = db.schema();
+
+    diagnostics.extend(super::directive::validate_directives(
+        db,
+        fragment.directives.iter(),
+        ast::DirectiveLocation::FragmentDefinition,
+        context.variables,
     ));
 
     let has_type_error = if context.has_schema {
-        let type_cond_diagnostics =
-            db.validate_fragment_type_condition(def.type_condition().to_string(), def.loc());
+        let type_cond_diagnostics = validate_fragment_type_condition(
+            db,
+            &fragment.type_condition,
+            fragment.location().unwrap(),
+        );
         let has_type_error = !type_cond_diagnostics.is_empty();
         diagnostics.extend(type_cond_diagnostics);
         has_type_error
@@ -250,50 +265,67 @@ pub fn validate_fragment_definition(
         false
     };
 
-    let fragment_cycles_diagnostics = db.validate_fragment_cycles(def.clone());
+    let fragment_cycles_diagnostics = validate_fragment_cycles(db, file_id, &fragment);
     let has_cycles = !fragment_cycles_diagnostics.is_empty();
     diagnostics.extend(fragment_cycles_diagnostics);
 
     if !has_type_error && !has_cycles {
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), context));
+        // If the type does not exist, do not attempt to validate the selections against it;
+        // it has either already raised an error, or we are validating an executable without
+        // a schema.
+        let type_condition = schema
+            .types
+            .contains_key(&fragment.type_condition)
+            .then_some(&fragment.type_condition);
+
+        diagnostics.extend(super::selection::validate_selection_set2(
+            db,
+            file_id,
+            type_condition,
+            &fragment.selection_set,
+            context,
+        ));
     }
 
     diagnostics
 }
 
-pub fn validate_fragment_cycles(
+pub(crate) fn validate_fragment_cycles(
     db: &dyn ValidationDatabase,
-    def: Arc<hir::FragmentDefinition>,
+    file_id: FileId,
+    def: &Node<ast::FragmentDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    // TODO pass in named fragments from outside this function, so it can be used on fully
+    // synthetic trees.
+    let named_fragments = db.ast_named_fragments(file_id);
+
     fn detect_fragment_cycles(
-        db: &dyn ValidationDatabase,
-        selection_set: &hir::SelectionSet,
-        visited: &mut RecursionStack<'_>,
-    ) -> Result<(), hir::Selection> {
-        for selection in selection_set.selection() {
+        named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
+        selection_set: &[ast::Selection],
+        visited: &mut RecursionGuard<'_>,
+    ) -> Result<(), ast::Selection> {
+        for selection in selection_set {
             match selection {
-                hir::Selection::FragmentSpread(spread) => {
-                    if visited.contains(spread.name()) {
-                        if visited.first() == Some(spread.name()) {
+                ast::Selection::FragmentSpread(spread) => {
+                    if visited.contains(&spread.fragment_name) {
+                        if visited.first() == Some(&spread.fragment_name) {
                             return Err(selection.clone());
                         }
                         continue;
                     }
 
-                    if let Some(fragment) =
-                        db.find_fragment_by_name(spread.loc().file_id(), spread.name().to_string())
-                    {
+                    if let Some(fragment) = named_fragments.get(&spread.fragment_name) {
                         detect_fragment_cycles(
-                            db,
-                            fragment.selection_set(),
-                            &mut visited.push(fragment.name().to_string()),
+                            named_fragments,
+                            &fragment.selection_set,
+                            &mut visited.push(&fragment.name),
                         )?;
                     }
                 }
-                hir::Selection::InlineFragment(inline) => {
-                    detect_fragment_cycles(db, inline.selection_set(), visited)?;
+                ast::Selection::InlineFragment(inline) => {
+                    detect_fragment_cycles(named_fragments, &inline.selection_set, visited)?;
                 }
                 _ => {}
             }
@@ -302,138 +334,142 @@ pub fn validate_fragment_cycles(
         Ok(())
     }
 
-    // Split RecursionStack initialisation for lifetime reasons
-    let mut visited = vec![];
-    let mut visited = RecursionStack(&mut visited);
-    let mut visited = visited.push(def.name().to_string());
+    let mut visited = RecursionStack::with_root(def.name.clone());
 
-    if let Err(cycle) = detect_fragment_cycles(db, def.selection_set(), &mut visited) {
+    if let Err(cycle) =
+        detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard())
+    {
+        let head_location = NodeLocation::recompose(def.location(), def.name.location());
+
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                def.loc().into(),
+                def.location().unwrap(),
                 DiagnosticData::RecursiveFragmentDefinition {
-                    name: def.name().to_string(),
-                },
-            )
-            .label(Label::new(def.head_loc(), "recursive fragment definition"))
-            .label(Label::new(cycle.loc(), "refers to itself here")),
-        );
-    }
-
-    diagnostics
-}
-
-pub fn validate_fragment_type_condition(
-    db: &dyn ValidationDatabase,
-    type_cond: String,
-    loc: hir::HirNodeLocation,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    let schema_types = db.types_definitions_by_name();
-
-    let type_def = db.find_type_definition_by_name(type_cond.clone());
-    let is_composite = type_def
-        .as_ref()
-        .map_or(false, |ty| ty.is_composite_definition());
-
-    if !schema_types.contains_key(&type_cond) {
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                loc.into(),
-                DiagnosticData::InvalidFragment {
-                    ty: type_cond.clone().into(),
+                    name: def.name.to_string(),
                 },
             )
             .label(Label::new(
-                loc,
-                format!("`{type_cond}` is defined here but not declared in the schema"),
+                head_location.unwrap(),
+                "recursive fragment definition",
             ))
-            .help("fragments must be specified on types that exist in the schema")
-            .help(format!("consider defining `{type_cond}` in the schema")),
+            .label(Label::new(
+                cycle.location().unwrap(),
+                "refers to itself here",
+            )),
         );
-    } else if !is_composite {
-        let mut diagnostic = ApolloDiagnostic::new(
-            db,
-            loc.into(),
-            DiagnosticData::InvalidFragmentTarget {
-                ty: type_cond.clone(),
-            },
-        )
-        .label(Label::new(
-            loc,
-            format!(
-                "fragment declares unsupported type condition `{}`",
-                type_cond
-            ),
-        ))
-        .help("fragments cannot be defined on enums, scalars and input object");
-        if let Some(def) = type_def {
-            diagnostic = diagnostic.label(Label::new(
-                def.loc(),
-                format!("`{type_cond}` is defined here"),
-            ))
-        }
-        diagnostics.push(diagnostic)
     }
 
     diagnostics
 }
 
-pub fn validate_fragment_used(
+pub(crate) fn validate_fragment_type_condition(
     db: &dyn ValidationDatabase,
-    def: Arc<hir::FragmentDefinition>,
+    type_cond: &ast::NamedType,
+    fragment_location: NodeLocation,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    let schema = db.schema();
+
+    let type_def = schema.types.get(type_cond);
+    let is_composite = type_def
+        .as_ref()
+        // .map_or(false, |ty| ty.is_composite_definition());
+        .map_or(false, |ty| {
+            matches!(
+                ty,
+                schema::ExtendedType::Object(_)
+                    | schema::ExtendedType::Interface(_)
+                    | schema::ExtendedType::Union(_)
+            )
+        });
+
+    if let Some(def) = type_def {
+        if !is_composite {
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                fragment_location,
+                DiagnosticData::InvalidFragmentTarget {
+                    ty: type_cond.to_string(),
+                },
+            )
+            .label(Label::new(
+                fragment_location,
+                format!("fragment declares unsupported type condition `{type_cond}`"),
+            ))
+            .label(Label::new(
+                def.location().unwrap(),
+                format!("`{type_cond}` is defined here"),
+            ))
+            .help("fragments cannot be defined on enums, scalars and input objects");
+            diagnostics.push(diagnostic)
+        }
+    }
+
+    diagnostics
+}
+
+pub(crate) fn validate_fragment_used(
+    db: &dyn ValidationDatabase,
+    fragment: Node<ast::FragmentDefinition>,
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    let operations = db.operations(file_id);
-    let fragments = db.fragments(file_id);
-    let name = def.name();
+    let document = db.ast(file_id);
+    let fragment_name = &fragment.name;
+
+    let named_fragments = db.ast_named_fragments(file_id);
+    let operations = document
+        .definitions
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::OperationDefinition(operation) => Some(operation),
+            _ => None,
+        });
+
+    let mut all_selections = operations
+        .flat_map(|operation| &operation.selection_set)
+        .chain(
+            named_fragments
+                .values()
+                .flat_map(|fragment| &fragment.selection_set),
+        );
+
+    let is_used = all_selections.any(|sel| selection_uses_fragment(sel, fragment_name));
 
     // Fragments must be used within the schema
     //
     // Returns Unused Fragment error.
-    if !operations.iter().any(|op| {
-        op.selection_set()
-            .selection()
-            .iter()
-            .any(|sel| is_fragment_used(sel.clone(), name))
-    }) & !fragments.values().any(|op| {
-        op.selection_set()
-            .selection()
-            .iter()
-            .any(|sel| is_fragment_used(sel.clone(), name))
-    }) {
+    if !is_used {
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                def.loc().into(),
-                DiagnosticData::UnusedFragment { name: name.into() },
+                fragment.location().unwrap(),
+                DiagnosticData::UnusedFragment {
+                    name: fragment_name.to_string(),
+                },
             )
-            .label(Label::new(def.loc(), format!("`{name}` is defined here")))
-            .help(format!("fragment `{name}` must be used in an operation")),
+            .label(Label::new(
+                fragment.location().unwrap(),
+                format!("`{fragment_name}` is defined here"),
+            ))
+            .help(format!(
+                "fragment `{fragment_name}` must be used in an operation"
+            )),
         )
     }
     diagnostics
 }
 
-fn is_fragment_used(sel: hir::Selection, name: &str) -> bool {
-    match sel {
-        hir::Selection::Field(field) => {
-            let sel = field.selection_set().selection();
-            sel.iter().any(|sel| is_fragment_used(sel.clone(), name))
-        }
-        hir::Selection::FragmentSpread(fragment) => {
-            if fragment.name() == name {
-                return true;
-            }
-            false
-        }
-        hir::Selection::InlineFragment(inline) => {
-            let sel = inline.selection_set().selection();
-            sel.iter().any(|sel| is_fragment_used(sel.clone(), name))
-        }
-    }
+fn selection_uses_fragment(sel: &ast::Selection, name: &str) -> bool {
+    let sub_selections = match sel {
+        ast::Selection::FragmentSpread(fragment) => return fragment.fragment_name == name,
+        ast::Selection::Field(field) => &field.selection_set,
+        ast::Selection::InlineFragment(inline) => &inline.selection_set,
+    };
+
+    sub_selections
+        .iter()
+        .any(|sel| selection_uses_fragment(sel, name))
 }

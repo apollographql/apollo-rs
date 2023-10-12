@@ -111,19 +111,19 @@ fn union_member_type(p: &mut Parser, is_union: bool) {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::ast;
+    use crate::cst;
 
     #[test]
     fn union_member_types() {
         let input = "union SearchResult = Photo | Person | Cat | Dog";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::UnionTypeDefinition(union_type) = def {
+            if let cst::Definition::UnionTypeDefinition(union_type) = def {
                 assert_eq!(union_type.name().unwrap().text(), "SearchResult");
                 for union_member in union_type.union_member_types().unwrap().named_types() {
                     println!("{}", union_member.name().unwrap().text()); // Photo Person Cat Dog

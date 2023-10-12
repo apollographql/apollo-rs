@@ -20,14 +20,14 @@ maintaining this project.
 4. **Extensibility.** The parser is written to work with different use cases in
 our budding Rust GraphQL ecosystem, be it building schema-diagnostics for Rover,
 or writing out query planning and composition algorithms in Rust. These all have
-quite different requirements when it comes to AST manipulation. We wanted to
+quite different requirements when it comes to CST manipulation. We wanted to
 make sure we account for them early on.
 
 ## `apollo-parser`
 
 `apollo-parser` is the parser crate of `apollo-rs`. Its job is to take GraphQL
-queries or schemas as input and produce an Abstract Syntax Tree (AST). Users of
-apollo-parser can then programmatically traverse the AST to get information
+queries or schemas as input and produce an Concrete Syntax Tree (CST). Users of
+apollo-parser can then programmatically traverse the CST to get information
 about their input. 
 
 There are three main components of `apollo-parser`: the lexer, the parser, and the analyser. We already have the lexer and the parser, and the analyser is in the process of getting written.
@@ -36,7 +36,7 @@ There are three main components of `apollo-parser`: the lexer, the parser, and t
 
 `apollo-parser` is a hand-written recursive-descent parser. This is a type of
 parser that starts from the top of a file and recursively walks its way down
-generating AST nodes along the way. This style of parser is common in
+generating CST nodes along the way. This style of parser is common in
 industrial-strength compilers; for example, Clang and Rustc use this style of
 parsing. In particular, recursive-descent parsers make it easier to output
 helpful diagnostics. They perform well and they’re easier to maintain.
@@ -79,7 +79,7 @@ The parsing step is done in two parts: we first create an untyped syntax tree, t
 We first create an untyped syntax tree when we manually parse incoming tokens.
 This tree is stored with the help of [`rowan`] crate, a really quite excellent
 library written by the rust-analyzer team. rowan creates a [Red/Green tree],
-which is an efficient way of representing ASTs that can be updated over time.
+which is an efficient way of representing CSTs that can be updated over time.
 This is a common technique used in many modern compilers such as Rust-Analyzer
 and the Swift compiler.
 
@@ -196,20 +196,20 @@ the syntax tree using the above `name()` getter method:
 
 ```rust
 use apollo_parser::Parser;
-use apollo_parser::ast::{Definition, ObjectTypeDefinition};
+use apollo_parser::cst::{Definition, ObjectTypeDefinition};
 
 // Let's create a GraphQL document with just a scalar type definition.
 let gql = r#"scalar UUID @specifiedBy(url: "cats.com/cool-kitten-schema")"#;
 
 // Parse the input data.
 let parser = Parser::new(gql);
-let ast = parser.parse();
+let cst = parser.parse();
 
 // Make sure the are no errors.
-assert!(ast.errors.is_empty());
+assert!(cst.errors.is_empty());
 
 // Check that the Scalar's name is indeed UUID.
-let document = ast.document();
+let document = cst.document();
 for definition in document.definitions() {
     if let Definition::ScalarTypeDefinition(scalar_type) = definition {
         assert_eq!("UUID", *scalar_type**.**name**()*.unwrap().text().to_string());

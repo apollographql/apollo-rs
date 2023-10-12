@@ -1,0 +1,21 @@
+scalar AnInputType @specifiedBy(url: "http://example.com")
+
+type OutputType {
+  not: AnInputType
+}
+
+input InputObjectWithOutputType {
+  thisIsWrong: OutputType
+}
+
+type Root {
+  id: ID!
+  undefinedTypes(a: number, b: number): OperationResult!
+  outputTypes(a: OutputType, b: OperationResult): ID!
+}
+
+union OperationResult = Operation
+
+type Operation {
+  id: ID!
+}

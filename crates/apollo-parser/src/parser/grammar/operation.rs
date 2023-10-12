@@ -108,9 +108,9 @@ mod test {
     fn it_continues_parsing_when_operation_definition_starts_with_description() {
         let input = "\"description\"{}";
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.errors().len(), 2);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.errors().len(), 2);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 }

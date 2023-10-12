@@ -1,58 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            30: "0030_schema_with_duplicate_input_objects.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 30,
-            },
-            offset: 162,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 30,
-                    },
-                    offset: 121,
-                    length: 7,
-                },
-                text: "previous definition of `Point2D` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 30,
-                    },
-                    offset: 162,
-                    length: 7,
-                },
-                text: "`Point2D` redefined here",
-            },
-        ],
-        help: Some(
-            "`Point2D` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "Point2D",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 30,
-                },
-                offset: 121,
-                length: 7,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 30,
-                },
-                offset: 162,
-                length: 7,
-            },
-        },
-    },
-]
+Error: the type `Point2D` is defined multiple times in the schema
+    ╭─[0030_schema_with_duplicate_input_objects.graphql:13:7]
+    │
+  8 │ input Point2D {
+    │       ───┬───  
+    │          ╰───── previous definition of `Point2D` here
+    │ 
+ 13 │ input Point2D {
+    │       ───┬───  
+    │          ╰───── `Point2D` redefined here
+    │ 
+    │ Help: remove or rename one of the definitions, or use `extend`
+────╯
+

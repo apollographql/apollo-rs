@@ -1,4 +1,4 @@
-use apollo_parser::{ast, Lexer};
+use apollo_parser::{cst, Lexer};
 use criterion::*;
 
 fn parse_schema(schema: &str) {
@@ -14,7 +14,7 @@ fn parse_schema(schema: &str) {
 
     // Simulate a basic field traversal operation.
     for definition in document.definitions() {
-        if let ast::Definition::ObjectTypeDefinition(operation) = definition {
+        if let cst::Definition::ObjectTypeDefinition(operation) = definition {
             let fields = operation
                 .fields_definition()
                 .expect("the node FieldsDefinition is not optional in the spec; qed");

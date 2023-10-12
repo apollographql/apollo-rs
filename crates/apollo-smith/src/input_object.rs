@@ -55,11 +55,11 @@ impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef {
+impl TryFrom<apollo_parser::cst::InputObjectTypeDefinition> for InputObjectTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        input_object: apollo_parser::ast::InputObjectTypeDefinition,
+        input_object: apollo_parser::cst::InputObjectTypeDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: input_object
@@ -88,11 +88,11 @@ impl TryFrom<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeD
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
+impl TryFrom<apollo_parser::cst::InputObjectTypeExtension> for InputObjectTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        input_object: apollo_parser::ast::InputObjectTypeExtension,
+        input_object: apollo_parser::cst::InputObjectTypeExtension,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: input_object

@@ -43,10 +43,10 @@ impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
+impl TryFrom<apollo_parser::cst::ScalarTypeDefinition> for ScalarTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(scalar_def: apollo_parser::ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(scalar_def: apollo_parser::cst::ScalarTypeDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             description: scalar_def
                 .description()
@@ -64,10 +64,10 @@ impl TryFrom<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
+impl TryFrom<apollo_parser::cst::ScalarTypeExtension> for ScalarTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(scalar_def: apollo_parser::ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(scalar_def: apollo_parser::cst::ScalarTypeExtension) -> Result<Self, Self::Error> {
         Ok(Self {
             description: None,
             name: scalar_def.name().unwrap().into(),

@@ -127,7 +127,7 @@ fn implements_interface(p: &mut Parser, is_interfaces: bool) {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::ast;
+    use crate::cst;
 
     #[test]
     fn object_type_definition() {
@@ -136,13 +136,13 @@ type Business implements NamedEntity & ValuedEntity & CatEntity {
   name: String
 }";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::ObjectTypeDefinition(interface_type) = def {
+            if let cst::Definition::ObjectTypeDefinition(interface_type) = def {
                 assert_eq!(interface_type.name().unwrap().text(), "Business");
                 for implements_interfaces in interface_type
                     .implements_interfaces()

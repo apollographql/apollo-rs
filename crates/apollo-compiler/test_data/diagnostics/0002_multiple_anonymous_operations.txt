@@ -1,89 +1,23 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            2: "0002_multiple_anonymous_operations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 2,
-            },
-            offset: 156,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 2,
-                    },
-                    offset: 156,
-                    length: 7,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "petType",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            2: "0002_multiple_anonymous_operations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 2,
-            },
-            offset: 0,
-            length: 15,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 2,
-                    },
-                    offset: 0,
-                    length: 15,
-                },
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
-        ),
-        data: MissingIdent,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            2: "0002_multiple_anonymous_operations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 2,
-            },
-            offset: 17,
-            length: 57,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 2,
-                    },
-                    offset: 17,
-                    length: 57,
-                },
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
-        ),
-        data: MissingIdent,
-    },
-]
+Error: anonymous operation cannot be selected when the document contains other operations
+   ╭─[0002_multiple_anonymous_operations.graphql:1:1]
+   │
+ 1 │ ╭─▶ query {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── provide a name for this definition
+   │     
+   │     Help: GraphQL requires operations to be named if the document has more than one
+───╯
+Error: anonymous operation cannot be selected when the document contains other operations
+   ╭─[0002_multiple_anonymous_operations.graphql:5:1]
+   │
+ 5 │ ╭─▶ mutation {
+   ┆ ┆   
+ 9 │ ├─▶ }
+   │ │       
+   │ ╰─────── provide a name for this definition
+   │     
+   │     Help: GraphQL requires operations to be named if the document has more than one
+───╯
+

@@ -1,31 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            61: "0061_root_operation_with_default_undefined_query.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 61,
-            },
-            offset: 13,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 61,
-                    },
-                    offset: 13,
-                    length: 12,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "Query",
-        },
-    },
-]
+Error: cannot find type `Query` in this document
+   ╭─[0061_root_operation_with_default_undefined_query.graphql:2:12]
+   │
+ 2 │     query: Query
+   │            ──┬──  
+   │              ╰──── not found in this scope
+───╯
+

@@ -1,167 +1,34 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            94: "0097_enum_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 94,
-            },
-            offset: 138,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 94,
-                    },
-                    offset: 82,
-                    length: 14,
-                },
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 94,
-                    },
-                    offset: 138,
-                    length: 14,
-                },
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 94,
-                },
-                offset: 82,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 94,
-                },
-                offset: 138,
-                length: 14,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            94: "0097_enum_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 94,
-            },
-            offset: 157,
-            length: 8,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 94,
-                    },
-                    offset: 56,
-                    length: 8,
-                },
-                text: "previous definition of `MEMBER_2` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 94,
-                    },
-                    offset: 157,
-                    length: 8,
-                },
-                text: "`MEMBER_2` redefined here",
-            },
-        ],
-        help: Some(
-            "MEMBER_2 must only be defined once in this enum.",
-        ),
-        data: UniqueEnumValue {
-            name: "MEMBER_2",
-            coordinate: "E",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 94,
-                },
-                offset: 56,
-                length: 8,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 94,
-                },
-                offset: 157,
-                length: 8,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            94: "0097_enum_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 94,
-            },
-            offset: 168,
-            length: 8,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 94,
-                    },
-                    offset: 112,
-                    length: 8,
-                },
-                text: "previous definition of `MEMBER_4` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 94,
-                    },
-                    offset: 168,
-                    length: 8,
-                },
-                text: "`MEMBER_4` redefined here",
-            },
-        ],
-        help: Some(
-            "MEMBER_4 must only be defined once in this enum.",
-        ),
-        data: UniqueEnumValue {
-            name: "MEMBER_4",
-            coordinate: "E",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 94,
-                },
-                offset: 112,
-                length: 8,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 94,
-                },
-                offset: 168,
-                length: 8,
-            },
-        },
-    },
-]
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0097_enum_extensions.graphql:13:15]
+    │
+  8 │ extend enum E @nonRepeatable {
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable first called here
+    │ 
+ 13 │ extend enum E @nonRepeatable {
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable called again here
+────╯
+Error: duplicate definitions for the `MEMBER_2` value of enum type `E`
+    ╭─[0097_enum_extensions.graphql:14:3]
+    │
+  5 │   MEMBER_2
+    │   ────┬───  
+    │       ╰───── previous definition of `MEMBER_2` here
+    │ 
+ 14 │   MEMBER_2
+    │   ────┬───  
+    │       ╰───── `MEMBER_2` redefined here
+────╯
+Error: duplicate definitions for the `MEMBER_4` value of enum type `E`
+    ╭─[0097_enum_extensions.graphql:15:3]
+    │
+ 10 │   MEMBER_4
+    │   ────┬───  
+    │       ╰───── previous definition of `MEMBER_4` here
+    │ 
+ 15 │   MEMBER_4
+    │   ────┬───  
+    │       ╰───── `MEMBER_4` redefined here
+────╯
+

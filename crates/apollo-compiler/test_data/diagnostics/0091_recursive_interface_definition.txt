@@ -1,62 +1,45 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            88: "0091_recursive_interface_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 88,
-            },
-            offset: 23,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 88,
-                    },
-                    offset: 23,
-                    length: 1,
-                },
-                text: "A must also be implemented here",
-            },
-        ],
-        help: None,
-        data: TransitiveImplementedInterfaces {
-            ty: "A",
-            missing_interface: "A",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            88: "0091_recursive_interface_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 88,
-            },
-            offset: 67,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 88,
-                    },
-                    offset: 67,
-                    length: 1,
-                },
-                text: "B must also be implemented here",
-            },
-        ],
-        help: None,
-        data: TransitiveImplementedInterfaces {
-            ty: "B",
-            missing_interface: "B",
-        },
-    },
-]
+Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+   ╭─[0091_recursive_interface_definition.graphql:1:1]
+   │
+ 1 │ ╭─▶ interface A implements B {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── A must also be implemented here
+ 4 │     interface B implements A {
+   │                            ┬  
+   │                            ╰── implementation of A declared by B here
+───╯
+Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+   ╭─[0091_recursive_interface_definition.graphql:4:1]
+   │
+ 1 │     interface A implements B {
+   │                            ┬  
+   │                            ╰── implementation of B declared by A here
+   │ 
+ 4 │ ╭─▶ interface B implements A {
+   ┆ ┆   
+ 6 │ ├─▶ }
+   │ │       
+   │ ╰─────── B must also be implemented here
+───╯
+Error: fragment cannot be applied to this type
+    ╭─[0091_recursive_interface_definition.graphql:15:9]
+    │
+  1 │ ╭───▶ interface A implements B {
+    ┆ ┆     
+  3 │ ├───▶ }
+    │ │         
+    │ ╰───────── type condition `A` is not assignable to this type
+    │ 
+  7 │   ╭─▶ fragment recursive on A {
+    ┆   ┆   
+  9 │   ├─▶ }
+    │   │       
+    │   ╰─────── fragment declared with type condition `A` here
+    │ 
+ 15 │         get { ...recursive }
+    │               ──────┬─────  
+    │                     ╰─────── fragment `recursive` cannot be applied
+────╯
+

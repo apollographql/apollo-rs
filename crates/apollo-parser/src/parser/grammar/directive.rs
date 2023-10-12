@@ -189,7 +189,7 @@ pub(crate) fn directives(p: &mut Parser) {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast;
+    use crate::cst;
 
     use super::*;
 
@@ -199,13 +199,13 @@ mod tests {
 directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MUTATION
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
                 assert_eq!(
                     dir_def.repeatable_token().unwrap().kind(),
                     SyntaxKind::repeatable_KW
@@ -213,7 +213,7 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
                 return;
             }
         }
-        panic!("Expected AST to have a Directive Definition");
+        panic!("Expected CST to have a Directive Definition");
     }
 
     #[test]
@@ -222,12 +222,12 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
 directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
                 let dir_locations: Vec<String> = dir_def
                     .directive_locations()
                     .unwrap()
@@ -241,7 +241,7 @@ directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
                 return;
             }
         }
-        panic!("Expected AST to have a Directive Definition");
+        panic!("Expected CST to have a Directive Definition");
     }
 
     #[test]
@@ -253,12 +253,12 @@ directive @example on
 | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
                 let dir_locations: Vec<String> = dir_def
                     .directive_locations()
                     .unwrap()
@@ -272,7 +272,7 @@ directive @example on
                 return;
             }
         }
-        panic!("Expected AST to have a Directive Definition");
+        panic!("Expected CST to have a Directive Definition");
     }
 
     #[test]
@@ -284,8 +284,8 @@ directive @example on
 | INLINE_FRAGMENT |
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
 
         let schema = r#"
 directive @example on
@@ -294,8 +294,8 @@ directive @example on
 | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
 
         let schema = r#"
 directive @example on
@@ -304,7 +304,7 @@ directive @example on
 | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
     }
 }

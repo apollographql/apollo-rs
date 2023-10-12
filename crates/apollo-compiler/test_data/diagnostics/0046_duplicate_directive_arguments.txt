@@ -1,112 +1,23 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            46: "0046_duplicate_directive_arguments.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 46,
-            },
-            offset: 74,
-            length: 42,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 30,
-                    length: 42,
-                },
-                text: "previously provided `url` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 74,
-                    length: 42,
-                },
-                text: "`url` provided again here",
-            },
-        ],
-        help: Some(
-            "`url` argument must only be provided once.",
-        ),
-        data: UniqueArgument {
-            name: "url",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 30,
-                length: 42,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 74,
-                length: 42,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            46: "0046_duplicate_directive_arguments.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 46,
-            },
-            offset: 189,
-            length: 8,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 178,
-                    length: 9,
-                },
-                text: "previously provided `if` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 189,
-                    length: 8,
-                },
-                text: "`if` provided again here",
-            },
-        ],
-        help: Some(
-            "`if` argument must only be provided once.",
-        ),
-        data: UniqueArgument {
-            name: "if",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 178,
-                length: 9,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 189,
-                length: 8,
-            },
-        },
-    },
-]
+Error: the argument `url` is defined multiple times
+   ╭─[0046_duplicate_directive_arguments.graphql:1:75]
+   │
+ 1 │ scalar newScalar @specifiedBy(url: "https://tools.ietf.org/html/rfc4122", url: "https://tools.ietf.org/html/rfc4125")
+   │                               ─────────────────────┬────────────────────  ─────────────────────┬────────────────────  
+   │                                                    ╰────────────────────────────────────────────────────────────────── previously provided `url` here
+   │                                                                                                │                      
+   │                                                                                                ╰────────────────────── `url` provided again here
+   │ 
+   │ Help: `url` argument must only be provided once.
+───╯
+Error: the argument `if` is defined multiple times
+   ╭─[0046_duplicate_directive_arguments.graphql:5:40]
+   │
+ 5 │   response: String @example(if: false, if: true)
+   │                             ────┬────  ────┬───  
+   │                                 ╰──────────────── previously provided `if` here
+   │                                            │     
+   │                                            ╰───── `if` provided again here
+   │ 
+   │ Help: `if` argument must only be provided once.
+───╯
+

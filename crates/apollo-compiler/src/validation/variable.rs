@@ -1,126 +1,269 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
-
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, VariableDefinition},
-    validation::ValidationSet,
-    ValidationDatabase,
+    schema, FileId, Node, NodeLocation, ValidationDatabase,
 };
+use std::collections::hash_map::Entry;
+use std::collections::{HashMap, HashSet};
 
-pub fn validate_variable_definitions(
+pub(crate) fn validate_variable_definitions2(
     db: &dyn ValidationDatabase,
-    variables: Arc<Vec<hir::VariableDefinition>>,
+    variables: &[Node<ast::VariableDefinition>],
     has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+    let schema = db.schema();
 
-    let mut seen: HashMap<&str, &VariableDefinition> = HashMap::new();
+    let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
-        diagnostics.extend(db.validate_directives(
-            variable.directives().to_vec(),
-            hir::DirectiveLocation::VariableDefinition,
+        diagnostics.extend(super::directive::validate_directives(
+            db,
+            variable.directives.iter(),
+            ast::DirectiveLocation::VariableDefinition,
             // let's assume that variable definitions cannot reference other
             // variables and provide them as arguments to directives
-            Arc::new(Vec::new()),
+            Default::default(),
         ));
 
         if has_schema {
-            let ty = variable.ty();
-            if !ty.is_input_type(db.upcast()) {
-                let type_def = ty.type_def(db.upcast());
-                if let Some(type_def) = type_def {
-                    let ty_name = type_def.kind();
-                    diagnostics.push(
-                    ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::VariableInputType {
-                        name: variable.name().to_string(),
-                        ty: type_def.name().to_string(),
-                    })
-                    .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
-                    .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
-                );
-                } else {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            variable.loc.into(),
-                            DiagnosticData::UndefinedDefinition { name: ty.name() },
-                        )
-                        .label(Label::new(variable.loc, "not found in the type system")),
-                    )
+            let ty = &variable.ty;
+            let type_definition = schema.types.get(ty.inner_named_type());
+
+            match type_definition {
+                Some(type_definition) if type_definition.is_input_type() => {
+                    // OK!
                 }
+                Some(type_definition) => {
+                    let kind = match type_definition {
+                        schema::ExtendedType::Scalar(_) => "scalar",
+                        schema::ExtendedType::Object(_) => "object",
+                        schema::ExtendedType::Interface(_) => "interface",
+                        schema::ExtendedType::Union(_) => "union",
+                        schema::ExtendedType::Enum(_) => "enum",
+                        schema::ExtendedType::InputObject(_) => "input object",
+                    };
+                    diagnostics.push(
+                        ApolloDiagnostic::new(db, variable.location().unwrap(), DiagnosticData::InputType {
+                            name: variable.name.to_string(),
+                            ty: kind,
+                        })
+                        .label(Label::new(ty.inner_named_type().location().unwrap(), format!("this is of `{kind}` type")))
+                        .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
+                        );
+                }
+                None => diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        variable.location().unwrap(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: ty.inner_named_type().to_string(),
+                        },
+                    )
+                    .label(Label::new(
+                        ty.inner_named_type().location().unwrap(),
+                        "not found in the type system",
+                    )),
+                ),
             }
         }
 
-        // Variable definitions must be unique.
-        //
-        // Return a Unique Definition error in case of a duplicate value.
-        let name = variable.name();
-        if let Some(prev_def) = seen.get(&name) {
-            let original_definition = prev_def.loc();
-            let redefined_definition = variable.loc();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    redefined_definition.into(),
-                    DiagnosticData::UniqueDefinition {
-                        ty: "enum",
-                        name: name.into(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: redefined_definition.into(),
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previous definition of `{name}` here"),
-                    ),
-                    Label::new(redefined_definition, format!("`{name}` redefined here")),
-                ])
-                .help(format!("{name} must only be defined once in this enum.")),
-            );
-        } else {
-            seen.insert(name, variable);
+        match seen.entry(variable.name.clone()) {
+            Entry::Occupied(original) => {
+                let original_definition = original.get().location().unwrap();
+                let redefined_definition = variable.location().unwrap();
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        redefined_definition,
+                        DiagnosticData::UniqueDefinition {
+                            ty: "variable",
+                            name: variable.name.to_string(),
+                            original_definition,
+                            redefined_definition,
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{}` here", variable.name),
+                        ),
+                        Label::new(
+                            redefined_definition,
+                            format!("`{}` redefined here", variable.name),
+                        ),
+                    ])
+                    .help(format!(
+                        "{} must only be defined once in this enum.",
+                        variable.name
+                    )),
+                );
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(variable);
+            }
         }
     }
 
     diagnostics
 }
 
-pub fn validate_unused_variables(
-    db: &dyn ValidationDatabase,
-    op: Arc<hir::OperationDefinition>,
-) -> Vec<ApolloDiagnostic> {
-    let defined_vars: HashSet<ValidationSet> = op
-        .variables()
+enum SelectionPathElement<'ast> {
+    Field(&'ast ast::Field),
+    Fragment(&'ast ast::FragmentSpread),
+    InlineFragment(&'ast ast::InlineFragment),
+}
+fn walk_selections(
+    document: &ast::Document,
+    selections: &[ast::Selection],
+    mut f: impl FnMut(&ast::Selection),
+) {
+    type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
+    let named_fragments: NamedFragments = document
+        .definitions
         .iter()
-        .map(|var| ValidationSet {
-            name: var.name().into(),
-            loc: Some(var.loc()),
+        .filter_map(|definition| match definition {
+            ast::Definition::FragmentDefinition(fragment) => {
+                Some((fragment.name.clone(), fragment.clone()))
+            }
+            _ => None,
         })
         .collect();
-    let used_vars: HashSet<ValidationSet> = op
-        .selection_set
-        .variables(db.upcast())
-        .into_iter()
-        .map(|var| ValidationSet {
-            name: var.name().into(),
-            loc: Some(var.loc()),
+
+    fn walk_selections_inner<'ast: 'path, 'path>(
+        named_fragments: &'ast NamedFragments,
+        selections: &'ast [ast::Selection],
+        path: &mut Vec<SelectionPathElement<'path>>,
+        f: &mut dyn FnMut(&ast::Selection),
+    ) {
+        for selection in selections {
+            f(selection);
+            match selection {
+                ast::Selection::Field(field) => {
+                    path.push(SelectionPathElement::Field(field));
+                    walk_selections_inner(named_fragments, &field.selection_set, path, f);
+                    path.pop();
+                }
+                ast::Selection::FragmentSpread(fragment) => {
+                    // prevent recursion
+                    if path.iter().any(|element| {
+                        matches!(element, SelectionPathElement::Fragment(walked) if walked.fragment_name == fragment.fragment_name)
+                    }) {
+                        continue;
+                    }
+
+                    path.push(SelectionPathElement::Fragment(fragment));
+                    if let Some(fragment_definition) = named_fragments.get(&fragment.fragment_name)
+                    {
+                        walk_selections_inner(
+                            named_fragments,
+                            &fragment_definition.selection_set,
+                            path,
+                            f,
+                        );
+                    }
+                    path.pop();
+                }
+                ast::Selection::InlineFragment(fragment) => {
+                    path.push(SelectionPathElement::InlineFragment(fragment));
+                    walk_selections_inner(named_fragments, &fragment.selection_set, path, f);
+                    path.pop();
+                }
+            }
+        }
+    }
+
+    walk_selections_inner(
+        &named_fragments,
+        selections,
+        &mut Default::default(),
+        &mut f,
+    );
+}
+
+fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '_ {
+    let mut value_stack = vec![value];
+    std::iter::from_fn(move || {
+        while let Some(value) = value_stack.pop() {
+            match value {
+                ast::Value::Variable(variable) => return Some(variable.clone()),
+                ast::Value::List(list) => value_stack.extend(list.iter().map(|value| &**value)),
+                ast::Value::Object(fields) => {
+                    value_stack.extend(fields.iter().map(|(_, value)| &**value))
+                }
+                _ => (),
+            }
+        }
+        None
+    })
+}
+
+fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = ast::Name> + '_ {
+    args.iter().flat_map(|arg| variables_in_value(&arg.value))
+}
+
+fn variables_in_directives(
+    directives: &[Node<ast::Directive>],
+) -> impl Iterator<Item = ast::Name> + '_ {
+    directives
+        .iter()
+        .flat_map(|directive| variables_in_arguments(&directive.arguments))
+}
+
+// TODO add test:
+// should NOT report a unused variable warning
+// query ($var1: Boolean!, $var2: Boolean!) {
+//   a: field (arg: $var1)
+//   a: field (arg: $var2)
+// }
+pub(crate) fn validate_unused_variables(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+    operation: Node<ast::OperationDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let defined_vars: HashSet<_> = operation
+        .variables
+        .iter()
+        .map(|var| var.name.clone())
+        .collect();
+    let locations: HashMap<_, _> = operation
+        .variables
+        .iter()
+        .map(|var| {
+            (
+                &var.name,
+                NodeLocation::recompose(var.location(), var.name.location()),
+            )
         })
         .collect();
+    let mut used_vars = HashSet::<ast::Name>::new();
+    walk_selections(
+        &db.ast(file_id),
+        &operation.selection_set,
+        |selection| match selection {
+            ast::Selection::Field(field) => {
+                used_vars.extend(variables_in_directives(&field.directives));
+                used_vars.extend(variables_in_arguments(&field.arguments));
+            }
+            ast::Selection::FragmentSpread(fragment) => {
+                used_vars.extend(variables_in_directives(&fragment.directives));
+            }
+            ast::Selection::InlineFragment(fragment) => {
+                used_vars.extend(variables_in_directives(&fragment.directives));
+            }
+        },
+    );
+
     let mut diagnostics = Vec::new();
 
     let unused_vars = defined_vars.difference(&used_vars);
+
     diagnostics.extend(unused_vars.map(|unused_var| {
-        // unused var location is always Some
-        let loc = unused_var.loc.expect("missing location information");
+        let loc = locations[unused_var].expect("missing location information");
         ApolloDiagnostic::new(
             db,
-            loc.into(),
+            loc,
             DiagnosticData::UnusedVariable {
-                name: unused_var.name.clone(),
+                name: unused_var.to_string(),
             },
         )
         .label(Label::new(loc, "this variable is never used"))
@@ -129,42 +272,40 @@ pub fn validate_unused_variables(
     diagnostics
 }
 
-pub fn validate_variable_usage(
+pub(crate) fn validate_variable_usage2(
     db: &dyn ValidationDatabase,
-    var_usage: hir::InputValueDefinition,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
-    arg: hir::Argument,
+    var_usage: Node<ast::InputValueDefinition>,
+    var_defs: &[Node<ast::VariableDefinition>],
+    argument: &Node<ast::Argument>,
 ) -> Result<(), ApolloDiagnostic> {
-    if let hir::Value::Variable(var) = arg.value() {
+    if let ast::Value::Variable(var_name) = &*argument.value {
         // Let var_def be the VariableDefinition named
         // variable_name defined within operation.
-        let var_def = var_defs.iter().find(|v| v.name() == var.name());
+        let var_def = var_defs.iter().find(|v| v.name == *var_name);
         if let Some(var_def) = var_def {
-            let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
+            let is_allowed = is_variable_usage_allowed2(var_def, &var_usage);
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
                     db,
-                    arg.loc.into(),
+                    argument.location().unwrap(),
                     DiagnosticData::DisallowedVariableUsage {
-                        var_name: var_def.name().into(),
-                        arg_name: arg.name().into(),
+                        var_name: var_def.name.to_string(),
+                        arg_name: argument.name.to_string(),
                     },
                 )
                 .labels([
                     Label::new(
-                        var_def.loc,
+                        var_def.location().unwrap(),
                         format!(
                             "variable `{}` of type `{}` is declared here",
-                            var_def.name(),
-                            var_def.ty(),
+                            var_def.name, var_def.ty,
                         ),
                     ),
                     Label::new(
-                        arg.loc,
+                        argument.location().unwrap(),
                         format!(
                             "argument `{}` of type `{}` is declared here",
-                            arg.name(),
-                            var_usage.ty()
+                            argument.name, var_usage.ty,
                         ),
                     ),
                 ]));
@@ -172,12 +313,15 @@ pub fn validate_variable_usage(
         } else {
             return Err(ApolloDiagnostic::new(
                 db,
-                arg.loc().into(),
+                argument.location().unwrap(),
                 DiagnosticData::UndefinedVariable {
-                    name: var.name().into(),
+                    name: var_name.to_string(),
                 },
             )
-            .label(Label::new(var.loc(), "not found in this scope")));
+            .label(Label::new(
+                argument.value.location().unwrap(),
+                "not found in this scope",
+            )));
         }
     }
     // It's super confusing to produce a diagnostic here if either the
@@ -185,29 +329,27 @@ pub fn validate_variable_usage(
     Ok(())
 }
 
-fn is_variable_usage_allowed(
-    var_def: &hir::VariableDefinition,
-    var_usage: &hir::InputValueDefinition,
+fn is_variable_usage_allowed2(
+    variable_def: &ast::VariableDefinition,
+    variable_usage: &ast::InputValueDefinition,
 ) -> bool {
     // 1. Let variable_ty be the expected type of variable_def.
-    let variable_ty = var_def.ty();
+    let variable_ty = &variable_def.ty;
     // 2. Let location_ty be the expected type of the Argument,
     // ObjectField, or ListValue entry where variableUsage is
     // located.
-    let location_ty = var_usage.ty();
+    let location_ty = &variable_usage.ty;
     // 3. if location_ty is a non-null type AND variable_ty is
     // NOT a non-null type:
     if location_ty.is_non_null() && !variable_ty.is_non_null() {
         // 3.a. let hasNonNullVariableDefaultValue be true
         // if a default value exists for variableDefinition
         // and is not the value null.
-        let has_non_null_default_value =
-            !(matches!(var_def.default_value(), Some(&hir::Value::Null { .. })));
+        let has_non_null_default_value = variable_def.default_value.is_some();
         // 3.b. Let hasLocationDefaultValue be true if a default
         // value exists for the Argument or ObjectField where
         // variableUsage is located.
-        let has_location_default_value =
-            !(matches!(var_usage.default_value(), Some(&hir::Value::Null { .. })));
+        let has_location_default_value = variable_usage.default_value.is_some();
         // 3.c. If hasNonNullVariableDefaultValue is NOT true
         // AND hasLocationDefaultValue is NOT true, return
         // false.
@@ -217,205 +359,8 @@ fn is_variable_usage_allowed(
 
         // 3.d. Let nullable_location_ty be the unwrapped
         // nullable type of location_ty.
-        match location_ty {
-            hir::Type::NonNull { ty: loc_ty, .. } => {
-                // 3.e. Return AreTypesCompatible(variableType, nullableLocationType).
-                return are_types_compatible(variable_ty, loc_ty);
-            }
-            hir::Type::List { ty: loc_ty, .. } => return are_types_compatible(variable_ty, loc_ty),
-            hir::Type::Named { .. } => return are_types_compatible(variable_ty, location_ty),
-        }
+        return variable_ty.is_assignable_to(&location_ty.as_ref().clone().nullable());
     }
 
-    are_types_compatible(variable_ty, location_ty)
-}
-
-fn are_types_compatible(variable_ty: &hir::Type, location_ty: &hir::Type) -> bool {
-    match (location_ty, variable_ty) {
-        // 1. If location_ty is a non-null type:
-        // 1.a. If variable_ty is NOT a non-null type, return false.
-        (hir::Type::NonNull { .. }, hir::Type::Named { .. } | hir::Type::List { .. }) => false,
-        // 1.b. Let nullable_location_ty be the unwrapped nullable type of location_ty.
-        // 1.c. Let nullable_variable_type be the unwrapped nullable type of variable_ty.
-        // 1.d. Return AreTypesCompatible(nullable_variable_ty, nullable_location_ty).
-        (
-            hir::Type::NonNull {
-                ty: nullable_location_ty,
-                ..
-            },
-            hir::Type::NonNull {
-                ty: nullable_variable_ty,
-                ..
-            },
-        ) => are_types_compatible(nullable_variable_ty, nullable_location_ty),
-        // 2. Otherwise, if variable_ty is a non-null type:
-        // 2.a. Let nullable_variable_ty be the nullable type of variable_ty.
-        // 2.b. Return are_types_compatible(nullable_variable_ty, location_ty).
-        (
-            _,
-            hir::Type::NonNull {
-                ty: nullable_variable_ty,
-                ..
-            },
-        ) => are_types_compatible(nullable_variable_ty, location_ty),
-        // 3.Otherwise, if location_ty is a list type:
-        // 3.a. If variable_ty is NOT a list type, return false.
-        (hir::Type::List { .. }, hir::Type::Named { .. }) => false,
-        // 3.b.Let item_location_ty be the unwrapped item type of location_ty.
-        // 3.c. Let item_variable_ty be the unwrapped item type of variable_ty.
-        // 3.d. Return AreTypesCompatible(item_variable_ty, item_location_ty).
-        (
-            hir::Type::List {
-                ty: item_location_ty,
-                ..
-            },
-            hir::Type::List {
-                ty: item_variable_ty,
-                ..
-            },
-        ) => are_types_compatible(item_variable_ty, item_location_ty),
-        // 4. Otherwise, if variable_ty is a list type, return false.
-        (hir::Type::Named { .. }, hir::Type::List { .. }) => false,
-        // 5. Return true if variable_ty and location_ty are identical, otherwise false.
-        (hir::Type::Named { name: loc_name, .. }, hir::Type::Named { name: var_name, .. }) => {
-            var_name == loc_name
-        }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::ApolloCompiler;
-
-    #[test]
-    fn it_raises_undefined_variable_in_query_error() {
-        let input = r#"
-query ExampleQuery {
-  topProducts(first: $undefinedVariable) {
-    name
-  }
-
-  me {
-    ... on User {
-      id
-      name
-      profilePic(size: $dimensions)
-      status
-    }
-  }
-}
-
-type Query {
-  topProducts(first: Int): Products
-  me: User
-}
-
-type User {
-    id: ID
-    name: String
-    profilePic(size: Int): String
-    status(membership: String): String
-}
-
-type Products {
-  weight: Float
-  size: Int
-  name: String
-}
-"#;
-
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(input, "document.graphql");
-
-        let diagnostics = compiler.validate();
-
-        for error in &diagnostics {
-            println!("{error}")
-        }
-
-        assert_eq!(diagnostics.len(), 2);
-    }
-
-    #[test]
-    fn it_raises_unused_variable_in_query_error() {
-        let input = r#"
-query ExampleQuery($unusedVariable: Int) {
-  topProducts {
-    name
-  }
-  ... multipleSubscriptions
-}
-
-type Query {
-  topProducts(first: Int): Product,
-}
-
-type Product {
-  name: String
-  price(setPrice: Int): Int
-}
-"#;
-
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(input, "document.graphql");
-
-        let diagnostics = compiler.validate();
-
-        for error in diagnostics {
-            println!("{error}")
-        }
-    }
-
-    #[test]
-    fn it_raises_undefined_variable_in_query_in_fragments_error() {
-        let input = r#"
-query ExampleQuery {
-  topProducts {
-    name
-  }
-
-  me {
-    ... on User {
-      id
-      name
-      status(membership: $goldStatus)
-    }
-  }
-
-  ... fragmentOne
-}
-
-fragment fragmentOne on Query {
-    profilePic(size: $dimensions)
-}
-
-type Query {
-  topProducts: Product
-  profilePic(size: Int): String
-  me: User
-}
-
-type User {
-    id: ID
-    name: String
-    status(membership: String): String
-}
-
-type Product {
-  name: String
-  price(setPrice: Int): Int
-}
-"#;
-
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(input, "document.graphql");
-
-        let diagnostics = compiler.validate();
-
-        for error in &diagnostics {
-            println!("{error}")
-        }
-
-        assert_eq!(diagnostics.len(), 2);
-    }
+    variable_ty.is_assignable_to(location_ty)
 }

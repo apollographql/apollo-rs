@@ -1,88 +1,35 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 34,
-            },
-            offset: 0,
-            length: 56,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 0,
-                    length: 56,
-                },
-                text: "add `id` field to this object",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 77,
-                    length: 7,
-                },
-                text: "`id` was originally defined here",
-            },
-        ],
-        help: Some(
-            "An object must provide all fields required by the interfaces it implements",
-        ),
-        data: MissingField {
-            name: "Query",
-            interface: "Node",
-            field: "id",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 34,
-            },
-            offset: 0,
-            length: 56,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 0,
-                    length: 56,
-                },
-                text: "add `width` field to this object",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 111,
-                    length: 10,
-                },
-                text: "`width` was originally defined here",
-            },
-        ],
-        help: Some(
-            "An object must provide all fields required by the interfaces it implements",
-        ),
-        data: MissingField {
-            name: "Query",
-            interface: "Resource",
-            field: "width",
-        },
-    },
-]
+Error: type does not satisfy interface `Node`: missing field `id`
+   ╭─[0034_object_type_definition_with_missing_transitive_fields.graphql:1:1]
+   │
+ 1 │ ╭─▶ type Query implements Node & Resource {
+   │ │                         ──┬─  
+   │ │                           ╰─── implementation of interface Node declared here
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── add `id` field to this object
+   │ 
+ 6 │       id: ID!
+   │       ───┬───  
+   │          ╰───── `id` was originally defined by Node here
+   │     
+   │     Help: An object must provide all fields required by the interfaces it implements
+───╯
+Error: type does not satisfy interface `Resource`: missing field `width`
+    ╭─[0034_object_type_definition_with_missing_transitive_fields.graphql:1:1]
+    │
+  1 │ ╭─▶ type Query implements Node & Resource {
+    │ │                                ────┬───  
+    │ │                                    ╰───── implementation of interface Resource declared here
+    ┆ ┆   
+  3 │ ├─▶ }
+    │ │       
+    │ ╰─────── add `width` field to this object
+    │ 
+ 10 │       width: Int
+    │       ─────┬────  
+    │            ╰────── `width` was originally defined by Resource here
+    │     
+    │     Help: An object must provide all fields required by the interfaces it implements
+────╯
+

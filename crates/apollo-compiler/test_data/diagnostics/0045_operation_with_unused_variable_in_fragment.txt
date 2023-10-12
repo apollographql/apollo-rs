@@ -1,62 +1,19 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 45,
-            },
-            offset: 19,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 45,
-                    },
-                    offset: 19,
-                    length: 14,
-                },
-                text: "this variable is never used",
-            },
-        ],
-        help: None,
-        data: UnusedVariable {
-            name: "variable",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 45,
-            },
-            offset: 69,
-            length: 83,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 45,
-                    },
-                    offset: 69,
-                    length: 83,
-                },
-                text: "`unusedFrag` is defined here",
-            },
-        ],
-        help: Some(
-            "fragment `unusedFrag` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "unusedFrag",
-        },
-    },
-]
+Error: unused variable: `variable`
+   ╭─[0045_operation_with_unused_variable_in_fragment.graphql:1:20]
+   │
+ 1 │ query ExampleQuery($variable: Int) {
+   │                    ────┬────  
+   │                        ╰────── this variable is never used
+───╯
+Error: fragment `unusedFrag` must be used in an operation
+    ╭─[0045_operation_with_unused_variable_in_fragment.graphql:7:1]
+    │
+  7 │ ╭─▶ fragment unusedFrag on Query {
+    ┆ ┆   
+ 11 │ ├─▶ }
+    │ │       
+    │ ╰─────── `unusedFrag` is defined here
+    │     
+    │     Help: fragment `unusedFrag` must be used in an operation
+────╯
+

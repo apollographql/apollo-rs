@@ -1,58 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            1: "0001_duplicate_operatoin_names.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 1,
-            },
-            offset: 31,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 1,
-                    },
-                    offset: 6,
-                    length: 7,
-                },
-                text: "previous definition of `getName` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 1,
-                    },
-                    offset: 31,
-                    length: 7,
-                },
-                text: "`getName` redefined here",
-            },
-        ],
-        help: Some(
-            "`getName` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "operation",
-            name: "getName",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 1,
-                },
-                offset: 6,
-                length: 7,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 1,
-                },
-                offset: 31,
-                length: 7,
-            },
-        },
-    },
-]
+Error: the operation `getName` is defined multiple times in the document
+   ╭─[0001_duplicate_operatoin_names.graphql:5:7]
+   │
+ 1 │ query getName {
+   │       ───┬───  
+   │          ╰───── previous definition of `getName` here
+   │ 
+ 5 │ query getName {
+   │       ───┬───  
+   │          ╰───── `getName` redefined here
+───╯
+

@@ -57,7 +57,7 @@ pub(crate) fn arguments_definition(p: &mut Parser) {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::{self, AstNode};
+    use crate::cst::{self, CstNode};
 
     use super::*;
 
@@ -71,13 +71,13 @@ type Query {
 }
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
+            if let cst::Definition::ObjectTypeDefinition(obj_def) = definition {
                 for field in obj_def.fields_definition().unwrap().field_definitions() {
                     if field.name().unwrap().text() == "bestSellers" {
                         let argument = field
