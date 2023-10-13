@@ -23,17 +23,6 @@ pub struct Parser {
     tokens_reached: usize,
 }
 
-/// Records for validation information about a file that was parsed
-#[derive(Clone)]
-pub struct SourceFile {
-    pub(crate) path: PathBuf,
-    pub(crate) source_text: String,
-    pub(crate) parse_errors: Vec<apollo_parser::Error>,
-    pub(crate) ariadne: OnceLock<ariadne::Source>,
-}
-
-pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
-
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
 /// This is mostly useful for unit tests.
@@ -115,7 +104,7 @@ impl Parser {
             path,
             source_text,
             parse_errors: tree.errors().cloned().collect(),
-            ariadne: OnceLock::new(),
+            source: OnceLock::new(),
         });
         (tree, source_file)
     }
@@ -245,6 +234,44 @@ impl Parser {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MappedSource {
+    ariadne: ariadne::Source,
+    map: Vec<u32>,
+}
+
+impl MappedSource {
+    fn new(input: &str) -> Self {
+        let ariadne = ariadne::Source::from(input);
+
+        let mut map = vec![0; input.len() + 1];
+        let mut char_index = 0;
+        for (byte_index, _) in input.char_indices() {
+            map[byte_index] = char_index;
+            char_index += 1;
+        }
+
+        // Support 1 past the end of the string, for use in exclusive ranges.
+        map[input.len()] = char_index;
+
+        Self { ariadne, map }
+    }
+
+    pub(crate) fn map_index(&self, byte_index: usize) -> usize {
+        self.map[byte_index] as usize
+    }
+}
+/// Records for validation information about a file that was parsed
+#[derive(Clone)]
+pub struct SourceFile {
+    pub(crate) path: PathBuf,
+    pub(crate) source_text: String,
+    pub(crate) parse_errors: Vec<apollo_parser::Error>,
+    pub(crate) source: OnceLock<MappedSource>,
+}
+
+pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+
 impl SourceFile {
     /// The filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -257,8 +284,16 @@ impl SourceFile {
     }
 
     pub fn ariadne(&self) -> &ariadne::Source {
-        self.ariadne
-            .get_or_init(|| ariadne::Source::from(&self.source_text))
+        &self
+            .source
+            .get_or_init(|| MappedSource::new(&self.source_text))
+            .ariadne
+    }
+
+    pub fn get_line_column(&self, index: usize) -> Option<(usize, usize)> {
+        let char_index = self.source.get()?.map_index(index);
+        let (_, line, column) = self.ariadne().get_offset_line(char_index)?;
+        Some((line, column))
     }
 
     pub(crate) fn validate_parse_errors(&self, errors: &mut Diagnostics, file_id: FileId) {
@@ -296,7 +331,7 @@ impl std::fmt::Debug for SourceFile {
             path,
             source_text,
             parse_errors,
-            ariadne: _, // Skipped: it’s a cache and would make debugging other things noisy
+            source: _, // Skipped: it’s a cache and would make debugging other things noisy
         } = self;
         let mut debug_struct = f.debug_struct("SourceFile");
         debug_struct.field("path", path);
