@@ -13,3 +13,7 @@ input UniqueDirective @nonRepeatable {
 }
 
 extend input UniqueDirective @nonRepeatable
+
+type Query {
+  x: Int
+}

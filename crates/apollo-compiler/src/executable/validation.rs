@@ -124,10 +124,7 @@ fn compiler_validation(
         compiler.db.validate_standalone_executable(ast_id)
     };
     for diagnostic in diagnostics {
-        errors.push(
-            Some(diagnostic.location),
-            Details::CompilerDiagnostic(diagnostic),
-        )
+        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
 }
 
@@ -192,9 +189,6 @@ pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, fiel
     //     compiler.db.validate_standalone_executable(ast_id)
     // };
     for diagnostic in diagnostics {
-        errors.push(
-            Some(diagnostic.location),
-            Details::CompilerDiagnostic(diagnostic),
-        )
+        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
 }

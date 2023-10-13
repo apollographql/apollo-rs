@@ -1,11 +1,11 @@
-Error: cannot find type `img` in this document
+Error: cannot find type `Url` in this document
    ╭─[0039_interface_with_undefined_field_type.graphql:3:8]
    │
  3 │   img: Url
    │        ─┬─  
    │         ╰─── not found in this scope
 ───╯
-Error: cannot find type `relationship` in this document
+Error: cannot find type `Person` in this document
    ╭─[0039_interface_with_undefined_field_type.graphql:7:17]
    │
  7 │   relationship: Person

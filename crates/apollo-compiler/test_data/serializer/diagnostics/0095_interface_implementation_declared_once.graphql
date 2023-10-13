@@ -15,3 +15,7 @@ extend type Extended implements Intf
 interface SubIntf implements Intf & Intf {
   field: String
 }
+
+type Query {
+  x: Int
+}

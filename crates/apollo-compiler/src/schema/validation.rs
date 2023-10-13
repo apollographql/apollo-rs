@@ -68,10 +68,7 @@ fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) -> Vec<crate::
     let mut warnings_and_advice = Vec::new();
     for diagnostic in compiler.db.validate_type_system() {
         if diagnostic.data.is_error() {
-            errors.push(
-                Some(diagnostic.location),
-                Details::CompilerDiagnostic(diagnostic),
-            )
+            errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
         } else {
             warnings_and_advice.push(diagnostic)
         }

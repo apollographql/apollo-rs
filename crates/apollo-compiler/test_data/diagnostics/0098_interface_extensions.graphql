@@ -24,3 +24,7 @@ interface Derived {
 extend interface Derived implements Base {
   c: Int
 }
+
+type Query {
+  x: Int
+}

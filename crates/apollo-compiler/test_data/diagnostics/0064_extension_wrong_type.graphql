@@ -26,3 +26,6 @@ extend type Input {
 extend input Enum {
   field2: Scalar,
 }
+type Query {
+  x: Int
+}

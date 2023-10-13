@@ -10,3 +10,6 @@ interface Intf @nonRepeatable {
   field: String
 }
 interface Intf @nonRepeatable
+type Query {
+  x: Int
+}
