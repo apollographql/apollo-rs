@@ -1,78 +1,155 @@
-0..35 @8 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        17..33 @8 FieldDefinition {
-            description: None,
-            name: "literature",
-            arguments: [],
-            ty: Named(
-                "Book",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
-}
-37..109 @8 DirectiveDefinition {
-    description: None,
-    name: "delegateField",
-    arguments: [
-        62..75 @8 InputValueDefinition {
-            description: None,
-            name: "name",
-            ty: 68..75 @8 NonNullNamed(
-                "String",
-            ),
-            default_value: None,
-            directives: [],
+        8: SourceFile {
+            path: "0008_schema_with_directive_definition.graphql",
+            source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
+            parse_errors: [],
         },
-    ],
-    repeatable: true,
-    locations: [
-        "OBJECT",
-        "INTERFACE",
-    ],
-}
-111..199 @8 ObjectTypeDefinition {
-    description: None,
-    name: "Book",
-    implements_interfaces: [],
-    directives: [
-        121..154 @8 Directive {
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+        "delegateField": 37..109 @8 DirectiveDefinition {
+            description: None,
             name: "delegateField",
             arguments: [
-                136..153 @8 Argument {
+                62..75 @8 InputValueDefinition {
+                    description: None,
                     name: "name",
-                    value: 142..153 @8 String(
-                        "pageCount",
+                    ty: 68..75 @8 NonNullNamed(
+                        "String",
                     ),
+                    default_value: None,
+                    directives: [],
                 },
             ],
-        },
-        155..185 @8 Directive {
-            name: "delegateField",
-            arguments: [
-                170..184 @8 Argument {
-                    name: "name",
-                    value: 176..184 @8 String(
-                        "author",
-                    ),
-                },
+            repeatable: true,
+            locations: [
+                "OBJECT",
+                "INTERFACE",
             ],
         },
-    ],
-    fields: [
-        190..197 @8 FieldDefinition {
-            description: None,
-            name: "id",
-            arguments: [],
-            ty: NonNullNamed(
-                "ID",
-            ),
-            directives: [],
-        },
-    ],
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..35 @8 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "literature": Component {
+                        origin: Definition,
+                        node: 17..33 @8 FieldDefinition {
+                            description: None,
+                            name: "literature",
+                            arguments: [],
+                            ty: Named(
+                                "Book",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Book": Object(
+            111..199 @8 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [
+                    Component {
+                        origin: Definition,
+                        node: 121..154 @8 Directive {
+                            name: "delegateField",
+                            arguments: [
+                                136..153 @8 Argument {
+                                    name: "name",
+                                    value: 142..153 @8 String(
+                                        "pageCount",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                    Component {
+                        origin: Definition,
+                        node: 155..185 @8 Directive {
+                            name: "delegateField",
+                            arguments: [
+                                170..184 @8 Argument {
+                                    name: "name",
+                                    value: 176..184 @8 String(
+                                        "author",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 190..197 @8 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-
+ExecutableDocument {
+    source: Some(
+        (
+            8,
+            SourceFile {
+                path: "0008_schema_with_directive_definition.graphql",
+                source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
+                parse_errors: [],
+            },
+        ),
+    ),
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

@@ -1,432 +1,729 @@
-0..33 @22 InterfaceTypeDefinition {
-    description: None,
-    name: "Pet",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        18..31 @22 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: NonNullNamed(
-                "String",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
-}
-35..67 @22 EnumTypeDefinition {
-    description: None,
-    name: "DogCommand",
-    directives: [],
-    values: [
-        55..58 @22 EnumValueDefinition {
-            description: None,
-            value: "SIT",
-            directives: [],
+        22: SourceFile {
+            path: "0022_merge_differing_fields_and_args.graphql",
+            source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
+            parse_errors: [],
         },
-        61..65 @22 EnumValueDefinition {
-            description: None,
-            value: "HEEL",
-            directives: [],
-        },
-    ],
-}
-69..95 @22 EnumTypeDefinition {
-    description: None,
-    name: "CatCommand",
-    directives: [],
-    values: [
-        89..93 @22 EnumValueDefinition {
-            description: None,
-            value: "JUMP",
-            directives: [],
-        },
-    ],
-}
-97..122 @22 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        112..120 @22 FieldDefinition {
-            description: None,
-            name: "pet",
-            arguments: [],
-            ty: Named(
-                "Pet",
-            ),
-            directives: [],
-        },
-    ],
-}
-124..300 @22 ObjectTypeDefinition {
-    description: None,
-    name: "Dog",
-    implements_interfaces: [
-        "Pet",
-    ],
-    directives: [],
-    fields: [
-        152..165 @22 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: NonNullNamed(
-                "String",
-            ),
-            directives: [],
-        },
-        168..185 @22 FieldDefinition {
-            description: None,
-            name: "nickname",
-            arguments: [],
-            ty: NonNullNamed(
-                "String",
-            ),
-            directives: [],
-        },
-        188..204 @22 FieldDefinition {
-            description: None,
-            name: "barkVolume",
-            arguments: [],
-            ty: NonNullNamed(
-                "Int",
-            ),
-            directives: [],
-        },
-        207..257 @22 FieldDefinition {
-            description: None,
-            name: "doesKnowCommand",
-            arguments: [
-                223..246 @22 InputValueDefinition {
-                    description: None,
-                    name: "dogCommand",
-                    ty: 235..246 @22 NonNullNamed(
-                        "DogCommand",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            ty: NonNullNamed(
-                "Boolean",
-            ),
-            directives: [],
-        },
-        260..298 @22 FieldDefinition {
-            description: None,
-            name: "isAtLocation",
-            arguments: [
-                273..279 @22 InputValueDefinition {
-                    description: None,
-                    name: "x",
-                    ty: 276..279 @22 Named(
-                        "Int",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-                281..287 @22 InputValueDefinition {
-                    description: None,
-                    name: "y",
-                    ty: 284..287 @22 Named(
-                        "Int",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            ty: NonNullNamed(
-                "Boolean",
-            ),
-            directives: [],
-        },
-    ],
-}
-302..417 @22 ObjectTypeDefinition {
-    description: None,
-    name: "Cat",
-    implements_interfaces: [
-        "Pet",
-    ],
-    directives: [],
-    fields: [
-        330..343 @22 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: NonNullNamed(
-                "String",
-            ),
-            directives: [],
-        },
-        346..362 @22 FieldDefinition {
-            description: None,
-            name: "meowVolume",
-            arguments: [],
-            ty: NonNullNamed(
-                "Int",
-            ),
-            directives: [],
-        },
-        365..415 @22 FieldDefinition {
-            description: None,
-            name: "doesKnowCommand",
-            arguments: [
-                381..404 @22 InputValueDefinition {
-                    description: None,
-                    name: "catCommand",
-                    ty: 393..404 @22 NonNullNamed(
-                        "CatCommand",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            ty: NonNullNamed(
-                "Boolean",
-            ),
-            directives: [],
-        },
-    ],
-}
-419..478 @22 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "barkVolume",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            440..476 @22 Field {
-                alias: None,
-                name: "pet",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        450..472 @22 FragmentSpread {
-                            fragment_name: "safeDifferingFields",
-                            directives: [],
-                        },
-                    ),
-                ],
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "Query",
             },
         ),
-    ],
-}
-480..542 @22 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "doesKnowCommand",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            506..540 @22 Field {
-                alias: None,
-                name: "pet",
-                arguments: [],
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Pet": Interface(
+            0..33 @22 InterfaceType {
+                description: None,
+                implements_interfaces: {},
                 directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        516..536 @22 FragmentSpread {
-                            fragment_name: "safeDifferingArgs",
-                            directives: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-    ],
-}
-544..607 @22 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "isAtLocation",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            567..605 @22 Field {
-                alias: None,
-                name: "pet",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        577..601 @22 FragmentSpread {
-                            fragment_name: "safeDifferingArgOrder",
-                            directives: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-    ],
-}
-609..732 @22 FragmentDefinition {
-    name: "safeDifferingFields",
-    type_condition: "Pet",
-    directives: [],
-    selection_set: [
-        InlineFragment(
-            649..688 @22 InlineFragment {
-                type_condition: Some(
-                    "Dog",
-                ),
-                directives: [],
-                selection_set: [
-                    Field(
-                        666..684 @22 Field {
-                            alias: Some(
-                                "volume",
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 18..31 @22 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "String",
                             ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "DogCommand": Enum(
+            35..67 @22 EnumType {
+                description: None,
+                directives: [],
+                values: {
+                    "SIT": Component {
+                        origin: Definition,
+                        node: 55..58 @22 EnumValueDefinition {
+                            description: None,
+                            value: "SIT",
+                            directives: [],
+                        },
+                    },
+                    "HEEL": Component {
+                        origin: Definition,
+                        node: 61..65 @22 EnumValueDefinition {
+                            description: None,
+                            value: "HEEL",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "CatCommand": Enum(
+            69..95 @22 EnumType {
+                description: None,
+                directives: [],
+                values: {
+                    "JUMP": Component {
+                        origin: Definition,
+                        node: 89..93 @22 EnumValueDefinition {
+                            description: None,
+                            value: "JUMP",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            97..122 @22 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "pet": Component {
+                        origin: Definition,
+                        node: 112..120 @22 FieldDefinition {
+                            description: None,
+                            name: "pet",
+                            arguments: [],
+                            ty: Named(
+                                "Pet",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Dog": Object(
+            124..300 @22 ObjectType {
+                description: None,
+                implements_interfaces: {
+                    ComponentStr {
+                        origin: Definition,
+                        node: "Pet",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 152..165 @22 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "nickname": Component {
+                        origin: Definition,
+                        node: 168..185 @22 FieldDefinition {
+                            description: None,
+                            name: "nickname",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "barkVolume": Component {
+                        origin: Definition,
+                        node: 188..204 @22 FieldDefinition {
+                            description: None,
                             name: "barkVolume",
                             arguments: [],
+                            ty: NonNullNamed(
+                                "Int",
+                            ),
                             directives: [],
-                            selection_set: [],
                         },
-                    ),
-                ],
+                    },
+                    "doesKnowCommand": Component {
+                        origin: Definition,
+                        node: 207..257 @22 FieldDefinition {
+                            description: None,
+                            name: "doesKnowCommand",
+                            arguments: [
+                                223..246 @22 InputValueDefinition {
+                                    description: None,
+                                    name: "dogCommand",
+                                    ty: 235..246 @22 NonNullNamed(
+                                        "DogCommand",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: NonNullNamed(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "isAtLocation": Component {
+                        origin: Definition,
+                        node: 260..298 @22 FieldDefinition {
+                            description: None,
+                            name: "isAtLocation",
+                            arguments: [
+                                273..279 @22 InputValueDefinition {
+                                    description: None,
+                                    name: "x",
+                                    ty: 276..279 @22 Named(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                                281..287 @22 InputValueDefinition {
+                                    description: None,
+                                    name: "y",
+                                    ty: 284..287 @22 Named(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: NonNullNamed(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
             },
         ),
-        InlineFragment(
-            691..730 @22 InlineFragment {
-                type_condition: Some(
-                    "Cat",
-                ),
+        "Cat": Object(
+            302..417 @22 ObjectType {
+                description: None,
+                implements_interfaces: {
+                    ComponentStr {
+                        origin: Definition,
+                        node: "Pet",
+                    },
+                },
                 directives: [],
-                selection_set: [
-                    Field(
-                        708..726 @22 Field {
-                            alias: Some(
-                                "volume",
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 330..343 @22 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "String",
                             ),
+                            directives: [],
+                        },
+                    },
+                    "meowVolume": Component {
+                        origin: Definition,
+                        node: 346..362 @22 FieldDefinition {
+                            description: None,
                             name: "meowVolume",
                             arguments: [],
+                            ty: NonNullNamed(
+                                "Int",
+                            ),
                             directives: [],
-                            selection_set: [],
                         },
-                    ),
-                ],
-            },
-        ),
-    ],
-}
-734..884 @22 FragmentDefinition {
-    name: "safeDifferingArgs",
-    type_condition: "Pet",
-    directives: [],
-    selection_set: [
-        InlineFragment(
-            772..825 @22 InlineFragment {
-                type_condition: Some(
-                    "Dog",
-                ),
-                directives: [],
-                selection_set: [
-                    Field(
-                        789..821 @22 Field {
-                            alias: None,
+                    },
+                    "doesKnowCommand": Component {
+                        origin: Definition,
+                        node: 365..415 @22 FieldDefinition {
+                            description: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                805..820 @22 Argument {
-                                    name: "dogCommand",
-                                    value: 817..820 @22 Enum(
-                                        "SIT",
-                                    ),
-                                },
-                            ],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-        InlineFragment(
-            828..882 @22 InlineFragment {
-                type_condition: Some(
-                    "Cat",
-                ),
-                directives: [],
-                selection_set: [
-                    Field(
-                        845..878 @22 Field {
-                            alias: None,
-                            name: "doesKnowCommand",
-                            arguments: [
-                                861..877 @22 Argument {
+                                381..404 @22 InputValueDefinition {
+                                    description: None,
                                     name: "catCommand",
-                                    value: 873..877 @22 Enum(
-                                        "JUMP",
+                                    ty: 393..404 @22 NonNullNamed(
+                                        "CatCommand",
                                     ),
+                                    default_value: None,
+                                    directives: [],
                                 },
                             ],
+                            ty: NonNullNamed(
+                                "Boolean",
+                            ),
                             directives: [],
-                            selection_set: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    source: Some(
+        (
+            22,
+            SourceFile {
+                path: "0022_merge_differing_fields_and_args.graphql",
+                source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
+                parse_errors: [],
+            },
+        ),
+    ),
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "barkVolume": 419..478 @22 Operation {
+            operation_type: Query,
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        440..476 @22 Field {
+                            definition: 112..120 @22 FieldDefinition {
+                                description: None,
+                                name: "pet",
+                                arguments: [],
+                                ty: Named(
+                                    "Pet",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "pet",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Pet",
+                                selections: [
+                                    FragmentSpread(
+                                        450..472 @22 FragmentSpread {
+                                            fragment_name: "safeDifferingFields",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
                         },
                     ),
                 ],
             },
-        ),
-    ],
-}
-886..981 @22 FragmentDefinition {
-    name: "safeDifferingArgOrder",
-    type_condition: "Dog",
-    directives: [],
-    selection_set: [
-        Field(
-            928..952 @22 Field {
-                alias: None,
-                name: "isAtLocation",
-                arguments: [
-                    941..945 @22 Argument {
-                        name: "x",
-                        value: 944..945 @22 Int(
-                            0,
-                        ),
-                    },
-                    947..951 @22 Argument {
-                        name: "y",
-                        value: 950..951 @22 Int(
-                            0,
-                        ),
-                    },
+        },
+        "doesKnowCommand": 480..542 @22 Operation {
+            operation_type: Query,
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        506..540 @22 Field {
+                            definition: 112..120 @22 FieldDefinition {
+                                description: None,
+                                name: "pet",
+                                arguments: [],
+                                ty: Named(
+                                    "Pet",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "pet",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Pet",
+                                selections: [
+                                    FragmentSpread(
+                                        516..536 @22 FragmentSpread {
+                                            fragment_name: "safeDifferingArgs",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
                 ],
-                directives: [],
-                selection_set: [],
             },
-        ),
-        Field(
-            955..979 @22 Field {
-                alias: None,
-                name: "isAtLocation",
-                arguments: [
-                    968..972 @22 Argument {
-                        name: "y",
-                        value: 971..972 @22 Int(
-                            0,
-                        ),
-                    },
-                    974..978 @22 Argument {
-                        name: "x",
-                        value: 977..978 @22 Int(
-                            0,
-                        ),
-                    },
+        },
+        "isAtLocation": 544..607 @22 Operation {
+            operation_type: Query,
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        567..605 @22 Field {
+                            definition: 112..120 @22 FieldDefinition {
+                                description: None,
+                                name: "pet",
+                                arguments: [],
+                                ty: Named(
+                                    "Pet",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "pet",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Pet",
+                                selections: [
+                                    FragmentSpread(
+                                        577..601 @22 FragmentSpread {
+                                            fragment_name: "safeDifferingArgOrder",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
                 ],
-                directives: [],
-                selection_set: [],
             },
-        ),
-    ],
+        },
+    },
+    fragments: {
+        "safeDifferingFields": 609..732 @22 Fragment {
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Pet",
+                selections: [
+                    InlineFragment(
+                        649..688 @22 InlineFragment {
+                            type_condition: Some(
+                                "Dog",
+                            ),
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    Field(
+                                        666..684 @22 Field {
+                                            definition: 188..204 @22 FieldDefinition {
+                                                description: None,
+                                                name: "barkVolume",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: Some(
+                                                "volume",
+                                            ),
+                                            name: "barkVolume",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    InlineFragment(
+                        691..730 @22 InlineFragment {
+                            type_condition: Some(
+                                "Cat",
+                            ),
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Cat",
+                                selections: [
+                                    Field(
+                                        708..726 @22 Field {
+                                            definition: 346..362 @22 FieldDefinition {
+                                                description: None,
+                                                name: "meowVolume",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: Some(
+                                                "volume",
+                                            ),
+                                            name: "meowVolume",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "safeDifferingArgs": 734..884 @22 Fragment {
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Pet",
+                selections: [
+                    InlineFragment(
+                        772..825 @22 InlineFragment {
+                            type_condition: Some(
+                                "Dog",
+                            ),
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    Field(
+                                        789..821 @22 Field {
+                                            definition: 207..257 @22 FieldDefinition {
+                                                description: None,
+                                                name: "doesKnowCommand",
+                                                arguments: [
+                                                    223..246 @22 InputValueDefinition {
+                                                        description: None,
+                                                        name: "dogCommand",
+                                                        ty: 235..246 @22 NonNullNamed(
+                                                            "DogCommand",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: NonNullNamed(
+                                                    "Boolean",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "doesKnowCommand",
+                                            arguments: [
+                                                805..820 @22 Argument {
+                                                    name: "dogCommand",
+                                                    value: 817..820 @22 Enum(
+                                                        "SIT",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Boolean",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    InlineFragment(
+                        828..882 @22 InlineFragment {
+                            type_condition: Some(
+                                "Cat",
+                            ),
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Cat",
+                                selections: [
+                                    Field(
+                                        845..878 @22 Field {
+                                            definition: 365..415 @22 FieldDefinition {
+                                                description: None,
+                                                name: "doesKnowCommand",
+                                                arguments: [
+                                                    381..404 @22 InputValueDefinition {
+                                                        description: None,
+                                                        name: "catCommand",
+                                                        ty: 393..404 @22 NonNullNamed(
+                                                            "CatCommand",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: NonNullNamed(
+                                                    "Boolean",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "doesKnowCommand",
+                                            arguments: [
+                                                861..877 @22 Argument {
+                                                    name: "catCommand",
+                                                    value: 873..877 @22 Enum(
+                                                        "JUMP",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Boolean",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "safeDifferingArgOrder": 886..981 @22 Fragment {
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Dog",
+                selections: [
+                    Field(
+                        928..952 @22 Field {
+                            definition: 260..298 @22 FieldDefinition {
+                                description: None,
+                                name: "isAtLocation",
+                                arguments: [
+                                    273..279 @22 InputValueDefinition {
+                                        description: None,
+                                        name: "x",
+                                        ty: 276..279 @22 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                    281..287 @22 InputValueDefinition {
+                                        description: None,
+                                        name: "y",
+                                        ty: 284..287 @22 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: NonNullNamed(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "isAtLocation",
+                            arguments: [
+                                941..945 @22 Argument {
+                                    name: "x",
+                                    value: 944..945 @22 Int(
+                                        0,
+                                    ),
+                                },
+                                947..951 @22 Argument {
+                                    name: "y",
+                                    value: 950..951 @22 Int(
+                                        0,
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        955..979 @22 Field {
+                            definition: 260..298 @22 FieldDefinition {
+                                description: None,
+                                name: "isAtLocation",
+                                arguments: [
+                                    273..279 @22 InputValueDefinition {
+                                        description: None,
+                                        name: "x",
+                                        ty: 276..279 @22 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                    281..287 @22 InputValueDefinition {
+                                        description: None,
+                                        name: "y",
+                                        ty: 284..287 @22 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: NonNullNamed(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "isAtLocation",
+                            arguments: [
+                                968..972 @22 Argument {
+                                    name: "y",
+                                    value: 971..972 @22 Int(
+                                        0,
+                                    ),
+                                },
+                                974..978 @22 Argument {
+                                    name: "x",
+                                    value: 977..978 @22 Int(
+                                        0,
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
 }
-

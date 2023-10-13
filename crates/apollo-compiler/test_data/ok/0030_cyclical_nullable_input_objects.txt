@@ -1,130 +1,225 @@
-0..60 @29 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        17..29 @29 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-        34..58 @29 FieldDefinition {
-            description: None,
-            name: "example",
-            arguments: [
-                42..52 @29 InputValueDefinition {
-                    description: None,
-                    name: "arg",
-                    ty: 47..52 @29 Named(
-                        "First",
-                    ),
-                    default_value: None,
-                    directives: [],
+        29: SourceFile {
+            path: "0030_cyclical_nullable_input_objects.graphql",
+            source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..60 @29 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 17..29 @29 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "example": Component {
+                        origin: Definition,
+                        node: 34..58 @29 FieldDefinition {
+                            description: None,
+                            name: "example",
+                            arguments: [
+                                42..52 @29 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 47..52 @29 Named(
+                                        "First",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
                 },
-            ],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-    ],
+            },
+        ),
+        "First": InputObject(
+            62..110 @29 InputObjectType {
+                description: None,
+                directives: [],
+                fields: {
+                    "second": Component {
+                        origin: Definition,
+                        node: 78..92 @29 InputValueDefinition {
+                            description: None,
+                            name: "second",
+                            ty: 86..92 @29 Named(
+                                "Second",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "value": Component {
+                        origin: Definition,
+                        node: 95..108 @29 InputValueDefinition {
+                            description: None,
+                            name: "value",
+                            ty: 102..108 @29 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Second": InputObject(
+            112..163 @29 InputObjectType {
+                description: None,
+                directives: [],
+                fields: {
+                    "third": Component {
+                        origin: Definition,
+                        node: 129..145 @29 InputValueDefinition {
+                            description: None,
+                            name: "third",
+                            ty: 136..145 @29 NonNullList(
+                                NonNullNamed(
+                                    "Third",
+                                ),
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "value": Component {
+                        origin: Definition,
+                        node: 148..161 @29 InputValueDefinition {
+                            description: None,
+                            name: "value",
+                            ty: 155..161 @29 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Third": InputObject(
+            165..213 @29 InputObjectType {
+                description: None,
+                directives: [],
+                fields: {
+                    "fourth": Component {
+                        origin: Definition,
+                        node: 181..195 @29 InputValueDefinition {
+                            description: None,
+                            name: "fourth",
+                            ty: 189..195 @29 Named(
+                                "Fourth",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "value": Component {
+                        origin: Definition,
+                        node: 198..211 @29 InputValueDefinition {
+                            description: None,
+                            name: "value",
+                            ty: 205..211 @29 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Fourth": InputObject(
+            215..246 @29 InputObjectType {
+                description: None,
+                directives: [],
+                fields: {
+                    "first": Component {
+                        origin: Definition,
+                        node: 232..244 @29 InputValueDefinition {
+                            description: None,
+                            name: "first",
+                            ty: 239..244 @29 Named(
+                                "First",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-62..110 @29 InputObjectTypeDefinition {
-    description: None,
-    name: "First",
-    directives: [],
-    fields: [
-        78..92 @29 InputValueDefinition {
-            description: None,
-            name: "second",
-            ty: 86..92 @29 Named(
-                "Second",
-            ),
-            default_value: None,
-            directives: [],
-        },
-        95..108 @29 InputValueDefinition {
-            description: None,
-            name: "value",
-            ty: 102..108 @29 Named(
-                "String",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
+ExecutableDocument {
+    source: Some(
+        (
+            29,
+            SourceFile {
+                path: "0030_cyclical_nullable_input_objects.graphql",
+                source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
+                parse_errors: [],
+            },
+        ),
+    ),
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
 }
-112..163 @29 InputObjectTypeDefinition {
-    description: None,
-    name: "Second",
-    directives: [],
-    fields: [
-        129..145 @29 InputValueDefinition {
-            description: None,
-            name: "third",
-            ty: 136..145 @29 NonNullList(
-                NonNullNamed(
-                    "Third",
-                ),
-            ),
-            default_value: None,
-            directives: [],
-        },
-        148..161 @29 InputValueDefinition {
-            description: None,
-            name: "value",
-            ty: 155..161 @29 Named(
-                "String",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-}
-165..213 @29 InputObjectTypeDefinition {
-    description: None,
-    name: "Third",
-    directives: [],
-    fields: [
-        181..195 @29 InputValueDefinition {
-            description: None,
-            name: "fourth",
-            ty: 189..195 @29 Named(
-                "Fourth",
-            ),
-            default_value: None,
-            directives: [],
-        },
-        198..211 @29 InputValueDefinition {
-            description: None,
-            name: "value",
-            ty: 205..211 @29 Named(
-                "String",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-}
-215..246 @29 InputObjectTypeDefinition {
-    description: None,
-    name: "Fourth",
-    directives: [],
-    fields: [
-        232..244 @29 InputValueDefinition {
-            description: None,
-            name: "first",
-            ty: 239..244 @29 Named(
-                "First",
-            ),
-            default_value: None,
-            directives: [],
-        },
-    ],
-}
-

@@ -29,7 +29,7 @@ pub use crate::ast::{
 use crate::validation::Diagnostics;
 
 /// High-level representation of a GraphQL schema
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Schema {
     /// Source files, if any, that were parsed to contribute to this schema.
     ///
@@ -988,6 +988,60 @@ impl From<EnumType> for ExtendedType {
 impl From<InputObjectType> for ExtendedType {
     fn from(ty: InputObjectType) -> Self {
         Self::InputObject(ty.into())
+    }
+}
+
+impl std::fmt::Debug for Schema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Self {
+            sources,
+            build_errors,
+            schema_definition,
+            directive_definitions,
+            types,
+        } = self;
+        f.debug_struct("Schema")
+            .field("sources", sources)
+            .field("build_errors", build_errors)
+            .field("schema_definition", schema_definition)
+            .field(
+                "directive_definitions",
+                &DebugDirectiveDefinitions(directive_definitions),
+            )
+            .field("types", &DebugTypes(types))
+            .finish()
+    }
+}
+
+struct DebugDirectiveDefinitions<'a>(&'a IndexMap<Name, Node<DirectiveDefinition>>);
+
+struct DebugTypes<'a>(&'a IndexMap<Name, ExtendedType>);
+
+impl std::fmt::Debug for DebugDirectiveDefinitions<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut map = f.debug_map();
+        for (name, def) in self.0 {
+            if !def.is_built_in() {
+                map.entry(name, def);
+            } else {
+                map.entry(name, &format_args!("built_in_directive!({name:?})"));
+            }
+        }
+        map.finish()
+    }
+}
+
+impl std::fmt::Debug for DebugTypes<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut map = f.debug_map();
+        for (name, def) in self.0 {
+            if !def.is_built_in() {
+                map.entry(name, def);
+            } else {
+                map.entry(name, &format_args!("built_in_type!({name:?})"));
+            }
+        }
+        map.finish()
     }
 }
 
