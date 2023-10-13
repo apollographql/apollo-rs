@@ -3,9 +3,10 @@ use apollo_compiler::Schema;
 #[test]
 fn test_orphan_extensions() {
     let input = r#"
-        extend schema @dir
+        extend schema @dir { query: Q }
         extend type Obj @dir
         directive @dir on SCHEMA | OBJECT
+        type Q { x: Int }
     "#;
 
     // By default, orphan extensions are errors:

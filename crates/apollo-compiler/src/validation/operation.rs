@@ -42,14 +42,14 @@ pub(crate) fn validate_operation(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    operation.location().unwrap(),
+                    operation.location(),
                     DiagnosticData::SingleRootField {
                         fields: fields.len(),
-                        subscription: (operation.location().unwrap()),
+                        subscription: (operation.location()),
                     },
                 )
                 .label(Label::new(
-                    operation.location().unwrap(),
+                    operation.location(),
                     format!("subscription with {} root fields", fields.len()),
                 ))
                 .help(format!(
@@ -77,13 +77,13 @@ pub(crate) fn validate_operation(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    field.location().unwrap(),
+                    field.location(),
                     DiagnosticData::IntrospectionField {
                         field: field.name.to_string(),
                     },
                 )
                 .label(Label::new(
-                    field.location().unwrap(),
+                    field.location(),
                     format!("{} is an introspection field", field.name),
                 )),
             );

@@ -47,8 +47,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   }
   ```
 
+## Fixes
+
+- **Don’t panic in validation or omit diagnostics when a source location is missing - [SimonSapin], [pull/697]:**
+  In apollo-compiler 0.11 every element of the HIR always had a source location because
+  it always came from a parsed input file.
+  In 1.0 source location is always optional.
+  When a node relevant to some diagnostic does not have a source location,
+  the diagnostic should still be emitted but its labels (each printing a bit of source code)
+  may be missing.
+  Essential information should therefore be in the main message, not only in labels.
+
 [SimonSapin]: https://github.com/SimonSapin
 [pull/696]: https://github.com/apollographql/apollo-rs/pull/696
+[pull/697]: https://github.com/apollographql/apollo-rs/pull/697
 
 # [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-10
 

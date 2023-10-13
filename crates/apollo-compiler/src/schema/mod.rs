@@ -315,7 +315,7 @@ impl Schema {
         let valid = errors.is_empty();
         for diagnostic in warnings_and_advice {
             errors.push(
-                Some(diagnostic.location),
+                diagnostic.location,
                 crate::validation::Details::CompilerDiagnostic(diagnostic),
             )
         }

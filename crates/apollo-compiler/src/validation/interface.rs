@@ -51,13 +51,13 @@ pub(crate) fn validate_interface_definition(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    implements_interface.location().unwrap(),
+                    implements_interface.location(),
                     DiagnosticData::RecursiveInterfaceDefinition {
                         name: implements_interface.to_string(),
                     },
                 )
                 .label(Label::new(
-                    implements_interface.location().unwrap(),
+                    implements_interface.location(),
                     format!("interface {implements_interface} cannot implement itself"),
                 )),
             );
@@ -94,7 +94,7 @@ pub(crate) fn validate_interface_definition(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        interface.definition.location().unwrap(),
+                        interface.definition.location(),
                         DiagnosticData::MissingInterfaceField {
                             interface: implements_interface.to_string(),
                             field: super_field.name.to_string(),
@@ -102,20 +102,20 @@ pub(crate) fn validate_interface_definition(
                     )
                     .labels([
                         Label::new(
-                            implements_interface.location().unwrap(),
+                            implements_interface.location(),
                             format!(
                                 "implementation of interface {implements_interface} declared here"
                             ),
                         ),
                         Label::new(
-                            super_field.location().unwrap(),
+                            super_field.location(),
                             format!(
                                 "`{}` was originally defined by {} here",
                                 super_field.name, implements_interface
                             ),
                         ),
                         Label::new(
-                            interface.definition.location().unwrap(),
+                            interface.definition.location(),
                             format!("add `{}` field to this interface", super_field.name),
                         ),
                     ])
@@ -155,9 +155,7 @@ pub(crate) fn validate_implements_interfaces(
         }
 
         // interface_name.loc should always be Some
-        let loc = interface_name
-            .location()
-            .expect("missing implements interface location");
+        let loc = interface_name.location();
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
@@ -186,13 +184,10 @@ pub(crate) fn validate_implements_interfaces(
             continue;
         }
 
-        let definition_loc = implementor.location().expect("missing interface location");
+        let definition_loc = implementor.location();
         // let via_loc = via_interface
-        //     .location()
-        //     .expect("missing implements interface location");
-        let transitive_loc = transitive_interface
-            .location()
-            .expect("missing implements interface location");
+        //     .location();
+        let transitive_loc = transitive_interface.location();
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,

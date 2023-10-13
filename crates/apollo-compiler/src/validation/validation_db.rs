@@ -303,10 +303,6 @@ pub(crate) fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics
 }
 
-fn location_sort_key(diagnostic: &ApolloDiagnostic) -> (FileId, usize) {
-    (diagnostic.location.file_id(), diagnostic.location.offset())
-}
-
 pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -322,7 +318,6 @@ pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDia
     diagnostics.extend(db.validate_input_object_definitions());
     diagnostics.extend(db.validate_object_type_definitions());
 
-    diagnostics.sort_by_key(location_sort_key);
     diagnostics
 }
 
@@ -344,7 +339,6 @@ fn validate_executable_inner(
         ));
     }
 
-    diagnostics.sort_by_key(location_sort_key);
     diagnostics
 }
 

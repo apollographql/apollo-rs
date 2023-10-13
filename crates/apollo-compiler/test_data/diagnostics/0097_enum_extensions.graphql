@@ -14,3 +14,7 @@ extend enum E @nonRepeatable {
   MEMBER_2
   MEMBER_4
 }
+
+type Query {
+  x: Int
+}
