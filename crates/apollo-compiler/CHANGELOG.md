@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [1.0.0-beta.3](https://crates.io/crates/apollo-compiler/1.0.0-beta.3) - 2023-10-13
 
 ## BREAKING
 
@@ -62,7 +62,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/696]: https://github.com/apollographql/apollo-rs/pull/696
 [pull/697]: https://github.com/apollographql/apollo-rs/pull/697
 
-# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-10
+# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.2) - 2023-10-10
 
 ## BREAKING
 
