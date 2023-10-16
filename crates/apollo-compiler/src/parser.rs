@@ -23,6 +23,23 @@ pub struct Parser {
     tokens_reached: usize,
 }
 
+/// Records for validation information about a file that was parsed
+#[derive(Clone)]
+pub struct SourceFile {
+    pub(crate) path: PathBuf,
+    pub(crate) source_text: String,
+    pub(crate) parse_errors: Vec<apollo_parser::Error>,
+    pub(crate) source: OnceLock<MappedSource>,
+}
+
+pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct MappedSource {
+    ariadne: ariadne::Source,
+    map: Vec<u32>,
+}
+
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
 /// This is mostly useful for unit tests.
@@ -234,12 +251,6 @@ impl Parser {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MappedSource {
-    ariadne: ariadne::Source,
-    map: Vec<u32>,
-}
-
 impl MappedSource {
     fn new(input: &str) -> Self {
         let ariadne = ariadne::Source::from(input);
@@ -261,16 +272,6 @@ impl MappedSource {
         self.map[byte_index] as usize
     }
 }
-/// Records for validation information about a file that was parsed
-#[derive(Clone)]
-pub struct SourceFile {
-    pub(crate) path: PathBuf,
-    pub(crate) source_text: String,
-    pub(crate) parse_errors: Vec<apollo_parser::Error>,
-    pub(crate) source: OnceLock<MappedSource>,
-}
-
-pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
 
 impl SourceFile {
     /// The filesystem path (or arbitrary string) used in diagnostics
@@ -283,15 +284,17 @@ impl SourceFile {
         &self.source_text
     }
 
-    pub fn ariadne(&self) -> &ariadne::Source {
-        &self
-            .source
+    pub(crate) fn ariadne(&self) -> &ariadne::Source {
+        &self.mapped_source().ariadne
+    }
+
+    pub(crate) fn mapped_source(&self) -> &MappedSource {
+        self.source
             .get_or_init(|| MappedSource::new(&self.source_text))
-            .ariadne
     }
 
     pub fn get_line_column(&self, index: usize) -> Option<(usize, usize)> {
-        let char_index = self.source.get()?.map_index(index);
+        let char_index = self.mapped_source().map_index(index);
         let (_, line, column) = self.ariadne().get_offset_line(char_index)?;
         Some((line, column))
     }
