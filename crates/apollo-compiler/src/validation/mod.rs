@@ -306,11 +306,7 @@ impl<'a> Diagnostic<'a> {
 
     /// Get serde_json serialisable version of the current diagnostic.
     pub fn to_json(&self) -> GraphQLError {
-        let mut locations = vec![];
-
-        if let Some(location) = self.get_line_column() {
-            locations.push(location);
-        }
+        let locations = self.get_line_column().into_iter().collect();
 
         GraphQLError {
             message: self.data.details.to_string(),
