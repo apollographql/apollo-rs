@@ -21,8 +21,8 @@ pub fn execute_request(
     let coerced_variable_values = VariableValues::coerce(schema, &operation, variable_values)?;
     let response =
         execute_non_introspection(schema, &document, operation_name, &coerced_variable_values)?;
-    let intropsection_response = introspection.execute_sync(schema, &coerced_variable_values)?;
-    Ok(response.merge(intropsection_response))
+    let introspection_response = introspection.execute_sync(schema, &coerced_variable_values)?;
+    Ok(response.merge(introspection_response))
 }
 
 fn execute_non_introspection(
