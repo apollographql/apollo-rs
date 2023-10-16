@@ -309,13 +309,13 @@ impl<'a> Diagnostic<'a> {
         let locations = self.get_line_column().into_iter().collect();
 
         GraphQLError {
-            message: self.message(),
+            message: self.message().to_string(),
             locations,
         }
     }
 
-    pub fn message(&self) -> String {
-        self.data.details.to_string()
+    pub fn message(&self) -> &impl fmt::Display {
+        &self.data.details
     }
 }
 
