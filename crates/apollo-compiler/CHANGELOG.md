@@ -51,20 +51,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ```
 ## Fixes
 
+- **Don’t emit a validation error for relying argument default - [SimonSapin], [pull/700]**
+  A field argument or directive argument was incorrectly considered required
+  as soon as it had a non-null type, even if it had a default value.
+
 ## Maintenance
 ## Documentation
 
 [lrlna]: https://github.com/lrlna
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
 [pull/698]: https://github.com/apollographql/apollo-rs/pull/698
 [pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[pull/700]: https://github.com/apollographql/apollo-rs/pull/700
 [JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
 
 # [1.0.0-beta.3](https://crates.io/crates/apollo-compiler/1.0.0-beta.3) - 2023-10-13
 
 ## BREAKING
 
-- **Keep source files in `Arc<Map<…>>` everywhere - [SimonSapin], [pull/696]:**
+- **Keep source files in `Arc<Map<…>>` everywhere - [SimonSapin], [pull/696]**
   Change struct fields from `sources: IndexMap<FileId, Arc<SourceFile>>` (in `Schema`)
   or `source: Option<(FileId, Arc<SourceFile>)>` (in `Document`, `ExecutablDocument`, `FieldSet`)
   to `sources: SourceMap`, with:
@@ -92,7 +98,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Don’t panic in validation or omit diagnostics when a source location is missing - [SimonSapin], [pull/697]:**
+- **Don’t panic in validation or omit diagnostics when a source location is missing - [SimonSapin], [pull/697]**
   In apollo-compiler 0.11 every element of the HIR always had a source location because
   it always came from a parsed input file.
   In 1.0 source location is always optional.
@@ -109,7 +115,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-**Assorted `Schema` API changes - [SimonSapin], [pull/678]:**
+**Assorted `Schema` API changes - [SimonSapin], [pull/678]**
 - Type of the `schema_definition` field changed
   from `Option<SchemaDefinition>` to `SchemaDefinition`.
   Default root operations based on object type names

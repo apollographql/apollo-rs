@@ -314,7 +314,7 @@ pub(crate) fn validate_directives<'dir>(
                     Some(value) => value.is_null(),
                 };
 
-                if arg_def.is_required() && is_null {
+                if arg_def.is_required() && is_null && arg_def.default_value.is_none() {
                     let mut diagnostic = ApolloDiagnostic::new(
                         db,
                         dir.location(),

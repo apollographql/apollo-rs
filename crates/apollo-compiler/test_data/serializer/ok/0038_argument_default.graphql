@@ -1,0 +1,11 @@
+directive @defer(label: String, if: Boolean! = true) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+type Query {
+  guitarAmp(upTo: Int! = 11): String
+}
+
+query {
+  ... @defer {
+    guitarAmp
+  }
+}

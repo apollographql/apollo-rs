@@ -91,7 +91,7 @@ pub(crate) fn validate_field(
                 Some(value) => value.is_null(),
             };
 
-            if arg_definition.is_required() && is_null {
+            if arg_definition.is_required() && is_null && arg_definition.default_value.is_none() {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
                     field.location(),
