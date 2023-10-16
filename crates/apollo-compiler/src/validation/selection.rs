@@ -103,15 +103,15 @@ pub(crate) fn same_response_shape(
     let mismatching_type_diagnostic = || {
         ApolloDiagnostic::new(
             db,
-            field_b.field.location().unwrap(),
+            field_b.field.location(),
             DiagnosticData::ConflictingField {
                 field: field_a.field.name.to_string(),
-                original_selection: (field_a.field.location().unwrap()),
-                redefined_selection: (field_b.field.location().unwrap()),
+                original_selection: (field_a.field.location()),
+                redefined_selection: (field_b.field.location()),
             },
         )
         .label(Label::new(
-            field_a.field.location().unwrap(),
+            field_a.field.location(),
             format!(
                 "`{}` has type `{}` here",
                 field_a.field.response_name(),
@@ -119,7 +119,7 @@ pub(crate) fn same_response_shape(
             ),
         ))
         .label(Label::new(
-            field_b.field.location().unwrap(),
+            field_b.field.location(),
             format!("but the same field name has type `{}` here", full_type_b.ty),
         ))
     };
@@ -237,8 +237,8 @@ fn identical_arguments(
     let args_a = &field_a.arguments;
     let args_b = &field_b.arguments;
 
-    let loc_a = field_a.location().unwrap();
-    let loc_b = field_b.location().unwrap();
+    let loc_a = field_a.location();
+    let loc_b = field_b.location();
 
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
     for arg in args_a {
@@ -253,7 +253,7 @@ fn identical_arguments(
                         redefined_selection: loc_b,
                     },
                 )
-                .label(Label::new(arg.location().unwrap(), format!("field `{}` is selected with argument `{}` here", field_a.name, arg.name)))
+                .label(Label::new(arg.location(), format!("field `{}` is selected with argument `{}` here", field_a.name, arg.name)))
                 .label(Label::new(loc_b, format!("but argument `{}` is not provided here", arg.name)))
                 .help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.")
             );
@@ -270,8 +270,8 @@ fn identical_arguments(
                         redefined_selection: loc_b,
                     },
                 )
-                .label(Label::new(arg.location().unwrap(), format!("field `{}` provides one argument value here", field_a.name)))
-                .label(Label::new(other_arg.location().unwrap(), "but a different value here"))
+                .label(Label::new(arg.location(), format!("field `{}` provides one argument value here", field_a.name)))
+                .label(Label::new(other_arg.location(), "but a different value here"))
                 .help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.")
             );
         }
@@ -289,7 +289,7 @@ fn identical_arguments(
                         redefined_selection: loc_b,
                     },
                 )
-                .label(Label::new(arg.location().unwrap(), format!("field `{}` is selected with argument `{}` here", field_b.name, arg.name)))
+                .label(Label::new(arg.location(), format!("field `{}` is selected with argument `{}` here", field_b.name, arg.name)))
                 .label(Label::new(loc_a, format!("but argument `{}` is not provided here", arg.name)))
                 .help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.")
             );
@@ -341,15 +341,15 @@ pub(crate) fn fields_in_set_can_merge(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            field_b.field.location().unwrap(),
+                            field_b.field.location(),
                             DiagnosticData::ConflictingField {
                                 field: field_b.field.name.to_string(),
-                                original_selection: (field_a.field.location().unwrap()),
-                                redefined_selection: (field_b.field.location().unwrap()),
+                                original_selection: (field_a.field.location()),
+                                redefined_selection: (field_b.field.location()),
                             },
                         )
                         .label(Label::new(
-                            field_a.field.location().unwrap(),
+                            field_a.field.location(),
                             format!(
                                 "field `{}` is selected from field `{}` here",
                                 field_a.field.response_name(),
@@ -357,7 +357,7 @@ pub(crate) fn fields_in_set_can_merge(
                             ),
                         ))
                         .label(Label::new(
-                            field_b.field.location().unwrap(),
+                            field_b.field.location(),
                             format!(
                                 "but the same field `{}` is also selected from field `{}` here",
                                 field_b.field.response_name(),

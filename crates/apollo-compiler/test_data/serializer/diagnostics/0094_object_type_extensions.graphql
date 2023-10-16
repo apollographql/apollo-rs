@@ -49,3 +49,7 @@ type ImplementsBaseButNotExtension implements ExtendedInterface {
 extend interface ExtendedInterface {
   fail: Boolean
 }
+
+type Query {
+  x: Int
+}

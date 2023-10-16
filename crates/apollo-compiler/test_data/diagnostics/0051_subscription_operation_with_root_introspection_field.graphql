@@ -5,3 +5,7 @@ subscription sub {
 type Subscription {
   __typename: String
 }
+
+type Query {
+  x: Int
+}

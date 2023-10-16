@@ -15,3 +15,7 @@ interface Intf @nonRepeatable {
 }
 
 interface Intf @nonRepeatable
+
+type Query {
+  x: Int
+}

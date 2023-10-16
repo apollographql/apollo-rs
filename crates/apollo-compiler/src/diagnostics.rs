@@ -1,32 +1,33 @@
 use crate::ast::DirectiveLocation;
+use crate::FileId;
 use crate::NodeLocation;
 use std::fmt;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct Label {
-    pub location: NodeLocation,
+pub(crate) struct Label {
+    pub location: Option<NodeLocation>,
     pub text: String,
 }
 impl Label {
-    pub fn new(location: impl Into<NodeLocation>, text: impl Into<String>) -> Self {
+    pub fn new(location: Option<NodeLocation>, text: impl Into<String>) -> Self {
         Self {
-            location: location.into(),
+            location,
             text: text.into(),
         }
     }
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
-pub struct ApolloDiagnostic {
-    pub location: NodeLocation,
+pub(crate) struct ApolloDiagnostic {
+    pub location: Option<NodeLocation>,
     pub labels: Vec<Label>,
     pub help: Option<String>,
     pub data: Box<DiagnosticData>,
 }
 
 impl ApolloDiagnostic {
-    pub fn new<DB: ?Sized>(_db: &DB, location: NodeLocation, data: DiagnosticData) -> Self {
+    pub fn new<DB: ?Sized>(_db: &DB, location: Option<NodeLocation>, data: DiagnosticData) -> Self {
         Self {
             location,
             labels: vec![],
@@ -64,32 +65,32 @@ impl fmt::Display for ApolloDiagnostic {
 /// Structured data about a diagnostic.
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum DiagnosticData {
+pub(crate) enum DiagnosticData {
     #[error("the {ty} `{name}` is defined multiple times in the document")]
     UniqueDefinition {
         ty: &'static str,
         name: String,
-        original_definition: NodeLocation,
-        redefined_definition: NodeLocation,
+        original_definition: Option<NodeLocation>,
+        redefined_definition: Option<NodeLocation>,
     },
     #[error("the argument `{name}` is defined multiple times")]
     UniqueArgument {
         name: String,
-        original_definition: NodeLocation,
-        redefined_definition: NodeLocation,
+        original_definition: Option<NodeLocation>,
+        redefined_definition: Option<NodeLocation>,
     },
     #[error("the value `{name}` is defined multiple times")]
     UniqueInputValue {
         name: String,
-        original_value: NodeLocation,
-        redefined_value: NodeLocation,
+        original_value: Option<NodeLocation>,
+        redefined_value: Option<NodeLocation>,
     },
     #[error("subscription operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
         // Else just remove as the labeling is done separately.
         fields: usize,
-        subscription: NodeLocation,
+        subscription: Option<NodeLocation>,
     },
     #[error("the argument `{name}` is not supported")]
     UndefinedArgument { name: String },
@@ -177,7 +178,7 @@ pub enum DiagnosticData {
         /// current location where the directive is used
         dir_loc: DirectiveLocation,
         /// The source location where the directive that's being used was defined.
-        directive_def: NodeLocation,
+        directive_def: Option<NodeLocation>,
     },
     #[error("{ty} cannot be represented by a {value} value")]
     UnsupportedValueType {
@@ -200,8 +201,8 @@ pub enum DiagnosticData {
     UniqueDirective {
         /// Name of the non-unique directive.
         name: String,
-        original_call: NodeLocation,
-        conflicting_call: NodeLocation,
+        original_call: Option<NodeLocation>,
+        conflicting_call: Option<NodeLocation>,
     },
     #[error("subscription operations can not have an introspection field as a root field")]
     IntrospectionField {
@@ -214,8 +215,8 @@ pub enum DiagnosticData {
     ConflictingField {
         /// Name of the non-unique field.
         field: String,
-        original_selection: NodeLocation,
-        redefined_selection: NodeLocation,
+        original_selection: Option<NodeLocation>,
+        redefined_selection: Option<NodeLocation>,
     },
     #[error("fragments can not be declared on primitive types")]
     InvalidFragmentTarget {
@@ -257,12 +258,6 @@ impl DiagnosticData {
     }
 }
 
-impl From<Label> for ariadne::Label<NodeLocation> {
-    fn from(label: Label) -> Self {
-        Self::new(label.location).with_message(label.text)
-    }
-}
-
 impl ApolloDiagnostic {
     pub(crate) fn to_report(
         &self,
@@ -278,14 +273,21 @@ impl ApolloDiagnostic {
             ReportKind::Error
         };
         let mut colors = ColorGenerator::new();
-        let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
+        let (id, offset) = if let Some(location) = self.location {
+            (location.file_id(), location.offset())
+        } else {
+            (FileId::NONE, 0)
+        };
+        let mut builder = Report::build(severity, id, offset)
             .with_config(config)
             .with_message(&self.data);
-        builder.add_labels(
-            self.labels
-                .iter()
-                .map(|label| ariadne::Label::from(label.clone()).with_color(colors.next())),
-        );
+        builder.add_labels(self.labels.iter().filter_map(|label| {
+            label.location.map(|loc| {
+                ariadne::Label::new(loc)
+                    .with_message(&label.text)
+                    .with_color(colors.next())
+            })
+        }));
         if let Some(help) = &self.help {
             builder = builder.with_help(help);
         }

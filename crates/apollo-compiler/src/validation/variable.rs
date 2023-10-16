@@ -43,24 +43,24 @@ pub(crate) fn validate_variable_definitions2(
                         schema::ExtendedType::InputObject(_) => "input object",
                     };
                     diagnostics.push(
-                        ApolloDiagnostic::new(db, variable.location().unwrap(), DiagnosticData::InputType {
+                        ApolloDiagnostic::new(db, variable.location(), DiagnosticData::InputType {
                             name: variable.name.to_string(),
                             ty: kind,
                         })
-                        .label(Label::new(ty.inner_named_type().location().unwrap(), format!("this is of `{kind}` type")))
+                        .label(Label::new(ty.inner_named_type().location(), format!("this is of `{kind}` type")))
                         .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
                         );
                 }
                 None => diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        variable.location().unwrap(),
+                        variable.location(),
                         DiagnosticData::UndefinedDefinition {
                             name: ty.inner_named_type().to_string(),
                         },
                     )
                     .label(Label::new(
-                        ty.inner_named_type().location().unwrap(),
+                        ty.inner_named_type().location(),
                         "not found in the type system",
                     )),
                 ),
@@ -69,8 +69,8 @@ pub(crate) fn validate_variable_definitions2(
 
         match seen.entry(variable.name.clone()) {
             Entry::Occupied(original) => {
-                let original_definition = original.get().location().unwrap();
-                let redefined_definition = variable.location().unwrap();
+                let original_definition = original.get().location();
+                let redefined_definition = variable.location();
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
@@ -258,7 +258,7 @@ pub(crate) fn validate_unused_variables(
     let unused_vars = defined_vars.difference(&used_vars);
 
     diagnostics.extend(unused_vars.map(|unused_var| {
-        let loc = locations[unused_var].expect("missing location information");
+        let loc = locations[unused_var];
         ApolloDiagnostic::new(
             db,
             loc,
@@ -287,7 +287,7 @@ pub(crate) fn validate_variable_usage2(
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
                     db,
-                    argument.location().unwrap(),
+                    argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
                         var_name: var_def.name.to_string(),
                         arg_name: argument.name.to_string(),
@@ -295,14 +295,14 @@ pub(crate) fn validate_variable_usage2(
                 )
                 .labels([
                     Label::new(
-                        var_def.location().unwrap(),
+                        var_def.location(),
                         format!(
                             "variable `{}` of type `{}` is declared here",
                             var_def.name, var_def.ty,
                         ),
                     ),
                     Label::new(
-                        argument.location().unwrap(),
+                        argument.location(),
                         format!(
                             "argument `{}` of type `{}` is declared here",
                             argument.name, var_usage.ty,
@@ -313,13 +313,13 @@ pub(crate) fn validate_variable_usage2(
         } else {
             return Err(ApolloDiagnostic::new(
                 db,
-                argument.location().unwrap(),
+                argument.location(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
                 },
             )
             .label(Label::new(
-                argument.value.location().unwrap(),
+                argument.value.location(),
                 "not found in this scope",
             )));
         }

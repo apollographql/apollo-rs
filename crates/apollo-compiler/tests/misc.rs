@@ -568,6 +568,9 @@ input Point2D {
 #[test]
 fn it_accesses_object_directive_name() {
     let input = r#"
+type Query {
+  theBook: Book
+}
 
 type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
   id: ID!
@@ -589,6 +592,10 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
 #[test]
 fn it_accesses_object_field_types_directive_name() {
     let input = r#"
+type Query {
+  me: Person
+}
+
 type Person {
   name: String
   picture(size: Number): Url
@@ -640,6 +647,10 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 #[test]
 fn it_accesses_input_object_field_types_directive_name() {
     let input = r#"
+type Query {
+  x: Int
+}
+
 input Person {
   name: String
   picture: Url

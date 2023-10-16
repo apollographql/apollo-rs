@@ -24,3 +24,7 @@ type X {
 }
 
 directive @X(ok: Boolean) on UNION
+
+type Query {
+  x: Int
+}
