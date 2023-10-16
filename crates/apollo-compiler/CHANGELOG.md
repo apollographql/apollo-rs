@@ -17,6 +17,49 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+> Important: X breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+## Features
+- **JSON Serialisable compiler diagnostics - [lrlna] and [goto-bus-stop], [pull/698]:**
+  This change brings back [JSON error format] for diagnostics introduced by
+  [goto-bus-stop] in [pull/668] for compiler@0.11.3. As a result, diagnostics'
+  line/column numbers are now also accessible as part of the public API.
+
+  ```rust
+  let json = expect_test::expect![[r#"
+    {
+      "message": "an executable document must not contain an object type definition",
+      "locations": [
+        {
+          "line": 2,
+          "column": 1
+        }
+      ]
+    }"#]];
+  let diagnostics = executable.validate(&schema).unwrap_err();
+  diagnostics.iter().for_each(|diag| {
+      assert_eq!(
+          diag.get_line_column(),
+          Some(GraphQLLocation { line: 2, column: 1 })
+      );
+      json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
+  });
+  ```
+## Fixes
+
+## Maintenance
+## Documentation
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/698]: https://github.com/apollographql/apollo-rs/pull/698
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
 # [1.0.0-beta.3](https://crates.io/crates/apollo-compiler/1.0.0-beta.3) - 2023-10-13
 
 ## BREAKING

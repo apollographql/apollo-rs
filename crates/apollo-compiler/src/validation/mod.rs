@@ -55,6 +55,27 @@ pub struct Diagnostic<'a> {
     data: &'a DiagnosticData,
 }
 
+/// A source location (line + column) for a GraphQL error.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct GraphQLLocation {
+    /// The line number for this location, starting at 1 for the first line.
+    pub line: usize,
+    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
+    /// Values) like [str::chars].
+    pub column: usize,
+}
+
+/// A serializable GraphQL error.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct GraphQLError {
+    /// The error message.
+    pub message: String,
+
+    /// Locations relevant to the error, if any.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub locations: Vec<GraphQLLocation>,
+}
+
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum Details {
     #[error("{message}")]
@@ -65,7 +86,7 @@ pub(crate) enum Details {
     SchemaBuildError(SchemaBuildError),
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
-    #[error("syntax error: {0}")]
+    #[error("compiler error: {0}")]
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
@@ -263,6 +284,34 @@ impl DiagnosticData {
             },
         }
         report.finish()
+    }
+}
+
+impl<'a> Diagnostic<'a> {
+    /// Get the line and column number where this diagnostic was raised.
+    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
+        let loc = self.data.location?;
+        let source = self.sources.get(&loc.file_id)?;
+        source
+            .get_line_column(loc.offset())
+            .map(|(line, column)| GraphQLLocation {
+                line: line + 1,
+                column: column + 1,
+            })
+    }
+
+    /// Get serde_json serialisable version of the current diagnostic.
+    pub fn to_json(&self) -> GraphQLError {
+        let locations = self.get_line_column().into_iter().collect();
+
+        GraphQLError {
+            message: self.message().to_string(),
+            locations,
+        }
+    }
+
+    pub fn message(&self) -> &impl fmt::Display {
+        &self.data.details
     }
 }
 
