@@ -18,11 +18,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation-->
 
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [1.0.0-beta.4](https://crates.io/crates/apollo-compiler/1.0.0-beta.4) - 2023-10-16
 
-> Important: X breaking changes below, indicated by **BREAKING**
-
-## BREAKING
 ## Features
 - **JSON Serialisable compiler diagnostics - [lrlna] and [goto-bus-stop], [pull/698]:**
   This change brings back [JSON error format] for diagnostics introduced by
@@ -51,12 +48,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ```
 ## Fixes
 
-- **Don’t emit a validation error for relying argument default - [SimonSapin], [pull/700]**
+- **Don’t emit a validation error for relying on argument default - [SimonSapin], [pull/700]**
   A field argument or directive argument was incorrectly considered required
   as soon as it had a non-null type, even if it had a default value.
-
-## Maintenance
-## Documentation
 
 [lrlna]: https://github.com/lrlna
 [goto-bus-stop]: https://github.com/goto-bus-stop
