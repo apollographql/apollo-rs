@@ -290,10 +290,6 @@ impl DiagnosticData {
 impl<'a> Diagnostic<'a> {
     /// Get the line and column number where this diagnostic was raised.
     pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        // let source = self.sources.get(&id)?;
-        // let char_index = source.map_index(index);
-        // let (_, line, column) = source.ariadne.get_offset_line(char_index)?;
-        // Some((line, column))
         let loc = self.data.location?;
         let source = self.sources.get(&loc.file_id)?;
         source
