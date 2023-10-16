@@ -48,7 +48,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ```
 ## Fixes
 
-- **Don’t emit a validation error for relying argument default - [SimonSapin], [pull/700]**
+- **Don’t emit a validation error for relying on argument default - [SimonSapin], [pull/700]**
   A field argument or directive argument was incorrectly considered required
   as soon as it had a non-null type, even if it had a default value.
 
