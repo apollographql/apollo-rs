@@ -46,6 +46,17 @@ query {
 }
 "#;
 
+    let json = expect_test::expect![[r#"
+{
+  "message": "an executable document must not contain an object type definition",
+  "locations": [
+    {
+      "line": 2,
+      "column": 1
+    }
+  ]
+}"#]];
+
     let schema = Schema::parse(input_type_system, "schema.graphql");
     let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
@@ -62,6 +73,7 @@ query {
             diag.get_line_column(),
             Some(GraphQLLocation { line: 2, column: 1 })
         );
+        json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
 }
 
@@ -120,15 +132,15 @@ fragment q on TestObject {
 }
 "#;
     let json = expect_test::expect![[r#"
-        {
-            "message": "`q` fragment cannot reference itself",
-            "locations": [
-            {
-                "line": 8,
-                "column": 1
-            }
-            ]
-        }"#]];
+{
+  "message": "compiler error: `q` fragment cannot reference itself",
+  "locations": [
+    {
+      "line": 8,
+      "column": 1
+    }
+  ]
+}"#]];
 
     let schema = Schema::parse(input_type_system, "schema.graphql");
     let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
@@ -162,6 +174,16 @@ fn validation_without_type_system() {
         "#,
         "dupe_frag.graphql",
     );
+    let json = expect_test::expect![[r#"
+{
+  "message": "compiler error: fragment `A` must be used in an operation",
+  "locations": [
+    {
+      "line": 2,
+      "column": 13
+    }
+  ]
+}"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
@@ -176,6 +198,7 @@ fn validation_without_type_system() {
                 column: 13
             })
         );
+        json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
 
     let doc = ast::Document::parse(
@@ -186,6 +209,16 @@ fn validation_without_type_system() {
         "#,
         "dupe_frag.graphql",
     );
+    let json = expect_test::expect![[r#"
+{
+  "message": "the fragment `A` is defined multiple times in the document",
+  "locations": [
+    {
+      "line": 3,
+      "column": 22
+    }
+  ]
+}"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
@@ -200,9 +233,20 @@ fn validation_without_type_system() {
                 column: 22
             })
         );
+        json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
 
     let doc = ast::Document::parse(r#"{ ...A }"#, "unknown_frag.graphql");
+    let json = expect_test::expect![[r#"
+{
+  "message": "compiler error: cannot find fragment `A` in this document",
+  "locations": [
+    {
+      "line": 1,
+      "column": 3
+    }
+  ]
+}"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
@@ -214,6 +258,7 @@ fn validation_without_type_system() {
             diag.get_line_column(),
             Some(GraphQLLocation { line: 1, column: 3 })
         );
+        json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
 }
 

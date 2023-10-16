@@ -86,7 +86,7 @@ pub(crate) enum Details {
     SchemaBuildError(SchemaBuildError),
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
-    #[error("syntax error: {0}")]
+    #[error("compiler error: {0}")]
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
@@ -313,9 +313,7 @@ impl<'a> Diagnostic<'a> {
         }
 
         GraphQLError {
-            // TODO(@lrlna): this needs DiagnosticData to have a Display impl
-            // using only diagnostic messages.
-            message: self.to_string(),
+            message: self.data.details.to_string(),
             locations,
         }
     }
