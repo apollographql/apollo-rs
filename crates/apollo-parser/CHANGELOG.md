@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [x.x.x] (unreleased) - 2022-mm-dd
+
+## Fixes
+
+- **Fix `SyntaxTree` being accidentally `!Send` and `!Sync` - [SimonSapin], [pull/704] fixing [issue/702]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/704]: https://github.com/apollographql/apollo-rs/pull/704
+[issue/702]: https://github.com/apollographql/apollo-rs/issues/702
+
 # [0.7.1](https://crates.io/crates/apollo-parser/0.7.1) - 2023-10-10
 
 ## Features
