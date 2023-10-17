@@ -2,7 +2,6 @@ use apollo_compiler::Schema;
 use apollo_parser::Parser;
 use apollo_smith::{Document, DocumentBuilder};
 use libfuzzer_sys::arbitrary::{Result, Unstructured};
-use log::debug;
 
 /// This generate an arbitrary valid GraphQL document
 pub fn generate_valid_document(input: &[u8]) -> Result<String> {
@@ -28,14 +27,6 @@ pub fn generate_valid_operation(input: &[u8]) -> Result<(String, String)> {
 
     let ts = Parser::new(SUPERGRAPH).parse();
 
-    // let diagnostics = compiler.validate();
-    // if diagnostics.len() > 0 {
-    //     for diag in diagnostics {
-    //         debug!("{}", diag);
-    //     }
-    //     panic!("validation errors in supergraph")
-    // }
-
     let mut u = Unstructured::new(input);
     let mut doc = DocumentBuilder::with_document(
         &mut u,
@@ -49,13 +40,11 @@ pub fn generate_valid_operation(input: &[u8]) -> Result<(String, String)> {
 }
 
 const SUPERGRAPH: &'static str = r#"
-schema
-  @core(feature: "https://specs.apollo.dev/core/v0.1")
-  @core(feature: "https://specs.apollo.dev/join/v0.1") {
+schema @core(feature: "https://specs.apollo.dev/core/v0.1"){
   query: Query
   mutation: Mutation
 }
-
+extend schema @core(feature: "https://specs.apollo.dev/join/v0.1") 
 directive @core(feature: String!) repeatable on SCHEMA
 
 directive @join__field(

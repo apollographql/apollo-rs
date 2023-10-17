@@ -3,10 +3,9 @@ use apollo_compiler::{ExecutableDocument, Schema};
 use apollo_rs_fuzz::generate_valid_operation;
 use libfuzzer_sys::fuzz_target;
 use log::debug;
-use router_bridge;
-// use serde_json::json;
-// use serde_json::Value;
+use router_bridge::planner::{Planner, QueryPlannerConfig};
 use std::panic;
+use tokio::runtime::Runtime;
 
 fuzz_target!(|data: &[u8]| {
     let (op, ts) = match generate_valid_operation(data) {
@@ -25,8 +24,9 @@ fuzz_target!(|data: &[u8]| {
     debug!("========= SCHEMA ===============");
     debug!("{}", ts);
     debug!("========================");
-    let js_diagnostics = router_bridge::validate::validate(&ts, &op)
-        .expect("bridge should return validation result");
+    let runtime = Runtime::new().unwrap();
+    let planner = runtime.block_on(planner(&ts));
+    let js_diagnostics = runtime.block_on(validate(planner, &op));
 
     // early return if js and rust validation errors don't match
     let mut should_panic = false;
@@ -63,14 +63,38 @@ fuzz_target!(|data: &[u8]| {
 
     debug!("========== RUST DIAGNOSTICS ==============");
     debug!("{:?}", rust_diagnostics);
-    // for diag in rust_diagnostics {
-    //     debug!("{}", diag);
-    // }
 
     debug!("========== JS DIAGNOSTICS ==============");
-    debug!("{:?}", js_diagnostics.errors);
+    debug!("{:?}", js_diagnostics);
 
     if should_panic {
         panic!("error detected");
     }
 });
+
+// If we are again starting to notice a memory leak in deno, this can be stored
+// in a once lock.
+async fn planner(ts: &str) -> Planner<serde_json::Value> {
+    Planner::<serde_json::Value>::new(ts.to_string(), QueryPlannerConfig::default())
+        .await
+        .unwrap()
+}
+
+#[derive(Debug)]
+struct JsDiagnostics {
+    errors: Vec<(String, String)>,
+}
+
+async fn validate(planner: Planner<serde_json::Value>, op: &str) -> Option<JsDiagnostics> {
+    let maybe_diag = planner.validate(op.to_string()).await.unwrap();
+
+    if maybe_diag.is_empty() {
+        None
+    } else {
+        let errors = maybe_diag
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        Some(JsDiagnostics { errors })
+    }
+}

@@ -21,8 +21,11 @@ apollo-parser = { path = "../crates/apollo-parser" }
 apollo-smith = { path = "../crates/apollo-smith", features = ["parser-impl"] }
 env_logger = "0.10.0"
 log = "0.4.14"
+router-bridge = { git = "https://github.com/apollographql/federation-rs/tree/main/federation-2/router-bridge", branch = "validation-for-fuzzing" }
 similar-asserts = "1.5.0"
-router-bridge = { path = "../../apollographql/federation-rs/federation-2/router-bridge" }
+serde_json = "1.0.107"
+futures = "0.3.28"
+tokio = { version = "1.33.0", features = ["full"] }                                                                                                # only for the fuzzing crate
 
 [[bin]]
 name = "parser"
