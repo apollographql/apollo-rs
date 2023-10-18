@@ -1,4 +1,3 @@
-use apollo_compiler::Schema;
 use apollo_parser::Parser;
 use apollo_smith::{Document, DocumentBuilder};
 use libfuzzer_sys::arbitrary::{Result, Unstructured};

@@ -30,21 +30,21 @@ fuzz_target!(|data: &[u8]| {
 
     // early return if js and rust validation errors don't match
     let mut should_panic = false;
-    match js_diagnostics.errors.clone() {
-        Some(js_diag) => match rust_diagnostics {
+    match js_diagnostics {
+        Some(ref js_diag) => match rust_diagnostics {
             Ok(_) => {
                 should_panic = true;
                 debug!("JS ERRORS FOUND BUT NOT RUST");
-                for diag in js_diag {
-                    debug!("{}", diag);
+                for diag in js_diag.errors.clone().into_iter() {
+                    debug!("{:?}", diag);
                 }
             }
-            Err(rust_diagnostics) => {
-                if rust_diagnostics.len() != js_diag.len() {
+            Err(ref rust_diagnostics) => {
+                if rust_diagnostics.len() != js_diag.errors.len() {
                     should_panic = true;
                     debug!("======== UNMATCHED DIAGNOSTICS LEN BETWEEN RUST & JS ======= ");
-                    for diag in js_diag {
-                        debug!("JS DIAG: {}", diag)
+                    for diag in js_diag.errors.clone().into_iter() {
+                        debug!("JS DIAG: {:?}", diag)
                     }
                     for diag in rust_diagnostics.iter() {
                         debug!("RUST DIAG: {}", diag)
@@ -56,16 +56,19 @@ fuzz_target!(|data: &[u8]| {
             if rust_diagnostics.is_err() {
                 should_panic = true;
                 debug!("======== RUST ERRORS FOUND BUT NOT JS ======= ");
-                rust_diagnostics.map_err(|diags| diags.iter().map(|diag| debug!("{}", diag)));
+                let _ = rust_diagnostics.as_ref().map_err(|diags| {
+                    diags
+                        .iter()
+                        .map(|diag| debug!("{}", diag))
+                        .collect::<Vec<_>>()
+                });
             }
         }
     }
 
-    debug!("========== RUST DIAGNOSTICS ==============");
-    debug!("{:?}", rust_diagnostics);
+    debug!("rust diagnostics: {:?}", rust_diagnostics);
 
-    debug!("========== JS DIAGNOSTICS ==============");
-    debug!("{:?}", js_diagnostics);
+    debug!("js diagnostics {:?}", js_diagnostics);
 
     if should_panic {
         panic!("error detected");
