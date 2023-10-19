@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.5.0] (unreleased) - 2023-mm-dd
+# [0.5.0](https://crates.io/crates/apollo-smith/0.5.0) - 2023-10-19
 
 ## BREAKING
 - **apollo-parser@0.7.0 - [SimonSapin], [pull/???]**
@@ -26,13 +26,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This updates the version of `apollo-parser` required by the `TryFrom`
   implementations in this crate.
 
-- **apollo-encoder@0.8.0 - [SimonSapin], [pull/???]**
+- **removes `tryfrom` from apollo-compiler - [SimonSapin]**
 
-  This updates the version of `apollo-compiler` required by the `TryFrom`
-  implementations in this crate.
+  `apollo-compiler@1.0.0` can be directly serialised to sdl without requiring
+  apollo-encoder. the `tryfrom` implementation is therefore no longer necessary.
 
 [SimonSapin]: https://github.com/SimonSapin
-[pull/???]: https://github.com/apollographql/apollo-rs/pull/???
 
 # [0.4.0](https://crates.io/crates/apollo-smith/0.4.0) - 2023-08-21
 
