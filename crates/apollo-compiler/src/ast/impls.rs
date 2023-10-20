@@ -1,5 +1,8 @@
 use super::*;
+use crate::name;
 use crate::node::NodeLocation;
+use crate::schema::ComponentName;
+use crate::schema::ComponentOrigin;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
 use crate::ExecutableDocument;
@@ -473,11 +476,11 @@ impl OperationType {
     }
 
     /// Get the default name of the object type for this operation type
-    pub const fn default_type_name(self) -> &'static str {
+    pub const fn default_type_name(self) -> NamedType {
         match self {
-            OperationType::Query => "Query",
-            OperationType::Mutation => "Mutation",
-            OperationType::Subscription => "Subscription",
+            OperationType::Query => name!("Query"),
+            OperationType::Mutation => name!("Mutation"),
+            OperationType::Subscription => name!("Subscription"),
         }
     }
 
@@ -532,11 +535,6 @@ impl VariableDefinition {
 }
 
 impl Type {
-    /// Returns a new `Type::Named` with with a synthetic `Name` (not parsed from a source file)
-    pub fn new_named(name: &str) -> Self {
-        Type::Named(Name::new(name))
-    }
-
     /// Returns this type made non-null, if it isn’t already.
     pub fn non_null(self) -> Self {
         match self {
@@ -1112,6 +1110,136 @@ impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
             name: name.into(),
             value: value.into(),
         })
+    }
+}
+
+/// Create a [`Name`] from a string literal, checked for validity at compile time.
+///
+/// A `Name` created this way does not own allocated heap memory or a reference counter,
+/// so cloning it is extremely cheap.
+#[macro_export]
+macro_rules! name {
+    ($value: literal) => {{
+        const _: () = { assert!($crate::ast::Name::check_syntax($value).is_ok()) };
+        $crate::ast::Name::new_unchecked($crate::NodeStr::from_static(&$value))
+    }};
+}
+
+impl Name {
+    /// Creates a new `Name` if the given value is a valid GraphQL name.
+    pub fn new(value: &str) -> Result<Self, InvalidNameError> {
+        Self::check_syntax(value).map(|()| Self::new_unchecked(NodeStr::new(value)))
+    }
+
+    /// Creates a new `Name` without validity checking.
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub const fn new_unchecked(value: NodeStr) -> Self {
+        Self(value)
+    }
+
+    /// Checks whether the given string is a valid GraphQL name.
+    ///
+    /// <https://spec.graphql.org/October2021/#Name>
+    pub const fn check_syntax(value: &str) -> Result<(), InvalidNameError> {
+        let bytes = value.as_bytes();
+        let Some(&first) = bytes.first() else {
+            return Err(InvalidNameError {});
+        };
+        // `NameStart` and `NameContinue` are within the ASCII range,
+        // so converting from `u8` to `char` here does not affect the result:
+        if !Self::char_is_name_start(first as char) {
+            return Err(InvalidNameError {});
+        }
+        // TODO: iterator when available in const
+        let mut i = 1;
+        while i < bytes.len() {
+            if !Self::char_is_name_continue(bytes[i] as char) {
+                return Err(InvalidNameError {});
+            }
+            i += 1
+        }
+        Ok(())
+    }
+
+    /// <https://spec.graphql.org/October2021/#NameStart>
+    const fn char_is_name_start(c: char) -> bool {
+        matches!(c, 'a'..='z' | 'A'..='Z' | '_')
+    }
+
+    /// <https://spec.graphql.org/October2021/#NameContinue>
+    const fn char_is_name_continue(c: char) -> bool {
+        matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '0'..='9')
+    }
+
+    pub fn to_component(&self, origin: ComponentOrigin) -> ComponentName {
+        ComponentName {
+            origin,
+            name: self.clone(),
+        }
+    }
+}
+
+impl std::ops::Deref for Name {
+    type Target = NodeStr;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Display for Name {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+
+impl fmt::Debug for Name {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+
+impl AsRef<NodeStr> for Name {
+    fn as_ref(&self) -> &NodeStr {
+        &self.0
+    }
+}
+
+impl AsRef<str> for Name {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::borrow::Borrow<str> for Name {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl PartialEq<str> for Name {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<&'_ str> for Name {
+    fn eq(&self, other: &&'_ str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialOrd<str> for Name {
+    fn partial_cmp(&self, other: &str) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(other)
+    }
+}
+
+impl PartialOrd<&'_ str> for Name {
+    fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(*other)
     }
 }
 

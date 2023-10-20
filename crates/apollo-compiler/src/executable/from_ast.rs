@@ -1,4 +1,5 @@
 use super::*;
+use crate::name;
 
 pub(crate) struct BuildErrors {
     pub(crate) errors: Vec<BuildError>,
@@ -106,7 +107,7 @@ impl Operation {
             s.root_operation(ast.operation_type)?.clone()
         } else {
             // Hack for validate_standalone_excutable
-            ast.operation_type.default_type_name().into()
+            ast.operation_type.default_type_name().clone()
         };
         let mut selection_set = SelectionSet::new(ty);
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
@@ -165,7 +166,7 @@ impl SelectionSet {
                             description: None,
                             name: ast.name.clone(),
                             arguments: Vec::new(),
-                            ty: Type::new_named("UNKNOWN"),
+                            ty: Type::Named(name!("UNKNOWN")),
                             directives: Default::default(),
                         }))
                     };

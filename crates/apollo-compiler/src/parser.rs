@@ -205,7 +205,7 @@ impl Parser {
     pub fn parse_field_set(
         &mut self,
         schema: &Schema,
-        type_name: impl Into<ast::NamedType>,
+        type_name: ast::NamedType,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
     ) -> executable::FieldSet {

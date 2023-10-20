@@ -57,12 +57,11 @@ impl Node<SchemaDefinition> {
                 // If there were no explict `schema` definition,
                 // what implicit root operation would we get for this operation type?
                 let default_type_name = operation_type.default_type_name();
-                let implicit_root_operation: Option<&str> = types
-                    .get(default_type_name)
-                    .filter(|ty_def| ty_def.is_object())
-                    .map(|_ty_def| default_type_name);
+                let has_object = types
+                    .get(&default_type_name).is_some_and(|def| def.is_object());
+                let implicit_root_operation = has_object.then_some(&default_type_name);
                 // What we have
-                let actual_root_operation = root_operation.as_ref().map(|r| r.as_str());
+                let actual_root_operation = root_operation.as_ref().map(|r| &r.name);
                 // Only allow an implicit `schema` definition if they match
                 actual_root_operation == implicit_root_operation
             })

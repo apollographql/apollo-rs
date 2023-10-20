@@ -16,11 +16,11 @@ mod union_;
 mod value;
 mod variable;
 
+use crate::ast::Name;
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::FileId;
 use crate::NodeLocation;
-use crate::NodeStr;
 use crate::SourceFile;
 use crate::SourceMap;
 use indexmap::IndexSet;
@@ -484,11 +484,11 @@ impl ariadne::Span for NodeLocation {
 
 /// Track used names in a recursive function.
 struct RecursionStack {
-    seen: IndexSet<NodeStr>,
+    seen: IndexSet<Name>,
 }
 
 impl RecursionStack {
-    fn with_root(root: NodeStr) -> Self {
+    fn with_root(root: Name) -> Self {
         let mut seen = IndexSet::new();
         seen.insert(root);
         Self { seen }
@@ -505,10 +505,10 @@ impl RecursionStack {
 /// Pass the result of `guard.push(name)` to recursive calls. Use `guard.contains(name)` to check
 /// if the name was used somewhere up the call stack. When a guard is dropped, its name is removed
 /// from the list.
-struct RecursionGuard<'a>(&'a mut IndexSet<NodeStr>);
+struct RecursionGuard<'a>(&'a mut IndexSet<Name>);
 impl RecursionGuard<'_> {
     /// Mark that we saw a name.
-    fn push(&mut self, name: &NodeStr) -> RecursionGuard<'_> {
+    fn push(&mut self, name: &Name) -> RecursionGuard<'_> {
         debug_assert!(
             self.0.insert(name.clone()),
             "cannot push the same name twice to RecursionGuard, check contains() first"
@@ -516,11 +516,11 @@ impl RecursionGuard<'_> {
         RecursionGuard(self.0)
     }
     /// Check if we saw a name somewhere up the call stack.
-    fn contains(&self, name: &NodeStr) -> bool {
+    fn contains(&self, name: &Name) -> bool {
         self.0.iter().any(|seen| seen == name)
     }
     /// Return the name where we started.
-    fn first(&self) -> Option<&NodeStr> {
+    fn first(&self) -> Option<&Name> {
         self.0.first()
     }
 }

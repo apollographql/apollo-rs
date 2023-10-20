@@ -61,10 +61,15 @@ const _: () = {
 };
 
 /// A GraphQL identifier
-pub type Name = NodeStr;
+#[derive(Clone, Ord, Eq, PartialOrd, PartialEq, Hash)]
+pub struct Name(NodeStr);
 
 /// Refers to the name of a GraphQL type defined elsewhere
 pub type NamedType = Name;
+
+#[derive(Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct InvalidNameError {}
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Definition {

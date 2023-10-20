@@ -1,7 +1,7 @@
 //! This example shows how to rename a type definition
 
+use apollo_compiler::name;
 use apollo_compiler::schema::ExtendedType;
-use apollo_compiler::schema::Name;
 use apollo_compiler::Schema;
 
 #[cfg(not(test))]
@@ -21,7 +21,7 @@ fn renamed() -> Schema {
     let ExtendedType::Object(obj) = &mut type_def else {
         panic!("expected an object type")
     };
-    let new_name = Name::from("MyQuery");
+    let new_name = name!("MyQuery");
     obj.make_mut().name = new_name.clone();
 
     // 3. Insert back into the map using the new name as the key

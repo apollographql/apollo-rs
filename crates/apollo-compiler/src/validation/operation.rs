@@ -1,7 +1,7 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    FileId, Node, ValidationDatabase,
+    name, FileId, Node, ValidationDatabase,
 };
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -29,7 +29,7 @@ pub(crate) fn validate_operation(
     let against_type = schema.root_operation(operation.operation_type);
 
     let named_fragments = db.ast_named_fragments(file_id);
-    let q = ast::NamedType::new("Query");
+    let q = name!("Query");
 
     if operation.operation_type == ast::OperationType::Subscription {
         let fields = super::selection::operation_fields(

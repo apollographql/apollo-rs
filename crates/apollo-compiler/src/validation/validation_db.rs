@@ -1,7 +1,7 @@
 use crate::{
     ast,
     diagnostics::ApolloDiagnostic,
-    schema,
+    name, schema,
     validation::{
         self, directive, enum_, input_object, interface, object, operation, scalar, union_,
     },
@@ -244,15 +244,15 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
                 directives: ast::DirectiveList::new(),
                 root_operations: {
                     let mut operations = Vec::with_capacity(3);
-                    let query_name = ast::Name::new("Query");
+                    let query_name = name!("Query");
                     if objects.contains_key(&query_name) {
                         operations.push((ast::OperationType::Query, query_name).into());
                     }
-                    let mutation_name = ast::Name::new("Mutation");
+                    let mutation_name = name!("Mutation");
                     if objects.contains_key(&mutation_name) {
                         operations.push((ast::OperationType::Mutation, mutation_name).into());
                     }
-                    let subscription_name = ast::Name::new("Subscription");
+                    let subscription_name = name!("Subscription");
                     if objects.contains_key(&subscription_name) {
                         operations
                             .push((ast::OperationType::Subscription, subscription_name).into());

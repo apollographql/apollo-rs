@@ -1,7 +1,5 @@
 #![allow(unstable_name_collisions)] // for `sptr::Strict`
 
-use crate::schema::ComponentName;
-use crate::schema::ComponentOrigin;
 use crate::NodeLocation;
 use sptr::Strict;
 use std::marker::PhantomData;
@@ -120,14 +118,6 @@ impl NodeStr {
         Self {
             ptr,
             phantom: PhantomData,
-        }
-    }
-
-    #[inline]
-    pub fn to_component(&self, origin: ComponentOrigin) -> ComponentName {
-        ComponentName {
-            origin,
-            name: self.clone(),
         }
     }
 

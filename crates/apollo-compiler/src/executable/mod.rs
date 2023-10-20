@@ -376,9 +376,9 @@ impl Fragment {
 
 impl SelectionSet {
     /// Create a new selection set
-    pub fn new(ty: impl Into<NamedType>) -> Self {
+    pub fn new(ty: NamedType) -> Self {
         Self {
-            ty: ty.into(),
+            ty,
             selections: Vec::new(),
         }
     }
@@ -399,18 +399,14 @@ impl SelectionSet {
     pub fn new_field<'schema>(
         &self,
         schema: &'schema Schema,
-        name: impl Into<Name>,
+        name: Name,
     ) -> Result<Field, schema::FieldLookupError<'schema>> {
-        let name = name.into();
         let definition = schema.type_field(&self.ty, &name)?.node.clone();
         Ok(Field::new(name, definition))
     }
 
     /// Create a new inline fragment to be added to this selection set with [`push`][Self::push]
-    pub fn new_inline_fragment(
-        &self,
-        opt_type_condition: Option<impl Into<NamedType>>,
-    ) -> InlineFragment {
+    pub fn new_inline_fragment(&self, opt_type_condition: Option<NamedType>) -> InlineFragment {
         if let Some(type_condition) = opt_type_condition {
             InlineFragment::with_type_condition(type_condition)
         } else {
@@ -419,7 +415,7 @@ impl SelectionSet {
     }
 
     /// Create a new fragment spread to be added to this selection set with [`push`][Self::push]
-    pub fn new_fragment_spread(&self, fragment_name: impl Into<Name>) -> FragmentSpread {
+    pub fn new_fragment_spread(&self, fragment_name: Name) -> FragmentSpread {
         FragmentSpread::new(fragment_name)
     }
 
@@ -511,24 +507,24 @@ impl Field {
     /// Create a new field with the given name and type.
     ///
     /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
-    pub fn new(name: impl Into<Name>, definition: Node<schema::FieldDefinition>) -> Self {
+    pub fn new(name: Name, definition: Node<schema::FieldDefinition>) -> Self {
         let selection_set = SelectionSet::new(definition.ty.inner_named_type().clone());
         Field {
             definition,
             alias: None,
-            name: name.into(),
+            name,
             arguments: Vec::new(),
             directives: DirectiveList::new(),
             selection_set,
         }
     }
 
-    pub fn with_alias(mut self, alias: impl Into<Name>) -> Self {
-        self.alias = Some(alias.into());
+    pub fn with_alias(mut self, alias: Name) -> Self {
+        self.alias = Some(alias);
         self
     }
 
-    pub fn with_opt_alias(mut self, alias: Option<impl Into<Name>>) -> Self {
+    pub fn with_opt_alias(mut self, alias: Option<Name>) -> Self {
         self.alias = alias.map(Into::into);
         self
     }
@@ -546,7 +542,7 @@ impl Field {
         self
     }
 
-    pub fn with_argument(mut self, name: impl Into<Name>, value: impl Into<Node<Value>>) -> Self {
+    pub fn with_argument(mut self, name: Name, value: impl Into<Node<Value>>) -> Self {
         self.arguments.push((name, value).into());
         self
     }
@@ -590,8 +586,7 @@ impl Field {
 }
 
 impl InlineFragment {
-    pub fn with_type_condition(type_condition: impl Into<NamedType>) -> Self {
-        let type_condition = type_condition.into();
+    pub fn with_type_condition(type_condition: NamedType) -> Self {
         let selection_set = SelectionSet::new(type_condition.clone());
         Self {
             type_condition: Some(type_condition),
@@ -600,7 +595,7 @@ impl InlineFragment {
         }
     }
 
-    pub fn without_type_condition(parent_selection_set_type: impl Into<NamedType>) -> Self {
+    pub fn without_type_condition(parent_selection_set_type: NamedType) -> Self {
         Self {
             type_condition: None,
             directives: DirectiveList::new(),
@@ -638,9 +633,9 @@ impl InlineFragment {
 }
 
 impl FragmentSpread {
-    pub fn new(fragment_name: impl Into<Name>) -> Self {
+    pub fn new(fragment_name: Name) -> Self {
         Self {
-            fragment_name: fragment_name.into(),
+            fragment_name,
             directives: DirectiveList::new(),
         }
     }
@@ -674,7 +669,7 @@ impl FieldSet {
     /// Create a [`Parser`] to use different parser configuration.
     pub fn parse(
         schema: &Schema,
-        type_name: impl Into<NamedType>,
+        type_name: NamedType,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
     ) -> Self {

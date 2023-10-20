@@ -1,4 +1,5 @@
 use apollo_compiler::executable::Selection;
+use apollo_compiler::name;
 use apollo_compiler::parse_mixed;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ExecutableDocument;
@@ -181,7 +182,7 @@ union Union = Concrete
 
     assert_eq!(inline_fragments.len(), 1);
     let inline_fragment = inline_fragments.first().unwrap();
-    assert_eq!(inline_fragment.type_condition, Some("Concrete".into()));
+    assert_eq!(inline_fragment.type_condition, Some(name!("Concrete")));
 
     let inline_fragment_fields = inline_fragment.selection_set.fields();
     let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
@@ -202,7 +203,7 @@ union Union = Concrete
     let union_inline_fragment = union_inline_fragments.first().unwrap();
     assert_eq!(
         union_inline_fragment.type_condition,
-        Some("Concrete".into())
+        Some(name!("Concrete"))
     );
 
     let union_inline_fragment_fields = union_inline_fragment.selection_set.fields();

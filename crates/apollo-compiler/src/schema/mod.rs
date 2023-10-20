@@ -24,6 +24,7 @@ pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
+use crate::name;
 use crate::validation::DiagnosticList;
 
 /// High-level representation of a GraphQL schema
@@ -482,32 +483,32 @@ impl Schema {
                 // __typename: String!
                 Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new("__typename"),
+                    name: name!("__typename"),
                     arguments: Vec::new(),
-                    ty: Type::new_named("String").non_null(),
+                    ty: Type::Named(name!("String")).non_null(),
                     directives: ast::DirectiveList::new(),
                 }),
                 // __schema: __Schema!
                 Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new("__schema"),
+                    name: name!("__schema"),
                     arguments: Vec::new(),
-                    ty: Type::new_named("__Schema").non_null(),
+                    ty: Type::Named(name!("__Schema")).non_null(),
                     directives: ast::DirectiveList::new(),
                 }),
                 // __type(name: String!): __Type
                 Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new("__type"),
+                    name: name!("__type"),
                     arguments: vec![InputValueDefinition {
                         description: None,
-                        name: Name::new("name"),
-                        ty: ast::Type::new_named("String").non_null().into(),
+                        name: name!("name"),
+                        ty: ast::Type::Named(name!("String")).non_null().into(),
                         default_value: None,
                         directives: ast::DirectiveList::new(),
                     }
                     .into()],
-                    ty: Type::new_named("__Type"),
+                    ty: Type::Named(name!("__Type")),
                     directives: ast::DirectiveList::new(),
                 }),
             ]

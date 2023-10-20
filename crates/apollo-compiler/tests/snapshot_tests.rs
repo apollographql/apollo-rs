@@ -8,6 +8,7 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset
 
 use apollo_compiler::ast;
+use apollo_compiler::name;
 use apollo_compiler::schema;
 use apollo_compiler::DiagnosticList;
 use apollo_compiler::FileId;
@@ -253,19 +254,19 @@ fn project_root() -> PathBuf {
 fn test_invalid_synthetic_node() {
     let mut schema = Schema::new();
     schema.types.insert(
-        "Obj".into(),
+        name!("Obj"),
         schema::ObjectType {
             description: Default::default(),
-            name: "Obj".into(),
+            name: name!("Obj"),
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: [(
-                "field".into(),
+                name!("field"),
                 schema::FieldDefinition {
                     description: Default::default(),
-                    name: "field".into(),
+                    name: name!("field"),
                     arguments: Default::default(),
-                    ty: schema::Type::new_named("UndefinedType"),
+                    ty: schema::Type::Named(name!("UndefinedType")),
                     directives: Default::default(),
                 }
                 .into(),
@@ -274,7 +275,7 @@ fn test_invalid_synthetic_node() {
         }
         .into(),
     );
-    schema.schema_definition.make_mut().query = Some("Obj".into());
+    schema.schema_definition.make_mut().query = Some(name!("Obj").into());
     let expected = expect_test::expect![[r#"
         Error: cannot find type `UndefinedType` in this document
     "#]];

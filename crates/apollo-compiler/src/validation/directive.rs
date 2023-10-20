@@ -262,7 +262,7 @@ pub(crate) fn validate_directives<'dir>(
                 let input_value = directive_definition
                     .arguments
                     .iter()
-                    .find(|val| val.name == *argument.name)
+                    .find(|val| val.name == argument.name)
                     .cloned();
 
                 // @b(a: true)
