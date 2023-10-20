@@ -42,6 +42,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The previous names were too similar to `Directive` and `Diagnostic` (singular).
 - **Rename `ComponentStr` to `ComponentName` - [SimonSapin], [pull/713]**
   and its `node: NodeStr` field to `name: Name`.
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  - **Check validity of `ast::Name`.**
+    `NodeStr` is a smart string type with infallible conversion from `&str`.
+    `ast::Name` used to be a type alias for `NodeStr`, 
+    leaving the possibility of creating one invalid in GraphQL syntax.
+    Validation and serialization would not check this.
+    `Name` is now a wrapper type for `NodeStr`.
+    Its `new` constructor checks validity of the given string and returns a `Result`.
+    A new `name!` macro (see below) creates a `Name` with compile-time checking.
+  - **`OperationType::default_type_name` returns a `Name` instead of `&str`**
+  - **`Type::new_named("x")` is removed. Use `Type::Named(name!("x"))` instead.**
+  - **`ComponentStr` is renamed to `ComponentName`.**
+    It no longer has infallible conversions from `&str` or `String`.
+    Its `node` field is renamed to `name`;
+    the type of that field is changed from `NodeStr` to `Name`.
+  - **`NodeStr` no longer has a `to_component` method, only `Name` does**
+  - **Various function or method parameters changed from `impl Into<Name>` to `Name`,**
+    since there is no longer an infallible conversion from `&str`
 
 ## Features
 
@@ -68,14 +86,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * `executable::InlineFragment`
   * `executable::FragmentSpread`
   * `executable::FieldSet`
-- **Add allocation-free `NodeStr::from_static` - [SimonSapin], [pull/713]**
-  ```rust
-  let s = apollo_compiler::NodeStr::from_static(&"example");
-  assert_eq!(s, "example");
-  ```
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  See also the BREAKING section above.
+  - **Add a `name!("example")` macro**,
+    to be imported with `use apollo_compiler::name;`.
+    It creates an `ast::Name` from a string literal, with a compile-time validity checking.
+    A `Name` created this way does not own allocated heap memory or a reference counter,
+    so cloning it is extremely cheap.
+  - **Add allocation-free `NodeStr::from_static`.**
+    This mostly exists to support the `name!` macro, but can also be used on its own:
+    ```rust
+    let s = apollo_compiler::NodeStr::from_static(&"example");
+    assert_eq!(s, "example");
+    ```
 
 [SimonSapin]: https://github.com/SimonSapin
 [issue/708]: https://github.com/apollographql/apollo-rs/issues/708
+[issue/710]: https://github.com/apollographql/apollo-rs/issues/710
 [issue/711]: https://github.com/apollographql/apollo-rs/issues/711
 [pull/713]: https://github.com/apollographql/apollo-rs/pull/713
 [pull/727]: https://github.com/apollographql/apollo-rs/pull/727

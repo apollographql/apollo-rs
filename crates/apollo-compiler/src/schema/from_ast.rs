@@ -1,4 +1,5 @@
 use super::*;
+use crate::ast::OperationType;
 use indexmap::map::Entry;
 use std::sync::Arc;
 
@@ -267,27 +268,19 @@ impl SchemaBuilder {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
                 // This a macro rather than a closure to generate separate `static`s
-                let mut has_implicit_root_operation = false;
-                macro_rules! default_root_operation {
-                    ($($operation_type: path: $root_operation: expr,)+) => {{
-                        $(
-                            let name = $operation_type.default_type_name();
-                            if let Some(ExtendedType::Object(_)) = schema.types.get(name) {
-                                static OBJECT_TYPE_NAME: OnceLock<ComponentName> = OnceLock::new();
-                                $root_operation = Some(OBJECT_TYPE_NAME.get_or_init(|| {
-                                    Name::new(name).to_component(ComponentOrigin::Definition)
-                                }).clone());
-                                has_implicit_root_operation = true;
-                            }
-                        )+
-                    }};
-                }
                 let schema_def = schema.schema_definition.make_mut();
-                default_root_operation!(
-                    ast::OperationType::Query: schema_def.query,
-                    ast::OperationType::Mutation: schema_def.mutation,
-                    ast::OperationType::Subscription: schema_def.subscription,
-                );
+                let mut has_implicit_root_operation = false;
+                for (operation_type, root_operation) in [
+                    (OperationType::Query, &mut schema_def.query),
+                    (OperationType::Mutation, &mut schema_def.mutation),
+                    (OperationType::Subscription, &mut schema_def.subscription),
+                ] {
+                    let name = operation_type.default_type_name();
+                    if schema.types.get(&name).is_some_and(|def| def.is_object()) {
+                        *root_operation = Some(name.into());
+                        has_implicit_root_operation = true
+                    }
+                }
 
                 let apply_schema_extensions =
                     // https://github.com/apollographql/apollo-rs/issues/682
@@ -339,7 +332,7 @@ impl SchemaBuilder {
 
 fn adopt_type_extensions(
     schema: &mut Schema,
-    type_name: &NodeStr,
+    type_name: &Name,
     extensions: &[ast::Definition],
 ) -> ExtendedType {
     macro_rules! extend {
@@ -456,14 +449,14 @@ impl SchemaDefinition {
         &mut self,
         errors: &mut Vec<BuildError>,
         origin: ComponentOrigin,
-        root_operations: &[Node<(ast::OperationType, Name)>],
+        root_operations: &[Node<(OperationType, Name)>],
     ) {
         for op in root_operations {
             let (operation_type, object_type_name) = &**op;
             let entry = match operation_type {
-                ast::OperationType::Query => &mut self.query,
-                ast::OperationType::Mutation => &mut self.mutation,
-                ast::OperationType::Subscription => &mut self.subscription,
+                OperationType::Query => &mut self.query,
+                OperationType::Mutation => &mut self.mutation,
+                OperationType::Subscription => &mut self.subscription,
             };
             match entry {
                 None => *entry = Some(object_type_name.to_component(origin.clone())),

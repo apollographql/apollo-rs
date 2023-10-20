@@ -1,4 +1,5 @@
 use apollo_compiler::executable::FieldSet;
+use apollo_compiler::name;
 use apollo_compiler::Schema;
 
 fn common_schema() -> Schema {
@@ -21,11 +22,11 @@ fn test_valid_field_sets() {
     let schema = common_schema();
 
     let input = "id";
-    let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+    let field_set = FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql");
     field_set.validate(&schema).unwrap();
 
     let input = "id organization { id }";
-    let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+    let field_set = FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql");
     field_set.validate(&schema).unwrap();
 }
 
@@ -34,7 +35,7 @@ fn test_invalid_field_sets() {
     let schema = common_schema();
 
     let input = "name";
-    let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+    let field_set = FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql");
     let errors = field_set
         .validate(&schema)
         .unwrap_err()
@@ -45,7 +46,7 @@ fn test_invalid_field_sets() {
     );
 
     let input = "id organization";
-    let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+    let field_set = FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql");
     let errors = field_set
         .validate(&schema)
         .unwrap_err()
@@ -60,7 +61,7 @@ fn test_invalid_field_sets() {
     );
 
     let input = "id(arg: true)";
-    let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+    let field_set = FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql");
     let errors = field_set
         .validate(&schema)
         .unwrap_err()

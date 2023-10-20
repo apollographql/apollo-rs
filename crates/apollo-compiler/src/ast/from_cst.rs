@@ -770,9 +770,10 @@ impl Convert for cst::Name {
     type Target = ast::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(ast::Name::new_parsed(
-            self.text().as_str(),
-            NodeLocation::new(file_id, self.syntax()),
-        ))
+        let loc = NodeLocation::new(file_id, self.syntax());
+        let token = &self.syntax().first_token()?;
+        let str = token.text();
+        debug_assert!(ast::Name::check_syntax(str).is_ok());
+        Some(ast::Name(crate::NodeStr::new_parsed(str, loc)))
     }
 }

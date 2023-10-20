@@ -134,14 +134,15 @@ pub struct ComponentName {
     pub name: Name,
 }
 
-impl ComponentName {
-    /// Mark `value` as coming from a synthetic (no source location) definition (not an extension)
-    #[inline]
-    pub fn new(value: &str) -> Self {
-        Self {
-            origin: ComponentOrigin::Definition,
-            name: Name::new(value),
-        }
+impl From<&Name> for ComponentName {
+    fn from(value: &Name) -> Self {
+        value.to_component(ComponentOrigin::Definition)
+    }
+}
+
+impl From<Name> for ComponentName {
+    fn from(value: Name) -> Self {
+        value.to_component(ComponentOrigin::Definition)
     }
 }
 
@@ -189,23 +190,5 @@ impl std::borrow::Borrow<str> for ComponentName {
 impl AsRef<str> for ComponentName {
     fn as_ref(&self) -> &str {
         self
-    }
-}
-
-impl From<&'_ str> for ComponentName {
-    fn from(value: &'_ str) -> Self {
-        Self::new(value)
-    }
-}
-
-impl From<&'_ String> for ComponentName {
-    fn from(value: &'_ String) -> Self {
-        Self::new(value)
-    }
-}
-
-impl From<String> for ComponentName {
-    fn from(value: String) -> Self {
-        Self::new(&value)
     }
 }
