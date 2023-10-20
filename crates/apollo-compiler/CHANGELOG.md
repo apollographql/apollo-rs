@@ -66,10 +66,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * `executable::InlineFragment`
   * `executable::FragmentSpread`
   * `executable::FieldSet`
+- **Add allocation-free `NodeStr::from_static` - [SimonSapin], [pull/713]**
+  ```rust
+  let s = apollo_compiler::NodeStr::from_static(&"example");
+  assert_eq!(s, "example");
+  ```
 
 [SimonSapin]: https://github.com/SimonSapin
 [issue/708]: https://github.com/apollographql/apollo-rs/issues/708
 [issue/711]: https://github.com/apollographql/apollo-rs/issues/711
+[pull/713]: https://github.com/apollographql/apollo-rs/pull/713
 [pull/727]: https://github.com/apollographql/apollo-rs/pull/727
 [pull/728]: https://github.com/apollographql/apollo-rs/pull/728
 [pull/732]: https://github.com/apollographql/apollo-rs/pull/732
