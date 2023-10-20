@@ -273,7 +273,7 @@ impl SchemaBuilder {
                         $(
                             let name = $operation_type.default_type_name();
                             if let Some(ExtendedType::Object(_)) = schema.types.get(name) {
-                                static OBJECT_TYPE_NAME: OnceLock<ComponentStr> = OnceLock::new();
+                                static OBJECT_TYPE_NAME: OnceLock<ComponentName> = OnceLock::new();
                                 $root_operation = Some(OBJECT_TYPE_NAME.get_or_init(|| {
                                     Name::new(name).to_component(ComponentOrigin::Definition)
                                 }).clone());
@@ -532,7 +532,7 @@ impl ObjectType {
                 |prev, dup| {
                     errors.push(BuildError::DuplicateImplementsInterfaceInObject {
                         location: dup.location(),
-                        name_at_previous_location: prev.node.clone(),
+                        name_at_previous_location: prev.name.clone(),
                         type_name: definition.name.clone(),
                     })
                 },
@@ -585,7 +585,7 @@ impl ObjectType {
             |prev, dup| {
                 errors.push(BuildError::DuplicateImplementsInterfaceInObject {
                     location: dup.location(),
-                    name_at_previous_location: prev.node.clone(),
+                    name_at_previous_location: prev.name.clone(),
                     type_name: extension.name.clone(),
                 })
             },
@@ -624,7 +624,7 @@ impl InterfaceType {
                 |prev, dup| {
                     errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
                         location: dup.location(),
-                        name_at_previous_location: prev.node.clone(),
+                        name_at_previous_location: prev.name.clone(),
                         type_name: definition.name.clone(),
                     })
                 },
@@ -677,7 +677,7 @@ impl InterfaceType {
             |prev, dup| {
                 errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
                     location: dup.location(),
-                    name_at_previous_location: prev.node.clone(),
+                    name_at_previous_location: prev.name.clone(),
                     type_name: extension.name.clone(),
                 })
             },
@@ -721,7 +721,7 @@ impl UnionType {
                 |prev, dup| {
                     errors.push(BuildError::UnionMemberNameCollision {
                         location: dup.location(),
-                        name_at_previous_location: prev.node.clone(),
+                        name_at_previous_location: prev.name.clone(),
                         type_name: definition.name.clone(),
                     })
                 },
@@ -756,7 +756,7 @@ impl UnionType {
             |prev, dup| {
                 errors.push(BuildError::UnionMemberNameCollision {
                     location: dup.location(),
-                    name_at_previous_location: prev.node.clone(),
+                    name_at_previous_location: prev.name.clone(),
                     type_name: extension.name.clone(),
                 })
             },
@@ -927,9 +927,9 @@ fn collect_sticky<'a, V>(
 }
 
 fn extend_sticky_set(
-    set: &mut IndexSet<ComponentStr>,
-    iter: impl IntoIterator<Item = ComponentStr>,
-    mut duplicate: impl FnMut(&ComponentStr, ComponentStr),
+    set: &mut IndexSet<ComponentName>,
+    iter: impl IntoIterator<Item = ComponentName>,
+    mut duplicate: impl FnMut(&ComponentName, ComponentName),
 ) {
     for value in iter.into_iter() {
         match set.get(&value) {
@@ -941,9 +941,9 @@ fn extend_sticky_set(
     }
 }
 fn collect_sticky_set(
-    iter: impl IntoIterator<Item = ComponentStr>,
-    duplicate: impl FnMut(&ComponentStr, ComponentStr),
-) -> IndexSet<ComponentStr> {
+    iter: impl IntoIterator<Item = ComponentName>,
+    duplicate: impl FnMut(&ComponentName, ComponentName),
+) -> IndexSet<ComponentName> {
     let mut set = IndexSet::new();
     extend_sticky_set(&mut set, iter, duplicate);
     set

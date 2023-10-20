@@ -16,21 +16,21 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "customPetQuery",
+                name: "customPetQuery",
             },
         ),
         mutation: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "customPetMutation",
+                name: "customPetMutation",
             },
         ),
         subscription: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "customPetSubscription",
+                name: "customPetSubscription",
             },
         ),
     },
