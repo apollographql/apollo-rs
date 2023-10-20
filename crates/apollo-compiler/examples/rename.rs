@@ -36,7 +36,7 @@ fn renamed() -> Schema {
         .query
         .as_mut()
         .unwrap()
-        .node = new_name;
+        .name = new_name;
 
     schema.validate().unwrap();
     schema

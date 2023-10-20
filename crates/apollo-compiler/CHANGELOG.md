@@ -40,6 +40,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` - 
   [SimonSapin], [pull/732] fixing [issue/711].**
   The previous names were too similar to `Directive` and `Diagnostic` (singular).
+- **Rename `ComponentStr` to `ComponentName` - [SimonSapin], [pull/713]**
+  and its `node: NodeStr` field to `name: Name`.
 
 ## Features
 

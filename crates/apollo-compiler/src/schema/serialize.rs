@@ -74,10 +74,10 @@ impl Node<SchemaDefinition> {
                 .into_iter()
                 .any(|op| op.is_some());
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
-            let root_op = |op: &Option<ComponentStr>, ty| {
+            let root_op = |op: &Option<ComponentName>, ty| {
                 op.as_ref()
                     .filter(|name| name.origin.extension_id() == ext)
-                    .map(|name| (ty, name.node.clone()).into())
+                    .map(|name| (ty, name.name.clone()).into())
                     .into_iter()
             };
             root_op(&self.query, OperationType::Query)
@@ -305,11 +305,11 @@ fn components<'a, T: 'a>(
         .collect()
 }
 
-fn names(names: &IndexSet<ComponentStr>, ext: Option<&ExtensionId>) -> Vec<Name> {
+fn names(names: &IndexSet<ComponentName>, ext: Option<&ExtensionId>) -> Vec<Name> {
     names
         .iter()
         .filter(|component| component.origin.extension_id() == ext)
-        .map(|component| component.node.clone())
+        .map(|component| component.name.clone())
         .collect()
 }
 

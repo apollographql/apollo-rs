@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -50,13 +50,13 @@ Schema {
                 name: "SearchResult",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Photo",
+                        name: "Photo",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Person",
+                        name: "Person",
                     },
                 },
             },

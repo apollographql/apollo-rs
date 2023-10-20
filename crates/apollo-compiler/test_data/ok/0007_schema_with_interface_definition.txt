@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -49,9 +49,9 @@ Schema {
                 description: None,
                 name: "Query",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Node",
+                        name: "Node",
                     },
                 },
                 directives: [],
@@ -98,9 +98,9 @@ Schema {
                 description: None,
                 name: "Resource",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Node",
+                        name: "Node",
                     },
                 },
                 directives: [],
@@ -149,13 +149,13 @@ Schema {
                 description: None,
                 name: "Image",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Resource",
+                        name: "Resource",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Node",
+                        name: "Node",
                     },
                 },
                 directives: [],

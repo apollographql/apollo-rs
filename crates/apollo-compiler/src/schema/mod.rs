@@ -18,7 +18,7 @@ mod from_ast;
 mod serialize;
 mod validation;
 
-pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
+pub use self::component::{Component, ComponentName, ComponentOrigin, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
 pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
@@ -56,13 +56,13 @@ pub struct SchemaDefinition {
     pub directives: DirectiveList,
 
     /// Name of the object type for the `query` root operation
-    pub query: Option<ComponentStr>,
+    pub query: Option<ComponentName>,
 
     /// Name of the object type for the `mutation` root operation
-    pub mutation: Option<ComponentStr>,
+    pub mutation: Option<ComponentName>,
 
     /// Name of the object type for the `subscription` root operation
-    pub subscription: Option<ComponentStr>,
+    pub subscription: Option<ComponentName>,
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
@@ -92,7 +92,7 @@ pub struct ScalarType {
 pub struct ObjectType {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub implements_interfaces: IndexSet<ComponentStr>,
+    pub implements_interfaces: IndexSet<ComponentName>,
     pub directives: DirectiveList,
 
     /// Explicit field definitions.
@@ -106,7 +106,7 @@ pub struct ObjectType {
 pub struct InterfaceType {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub implements_interfaces: IndexSet<ComponentStr>,
+    pub implements_interfaces: IndexSet<ComponentName>,
 
     pub directives: DirectiveList,
 
@@ -126,7 +126,7 @@ pub struct UnionType {
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
-    pub members: IndexSet<ComponentStr>,
+    pub members: IndexSet<ComponentName>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -391,7 +391,7 @@ impl Schema {
             ast::OperationType::Subscription => &self.schema_definition.subscription,
         }
         .as_ref()
-        .map(|component| &component.node)
+        .map(|component| &component.name)
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -439,7 +439,7 @@ impl Schema {
                 | ExtendedType::InputObject(_) => continue,
             };
             for interface in interfaces {
-                map.entry(interface.node.clone())
+                map.entry(interface.name.clone())
                     .or_default()
                     .insert(ty_name.clone());
             }

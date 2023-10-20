@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -77,9 +77,9 @@ Schema {
                 description: None,
                 name: "Object",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Intf",
+                        name: "Intf",
                     },
                 },
                 directives: [],

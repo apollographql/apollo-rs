@@ -43,7 +43,7 @@ pub(crate) fn get_possible_types<'a>(
         Some(schema::ExtendedType::Union(union_)) => union_
             .members
             .iter()
-            .map(|component| &component.node)
+            .map(|component| &component.name)
             .collect(),
         _ => Default::default(),
     }

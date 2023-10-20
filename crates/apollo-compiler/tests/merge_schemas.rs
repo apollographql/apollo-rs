@@ -1,7 +1,7 @@
 use apollo_compiler::ast;
 use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
-use apollo_compiler::schema::ComponentStr;
+use apollo_compiler::schema::ComponentName;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::Schema;
 use indexmap::IndexMap;
@@ -91,7 +91,7 @@ where
     Ok(())
 }
 
-fn merge_sets(merged: &mut IndexSet<ComponentStr>, new: &IndexSet<ComponentStr>) {
+fn merge_sets(merged: &mut IndexSet<ComponentName>, new: &IndexSet<ComponentName>) {
     for value in new {
         if !merged.contains(value) {
             merged.insert(value.clone());
