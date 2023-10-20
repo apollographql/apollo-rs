@@ -4,6 +4,7 @@ mod field_set;
 mod merge_schemas;
 /// Formerly in src/lib.rs
 mod misc;
+mod node_str;
 mod parser;
 mod schema;
 mod validation;
