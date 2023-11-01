@@ -8,7 +8,7 @@ pub(crate) mod grammar;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    cst::{Document, SelectionSet},
+    cst::{Document, SelectionSet, Type},
     lexer::Lexer,
     Error, LimitTracker, Token, TokenKind,
 };
@@ -146,12 +146,15 @@ impl<'a> Parser<'a> {
 
         match builder {
             syntax_tree::SyntaxTreeWrapper::Document(tree) => tree,
-            syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
+            syntax_tree::SyntaxTreeWrapper::Type(_)
+            | syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
                 unreachable!("parse constructor can only construct a document")
             }
         }
     }
 
+    /// Parse selection set tokens. Useful for specifically parsing selections
+    /// sets which are part of specific directives, like `@requires`.
     pub fn parse_selection_set(mut self) -> SyntaxTree<SelectionSet> {
         grammar::selection::field_set(&mut self);
 
@@ -166,7 +169,28 @@ impl<'a> Parser<'a> {
 
         match builder {
             syntax_tree::SyntaxTreeWrapper::FieldSet(tree) => tree,
-            syntax_tree::SyntaxTreeWrapper::Document(_) => {
+            syntax_tree::SyntaxTreeWrapper::Document(_)
+            | syntax_tree::SyntaxTreeWrapper::Type(_) => {
+                unreachable!("parse constructor can only construct a selection set")
+            }
+        }
+    }
+
+    /// Parse type tokens. Useful for specifically parsing field types which are
+    /// part of specific directives, like `@field`.
+    pub fn parse_type(mut self) -> SyntaxTree<Type> {
+        grammar::ty::ty(&mut self);
+
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        let builder =
+            builder.finish_type(self.errors, self.recursion_limit, self.lexer.limit_tracker);
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::Type(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::FieldSet(_)
+            | syntax_tree::SyntaxTreeWrapper::Document(_) => {
                 unreachable!("parse constructor can only construct a selection set")
             }
         }
