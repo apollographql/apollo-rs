@@ -570,6 +570,80 @@ impl Type {
         }
     }
 
+    pub fn parse(&self, input: &str) -> Result<Self, &'static str> {
+        // <https://spec.graphql.org/October2021/#sec-Language.Source-Text.Ignored-Tokens>
+        let next_significant = |iter: &mut std::str::Chars<'_>| {
+            loop {
+                match iter.next() {
+                    Some(
+                        '\u{FEFF}' | // UnicodeBOM
+                        ' ' | '\t' | // WhiteSpace
+                        '\n' | '\r' | // LineTerminator
+                        ',' // Comma
+                    ) => {}
+                    // Comment: skip until next LineTerminator
+                    Some('#') => loop {
+                        if let None | Some('\n' | '\r') = iter.next() {
+                            break
+                        }
+                    }
+                    opt => return opt,
+                }
+            }
+        };
+        let index = |iter: &std::str::Chars<'_>| input.len() - iter.as_str().len();
+
+        let mut iter = input.chars();
+        let mut list_nesting_level = 0;
+        let name_start_index = loop {
+            let Some(c) = next_significant(&mut iter) else {
+                return Err("missing name");
+            };
+            if c == '[' {
+                list_nesting_level += 1
+            } else if Name::char_is_name_start(c) {
+                break index(&iter) - c.len_utf8();
+            } else {
+                return Err("unexpected character");
+            }
+        };
+
+        let name = loop {
+            let previous_iter = iter.clone();
+            // Not calling `next_significant`, the name must be a single token:
+            let Some(c) = iter.next() else {
+                break &input[name_start_index..];
+            };
+            if !Name::char_is_name_continue(c) {
+                iter = previous_iter; // roll back
+                let name_end_index = index(&iter);
+                break &input[name_start_index..name_end_index];
+            }
+        };
+
+        let mut ty = Self::Named(name.into());
+        loop {
+            match next_significant(&mut iter) {
+                Some(']') => {
+                    if list_nesting_level == 0 {
+                        return Err("unbalanced bracket");
+                    }
+                    list_nesting_level -= 1;
+                    ty = ty.list();
+                }
+                Some('!') => {
+                    if ty.is_non_null() {
+                        return Err("type cannot be doubly non-null");
+                    }
+                    ty = ty.non_null()
+                }
+                None if list_nesting_level == 0 => return Ok(ty),
+                None => return Err("unbalanced bracket"),
+                Some(_) => return Err("unexpected character"),
+            }
+        }
+    }
+
     /// Returns whether this type is non-null
     pub fn is_non_null(&self) -> bool {
         matches!(self, Type::NonNullNamed(_) | Type::NonNullList(_))
@@ -1112,6 +1186,18 @@ impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
             name: name.into(),
             value: value.into(),
         })
+    }
+}
+
+impl Name {
+    /// <https://spec.graphql.org/October2021/#NameStart>
+    const fn char_is_name_start(c: char) -> bool {
+        matches!(c, 'a'..='z' | 'A'..='Z' | '_')
+    }
+
+    /// <https://spec.graphql.org/October2021/#NameContinue>
+    const fn char_is_name_continue(c: char) -> bool {
+        matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '0'..='9')
     }
 }
 
