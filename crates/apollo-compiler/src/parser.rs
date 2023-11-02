@@ -1,6 +1,7 @@
 use crate::ast;
 use crate::ast::Document;
 use crate::executable;
+use crate::schema;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
@@ -232,6 +233,27 @@ impl Parser {
             build_errors: build_errors.errors,
             selection_set,
         }
+    }
+
+    /// Parse the given source of a field type.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Parsing is fault-tolerant, so a type node is always returned.
+    /// TODO: document how to validate
+    pub fn parse_field_type(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> schema::FieldType {
+        let (tree, source_file) =
+            self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
+                parser.parse_type()
+            });
+        let file_id = FileId::new();
+        let ast = ast::from_cst::convert_type(&tree.ty(), file_id);
+        todo!()
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.

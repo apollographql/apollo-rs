@@ -27,7 +27,7 @@ impl Document {
 }
 
 /// Similar to `TryFrom`, but with an `Option` return type because AST uses Option a lot.
-trait Convert {
+pub(crate) trait Convert {
     type Target;
     fn convert(&self, file_id: FileId) -> Option<Self::Target>;
 }
@@ -564,6 +564,14 @@ impl Convert for cst::Type {
                 }
             }
         }
+    }
+}
+
+pub(crate) fn convert_type(ty: &cst::Type, file_id: FileId) -> ast::Type {
+    match ty {
+        cst::Type::NamedType(name) => todo!(),
+        cst::Type::ListType(inner) => todo!(),
+        cst::Type::NonNullType(inner) => todo!(),
     }
 }
 

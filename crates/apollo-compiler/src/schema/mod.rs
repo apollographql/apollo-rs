@@ -143,6 +143,20 @@ pub struct InputObjectType {
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
+#[derive(Debug, Clone)]
+pub struct FieldType {
+    /// If this field type was originally parsed from a source file,
+    /// this map contains one entry for that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub sources: crate::SourceMap,
+
+    /// Errors that occurred when building this field type,
+    /// either parsing a source file or converting from AST.
+    build_errors: Vec<BuildError>,
+    pub ty: Type,
+}
+
 /// AST node that has been skipped during conversion to `Schema`
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
@@ -849,6 +863,18 @@ impl Directives {
     }
 
     serialize_method!();
+}
+
+impl FieldType {
+    /// Parse the given source with a field type.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Parser::new().parse_field_type(source_text, path)
+    }
 }
 
 impl std::fmt::Debug for Directives {
