@@ -51,7 +51,14 @@ pub(crate) fn arguments(p: &mut Parser) {
 pub(crate) fn arguments_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
     p.bump(S!['(']);
-    input::input_value_definition(p, false);
+    if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+        input::input_value_definition(p);
+    } else {
+        p.err("expected an Argument Definition");
+    }
+    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+        input::input_value_definition(p);
+    }
     p.expect(T![')'], S![')']);
 }
 
