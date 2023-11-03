@@ -17,4 +17,4 @@
             - NAMED_TYPE@29..35
                 - NAME@29..35
                     - IDENT@29..35 "Person"
-recursion limit: 500, high: 2
+recursion limit: 500, high: 0
