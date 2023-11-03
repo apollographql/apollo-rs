@@ -52,8 +52,8 @@
 - ERROR@108:116 "unterminated string value" ")
   }
 }
-- ERROR@116:116 "expected }" EOF
-- ERROR@116:116 "expected }" EOF
+- ERROR@116:116 "expected R_CURLY, got EOF" EOF
+- ERROR@116:116 "expected R_CURLY, got EOF" EOF
 - ERROR@116:116 "expected R_PAREN, got EOF" EOF
 - ERROR@116:116 "expected R_CURLY, got EOF" EOF
-recursion limit: 500, high: 6
+recursion limit: 500, high: 4
