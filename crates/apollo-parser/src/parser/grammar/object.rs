@@ -1,7 +1,7 @@
 #![allow(clippy::needless_return)]
 
 use crate::{
-    parser::grammar::{description, directive, document::is_definition, field, name, ty},
+    parser::grammar::{description, directive, field, name, ty},
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
@@ -91,36 +91,19 @@ pub(crate) fn implements_interfaces(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
     p.bump(SyntaxKind::implements_KW);
 
-    implements_interface(p, false);
-}
+    if let Some(T![&]) = p.peek() {
+        p.bump(S![&]);
+    }
 
-fn implements_interface(p: &mut Parser, is_interfaces: bool) {
-    match p.peek() {
-        Some(T![&]) => {
-            p.bump(S![&]);
-            implements_interface(p, is_interfaces)
-        }
-        Some(TokenKind::Name) => {
-            ty::named_type(p);
-            if let Some(node) = p.peek_data() {
-                if !is_definition(node) {
-                    // TODO: use a loop instead of recursion
-                    if p.recursion_limit.check_and_increment() {
-                        p.limit_err("parser recursion limit reached");
-                        return;
-                    }
-                    implements_interface(p, true);
-                    p.recursion_limit.decrement()
-                }
+    if let Some(TokenKind::Name) = p.peek() {
+        ty::named_type(p);
+    } else {
+        p.err("expected an Interface name");
+    }
 
-                return;
-            }
-        }
-        _ => {
-            if !is_interfaces {
-                p.err("expected an Object Type Definition");
-            }
-        }
+    while let Some(T![&]) = p.peek() {
+        p.bump(S![&]);
+        ty::named_type(p);
     }
 }
 
