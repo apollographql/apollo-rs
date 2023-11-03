@@ -68,4 +68,4 @@
             - R_CURLY@118..119 "}"
 - ERROR@105:128 "unexpected escaped character" "\ errronous string \""
 - ERROR@128:129 "expected a valid Value" )
-recursion limit: 500, high: 1
+recursion limit: 500, high: 0

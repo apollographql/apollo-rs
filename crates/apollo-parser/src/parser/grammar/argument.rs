@@ -7,29 +7,12 @@ use crate::{
 ///
 /// *Argument*:
 ///    Name **:** Value
-pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
-    if let Some(TokenKind::Name) = p.peek() {
-        let guard = p.start_node(SyntaxKind::ARGUMENT);
-        name::name(p);
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            value::value(p, false);
-            is_argument = true;
-            if p.peek().is_some() {
-                guard.finish_node();
-                // TODO: use a loop instead of recursion
-                if p.recursion_limit.check_and_increment() {
-                    p.limit_err("parser recursion limit reached");
-                    return;
-                }
-                argument(p, is_argument);
-                p.recursion_limit.decrement();
-                return;
-            }
-        }
-    }
-    if !is_argument {
-        p.err("expected an Argument");
+pub(crate) fn argument(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ARGUMENT);
+    name::name(p);
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        value::value(p, false);
     }
 }
 
@@ -40,7 +23,14 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
 pub(crate) fn arguments(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
-    argument(p, false);
+    if let Some(TokenKind::Name) = p.peek() {
+        argument(p);
+    } else {
+        p.err("expected an Argument");
+    }
+    while let Some(TokenKind::Name) = p.peek() {
+        argument(p);
+    }
     p.expect(T![')'], S![')']);
 }
 
