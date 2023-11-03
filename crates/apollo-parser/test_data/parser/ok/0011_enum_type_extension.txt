@@ -27,4 +27,4 @@
                         - IDENT@47..51 "WEST"
             - WHITESPACE@51..52 "\n"
             - R_CURLY@52..53 "}"
-recursion limit: 500, high: 2
+recursion limit: 500, high: 0
