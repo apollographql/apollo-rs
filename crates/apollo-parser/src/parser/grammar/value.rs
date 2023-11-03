@@ -110,26 +110,16 @@ pub(crate) fn object_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
-    match p.peek() {
-        Some(TokenKind::Name) => {
-            if p.recursion_limit.check_and_increment() {
-                p.limit_err("parser recursion limit reached");
-                return;
-            }
-            object_field(p);
-            p.recursion_limit.decrement();
-
-            if let Some(T!['}']) = p.peek() {
-                p.bump(S!['}']);
-            } else {
-                p.err("expected }");
-            }
-        }
-        Some(T!['}']) => {
-            p.bump(S!['}']);
-        }
-        _ => p.err("expected Object Value"),
+    if let Some(TokenKind::Name) = p.peek() {
+        object_field(p);
+    } else {
+        p.err("expected Object Value");
     }
+    while let Some(TokenKind::Name) = p.peek() {
+        object_field(p);
+    }
+
+    p.expect(T!['}'], S!['}']);
 }
 
 /// See: https://spec.graphql.org/October2021/#ObjectField
@@ -137,25 +127,17 @@ pub(crate) fn object_value(p: &mut Parser) {
 /// *ObjectField*:
 ///     Name **:** Value
 pub(crate) fn object_field(p: &mut Parser) {
-    if let Some(TokenKind::Name) = p.peek() {
-        let guard = p.start_node(SyntaxKind::OBJECT_FIELD);
-        name::name(p);
+    let _guard = p.start_node(SyntaxKind::OBJECT_FIELD);
+    name::name(p);
 
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            value(p, true);
-            if p.peek().is_some() {
-                guard.finish_node();
-
-                // TODO: use a loop instead of recursion
-                if p.recursion_limit.check_and_increment() {
-                    p.limit_err("parser recursion limit reached");
-                    return;
-                }
-                object_field(p);
-                p.recursion_limit.decrement();
-            }
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        if p.recursion_limit.check_and_increment() {
+            p.limit_err("parser recursion limit reached");
+            return;
         }
+        value(p, true);
+        p.recursion_limit.decrement()
     }
 }
 
