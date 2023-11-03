@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2022-mm-dd
+# [0.7.2](https://crates.io/crates/apollo-parser/0.7.2) - 2023-11-03
 
 ## Fixes
 
