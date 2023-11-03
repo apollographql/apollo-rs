@@ -103,7 +103,11 @@ pub(crate) fn implements_interfaces(p: &mut Parser) {
 
     while let Some(T![&]) = p.peek() {
         p.bump(S![&]);
-        ty::named_type(p);
+        if let Some(TokenKind::Name) = p.peek() {
+            ty::named_type(p);
+        } else {
+            p.err("expected an Interface name");
+        }
     }
 }
 
