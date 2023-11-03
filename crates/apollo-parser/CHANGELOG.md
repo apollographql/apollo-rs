@@ -16,6 +16,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Fixes
+
+- **Fix overly permissive parsing of `implements` lists and `union` member types - [goto-bus-stop], [pull/721] fixing [issue/659]**
+  Previously these definitions were all accepted, despite missing or excessive `&` and `|` separators:
+  ```graphql
+  type Ty implements A B
+  type Ty implements A && B
+  type Ty implements A & B &
+
+  union Ty = A B
+  union Ty = A || B
+  union Ty = A | B |
+  ```
+  Now they report a syntax error.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/659]: https://github.com/apollographql/apollo-rs/issues/659
 
 # [0.7.2](https://crates.io/crates/apollo-parser/0.7.2) - 2023-11-03
 
