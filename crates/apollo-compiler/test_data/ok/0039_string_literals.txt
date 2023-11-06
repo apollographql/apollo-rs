@@ -6,7 +6,7 @@ Schema {
         },
         38: SourceFile {
             path: "0039_string_literals.graphql",
-            source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n}\n",
+            source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n}\n",
         },
     },
     schema_definition: SchemaDefinition {
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..531 @38 ObjectType {
+            0..602 @38 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -266,6 +266,34 @@ Schema {
                             directives: [],
                         },
                     },
+                    "f14": Component {
+                        origin: Definition,
+                        node: 533..567 @38 FieldDefinition {
+                            description: Some(
+                                "Trailing backslash \\",
+                            ),
+                            name: "f14",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f15": Component {
+                        origin: Definition,
+                        node: 571..600 @38 FieldDefinition {
+                            description: Some(
+                                "Trailing quote\"",
+                            ),
+                            name: "f15",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
                 },
             },
         ),
@@ -279,7 +307,7 @@ ExecutableDocument {
         },
         38: SourceFile {
             path: "0039_string_literals.graphql",
-            source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n}\n",
+            source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n}\n",
         },
     },
     anonymous_operation: None,

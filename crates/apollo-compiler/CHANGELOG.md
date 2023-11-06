@@ -108,10 +108,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/752]:**
   when mutating isn’t needed after parsing,
   this returns an immutable `Valid<_>` value in one step.
+- **Serialize multi-line strings as block strings- [SimonSapin], [pull/724]**
+  Example before:
+  ```graphql
+  "Example\n\nDescription description description"
+  schema { query: MyQuery }
+  ```
+  After:
+  ```graphql
+  """
+  Example
+  
+  Description description description
+  """
+  schema { query: MyQuery }
+  ```
 
 [SimonSapin]: https://github.com/SimonSapin
 [issue/709]: https://github.com/apollographql/apollo-rs/issues/709
 [issue/751]: https://github.com/apollographql/apollo-rs/issues/751
+[pull/724]: https://github.com/apollographql/apollo-rs/pull/724
 [pull/752]: https://github.com/apollographql/apollo-rs/pull/752
 
 
