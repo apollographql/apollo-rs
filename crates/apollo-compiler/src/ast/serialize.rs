@@ -12,7 +12,7 @@ pub struct Serialize<'a, T> {
 
 #[derive(Debug, Clone)]
 pub(crate) struct Config<'a> {
-    ident_prefix: Option<&'a str>,
+    indent_prefix: Option<&'a str>,
 }
 
 pub(crate) struct State<'config, 'fmt, 'fmt2> {
@@ -29,13 +29,13 @@ impl<'a, T> Serialize<'a, T> {
     /// `prefix` is repeated at the start of each line by the number of indentation levels.
     /// The default is `"  "`, two spaces.
     pub fn indent_prefix(mut self, prefix: &'a str) -> Self {
-        self.config.ident_prefix = Some(prefix);
+        self.config.indent_prefix = Some(prefix);
         self
     }
 
     /// Disable indentation and line breaks
     pub fn no_indent(mut self) -> Self {
-        self.config.ident_prefix = None;
+        self.config.indent_prefix = None;
         self
     }
 }
@@ -43,7 +43,7 @@ impl<'a, T> Serialize<'a, T> {
 impl Default for Config<'_> {
     fn default() -> Self {
         Self {
-            ident_prefix: Some("  "),
+            indent_prefix: Some("  "),
         }
     }
 }
@@ -89,7 +89,7 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
     }
 
     fn new_line_common(&mut self, space: bool) -> fmt::Result {
-        if let Some(prefix) = self.config.ident_prefix {
+        if let Some(prefix) = self.config.indent_prefix {
             self.write("\n")?;
             for _ in 0..self.indent_level {
                 self.write(prefix)?;
@@ -104,7 +104,7 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
     fn require_new_line(&mut self) -> fmt::Result {
         let prefix = self
             .config
-            .ident_prefix
+            .indent_prefix
             .expect("require_new_line called with newlines disabled");
         self.write("\n")?;
         for _ in 0..self.indent_level {
@@ -114,13 +114,13 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
     }
 
     pub(crate) fn newlines_enabled(&self) -> bool {
-        self.config.ident_prefix.is_some()
+        self.config.indent_prefix.is_some()
     }
 
     pub(crate) fn on_single_line<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> R {
-        let indent_prefix = self.config.ident_prefix.take();
+        let indent_prefix = self.config.indent_prefix.take();
         let result = f(self);
-        self.config.ident_prefix = indent_prefix;
+        self.config.indent_prefix = indent_prefix;
         result
     }
 }
