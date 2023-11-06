@@ -4,8 +4,9 @@ mod inputs;
 mod repr;
 mod sources;
 
-pub use db::RootDatabase;
-pub use inputs::{InputDatabase, InputStorage, SourceCache};
-pub use repr::{ReprDatabase, ReprStorage};
+pub(crate) use db::RootDatabase;
+pub(crate) use inputs::{InputDatabase, InputStorage};
+pub(crate) use repr::{ReprDatabase, ReprStorage};
+pub use sources::FileId;
+pub(crate) use sources::Source;
 pub(crate) use sources::SourceType;
-pub use sources::{FileId, Source};

@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 /// Queries for parsing into the various in-memory representations of GraphQL documents
 #[salsa::query_group(ReprStorage)]
-pub trait ReprDatabase: InputDatabase {
+pub(crate) trait ReprDatabase: InputDatabase {
     #[salsa::invoke(ast)]
     #[salsa::transparent]
     fn ast(&self, file_id: FileId) -> Arc<ast::Document>;
