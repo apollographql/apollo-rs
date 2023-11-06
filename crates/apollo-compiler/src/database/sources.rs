@@ -67,7 +67,6 @@ impl FileId {
     pub(crate) const NONE: Self = Self::const_new(-2);
 
     pub(crate) const HACK_TMP: Self = Self::const_new(-3);
-    pub(crate) const HACK_TMP_2: Self = Self::const_new(-4);
 
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
