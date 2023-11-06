@@ -7,6 +7,9 @@ pub(crate) trait InputDatabase {
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
 
+    #[salsa::input]
+    fn schema_input(&self) -> Option<Arc<crate::Schema>>;
+
     /// Get the GraphQL source text for a file.
     #[salsa::invoke(source_code)]
     fn source_code(&self, file_id: FileId) -> Arc<String>;

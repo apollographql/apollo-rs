@@ -39,6 +39,9 @@ fn ast(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ast::Document> {
 }
 
 fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
+    if let Some(schema) = db.schema_input() {
+        return schema;
+    }
     let mut builder = crate::Schema::builder();
     for file_id in db.type_definition_files() {
         let executable_definitions_are_errors = db.source_type(file_id) != SourceType::Document;

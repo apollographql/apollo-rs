@@ -90,22 +90,10 @@ fn compiler_validation(
     }
 
     if let Some(schema) = schema {
-        let schema_ast_id = FileId::HACK_TMP;
-        ids.push(schema_ast_id);
-        let mut ast = crate::ast::Document::new();
-        ast.definitions.extend(schema.to_ast());
-        compiler.db.set_input(
-            schema_ast_id,
-            crate::Source {
-                ty: crate::database::SourceType::Schema,
-                filename: Default::default(),
-                text: Default::default(),
-                ast: Some(Arc::new(ast)),
-            },
-        );
+        compiler.db.set_schema_input(Some(Arc::new(schema.clone())));
     }
 
-    let ast_id = FileId::HACK_TMP_2;
+    let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let ast = document.to_ast();
     compiler.db.set_input(
@@ -146,21 +134,9 @@ pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, fiel
         compiler.db.set_input(*id, source.into());
     }
 
-    let schema_ast_id = FileId::HACK_TMP;
-    ids.push(schema_ast_id);
-    let mut ast = crate::ast::Document::new();
-    ast.definitions.extend(schema.to_ast());
-    compiler.db.set_input(
-        schema_ast_id,
-        crate::Source {
-            ty: crate::database::SourceType::Schema,
-            filename: Default::default(),
-            text: Default::default(),
-            ast: Some(Arc::new(ast)),
-        },
-    );
+    compiler.db.set_schema_input(Some(Arc::new(schema.clone())));
 
-    let ast_id = FileId::HACK_TMP_2;
+    let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let ast = ast::Document::new();
     compiler.db.set_input(
