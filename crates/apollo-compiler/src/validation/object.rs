@@ -66,26 +66,25 @@ pub(crate) fn validate_object_type_definition(
 
                 let mut labels = vec![
                     Label::new(
-                        implements_interface.location().unwrap(),
+                        implements_interface.location(),
                         format!("implementation of interface {implements_interface} declared here"),
                     ),
                     Label::new(
-                        object.definition.location().unwrap(),
+                        object.definition.location(),
                         format!("add `{}` field to this object", interface_field.name),
                     ),
                 ];
-                if let Some(loc) = interface_field.location() {
-                    labels.push(Label::new(
-                        loc,
-                        format!(
-                            "`{}` was originally defined by {} here",
-                            interface_field.name, implements_interface
-                        ),
-                    ));
-                };
+                let loc = interface_field.location();
+                labels.push(Label::new(
+                    loc,
+                    format!(
+                        "`{}` was originally defined by {} here",
+                        interface_field.name, implements_interface
+                    ),
+                ));
                 diagnostics.push(ApolloDiagnostic::new(
                     db,
-                    object.definition.location().unwrap(),
+                    object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
                         interface: implements_interface.to_string(),
                         field: interface_field.name.to_string(),

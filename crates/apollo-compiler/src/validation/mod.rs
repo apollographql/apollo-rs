@@ -8,10 +8,10 @@ mod fragment;
 mod input_object;
 mod interface;
 mod object;
-mod operation;
+pub(crate) mod operation;
 mod scalar;
 mod schema;
-mod selection;
+pub(crate) mod selection;
 mod union_;
 mod value;
 mod variable;
@@ -22,33 +22,58 @@ use crate::FileId;
 use crate::NodeLocation;
 use crate::NodeStr;
 use crate::SourceFile;
-use indexmap::IndexMap;
+use crate::SourceMap;
 use indexmap::IndexSet;
-use std::cell::RefCell;
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 use std::fmt;
 use std::io;
 use std::sync::Arc;
+use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
+/// A collection of diagnostics returned by some validation method
 pub struct Diagnostics(Box<DiagnosticsBoxed>);
 
 /// Box indirection to avoid large `Err` values:
 /// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
 struct DiagnosticsBoxed {
-    source_cache: RefCell<SourceCache>,
-    errors: Vec<Error>,
+    sources: Sources,
+    diagnostics_data: Vec<DiagnosticData>,
 }
 
-struct SourceCache {
-    sources: IndexMap<FileId, Arc<SourceFile>>,
-    cache: HashMap<FileId, ariadne::Source>,
+struct Sources {
+    schema_sources: Option<SourceMap>,
+    self_sources: SourceMap,
 }
 
-struct Error {
+struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
+}
+
+pub struct Diagnostic<'a> {
+    sources: &'a Sources,
+    data: &'a DiagnosticData,
+}
+
+/// A source location (line + column) for a GraphQL error.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct GraphQLLocation {
+    /// The line number for this location, starting at 1 for the first line.
+    pub line: usize,
+    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
+    /// Values) like [str::chars].
+    pub column: usize,
+}
+
+/// A serializable GraphQL error.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct GraphQLError {
+    /// The error message.
+    pub message: String,
+
+    /// Locations relevant to the error, if any.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub locations: Vec<GraphQLLocation>,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -61,11 +86,11 @@ pub(crate) enum Details {
     SchemaBuildError(SchemaBuildError),
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
-    #[error("syntax error: {0}")]
+    #[error("compiler error: {0}")]
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
-impl Error {
+impl DiagnosticData {
     fn report(&self, color: bool) -> ariadne::Report<'static, NodeLocation> {
         let config = ariadne::Config::default().with_color(color);
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
@@ -262,7 +287,52 @@ impl Error {
     }
 }
 
+impl<'a> Diagnostic<'a> {
+    /// Get the line and column number where this diagnostic was raised.
+    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
+        let loc = self.data.location?;
+        let source = self.sources.get(&loc.file_id)?;
+        source
+            .get_line_column(loc.offset())
+            .map(|(line, column)| GraphQLLocation {
+                line: line + 1,
+                column: column + 1,
+            })
+    }
+
+    /// Get serde_json serialisable version of the current diagnostic.
+    pub fn to_json(&self) -> GraphQLError {
+        let locations = self.get_line_column().into_iter().collect();
+
+        GraphQLError {
+            message: self.message().to_string(),
+            locations,
+        }
+    }
+
+    pub fn message(&self) -> &impl fmt::Display {
+        &self.data.details
+    }
+}
+
 impl Diagnostics {
+    pub fn is_empty(&self) -> bool {
+        self.0.diagnostics_data.is_empty()
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.diagnostics_data.len()
+    }
+
+    pub fn iter(
+        &self,
+    ) -> impl Iterator<Item = Diagnostic<'_>> + DoubleEndedIterator + ExactSizeIterator {
+        self.0.diagnostics_data.iter().map(|data| Diagnostic {
+            sources: &self.0.sources,
+            data,
+        })
+    }
+
     /// Returns a human-readable string formatting, without color codes regardless of stderr.
     ///
     /// `Display` and `.to_string()` are meant for printing to stderr,
@@ -271,22 +341,24 @@ impl Diagnostics {
         format!("{self:#}")
     }
 
-    pub(crate) fn new(sources: IndexMap<FileId, Arc<SourceFile>>) -> Self {
+    pub(crate) fn new(schema_sources: Option<SourceMap>, self_sources: SourceMap) -> Self {
         Self(Box::new(DiagnosticsBoxed {
-            errors: Vec::new(),
-            source_cache: RefCell::new(SourceCache {
-                sources,
-                cache: HashMap::new(),
-            }),
+            sources: Sources {
+                schema_sources,
+                self_sources,
+            },
+            diagnostics_data: Vec::new(),
         }))
     }
 
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: Details) {
-        self.0.errors.push(Error { location, details })
+        self.0
+            .diagnostics_data
+            .push(DiagnosticData { location, details })
     }
 
     pub(crate) fn into_result(mut self) -> Result<(), Self> {
-        if self.0.errors.is_empty() {
+        if self.0.diagnostics_data.is_empty() {
             Ok(())
         } else {
             self.sort();
@@ -296,17 +368,27 @@ impl Diagnostics {
 
     pub(crate) fn sort(&mut self) {
         self.0
-            .errors
+            .diagnostics_data
             .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())))
-    }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        self.0.errors.is_empty()
     }
 }
 
-/// Use alternate formatting to disable colors: `format!("{validation_errors:#}")`
+/// Defaults to ANSI color codes if stderr is a terminal.
+///
+/// Use alternate formatting to never use colors: `format!("{diagnostics:#}")`
 impl fmt::Display for Diagnostics {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for diagnostic in self.iter() {
+            diagnostic.fmt(f)?
+        }
+        Ok(())
+    }
+}
+
+/// Defaults to ANSI color codes if stderr is a terminal.
+///
+/// Use alternate formatting to never use colors: `format!("{diagnostic:#}")`
+impl fmt::Display for Diagnostic<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         struct Adaptor<'a, 'b>(&'a mut fmt::Formatter<'b>);
 
@@ -322,19 +404,23 @@ impl fmt::Display for Diagnostics {
             }
         }
 
-        let mut cache = self.0.source_cache.borrow_mut();
         let color = !f.alternate();
-        for error in &self.0.errors {
-            error
-                .report(color)
-                .write(&mut *cache, Adaptor(f))
-                .map_err(|_| fmt::Error)?
-        }
-        Ok(())
+        self.data
+            .report(color)
+            .write(self.sources, Adaptor(f))
+            .map_err(|_| fmt::Error)
     }
 }
 
-impl ariadne::Cache<FileId> for SourceCache {
+impl Sources {
+    pub(crate) fn get(&self, file_id: &FileId) -> Option<&Arc<SourceFile>> {
+        self.self_sources
+            .get(file_id)
+            .or_else(|| self.schema_sources.as_ref()?.get(file_id))
+    }
+}
+
+impl ariadne::Cache<FileId> for &'_ Sources {
     fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {
@@ -342,21 +428,16 @@ impl ariadne::Cache<FileId> for SourceCache {
                 write!(f, "source file not found: {:?}", self.0)
             }
         }
-        match self.cache.entry(*file_id) {
-            Entry::Occupied(entry) => Ok(entry.into_mut()),
-            Entry::Vacant(entry) => {
-                let source_text = if *file_id == FileId::NONE
-                    || *file_id == FileId::HACK_TMP
-                    || *file_id == FileId::HACK_TMP_2
-                {
-                    ""
-                } else if let Some(file) = self.sources.get(file_id) {
-                    file.source_text()
-                } else {
-                    return Err(Box::new(NotFound(*file_id)));
-                };
-                Ok(entry.insert(ariadne::Source::from(source_text)))
-            }
+        if let Some(source_file) = self.get(file_id) {
+            Ok(source_file.ariadne())
+        } else if *file_id == FileId::NONE
+            || *file_id == FileId::HACK_TMP
+            || *file_id == FileId::HACK_TMP_2
+        {
+            static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
+            Ok(EMPTY.get_or_init(|| ariadne::Source::from("")))
+        } else {
+            Err(Box::new(NotFound(*file_id)))
         }
     }
 
@@ -368,7 +449,7 @@ impl ariadne::Cache<FileId> for SourceCache {
                     self.0.path().display().fmt(f)
                 }
             }
-            let source_file = self.sources.get(file_id)?;
+            let source_file = self.get(file_id)?;
             Some(Box::new(Path(source_file.clone())))
         } else {
             struct NoSourceFile;

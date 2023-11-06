@@ -1,89 +1,164 @@
-0..31 @6 SchemaDefinition {
-    description: None,
-    directives: [],
-    root_operations: [
-        11..29 @6 (
-            Query,
-            "SearchQuery",
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
+        },
+        6: SourceFile {
+            path: "0006_schema_with_valid_union.graphql",
+            source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: 0..31 @6 SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "SearchQuery",
+            },
         ),
-    ],
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "SearchResult": Union(
+            33..68 @6 UnionType {
+                description: None,
+                directives: [],
+                members: {
+                    ComponentStr {
+                        origin: Definition,
+                        node: "Photo",
+                    },
+                    ComponentStr {
+                        origin: Definition,
+                        node: "Person",
+                    },
+                },
+            },
+        ),
+        "Person": Object(
+            70..111 @6 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 86..98 @6 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "age": Component {
+                        origin: Definition,
+                        node: 101..109 @6 FieldDefinition {
+                            description: None,
+                            name: "age",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Photo": Object(
+            113..154 @6 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "height": Component {
+                        origin: Definition,
+                        node: 128..139 @6 FieldDefinition {
+                            description: None,
+                            name: "height",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "width": Component {
+                        origin: Definition,
+                        node: 142..152 @6 FieldDefinition {
+                            description: None,
+                            name: "width",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "SearchQuery": Object(
+            156..210 @6 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "firstSearchResult": Component {
+                        origin: Definition,
+                        node: 177..208 @6 FieldDefinition {
+                            description: None,
+                            name: "firstSearchResult",
+                            arguments: [],
+                            ty: Named(
+                                "SearchResult",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-33..68 @6 UnionTypeDefinition {
-    description: None,
-    name: "SearchResult",
-    directives: [],
-    members: [
-        "Photo",
-        "Person",
-    ],
+ExecutableDocument {
+    sources: {
+        6: SourceFile {
+            path: "0006_schema_with_valid_union.graphql",
+            source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
 }
-70..111 @6 ObjectTypeDefinition {
-    description: None,
-    name: "Person",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        86..98 @6 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-        101..109 @6 FieldDefinition {
-            description: None,
-            name: "age",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-    ],
-}
-113..154 @6 ObjectTypeDefinition {
-    description: None,
-    name: "Photo",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        128..139 @6 FieldDefinition {
-            description: None,
-            name: "height",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        142..152 @6 FieldDefinition {
-            description: None,
-            name: "width",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-    ],
-}
-156..210 @6 ObjectTypeDefinition {
-    description: None,
-    name: "SearchQuery",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        177..208 @6 FieldDefinition {
-            description: None,
-            name: "firstSearchResult",
-            arguments: [],
-            ty: Named(
-                "SearchResult",
-            ),
-            directives: [],
-        },
-    ],
-}
-

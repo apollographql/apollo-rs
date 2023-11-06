@@ -20,9 +20,9 @@ pub use self::database::FileId;
 pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
 pub use self::node_str::NodeStr;
-pub use self::parser::{parse_mixed, Parser, SourceFile};
+pub use self::parser::{parse_mixed, Parser, SourceFile, SourceMap};
 pub use self::schema::Schema;
-pub use self::validation::Diagnostics;
+pub use self::validation::{Diagnostic, Diagnostics, GraphQLError, GraphQLLocation};
 
 pub(crate) struct ApolloCompiler {
     pub db: RootDatabase,

@@ -8,6 +8,7 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset
 
 use apollo_compiler::ast;
+use apollo_compiler::schema;
 use apollo_compiler::Diagnostics;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
@@ -32,8 +33,8 @@ use std::path::PathBuf;
 #[serial]
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
-        let ast = ast::Document::parse(text, path.file_name().unwrap());
-        let (schema, executable) = ast.to_mixed();
+        let file_name = path.file_name().unwrap();
+        let (schema, executable) = apollo_compiler::parse_mixed(text, file_name);
 
         let schema_validation_errors = schema.validate().err();
         let executable_validation_errors = executable.validate(&schema).err();
@@ -43,7 +44,7 @@ fn validation() {
             path,
         );
 
-        format!("{ast:#?}")
+        format!("{schema:#?}\n{executable:#?}")
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
@@ -246,4 +247,35 @@ fn project_root() -> PathBuf {
     .nth(1)
     .unwrap()
     .to_path_buf()
+}
+
+#[test]
+fn test_invalid_synthetic_node() {
+    let mut schema = Schema::new();
+    schema.types.insert(
+        "Obj".into(),
+        schema::ObjectType {
+            description: Default::default(),
+            implements_interfaces: Default::default(),
+            directives: Default::default(),
+            fields: [(
+                "field".into(),
+                schema::FieldDefinition {
+                    description: Default::default(),
+                    name: "field".into(),
+                    arguments: Default::default(),
+                    ty: schema::Type::new_named("UndefinedType"),
+                    directives: Default::default(),
+                }
+                .into(),
+            )]
+            .into(),
+        }
+        .into(),
+    );
+    schema.schema_definition.make_mut().query = Some("Obj".into());
+    let expected = expect_test::expect![[r#"
+        Error: cannot find type `UndefinedType` in this document
+    "#]];
+    expected.assert_eq(&schema.validate().unwrap_err().to_string_no_color());
 }

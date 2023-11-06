@@ -10,3 +10,7 @@ input UniqueDirective @nonRepeatable {
   field: String
 }
 extend input UniqueDirective @nonRepeatable
+
+type Query {
+  x: Int
+}

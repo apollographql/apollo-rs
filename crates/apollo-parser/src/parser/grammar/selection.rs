@@ -26,6 +26,23 @@ pub(crate) fn selection_set(p: &mut Parser) {
     }
 }
 
+pub(crate) fn field_set(p: &mut Parser) {
+    if let Some(T!['{']) = p.peek() {
+        selection_set(p)
+    } else {
+        let _g = p.start_node(SyntaxKind::SELECTION_SET);
+        // We need to enforce recursion limits to prevent
+        // excessive resource consumption or (more seriously)
+        // stack overflows.
+        if p.recursion_limit.check_and_increment() {
+            p.limit_err("parser recursion limit reached");
+            return;
+        }
+        selection(p);
+        p.recursion_limit.decrement();
+    }
+}
+
 /// See: https://spec.graphql.org/October2021/#Selection
 ///
 /// *Selection*:

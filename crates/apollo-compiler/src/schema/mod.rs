@@ -6,13 +6,11 @@ use crate::Node;
 use crate::NodeLocation;
 use crate::NodeStr;
 use crate::Parser;
-use crate::SourceFile;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
-use std::sync::Arc;
 use std::sync::OnceLock;
 
 mod component;
@@ -29,22 +27,19 @@ pub use crate::ast::{
 use crate::validation::Diagnostics;
 
 /// High-level representation of a GraphQL schema
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Schema {
     /// Source files, if any, that were parsed to contribute to this schema.
     ///
     /// The schema (including parsed definitions) may have been modified since parsing.
-    pub sources: IndexMap<FileId, Arc<SourceFile>>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this schema,
     /// either parsing a source file or converting from AST.
     build_errors: Vec<BuildError>,
 
     /// The `schema` definition and its extensions, defining root operations
-    ///
-    /// For more convenient access to its directives regardless of `Option`,
-    /// see [`schema_definition_directives`][Self::schema_definition_directives]
-    pub schema_definition: Option<Node<SchemaDefinition>>,
+    pub schema_definition: Node<SchemaDefinition>,
 
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
@@ -315,12 +310,12 @@ impl Schema {
 
     /// Returns `Err` if invalid, or `Ok` for potential warnings or advice
     pub fn validate(&self) -> Result<Diagnostics, Diagnostics> {
-        let mut errors = Diagnostics::new(self.sources.clone());
+        let mut errors = Diagnostics::new(None, self.sources.clone());
         let warnings_and_advice = validation::validate_schema(&mut errors, self);
         let valid = errors.is_empty();
         for diagnostic in warnings_and_advice {
             errors.push(
-                Some(diagnostic.location),
+                diagnostic.location,
                 crate::validation::Details::CompilerDiagnostic(diagnostic),
             )
         }
@@ -329,15 +324,6 @@ impl Schema {
             Ok(errors)
         } else {
             Err(errors)
-        }
-    }
-
-    /// Directives of the `schema` definition and its extensions
-    pub fn schema_definition_directives(&self) -> &Directives {
-        if let Some(def) = &self.schema_definition {
-            &def.directives
-        } else {
-            Directives::EMPTY
         }
     }
 
@@ -395,72 +381,15 @@ impl Schema {
         }
     }
 
-    /// Returns the name of the object type for the `query` root operation
-    pub fn query_root_operation(&self) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            root_operations
-                .query
-                .as_ref()
-                .map(|component| &component.node)
-        } else {
-            self.default_root_operation(ast::OperationType::Query)
-        }
-    }
-
-    /// Returns the name of the object type for the `mutation` root operation
-    pub fn mutation_root_operation(&self) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            root_operations
-                .mutation
-                .as_ref()
-                .map(|component| &component.node)
-        } else {
-            self.default_root_operation(ast::OperationType::Mutation)
-        }
-    }
-
-    /// Returns the name of the object type for the `subscription` root operation
-    pub fn subscription_root_operation(&self) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            root_operations
-                .subscription
-                .as_ref()
-                .map(|component| &component.node)
-        } else {
-            self.default_root_operation(ast::OperationType::Subscription)
-        }
-    }
-
     /// Returns the name of the object type for the root operation with the given operation kind
     pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            match operation_type {
-                ast::OperationType::Query => &root_operations.query,
-                ast::OperationType::Mutation => &root_operations.mutation,
-                ast::OperationType::Subscription => &root_operations.subscription,
-            }
-            .as_ref()
-            .map(|component| &component.node)
-        } else {
-            self.default_root_operation(operation_type)
+        match operation_type {
+            ast::OperationType::Query => &self.schema_definition.query,
+            ast::OperationType::Mutation => &self.schema_definition.mutation,
+            ast::OperationType::Subscription => &self.schema_definition.subscription,
         }
-    }
-
-    fn default_root_operation(&self, operation_type: ast::OperationType) -> Option<&NamedType> {
-        let name = operation_type.default_type_name();
-        macro_rules! as_static {
-            () => {{
-                static OBJECT_TYPE_NAME: OnceLock<Name> = OnceLock::new();
-                OBJECT_TYPE_NAME.get_or_init(|| Name::new(name))
-            }};
-        }
-        self.get_object(name)
-            .is_some()
-            .then(|| match operation_type {
-                ast::OperationType::Query => as_static!(),
-                ast::OperationType::Mutation => as_static!(),
-                ast::OperationType::Subscription => as_static!(),
-            })
+        .as_ref()
+        .map(|component| &component.node)
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -581,7 +510,12 @@ impl Schema {
                 }),
             ]
         });
-        if self.query_root_operation().is_some_and(|n| n == type_name) {
+        if self
+            .schema_definition
+            .query
+            .as_ref()
+            .is_some_and(|n| n == type_name)
+        {
             // __typename: String!
             // __schema: __Schema!
             // __type(name: String!): __Type
@@ -886,8 +820,6 @@ impl InputObjectType {
 }
 
 impl Directives {
-    const EMPTY: &Self = &Self::new();
-
     pub const fn new() -> Self {
         Self(Vec::new())
     }
@@ -1054,6 +986,60 @@ impl From<EnumType> for ExtendedType {
 impl From<InputObjectType> for ExtendedType {
     fn from(ty: InputObjectType) -> Self {
         Self::InputObject(ty.into())
+    }
+}
+
+impl std::fmt::Debug for Schema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Self {
+            sources,
+            build_errors,
+            schema_definition,
+            directive_definitions,
+            types,
+        } = self;
+        f.debug_struct("Schema")
+            .field("sources", sources)
+            .field("build_errors", build_errors)
+            .field("schema_definition", schema_definition)
+            .field(
+                "directive_definitions",
+                &DebugDirectiveDefinitions(directive_definitions),
+            )
+            .field("types", &DebugTypes(types))
+            .finish()
+    }
+}
+
+struct DebugDirectiveDefinitions<'a>(&'a IndexMap<Name, Node<DirectiveDefinition>>);
+
+struct DebugTypes<'a>(&'a IndexMap<Name, ExtendedType>);
+
+impl std::fmt::Debug for DebugDirectiveDefinitions<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut map = f.debug_map();
+        for (name, def) in self.0 {
+            if !def.is_built_in() {
+                map.entry(name, def);
+            } else {
+                map.entry(name, &format_args!("built_in_directive!({name:?})"));
+            }
+        }
+        map.finish()
+    }
+}
+
+impl std::fmt::Debug for DebugTypes<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut map = f.debug_map();
+        for (name, def) in self.0 {
+            if !def.is_built_in() {
+                map.entry(name, def);
+            } else {
+                map.entry(name, &format_args!("built_in_type!({name:?})"));
+            }
+        }
+        map.finish()
     }
 }
 

@@ -16,6 +16,74 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Fixes
+
+- **Less recursion in parser implementation - [goto-bus-stop], [pull/721] fixing [issue/666]**
+  The parser previously used recursive functions while parsing some repetitive nodes, like members of an enum:
+  ```graphql
+  enum Alphabet { A B C D E F G etc }
+  ```
+  Even though this is a flat list, each member would use a recursive call. Having many members, or fields in a type
+  definition, or arguments in a directive, would all contribute to the recursion limit.
+
+  Those cases are now using iteration instead and no longer contribute to the recursion limit. The default recursion limit
+  is unchanged at 500, but you could reduce it depending on your needs.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/666]: https://github.com/apollographql/apollo-rs/issues/666
+
+- **Fix overly permissive parsing of `implements` lists and `union` member types - [goto-bus-stop], [pull/721] fixing [issue/659]**
+  Previously these definitions were all accepted, despite missing or excessive `&` and `|` separators:
+  ```graphql
+  type Ty implements A B
+  type Ty implements A && B
+  type Ty implements A & B &
+
+  union Ty = A B
+  union Ty = A || B
+  union Ty = A | B |
+  ```
+  Now they report a syntax error.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/659]: https://github.com/apollographql/apollo-rs/issues/659
+
+# [0.7.2](https://crates.io/crates/apollo-parser/0.7.2) - 2023-11-03
+
+## Fixes
+
+- **Fix `SyntaxTree` being accidentally `!Send` and `!Sync` - [SimonSapin], [pull/704] fixing [issue/702]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/704]: https://github.com/apollographql/apollo-rs/pull/704
+[issue/702]: https://github.com/apollographql/apollo-rs/issues/702
+
+# [0.7.1](https://crates.io/crates/apollo-parser/0.7.1) - 2023-10-10
+
+## Features
+- **`parse_field_set` parses a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
+  This returns a `SyntaxTree<SelectionSet>` which instead of `.document() -> cst::Document`
+  has `.field_set() -> cst::SelectionSet`.
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
+  used in some Apollo Federation directives.
+  ```rust
+  let source = r#"a { a }"#;
+
+  let parser = Parser::new(source);
+  let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+  let errors = cst.errors().collect::<Vec<_>>();
+  assert_eq!(errors.len(), 0);
+  ```
+
+[lrlna]: https://github.com/lrlna
+[pull/685]: https://github.com/apollographql/apollo-rs/pull/685
+[issue/681]: https://github.com/apollographql/apollo-rs/issues/681
+[fieldset]: https://www.apollographql.com/docs/federation/subgraph-spec/#scalar-fieldset
+
 
 # [0.7.0](https://crates.io/crates/apollo-parser/0.7.0) - 2023-10-05
 
@@ -27,6 +95,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   text input losslessly, and all tree leaves are string-based tokens.
   This renames it to Concrete Syntax Tree (CST) and renames various APIs accordingly.
   This leaves the name available for a new AST in apollo-compiler 1.0.
+
+# [0.6.3](https://crates.io/crates/apollo-parser/0.6.3) - 2023-10-06
 
 ## Fixes
 - **apply recursion limit where needed, reduce its default from 4096 to 500 - [SimonSapin], [pull/662]**

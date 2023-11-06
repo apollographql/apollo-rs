@@ -17,8 +17,230 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-<!--
-# [x.x.x] (unreleased) - 2023-mm-dd
+
+# [1.0.0-beta.4](https://crates.io/crates/apollo-compiler/1.0.0-beta.4) - 2023-10-16
+
+## Features
+- **JSON Serialisable compiler diagnostics - [lrlna] and [goto-bus-stop], [pull/698]:**
+  This change brings back [JSON error format] for diagnostics introduced by
+  [goto-bus-stop] in [pull/668] for compiler@0.11.3. As a result, diagnostics'
+  line/column numbers are now also accessible as part of the public API.
+
+  ```rust
+  let json = expect_test::expect![[r#"
+    {
+      "message": "an executable document must not contain an object type definition",
+      "locations": [
+        {
+          "line": 2,
+          "column": 1
+        }
+      ]
+    }"#]];
+  let diagnostics = executable.validate(&schema).unwrap_err();
+  diagnostics.iter().for_each(|diag| {
+      assert_eq!(
+          diag.get_line_column(),
+          Some(GraphQLLocation { line: 2, column: 1 })
+      );
+      json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
+  });
+  ```
+## Fixes
+
+- **Don’t emit a validation error for relying on argument default - [SimonSapin], [pull/700]**
+  A field argument or directive argument was incorrectly considered required
+  as soon as it had a non-null type, even if it had a default value.
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[pull/698]: https://github.com/apollographql/apollo-rs/pull/698
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[pull/700]: https://github.com/apollographql/apollo-rs/pull/700
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
+# [1.0.0-beta.3](https://crates.io/crates/apollo-compiler/1.0.0-beta.3) - 2023-10-13
+
+## BREAKING
+
+- **Keep source files in `Arc<Map<…>>` everywhere - [SimonSapin], [pull/696]**
+  Change struct fields from `sources: IndexMap<FileId, Arc<SourceFile>>` (in `Schema`)
+  or `source: Option<(FileId, Arc<SourceFile>)>` (in `Document`, `ExecutablDocument`, `FieldSet`)
+  to `sources: SourceMap`, with:
+  ```rust
+  pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+  ```
+  Cases other than `Schema` still only have zero or one source when created by apollo-compiler,
+  but it is now possible to make more sources available to diagnostics,
+  for example when merging documents:
+  ```rust
+  Arc::make_mut(&mut doc1.sources).extend(doc2.sources.iter().map(|(k, v)| (*k, v.clone())));
+  ```
+
+## Features
+
+- **Add iteration over individual diagnostics - [SimonSapin], [pull/696]:**
+  ```rust
+  let schema = Schema::parse(input, "schema.graphql");
+  if let Err(errors) = schema.validate() {
+      for error in errors.iter() {
+          eprintln!("{error}")
+      }
+  }
+  ```
+
+## Fixes
+
+- **Don’t panic in validation or omit diagnostics when a source location is missing - [SimonSapin], [pull/697]**
+  In apollo-compiler 0.11 every element of the HIR always had a source location because
+  it always came from a parsed input file.
+  In 1.0 source location is always optional.
+  When a node relevant to some diagnostic does not have a source location,
+  the diagnostic should still be emitted but its labels (each printing a bit of source code)
+  may be missing.
+  Essential information should therefore be in the main message, not only in labels.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/696]: https://github.com/apollographql/apollo-rs/pull/696
+[pull/697]: https://github.com/apollographql/apollo-rs/pull/697
+
+# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.2) - 2023-10-10
+
+## BREAKING
+
+**Assorted `Schema` API changes - [SimonSapin], [pull/678]**
+- Type of the `schema_definition` field changed
+  from `Option<SchemaDefinition>` to `SchemaDefinition`.
+  Default root operations based on object type names
+  are now stored explicitly in `SchemaDefinition`.
+  Serialization relies on a heuristic to decide on implicit schema definition.
+- Removed `schema_definition_directives` method: no longer having an `Option` allows
+  field `schema.schema_definition.directives` to be accessed directly
+- Removed `query_root_operation`, `mutation_root_operation`, and `subscription_root_operation`
+  methods. Instead `schema.schema_definition.query` etc can be accessed directly.
+
+## Features
+
+- **Add `executable::FieldSet` for a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
+  used in some Apollo Federation directives in the context of a specific schema and type.
+  Its `validate` method calls a subset of validation rules relevant to selection sets.
+  which is not part of a document.
+  ```rust
+  let input = r#"
+    type Query {
+      id: ID
+      organization: Org
+    }
+    type Org {
+      id: ID
+    }
+  "#;
+  let schema = Schema::parse(input, "schema.graphql");
+  schema.validate().unwrap();
+  let input = "id organization { id }";
+  let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+  field_set.validate(&schema).unwrap();
+  ```
+
+- **Add opt-in configuration for “orphan” extensions to be “adopted” - [SimonSapin], [pull/678]**
+
+  Type extensions and schema extensions without a corresponding definition
+  are normally ignored except for recording a validation error.
+  In this new mode, an implicit empty definition to extend is generated instead.
+  This behavious is not the default, as it's non-standard.
+  Configure a schema builder to opt in:
+  ```rust
+  let input = "extend type Query { x: Int }";
+  let schema = apollo_compiler::Schema::builder()
+      .adopt_orphan_extensions()
+      .parse(input, "schema.graphql")
+      .build();
+  schema.validate()?;
+  ```
+
+## Fixes
+
+- **Allow built-in directives to be redefined - [SimonSapin], [pull/684] fixing [issue/656]**
+- **Allow schema extensions to extend a schema definition implied by object types named after default root operations - [SimonSapin], [pull/678] fixing [issues/682]**
+
+[lrlna]: https://github.com/lrlna
+[SimonSapin]: https://github.com/SimonSapin
+[issue/656]: https://github.com/apollographql/apollo-rs/issues/656
+[issue/682]: https://github.com/apollographql/apollo-rs/issues/682
+[issue/681]: https://github.com/apollographql/apollo-rs/issues/681
+[pull/678]: https://github.com/apollographql/apollo-rs/pull/678
+[pull/684]: https://github.com/apollographql/apollo-rs/pull/684
+[pull/685]: https://github.com/apollographql/apollo-rs/pull/685
+[fieldset]: https://www.apollographql.com/docs/federation/subgraph-spec/#scalar-fieldset
+
+# [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
+
+## BREAKING
+
+Compared to 0.11, version 1.0 is a near-complete rewrite of the library
+and revamp of the public API.
+While in beta, there may still be breaking changes (though not as dramatic)
+until 1.0.0 “final”.
+If using a beta version, we recommend specifying an exact dependency in `Cargo.toml`:
+
+```toml
+apollo-compiler = "=1.0.0-beta.1"
+```
+
+## Features
+
+The API is now centered on `Schema` and `ExecutableDocument` types.
+Users no longer need to create a compiler, add inputs to it, and track them by ID.
+Validation is now a method of these types, and returns a `Result` to indicate errors.
+
+These types are serializable
+(through `Display`, `.to_string()`, and a `.serialize()` config builder),
+integrating the functionality of the apollo-encoder crate.
+
+They are also mutable, and can be created programmatically out of thin air.
+`Node<T>` is a thread-safe reference-counted smart pointer
+that provides structural sharing and copy-on-write semantics.
+
+# [0.11.3](https://crates.io/crates/apollo-compiler/0.11.3) - 2023-10-06
+
+## Features
+- expose line/column location and JSON format from diagnostics, by [goto-bus-stop] in [pull/668]
+
+  You can now use `diagnostic.get_line_column()` to access the line/column number where a validation error occurred.
+
+  `diagnostic.to_json()` returns a GraphQL error structure that's serializable with serde, matching the [JSON error format].
+
+  ```rust
+  let diagnostics = compiler.db.validate();
+  let errors = diagnostics.into_iter().map(ApolloDiagnostic::to_json).collect::<Vec<_>>();
+
+  let error_response = serde_json::to_string(&serde_json::json!({
+      "errors": errors,
+  }))?;
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
+- improve validation error summaries, by [goto-bus-stop] in [pull/674]
+
+  Adds more context and a more consistent voice to the "main" message for validation errors. They are now concise,
+  matter-of-fact descriptions of the problem. Information about how to solve the problem is usually already provided
+  by labels and notes on the diagnostic.
+
+  > - operation `getName` is defined multiple times
+  > - interface `NamedEntity` implements itself
+
+  The primary use case for this is to make `diagnostic.data.to_string()` return a useful message for text-only error
+  reports, like in JSON responses. The JSON format for diagnostics uses these new messages.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/674]: https://github.com/apollographql/apollo-rs/pull/674
+
+# [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
 
 ## Features
 - Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
@@ -38,38 +260,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/631]: https://github.com/apollographql/apollo-rs/pull/631
 [issue/629]: https://github.com/apollographql/apollo-rs/issues/629
--->
-
-# [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
-
-## BREAKING
-
-Compared to 0.11, version 1.0 is a near-complete rewrite of the library
-and revamp of the public API.
-While in beta, there may still be breaking changes (though not as dramatic)
-until 1.0.0 “final”. 
-If using a beta version, we recommend specifying an exact dependency in `Cargo.toml`:
-
-```toml
-apollo-compiler = "=1.0.0-beta.1"
-```
-
-## Features
-
-The API is now centered on `Schema` and `ExecutableDocument` types.
-Users no longer need to create a compiler, add inputs to it, and track them by ID.
-Validation is now a method of these types, and returns a `Result` to indicate errors.
-
-These types are serializable 
-(through `Display`, `.to_string()`, and a `.serialize()` config builder), 
-integrating the functionality of the apollo-encoder crate.
-
-They are also mutable, and can be created programmatically out of thin air.
-`Node<T>` is a thread-safe reference-counted smart pointer
-that provides structural sharing and copy-on-write semantics.
-
-
-# [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
 
 ## Fixes
 - validate input value types, by [goto-bus-stop] in [pull/642]

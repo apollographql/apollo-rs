@@ -87,16 +87,15 @@ pub(crate) fn validate_input_object_definition(
 
     if let Err(input_val) = FindRecursiveInputValue::check(db, &input_object) {
         let mut labels = vec![Label::new(
-            input_object.definition.location().unwrap(),
+            input_object.definition.location(),
             "cyclical input object definition",
         )];
-        if let Some(loc) = input_val.location() {
-            labels.push(Label::new(loc, "refers to itself here"));
-        };
+        let loc = input_val.location();
+        labels.push(Label::new(loc, "refers to itself here"));
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                input_object.definition.location().unwrap(),
+                input_object.definition.location(),
                 DiagnosticData::RecursiveInputObjectDefinition {
                     name: input_object.definition.name.to_string(),
                 },
@@ -129,31 +128,29 @@ pub(crate) fn validate_argument_definitions(
     for input_value in input_values {
         let name = &input_value.name;
         if let Some(prev_value) = seen.get(name) {
-            if let (Some(original_value), Some(redefined_value)) =
-                (prev_value.location(), input_value.location())
-            {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
+            let (original_value, redefined_value) = (prev_value.location(), input_value.location());
+
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    original_value,
+                    DiagnosticData::UniqueInputValue {
+                        name: name.to_string(),
                         original_value,
-                        DiagnosticData::UniqueInputValue {
-                            name: name.to_string(),
-                            original_value,
-                            redefined_value,
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_value,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_value, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` field must only be defined once in this input object definition."
-                    )),
-                );
-            }
+                        redefined_value,
+                    },
+                )
+                .labels([
+                    Label::new(
+                        original_value,
+                        format!("previous definition of `{name}` here"),
+                    ),
+                    Label::new(redefined_value, format!("`{name}` redefined here")),
+                ])
+                .help(format!(
+                    "`{name}` field must only be defined once in this input object definition."
+                )),
+            );
         } else {
             seen.insert(name.clone(), input_value);
         }
@@ -179,9 +176,7 @@ pub(crate) fn validate_input_value_definitions(
             Default::default(), // No variables in an input value definition
         ));
         // Input values must only contain input types.
-        let loc = input_value
-            .location()
-            .expect("undefined input value definition location");
+        let loc = input_value.location();
         if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
             if !field_ty.is_input_type() {
                 let (particle, kind) = match field_ty {
@@ -203,7 +198,7 @@ pub(crate) fn validate_input_value_definitions(
             }
         } else {
             let named_type = input_value.ty.inner_named_type();
-            let loc = named_type.location().unwrap();
+            let loc = named_type.location();
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,

@@ -15,9 +15,7 @@ impl Schema {
 impl Schema {
     pub(crate) fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         self.schema_definition
-            .as_ref()
-            .into_iter()
-            .flat_map(|root| root.to_ast())
+            .to_ast(&self.types)
             .chain(
                 self.directive_definitions
                     .values()
@@ -36,7 +34,47 @@ impl Schema {
 }
 
 impl Node<SchemaDefinition> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(
+        &self,
+        types: &IndexMap<Name, ExtendedType>,
+    ) -> impl Iterator<Item = ast::Definition> + '_ {
+        let SchemaDefinition {
+            description,
+            directives,
+            query,
+            mutation,
+            subscription,
+        } = &**self;
+        let extensions = self.extensions();
+        let implict = description.is_none()
+            && directives.is_empty()
+            && extensions.is_empty()
+            && [
+                (query, ast::OperationType::Query),
+                (mutation, ast::OperationType::Mutation),
+                (subscription, ast::OperationType::Subscription),
+            ]
+            .into_iter()
+            .all(|(root_operation, operation_type)| {
+                // If there were no explict `schema` definition,
+                // what implicit root operation would we get for this operation type?
+                let default_type_name = operation_type.default_type_name();
+                let implicit_root_operation: Option<&str> = types
+                    .get(default_type_name)
+                    .filter(|ty_def| ty_def.is_object())
+                    .map(|_ty_def| default_type_name);
+                // What we have
+                let actual_root_operation = root_operation.as_ref().map(|r| r.as_str());
+                // Only allow an implicit `schema` definition if they match
+                actual_root_operation == implicit_root_operation
+            })
+            // Hack: if there is *nothing*, still emit an empty SchemaDefinition AST node
+            // that carries a location, so AST-based validation can emit an error
+            // with `DiagnosticData::QueryRootOperationType`.
+            // This can be removed after that validation rule is ported to high-level `Schema`.
+            && [query, mutation, subscription]
+                .into_iter()
+                .any(|op| op.is_some());
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
             let root_op = |op: &Option<ComponentStr>, ty| {
                 op.as_ref()
@@ -49,14 +87,19 @@ impl Node<SchemaDefinition> {
                 .chain(root_op(&self.subscription, OperationType::Subscription))
                 .collect()
         };
-        std::iter::once(ast::Definition::SchemaDefinition(self.same_location(
-            ast::SchemaDefinition {
-                description: self.description.clone(),
-                directives: ast::Directives(components(&self.directives, None)),
-                root_operations: root_ops(None),
-            },
-        )))
-        .chain(self.extensions().into_iter().map(move |ext| {
+        if implict {
+            None
+        } else {
+            Some(ast::Definition::SchemaDefinition(self.same_location(
+                ast::SchemaDefinition {
+                    description: self.description.clone(),
+                    directives: ast::Directives(components(&self.directives, None)),
+                    root_operations: root_ops(None),
+                },
+            )))
+        }
+        .into_iter()
+        .chain(extensions.into_iter().map(move |ext| {
             ast::Definition::SchemaExtension(ext.same_location(ast::SchemaExtension {
                 directives: ast::Directives(components(&self.directives, Some(ext))),
                 root_operations: root_ops(Some(ext)),

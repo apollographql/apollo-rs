@@ -85,39 +85,39 @@ fn validate_fragment_spread_type(
 
                 ApolloDiagnostic::new(
                     db,
-                    spread.location().unwrap(),
+                    spread.location(),
                     DiagnosticData::InvalidFragmentSpread {
                         name: Some(spread.fragment_name.to_string()),
                         type_name: against_type.to_string(),
                     },
                 )
                 .label(Label::new(
-                    spread.location().unwrap(),
+                    spread.location(),
                     format!("fragment `{}` cannot be applied", spread.fragment_name),
                 ))
                 .label(Label::new(
-                    fragment_definition.location().unwrap(),
+                    fragment_definition.location(),
                     format!("fragment declared with type condition `{type_condition}` here"),
                 ))
                 .label(Label::new(
-                    against_type_definition.location().unwrap(),
+                    against_type_definition.location(),
                     format!("type condition `{type_condition}` is not assignable to this type"),
                 ))
             }
             ast::Selection::InlineFragment(inline) => ApolloDiagnostic::new(
                 db,
-                inline.location().unwrap(),
+                inline.location(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
                     type_name: against_type.to_string(),
                 },
             )
             .label(Label::new(
-                inline.location().unwrap(),
+                inline.location(),
                 format!("fragment applied with type condition `{type_condition}` here"),
             ))
             .label(Label::new(
-                against_type_definition.location().unwrap(),
+                against_type_definition.location(),
                 format!("type condition `{type_condition}` is not assignable to this type"),
             )),
         };
@@ -146,7 +146,7 @@ pub(crate) fn validate_inline_fragment(
 
     let has_type_error = if context.has_schema {
         let type_cond_diagnostics = if let Some(t) = &inline.type_condition {
-            validate_fragment_type_condition(db, t, inline.location().unwrap())
+            validate_fragment_type_condition(db, t, inline.location())
         } else {
             Default::default()
         };
@@ -220,13 +220,13 @@ pub(crate) fn validate_fragment_spread(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    spread.location().unwrap(),
+                    spread.location(),
                     DiagnosticData::UndefinedFragment {
                         name: spread.fragment_name.to_string(),
                     },
                 )
                 .labels(vec![Label::new(
-                    spread.location().unwrap(),
+                    spread.location(),
                     format!("fragment `{}` is not defined", spread.fragment_name),
                 )]),
             );
@@ -253,11 +253,8 @@ pub(crate) fn validate_fragment_definition(
     ));
 
     let has_type_error = if context.has_schema {
-        let type_cond_diagnostics = validate_fragment_type_condition(
-            db,
-            &fragment.type_condition,
-            fragment.location().unwrap(),
-        );
+        let type_cond_diagnostics =
+            validate_fragment_type_condition(db, &fragment.type_condition, fragment.location());
         let has_type_error = !type_cond_diagnostics.is_empty();
         diagnostics.extend(type_cond_diagnostics);
         has_type_error
@@ -344,19 +341,13 @@ pub(crate) fn validate_fragment_cycles(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                def.location().unwrap(),
+                def.location(),
                 DiagnosticData::RecursiveFragmentDefinition {
                     name: def.name.to_string(),
                 },
             )
-            .label(Label::new(
-                head_location.unwrap(),
-                "recursive fragment definition",
-            ))
-            .label(Label::new(
-                cycle.location().unwrap(),
-                "refers to itself here",
-            )),
+            .label(Label::new(head_location, "recursive fragment definition"))
+            .label(Label::new(cycle.location(), "refers to itself here")),
         );
     }
 
@@ -366,7 +357,7 @@ pub(crate) fn validate_fragment_cycles(
 pub(crate) fn validate_fragment_type_condition(
     db: &dyn ValidationDatabase,
     type_cond: &ast::NamedType,
-    fragment_location: NodeLocation,
+    fragment_location: Option<NodeLocation>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
@@ -398,7 +389,7 @@ pub(crate) fn validate_fragment_type_condition(
                 format!("fragment declares unsupported type condition `{type_cond}`"),
             ))
             .label(Label::new(
-                def.location().unwrap(),
+                def.location(),
                 format!("`{type_cond}` is defined here"),
             ))
             .help("fragments cannot be defined on enums, scalars and input objects");
@@ -445,13 +436,13 @@ pub(crate) fn validate_fragment_used(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                fragment.location().unwrap(),
+                fragment.location(),
                 DiagnosticData::UnusedFragment {
                     name: fragment_name.to_string(),
                 },
             )
             .label(Label::new(
-                fragment.location().unwrap(),
+                fragment.location(),
                 format!("`{fragment_name}` is defined here"),
             ))
             .help(format!(

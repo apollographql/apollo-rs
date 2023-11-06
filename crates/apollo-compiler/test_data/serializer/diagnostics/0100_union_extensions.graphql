@@ -21,3 +21,7 @@ directive @nonRepeatable on UNION
 union DuplicateDirective @nonRepeatable = WithFieldA
 
 extend union DuplicateDirective @nonRepeatable = WithFieldB
+
+type Query {
+  x: Int
+}

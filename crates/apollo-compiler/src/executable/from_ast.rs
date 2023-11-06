@@ -1,8 +1,8 @@
 use super::*;
 
-struct BuildErrors {
-    errors: Vec<BuildError>,
-    path: SelectionPath,
+pub(crate) struct BuildErrors {
+    pub(crate) errors: Vec<BuildError>,
+    pub(crate) path: SelectionPath,
 }
 
 pub(crate) fn document_from_ast(
@@ -88,7 +88,7 @@ pub(crate) fn document_from_ast(
         }
     }
     ExecutableDocument {
-        source: document.source.clone(),
+        sources: document.sources.clone(),
         build_errors: errors.errors,
         named_operations,
         anonymous_operation,
@@ -147,7 +147,7 @@ impl Fragment {
 }
 
 impl SelectionSet {
-    fn extend_from_ast(
+    pub(crate) fn extend_from_ast(
         &mut self,
         schema: Option<&Schema>,
         errors: &mut BuildErrors,

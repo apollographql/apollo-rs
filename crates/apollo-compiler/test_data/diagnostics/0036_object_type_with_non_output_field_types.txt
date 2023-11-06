@@ -1,4 +1,4 @@
-Error: cannot find type `permissions` in this document
+Error: cannot find type `Auth` in this document
     ╭─[0036_object_type_with_non_output_field_types.graphql:20:16]
     │
  20 │   permissions: Auth
@@ -14,7 +14,7 @@ Error: `coordinates` field must return an output type
     │ 
     │ Help: Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.
 ────╯
-Error: cannot find type `main` in this document
+Error: cannot find type `mainPage` in this document
     ╭─[0036_object_type_with_non_output_field_types.graphql:22:9]
     │
  22 │   main: mainPage

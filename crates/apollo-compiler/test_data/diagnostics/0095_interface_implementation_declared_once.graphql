@@ -20,3 +20,7 @@ interface SubIntf implements Intf & Intf {
 #   field: String
 # }
 # extend interface ExtendedIntf implements Intf
+
+type Query {
+  x: Int
+}

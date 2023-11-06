@@ -1,4 +1,6 @@
 use super::BuildError;
+use super::FieldSet;
+use crate::ast;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
 use crate::ExecutableDocument;
@@ -27,7 +29,7 @@ pub(crate) fn validate_standalone_executable(
 }
 
 pub(crate) fn validate_common(errors: &mut Diagnostics, document: &ExecutableDocument) {
-    if let Some((file_id, source)) = &document.source {
+    for (file_id, source) in document.sources.iter() {
         source.validate_parse_errors(errors, *file_id)
     }
     for build_error in &document.build_errors {
@@ -77,12 +79,12 @@ fn compiler_validation(
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
     if let Some(schema) = schema {
-        for (id, source) in &schema.sources {
+        for (id, source) in schema.sources.iter() {
             ids.push(*id);
             compiler.db.set_input(*id, source.into());
         }
     }
-    if let Some((id, source)) = &document.source {
+    for (id, source) in document.sources.iter() {
         ids.push(*id);
         compiler.db.set_input(*id, source.into());
     }
@@ -122,9 +124,71 @@ fn compiler_validation(
         compiler.db.validate_standalone_executable(ast_id)
     };
     for diagnostic in diagnostics {
-        errors.push(
-            Some(diagnostic.location),
-            Details::CompilerDiagnostic(diagnostic),
-        )
+        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
+    }
+}
+
+pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, field_set: &FieldSet) {
+    for (file_id, source) in &*field_set.sources {
+        source.validate_parse_errors(errors, *file_id)
+    }
+    for build_error in &field_set.build_errors {
+        validate_build_error(errors, build_error)
+    }
+    let mut compiler = crate::ApolloCompiler::new();
+    let mut ids = Vec::new();
+    for (id, source) in &*schema.sources {
+        ids.push(*id);
+        compiler.db.set_input(*id, source.into());
+    }
+    for (id, source) in &*field_set.sources {
+        ids.push(*id);
+        compiler.db.set_input(*id, source.into());
+    }
+
+    let schema_ast_id = FileId::HACK_TMP;
+    ids.push(schema_ast_id);
+    let mut ast = crate::ast::Document::new();
+    ast.definitions.extend(schema.to_ast());
+    compiler.db.set_input(
+        schema_ast_id,
+        crate::Source {
+            ty: crate::database::SourceType::Schema,
+            filename: Default::default(),
+            text: Default::default(),
+            ast: Some(Arc::new(ast)),
+        },
+    );
+
+    let ast_id = FileId::HACK_TMP_2;
+    ids.push(ast_id);
+    let ast = ast::Document::new();
+    compiler.db.set_input(
+        ast_id,
+        crate::Source {
+            ty: crate::database::SourceType::Executable,
+            filename: Default::default(),
+            text: Default::default(),
+            ast: Some(Arc::new(ast)),
+        },
+    );
+    compiler.db.set_source_files(ids);
+    let diagnostics = crate::validation::selection::validate_selection_set2(
+        &compiler.db,
+        ast_id,
+        Some(&field_set.selection_set.ty),
+        &field_set.selection_set.to_ast(),
+        crate::validation::operation::OperationValidationConfig {
+            has_schema: true,
+            variables: &[],
+        },
+    );
+    //  if schema.is_some() {
+    //     compiler.db.validate_executable(ast_id)
+    // } else {
+    //     compiler.db.validate_standalone_executable(ast_id)
+    // };
+    for diagnostic in diagnostics {
+        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
 }

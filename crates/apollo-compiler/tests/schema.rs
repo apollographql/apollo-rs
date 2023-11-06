@@ -56,7 +56,8 @@ fn test_schema_reserialize() {
         directive @customDirective on OBJECT;
     "#;
     // Order is mostly not preserved
-    let expected = r#"directive @customDirective on OBJECT
+    let expected = expect_test::expect![
+        r#"directive @customDirective on OBJECT
 
 type Query {
   int: Int
@@ -75,9 +76,10 @@ extend type Query {
 interface Inter {
   string: String
 }
-"#;
+"#
+    ];
     let schema = Schema::parse(input, "schema.graphql");
-    assert_eq!(schema.to_string(), expected);
+    expected.assert_eq(&schema.to_string());
 }
 
 #[test]
@@ -192,3 +194,29 @@ const SUPERGRAPH_BOILERPLATE: &str = r#"
         }
 
         "#;
+
+/// https://github.com/graphql/graphql-spec/pull/987
+/// https://github.com/apollographql/apollo-rs/issues/682#issuecomment-1752661656
+#[test]
+fn test_default_root_op_name_ignored_with_explicit_schema_def() {
+    let input = r#"
+    schema {
+        query: Query
+        # no mutation here
+    }
+    type Query {
+        viruses: [Virus!]
+    }
+    type Virus {
+        name: String!
+        knownMutations: [Mutation!]!
+    }
+    type Mutation { # happens to use that name but isn't a root operation
+        name: String!
+        geneSequence: String!
+    }
+    "#;
+    let schema = Schema::parse(input, "schema.graphql");
+    schema.validate().unwrap();
+    assert!(schema.schema_definition.mutation.is_none())
+}

@@ -17,7 +17,7 @@ impl Document {
         source_file: Arc<SourceFile>,
     ) -> Self {
         Self {
-            source: Some((file_id, source_file)),
+            sources: Arc::new([(file_id, source_file)].into()),
             definitions: document
                 .definitions()
                 .filter_map(|def| def.convert(file_id))
@@ -641,12 +641,18 @@ impl Convert for cst::SelectionSet {
     type Target = Vec<ast::Selection>;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(
-            self.selections()
-                .filter_map(|selection| selection.convert(file_id))
-                .collect(),
-        )
+        Some(convert_selection_set(self, file_id))
     }
+}
+
+pub(crate) fn convert_selection_set(
+    selection_set: &cst::SelectionSet,
+    file_id: FileId,
+) -> Vec<ast::Selection> {
+    selection_set
+        .selections()
+        .filter_map(|selection| selection.convert(file_id))
+        .collect()
 }
 
 impl Convert for cst::Selection {

@@ -3,16 +3,13 @@
 
 use crate::ast;
 use crate::schema;
-use crate::FileId;
 use crate::Node;
 use crate::Parser;
 use crate::Schema;
-use crate::SourceFile;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
-use std::sync::Arc;
 
 pub(crate) mod from_ast;
 mod serialize;
@@ -30,10 +27,10 @@ use std::fmt;
 #[derive(Debug, Clone, Default)]
 pub struct ExecutableDocument {
     /// If this document was originally parsed from a source file,
-    /// that file and its ID.
+    /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this document,
     /// either parsing a source file or converting from AST.
@@ -42,6 +39,23 @@ pub struct ExecutableDocument {
     pub anonymous_operation: Option<Node<Operation>>,
     pub named_operations: IndexMap<Name, Node<Operation>>,
     pub fragments: IndexMap<Name, Node<Fragment>>,
+}
+
+/// FieldSet information created for FieldSet parsing in `@requires` directive.
+/// Annotated with type information.
+#[derive(Debug, Clone)]
+pub struct FieldSet {
+    /// If this document was originally parsed from a source file,
+    /// this map contains one entry for that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub sources: crate::SourceMap,
+
+    /// Errors that occurred when building this FieldSet,
+    /// either parsing a source file or converting from AST.
+    pub(crate) build_errors: Vec<BuildError>,
+
+    pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -176,8 +190,8 @@ pub(crate) enum BuildError {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct SelectionPath {
-    root: ExecutableDefinitionName,
-    nested_fields: Vec<Name>,
+    pub(crate) root: ExecutableDefinitionName,
+    pub(crate) nested_fields: Vec<Name>,
 }
 
 /// Designates by name a top-level definition in an executable document
@@ -217,9 +231,7 @@ impl ExecutableDocument {
     }
 
     pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut sources = schema.sources.clone();
-        sources.extend(self.source.clone());
-        let mut errors = Diagnostics::new(sources);
+        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
@@ -298,11 +310,11 @@ impl ExecutableDocument {
 
 impl Eq for ExecutableDocument {}
 
-/// `source` and `build_errors` are ignored for comparison
+/// `sources` and `build_errors` are ignored for comparison
 impl PartialEq for ExecutableDocument {
     fn eq(&self, other: &Self) -> bool {
         let Self {
-            source: _,
+            sources: _,
             build_errors: _,
             anonymous_operation,
             named_operations,
@@ -670,6 +682,29 @@ impl FragmentSpread {
 
     pub fn fragment_def<'a>(&self, document: &'a ExecutableDocument) -> Option<&'a Node<Fragment>> {
         document.fragments.get(&self.fragment_name)
+    }
+}
+
+impl FieldSet {
+    /// Parse the given source a selection set with optional outer brackets.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(
+        schema: &Schema,
+        type_name: impl Into<NamedType>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Self {
+        Parser::new().parse_field_set(schema, type_name, source_text, path)
+    }
+
+    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
+        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
+        validation::validate_field_set(&mut errors, schema, self);
+        errors.into_result()
     }
 }
 

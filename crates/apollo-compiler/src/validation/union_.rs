@@ -29,7 +29,7 @@ pub(crate) fn validate_union_definition(
     let schema = db.schema();
 
     for union_member in union_def.members() {
-        let member_location = union_member.location().unwrap();
+        let member_location = union_member.location();
         // TODO: (?) A Union type must include one or more unique member types.
 
         match schema.types.get(union_member) {

@@ -1,218 +1,342 @@
-0..77 @23 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        15..39 @23 FieldDefinition {
-            description: None,
-            name: "field",
-            arguments: [
-                21..33 @23 InputValueDefinition {
-                    description: None,
-                    name: "arg",
-                    ty: 26..33 @23 Named(
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
+        },
+        23: SourceFile {
+            path: "0024_used_variables_in_directives.graphql",
+            source_text: "type Query {\n  field(arg: Boolean): Int\n  fragField: Int\n  inlineField: Int\n}\n\nfragment fragment on Query {\n  fragField @include(if: $indirectDirective)\n}\n\nquery (\n  $fieldDirective: Boolean = true,\n  $fragDirective: Boolean = false,\n  $inlineDirective: Boolean = false,\n  $argDirective: Boolean = false,\n  $indirectDirective: Boolean = false,\n) {\n  field(arg: $argDirective) @skip(if: $fieldDirective)\n\n  ...fragment @include(if: $fragDirective)\n\n  ... @skip(if: $inlineDirective) {\n    inlineField\n  }\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentStr {
+                origin: Definition,
+                node: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..77 @23 ObjectType {
+                description: None,
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 15..39 @23 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [
+                                21..33 @23 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 26..33 @23 Named(
+                                        "Boolean",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "fragField": Component {
+                        origin: Definition,
+                        node: 42..56 @23 FieldDefinition {
+                            description: None,
+                            name: "fragField",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "inlineField": Component {
+                        origin: Definition,
+                        node: 59..75 @23 FieldDefinition {
+                            description: None,
+                            name: "inlineField",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        23: SourceFile {
+            path: "0024_used_variables_in_directives.graphql",
+            source_text: "type Query {\n  field(arg: Boolean): Int\n  fragField: Int\n  inlineField: Int\n}\n\nfragment fragment on Query {\n  fragField @include(if: $indirectDirective)\n}\n\nquery (\n  $fieldDirective: Boolean = true,\n  $fragDirective: Boolean = false,\n  $inlineDirective: Boolean = false,\n  $argDirective: Boolean = false,\n  $indirectDirective: Boolean = false,\n) {\n  field(arg: $argDirective) @skip(if: $fieldDirective)\n\n  ...fragment @include(if: $fragDirective)\n\n  ... @skip(if: $inlineDirective) {\n    inlineField\n  }\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: Some(
+        156..505 @23 Operation {
+            operation_type: Query,
+            variables: [
+                166..197 @23 VariableDefinition {
+                    name: "fieldDirective",
+                    ty: 183..190 @23 Named(
                         "Boolean",
                     ),
-                    default_value: None,
+                    default_value: Some(
+                        193..197 @23 Boolean(
+                            true,
+                        ),
+                    ),
+                    directives: [],
+                },
+                201..232 @23 VariableDefinition {
+                    name: "fragDirective",
+                    ty: 217..224 @23 Named(
+                        "Boolean",
+                    ),
+                    default_value: Some(
+                        227..232 @23 Boolean(
+                            false,
+                        ),
+                    ),
+                    directives: [],
+                },
+                236..269 @23 VariableDefinition {
+                    name: "inlineDirective",
+                    ty: 254..261 @23 Named(
+                        "Boolean",
+                    ),
+                    default_value: Some(
+                        264..269 @23 Boolean(
+                            false,
+                        ),
+                    ),
+                    directives: [],
+                },
+                273..303 @23 VariableDefinition {
+                    name: "argDirective",
+                    ty: 288..295 @23 Named(
+                        "Boolean",
+                    ),
+                    default_value: Some(
+                        298..303 @23 Boolean(
+                            false,
+                        ),
+                    ),
+                    directives: [],
+                },
+                307..342 @23 VariableDefinition {
+                    name: "indirectDirective",
+                    ty: 327..334 @23 Named(
+                        "Boolean",
+                    ),
+                    default_value: Some(
+                        337..342 @23 Boolean(
+                            false,
+                        ),
+                    ),
                     directives: [],
                 },
             ],
-            ty: Named(
-                "Int",
-            ),
             directives: [],
-        },
-        42..56 @23 FieldDefinition {
-            description: None,
-            name: "fragField",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        59..75 @23 FieldDefinition {
-            description: None,
-            name: "inlineField",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-    ],
-}
-79..154 @23 FragmentDefinition {
-    name: "fragment",
-    type_condition: "Query",
-    directives: [],
-    selection_set: [
-        Field(
-            110..152 @23 Field {
-                alias: None,
-                name: "fragField",
-                arguments: [],
-                directives: [
-                    120..152 @23 Directive {
-                        name: "include",
-                        arguments: [
-                            129..151 @23 Argument {
-                                name: "if",
-                                value: 133..151 @23 Variable(
-                                    "indirectDirective",
-                                ),
-                            },
-                        ],
-                    },
-                ],
-                selection_set: [],
-            },
-        ),
-    ],
-}
-156..505 @23 OperationDefinition {
-    operation_type: Query,
-    name: None,
-    variables: [
-        166..197 @23 VariableDefinition {
-            name: "fieldDirective",
-            ty: 183..190 @23 Named(
-                "Boolean",
-            ),
-            default_value: Some(
-                193..197 @23 Boolean(
-                    true,
-                ),
-            ),
-            directives: [],
-        },
-        201..232 @23 VariableDefinition {
-            name: "fragDirective",
-            ty: 217..224 @23 Named(
-                "Boolean",
-            ),
-            default_value: Some(
-                227..232 @23 Boolean(
-                    false,
-                ),
-            ),
-            directives: [],
-        },
-        236..269 @23 VariableDefinition {
-            name: "inlineDirective",
-            ty: 254..261 @23 Named(
-                "Boolean",
-            ),
-            default_value: Some(
-                264..269 @23 Boolean(
-                    false,
-                ),
-            ),
-            directives: [],
-        },
-        273..303 @23 VariableDefinition {
-            name: "argDirective",
-            ty: 288..295 @23 Named(
-                "Boolean",
-            ),
-            default_value: Some(
-                298..303 @23 Boolean(
-                    false,
-                ),
-            ),
-            directives: [],
-        },
-        307..342 @23 VariableDefinition {
-            name: "indirectDirective",
-            ty: 327..334 @23 Named(
-                "Boolean",
-            ),
-            default_value: Some(
-                337..342 @23 Boolean(
-                    false,
-                ),
-            ),
-            directives: [],
-        },
-    ],
-    directives: [],
-    selection_set: [
-        Field(
-            350..402 @23 Field {
-                alias: None,
-                name: "field",
-                arguments: [
-                    356..374 @23 Argument {
-                        name: "arg",
-                        value: 361..374 @23 Variable(
-                            "argDirective",
-                        ),
-                    },
-                ],
-                directives: [
-                    376..402 @23 Directive {
-                        name: "skip",
-                        arguments: [
-                            382..401 @23 Argument {
-                                name: "if",
-                                value: 386..401 @23 Variable(
-                                    "fieldDirective",
-                                ),
-                            },
-                        ],
-                    },
-                ],
-                selection_set: [],
-            },
-        ),
-        FragmentSpread(
-            406..446 @23 FragmentSpread {
-                fragment_name: "fragment",
-                directives: [
-                    418..446 @23 Directive {
-                        name: "include",
-                        arguments: [
-                            427..445 @23 Argument {
-                                name: "if",
-                                value: 431..445 @23 Variable(
-                                    "fragDirective",
-                                ),
-                            },
-                        ],
-                    },
-                ],
-            },
-        ),
-        InlineFragment(
-            450..503 @23 InlineFragment {
-                type_condition: None,
-                directives: [
-                    454..481 @23 Directive {
-                        name: "skip",
-                        arguments: [
-                            460..480 @23 Argument {
-                                name: "if",
-                                value: 464..480 @23 Variable(
-                                    "inlineDirective",
-                                ),
-                            },
-                        ],
-                    },
-                ],
-                selection_set: [
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
                     Field(
-                        488..499 @23 Field {
+                        350..402 @23 Field {
+                            definition: 15..39 @23 FieldDefinition {
+                                description: None,
+                                name: "field",
+                                arguments: [
+                                    21..33 @23 InputValueDefinition {
+                                        description: None,
+                                        name: "arg",
+                                        ty: 26..33 @23 Named(
+                                            "Boolean",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Int",
+                                ),
+                                directives: [],
+                            },
                             alias: None,
-                            name: "inlineField",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
+                            name: "field",
+                            arguments: [
+                                356..374 @23 Argument {
+                                    name: "arg",
+                                    value: 361..374 @23 Variable(
+                                        "argDirective",
+                                    ),
+                                },
+                            ],
+                            directives: [
+                                376..402 @23 Directive {
+                                    name: "skip",
+                                    arguments: [
+                                        382..401 @23 Argument {
+                                            name: "if",
+                                            value: 386..401 @23 Variable(
+                                                "fieldDirective",
+                                            ),
+                                        },
+                                    ],
+                                },
+                            ],
+                            selection_set: SelectionSet {
+                                ty: "Int",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    FragmentSpread(
+                        406..446 @23 FragmentSpread {
+                            fragment_name: "fragment",
+                            directives: [
+                                418..446 @23 Directive {
+                                    name: "include",
+                                    arguments: [
+                                        427..445 @23 Argument {
+                                            name: "if",
+                                            value: 431..445 @23 Variable(
+                                                "fragDirective",
+                                            ),
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ),
+                    InlineFragment(
+                        450..503 @23 InlineFragment {
+                            type_condition: None,
+                            directives: [
+                                454..481 @23 Directive {
+                                    name: "skip",
+                                    arguments: [
+                                        460..480 @23 Argument {
+                                            name: "if",
+                                            value: 464..480 @23 Variable(
+                                                "inlineDirective",
+                                            ),
+                                        },
+                                    ],
+                                },
+                            ],
+                            selection_set: SelectionSet {
+                                ty: "Query",
+                                selections: [
+                                    Field(
+                                        488..499 @23 Field {
+                                            definition: 59..75 @23 FieldDefinition {
+                                                description: None,
+                                                name: "inlineField",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "inlineField",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
                         },
                     ),
                 ],
             },
-        ),
-    ],
+        },
+    ),
+    named_operations: {},
+    fragments: {
+        "fragment": 79..154 @23 Fragment {
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        110..152 @23 Field {
+                            definition: 42..56 @23 FieldDefinition {
+                                description: None,
+                                name: "fragField",
+                                arguments: [],
+                                ty: Named(
+                                    "Int",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "fragField",
+                            arguments: [],
+                            directives: [
+                                120..152 @23 Directive {
+                                    name: "include",
+                                    arguments: [
+                                        129..151 @23 Argument {
+                                            name: "if",
+                                            value: 133..151 @23 Variable(
+                                                "indirectDirective",
+                                            ),
+                                        },
+                                    ],
+                                },
+                            ],
+                            selection_set: SelectionSet {
+                                ty: "Int",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
 }
-

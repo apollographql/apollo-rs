@@ -15,4 +15,4 @@
                 - NAME@16..22
                     - IDENT@16..22 "Person"
 - ERROR@6:7 "expected a Name" =
-recursion limit: 500, high: 2
+recursion limit: 500, high: 0

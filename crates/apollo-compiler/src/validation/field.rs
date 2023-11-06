@@ -62,17 +62,14 @@ pub(crate) fn validate_field(
                     ));
                 }
             } else {
-                let mut labels = vec![Label::new(
-                    argument.location().unwrap(),
-                    "argument name not found",
-                )];
-                if let Some(loc) = field_definition.location() {
-                    labels.push(Label::new(loc, "field declared here"));
-                };
+                let mut labels = vec![Label::new(argument.location(), "argument name not found")];
+                let loc = field_definition.location();
+                labels.push(Label::new(loc, "field declared here"));
+
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        argument.location().unwrap(),
+                        argument.location(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.to_string(),
                         },
@@ -94,21 +91,20 @@ pub(crate) fn validate_field(
                 Some(value) => value.is_null(),
             };
 
-            if arg_definition.is_required() && is_null {
+            if arg_definition.is_required() && is_null && arg_definition.default_value.is_none() {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
-                    field.location().unwrap(),
+                    field.location(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.to_string(),
                     },
                 );
                 diagnostic = diagnostic.label(Label::new(
-                    field.location().unwrap(),
+                    field.location(),
                     format!("missing value for argument `{}`", arg_definition.name),
                 ));
-                if let Some(loc) = arg_definition.location() {
-                    diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
-                }
+                let loc = arg_definition.location();
+                diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
 
                 diagnostics.push(diagnostic);
             }
@@ -162,9 +158,7 @@ pub(crate) fn validate_field_definitions(
         diagnostics.extend(validate_field_definition(db, field));
 
         // Field types in Object Types must be of output type
-        let loc = field
-            .location()
-            .expect("undefined field definition location");
+        let loc = field.location();
         if let Some(field_ty) = schema.types.get(field.ty.inner_named_type()) {
             if !field_ty.is_output_type() {
                 // Output types are unreachable
@@ -185,27 +179,17 @@ pub(crate) fn validate_field_definitions(
                         .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name)),
                 );
             }
-        } else if let Some(field_ty_loc) = field.ty.inner_named_type().location() {
+        } else {
+            let field_ty_loc = field.ty.inner_named_type().location();
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
                     field_ty_loc,
                     DiagnosticData::UndefinedDefinition {
-                        name: field.name.to_string(),
+                        name: field.ty.inner_named_type().to_string(),
                     },
                 )
                 .label(Label::new(field_ty_loc, "not found in this scope")),
-            );
-        } else {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    loc,
-                    DiagnosticData::UndefinedDefinition {
-                        name: field.ty.to_string(),
-                    },
-                )
-                .label(Label::new(loc, "not found in this scope")),
             );
         }
     }
@@ -247,12 +231,10 @@ pub(crate) fn validate_leaf_field_selection(
         return Ok(());
     };
 
-    Err(
-        ApolloDiagnostic::new(db, field.location().unwrap(), diagnostic_data)
-            .label(Label::new(field.location().unwrap(), label))
-            .label(Label::new(
-                type_def.location().unwrap(),
-                format!("`{tname}` declared here"),
-            )),
-    )
+    Err(ApolloDiagnostic::new(db, field.location(), diagnostic_data)
+        .label(Label::new(field.location(), label))
+        .label(Label::new(
+            type_def.location(),
+            format!("`{tname}` declared here"),
+        )))
 }

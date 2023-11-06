@@ -1,4 +1,5 @@
 pub(crate) mod document;
+pub(crate) mod selection;
 
 mod argument;
 mod description;
@@ -14,7 +15,6 @@ mod object;
 mod operation;
 mod scalar;
 mod schema;
-mod selection;
 mod ty;
 mod union_;
 mod value;
