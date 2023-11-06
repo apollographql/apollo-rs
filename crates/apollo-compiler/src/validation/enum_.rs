@@ -49,7 +49,7 @@ pub(crate) fn validate_enum_value(
     //
     // Return a Capitalized Value warning if enum value is not capitalized.
     if enum_val.value != enum_val.value.to_uppercase().as_str() {
-        let location = enum_val.location();
+        let location = enum_val.value.location();
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
