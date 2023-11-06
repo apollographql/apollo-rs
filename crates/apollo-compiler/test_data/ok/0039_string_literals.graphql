@@ -42,4 +42,10 @@ type Query {
   f12(arg: String = "a \"b\" c"): Int
 
   f13(arg: String = "regex: \\d+"): Int
+
+  "Trailing backslash \\"
+  f14: Int
+
+  "Trailing quote\""
+  f15: Int
 }

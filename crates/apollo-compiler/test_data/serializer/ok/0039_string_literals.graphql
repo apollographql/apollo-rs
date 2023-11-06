@@ -1,15 +1,22 @@
 type Query {
-  "LF: a\nb"
+  """
+  LF: a
+  b
+  """
   f1: Int
   "CRLF: a\r\nb"
   f2: Int
-  "a\n\nb"
+  """
+  a
+
+  b
+  """
   f3: Int
-  "a \"b\" c"
+  """a "b" c"""
   f4: Int
-  "a \"\"\"b\"\"\" c"
+  """a \"""b\""" c"""
   f5: Int
-  "regex: \\d+"
+  """regex: \d+"""
   f6: Int
   "\nLeading empty line to preserve"
   f7: Int
@@ -22,4 +29,12 @@ type Query {
   f11(arg: String = "a\nb"): Int
   f12(arg: String = "a \"b\" c"): Int
   f13(arg: String = "regex: \\d+"): Int
+  """
+  Trailing backslash \
+  """
+  f14: Int
+  """
+  Trailing quote"
+  """
+  f15: Int
 }

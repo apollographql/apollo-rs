@@ -100,6 +100,19 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
         Ok(())
     }
 
+    /// Panics if newlines are disabled
+    fn require_new_line(&mut self) -> fmt::Result {
+        let prefix = self
+            .config
+            .ident_prefix
+            .expect("require_new_line called with newlines disabled");
+        self.write("\n")?;
+        for _ in 0..self.indent_level {
+            self.write(prefix)?;
+        }
+        Ok(())
+    }
+
     pub(crate) fn newlines_enabled(&self) -> bool {
         self.config.ident_prefix.is_some()
     }
@@ -702,7 +715,10 @@ impl Value {
             Value::Boolean(true) => state.write("true"),
             Value::Boolean(false) => state.write("false"),
             Value::Enum(name) => state.write(name),
-            Value::String(value) => serialize_string_value(state, value),
+            Value::String(value) => {
+                let is_description = false;
+                serialize_string_value(state, is_description, value)
+            }
             Value::Variable(name) => display!(state, "${}", name),
             Value::Float(value) => display!(state, value),
             Value::Int(value) => display!(state, value),
@@ -800,12 +816,12 @@ pub(crate) fn curly_brackets_space_separated<T>(
     state.write("}")
 }
 
-fn serialize_string_value(state: &mut State, mut str: &str) -> fmt::Result {
-    // TODO: use block string when it would be possible AND would look nicer
-    // The parsed value of a block string cannot have:
-    // * non-\n control characters (not representable)
-    // * leading/trailing empty lines (would be stripped when reparsing)
-    // * common indent (would be stripped when reparsing)
+fn serialize_string_value(state: &mut State, is_description: bool, mut str: &str) -> fmt::Result {
+    let contains_newline = str.contains('\n');
+    let prefer_block_string = is_description || contains_newline;
+    if state.newlines_enabled() && prefer_block_string && can_be_block_string(str) {
+        return serialize_block_string(state, contains_newline, str);
+    }
     state.write("\"")?;
     loop {
         if let Some(i) = str.find(|c| (c < ' ' && c != '\t') || c == '"' || c == '\\') {
@@ -831,9 +847,100 @@ fn serialize_string_value(state: &mut State, mut str: &str) -> fmt::Result {
     state.write("\"")
 }
 
+fn serialize_block_string(state: &mut State, contains_newline: bool, str: &str) -> fmt::Result {
+    const TRIPLE_QUOTE: &str = "\"\"\"";
+    const ESCAPED_TRIPLE_QUOTE: &str = "\\\"\"\"";
+    const _: () = assert!(TRIPLE_QUOTE.len() == 3);
+    const _: () = assert!(ESCAPED_TRIPLE_QUOTE.len() == 4);
+
+    fn serialize_line(state: &mut State, mut line: &str) -> Result<(), fmt::Error> {
+        while let Some((before, after)) = line.split_once(TRIPLE_QUOTE) {
+            state.write(before)?;
+            state.write(ESCAPED_TRIPLE_QUOTE)?;
+            line = after;
+        }
+        state.write(line)
+    }
+
+    let multi_line =
+        contains_newline || str.len() > 70 || str.ends_with('"') || str.ends_with('\\');
+
+    state.write(TRIPLE_QUOTE)?;
+    if !multi_line {
+        // """example""""
+        serialize_line(state, str)?
+    } else {
+        // """
+        // example
+        // """
+
+        // `can_be_block_string` excludes \r, so the only remaining line terminator is \n
+        for line in str.split('\n') {
+            if line.is_empty() {
+                // Skip indentation which would be trailing whitespace
+                state.write("\n")?;
+            } else {
+                state.require_new_line()?;
+                serialize_line(state, line)?;
+            }
+        }
+        state.require_new_line()?;
+    }
+    state.write(TRIPLE_QUOTE)
+}
+
+/// Is it possible to create a serialization that, when fed through
+/// [BlockStringValue](https://spec.graphql.org/October2021/#BlockStringValue()),
+/// returns exactly `value`?
+fn can_be_block_string(value: &str) -> bool {
+    // `BlockStringValue` splits its inputs at any `LineTerminator` (\n, \r\n, or \r)
+    // and eventually joins lines but always with \n. So its output can never contain \r
+    if value.contains('\r') {
+        return false;
+    }
+
+    /// <https://spec.graphql.org/October2021/#WhiteSpace>
+    fn trim_start_graphql_whitespace(value: &str) -> &str {
+        value.trim_start_matches([' ', '\t'])
+    }
+
+    // With the above, \n is the only remaining LineTerminator
+    let mut lines = value.split('\n');
+    if lines
+        .next()
+        .is_some_and(|first| trim_start_graphql_whitespace(first).is_empty())
+        || lines
+            .next_back()
+            .is_some_and(|last| trim_start_graphql_whitespace(last).is_empty())
+    {
+        // Leading or trailing whitespace-only line would be trimmed by `BlockStringValue`
+        return false;
+    }
+
+    let common_indent = {
+        let mut lines = value.split('\n');
+        // Skip the first line, the one following """
+        lines.next();
+
+        let each_line_indent_utf8_len = lines.filter_map(|line| {
+            let after_indent = trim_start_graphql_whitespace(line);
+            if !after_indent.is_empty() {
+                Some(line.len() - after_indent.len())
+            } else {
+                None // skip whitespace-only lines
+            }
+        });
+        each_line_indent_utf8_len.min().unwrap_or(0)
+    };
+    // If there is common indent `BlockStringValue` would remove it
+    // and incorrectly round-trip to a different value.
+    common_indent == 0
+}
+
 fn serialize_description(state: &mut State, description: &Option<NodeStr>) -> fmt::Result {
     if let Some(description) = description {
-        serialize_string_value(state, description)?;
+        let is_description = true;
+        serialize_string_value(state, is_description, description)?;
         state.new_line_or_space()?;
     }
     Ok(())
