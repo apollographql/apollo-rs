@@ -52,6 +52,7 @@ Schema {
         "Query": Object(
             0..31 @35 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -73,6 +74,7 @@ Schema {
         "Mutation": Object(
             33..81 @35 ObjectType {
                 description: None,
+                name: "Mutation",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -104,6 +106,7 @@ Schema {
         "Result": Object(
             83..111 @35 ObjectType {
                 description: None,
+                name: "Result",
                 implements_interfaces: {},
                 directives: [],
                 fields: {

@@ -47,6 +47,7 @@ Schema {
         "DogCommand": Enum(
             0..32 @21 EnumType {
                 description: None,
+                name: "DogCommand",
                 directives: [],
                 values: {
                     "SIT": Component {
@@ -71,6 +72,7 @@ Schema {
         "Dog": Object(
             34..97 @21 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -102,6 +104,7 @@ Schema {
         "Query": Object(
             99..124 @21 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -135,6 +138,9 @@ ExecutableDocument {
     named_operations: {
         "queryPupper": 126..204 @21 Operation {
             operation_type: Query,
+            name: Some(
+                "queryPupper",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -173,6 +179,9 @@ ExecutableDocument {
         },
         "queryPupperAgain": 206..316 @21 Operation {
             operation_type: Query,
+            name: Some(
+                "queryPupperAgain",
+            ),
             variables: [
                 229..252 @21 VariableDefinition {
                     name: "dogCommand",
@@ -221,6 +230,7 @@ ExecutableDocument {
     },
     fragments: {
         "mergeIdenticalFieldsWithIdenticalArgs": 318..445 @21 Fragment {
+            name: "mergeIdenticalFieldsWithIdenticalArgs",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
@@ -305,6 +315,7 @@ ExecutableDocument {
             },
         },
         "mergeIdenticalFieldsWithIdenticalValues": 447..592 @21 Fragment {
+            name: "mergeIdenticalFieldsWithIdenticalValues",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",

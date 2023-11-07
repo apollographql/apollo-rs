@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             33..58 @1 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Pet": Object(
             60..87 @1 ObjectType {
                 description: None,
+                name: "Pet",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -100,6 +102,7 @@ ExecutableDocument {
     anonymous_operation: Some(
         1..31 @1 Operation {
             operation_type: Query,
+            name: None,
             variables: [],
             directives: [],
             selection_set: SelectionSet {

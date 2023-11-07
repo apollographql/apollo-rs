@@ -67,6 +67,7 @@ Schema {
         "Query": Object(
             0..35 @8 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -88,6 +89,7 @@ Schema {
         "Book": Object(
             111..199 @8 ObjectType {
                 description: None,
+                name: "Book",
                 implements_interfaces: {},
                 directives: [
                     Component {

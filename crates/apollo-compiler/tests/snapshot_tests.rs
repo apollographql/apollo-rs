@@ -256,6 +256,7 @@ fn test_invalid_synthetic_node() {
         "Obj".into(),
         schema::ObjectType {
             description: Default::default(),
+            name: "Obj".into(),
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: [(

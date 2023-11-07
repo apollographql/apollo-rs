@@ -7,3 +7,6 @@ mod misc;
 mod parser;
 mod schema;
 mod validation;
+
+#[path = "../examples/rename.rs"]
+mod rename;

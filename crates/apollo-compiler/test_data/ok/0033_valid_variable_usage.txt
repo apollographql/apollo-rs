@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             298..337 @32 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Arguments": Object(
             339..510 @32 ObjectType {
                 description: None,
+                name: "Arguments",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -161,6 +163,9 @@ ExecutableDocument {
     named_operations: {
         "nullableStringArg": 0..296 @32 Operation {
             operation_type: Query,
+            name: Some(
+                "nullableStringArg",
+            ),
             variables: [
                 24..48 @32 VariableDefinition {
                     name: "nonNullableVar",

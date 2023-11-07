@@ -119,9 +119,8 @@ impl SchemaBuilder {
                             );
                             entry.insert(extended_def.into());
                         }
-                        Entry::Occupied(_) => {
-                            let (_index, prev_name, previous) =
-                                self.schema.types.get_full_mut(&$def.name).unwrap();
+                        Entry::Occupied(entry) => {
+                            let previous = entry.get();
                             let error = if $is_scalar && previous.is_built_in() {
                                 BuildError::BuiltInScalarTypeRedefinition {
                                     location: $def.location(),
@@ -129,7 +128,7 @@ impl SchemaBuilder {
                             } else {
                                 BuildError::TypeDefinitionCollision {
                                     location: $def.name.location(),
-                                    previous_location: prev_name.location(),
+                                    previous_location: previous.name().location(),
                                     name: $def.name.clone(),
                                 }
                             };
@@ -140,7 +139,7 @@ impl SchemaBuilder {
             }
             macro_rules! type_extension {
                 ($ext: ident, $Kind: ident) => {
-                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&$ext.name) {
+                    if let Some(ty) = self.schema.types.get_mut(&$ext.name) {
                         if let ExtendedType::$Kind(ty) = ty {
                             ty.make_mut()
                                 .extend_ast(&mut self.schema.build_errors, $ext)
@@ -151,7 +150,7 @@ impl SchemaBuilder {
                                     location: $ext.name.location(),
                                     name: $ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty_name.location(),
+                                    def_location: ty.name().location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -372,35 +371,42 @@ fn adopt_type_extensions(
             }
         };
     }
+    let name = type_name.clone();
     extend! {
         ast::Definition::ScalarTypeExtension => "a scalar type" ScalarType {
             description: Default::default(),
+            name,
             directives: Default::default(),
         }
         ast::Definition::ObjectTypeExtension => "an object type" ObjectType {
             description: Default::default(),
+            name,
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: Default::default(),
         }
         ast::Definition::InterfaceTypeExtension => "an interface type" InterfaceType {
             description: Default::default(),
+            name,
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: Default::default(),
         }
         ast::Definition::UnionTypeExtension => "a union type" UnionType {
             description: Default::default(),
+            name,
             directives: Default::default(),
             members: Default::default(),
         }
         ast::Definition::EnumTypeExtension => "an enum type" EnumType {
             description: Default::default(),
+            name,
             directives: Default::default(),
             values: Default::default(),
         }
         ast::Definition::InputObjectTypeExtension => "an input object type" InputObjectType {
             description: Default::default(),
+            name,
             directives: Default::default(),
             fields: Default::default(),
         }
@@ -479,6 +485,7 @@ impl ScalarType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -516,6 +523,7 @@ impl ObjectType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             implements_interfaces: collect_sticky_set(
                 definition
                     .implements_interfaces
@@ -607,6 +615,7 @@ impl InterfaceType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             implements_interfaces: collect_sticky_set(
                 definition
                     .implements_interfaces
@@ -698,6 +707,7 @@ impl UnionType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -762,6 +772,7 @@ impl EnumType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -828,6 +839,7 @@ impl InputObjectType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()

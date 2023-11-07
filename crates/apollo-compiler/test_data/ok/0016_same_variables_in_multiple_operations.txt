@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             230..255 @16 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Dog": Object(
             257..372 @16 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -147,6 +149,9 @@ ExecutableDocument {
     named_operations: {
         "A": 0..61 @16 Operation {
             operation_type: Query,
+            name: Some(
+                "A",
+            ),
             variables: [
                 8..30 @16 VariableDefinition {
                     name: "atOtherHomes",
@@ -172,6 +177,9 @@ ExecutableDocument {
         },
         "B": 63..124 @16 Operation {
             operation_type: Query,
+            name: Some(
+                "B",
+            ),
             variables: [
                 71..93 @16 VariableDefinition {
                     name: "atOtherHomes",
@@ -198,6 +206,7 @@ ExecutableDocument {
     },
     fragments: {
         "HouseTrainedFragment": 126..228 @16 Fragment {
+            name: "HouseTrainedFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Query",
