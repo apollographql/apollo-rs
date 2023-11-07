@@ -16,24 +16,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation-->
-# [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
-
-## Features
-- Diangostic struct is now public by [SimonSapin] in [11fe454]
-- Improve lowercase enum value diagnostic by [goto-bus-stop] in [pull/725]
-
-## Maintenance 
-- Simplify `SchemaBuilder` internals by [SimonSapin] in [pull/722]
-- Remove validation dead code by [SimonSapin] in [bd5d107]
-- Skip schema AST conversion in ExecutableDocument::validate by [SimonSapin] in [pull/726]
-
-[SimonSapin]: https://github.com/SimonSapin
-[goto-bus-stop]: https://github.com/goto-bus-stop
-[11fe454]: https://github.com/apollographql/apollo-rs/commit/11fe454f81b4cfbada4884a22575fa5c812a6ed4
-[bd5d107]: https://github.com/apollographql/apollo-rs/commit/bd5d107eca14a7fc06dd885b2952346326e648cb
-[pull/722]: https://github.com/apollographql/apollo-rs/pull/722
-[pull/725]: https://github.com/apollographql/apollo-rs/pull/725
-[pull/726]: https://github.com/apollographql/apollo-rs/pull/726
 
 # [x.x.x] (unreleased) - 2023-mm-dd
 
@@ -56,9 +38,57 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
     replacing its uses with `&Node<Operation>`
 
+## Features
+
+- **Add serialization support for everything - [SimonSapin], [pull/728].**
+
+  `Schema`, `ExecutableDocument`, and all AST types
+  already supported serialization to GraphQL syntax
+  through the `Display` trait and the `.serialize()` method.
+  This is now also the case of all other Rust types
+  representing some element of a GraphQL document:
+  * `schema::Directives`
+  * `schema::ExtendedType`
+  * `schema::ScalarType`
+  * `schema::ObjectType`
+  * `schema::InterfaceType`
+  * `schema::EnumType`
+  * `schema::UnionType`
+  * `schema::InputObjectType`
+  * `executable::Operation`
+  * `executable::Fragment`
+  * `executable::SelectionSet`
+  * `executable::Selection`
+  * `executable::Field`
+  * `executable::InlineFragment`
+  * `executable::FragmentSpread`
+  * `executable::FieldSet`
+
 [SimonSapin]: https://github.com/SimonSapin
 [issue/708]: https://github.com/apollographql/apollo-rs/issues/708
 [pull/727]: https://github.com/apollographql/apollo-rs/pull/727
+[pull/728]: https://github.com/apollographql/apollo-rs/pull/728
+
+
+# [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
+
+## Features
+- Diangostic struct is now public by [SimonSapin] in [11fe454]
+- Improve lowercase enum value diagnostic by [goto-bus-stop] in [pull/725]
+
+## Maintenance 
+- Simplify `SchemaBuilder` internals by [SimonSapin] in [pull/722]
+- Remove validation dead code by [SimonSapin] in [bd5d107]
+- Skip schema AST conversion in ExecutableDocument::validate by [SimonSapin] in [pull/726]
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[11fe454]: https://github.com/apollographql/apollo-rs/commit/11fe454f81b4cfbada4884a22575fa5c812a6ed4
+[bd5d107]: https://github.com/apollographql/apollo-rs/commit/bd5d107eca14a7fc06dd885b2952346326e648cb
+[pull/722]: https://github.com/apollographql/apollo-rs/pull/722
+[pull/725]: https://github.com/apollographql/apollo-rs/pull/725
+[pull/726]: https://github.com/apollographql/apollo-rs/pull/726
+
 
 # [1.0.0-beta.4](https://crates.io/crates/apollo-compiler/1.0.0-beta.4) - 2023-10-16
 
