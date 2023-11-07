@@ -109,7 +109,7 @@ impl Node<SchemaDefinition> {
 }
 
 impl ExtendedType {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         match self {
             ExtendedType::Scalar(ty) => Box::new(ty.to_ast()) as Box<dyn Iterator<Item = _>>,
             ExtendedType::Object(ty) => Box::new(ty.to_ast()) as _,
@@ -122,7 +122,7 @@ impl ExtendedType {
 }
 
 impl Node<ScalarType> {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         std::iter::once(ast::Definition::ScalarTypeDefinition(self.same_location(
             ast::ScalarTypeDefinition {
                 description: self.description.clone(),
@@ -140,7 +140,7 @@ impl Node<ScalarType> {
 }
 
 impl Node<ObjectType> {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         std::iter::once(ast::Definition::ObjectTypeDefinition(self.same_location(
             ast::ObjectTypeDefinition {
                 description: self.description.clone(),
@@ -162,7 +162,7 @@ impl Node<ObjectType> {
 }
 
 impl Node<InterfaceType> {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         std::iter::once(ast::Definition::InterfaceTypeDefinition(
             self.same_location(ast::InterfaceTypeDefinition {
                 description: self.description.clone(),
@@ -186,7 +186,7 @@ impl Node<InterfaceType> {
 }
 
 impl Node<UnionType> {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         std::iter::once(ast::Definition::UnionTypeDefinition(self.same_location(
             ast::UnionTypeDefinition {
                 description: self.description.clone(),
@@ -206,7 +206,7 @@ impl Node<UnionType> {
 }
 
 impl Node<EnumType> {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         std::iter::once(ast::Definition::EnumTypeDefinition(self.same_location(
             ast::EnumTypeDefinition {
                 description: self.description.clone(),
@@ -226,7 +226,7 @@ impl Node<EnumType> {
 }
 
 impl Node<InputObjectType> {
-    fn to_ast<'a>(&'a self) -> impl Iterator<Item = ast::Definition> + 'a {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         std::iter::once(ast::Definition::InputObjectTypeDefinition(
             self.same_location(ast::InputObjectTypeDefinition {
                 description: self.description.clone(),
