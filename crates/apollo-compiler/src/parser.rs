@@ -1,7 +1,9 @@
 use crate::ast;
+use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::executable;
 use crate::schema;
+use crate::schema::FieldType;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
@@ -252,8 +254,13 @@ impl Parser {
                 parser.parse_type()
             });
         let file_id = FileId::new();
-        let ast = ast::from_cst::convert_type(&tree.ty(), file_id);
-        todo!()
+        match tree.ty().convert(file_id) {
+            Some(ty) => return Ok(FieldType{
+                sources: Arc::new([(file_id, source_file)]),
+                ty,
+            }),
+            None => ,
+        }
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.

@@ -567,14 +567,6 @@ impl Convert for cst::Type {
     }
 }
 
-pub(crate) fn convert_type(ty: &cst::Type, file_id: FileId) -> ast::Type {
-    match ty {
-        cst::Type::NamedType(name) => todo!(),
-        cst::Type::ListType(inner) => todo!(),
-        cst::Type::NonNullType(inner) => todo!(),
-    }
-}
-
 impl Convert for cst::FieldDefinition {
     type Target = ast::FieldDefinition;
 
