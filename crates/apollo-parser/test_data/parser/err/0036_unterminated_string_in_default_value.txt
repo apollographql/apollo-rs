@@ -40,4 +40,4 @@
 - ERROR@112:112 "expected R_PAREN, got EOF" EOF
 - ERROR@112:112 "expected a type" EOF
 - ERROR@112:112 "expected R_CURLY, got EOF" EOF
-recursion limit: 500, high: 1
+recursion limit: 500, high: 0

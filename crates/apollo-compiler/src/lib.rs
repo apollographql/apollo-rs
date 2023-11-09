@@ -37,6 +37,7 @@ impl ApolloCompiler {
         let mut db = RootDatabase::default();
         // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
         db.set_source_files(vec![]);
+        db.set_schema_input(None);
 
         Self { db }
     }

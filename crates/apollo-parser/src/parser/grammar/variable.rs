@@ -12,10 +12,14 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     p.bump(S!['(']);
 
     if let Some(T![$]) = p.peek() {
-        variable_definition(p, false);
+        variable_definition(p);
     } else {
         p.err("expected a Variable Definition")
     }
+    while let Some(T![$]) = p.peek() {
+        variable_definition(p);
+    }
+
     p.expect(T![')'], S![')']);
 }
 
@@ -23,41 +27,25 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
 ///
 /// *VariableDefinition*:
 ///     Variable **:** Type DefaultValue? Directives?
-pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
-    if let Some(T![$]) = p.peek() {
-        let guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
-        variable(p);
+pub(crate) fn variable_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
+    variable(p);
 
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            if let Some(TokenKind::Name | TokenKind::LBracket) = p.peek() {
-                ty::ty(p);
-                if let Some(T![=]) = p.peek() {
-                    value::default_value(p);
-                }
-                if let Some(T![@]) = p.peek() {
-                    directive::directives(p)
-                }
-                if p.peek().is_some() {
-                    guard.finish_node();
-                    // TODO: use a loop instead of recursion
-                    if p.recursion_limit.check_and_increment() {
-                        p.limit_err("parser recursion limit reached");
-                        return;
-                    }
-                    variable_definition(p, true);
-                    p.recursion_limit.decrement();
-                    return;
-                }
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        if let Some(TokenKind::Name | TokenKind::LBracket) = p.peek() {
+            ty::ty(p);
+            if let Some(T![=]) = p.peek() {
+                value::default_value(p);
             }
-            p.err("expected a Type");
+            if let Some(T![@]) = p.peek() {
+                directive::directives(p)
+            }
         } else {
-            p.err("expected a Name");
+            p.err("expected a Type");
         }
-    }
-
-    if !is_variable {
-        p.err("expected a Variable Definition");
+    } else {
+        p.err("expected a Name");
     }
 }
 
