@@ -324,7 +324,9 @@ pub(crate) fn validate_fragment_cycles(
                 ast::Selection::InlineFragment(inline) => {
                     detect_fragment_cycles(named_fragments, &inline.selection_set, visited)?;
                 }
-                _ => {}
+                ast::Selection::Field(field) => {
+                    detect_fragment_cycles(named_fragments, &field.selection_set, visited)?;
+                }
             }
         }
 
