@@ -37,7 +37,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * Remove `executable::OperationRef<'_>` 
     (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
     replacing its uses with `&Node<Operation>`
-- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticsList` - 
+- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` - 
   [SimonSapin], [pull/732] fixing [issue/711].**
   The previous names were too similar to `Directive` and `Diagnostic` (singular).
 
