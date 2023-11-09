@@ -116,7 +116,7 @@ impl SyntaxTree<cst::Type> {
     /// Return the root typed `SelectionSet` node. This is used for parsing
     /// selection sets defined by @requires directive.
     pub fn ty(&self) -> cst::Type {
-        match self.syntax_node().kind().into() {
+        match self.syntax_node().kind() {
             SyntaxKind::NAMED_TYPE => cst::Type::NamedType(cst::NamedType {
                 syntax: self.syntax_node(),
             }),

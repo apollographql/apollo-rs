@@ -259,9 +259,9 @@ impl Parser {
 
         if let Some(ty) = tree.ty().convert(file_id) {
             let field_type = schema::FieldType { sources, ty };
-            return Ok((field_type, errors));
+            Ok((field_type, errors))
         } else {
-            return Err(errors);
+            Err(errors)
         }
     }
 
