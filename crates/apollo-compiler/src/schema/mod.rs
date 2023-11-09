@@ -145,12 +145,6 @@ pub struct InputObjectType {
 
 #[derive(Debug, Clone)]
 pub struct FieldType {
-    /// If this field type was originally parsed from a source file,
-    /// this map contains one entry for that file and its ID.
-    ///
-    /// The document may have been modified since.
-    pub sources: crate::SourceMap,
-
     pub ty: Type,
 }
 

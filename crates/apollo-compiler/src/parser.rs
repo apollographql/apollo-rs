@@ -258,7 +258,7 @@ impl Parser {
         }
 
         if let Some(ty) = tree.ty().convert(file_id) {
-            let field_type = schema::FieldType { sources, ty };
+            let field_type = schema::FieldType { ty };
             Ok((field_type, errors))
         } else {
             Err(errors)
