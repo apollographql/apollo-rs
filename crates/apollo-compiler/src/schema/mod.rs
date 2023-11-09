@@ -869,14 +869,11 @@ impl FieldType {
     /// to identify this source file to users.
     ///
     /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Option<Self> {
+    pub fn parse(
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<(Self, Diagnostics), Diagnostics> {
         Parser::new().parse_field_type(source_text, path)
-    }
-
-    pub fn validate(&self) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(Some(self.sources.clone()), self.sources.clone());
-        validation::validate_field_type(&mut errors, self);
-        errors.into_result()
     }
 }
 

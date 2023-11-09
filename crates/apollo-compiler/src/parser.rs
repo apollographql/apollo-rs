@@ -240,25 +240,29 @@ impl Parser {
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    ///
-    /// Parsing is fault-tolerant, so a type node is always returned.
-    /// TODO: document how to validate
     pub fn parse_field_type(
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> Option<schema::FieldType> {
+    ) -> Result<(schema::FieldType, Diagnostics), Diagnostics> {
         let (tree, source_file) =
             self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
                 parser.parse_type()
             });
         let file_id = FileId::new();
-        tree.ty().convert(file_id).map(|ty| {
-            return schema::FieldType {
-                sources: Arc::new([(file_id, source_file)].into()),
-                ty,
-            };
-        })
+
+        let sources: crate::SourceMap = Arc::new([(file_id, source_file)].into());
+        let mut errors = Diagnostics::new(Some(sources.clone()), sources.clone());
+        for (file_id, source) in sources.iter() {
+            source.validate_parse_errors(&mut errors, *file_id)
+        }
+
+        if let Some(ty) = tree.ty().convert(file_id) {
+            let field_type = schema::FieldType { sources, ty };
+            return Ok((field_type, errors));
+        } else {
+            return Err(errors);
+        }
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.
