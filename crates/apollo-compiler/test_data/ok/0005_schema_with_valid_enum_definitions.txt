@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..43 @5 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -80,6 +81,7 @@ Schema {
         "Pet": Enum(
             45..81 @5 EnumType {
                 description: None,
+                name: "Pet",
                 directives: [],
                 values: {
                     "CAT": Component {
@@ -112,6 +114,7 @@ Schema {
         "Snack": Enum(
             83..146 @5 EnumType {
                 description: None,
+                name: "Snack",
                 directives: [],
                 values: {
                     "THRIVE_PET_FOODS": Component {

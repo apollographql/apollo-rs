@@ -12,23 +12,23 @@ impl ExecutableDocument {
     pub(crate) fn to_ast(&self) -> ast::Document {
         let mut doc = ast::Document::new();
         if let Some(operation) = &self.anonymous_operation {
-            doc.definitions.push(operation.to_ast(None))
+            doc.definitions.push(operation.to_ast())
         }
-        for (name, operation) in &self.named_operations {
-            doc.definitions.push(operation.to_ast(Some(name)))
+        for operation in self.named_operations.values() {
+            doc.definitions.push(operation.to_ast())
         }
-        for (name, fragment) in &self.fragments {
-            doc.definitions.push(fragment.to_ast(name))
+        for fragment in self.fragments.values() {
+            doc.definitions.push(fragment.to_ast())
         }
         doc
     }
 }
 
 impl Node<Operation> {
-    fn to_ast(&self, name: Option<&Name>) -> ast::Definition {
+    fn to_ast(&self) -> ast::Definition {
         ast::Definition::OperationDefinition(self.same_location(ast::OperationDefinition {
             operation_type: self.operation_type,
-            name: name.cloned(),
+            name: self.name.clone(),
             variables: self.variables.clone(),
             directives: self.directives.clone(),
             selection_set: self.selection_set.to_ast(),
@@ -37,9 +37,9 @@ impl Node<Operation> {
 }
 
 impl Node<Fragment> {
-    fn to_ast(&self, name: &Name) -> ast::Definition {
+    fn to_ast(&self) -> ast::Definition {
         ast::Definition::FragmentDefinition(self.same_location(ast::FragmentDefinition {
-            name: name.clone(),
+            name: self.name.clone(),
             type_condition: self.selection_set.ty.clone(),
             directives: self.directives.clone(),
             selection_set: self.selection_set.to_ast(),

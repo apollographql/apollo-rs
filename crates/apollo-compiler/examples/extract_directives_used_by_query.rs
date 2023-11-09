@@ -9,7 +9,7 @@ fn get_directives_used_in_query(doc: &ExecutableDocument) -> Vec<&Node<Directive
     // seed the stack with top-level fields
     let mut stack: Vec<_> = doc
         .all_operations()
-        .flat_map(|op| op.definition().selection_set.fields())
+        .flat_map(|op| op.selection_set.fields())
         .collect();
 
     let mut directives = vec![];

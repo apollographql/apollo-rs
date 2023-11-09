@@ -61,18 +61,15 @@ pub struct FieldSet {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,
+    pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
     pub directives: Directives,
     pub selection_set: SelectionSet,
 }
 
-pub enum OperationRef<'a> {
-    Anonymous(&'a Node<Operation>),
-    Named(&'a Name, &'a Node<Operation>),
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
+    pub name: Name,
     pub directives: Directives,
     pub selection_set: SelectionSet,
 }
@@ -237,16 +234,11 @@ impl ExecutableDocument {
     }
 
     /// Returns an iterator of operations, both anonymous and named
-    pub fn all_operations(&self) -> impl Iterator<Item = OperationRef<'_>> {
+    pub fn all_operations(&self) -> impl Iterator<Item = &'_ Node<Operation>> {
         self.anonymous_operation
             .as_ref()
             .into_iter()
-            .map(OperationRef::Anonymous)
-            .chain(
-                self.named_operations
-                    .iter()
-                    .map(|(name, op)| OperationRef::Named(name, op)),
-            )
+            .chain(self.named_operations.values())
     }
 
     /// Return the relevant operation for a request, or a request error
@@ -262,22 +254,19 @@ impl ExecutableDocument {
     pub fn get_operation(
         &self,
         name_request: Option<&str>,
-    ) -> Result<OperationRef<'_>, GetOperationError> {
+    ) -> Result<&Node<Operation>, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named_operations
-                .get_key_value(name)
-                .map(|(name, op)| OperationRef::Named(name, op))
+            self.named_operations.get(name)
         } else if let Some(op) = &self.anonymous_operation {
             // No name request, return the anonymous operation if it’s the only operation
-            self.named_operations
-                .is_empty()
-                .then_some(OperationRef::Anonymous(op))
+            self.named_operations.is_empty().then_some(op)
         } else {
             // No name request or anonymous operation, return a named operation if it’s the only one
-            self.named_operations.iter().next().and_then(|(name, op)| {
-                (self.named_operations.len() == 1).then_some(OperationRef::Named(name, op))
-            })
+            self.named_operations
+                .values()
+                .next()
+                .and_then(|op| (self.named_operations.len() == 1).then_some(op))
         }
         .ok_or(GetOperationError())
     }
@@ -323,29 +312,6 @@ impl PartialEq for ExecutableDocument {
         *anonymous_operation == other.anonymous_operation
             && *named_operations == other.named_operations
             && *fragments == other.fragments
-    }
-}
-
-impl<'a> OperationRef<'a> {
-    pub fn name(&self) -> Option<&'a Name> {
-        match self {
-            OperationRef::Anonymous(_) => None,
-            OperationRef::Named(name, _) => Some(name),
-        }
-    }
-
-    pub fn definition(&self) -> &'a Node<Operation> {
-        match self {
-            OperationRef::Anonymous(def) | OperationRef::Named(_, def) => def,
-        }
-    }
-}
-
-impl std::ops::Deref for OperationRef<'_> {
-    type Target = Node<Operation>;
-
-    fn deref(&self) -> &Self::Target {
-        self.definition()
     }
 }
 

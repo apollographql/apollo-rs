@@ -84,12 +84,14 @@ pub enum ExtendedType {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
     pub description: Option<NodeStr>,
+    pub name: Name,
     pub directives: Directives,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
     pub description: Option<NodeStr>,
+    pub name: Name,
     pub implements_interfaces: IndexSet<ComponentStr>,
     pub directives: Directives,
 
@@ -103,10 +105,7 @@ pub struct ObjectType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterfaceType {
     pub description: Option<NodeStr>,
-
-    /// * Key: name of an implemented interface
-    /// * Value: which interface type extension defined this implementation,
-    ///   or `None` for the interface type definition.
+    pub name: Name,
     pub implements_interfaces: IndexSet<ComponentStr>,
 
     pub directives: Directives,
@@ -121,6 +120,7 @@ pub struct InterfaceType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
     pub description: Option<NodeStr>,
+    pub name: Name,
     pub directives: Directives,
 
     /// * Key: name of a member object type
@@ -132,6 +132,7 @@ pub struct UnionType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
     pub description: Option<NodeStr>,
+    pub name: Name,
     pub directives: Directives,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
@@ -139,6 +140,7 @@ pub struct EnumType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
     pub description: Option<NodeStr>,
+    pub name: Name,
     pub directives: Directives,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
@@ -587,6 +589,17 @@ impl SchemaDefinition {
 }
 
 impl ExtendedType {
+    pub fn name(&self) -> &Name {
+        match self {
+            Self::Scalar(def) => &def.name,
+            Self::Object(def) => &def.name,
+            Self::Interface(def) => &def.name,
+            Self::Union(def) => &def.name,
+            Self::Enum(def) => &def.name,
+            Self::InputObject(def) => &def.name,
+        }
+    }
+
     /// Return the source location of the type's base definition.
     ///
     /// If the type has extensions, those are not covered by this location.

@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             165..233 @13 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -90,6 +91,7 @@ Schema {
         "Review": Object(
             235..269 @13 ObjectType {
                 description: None,
+                name: "Review",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -111,6 +113,7 @@ Schema {
         "Message": Object(
             271..338 @13 ObjectType {
                 description: None,
+                name: "Message",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -154,6 +157,7 @@ Schema {
         "Product": Object(
             340..399 @13 ObjectType {
                 description: None,
+                name: "Product",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -209,6 +213,9 @@ ExecutableDocument {
     named_operations: {
         "ExampleQuery": 0..81 @13 Operation {
             operation_type: Query,
+            name: Some(
+                "ExampleQuery",
+            ),
             variables: [
                 19..33 @13 VariableDefinition {
                     name: "variable",
@@ -288,6 +295,7 @@ ExecutableDocument {
     },
     fragments: {
         "subFrag": 83..163 @13 Fragment {
+            name: "subFrag",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Query",

@@ -47,6 +47,7 @@ Schema {
         "Pet": Interface(
             0..33 @30 InterfaceType {
                 description: None,
+                name: "Pet",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Dog": Object(
             35..96 @30 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,
@@ -106,6 +108,7 @@ Schema {
         "Cat": Object(
             98..159 @30 ObjectType {
                 description: None,
+                name: "Cat",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,
@@ -144,6 +147,7 @@ Schema {
         "CatOrDog": Union(
             161..187 @30 UnionType {
                 description: None,
+                name: "CatOrDog",
                 directives: [],
                 members: {
                     ComponentStr {
@@ -160,6 +164,7 @@ Schema {
         "Human": Object(
             189..218 @30 ObjectType {
                 description: None,
+                name: "Human",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -183,6 +188,7 @@ Schema {
         "DogOrHuman": Union(
             220..250 @30 UnionType {
                 description: None,
+                name: "DogOrHuman",
                 directives: [],
                 members: {
                     ComponentStr {
@@ -199,6 +205,7 @@ Schema {
         "Node": Interface(
             1319..1347 @30 InterfaceType {
                 description: None,
+                name: "Node",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -220,6 +227,7 @@ Schema {
         "Resource": Interface(
             1349..1411 @30 InterfaceType {
                 description: None,
+                name: "Resource",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,
@@ -258,6 +266,7 @@ Schema {
         "ConcreteResource": Object(
             1476..1552 @30 ObjectType {
                 description: None,
+                name: "ConcreteResource",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,
@@ -300,6 +309,7 @@ Schema {
         "Query": Object(
             1711..1757 @30 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -345,6 +355,9 @@ ExecutableDocument {
     named_operations: {
         "UseAllFragments": 1759..2068 @30 Operation {
             operation_type: Query,
+            name: Some(
+                "UseAllFragments",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -488,6 +501,7 @@ ExecutableDocument {
     },
     fragments: {
         "dogFragment": 327..392 @30 Fragment {
+            name: "dogFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
@@ -530,6 +544,7 @@ ExecutableDocument {
             },
         },
         "petNameFragment": 471..513 @30 Fragment {
+            name: "petNameFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
@@ -559,6 +574,7 @@ ExecutableDocument {
             },
         },
         "interfaceWithinObjectFragment": 515..585 @30 Fragment {
+            name: "interfaceWithinObjectFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
@@ -573,6 +589,7 @@ ExecutableDocument {
             },
         },
         "catOrDogNameFragment": 587..666 @30 Fragment {
+            name: "catOrDogNameFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "CatOrDog",
@@ -615,6 +632,7 @@ ExecutableDocument {
             },
         },
         "unionWithObjectFragment": 668..737 @30 Fragment {
+            name: "unionWithObjectFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
@@ -629,6 +647,7 @@ ExecutableDocument {
             },
         },
         "petFragment": 816..888 @30 Fragment {
+            name: "petFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
@@ -692,6 +711,7 @@ ExecutableDocument {
             },
         },
         "catOrDogFragment": 890..965 @30 Fragment {
+            name: "catOrDogFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "CatOrDog",
@@ -734,6 +754,7 @@ ExecutableDocument {
             },
         },
         "unionWithInterface": 1046..1108 @30 Fragment {
+            name: "unionWithInterface",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
@@ -748,6 +769,7 @@ ExecutableDocument {
             },
         },
         "dogOrHumanFragment": 1110..1189 @30 Fragment {
+            name: "dogOrHumanFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "DogOrHuman",
@@ -790,6 +812,7 @@ ExecutableDocument {
             },
         },
         "interfaceWithInterface": 1554..1619 @30 Fragment {
+            name: "interfaceWithInterface",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Node",
@@ -804,6 +827,7 @@ ExecutableDocument {
             },
         },
         "resourceFragment": 1621..1668 @30 Fragment {
+            name: "resourceFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Resource",

@@ -111,10 +111,11 @@ impl Operation {
         let mut selection_set = SelectionSet::new(ty);
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
         Some(Self {
-            selection_set,
             operation_type: ast.operation_type,
+            name: ast.name.clone(),
             variables: ast.variables.clone(),
             directives: ast.directives.clone(),
+            selection_set,
         })
     }
 }
@@ -140,8 +141,9 @@ impl Fragment {
         let mut selection_set = SelectionSet::new(ast.type_condition.clone());
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
         Some(Self {
-            selection_set,
+            name: ast.name.clone(),
             directives: ast.directives.clone(),
+            selection_set,
         })
     }
 }

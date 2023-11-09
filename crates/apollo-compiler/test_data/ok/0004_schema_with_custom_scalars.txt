@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..44 @4 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -80,6 +81,7 @@ Schema {
         "URL": Scalar(
             46..113 @4 ScalarType {
                 description: None,
+                name: "URL",
                 directives: [
                     Component {
                         origin: Definition,

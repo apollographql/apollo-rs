@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..59 @26 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -92,6 +93,7 @@ Schema {
         "Date": Scalar(
             61..106 @26 ScalarType {
                 description: None,
+                name: "Date",
                 directives: [
                     Component {
                         origin: Definition,
@@ -124,6 +126,7 @@ ExecutableDocument {
     anonymous_operation: Some(
         108..135 @26 Operation {
             operation_type: Query,
+            name: None,
             variables: [],
             directives: [],
             selection_set: SelectionSet {

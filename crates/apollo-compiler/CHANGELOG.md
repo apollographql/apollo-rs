@@ -35,6 +35,30 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/725]: https://github.com/apollographql/apollo-rs/pull/725
 [pull/726]: https://github.com/apollographql/apollo-rs/pull/726
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## BREAKING
+
+- **Make everything know their own name - [SimonSapin], [pull/727] fixing [issue/708].**
+
+  In a few places (but not consistently) a `name` field
+  was omitted from some structs used as map values 
+  on the basis that it would have been redundant with the map key.
+  This reverts that decision,
+  making it the user’s responsibility when mutating documents to keep names consistent.
+
+  * Add a `pub name: Name` field to `executable::Fragment` as well as 
+    `ScalarType`, `ObjectType`, `InterfaceType`, `EnumType`, `UnionType`, and `InputObjectType`
+    in `schema`.
+  * Add a `fn name(&self) -> &Name` method to the `schema::ExtendedType` enum
+  * Add a `pub name: Option<Name>` field to `executable::Operation`
+  * Remove `executable::OperationRef<'_>` 
+    (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
+    replacing its uses with `&Node<Operation>`
+
+[SimonSapin]: https://github.com/SimonSapin
+[issue/708]: https://github.com/apollographql/apollo-rs/issues/708
+[pull/727]: https://github.com/apollographql/apollo-rs/pull/727
 
 # [1.0.0-beta.4](https://crates.io/crates/apollo-compiler/1.0.0-beta.4) - 2023-10-16
 

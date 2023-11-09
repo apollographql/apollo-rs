@@ -47,6 +47,7 @@ Schema {
         "ComplicatedArgs": Object(
             0..816 @31 ObjectType {
                 description: None,
+                name: "ComplicatedArgs",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -455,6 +456,7 @@ Schema {
         "Custom": Scalar(
             818..864 @31 ScalarType {
                 description: None,
+                name: "Custom",
                 directives: [
                     Component {
                         origin: Definition,
@@ -476,6 +478,7 @@ Schema {
         "FurColor": Enum(
             866..934 @31 EnumType {
                 description: None,
+                name: "FurColor",
                 directives: [],
                 values: {
                     "BROWN": Component {
@@ -532,6 +535,7 @@ Schema {
         "ComplexInput": InputObject(
             936..1107 @31 InputObjectType {
                 description: None,
+                name: "ComplexInput",
                 directives: [],
                 fields: {
                     "requiredField": Component {
@@ -618,6 +622,7 @@ Schema {
         "DogCommand": Enum(
             1109..1148 @31 EnumType {
                 description: None,
+                name: "DogCommand",
                 directives: [],
                 values: {
                     "SIT": Component {
@@ -650,6 +655,7 @@ Schema {
         "Dog": Object(
             1150..1302 @31 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -729,6 +735,7 @@ Schema {
         "Pet": Interface(
             1304..1354 @31 InterfaceType {
                 description: None,
+                name: "Pet",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -760,6 +767,7 @@ Schema {
         "Query": Object(
             1356..1439 @31 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -815,6 +823,7 @@ Schema {
         "Human": Object(
             1441..1524 @31 ObjectType {
                 description: None,
+                name: "Human",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -886,6 +895,9 @@ ExecutableDocument {
     named_operations: {
         "goodIntValue": 1526..1599 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodIntValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -956,6 +968,9 @@ ExecutableDocument {
         },
         "goodNegativeIntValue": 1601..1682 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodNegativeIntValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1026,6 +1041,9 @@ ExecutableDocument {
         },
         "goodBooleanValue": 1684..1772 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodBooleanValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1096,6 +1114,9 @@ ExecutableDocument {
         },
         "goodStringValue": 1774..1860 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodStringValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1166,6 +1187,9 @@ ExecutableDocument {
         },
         "goodFloatValue": 1862..1943 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodFloatValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1236,6 +1260,9 @@ ExecutableDocument {
         },
         "goodNegativeFloatValue": 1945..2035 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodNegativeFloatValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1306,6 +1333,9 @@ ExecutableDocument {
         },
         "intIntoFloat": 2037..2114 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "intIntoFloat",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1376,6 +1406,9 @@ ExecutableDocument {
         },
         "intIntoID": 2116..2184 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "intIntoID",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1446,6 +1479,9 @@ ExecutableDocument {
         },
         "stringIntoID": 2186..2270 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "stringIntoID",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1516,6 +1552,9 @@ ExecutableDocument {
         },
         "goodEnumValue": 2272..2344 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodEnumValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1586,6 +1625,9 @@ ExecutableDocument {
         },
         "enumWithUndefinedValue": 2346..2437 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "enumWithUndefinedValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1656,6 +1698,9 @@ ExecutableDocument {
         },
         "enumWithNullValue": 2439..2522 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "enumWithNullValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1724,6 +1769,9 @@ ExecutableDocument {
         },
         "nullIntoNullableType": 2524..2608 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "nullIntoNullableType",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1792,6 +1840,9 @@ ExecutableDocument {
         },
         "goodListValue": 2610..2717 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "goodListValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1872,6 +1923,9 @@ ExecutableDocument {
         },
         "emptyListValue": 2719..2809 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "emptyListValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -1944,6 +1998,9 @@ ExecutableDocument {
         },
         "nullListValue": 2811..2902 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "nullListValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2014,6 +2071,9 @@ ExecutableDocument {
         },
         "singleValueIntoList": 2904..3002 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "singleValueIntoList",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2086,6 +2146,9 @@ ExecutableDocument {
         },
         "argOnOptionalArg": 3031..3108 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "argOnOptionalArg",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2160,6 +2223,9 @@ ExecutableDocument {
         },
         "noArgOnOptionalArg": 3110..3169 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "noArgOnOptionalArg",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2227,6 +2293,9 @@ ExecutableDocument {
         },
         "multipleArgs": 3171..3252 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "multipleArgs",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2312,6 +2381,9 @@ ExecutableDocument {
         },
         "multiplArgsReverseOrder": 3254..3346 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "multiplArgsReverseOrder",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2397,6 +2469,9 @@ ExecutableDocument {
         },
         "noArgsOnMultipleOptional": 3348..3423 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "noArgsOnMultipleOptional",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2477,6 +2552,9 @@ ExecutableDocument {
         },
         "oneArgOnMultipleOptional": 3425..3509 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "oneArgOnMultipleOptional",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2564,6 +2642,9 @@ ExecutableDocument {
         },
         "secondArgOnMultipleOptional": 3511..3598 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "secondArgOnMultipleOptional",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2651,6 +2732,9 @@ ExecutableDocument {
         },
         "multipleRequiredArgsOnMixedList": 3600..3705 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "multipleRequiredArgsOnMixedList",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2762,6 +2846,9 @@ ExecutableDocument {
         },
         "multipleRequiredAndOneOptionalArgOnMixedList": 3707..3834 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "multipleRequiredAndOneOptionalArgOnMixedList",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -2879,6 +2966,9 @@ ExecutableDocument {
         },
         "AllRequiredAndOptionalArgsOnMixedList": 3836..3965 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "AllRequiredAndOptionalArgsOnMixedList",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3002,6 +3092,9 @@ ExecutableDocument {
         },
         "optionalArgDespiteRequiredFieldInType": 3994..4085 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "optionalArgDespiteRequiredFieldInType",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3065,6 +3158,9 @@ ExecutableDocument {
         },
         "partialObjectOnlyRequired": 4087..4203 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "partialObjectOnlyRequired",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3142,6 +3238,9 @@ ExecutableDocument {
         },
         "partialObjectRequiredFieldCanBeFalse": 4205..4333 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "partialObjectRequiredFieldCanBeFalse",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3219,6 +3318,9 @@ ExecutableDocument {
         },
         "partialObjectIncludingRequired": 4335..4469 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "partialObjectIncludingRequired",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3302,6 +3404,9 @@ ExecutableDocument {
         },
         "fullObject": 4471..4693 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "fullObject",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3410,6 +3515,9 @@ ExecutableDocument {
         },
         "fullObjectWithFieldsInDifferentOrder": 4695..4944 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "fullObjectWithFieldsInDifferentOrder",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3518,6 +3626,9 @@ ExecutableDocument {
         },
         "withDirectivesOfValidTypes": 4946..5062 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "withDirectivesOfValidTypes",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -3668,6 +3779,9 @@ ExecutableDocument {
         },
         "withDefaultValues": 5091..5337 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "withDefaultValues",
+            ),
             variables: [
                 5118..5129 @31 VariableDefinition {
                     name: "a",
@@ -3864,6 +3978,9 @@ ExecutableDocument {
         },
         "variablesWithDefaultNullValues": 5339..5605 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "variablesWithDefaultNullValues",
+            ),
             variables: [
                 5379..5393 @31 VariableDefinition {
                     name: "a",
@@ -4054,6 +4171,9 @@ ExecutableDocument {
         },
         "customScalarWithStringValue": 5624..5726 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithStringValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -4124,6 +4244,9 @@ ExecutableDocument {
         },
         "customScalarWithIntValue": 5728..5820 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithIntValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -4194,6 +4317,9 @@ ExecutableDocument {
         },
         "customScalarWithBooleanValue": 5822..5921 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithBooleanValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -4264,6 +4390,9 @@ ExecutableDocument {
         },
         "customScalarWithFloatValue": 5923..6019 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithFloatValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -4334,6 +4463,9 @@ ExecutableDocument {
         },
         "customScalarWithVariableValue": 6021..6146 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithVariableValue",
+            ),
             variables: [
                 6057..6076 @31 VariableDefinition {
                     name: "custom",
@@ -4417,6 +4549,9 @@ ExecutableDocument {
         },
         "customScalarWithArbitraryInputObject": 6148..6265 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithArbitraryInputObject",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -4494,6 +4629,9 @@ ExecutableDocument {
         },
         "customScalarWithListValue": 6267..6368 @31 Operation {
             operation_type: Query,
+            name: Some(
+                "customScalarWithListValue",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {

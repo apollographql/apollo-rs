@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..42 @7 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,
@@ -73,6 +74,7 @@ Schema {
         "Node": Interface(
             44..72 @7 InterfaceType {
                 description: None,
+                name: "Node",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -94,6 +96,7 @@ Schema {
         "Resource": Interface(
             74..149 @7 InterfaceType {
                 description: None,
+                name: "Resource",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,
@@ -144,6 +147,7 @@ Schema {
         "Image": Interface(
             151..254 @7 InterfaceType {
                 description: None,
+                name: "Image",
                 implements_interfaces: {
                     ComponentStr {
                         origin: Definition,

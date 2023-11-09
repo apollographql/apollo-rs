@@ -88,6 +88,7 @@ Schema {
         "Query": Object(
             200..235 @33 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
