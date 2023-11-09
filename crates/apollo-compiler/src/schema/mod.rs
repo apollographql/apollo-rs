@@ -24,7 +24,7 @@ pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 
 /// High-level representation of a GraphQL schema
 #[derive(Clone)]
@@ -53,7 +53,7 @@ pub struct Schema {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 
     /// Name of the object type for the `query` root operation
     pub query: Option<ComponentStr>,
@@ -66,7 +66,7 @@ pub struct SchemaDefinition {
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
-pub struct Directives(pub Vec<Component<Directive>>);
+pub struct DirectiveList(pub Vec<Component<Directive>>);
 
 /// The definition of a named type, with all information from type extensions folded in.
 ///
@@ -85,7 +85,7 @@ pub enum ExtendedType {
 pub struct ScalarType {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -93,7 +93,7 @@ pub struct ObjectType {
     pub description: Option<NodeStr>,
     pub name: Name,
     pub implements_interfaces: IndexSet<ComponentStr>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 
     /// Explicit field definitions.
     ///
@@ -108,7 +108,7 @@ pub struct InterfaceType {
     pub name: Name,
     pub implements_interfaces: IndexSet<ComponentStr>,
 
-    pub directives: Directives,
+    pub directives: DirectiveList,
 
     /// Explicit field definitions.
     ///
@@ -121,7 +121,7 @@ pub struct InterfaceType {
 pub struct UnionType {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
@@ -133,7 +133,7 @@ pub struct UnionType {
 pub struct EnumType {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
 
@@ -141,7 +141,7 @@ pub struct EnumType {
 pub struct InputObjectType {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
@@ -311,8 +311,8 @@ impl Schema {
     }
 
     /// Returns `Err` if invalid, or `Ok` for potential warnings or advice
-    pub fn validate(&self) -> Result<Diagnostics, Diagnostics> {
-        let mut errors = Diagnostics::new(None, self.sources.clone());
+    pub fn validate(&self) -> Result<DiagnosticList, DiagnosticList> {
+        let mut errors = DiagnosticList::new(None, self.sources.clone());
         let warnings_and_advice = validation::validate_schema(&mut errors, self);
         let valid = errors.is_empty();
         for diagnostic in warnings_and_advice {
@@ -485,7 +485,7 @@ impl Schema {
                     name: Name::new("__typename"),
                     arguments: Vec::new(),
                     ty: Type::new_named("String").non_null(),
-                    directives: ast::Directives::new(),
+                    directives: ast::DirectiveList::new(),
                 }),
                 // __schema: __Schema!
                 Component::new(FieldDefinition {
@@ -493,7 +493,7 @@ impl Schema {
                     name: Name::new("__schema"),
                     arguments: Vec::new(),
                     ty: Type::new_named("__Schema").non_null(),
-                    directives: ast::Directives::new(),
+                    directives: ast::DirectiveList::new(),
                 }),
                 // __type(name: String!): __Type
                 Component::new(FieldDefinition {
@@ -504,11 +504,11 @@ impl Schema {
                         name: Name::new("name"),
                         ty: ast::Type::new_named("String").non_null().into(),
                         default_value: None,
-                        directives: ast::Directives::new(),
+                        directives: ast::DirectiveList::new(),
                     }
                     .into()],
                     ty: Type::new_named("__Type"),
-                    directives: ast::Directives::new(),
+                    directives: ast::DirectiveList::new(),
                 }),
             ]
         });
@@ -682,7 +682,7 @@ impl ExtendedType {
         }
     }
 
-    pub fn directives(&self) -> &Directives {
+    pub fn directives(&self) -> &DirectiveList {
         match self {
             Self::Scalar(ty) => &ty.directives,
             Self::Object(ty) => &ty.directives,
@@ -832,7 +832,7 @@ impl InputObjectType {
     serialize_method!();
 }
 
-impl Directives {
+impl DirectiveList {
     pub const fn new() -> Self {
         Self(Vec::new())
     }
@@ -864,13 +864,13 @@ impl Directives {
     serialize_method!();
 }
 
-impl std::fmt::Debug for Directives {
+impl std::fmt::Debug for DirectiveList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }
 }
 
-impl std::ops::Deref for Directives {
+impl std::ops::Deref for DirectiveList {
     type Target = Vec<Component<Directive>>;
 
     fn deref(&self) -> &Self::Target {
@@ -878,13 +878,13 @@ impl std::ops::Deref for Directives {
     }
 }
 
-impl std::ops::DerefMut for Directives {
+impl std::ops::DerefMut for DirectiveList {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a> IntoIterator for &'a Directives {
+impl<'a> IntoIterator for &'a DirectiveList {
     type Item = &'a Component<Directive>;
 
     type IntoIter = std::slice::Iter<'a, Component<Directive>>;
@@ -894,7 +894,7 @@ impl<'a> IntoIterator for &'a Directives {
     }
 }
 
-impl<'a> IntoIterator for &'a mut Directives {
+impl<'a> IntoIterator for &'a mut DirectiveList {
     type Item = &'a mut Component<Directive>;
 
     type IntoIter = std::slice::IterMut<'a, Component<Directive>>;
@@ -904,7 +904,7 @@ impl<'a> IntoIterator for &'a mut Directives {
     }
 }
 
-impl<D> FromIterator<D> for Directives
+impl<D> FromIterator<D> for DirectiveList
 where
     D: Into<Component<Directive>>,
 {

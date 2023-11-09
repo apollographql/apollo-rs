@@ -16,10 +16,10 @@ mod serialize;
 pub(crate) mod validation;
 
 pub use crate::ast::{
-    Argument, Directive, Directives, Name, NamedType, OperationType, Type, Value,
+    Argument, Directive, DirectiveList, Name, NamedType, OperationType, Type, Value,
     VariableDefinition,
 };
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::NodeLocation;
 use std::fmt;
 
@@ -63,14 +63,14 @@ pub struct Operation {
     pub operation_type: OperationType,
     pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
@@ -94,20 +94,20 @@ pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
@@ -227,8 +227,8 @@ impl ExecutableDocument {
         Parser::new().parse_executable(schema, source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
+    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
@@ -434,7 +434,7 @@ impl SelectionSet {
 }
 
 impl Selection {
-    pub fn directives(&self) -> &Directives {
+    pub fn directives(&self) -> &DirectiveList {
         match self {
             Self::Field(sel) => &sel.directives,
             Self::FragmentSpread(sel) => &sel.directives,
@@ -518,7 +518,7 @@ impl Field {
             alias: None,
             name: name.into(),
             arguments: Vec::new(),
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
             selection_set,
         }
     }
@@ -595,7 +595,7 @@ impl InlineFragment {
         let selection_set = SelectionSet::new(type_condition.clone());
         Self {
             type_condition: Some(type_condition),
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
             selection_set,
         }
     }
@@ -603,7 +603,7 @@ impl InlineFragment {
     pub fn without_type_condition(parent_selection_set_type: impl Into<NamedType>) -> Self {
         Self {
             type_condition: None,
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
             selection_set: SelectionSet::new(parent_selection_set_type),
         }
     }
@@ -641,7 +641,7 @@ impl FragmentSpread {
     pub fn new(fragment_name: impl Into<Name>) -> Self {
         Self {
             fragment_name: fragment_name.into(),
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
         }
     }
 
@@ -681,8 +681,8 @@ impl FieldSet {
         Parser::new().parse_field_set(schema, type_name, source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
+    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_field_set(&mut errors, schema, self);
         errors.into_result()
     }

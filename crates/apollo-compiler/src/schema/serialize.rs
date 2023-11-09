@@ -91,7 +91,7 @@ impl Node<SchemaDefinition> {
             Some(ast::Definition::SchemaDefinition(self.same_location(
                 ast::SchemaDefinition {
                     description: self.description.clone(),
-                    directives: ast::Directives(components(&self.directives, None)),
+                    directives: ast::DirectiveList(components(&self.directives, None)),
                     root_operations: root_ops(None),
                 },
             )))
@@ -99,7 +99,7 @@ impl Node<SchemaDefinition> {
         .into_iter()
         .chain(extensions.into_iter().map(move |ext| {
             ast::Definition::SchemaExtension(ext.same_location(ast::SchemaExtension {
-                directives: ast::Directives(components(&self.directives, Some(ext))),
+                directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                 root_operations: root_ops(Some(ext)),
             }))
         }))
@@ -137,13 +137,13 @@ impl ScalarType {
         let def = ast::ScalarTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
-            directives: ast::Directives(components(&self.directives, None)),
+            directives: ast::DirectiveList(components(&self.directives, None)),
         };
         std::iter::once(Node::new_opt_location(def, location).into()).chain(
             self.extensions().into_iter().map(move |ext| {
                 ast::Definition::ScalarTypeExtension(ext.same_location(ast::ScalarTypeExtension {
                     name: self.name.clone(),
-                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                 }))
             }),
         )
@@ -162,7 +162,7 @@ impl ObjectType {
             description: self.description.clone(),
             name: self.name.clone(),
             implements_interfaces: names(&self.implements_interfaces, None),
-            directives: ast::Directives(components(&self.directives, None)),
+            directives: ast::DirectiveList(components(&self.directives, None)),
             fields: components(self.fields.values(), None),
         };
         std::iter::once(Node::new_opt_location(def, location).into()).chain(
@@ -170,7 +170,7 @@ impl ObjectType {
                 ast::Definition::ObjectTypeExtension(ext.same_location(ast::ObjectTypeExtension {
                     name: self.name.clone(),
                     implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                     fields: components(self.fields.values(), Some(ext)),
                 }))
             }),
@@ -190,7 +190,7 @@ impl InterfaceType {
             description: self.description.clone(),
             name: self.name.clone(),
             implements_interfaces: names(&self.implements_interfaces, None),
-            directives: ast::Directives(components(&self.directives, None)),
+            directives: ast::DirectiveList(components(&self.directives, None)),
             fields: components(self.fields.values(), None),
         };
         std::iter::once(Node::new_opt_location(def, location).into()).chain(
@@ -199,7 +199,7 @@ impl InterfaceType {
                     ast::InterfaceTypeExtension {
                         name: self.name.clone(),
                         implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                        directives: ast::Directives(components(&self.directives, Some(ext))),
+                        directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                         fields: components(self.fields.values(), Some(ext)),
                     },
                 ))
@@ -219,14 +219,14 @@ impl UnionType {
         let def = ast::UnionTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
-            directives: ast::Directives(components(&self.directives, None)),
+            directives: ast::DirectiveList(components(&self.directives, None)),
             members: names(&self.members, None),
         };
         std::iter::once(Node::new_opt_location(def, location).into()).chain(
             self.extensions().into_iter().map(move |ext| {
                 ast::Definition::UnionTypeExtension(ext.same_location(ast::UnionTypeExtension {
                     name: self.name.clone(),
-                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                     members: names(&self.members, Some(ext)),
                 }))
             }),
@@ -245,14 +245,14 @@ impl EnumType {
         let def = ast::EnumTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
-            directives: ast::Directives(components(&self.directives, None)),
+            directives: ast::DirectiveList(components(&self.directives, None)),
             values: components(self.values.values(), None),
         };
         std::iter::once(Node::new_opt_location(def, location).into()).chain(
             self.extensions().into_iter().map(move |ext| {
                 ast::Definition::EnumTypeExtension(ext.same_location(ast::EnumTypeExtension {
                     name: self.name.clone(),
-                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                     values: components(self.values.values(), Some(ext)),
                 }))
             }),
@@ -271,7 +271,7 @@ impl InputObjectType {
         let def = ast::InputObjectTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
-            directives: ast::Directives(components(&self.directives, None)),
+            directives: ast::DirectiveList(components(&self.directives, None)),
             fields: components(self.fields.values(), None),
         };
         std::iter::once(Node::new_opt_location(def, location).into()).chain(
@@ -279,7 +279,7 @@ impl InputObjectType {
                 ast::Definition::InputObjectTypeExtension(ext.same_location(
                     ast::InputObjectTypeExtension {
                         name: self.name.clone(),
-                        directives: ast::Directives(components(&self.directives, Some(ext))),
+                        directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                         fields: components(self.fields.values(), Some(ext)),
                     },
                 ))
@@ -313,7 +313,7 @@ fn names(names: &IndexSet<ComponentStr>, ext: Option<&ExtensionId>) -> Vec<Name>
         .collect()
 }
 
-impl Directives {
+impl DirectiveList {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         for directive in self.iter() {
             state.write(" ")?;

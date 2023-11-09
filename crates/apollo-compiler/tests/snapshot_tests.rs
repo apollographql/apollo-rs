@@ -9,7 +9,7 @@
 
 use apollo_compiler::ast;
 use apollo_compiler::schema;
-use apollo_compiler::Diagnostics;
+use apollo_compiler::DiagnosticList;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
@@ -92,8 +92,8 @@ fn validation() {
 }
 
 fn assert_diagnostics_are_present(
-    schema_validation_errors: &Option<Diagnostics>,
-    executable_validation_errors: &Option<Diagnostics>,
+    schema_validation_errors: &Option<DiagnosticList>,
+    executable_validation_errors: &Option<DiagnosticList>,
     path: &Path,
 ) {
     assert!(
@@ -104,8 +104,8 @@ fn assert_diagnostics_are_present(
 }
 
 fn assert_diagnostics_are_absent(
-    schema_validation_errors: &Option<Diagnostics>,
-    executable_validation_errors: &Option<Diagnostics>,
+    schema_validation_errors: &Option<DiagnosticList>,
+    executable_validation_errors: &Option<DiagnosticList>,
     path: &Path,
 ) {
     if schema_validation_errors.is_some() || executable_validation_errors.is_some() {

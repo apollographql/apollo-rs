@@ -33,7 +33,7 @@ impl SchemaBuilder {
                 build_errors: Vec::new(),
                 schema_definition: Node::new(SchemaDefinition {
                     description: None,
-                    directives: Directives::default(),
+                    directives: DirectiveList::default(),
                     query: None,
                     mutation: None,
                     subscription: None,

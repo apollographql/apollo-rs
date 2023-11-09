@@ -1,7 +1,7 @@
 use super::*;
 use crate::node::NodeLocation;
 use crate::schema::SchemaBuilder;
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::ExecutableDocument;
 use crate::Parser;
 use crate::Schema;
@@ -35,8 +35,8 @@ impl Document {
     /// the GraphQL grammar or where the parser reached a token limit or recursion limit.
     ///
     /// Does not perform any validation beyond this syntactic level.
-    pub fn check_parse_errors(&self) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(None, self.sources.clone());
+    pub fn check_parse_errors(&self) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(None, self.sources.clone());
         for (file_id, source) in self.sources.iter() {
             source.validate_parse_errors(&mut errors, *file_id)
         }
@@ -44,14 +44,14 @@ impl Document {
     }
 
     /// Validate as an executable document, as much as possible without a schema
-    pub fn validate_standalone_executable(&self) -> Result<(), Diagnostics> {
+    pub fn validate_standalone_executable(&self) -> Result<(), DiagnosticList> {
         let type_system_definitions_are_errors = true;
         let executable = crate::executable::from_ast::document_from_ast(
             None,
             self,
             type_system_definitions_are_errors,
         );
-        let mut errors = Diagnostics::new(None, self.sources.clone());
+        let mut errors = DiagnosticList::new(None, self.sources.clone());
         crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
         errors.into_result()
     }
@@ -240,8 +240,8 @@ impl Definition {
         }
     }
 
-    pub fn directives(&self) -> &Directives {
-        static EMPTY: Directives = Directives(Vec::new());
+    pub fn directives(&self) -> &DirectiveList {
+        static EMPTY: DirectiveList = DirectiveList(Vec::new());
         match self {
             Self::DirectiveDefinition(_) => &EMPTY,
             Self::OperationDefinition(def) => &def.directives,
@@ -380,7 +380,7 @@ impl InputObjectTypeExtension {
     serialize_method!();
 }
 
-impl Directives {
+impl DirectiveList {
     pub fn new() -> Self {
         Self(Vec::new())
     }
@@ -412,13 +412,13 @@ impl Directives {
     serialize_method!();
 }
 
-impl std::fmt::Debug for Directives {
+impl std::fmt::Debug for DirectiveList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }
 }
 
-impl std::ops::Deref for Directives {
+impl std::ops::Deref for DirectiveList {
     type Target = Vec<Node<Directive>>;
 
     fn deref(&self) -> &Self::Target {
@@ -426,13 +426,13 @@ impl std::ops::Deref for Directives {
     }
 }
 
-impl std::ops::DerefMut for Directives {
+impl std::ops::DerefMut for DirectiveList {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a> IntoIterator for &'a Directives {
+impl<'a> IntoIterator for &'a DirectiveList {
     type Item = &'a Node<Directive>;
 
     type IntoIter = std::slice::Iter<'a, Node<Directive>>;
@@ -442,7 +442,7 @@ impl<'a> IntoIterator for &'a Directives {
     }
 }
 
-impl<'a> IntoIterator for &'a mut Directives {
+impl<'a> IntoIterator for &'a mut DirectiveList {
     type Item = &'a mut Node<Directive>;
 
     type IntoIter = std::slice::IterMut<'a, Node<Directive>>;
