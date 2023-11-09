@@ -302,13 +302,13 @@ pub(crate) fn validate_fragment_cycles(
         named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
         selection_set: &[ast::Selection],
         visited: &mut RecursionGuard<'_>,
-    ) -> Result<(), ast::Selection> {
+    ) -> Result<(), Vec<Node<ast::FragmentSpread>>> {
         for selection in selection_set {
             match selection {
                 ast::Selection::FragmentSpread(spread) => {
                     if visited.contains(&spread.fragment_name) {
                         if visited.first() == Some(&spread.fragment_name) {
-                            return Err(selection.clone());
+                            return Err(vec![spread.clone()]);
                         }
                         continue;
                     }
@@ -318,7 +318,11 @@ pub(crate) fn validate_fragment_cycles(
                             named_fragments,
                             &fragment.selection_set,
                             &mut visited.push(&fragment.name),
-                        )?;
+                        )
+                        .map_err(|mut trace| {
+                            trace.insert(0, spread.clone());
+                            trace
+                        })?;
                     }
                 }
                 ast::Selection::InlineFragment(inline) => {
@@ -335,22 +339,43 @@ pub(crate) fn validate_fragment_cycles(
 
     let mut visited = RecursionStack::with_root(def.name.clone());
 
-    if let Err(cycle) =
+    if let Err(mut cycle) =
         detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard())
     {
         let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                def.location(),
-                DiagnosticData::RecursiveFragmentDefinition {
-                    name: def.name.to_string(),
-                },
-            )
-            .label(Label::new(head_location, "recursive fragment definition"))
-            .label(Label::new(cycle.location(), "refers to itself here")),
-        );
+        let mut diagnostic = ApolloDiagnostic::new(
+            db,
+            def.location(),
+            DiagnosticData::RecursiveFragmentDefinition {
+                name: def.name.to_string(),
+            },
+        )
+        .label(Label::new(head_location, "recursive fragment definition"));
+
+        let last = cycle.pop();
+        let mut prev_name = &def.name;
+        for spread in &cycle {
+            diagnostic = diagnostic.label(Label::new(
+                spread.location(),
+                format!(
+                    "`{}` references `{}` here...",
+                    prev_name, spread.fragment_name
+                ),
+            ));
+            prev_name = &spread.fragment_name;
+        }
+        if let Some(spread) = last {
+            diagnostic = diagnostic.label(Label::new(
+                spread.location(),
+                format!(
+                    "`{}` circularly references `{}` here",
+                    prev_name, spread.fragment_name
+                ),
+            ));
+        }
+
+        diagnostics.push(diagnostic);
     }
 
     diagnostics
