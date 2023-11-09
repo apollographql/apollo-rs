@@ -92,7 +92,7 @@ pub struct OperationDefinition {
     pub operation_type: OperationType,
     pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: Vec<Selection>,
 }
 
@@ -100,7 +100,7 @@ pub struct OperationDefinition {
 pub struct FragmentDefinition {
     pub name: Name,
     pub type_condition: NamedType,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: Vec<Selection>,
 }
 
@@ -116,7 +116,7 @@ pub struct DirectiveDefinition {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct SchemaDefinition {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub root_operations: Vec<Node<(OperationType, NamedType)>>,
 }
 
@@ -124,7 +124,7 @@ pub struct SchemaDefinition {
 pub struct ScalarTypeDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -132,7 +132,7 @@ pub struct ObjectTypeDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: Vec<Node<FieldDefinition>>,
 }
 
@@ -141,7 +141,7 @@ pub struct InterfaceTypeDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: Vec<Node<FieldDefinition>>,
 }
 
@@ -149,7 +149,7 @@ pub struct InterfaceTypeDefinition {
 pub struct UnionTypeDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub members: Vec<NamedType>,
 }
 
@@ -157,7 +157,7 @@ pub struct UnionTypeDefinition {
 pub struct EnumTypeDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub values: Vec<Node<EnumValueDefinition>>,
 }
 
@@ -165,27 +165,27 @@ pub struct EnumTypeDefinition {
 pub struct InputObjectTypeDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: Vec<Node<InputValueDefinition>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct SchemaExtension {
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub root_operations: Vec<Node<(OperationType, NamedType)>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ScalarTypeExtension {
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ObjectTypeExtension {
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: Vec<Node<FieldDefinition>>,
 }
 
@@ -193,28 +193,28 @@ pub struct ObjectTypeExtension {
 pub struct InterfaceTypeExtension {
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: Vec<Node<FieldDefinition>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct UnionTypeExtension {
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub members: Vec<NamedType>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumTypeExtension {
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub values: Vec<Node<EnumValueDefinition>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputObjectTypeExtension {
     pub name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub fields: Vec<Node<InputValueDefinition>>,
 }
 
@@ -225,7 +225,7 @@ pub struct Argument {
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
-pub struct Directives(pub Vec<Node<Directive>>);
+pub struct DirectiveList(pub Vec<Node<Directive>>);
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Directive {
@@ -268,7 +268,7 @@ pub struct VariableDefinition {
     pub name: Name,
     pub ty: Node<Type>,
     pub default_value: Option<Node<Value>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -285,7 +285,7 @@ pub struct FieldDefinition {
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub ty: Type,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -294,14 +294,14 @@ pub struct InputValueDefinition {
     pub name: Name,
     pub ty: Node<Type>,
     pub default_value: Option<Node<Value>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumValueDefinition {
     pub description: Option<NodeStr>,
     pub value: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -316,20 +316,20 @@ pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: Vec<Selection>,
 }
 

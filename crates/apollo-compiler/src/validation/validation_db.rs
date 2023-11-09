@@ -241,7 +241,7 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
         definition: schema_definition.unwrap_or_else(|| {
             Node::new(ast::SchemaDefinition {
                 description: None,
-                directives: ast::Directives::new(),
+                directives: ast::DirectiveList::new(),
                 root_operations: {
                     let mut operations = Vec::with_capacity(3);
                     let query_name = ast::Name::new("Query");

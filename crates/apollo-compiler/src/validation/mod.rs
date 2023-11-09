@@ -31,11 +31,11 @@ use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 /// A collection of diagnostics returned by some validation method
-pub struct Diagnostics(Box<DiagnosticsBoxed>);
+pub struct DiagnosticList(Box<DiagnosticListBoxed>);
 
 /// Box indirection to avoid large `Err` values:
 /// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
-struct DiagnosticsBoxed {
+struct DiagnosticListBoxed {
     sources: Sources,
     diagnostics_data: Vec<DiagnosticData>,
 }
@@ -315,7 +315,7 @@ impl<'a> Diagnostic<'a> {
     }
 }
 
-impl Diagnostics {
+impl DiagnosticList {
     pub fn is_empty(&self) -> bool {
         self.0.diagnostics_data.is_empty()
     }
@@ -342,7 +342,7 @@ impl Diagnostics {
     }
 
     pub(crate) fn new(schema_sources: Option<SourceMap>, self_sources: SourceMap) -> Self {
-        Self(Box::new(DiagnosticsBoxed {
+        Self(Box::new(DiagnosticListBoxed {
             sources: Sources {
                 schema_sources,
                 self_sources,
@@ -376,7 +376,7 @@ impl Diagnostics {
 /// Defaults to ANSI color codes if stderr is a terminal.
 ///
 /// Use alternate formatting to never use colors: `format!("{diagnostics:#}")`
-impl fmt::Display for Diagnostics {
+impl fmt::Display for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
             diagnostic.fmt(f)?
@@ -460,7 +460,7 @@ impl ariadne::Cache<FileId> for &'_ Sources {
     }
 }
 
-impl fmt::Debug for Diagnostics {
+impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }

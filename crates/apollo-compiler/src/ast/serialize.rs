@@ -322,7 +322,7 @@ fn serialize_object_type_like(
     state: &mut State,
     name: &str,
     implements_interfaces: &[Name],
-    directives: &Directives,
+    directives: &DirectiveList,
     fields: &[Node<FieldDefinition>],
 ) -> Result<(), fmt::Error> {
     state.write(name)?;
@@ -375,7 +375,7 @@ impl UnionTypeDefinition {
 fn serialize_union(
     state: &mut State,
     name: &str,
-    directives: &Directives,
+    directives: &DirectiveList,
     members: &[Name],
 ) -> fmt::Result {
     state.write(name)?;
@@ -537,7 +537,7 @@ impl InputObjectTypeExtension {
     }
 }
 
-impl Directives {
+impl DirectiveList {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         for dir in self {
             state.write(" ")?;
@@ -907,7 +907,7 @@ impl_display! {
     UnionTypeExtension
     EnumTypeExtension
     InputObjectTypeExtension
-    Directives
+    DirectiveList
     Directive
     VariableDefinition
     FieldDefinition
@@ -920,7 +920,7 @@ impl_display! {
     Value
     crate::Schema
     crate::ExecutableDocument
-    schema::Directives
+    schema::DirectiveList
     schema::ExtendedType
     schema::ScalarType
     schema::ObjectType

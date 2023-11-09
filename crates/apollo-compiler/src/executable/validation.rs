@@ -2,7 +2,7 @@ use super::BuildError;
 use super::FieldSet;
 use crate::ast;
 use crate::validation::Details;
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::ExecutableDocument;
 use crate::FileId;
 use crate::InputDatabase;
@@ -11,7 +11,7 @@ use crate::ValidationDatabase;
 use std::sync::Arc;
 
 pub(crate) fn validate_executable_document(
-    errors: &mut Diagnostics,
+    errors: &mut DiagnosticList,
     schema: &Schema,
     document: &ExecutableDocument,
 ) {
@@ -21,14 +21,14 @@ pub(crate) fn validate_executable_document(
 }
 
 pub(crate) fn validate_standalone_executable(
-    errors: &mut Diagnostics,
+    errors: &mut DiagnosticList,
     document: &ExecutableDocument,
 ) {
     validate_common(errors, document);
     compiler_validation(errors, None, document);
 }
 
-pub(crate) fn validate_common(errors: &mut Diagnostics, document: &ExecutableDocument) {
+pub(crate) fn validate_common(errors: &mut DiagnosticList, document: &ExecutableDocument) {
     for (file_id, source) in document.sources.iter() {
         source.validate_parse_errors(errors, *file_id)
     }
@@ -54,7 +54,7 @@ pub(crate) fn validate_common(errors: &mut Diagnostics, document: &ExecutableDoc
     // TODO
 }
 
-fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
+fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
     let location = match build_error {
         BuildError::TypeSystemDefinition { location, .. }
         | BuildError::AmbiguousAnonymousOperation { location }
@@ -72,7 +72,7 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
 
 /// TODO: replace this with validation based on `ExecutableDocument` without a database
 fn compiler_validation(
-    errors: &mut Diagnostics,
+    errors: &mut DiagnosticList,
     schema: Option<&Schema>,
     document: &ExecutableDocument,
 ) {
@@ -116,7 +116,11 @@ fn compiler_validation(
     }
 }
 
-pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, field_set: &FieldSet) {
+pub(crate) fn validate_field_set(
+    errors: &mut DiagnosticList,
+    schema: &Schema,
+    field_set: &FieldSet,
+) {
     for (file_id, source) in &*field_set.sources {
         source.validate_parse_errors(errors, *file_id)
     }

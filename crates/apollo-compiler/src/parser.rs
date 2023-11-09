@@ -3,7 +3,7 @@ use crate::ast::Document;
 use crate::executable;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::ExecutableDocument;
 use crate::FileId;
 use crate::NodeLocation;
@@ -299,7 +299,7 @@ impl SourceFile {
         Some((line, column))
     }
 
-    pub(crate) fn validate_parse_errors(&self, errors: &mut Diagnostics, file_id: FileId) {
+    pub(crate) fn validate_parse_errors(&self, errors: &mut DiagnosticList, file_id: FileId) {
         for err in &self.parse_errors {
             // Silently skip parse errors at index beyond 4 GiB.
             // Rowan in apollo-parser might complain about files that large

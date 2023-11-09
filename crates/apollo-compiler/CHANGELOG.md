@@ -37,6 +37,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * Remove `executable::OperationRef<'_>` 
     (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
     replacing its uses with `&Node<Operation>`
+- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` - 
+  [SimonSapin], [pull/732] fixing [issue/711].**
+  The previous names were too similar to `Directive` and `Diagnostic` (singular).
 
 ## Features
 
@@ -66,8 +69,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 [SimonSapin]: https://github.com/SimonSapin
 [issue/708]: https://github.com/apollographql/apollo-rs/issues/708
+[issue/711]: https://github.com/apollographql/apollo-rs/issues/711
 [pull/727]: https://github.com/apollographql/apollo-rs/pull/727
 [pull/728]: https://github.com/apollographql/apollo-rs/pull/728
+[pull/732]: https://github.com/apollographql/apollo-rs/pull/732
 
 
 # [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
