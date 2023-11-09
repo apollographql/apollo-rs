@@ -77,11 +77,7 @@ fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) -> Vec<crate::
     warnings_and_advice
 }
 
-pub(crate) fn validate_field_type(
-    errors: &mut Diagnostics,
-    schema: &Schema,
-    field_type: &FieldType,
-) {
+pub(crate) fn validate_field_type(errors: &mut Diagnostics, field_type: &FieldType) {
     for (file_id, source) in &*field_type.sources {
         source.validate_parse_errors(errors, *file_id)
     }

@@ -150,9 +150,6 @@ pub struct FieldType {
     ///
     /// The document may have been modified since.
     pub sources: crate::SourceMap,
-    /// Errors that occurred when building this schema,
-    /// either parsing a source file or converting from AST.
-    build_errors: Vec<BuildError>,
 
     pub ty: Type,
 }
@@ -872,13 +869,13 @@ impl FieldType {
     /// to identify this source file to users.
     ///
     /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Option<Self> {
         Parser::new().parse_field_type(source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
-        validation::validate_field_type(&mut errors, schema, self);
+    pub fn validate(&self) -> Result<(), Diagnostics> {
+        let mut errors = Diagnostics::new(Some(self.sources.clone()), self.sources.clone());
+        validation::validate_field_type(&mut errors, self);
         errors.into_result()
     }
 }

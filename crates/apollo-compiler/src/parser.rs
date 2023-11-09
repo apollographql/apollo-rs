@@ -3,7 +3,6 @@ use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::executable;
 use crate::schema;
-use crate::schema::FieldType;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
@@ -248,19 +247,18 @@ impl Parser {
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> schema::FieldType {
+    ) -> Option<schema::FieldType> {
         let (tree, source_file) =
             self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
                 parser.parse_type()
             });
         let file_id = FileId::new();
-        match tree.ty().convert(file_id) {
-            Some(ty) => return Ok(FieldType{
-                sources: Arc::new([(file_id, source_file)]),
+        tree.ty().convert(file_id).map(|ty| {
+            return schema::FieldType {
+                sources: Arc::new([(file_id, source_file)].into()),
                 ty,
-            }),
-            None => ,
-        }
+            };
+        })
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.
