@@ -362,12 +362,16 @@ impl Operation {
         self.operation_type == OperationType::Query
             && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
     }
+
+    serialize_method!();
 }
 
 impl Fragment {
     pub fn type_condition(&self) -> &NamedType {
         &self.selection_set.ty
     }
+
+    serialize_method!();
 }
 
 impl SelectionSet {
@@ -425,6 +429,8 @@ impl SelectionSet {
     pub fn fields(&self) -> impl Iterator<Item = &Node<Field>> {
         self.selections.iter().filter_map(|sel| sel.as_field())
     }
+
+    serialize_method!();
 }
 
 impl Selection {
@@ -435,6 +441,8 @@ impl Selection {
             Self::InlineFragment(sel) => &sel.directives,
         }
     }
+
+    serialize_method!();
 }
 
 impl From<Node<Field>> for Selection {
@@ -577,6 +585,8 @@ impl Field {
     pub fn inner_type_def<'a>(&self, schema: &'a Schema) -> Option<&'a schema::ExtendedType> {
         schema.types.get(self.ty().inner_named_type())
     }
+
+    serialize_method!();
 }
 
 impl InlineFragment {
@@ -623,6 +633,8 @@ impl InlineFragment {
         self.selection_set.extend(selections);
         self
     }
+
+    serialize_method!();
 }
 
 impl FragmentSpread {
@@ -649,6 +661,8 @@ impl FragmentSpread {
     pub fn fragment_def<'a>(&self, document: &'a ExecutableDocument) -> Option<&'a Node<Fragment>> {
         document.fragments.get(&self.fragment_name)
     }
+
+    serialize_method!();
 }
 
 impl FieldSet {
@@ -672,6 +686,8 @@ impl FieldSet {
         validation::validate_field_set(&mut errors, schema, self);
         errors.into_result()
     }
+
+    serialize_method!();
 }
 
 impl fmt::Display for SelectionPath {

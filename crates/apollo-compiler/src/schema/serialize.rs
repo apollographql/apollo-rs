@@ -10,9 +10,7 @@ impl Schema {
         // it would ~duplicate large parts of ast/serialize.rs
         top_level(state, self.to_ast(), |state, def| def.serialize_impl(state))
     }
-}
 
-impl Schema {
     pub(crate) fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         self.schema_definition
             .to_ast(&self.types)
@@ -111,139 +109,188 @@ impl Node<SchemaDefinition> {
 impl ExtendedType {
     fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         match self {
-            ExtendedType::Scalar(ty) => Box::new(ty.to_ast()) as Box<dyn Iterator<Item = _>>,
-            ExtendedType::Object(ty) => Box::new(ty.to_ast()) as _,
-            ExtendedType::Interface(ty) => Box::new(ty.to_ast()) as _,
-            ExtendedType::Union(ty) => Box::new(ty.to_ast()) as _,
-            ExtendedType::Enum(ty) => Box::new(ty.to_ast()) as _,
-            ExtendedType::InputObject(ty) => Box::new(ty.to_ast()) as _,
+            ExtendedType::Scalar(ty) => {
+                Box::new(ty.to_ast(ty.location())) as Box<dyn Iterator<Item = _>>
+            }
+            ExtendedType::Object(ty) => Box::new(ty.to_ast(ty.location())) as _,
+            ExtendedType::Interface(ty) => Box::new(ty.to_ast(ty.location())) as _,
+            ExtendedType::Union(ty) => Box::new(ty.to_ast(ty.location())) as _,
+            ExtendedType::Enum(ty) => Box::new(ty.to_ast(ty.location())) as _,
+            ExtendedType::InputObject(ty) => Box::new(ty.to_ast(ty.location())) as _,
+        }
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        match self {
+            ExtendedType::Scalar(ty) => ty.serialize_impl(state),
+            ExtendedType::Object(ty) => ty.serialize_impl(state),
+            ExtendedType::Interface(ty) => ty.serialize_impl(state),
+            ExtendedType::Union(ty) => ty.serialize_impl(state),
+            ExtendedType::Enum(ty) => ty.serialize_impl(state),
+            ExtendedType::InputObject(ty) => ty.serialize_impl(state),
         }
     }
 }
 
-impl Node<ScalarType> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        std::iter::once(ast::Definition::ScalarTypeDefinition(self.same_location(
-            ast::ScalarTypeDefinition {
-                description: self.description.clone(),
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, None)),
-            },
-        )))
-        .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::ScalarTypeExtension(ext.same_location(ast::ScalarTypeExtension {
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, Some(ext))),
-            }))
-        }))
-    }
-}
-
-impl Node<ObjectType> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        std::iter::once(ast::Definition::ObjectTypeDefinition(self.same_location(
-            ast::ObjectTypeDefinition {
-                description: self.description.clone(),
-                name: self.name.clone(),
-                implements_interfaces: names(&self.implements_interfaces, None),
-                directives: ast::Directives(components(&self.directives, None)),
-                fields: components(self.fields.values(), None),
-            },
-        )))
-        .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::ObjectTypeExtension(ext.same_location(ast::ObjectTypeExtension {
-                name: self.name.clone(),
-                implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                directives: ast::Directives(components(&self.directives, Some(ext))),
-                fields: components(self.fields.values(), Some(ext)),
-            }))
-        }))
-    }
-}
-
-impl Node<InterfaceType> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        std::iter::once(ast::Definition::InterfaceTypeDefinition(
-            self.same_location(ast::InterfaceTypeDefinition {
-                description: self.description.clone(),
-                name: self.name.clone(),
-                implements_interfaces: names(&self.implements_interfaces, None),
-                directives: ast::Directives(components(&self.directives, None)),
-                fields: components(self.fields.values(), None),
+impl ScalarType {
+    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+        let def = ast::ScalarTypeDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            directives: ast::Directives(components(&self.directives, None)),
+        };
+        std::iter::once(Node::new_opt_location(def, location).into()).chain(
+            self.extensions().into_iter().map(move |ext| {
+                ast::Definition::ScalarTypeExtension(ext.same_location(ast::ScalarTypeExtension {
+                    name: self.name.clone(),
+                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                }))
             }),
-        ))
-        .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::InterfaceTypeExtension(ext.same_location(
-                ast::InterfaceTypeExtension {
+        )
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        top_level(state, self.to_ast(None), |state, def| {
+            def.serialize_impl(state)
+        })
+    }
+}
+
+impl ObjectType {
+    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+        let def = ast::ObjectTypeDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            implements_interfaces: names(&self.implements_interfaces, None),
+            directives: ast::Directives(components(&self.directives, None)),
+            fields: components(self.fields.values(), None),
+        };
+        std::iter::once(Node::new_opt_location(def, location).into()).chain(
+            self.extensions().into_iter().map(move |ext| {
+                ast::Definition::ObjectTypeExtension(ext.same_location(ast::ObjectTypeExtension {
                     name: self.name.clone(),
                     implements_interfaces: names(&self.implements_interfaces, Some(ext)),
                     directives: ast::Directives(components(&self.directives, Some(ext))),
                     fields: components(self.fields.values(), Some(ext)),
-                },
-            ))
-        }))
-    }
-}
-
-impl Node<UnionType> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        std::iter::once(ast::Definition::UnionTypeDefinition(self.same_location(
-            ast::UnionTypeDefinition {
-                description: self.description.clone(),
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, None)),
-                members: names(&self.members, None),
-            },
-        )))
-        .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::UnionTypeExtension(ext.same_location(ast::UnionTypeExtension {
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, Some(ext))),
-                members: names(&self.members, Some(ext)),
-            }))
-        }))
-    }
-}
-
-impl Node<EnumType> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        std::iter::once(ast::Definition::EnumTypeDefinition(self.same_location(
-            ast::EnumTypeDefinition {
-                description: self.description.clone(),
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, None)),
-                values: components(self.values.values(), None),
-            },
-        )))
-        .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::EnumTypeExtension(ext.same_location(ast::EnumTypeExtension {
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, Some(ext))),
-                values: components(self.values.values(), Some(ext)),
-            }))
-        }))
-    }
-}
-
-impl Node<InputObjectType> {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        std::iter::once(ast::Definition::InputObjectTypeDefinition(
-            self.same_location(ast::InputObjectTypeDefinition {
-                description: self.description.clone(),
-                name: self.name.clone(),
-                directives: ast::Directives(components(&self.directives, None)),
-                fields: components(self.fields.values(), None),
+                }))
             }),
-        ))
-        .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::InputObjectTypeExtension(ext.same_location(
-                ast::InputObjectTypeExtension {
+        )
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        top_level(state, self.to_ast(None), |state, def| {
+            def.serialize_impl(state)
+        })
+    }
+}
+
+impl InterfaceType {
+    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+        let def = ast::InterfaceTypeDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            implements_interfaces: names(&self.implements_interfaces, None),
+            directives: ast::Directives(components(&self.directives, None)),
+            fields: components(self.fields.values(), None),
+        };
+        std::iter::once(Node::new_opt_location(def, location).into()).chain(
+            self.extensions().into_iter().map(move |ext| {
+                ast::Definition::InterfaceTypeExtension(ext.same_location(
+                    ast::InterfaceTypeExtension {
+                        name: self.name.clone(),
+                        implements_interfaces: names(&self.implements_interfaces, Some(ext)),
+                        directives: ast::Directives(components(&self.directives, Some(ext))),
+                        fields: components(self.fields.values(), Some(ext)),
+                    },
+                ))
+            }),
+        )
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        top_level(state, self.to_ast(None), |state, def| {
+            def.serialize_impl(state)
+        })
+    }
+}
+
+impl UnionType {
+    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+        let def = ast::UnionTypeDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            directives: ast::Directives(components(&self.directives, None)),
+            members: names(&self.members, None),
+        };
+        std::iter::once(Node::new_opt_location(def, location).into()).chain(
+            self.extensions().into_iter().map(move |ext| {
+                ast::Definition::UnionTypeExtension(ext.same_location(ast::UnionTypeExtension {
                     name: self.name.clone(),
                     directives: ast::Directives(components(&self.directives, Some(ext))),
-                    fields: components(self.fields.values(), Some(ext)),
-                },
-            ))
-        }))
+                    members: names(&self.members, Some(ext)),
+                }))
+            }),
+        )
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        top_level(state, self.to_ast(None), |state, def| {
+            def.serialize_impl(state)
+        })
+    }
+}
+
+impl EnumType {
+    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+        let def = ast::EnumTypeDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            directives: ast::Directives(components(&self.directives, None)),
+            values: components(self.values.values(), None),
+        };
+        std::iter::once(Node::new_opt_location(def, location).into()).chain(
+            self.extensions().into_iter().map(move |ext| {
+                ast::Definition::EnumTypeExtension(ext.same_location(ast::EnumTypeExtension {
+                    name: self.name.clone(),
+                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    values: components(self.values.values(), Some(ext)),
+                }))
+            }),
+        )
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        top_level(state, self.to_ast(None), |state, def| {
+            def.serialize_impl(state)
+        })
+    }
+}
+
+impl InputObjectType {
+    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+        let def = ast::InputObjectTypeDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            directives: ast::Directives(components(&self.directives, None)),
+            fields: components(self.fields.values(), None),
+        };
+        std::iter::once(Node::new_opt_location(def, location).into()).chain(
+            self.extensions().into_iter().map(move |ext| {
+                ast::Definition::InputObjectTypeExtension(ext.same_location(
+                    ast::InputObjectTypeExtension {
+                        name: self.name.clone(),
+                        directives: ast::Directives(components(&self.directives, Some(ext))),
+                        fields: components(self.fields.values(), Some(ext)),
+                    },
+                ))
+            }),
+        )
+    }
+
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        top_level(state, self.to_ast(None), |state, def| {
+            def.serialize_impl(state)
+        })
     }
 }
 
@@ -264,4 +311,14 @@ fn names(names: &IndexSet<ComponentStr>, ext: Option<&ExtensionId>) -> Vec<Name>
         .filter(|component| component.origin.extension_id() == ext)
         .map(|component| component.node.clone())
         .collect()
+}
+
+impl Directives {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        for directive in self.iter() {
+            state.write(" ")?;
+            directive.serialize_impl(state)?;
+        }
+        Ok(())
+    }
 }
