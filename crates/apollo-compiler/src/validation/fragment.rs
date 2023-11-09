@@ -298,6 +298,8 @@ pub(crate) fn validate_fragment_cycles(
     // synthetic trees.
     let named_fragments = db.ast_named_fragments(file_id);
 
+    /// If a fragment spread is recursive, returns a vec containing the spread that refers back to
+    /// the original fragment, and a trace of each fragment spread back to the original fragment.
     fn detect_fragment_cycles(
         named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
         selection_set: &[ast::Selection],
@@ -320,7 +322,7 @@ pub(crate) fn validate_fragment_cycles(
                             &mut visited.push(&fragment.name),
                         )
                         .map_err(|mut trace| {
-                            trace.insert(0, spread.clone());
+                            trace.push(spread.clone());
                             trace
                         })?;
                     }
@@ -339,7 +341,7 @@ pub(crate) fn validate_fragment_cycles(
 
     let mut visited = RecursionStack::with_root(def.name.clone());
 
-    if let Err(mut cycle) =
+    if let Err(cycle) =
         detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard())
     {
         let head_location = NodeLocation::recompose(def.location(), def.name.location());
@@ -353,24 +355,24 @@ pub(crate) fn validate_fragment_cycles(
         )
         .label(Label::new(head_location, "recursive fragment definition"));
 
-        let last = cycle.pop();
-        let mut prev_name = &def.name;
-        for spread in &cycle {
+        if let Some((cyclical_spread, path)) = cycle.split_first() {
+            let mut prev_name = &def.name;
+            for spread in path.iter().rev() {
+                diagnostic = diagnostic.label(Label::new(
+                    spread.location(),
+                    format!(
+                        "`{}` references `{}` here...",
+                        prev_name, spread.fragment_name
+                    ),
+                ));
+                prev_name = &spread.fragment_name;
+            }
+
             diagnostic = diagnostic.label(Label::new(
-                spread.location(),
-                format!(
-                    "`{}` references `{}` here...",
-                    prev_name, spread.fragment_name
-                ),
-            ));
-            prev_name = &spread.fragment_name;
-        }
-        if let Some(spread) = last {
-            diagnostic = diagnostic.label(Label::new(
-                spread.location(),
+                cyclical_spread.location(),
                 format!(
                     "`{}` circularly references `{}` here",
-                    prev_name, spread.fragment_name
+                    prev_name, cyclical_spread.fragment_name
                 ),
             ));
         }
