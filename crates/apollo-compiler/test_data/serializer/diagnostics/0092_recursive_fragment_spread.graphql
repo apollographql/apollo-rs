@@ -10,6 +10,11 @@ query {
   human {
     ...fragA
   }
+  __schema {
+    types {
+      ...cycle1
+    }
+  }
 }
 
 fragment fragA on Human {
@@ -25,4 +30,16 @@ fragment fragB on Human {
 fragment fragC on Human {
   name
   ...fragA
+}
+
+fragment cycle1 on __Type {
+  kind
+  ...cycle2
+}
+
+fragment cycle2 on __Type {
+  kind
+  ofType {
+    ...cycle1
+  }
 }

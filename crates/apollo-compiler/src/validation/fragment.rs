@@ -298,17 +298,19 @@ pub(crate) fn validate_fragment_cycles(
     // synthetic trees.
     let named_fragments = db.ast_named_fragments(file_id);
 
+    /// If a fragment spread is recursive, returns a vec containing the spread that refers back to
+    /// the original fragment, and a trace of each fragment spread back to the original fragment.
     fn detect_fragment_cycles(
         named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
         selection_set: &[ast::Selection],
         visited: &mut RecursionGuard<'_>,
-    ) -> Result<(), ast::Selection> {
+    ) -> Result<(), Vec<Node<ast::FragmentSpread>>> {
         for selection in selection_set {
             match selection {
                 ast::Selection::FragmentSpread(spread) => {
                     if visited.contains(&spread.fragment_name) {
                         if visited.first() == Some(&spread.fragment_name) {
-                            return Err(selection.clone());
+                            return Err(vec![spread.clone()]);
                         }
                         continue;
                     }
@@ -318,13 +320,19 @@ pub(crate) fn validate_fragment_cycles(
                             named_fragments,
                             &fragment.selection_set,
                             &mut visited.push(&fragment.name),
-                        )?;
+                        )
+                        .map_err(|mut trace| {
+                            trace.push(spread.clone());
+                            trace
+                        })?;
                     }
                 }
                 ast::Selection::InlineFragment(inline) => {
                     detect_fragment_cycles(named_fragments, &inline.selection_set, visited)?;
                 }
-                _ => {}
+                ast::Selection::Field(field) => {
+                    detect_fragment_cycles(named_fragments, &field.selection_set, visited)?;
+                }
             }
         }
 
@@ -338,17 +346,38 @@ pub(crate) fn validate_fragment_cycles(
     {
         let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                def.location(),
-                DiagnosticData::RecursiveFragmentDefinition {
-                    name: def.name.to_string(),
-                },
-            )
-            .label(Label::new(head_location, "recursive fragment definition"))
-            .label(Label::new(cycle.location(), "refers to itself here")),
-        );
+        let mut diagnostic = ApolloDiagnostic::new(
+            db,
+            def.location(),
+            DiagnosticData::RecursiveFragmentDefinition {
+                name: def.name.to_string(),
+            },
+        )
+        .label(Label::new(head_location, "recursive fragment definition"));
+
+        if let Some((cyclical_spread, path)) = cycle.split_first() {
+            let mut prev_name = &def.name;
+            for spread in path.iter().rev() {
+                diagnostic = diagnostic.label(Label::new(
+                    spread.location(),
+                    format!(
+                        "`{}` references `{}` here...",
+                        prev_name, spread.fragment_name
+                    ),
+                ));
+                prev_name = &spread.fragment_name;
+            }
+
+            diagnostic = diagnostic.label(Label::new(
+                cyclical_spread.location(),
+                format!(
+                    "`{}` circularly references `{}` here",
+                    prev_name, cyclical_spread.fragment_name
+                ),
+            ));
+        }
+
+        diagnostics.push(diagnostic);
     }
 
     diagnostics
