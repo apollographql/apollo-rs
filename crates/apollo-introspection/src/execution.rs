@@ -15,7 +15,6 @@ use crate::result_coercion::complete_value;
 use crate::JsonMap;
 use apollo_compiler::executable::Field;
 use apollo_compiler::executable::Operation;
-use apollo_compiler::executable::OperationRef;
 use apollo_compiler::executable::OperationType;
 use apollo_compiler::executable::Selection;
 use apollo_compiler::schema::ExtendedType;
@@ -25,6 +24,7 @@ use apollo_compiler::schema::ObjectType;
 use apollo_compiler::schema::Type;
 use apollo_compiler::schema::Value;
 use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Node;
 use apollo_compiler::Schema;
 use futures::future::join_all;
 use indexmap::IndexMap;
@@ -50,7 +50,7 @@ pub(crate) struct PropagateNull;
 pub fn get_operation<'doc>(
     document: &'doc ExecutableDocument,
     operation_name: Option<&str>,
-) -> Result<OperationRef<'doc>, RequestErrorResponse> {
+) -> Result<&'doc Node<Operation>, RequestErrorResponse> {
     document.get_operation(operation_name).map_err(|_| {
         if let Some(name) = operation_name {
             request_error(format!("no operation named '{name}'"))
@@ -322,7 +322,7 @@ async fn execute_field(
                 errors,
                 path,
                 mode,
-                &field.ty(),
+                field.ty(),
                 resolved,
                 fields,
             )

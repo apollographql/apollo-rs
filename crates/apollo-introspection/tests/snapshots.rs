@@ -10,7 +10,7 @@ use serde_json_bytes::Value as JsonValue;
 #[test]
 fn test() {
     let schema = r#"
-        type Query implements I { 
+        type Query implements I {
             id: ID!
             int: Int! @deprecated(reason: "…")
             url: Url
@@ -30,7 +30,7 @@ fn test() {
         document.validate(&schema).unwrap();
         let operation = document.get_operation(None).unwrap();
         let variables = JsonValue::as_object(&variables).unwrap();
-        let variables = VariableValues::coerce(&schema, &operation, &variables).unwrap();
+        let variables = VariableValues::coerce(&schema, operation, variables).unwrap();
         let introspection = SchemaIntrospectionQuery::split_from(&mut document, None).unwrap();
         let response = introspection.execute_sync(&schema, &variables).unwrap();
         serde_json::to_string_pretty(&response).unwrap()

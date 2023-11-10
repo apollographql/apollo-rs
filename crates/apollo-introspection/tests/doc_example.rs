@@ -15,10 +15,8 @@ pub fn execute_request(
     variable_values: &JsonMap,
 ) -> Result<Response, RequestErrorResponse> {
     let introspection = SchemaIntrospectionQuery::split_from(&mut document, operation_name)?;
-    let operation = get_operation(&document, operation_name)?
-        .definition()
-        .clone();
-    let coerced_variable_values = VariableValues::coerce(schema, &operation, variable_values)?;
+    let operation = get_operation(&document, operation_name)?;
+    let coerced_variable_values = VariableValues::coerce(schema, operation, variable_values)?;
     let response =
         execute_non_introspection(schema, &document, operation_name, &coerced_variable_values)?;
     let introspection_response = introspection.execute_sync(schema, &coerced_variable_values)?;

@@ -81,6 +81,7 @@ impl SchemaIntrospectionQuery {
         let mut introspection_document = ExecutableDocument::new();
         introspection_document.anonymous_operation = Some(Node::new(Operation {
             operation_type: OperationType::Query,
+            name: None,
             variables: Vec::new(),          // unused by execution
             directives: Default::default(), // unused by execution
             selection_set: SelectionSet { ty, selections },
@@ -92,6 +93,7 @@ impl SchemaIntrospectionQuery {
                 let ty = fragment.selection_set.ty.clone();
                 let selections = collect_from(&mut fragment.selection_set.selections);
                 let new_fragment = Fragment {
+                    name: name.clone(),
                     directives: Default::default(), // unused by execution
                     selection_set: SelectionSet { ty, selections },
                 };
@@ -462,7 +464,7 @@ impl_resolver! {
             schema::ExtendedType::InputObject(_) => return Ok(ResolvedValue::null()),
         };
         Ok(ResolvedValue::list(implements_interfaces.iter().filter_map(|name| {
-            self_.schema.types.get(&name.node).map(|def| {
+            self_.schema.types.get(&name.name).map(|def| {
                 ResolvedValue::object(TypeDef { schema: self_.schema, name, def })
             })
         })))
@@ -480,7 +482,7 @@ impl_resolver! {
         }
         match self_.def {
             schema::ExtendedType::Interface(_) => types!(self_.schema.implementers_of(self_.name)),
-            schema::ExtendedType::Union(def) => types!(def.members.iter().map(|c| &c.node)),
+            schema::ExtendedType::Union(def) => types!(def.members.iter().map(|c| &c.name)),
             schema::ExtendedType::Object(_) |
             schema::ExtendedType::Scalar(_) |
             schema::ExtendedType::Enum(_) |
@@ -683,7 +685,7 @@ impl_resolver! {
     __typename = "__InputValue";
 
     async fn name(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.name.as_ref()))
+        Ok(ResolvedValue::leaf(self_.def.name.as_str()))
     }
 
     async fn description(&self_) {

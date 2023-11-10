@@ -195,10 +195,8 @@ mod tests {
         variable_values: &JsonMap,
     ) -> Result<Response, RequestErrorResponse> {
         let introspection = SchemaIntrospectionQuery::split_from(&mut document, operation_name)?;
-        let operation = get_operation(&document, operation_name)?
-            .definition()
-            .clone();
-        let coerced_variable_values = VariableValues::coerce(schema, &operation, variable_values)?;
+        let operation = get_operation(&document, operation_name)?;
+        let coerced_variable_values = VariableValues::coerce(schema, operation, variable_values)?;
         let initial_value = match operation.operation_type {
             OperationType::Query => QueryResolver {
                 world: "World".into(),
@@ -210,7 +208,7 @@ mod tests {
             &document,
             &coerced_variable_values,
             &&initial_value,
-            &operation,
+            operation,
         )
         .await?;
         let intropsection_response = introspection
