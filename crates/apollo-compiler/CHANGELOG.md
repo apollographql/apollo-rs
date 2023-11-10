@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 
 ## BREAKING
 
@@ -100,14 +100,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     assert_eq!(s, "example");
     ```
 
+## Fixes
+- **Fix crash in validation of self-referential fragments - [goto-bus-stop], [pull/733] fixing [issue/716].**
+  Now fragments that cyclically reference themselves inside a nested field also produce a
+  validation error, instead of causing a stack overflow crash.
+
 [SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
 [issue/708]: https://github.com/apollographql/apollo-rs/issues/708
 [issue/710]: https://github.com/apollographql/apollo-rs/issues/710
 [issue/711]: https://github.com/apollographql/apollo-rs/issues/711
+[issue/716]: https://github.com/apollographql/apollo-rs/issues/716
 [pull/713]: https://github.com/apollographql/apollo-rs/pull/713
 [pull/727]: https://github.com/apollographql/apollo-rs/pull/727
 [pull/728]: https://github.com/apollographql/apollo-rs/pull/728
 [pull/732]: https://github.com/apollographql/apollo-rs/pull/732
+[pull/733]: https://github.com/apollographql/apollo-rs/pull/733
 
 
 # [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
