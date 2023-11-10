@@ -22,6 +22,7 @@ use serde_json_bytes::Value as JsonValue;
 ///
 /// Returns `Err` for a field error being propagated upwards to find a nullable place
 #[async_recursion::async_recursion]
+#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 pub(crate) async fn complete_value<'a, 'b>(
     schema: &'a Schema,
     document: &'a ExecutableDocument,

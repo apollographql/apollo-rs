@@ -335,6 +335,7 @@ pub(crate) fn coerce_argument_values(
     Ok(coerced_values)
 }
 
+#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 fn coerce_argument_value(
     schema: &Schema,
     variable_values: &VariableValues,
