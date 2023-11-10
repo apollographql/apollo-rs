@@ -1,655 +1,1517 @@
-0..271 @12 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "IntrospectionQuery",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            29..269 @12 Field {
-                alias: None,
-                name: "__schema",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    Field(
-                        44..62 @12 Field {
-                            alias: None,
-                            name: "queryType",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                Field(
-                                    56..60 @12 Field {
-                                        alias: None,
-                                        name: "name",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                    Field(
-                        67..88 @12 Field {
-                            alias: None,
-                            name: "mutationType",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                Field(
-                                    82..86 @12 Field {
-                                        alias: None,
-                                        name: "name",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                    Field(
-                        93..118 @12 Field {
-                            alias: None,
-                            name: "subscriptionType",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                Field(
-                                    112..116 @12 Field {
-                                        alias: None,
-                                        name: "name",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                    Field(
-                        123..154 @12 Field {
-                            alias: None,
-                            name: "types",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                FragmentSpread(
-                                    137..148 @12 FragmentSpread {
-                                        fragment_name: "FullType",
-                                        directives: [],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                    Field(
-                        159..265 @12 Field {
-                            alias: None,
-                            name: "directives",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                Field(
-                                    178..182 @12 Field {
-                                        alias: None,
-                                        name: "name",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                                Field(
-                                    189..200 @12 Field {
-                                        alias: None,
-                                        name: "description",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                                Field(
-                                    207..216 @12 Field {
-                                        alias: None,
-                                        name: "locations",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                                Field(
-                                    223..259 @12 Field {
-                                        alias: None,
-                                        name: "args",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [
-                                            FragmentSpread(
-                                                238..251 @12 FragmentSpread {
-                                                    fragment_name: "InputValue",
-                                                    directives: [],
-                                                },
-                                            ),
-                                        ],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                ],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
+        },
+        12: SourceFile {
+            path: "0012_introspection_query.graphql",
+            source_text: "query IntrospectionQuery {\n  __schema {\n    queryType { name }\n    mutationType { name }\n    subscriptionType { name }\n    types {\n      ...FullType\n    }\n    directives {\n      name\n      description\n      locations\n      args {\n        ...InputValue\n      }\n    }\n  }\n}\nfragment FullType on __Type {\n  kind\n  name\n  description\n  fields(includeDeprecated: true) {\n    name\n    description\n    args {\n      ...InputValue\n    }\n    type {\n      ...TypeRef\n    }\n    isDeprecated\n    deprecationReason\n  }\n  inputFields {\n    ...InputValue\n  }\n  interfaces {\n    ...TypeRef\n  }\n  enumValues(includeDeprecated: true) {\n    name\n    description\n    isDeprecated\n    deprecationReason\n  }\n  possibleTypes {\n    ...TypeRef\n  }\n}\nfragment InputValue on __InputValue {\n  name\n  description\n  type { ...TypeRef }\n  defaultValue\n}\nfragment TypeRef on __Type {\n  kind\n  name\n  ofType {\n    kind\n    name\n    ofType {\n      kind\n      name\n      ofType {\n        kind\n        name\n        ofType {\n          kind\n          name\n          ofType {\n            kind\n            name\n            ofType {\n              kind\n              name\n              ofType {\n                kind\n                name\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}\ntype Query {\n  field: Int\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
             },
         ),
-    ],
-}
-272..723 @12 FragmentDefinition {
-    name: "FullType",
-    type_condition: "__Type",
-    directives: [],
-    selection_set: [
-        Field(
-            304..308 @12 Field {
-                alias: None,
-                name: "kind",
-                arguments: [],
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            1266..1293 @12 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
                 directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            311..315 @12 Field {
-                alias: None,
-                name: "name",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            318..329 @12 Field {
-                alias: None,
-                name: "description",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            332..504 @12 Field {
-                alias: None,
-                name: "fields",
-                arguments: [
-                    339..362 @12 Argument {
-                        name: "includeDeprecated",
-                        value: 358..362 @12 Boolean(
-                            true,
-                        ),
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 1281..1291 @12 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
                     },
-                ],
-                directives: [],
-                selection_set: [
-                    Field(
-                        370..374 @12 Field {
-                            alias: None,
-                            name: "name",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        379..390 @12 Field {
-                            alias: None,
-                            name: "description",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        395..427 @12 Field {
-                            alias: None,
-                            name: "args",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                FragmentSpread(
-                                    408..421 @12 FragmentSpread {
-                                        fragment_name: "InputValue",
-                                        directives: [],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                    Field(
-                        432..461 @12 Field {
-                            alias: None,
-                            name: "type",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                FragmentSpread(
-                                    445..455 @12 FragmentSpread {
-                                        fragment_name: "TypeRef",
-                                        directives: [],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                    Field(
-                        466..478 @12 Field {
-                            alias: None,
-                            name: "isDeprecated",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        483..500 @12 Field {
-                            alias: None,
-                            name: "deprecationReason",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                ],
+                },
             },
         ),
-        Field(
-            507..542 @12 Field {
-                alias: None,
-                name: "inputFields",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        525..538 @12 FragmentSpread {
-                            fragment_name: "InputValue",
-                            directives: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-        Field(
-            545..576 @12 Field {
-                alias: None,
-                name: "interfaces",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        562..572 @12 FragmentSpread {
-                            fragment_name: "TypeRef",
-                            directives: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-        Field(
-            579..684 @12 Field {
-                alias: None,
-                name: "enumValues",
-                arguments: [
-                    590..613 @12 Argument {
-                        name: "includeDeprecated",
-                        value: 609..613 @12 Boolean(
-                            true,
-                        ),
-                    },
-                ],
-                directives: [],
-                selection_set: [
-                    Field(
-                        621..625 @12 Field {
-                            alias: None,
-                            name: "name",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        630..641 @12 Field {
-                            alias: None,
-                            name: "description",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        646..658 @12 Field {
-                            alias: None,
-                            name: "isDeprecated",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        663..680 @12 Field {
-                            alias: None,
-                            name: "deprecationReason",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-        Field(
-            687..721 @12 Field {
-                alias: None,
-                name: "possibleTypes",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        707..717 @12 FragmentSpread {
-                            fragment_name: "TypeRef",
-                            directives: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-    ],
+    },
 }
-724..821 @12 FragmentDefinition {
-    name: "InputValue",
-    type_condition: "__InputValue",
-    directives: [],
-    selection_set: [
-        Field(
-            764..768 @12 Field {
-                alias: None,
-                name: "name",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            771..782 @12 Field {
-                alias: None,
-                name: "description",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            785..804 @12 Field {
-                alias: None,
-                name: "type",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        792..802 @12 FragmentSpread {
-                            fragment_name: "TypeRef",
-                            directives: [],
-                        },
-                    ),
-                ],
-            },
-        ),
-        Field(
-            807..819 @12 Field {
-                alias: None,
-                name: "defaultValue",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-    ],
-}
-822..1265 @12 FragmentDefinition {
-    name: "TypeRef",
-    type_condition: "__Type",
-    directives: [],
-    selection_set: [
-        Field(
-            853..857 @12 Field {
-                alias: None,
-                name: "kind",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            860..864 @12 Field {
-                alias: None,
-                name: "name",
-                arguments: [],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            867..1263 @12 Field {
-                alias: None,
-                name: "ofType",
-                arguments: [],
-                directives: [],
-                selection_set: [
+ExecutableDocument {
+    sources: {
+        12: SourceFile {
+            path: "0012_introspection_query.graphql",
+            source_text: "query IntrospectionQuery {\n  __schema {\n    queryType { name }\n    mutationType { name }\n    subscriptionType { name }\n    types {\n      ...FullType\n    }\n    directives {\n      name\n      description\n      locations\n      args {\n        ...InputValue\n      }\n    }\n  }\n}\nfragment FullType on __Type {\n  kind\n  name\n  description\n  fields(includeDeprecated: true) {\n    name\n    description\n    args {\n      ...InputValue\n    }\n    type {\n      ...TypeRef\n    }\n    isDeprecated\n    deprecationReason\n  }\n  inputFields {\n    ...InputValue\n  }\n  interfaces {\n    ...TypeRef\n  }\n  enumValues(includeDeprecated: true) {\n    name\n    description\n    isDeprecated\n    deprecationReason\n  }\n  possibleTypes {\n    ...TypeRef\n  }\n}\nfragment InputValue on __InputValue {\n  name\n  description\n  type { ...TypeRef }\n  defaultValue\n}\nfragment TypeRef on __Type {\n  kind\n  name\n  ofType {\n    kind\n    name\n    ofType {\n      kind\n      name\n      ofType {\n        kind\n        name\n        ofType {\n          kind\n          name\n          ofType {\n            kind\n            name\n            ofType {\n              kind\n              name\n              ofType {\n                kind\n                name\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}\ntype Query {\n  field: Int\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "IntrospectionQuery": 0..271 @12 Operation {
+            operation_type: Query,
+            name: Some(
+                "IntrospectionQuery",
+            ),
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
                     Field(
-                        880..884 @12 Field {
-                            alias: None,
-                            name: "kind",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        889..893 @12 Field {
-                            alias: None,
-                            name: "name",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                    Field(
-                        898..1259 @12 Field {
-                            alias: None,
-                            name: "ofType",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [
-                                Field(
-                                    913..917 @12 Field {
-                                        alias: None,
-                                        name: "kind",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
+                        29..269 @12 Field {
+                            definition: FieldDefinition {
+                                description: None,
+                                name: "__schema",
+                                arguments: [],
+                                ty: NonNullNamed(
+                                    "__Schema",
                                 ),
-                                Field(
-                                    924..928 @12 Field {
-                                        alias: None,
-                                        name: "name",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
-                                ),
-                                Field(
-                                    935..1253 @12 Field {
-                                        alias: None,
-                                        name: "ofType",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [
-                                            Field(
-                                                952..956 @12 Field {
-                                                    alias: None,
-                                                    name: "kind",
-                                                    arguments: [],
-                                                    directives: [],
-                                                    selection_set: [],
-                                                },
-                                            ),
-                                            Field(
-                                                965..969 @12 Field {
-                                                    alias: None,
-                                                    name: "name",
-                                                    arguments: [],
-                                                    directives: [],
-                                                    selection_set: [],
-                                                },
-                                            ),
-                                            Field(
-                                                978..1245 @12 Field {
-                                                    alias: None,
-                                                    name: "ofType",
-                                                    arguments: [],
-                                                    directives: [],
-                                                    selection_set: [
-                                                        Field(
-                                                            997..1001 @12 Field {
-                                                                alias: None,
-                                                                name: "kind",
-                                                                arguments: [],
-                                                                directives: [],
-                                                                selection_set: [],
-                                                            },
-                                                        ),
-                                                        Field(
-                                                            1012..1016 @12 Field {
-                                                                alias: None,
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "__schema",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__Schema",
+                                selections: [
+                                    Field(
+                                        44..62 @12 Field {
+                                            definition: 60..78 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "queryType",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "__Type",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "queryType",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Type",
+                                                selections: [
+                                                    Field(
+                                                        56..60 @12 Field {
+                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                description: None,
                                                                 name: "name",
                                                                 arguments: [],
+                                                                ty: Named(
+                                                                    "String",
+                                                                ),
                                                                 directives: [],
-                                                                selection_set: [],
                                                             },
-                                                        ),
-                                                        Field(
-                                                            1027..1235 @12 Field {
-                                                                alias: None,
-                                                                name: "ofType",
+                                                            alias: None,
+                                                            name: "name",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        67..88 @12 Field {
+                                            definition: 81..101 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "mutationType",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "__Type",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "mutationType",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Type",
+                                                selections: [
+                                                    Field(
+                                                        82..86 @12 Field {
+                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "name",
                                                                 arguments: [],
+                                                                ty: Named(
+                                                                    "String",
+                                                                ),
                                                                 directives: [],
-                                                                selection_set: [
-                                                                    Field(
-                                                                        1048..1052 @12 Field {
-                                                                            alias: None,
-                                                                            name: "kind",
-                                                                            arguments: [],
-                                                                            directives: [],
-                                                                            selection_set: [],
-                                                                        },
+                                                            },
+                                                            alias: None,
+                                                            name: "name",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        93..118 @12 Field {
+                                            definition: 104..128 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "subscriptionType",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "__Type",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "subscriptionType",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Type",
+                                                selections: [
+                                                    Field(
+                                                        112..116 @12 Field {
+                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "name",
+                                                                arguments: [],
+                                                                ty: Named(
+                                                                    "String",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "name",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        123..154 @12 Field {
+                                            definition: 40..57 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "types",
+                                                arguments: [],
+                                                ty: NonNullList(
+                                                    NonNullNamed(
+                                                        "__Type",
+                                                    ),
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "types",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Type",
+                                                selections: [
+                                                    FragmentSpread(
+                                                        137..148 @12 FragmentSpread {
+                                                            fragment_name: "FullType",
+                                                            directives: [],
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        159..265 @12 Field {
+                                            definition: 131..158 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "directives",
+                                                arguments: [],
+                                                ty: NonNullList(
+                                                    NonNullNamed(
+                                                        "__Directive",
+                                                    ),
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "directives",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Directive",
+                                                selections: [
+                                                    Field(
+                                                        178..182 @12 Field {
+                                                            definition: 1495..1508 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "name",
+                                                                arguments: [],
+                                                                ty: NonNullNamed(
+                                                                    "String",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "name",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                    Field(
+                                                        189..200 @12 Field {
+                                                            definition: 1511..1530 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "description",
+                                                                arguments: [],
+                                                                ty: Named(
+                                                                    "String",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "description",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                    Field(
+                                                        207..216 @12 Field {
+                                                            definition: 1533..1567 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "locations",
+                                                                arguments: [],
+                                                                ty: NonNullList(
+                                                                    NonNullNamed(
+                                                                        "__DirectiveLocation",
                                                                     ),
-                                                                    Field(
-                                                                        1065..1069 @12 Field {
-                                                                            alias: None,
-                                                                            name: "name",
-                                                                            arguments: [],
-                                                                            directives: [],
-                                                                            selection_set: [],
-                                                                        },
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "locations",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "__DirectiveLocation",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                    Field(
+                                                        223..259 @12 Field {
+                                                            definition: 1570..1628 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "args",
+                                                                arguments: [
+                                                                    1575..1609 @-1 InputValueDefinition {
+                                                                        description: None,
+                                                                        name: "includeDeprecated",
+                                                                        ty: 1594..1601 @-1 Named(
+                                                                            "Boolean",
+                                                                        ),
+                                                                        default_value: Some(
+                                                                            1604..1609 @-1 Boolean(
+                                                                                false,
+                                                                            ),
+                                                                        ),
+                                                                        directives: [],
+                                                                    },
+                                                                ],
+                                                                ty: NonNullList(
+                                                                    NonNullNamed(
+                                                                        "__InputValue",
                                                                     ),
-                                                                    Field(
-                                                                        1082..1223 @12 Field {
-                                                                            alias: None,
-                                                                            name: "ofType",
-                                                                            arguments: [],
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "args",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "__InputValue",
+                                                                selections: [
+                                                                    FragmentSpread(
+                                                                        238..251 @12 FragmentSpread {
+                                                                            fragment_name: "InputValue",
                                                                             directives: [],
-                                                                            selection_set: [
-                                                                                Field(
-                                                                                    1105..1109 @12 Field {
-                                                                                        alias: None,
-                                                                                        name: "kind",
-                                                                                        arguments: [],
-                                                                                        directives: [],
-                                                                                        selection_set: [],
-                                                                                    },
-                                                                                ),
-                                                                                Field(
-                                                                                    1124..1128 @12 Field {
-                                                                                        alias: None,
-                                                                                        name: "name",
-                                                                                        arguments: [],
-                                                                                        directives: [],
-                                                                                        selection_set: [],
-                                                                                    },
-                                                                                ),
-                                                                                Field(
-                                                                                    1143..1209 @12 Field {
-                                                                                        alias: None,
-                                                                                        name: "ofType",
-                                                                                        arguments: [],
-                                                                                        directives: [],
-                                                                                        selection_set: [
-                                                                                            Field(
-                                                                                                1168..1172 @12 Field {
-                                                                                                    alias: None,
-                                                                                                    name: "kind",
-                                                                                                    arguments: [],
-                                                                                                    directives: [],
-                                                                                                    selection_set: [],
-                                                                                                },
-                                                                                            ),
-                                                                                            Field(
-                                                                                                1189..1193 @12 Field {
-                                                                                                    alias: None,
-                                                                                                    name: "name",
-                                                                                                    arguments: [],
-                                                                                                    directives: [],
-                                                                                                    selection_set: [],
-                                                                                                },
-                                                                                            ),
-                                                                                        ],
-                                                                                    },
-                                                                                ),
-                                                                            ],
                                                                         },
                                                                     ),
                                                                 ],
                                                             },
-                                                        ),
-                                                    ],
-                                                },
-                                            ),
-                                        ],
-                                    },
-                                ),
-                            ],
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
                         },
                     ),
                 ],
             },
-        ),
-    ],
-}
-1266..1293 @12 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        1281..1291 @12 FieldDefinition {
-            description: None,
-            name: "field",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
         },
-    ],
+    },
+    fragments: {
+        "FullType": 272..723 @12 Fragment {
+            name: "FullType",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "__Type",
+                selections: [
+                    Field(
+                        304..308 @12 Field {
+                            definition: 178..195 @-1 FieldDefinition {
+                                description: None,
+                                name: "kind",
+                                arguments: [],
+                                ty: NonNullNamed(
+                                    "__TypeKind",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "kind",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__TypeKind",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        311..315 @12 Field {
+                            definition: 198..210 @-1 FieldDefinition {
+                                description: None,
+                                name: "name",
+                                arguments: [],
+                                ty: Named(
+                                    "String",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "String",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        318..329 @12 Field {
+                            definition: 213..232 @-1 FieldDefinition {
+                                description: None,
+                                name: "description",
+                                arguments: [],
+                                ty: Named(
+                                    "String",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "description",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "String",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        332..504 @12 Field {
+                            definition: 298..352 @-1 FieldDefinition {
+                                description: None,
+                                name: "fields",
+                                arguments: [
+                                    305..339 @-1 InputValueDefinition {
+                                        description: None,
+                                        name: "includeDeprecated",
+                                        ty: 324..331 @-1 Named(
+                                            "Boolean",
+                                        ),
+                                        default_value: Some(
+                                            334..339 @-1 Boolean(
+                                                false,
+                                            ),
+                                        ),
+                                        directives: [],
+                                    },
+                                ],
+                                ty: List(
+                                    NonNullNamed(
+                                        "__Field",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "fields",
+                            arguments: [
+                                339..362 @12 Argument {
+                                    name: "includeDeprecated",
+                                    value: 358..362 @12 Boolean(
+                                        true,
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__Field",
+                                selections: [
+                                    Field(
+                                        370..374 @12 Field {
+                                            definition: 1039..1052 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        379..390 @12 Field {
+                                            definition: 1055..1074 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "description",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "description",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        395..427 @12 Field {
+                                            definition: 1077..1135 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "args",
+                                                arguments: [
+                                                    1082..1116 @-1 InputValueDefinition {
+                                                        description: None,
+                                                        name: "includeDeprecated",
+                                                        ty: 1101..1108 @-1 Named(
+                                                            "Boolean",
+                                                        ),
+                                                        default_value: Some(
+                                                            1111..1116 @-1 Boolean(
+                                                                false,
+                                                            ),
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: NonNullList(
+                                                    NonNullNamed(
+                                                        "__InputValue",
+                                                    ),
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "args",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__InputValue",
+                                                selections: [
+                                                    FragmentSpread(
+                                                        408..421 @12 FragmentSpread {
+                                                            fragment_name: "InputValue",
+                                                            directives: [],
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        432..461 @12 Field {
+                                            definition: 1138..1151 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "type",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "__Type",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "type",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Type",
+                                                selections: [
+                                                    FragmentSpread(
+                                                        445..455 @12 FragmentSpread {
+                                                            fragment_name: "TypeRef",
+                                                            directives: [],
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        466..478 @12 Field {
+                                            definition: 1154..1176 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "isDeprecated",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "Boolean",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "isDeprecated",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Boolean",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        483..500 @12 Field {
+                                            definition: 1179..1204 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "deprecationReason",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "deprecationReason",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    Field(
+                        507..542 @12 Field {
+                            definition: 698..762 @-1 FieldDefinition {
+                                description: None,
+                                name: "inputFields",
+                                arguments: [
+                                    710..744 @-1 InputValueDefinition {
+                                        description: None,
+                                        name: "includeDeprecated",
+                                        ty: 729..736 @-1 Named(
+                                            "Boolean",
+                                        ),
+                                        default_value: Some(
+                                            739..744 @-1 Boolean(
+                                                false,
+                                            ),
+                                        ),
+                                        directives: [],
+                                    },
+                                ],
+                                ty: List(
+                                    NonNullNamed(
+                                        "__InputValue",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "inputFields",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__InputValue",
+                                selections: [
+                                    FragmentSpread(
+                                        525..538 @12 FragmentSpread {
+                                            fragment_name: "InputValue",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    Field(
+                        545..576 @12 Field {
+                            definition: 418..439 @-1 FieldDefinition {
+                                description: None,
+                                name: "interfaces",
+                                arguments: [],
+                                ty: List(
+                                    NonNullNamed(
+                                        "__Type",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "interfaces",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__Type",
+                                selections: [
+                                    FragmentSpread(
+                                        562..572 @12 FragmentSpread {
+                                            fragment_name: "TypeRef",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    Field(
+                        579..684 @12 Field {
+                            definition: 578..640 @-1 FieldDefinition {
+                                description: None,
+                                name: "enumValues",
+                                arguments: [
+                                    589..623 @-1 InputValueDefinition {
+                                        description: None,
+                                        name: "includeDeprecated",
+                                        ty: 608..615 @-1 Named(
+                                            "Boolean",
+                                        ),
+                                        default_value: Some(
+                                            618..623 @-1 Boolean(
+                                                false,
+                                            ),
+                                        ),
+                                        directives: [],
+                                    },
+                                ],
+                                ty: List(
+                                    NonNullNamed(
+                                        "__EnumValue",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "enumValues",
+                            arguments: [
+                                590..613 @12 Argument {
+                                    name: "includeDeprecated",
+                                    value: 609..613 @12 Boolean(
+                                        true,
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__EnumValue",
+                                selections: [
+                                    Field(
+                                        621..625 @12 Field {
+                                            definition: 1382..1395 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        630..641 @12 Field {
+                                            definition: 1398..1417 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "description",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "description",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        646..658 @12 Field {
+                                            definition: 1420..1442 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "isDeprecated",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "Boolean",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "isDeprecated",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Boolean",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        663..680 @12 Field {
+                                            definition: 1445..1470 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "deprecationReason",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "deprecationReason",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    Field(
+                        687..721 @12 Field {
+                            definition: 504..528 @-1 FieldDefinition {
+                                description: None,
+                                name: "possibleTypes",
+                                arguments: [],
+                                ty: List(
+                                    NonNullNamed(
+                                        "__Type",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "possibleTypes",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__Type",
+                                selections: [
+                                    FragmentSpread(
+                                        707..717 @12 FragmentSpread {
+                                            fragment_name: "TypeRef",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "InputValue": 724..821 @12 Fragment {
+            name: "InputValue",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "__InputValue",
+                selections: [
+                    Field(
+                        764..768 @12 Field {
+                            definition: 1230..1243 @-1 FieldDefinition {
+                                description: None,
+                                name: "name",
+                                arguments: [],
+                                ty: NonNullNamed(
+                                    "String",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "String",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        771..782 @12 Field {
+                            definition: 1246..1265 @-1 FieldDefinition {
+                                description: None,
+                                name: "description",
+                                arguments: [],
+                                ty: Named(
+                                    "String",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "description",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "String",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        785..804 @12 Field {
+                            definition: 1268..1281 @-1 FieldDefinition {
+                                description: None,
+                                name: "type",
+                                arguments: [],
+                                ty: NonNullNamed(
+                                    "__Type",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "type",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__Type",
+                                selections: [
+                                    FragmentSpread(
+                                        792..802 @12 FragmentSpread {
+                                            fragment_name: "TypeRef",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    Field(
+                        807..819 @12 Field {
+                            definition: 1284..1304 @-1 FieldDefinition {
+                                description: None,
+                                name: "defaultValue",
+                                arguments: [],
+                                ty: Named(
+                                    "String",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "defaultValue",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "String",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "TypeRef": 822..1265 @12 Fragment {
+            name: "TypeRef",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "__Type",
+                selections: [
+                    Field(
+                        853..857 @12 Field {
+                            definition: 178..195 @-1 FieldDefinition {
+                                description: None,
+                                name: "kind",
+                                arguments: [],
+                                ty: NonNullNamed(
+                                    "__TypeKind",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "kind",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__TypeKind",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        860..864 @12 Field {
+                            definition: 198..210 @-1 FieldDefinition {
+                                description: None,
+                                name: "name",
+                                arguments: [],
+                                ty: Named(
+                                    "String",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "String",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        867..1263 @12 Field {
+                            definition: 825..839 @-1 FieldDefinition {
+                                description: None,
+                                name: "ofType",
+                                arguments: [],
+                                ty: Named(
+                                    "__Type",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "ofType",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "__Type",
+                                selections: [
+                                    Field(
+                                        880..884 @12 Field {
+                                            definition: 178..195 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "kind",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "__TypeKind",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "kind",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__TypeKind",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        889..893 @12 Field {
+                                            definition: 198..210 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        898..1259 @12 Field {
+                                            definition: 825..839 @-1 FieldDefinition {
+                                                description: None,
+                                                name: "ofType",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "__Type",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "ofType",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "__Type",
+                                                selections: [
+                                                    Field(
+                                                        913..917 @12 Field {
+                                                            definition: 178..195 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "kind",
+                                                                arguments: [],
+                                                                ty: NonNullNamed(
+                                                                    "__TypeKind",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "kind",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "__TypeKind",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                    Field(
+                                                        924..928 @12 Field {
+                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "name",
+                                                                arguments: [],
+                                                                ty: Named(
+                                                                    "String",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "name",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                    Field(
+                                                        935..1253 @12 Field {
+                                                            definition: 825..839 @-1 FieldDefinition {
+                                                                description: None,
+                                                                name: "ofType",
+                                                                arguments: [],
+                                                                ty: Named(
+                                                                    "__Type",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "ofType",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "__Type",
+                                                                selections: [
+                                                                    Field(
+                                                                        952..956 @12 Field {
+                                                                            definition: 178..195 @-1 FieldDefinition {
+                                                                                description: None,
+                                                                                name: "kind",
+                                                                                arguments: [],
+                                                                                ty: NonNullNamed(
+                                                                                    "__TypeKind",
+                                                                                ),
+                                                                                directives: [],
+                                                                            },
+                                                                            alias: None,
+                                                                            name: "kind",
+                                                                            arguments: [],
+                                                                            directives: [],
+                                                                            selection_set: SelectionSet {
+                                                                                ty: "__TypeKind",
+                                                                                selections: [],
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    Field(
+                                                                        965..969 @12 Field {
+                                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                                description: None,
+                                                                                name: "name",
+                                                                                arguments: [],
+                                                                                ty: Named(
+                                                                                    "String",
+                                                                                ),
+                                                                                directives: [],
+                                                                            },
+                                                                            alias: None,
+                                                                            name: "name",
+                                                                            arguments: [],
+                                                                            directives: [],
+                                                                            selection_set: SelectionSet {
+                                                                                ty: "String",
+                                                                                selections: [],
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    Field(
+                                                                        978..1245 @12 Field {
+                                                                            definition: 825..839 @-1 FieldDefinition {
+                                                                                description: None,
+                                                                                name: "ofType",
+                                                                                arguments: [],
+                                                                                ty: Named(
+                                                                                    "__Type",
+                                                                                ),
+                                                                                directives: [],
+                                                                            },
+                                                                            alias: None,
+                                                                            name: "ofType",
+                                                                            arguments: [],
+                                                                            directives: [],
+                                                                            selection_set: SelectionSet {
+                                                                                ty: "__Type",
+                                                                                selections: [
+                                                                                    Field(
+                                                                                        997..1001 @12 Field {
+                                                                                            definition: 178..195 @-1 FieldDefinition {
+                                                                                                description: None,
+                                                                                                name: "kind",
+                                                                                                arguments: [],
+                                                                                                ty: NonNullNamed(
+                                                                                                    "__TypeKind",
+                                                                                                ),
+                                                                                                directives: [],
+                                                                                            },
+                                                                                            alias: None,
+                                                                                            name: "kind",
+                                                                                            arguments: [],
+                                                                                            directives: [],
+                                                                                            selection_set: SelectionSet {
+                                                                                                ty: "__TypeKind",
+                                                                                                selections: [],
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                    Field(
+                                                                                        1012..1016 @12 Field {
+                                                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                                                description: None,
+                                                                                                name: "name",
+                                                                                                arguments: [],
+                                                                                                ty: Named(
+                                                                                                    "String",
+                                                                                                ),
+                                                                                                directives: [],
+                                                                                            },
+                                                                                            alias: None,
+                                                                                            name: "name",
+                                                                                            arguments: [],
+                                                                                            directives: [],
+                                                                                            selection_set: SelectionSet {
+                                                                                                ty: "String",
+                                                                                                selections: [],
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                    Field(
+                                                                                        1027..1235 @12 Field {
+                                                                                            definition: 825..839 @-1 FieldDefinition {
+                                                                                                description: None,
+                                                                                                name: "ofType",
+                                                                                                arguments: [],
+                                                                                                ty: Named(
+                                                                                                    "__Type",
+                                                                                                ),
+                                                                                                directives: [],
+                                                                                            },
+                                                                                            alias: None,
+                                                                                            name: "ofType",
+                                                                                            arguments: [],
+                                                                                            directives: [],
+                                                                                            selection_set: SelectionSet {
+                                                                                                ty: "__Type",
+                                                                                                selections: [
+                                                                                                    Field(
+                                                                                                        1048..1052 @12 Field {
+                                                                                                            definition: 178..195 @-1 FieldDefinition {
+                                                                                                                description: None,
+                                                                                                                name: "kind",
+                                                                                                                arguments: [],
+                                                                                                                ty: NonNullNamed(
+                                                                                                                    "__TypeKind",
+                                                                                                                ),
+                                                                                                                directives: [],
+                                                                                                            },
+                                                                                                            alias: None,
+                                                                                                            name: "kind",
+                                                                                                            arguments: [],
+                                                                                                            directives: [],
+                                                                                                            selection_set: SelectionSet {
+                                                                                                                ty: "__TypeKind",
+                                                                                                                selections: [],
+                                                                                                            },
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    Field(
+                                                                                                        1065..1069 @12 Field {
+                                                                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                                                                description: None,
+                                                                                                                name: "name",
+                                                                                                                arguments: [],
+                                                                                                                ty: Named(
+                                                                                                                    "String",
+                                                                                                                ),
+                                                                                                                directives: [],
+                                                                                                            },
+                                                                                                            alias: None,
+                                                                                                            name: "name",
+                                                                                                            arguments: [],
+                                                                                                            directives: [],
+                                                                                                            selection_set: SelectionSet {
+                                                                                                                ty: "String",
+                                                                                                                selections: [],
+                                                                                                            },
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    Field(
+                                                                                                        1082..1223 @12 Field {
+                                                                                                            definition: 825..839 @-1 FieldDefinition {
+                                                                                                                description: None,
+                                                                                                                name: "ofType",
+                                                                                                                arguments: [],
+                                                                                                                ty: Named(
+                                                                                                                    "__Type",
+                                                                                                                ),
+                                                                                                                directives: [],
+                                                                                                            },
+                                                                                                            alias: None,
+                                                                                                            name: "ofType",
+                                                                                                            arguments: [],
+                                                                                                            directives: [],
+                                                                                                            selection_set: SelectionSet {
+                                                                                                                ty: "__Type",
+                                                                                                                selections: [
+                                                                                                                    Field(
+                                                                                                                        1105..1109 @12 Field {
+                                                                                                                            definition: 178..195 @-1 FieldDefinition {
+                                                                                                                                description: None,
+                                                                                                                                name: "kind",
+                                                                                                                                arguments: [],
+                                                                                                                                ty: NonNullNamed(
+                                                                                                                                    "__TypeKind",
+                                                                                                                                ),
+                                                                                                                                directives: [],
+                                                                                                                            },
+                                                                                                                            alias: None,
+                                                                                                                            name: "kind",
+                                                                                                                            arguments: [],
+                                                                                                                            directives: [],
+                                                                                                                            selection_set: SelectionSet {
+                                                                                                                                ty: "__TypeKind",
+                                                                                                                                selections: [],
+                                                                                                                            },
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                    Field(
+                                                                                                                        1124..1128 @12 Field {
+                                                                                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                                                                                description: None,
+                                                                                                                                name: "name",
+                                                                                                                                arguments: [],
+                                                                                                                                ty: Named(
+                                                                                                                                    "String",
+                                                                                                                                ),
+                                                                                                                                directives: [],
+                                                                                                                            },
+                                                                                                                            alias: None,
+                                                                                                                            name: "name",
+                                                                                                                            arguments: [],
+                                                                                                                            directives: [],
+                                                                                                                            selection_set: SelectionSet {
+                                                                                                                                ty: "String",
+                                                                                                                                selections: [],
+                                                                                                                            },
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                    Field(
+                                                                                                                        1143..1209 @12 Field {
+                                                                                                                            definition: 825..839 @-1 FieldDefinition {
+                                                                                                                                description: None,
+                                                                                                                                name: "ofType",
+                                                                                                                                arguments: [],
+                                                                                                                                ty: Named(
+                                                                                                                                    "__Type",
+                                                                                                                                ),
+                                                                                                                                directives: [],
+                                                                                                                            },
+                                                                                                                            alias: None,
+                                                                                                                            name: "ofType",
+                                                                                                                            arguments: [],
+                                                                                                                            directives: [],
+                                                                                                                            selection_set: SelectionSet {
+                                                                                                                                ty: "__Type",
+                                                                                                                                selections: [
+                                                                                                                                    Field(
+                                                                                                                                        1168..1172 @12 Field {
+                                                                                                                                            definition: 178..195 @-1 FieldDefinition {
+                                                                                                                                                description: None,
+                                                                                                                                                name: "kind",
+                                                                                                                                                arguments: [],
+                                                                                                                                                ty: NonNullNamed(
+                                                                                                                                                    "__TypeKind",
+                                                                                                                                                ),
+                                                                                                                                                directives: [],
+                                                                                                                                            },
+                                                                                                                                            alias: None,
+                                                                                                                                            name: "kind",
+                                                                                                                                            arguments: [],
+                                                                                                                                            directives: [],
+                                                                                                                                            selection_set: SelectionSet {
+                                                                                                                                                ty: "__TypeKind",
+                                                                                                                                                selections: [],
+                                                                                                                                            },
+                                                                                                                                        },
+                                                                                                                                    ),
+                                                                                                                                    Field(
+                                                                                                                                        1189..1193 @12 Field {
+                                                                                                                                            definition: 198..210 @-1 FieldDefinition {
+                                                                                                                                                description: None,
+                                                                                                                                                name: "name",
+                                                                                                                                                arguments: [],
+                                                                                                                                                ty: Named(
+                                                                                                                                                    "String",
+                                                                                                                                                ),
+                                                                                                                                                directives: [],
+                                                                                                                                            },
+                                                                                                                                            alias: None,
+                                                                                                                                            name: "name",
+                                                                                                                                            arguments: [],
+                                                                                                                                            directives: [],
+                                                                                                                                            selection_set: SelectionSet {
+                                                                                                                                                ty: "String",
+                                                                                                                                                selections: [],
+                                                                                                                                            },
+                                                                                                                                        },
+                                                                                                                                    ),
+                                                                                                                                ],
+                                                                                                                            },
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                ],
+                                                                                                            },
+                                                                                                        },
+                                                                                                    ),
+                                                                                                ],
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                ],
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                ],
+                                                            },
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
 }
-

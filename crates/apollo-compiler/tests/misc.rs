@@ -1,4 +1,5 @@
 use apollo_compiler::executable::Selection;
+use apollo_compiler::name;
 use apollo_compiler::parse_mixed;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ExecutableDocument;
@@ -181,7 +182,7 @@ union Union = Concrete
 
     assert_eq!(inline_fragments.len(), 1);
     let inline_fragment = inline_fragments.first().unwrap();
-    assert_eq!(inline_fragment.type_condition, Some("Concrete".into()));
+    assert_eq!(inline_fragment.type_condition, Some(name!("Concrete")));
 
     let inline_fragment_fields = inline_fragment.selection_set.fields();
     let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
@@ -202,7 +203,7 @@ union Union = Concrete
     let union_inline_fragment = union_inline_fragments.first().unwrap();
     assert_eq!(
         union_inline_fragment.type_condition,
-        Some("Concrete".into())
+        Some(name!("Concrete"))
     );
 
     let union_inline_fragment_fields = union_inline_fragment.selection_set.fields();
@@ -568,6 +569,9 @@ input Point2D {
 #[test]
 fn it_accesses_object_directive_name() {
     let input = r#"
+type Query {
+  theBook: Book
+}
 
 type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
   id: ID!
@@ -589,6 +593,10 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
 #[test]
 fn it_accesses_object_field_types_directive_name() {
     let input = r#"
+type Query {
+  me: Person
+}
+
 type Person {
   name: String
   picture(size: Number): Url
@@ -640,6 +648,10 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 #[test]
 fn it_accesses_input_object_field_types_directive_name() {
     let input = r#"
+type Query {
+  x: Int
+}
+
 input Person {
   name: String
   picture: Url

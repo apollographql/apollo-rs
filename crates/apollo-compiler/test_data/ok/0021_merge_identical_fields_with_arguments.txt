@@ -1,201 +1,403 @@
-0..32 @21 EnumTypeDefinition {
-    description: None,
-    name: "DogCommand",
-    directives: [],
-    values: [
-        20..23 @21 EnumValueDefinition {
-            description: None,
-            value: "SIT",
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-        26..30 @21 EnumValueDefinition {
-            description: None,
-            value: "HEEL",
-            directives: [],
+        21: SourceFile {
+            path: "0021_merge_identical_fields_with_arguments.graphql",
+            source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
+            parse_errors: [],
         },
-    ],
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "DogCommand": Enum(
+            0..32 @21 EnumType {
+                description: None,
+                name: "DogCommand",
+                directives: [],
+                values: {
+                    "SIT": Component {
+                        origin: Definition,
+                        node: 20..23 @21 EnumValueDefinition {
+                            description: None,
+                            value: "SIT",
+                            directives: [],
+                        },
+                    },
+                    "HEEL": Component {
+                        origin: Definition,
+                        node: 26..30 @21 EnumValueDefinition {
+                            description: None,
+                            value: "HEEL",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Dog": Object(
+            34..97 @21 ObjectType {
+                description: None,
+                name: "Dog",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "doesKnowCommand": Component {
+                        origin: Definition,
+                        node: 47..95 @21 FieldDefinition {
+                            description: None,
+                            name: "doesKnowCommand",
+                            arguments: [
+                                63..85 @21 InputValueDefinition {
+                                    description: None,
+                                    name: "dogCommand",
+                                    ty: 75..85 @21 Named(
+                                        "DogCommand",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            99..124 @21 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "pet": Component {
+                        origin: Definition,
+                        node: 114..122 @21 FieldDefinition {
+                            description: None,
+                            name: "pet",
+                            arguments: [],
+                            ty: Named(
+                                "Dog",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-34..97 @21 ObjectTypeDefinition {
-    description: None,
-    name: "Dog",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        47..95 @21 FieldDefinition {
-            description: None,
-            name: "doesKnowCommand",
-            arguments: [
-                63..85 @21 InputValueDefinition {
-                    description: None,
+ExecutableDocument {
+    sources: {
+        21: SourceFile {
+            path: "0021_merge_identical_fields_with_arguments.graphql",
+            source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "queryPupper": 126..204 @21 Operation {
+            operation_type: Query,
+            name: Some(
+                "queryPupper",
+            ),
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        148..202 @21 Field {
+                            definition: 114..122 @21 FieldDefinition {
+                                description: None,
+                                name: "pet",
+                                arguments: [],
+                                ty: Named(
+                                    "Dog",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "pet",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    FragmentSpread(
+                                        158..198 @21 FragmentSpread {
+                                            fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "queryPupperAgain": 206..316 @21 Operation {
+            operation_type: Query,
+            name: Some(
+                "queryPupperAgain",
+            ),
+            variables: [
+                229..252 @21 VariableDefinition {
                     name: "dogCommand",
-                    ty: 75..85 @21 Named(
+                    ty: 242..252 @21 Named(
                         "DogCommand",
                     ),
                     default_value: None,
                     directives: [],
                 },
             ],
-            ty: Named(
-                "Boolean",
-            ),
             directives: [],
-        },
-    ],
-}
-99..124 @21 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        114..122 @21 FieldDefinition {
-            description: None,
-            name: "pet",
-            arguments: [],
-            ty: Named(
-                "Dog",
-            ),
-            directives: [],
-        },
-    ],
-}
-126..204 @21 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "queryPupper",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            148..202 @21 Field {
-                alias: None,
-                name: "pet",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        158..198 @21 FragmentSpread {
-                            fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        258..314 @21 Field {
+                            definition: 114..122 @21 FieldDefinition {
+                                description: None,
+                                name: "pet",
+                                arguments: [],
+                                ty: Named(
+                                    "Dog",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "pet",
+                            arguments: [],
                             directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Dog",
+                                selections: [
+                                    FragmentSpread(
+                                        268..310 @21 FragmentSpread {
+                                            fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
                         },
                     ),
                 ],
             },
-        ),
-    ],
-}
-206..316 @21 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "queryPupperAgain",
-    ),
-    variables: [
-        229..252 @21 VariableDefinition {
-            name: "dogCommand",
-            ty: 242..252 @21 Named(
-                "DogCommand",
-            ),
-            default_value: None,
-            directives: [],
         },
-    ],
-    directives: [],
-    selection_set: [
-        Field(
-            258..314 @21 Field {
-                alias: None,
-                name: "pet",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    FragmentSpread(
-                        268..310 @21 FragmentSpread {
-                            fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
+    },
+    fragments: {
+        "mergeIdenticalFieldsWithIdenticalArgs": 318..445 @21 Fragment {
+            name: "mergeIdenticalFieldsWithIdenticalArgs",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Dog",
+                selections: [
+                    Field(
+                        376..408 @21 Field {
+                            definition: 47..95 @21 FieldDefinition {
+                                description: None,
+                                name: "doesKnowCommand",
+                                arguments: [
+                                    63..85 @21 InputValueDefinition {
+                                        description: None,
+                                        name: "dogCommand",
+                                        ty: 75..85 @21 Named(
+                                            "DogCommand",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "doesKnowCommand",
+                            arguments: [
+                                392..407 @21 Argument {
+                                    name: "dogCommand",
+                                    value: 404..407 @21 Enum(
+                                        "SIT",
+                                    ),
+                                },
+                            ],
                             directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        411..443 @21 Field {
+                            definition: 47..95 @21 FieldDefinition {
+                                description: None,
+                                name: "doesKnowCommand",
+                                arguments: [
+                                    63..85 @21 InputValueDefinition {
+                                        description: None,
+                                        name: "dogCommand",
+                                        ty: 75..85 @21 Named(
+                                            "DogCommand",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "doesKnowCommand",
+                            arguments: [
+                                427..442 @21 Argument {
+                                    name: "dogCommand",
+                                    value: 439..442 @21 Enum(
+                                        "SIT",
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
                         },
                     ),
                 ],
             },
-        ),
-    ],
+        },
+        "mergeIdenticalFieldsWithIdenticalValues": 447..592 @21 Fragment {
+            name: "mergeIdenticalFieldsWithIdenticalValues",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Dog",
+                selections: [
+                    Field(
+                        507..547 @21 Field {
+                            definition: 47..95 @21 FieldDefinition {
+                                description: None,
+                                name: "doesKnowCommand",
+                                arguments: [
+                                    63..85 @21 InputValueDefinition {
+                                        description: None,
+                                        name: "dogCommand",
+                                        ty: 75..85 @21 Named(
+                                            "DogCommand",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "doesKnowCommand",
+                            arguments: [
+                                523..546 @21 Argument {
+                                    name: "dogCommand",
+                                    value: 535..546 @21 Variable(
+                                        "dogCommand",
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                    Field(
+                        550..590 @21 Field {
+                            definition: 47..95 @21 FieldDefinition {
+                                description: None,
+                                name: "doesKnowCommand",
+                                arguments: [
+                                    63..85 @21 InputValueDefinition {
+                                        description: None,
+                                        name: "dogCommand",
+                                        ty: 75..85 @21 Named(
+                                            "DogCommand",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "doesKnowCommand",
+                            arguments: [
+                                566..589 @21 Argument {
+                                    name: "dogCommand",
+                                    value: 578..589 @21 Variable(
+                                        "dogCommand",
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
 }
-318..445 @21 FragmentDefinition {
-    name: "mergeIdenticalFieldsWithIdenticalArgs",
-    type_condition: "Dog",
-    directives: [],
-    selection_set: [
-        Field(
-            376..408 @21 Field {
-                alias: None,
-                name: "doesKnowCommand",
-                arguments: [
-                    392..407 @21 Argument {
-                        name: "dogCommand",
-                        value: 404..407 @21 Enum(
-                            "SIT",
-                        ),
-                    },
-                ],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            411..443 @21 Field {
-                alias: None,
-                name: "doesKnowCommand",
-                arguments: [
-                    427..442 @21 Argument {
-                        name: "dogCommand",
-                        value: 439..442 @21 Enum(
-                            "SIT",
-                        ),
-                    },
-                ],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-    ],
-}
-447..592 @21 FragmentDefinition {
-    name: "mergeIdenticalFieldsWithIdenticalValues",
-    type_condition: "Dog",
-    directives: [],
-    selection_set: [
-        Field(
-            507..547 @21 Field {
-                alias: None,
-                name: "doesKnowCommand",
-                arguments: [
-                    523..546 @21 Argument {
-                        name: "dogCommand",
-                        value: 535..546 @21 Variable(
-                            "dogCommand",
-                        ),
-                    },
-                ],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-        Field(
-            550..590 @21 Field {
-                alias: None,
-                name: "doesKnowCommand",
-                arguments: [
-                    566..589 @21 Argument {
-                        name: "dogCommand",
-                        value: 578..589 @21 Variable(
-                            "dogCommand",
-                        ),
-                    },
-                ],
-                directives: [],
-                selection_set: [],
-            },
-        ),
-    ],
-}
-

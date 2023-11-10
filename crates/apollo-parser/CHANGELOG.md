@@ -16,6 +16,51 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.7.3]([unreleased](https://crates.io/crates/apollo-parser/0.7.3)) - 2023-11-07
+
+## Fixes
+
+- **Less recursion in parser implementation - [goto-bus-stop], [pull/721] fixing [issue/666]**
+  The parser previously used recursive functions while parsing some repetitive nodes, like members of an enum:
+  ```graphql
+  enum Alphabet { A B C D E F G etc }
+  ```
+  Even though this is a flat list, each member would use a recursive call. Having many members, or fields in a type
+  definition, or arguments in a directive, would all contribute to the recursion limit.
+
+  Those cases are now using iteration instead and no longer contribute to the recursion limit. The default recursion limit
+  is unchanged at 500, but you could reduce it depending on your needs.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/666]: https://github.com/apollographql/apollo-rs/issues/666
+
+- **Fix overly permissive parsing of `implements` lists and `union` member types - [goto-bus-stop], [pull/721] fixing [issue/659]**
+  Previously these definitions were all accepted, despite missing or excessive `&` and `|` separators:
+  ```graphql
+  type Ty implements A B
+  type Ty implements A && B
+  type Ty implements A & B &
+
+  union Ty = A B
+  union Ty = A || B
+  union Ty = A | B |
+  ```
+  Now they report a syntax error.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/659]: https://github.com/apollographql/apollo-rs/issues/659
+
+# [0.7.2](https://crates.io/crates/apollo-parser/0.7.2) - 2023-11-03
+
+## Fixes
+
+- **Fix `SyntaxTree` being accidentally `!Send` and `!Sync` - [SimonSapin], [pull/704] fixing [issue/702]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/704]: https://github.com/apollographql/apollo-rs/pull/704
+[issue/702]: https://github.com/apollographql/apollo-rs/issues/702
 
 # [0.7.1](https://crates.io/crates/apollo-parser/0.7.1) - 2023-10-10
 

@@ -8,7 +8,9 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset
 
 use apollo_compiler::ast;
-use apollo_compiler::Diagnostics;
+use apollo_compiler::name;
+use apollo_compiler::schema;
+use apollo_compiler::DiagnosticList;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
@@ -32,8 +34,8 @@ use std::path::PathBuf;
 #[serial]
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
-        let ast = ast::Document::parse(text, path.file_name().unwrap());
-        let (schema, executable) = ast.to_mixed();
+        let file_name = path.file_name().unwrap();
+        let (schema, executable) = apollo_compiler::parse_mixed(text, file_name);
 
         let schema_validation_errors = schema.validate().err();
         let executable_validation_errors = executable.validate(&schema).err();
@@ -43,7 +45,7 @@ fn validation() {
             path,
         );
 
-        format!("{ast:#?}")
+        format!("{schema:#?}\n{executable:#?}")
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
@@ -91,8 +93,8 @@ fn validation() {
 }
 
 fn assert_diagnostics_are_present(
-    schema_validation_errors: &Option<Diagnostics>,
-    executable_validation_errors: &Option<Diagnostics>,
+    schema_validation_errors: &Option<DiagnosticList>,
+    executable_validation_errors: &Option<DiagnosticList>,
     path: &Path,
 ) {
     assert!(
@@ -103,8 +105,8 @@ fn assert_diagnostics_are_present(
 }
 
 fn assert_diagnostics_are_absent(
-    schema_validation_errors: &Option<Diagnostics>,
-    executable_validation_errors: &Option<Diagnostics>,
+    schema_validation_errors: &Option<DiagnosticList>,
+    executable_validation_errors: &Option<DiagnosticList>,
     path: &Path,
 ) {
     if schema_validation_errors.is_some() || executable_validation_errors.is_some() {
@@ -246,4 +248,36 @@ fn project_root() -> PathBuf {
     .nth(1)
     .unwrap()
     .to_path_buf()
+}
+
+#[test]
+fn test_invalid_synthetic_node() {
+    let mut schema = Schema::new();
+    schema.types.insert(
+        name!("Obj"),
+        schema::ObjectType {
+            description: Default::default(),
+            name: name!("Obj"),
+            implements_interfaces: Default::default(),
+            directives: Default::default(),
+            fields: [(
+                name!("field"),
+                schema::FieldDefinition {
+                    description: Default::default(),
+                    name: name!("field"),
+                    arguments: Default::default(),
+                    ty: schema::Type::Named(name!("UndefinedType")),
+                    directives: Default::default(),
+                }
+                .into(),
+            )]
+            .into(),
+        }
+        .into(),
+    );
+    schema.schema_definition.make_mut().query = Some(name!("Obj").into());
+    let expected = expect_test::expect![[r#"
+        Error: cannot find type `UndefinedType` in this document
+    "#]];
+    expected.assert_eq(&schema.validate().unwrap_err().to_string_no_color());
 }

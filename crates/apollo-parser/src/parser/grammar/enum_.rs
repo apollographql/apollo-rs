@@ -79,6 +79,10 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
         _ => p.err("expected Enum Value Definition"),
     }
 
+    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+        enum_value_definition(p);
+    }
+
     p.expect(T!['}'], S!['}']);
 }
 
@@ -88,7 +92,7 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
 ///     Description? EnumValue Directives?
 pub(crate) fn enum_value_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        let guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);
+        let _guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);
 
         if let Some(TokenKind::StringValue) = p.peek() {
             description::description(p);
@@ -99,20 +103,5 @@ pub(crate) fn enum_value_definition(p: &mut Parser) {
         if let Some(T![@]) = p.peek() {
             directive::directives(p);
         }
-        if p.peek().is_some() {
-            guard.finish_node();
-            // TODO: use a loop instead of recursion
-            if p.recursion_limit.check_and_increment() {
-                p.limit_err("parser recursion limit reached");
-                return;
-            }
-            enum_value_definition(p);
-            p.recursion_limit.decrement();
-            return;
-        }
-    }
-
-    if let Some(T!['}']) = p.peek() {
-        return;
     }
 }

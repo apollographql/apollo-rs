@@ -3,26 +3,23 @@
 
 use crate::ast;
 use crate::schema;
-use crate::FileId;
 use crate::Node;
 use crate::Parser;
 use crate::Schema;
-use crate::SourceFile;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
-use std::sync::Arc;
 
 pub(crate) mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
 pub use crate::ast::{
-    Argument, Directive, Directives, Name, NamedType, OperationType, Type, Value,
+    Argument, Directive, DirectiveList, Name, NamedType, OperationType, Type, Value,
     VariableDefinition,
 };
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::NodeLocation;
 use std::fmt;
 
@@ -30,10 +27,10 @@ use std::fmt;
 #[derive(Debug, Clone, Default)]
 pub struct ExecutableDocument {
     /// If this document was originally parsed from a source file,
-    /// that file and its ID.
+    /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this document,
     /// either parsing a source file or converting from AST.
@@ -49,10 +46,10 @@ pub struct ExecutableDocument {
 #[derive(Debug, Clone)]
 pub struct FieldSet {
     /// If this document was originally parsed from a source file,
-    /// that file and its ID.
+    /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this FieldSet,
     /// either parsing a source file or converting from AST.
@@ -64,19 +61,16 @@ pub struct FieldSet {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,
+    pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
-}
-
-pub enum OperationRef<'a> {
-    Anonymous(&'a Node<Operation>),
-    Named(&'a Name, &'a Node<Operation>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
-    pub directives: Directives,
+    pub name: Name,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
@@ -100,20 +94,20 @@ pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
@@ -233,25 +227,18 @@ impl ExecutableDocument {
         Parser::new().parse_executable(schema, source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut sources = schema.sources.clone();
-        sources.extend(self.source.clone());
-        let mut errors = Diagnostics::new(sources);
+    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
 
     /// Returns an iterator of operations, both anonymous and named
-    pub fn all_operations(&self) -> impl Iterator<Item = OperationRef<'_>> {
+    pub fn all_operations(&self) -> impl Iterator<Item = &'_ Node<Operation>> {
         self.anonymous_operation
             .as_ref()
             .into_iter()
-            .map(OperationRef::Anonymous)
-            .chain(
-                self.named_operations
-                    .iter()
-                    .map(|(name, op)| OperationRef::Named(name, op)),
-            )
+            .chain(self.named_operations.values())
     }
 
     /// Return the relevant operation for a request, or a request error
@@ -267,22 +254,19 @@ impl ExecutableDocument {
     pub fn get_operation(
         &self,
         name_request: Option<&str>,
-    ) -> Result<OperationRef<'_>, GetOperationError> {
+    ) -> Result<&Node<Operation>, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named_operations
-                .get_key_value(name)
-                .map(|(name, op)| OperationRef::Named(name, op))
+            self.named_operations.get(name)
         } else if let Some(op) = &self.anonymous_operation {
             // No name request, return the anonymous operation if it’s the only operation
-            self.named_operations
-                .is_empty()
-                .then_some(OperationRef::Anonymous(op))
+            self.named_operations.is_empty().then_some(op)
         } else {
             // No name request or anonymous operation, return a named operation if it’s the only one
-            self.named_operations.iter().next().and_then(|(name, op)| {
-                (self.named_operations.len() == 1).then_some(OperationRef::Named(name, op))
-            })
+            self.named_operations
+                .values()
+                .next()
+                .and_then(|op| (self.named_operations.len() == 1).then_some(op))
         }
         .ok_or(GetOperationError())
     }
@@ -315,11 +299,11 @@ impl ExecutableDocument {
 
 impl Eq for ExecutableDocument {}
 
-/// `source` and `build_errors` are ignored for comparison
+/// `sources` and `build_errors` are ignored for comparison
 impl PartialEq for ExecutableDocument {
     fn eq(&self, other: &Self) -> bool {
         let Self {
-            source: _,
+            sources: _,
             build_errors: _,
             anonymous_operation,
             named_operations,
@@ -328,29 +312,6 @@ impl PartialEq for ExecutableDocument {
         *anonymous_operation == other.anonymous_operation
             && *named_operations == other.named_operations
             && *fragments == other.fragments
-    }
-}
-
-impl<'a> OperationRef<'a> {
-    pub fn name(&self) -> Option<&'a Name> {
-        match self {
-            OperationRef::Anonymous(_) => None,
-            OperationRef::Named(name, _) => Some(name),
-        }
-    }
-
-    pub fn definition(&self) -> &'a Node<Operation> {
-        match self {
-            OperationRef::Anonymous(def) | OperationRef::Named(_, def) => def,
-        }
-    }
-}
-
-impl std::ops::Deref for OperationRef<'_> {
-    type Target = Node<Operation>;
-
-    fn deref(&self) -> &Self::Target {
-        self.definition()
     }
 }
 
@@ -401,19 +362,23 @@ impl Operation {
         self.operation_type == OperationType::Query
             && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
     }
+
+    serialize_method!();
 }
 
 impl Fragment {
     pub fn type_condition(&self) -> &NamedType {
         &self.selection_set.ty
     }
+
+    serialize_method!();
 }
 
 impl SelectionSet {
     /// Create a new selection set
-    pub fn new(ty: impl Into<NamedType>) -> Self {
+    pub fn new(ty: NamedType) -> Self {
         Self {
-            ty: ty.into(),
+            ty,
             selections: Vec::new(),
         }
     }
@@ -434,18 +399,14 @@ impl SelectionSet {
     pub fn new_field<'schema>(
         &self,
         schema: &'schema Schema,
-        name: impl Into<Name>,
+        name: Name,
     ) -> Result<Field, schema::FieldLookupError<'schema>> {
-        let name = name.into();
         let definition = schema.type_field(&self.ty, &name)?.node.clone();
         Ok(Field::new(name, definition))
     }
 
     /// Create a new inline fragment to be added to this selection set with [`push`][Self::push]
-    pub fn new_inline_fragment(
-        &self,
-        opt_type_condition: Option<impl Into<NamedType>>,
-    ) -> InlineFragment {
+    pub fn new_inline_fragment(&self, opt_type_condition: Option<NamedType>) -> InlineFragment {
         if let Some(type_condition) = opt_type_condition {
             InlineFragment::with_type_condition(type_condition)
         } else {
@@ -454,7 +415,7 @@ impl SelectionSet {
     }
 
     /// Create a new fragment spread to be added to this selection set with [`push`][Self::push]
-    pub fn new_fragment_spread(&self, fragment_name: impl Into<Name>) -> FragmentSpread {
+    pub fn new_fragment_spread(&self, fragment_name: Name) -> FragmentSpread {
         FragmentSpread::new(fragment_name)
     }
 
@@ -464,16 +425,20 @@ impl SelectionSet {
     pub fn fields(&self) -> impl Iterator<Item = &Node<Field>> {
         self.selections.iter().filter_map(|sel| sel.as_field())
     }
+
+    serialize_method!();
 }
 
 impl Selection {
-    pub fn directives(&self) -> &Directives {
+    pub fn directives(&self) -> &DirectiveList {
         match self {
             Self::Field(sel) => &sel.directives,
             Self::FragmentSpread(sel) => &sel.directives,
             Self::InlineFragment(sel) => &sel.directives,
         }
     }
+
+    serialize_method!();
 }
 
 impl From<Node<Field>> for Selection {
@@ -542,24 +507,24 @@ impl Field {
     /// Create a new field with the given name and type.
     ///
     /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
-    pub fn new(name: impl Into<Name>, definition: Node<schema::FieldDefinition>) -> Self {
+    pub fn new(name: Name, definition: Node<schema::FieldDefinition>) -> Self {
         let selection_set = SelectionSet::new(definition.ty.inner_named_type().clone());
         Field {
             definition,
             alias: None,
-            name: name.into(),
+            name,
             arguments: Vec::new(),
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
             selection_set,
         }
     }
 
-    pub fn with_alias(mut self, alias: impl Into<Name>) -> Self {
-        self.alias = Some(alias.into());
+    pub fn with_alias(mut self, alias: Name) -> Self {
+        self.alias = Some(alias);
         self
     }
 
-    pub fn with_opt_alias(mut self, alias: Option<impl Into<Name>>) -> Self {
+    pub fn with_opt_alias(mut self, alias: Option<Name>) -> Self {
         self.alias = alias.map(Into::into);
         self
     }
@@ -577,7 +542,7 @@ impl Field {
         self
     }
 
-    pub fn with_argument(mut self, name: impl Into<Name>, value: impl Into<Node<Value>>) -> Self {
+    pub fn with_argument(mut self, name: Name, value: impl Into<Node<Value>>) -> Self {
         self.arguments.push((name, value).into());
         self
     }
@@ -616,23 +581,24 @@ impl Field {
     pub fn inner_type_def<'a>(&self, schema: &'a Schema) -> Option<&'a schema::ExtendedType> {
         schema.types.get(self.ty().inner_named_type())
     }
+
+    serialize_method!();
 }
 
 impl InlineFragment {
-    pub fn with_type_condition(type_condition: impl Into<NamedType>) -> Self {
-        let type_condition = type_condition.into();
+    pub fn with_type_condition(type_condition: NamedType) -> Self {
         let selection_set = SelectionSet::new(type_condition.clone());
         Self {
             type_condition: Some(type_condition),
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
             selection_set,
         }
     }
 
-    pub fn without_type_condition(parent_selection_set_type: impl Into<NamedType>) -> Self {
+    pub fn without_type_condition(parent_selection_set_type: NamedType) -> Self {
         Self {
             type_condition: None,
-            directives: Directives::new(),
+            directives: DirectiveList::new(),
             selection_set: SelectionSet::new(parent_selection_set_type),
         }
     }
@@ -662,13 +628,15 @@ impl InlineFragment {
         self.selection_set.extend(selections);
         self
     }
+
+    serialize_method!();
 }
 
 impl FragmentSpread {
-    pub fn new(fragment_name: impl Into<Name>) -> Self {
+    pub fn new(fragment_name: Name) -> Self {
         Self {
-            fragment_name: fragment_name.into(),
-            directives: Directives::new(),
+            fragment_name,
+            directives: DirectiveList::new(),
         }
     }
 
@@ -688,6 +656,8 @@ impl FragmentSpread {
     pub fn fragment_def<'a>(&self, document: &'a ExecutableDocument) -> Option<&'a Node<Fragment>> {
         document.fragments.get(&self.fragment_name)
     }
+
+    serialize_method!();
 }
 
 impl FieldSet {
@@ -699,20 +669,20 @@ impl FieldSet {
     /// Create a [`Parser`] to use different parser configuration.
     pub fn parse(
         schema: &Schema,
-        type_name: impl Into<NamedType>,
+        type_name: NamedType,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
     ) -> Self {
         Parser::new().parse_field_set(schema, type_name, source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut sources = schema.sources.clone();
-        sources.extend(self.source.clone());
-        let mut errors = Diagnostics::new(sources);
+    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_field_set(&mut errors, schema, self);
         errors.into_result()
     }
+
+    serialize_method!();
 }
 
 impl fmt::Display for SelectionPath {

@@ -1,0 +1,193 @@
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
+        },
+        37: SourceFile {
+            path: "0038_argument_default.graphql",
+            source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+        "defer": 0..94 @37 DirectiveDefinition {
+            description: None,
+            name: "defer",
+            arguments: [
+                20..33 @37 InputValueDefinition {
+                    description: None,
+                    name: "label",
+                    ty: 27..33 @37 Named(
+                        "String",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+                36..55 @37 InputValueDefinition {
+                    description: None,
+                    name: "if",
+                    ty: 40..48 @37 NonNullNamed(
+                        "Boolean",
+                    ),
+                    default_value: Some(
+                        51..55 @37 Boolean(
+                            true,
+                        ),
+                    ),
+                    directives: [],
+                },
+            ],
+            repeatable: false,
+            locations: [
+                "FRAGMENT_SPREAD",
+                "INLINE_FRAGMENT",
+            ],
+        },
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            96..147 @37 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "guitarAmp": Component {
+                        origin: Definition,
+                        node: 111..145 @37 FieldDefinition {
+                            description: None,
+                            name: "guitarAmp",
+                            arguments: [
+                                121..136 @37 InputValueDefinition {
+                                    description: None,
+                                    name: "upTo",
+                                    ty: 127..131 @37 NonNullNamed(
+                                        "Int",
+                                    ),
+                                    default_value: Some(
+                                        134..136 @37 Int(
+                                            11,
+                                        ),
+                                    ),
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        37: SourceFile {
+            path: "0038_argument_default.graphql",
+            source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: Some(
+        149..185 @37 Operation {
+            operation_type: Query,
+            name: None,
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    InlineFragment(
+                        153..183 @37 InlineFragment {
+                            type_condition: None,
+                            directives: [
+                                157..163 @37 Directive {
+                                    name: "defer",
+                                    arguments: [],
+                                },
+                            ],
+                            selection_set: SelectionSet {
+                                ty: "Query",
+                                selections: [
+                                    Field(
+                                        170..179 @37 Field {
+                                            definition: 111..145 @37 FieldDefinition {
+                                                description: None,
+                                                name: "guitarAmp",
+                                                arguments: [
+                                                    121..136 @37 InputValueDefinition {
+                                                        description: None,
+                                                        name: "upTo",
+                                                        ty: 127..131 @37 NonNullNamed(
+                                                            "Int",
+                                                        ),
+                                                        default_value: Some(
+                                                            134..136 @37 Int(
+                                                                11,
+                                                            ),
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "guitarAmp",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    ),
+    named_operations: {},
+    fragments: {},
+}

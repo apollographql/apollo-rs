@@ -1,121 +1,228 @@
-0..42 @7 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [
-        "Node",
-    ],
-    directives: [],
-    fields: [
-        33..40 @7 FieldDefinition {
-            description: None,
-            name: "id",
-            arguments: [],
-            ty: NonNullNamed(
-                "ID",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
+        7: SourceFile {
+            path: "0007_schema_with_interface_definition.graphql",
+            source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..42 @7 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Node",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 33..40 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Node": Interface(
+            44..72 @7 InterfaceType {
+                description: None,
+                name: "Node",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 63..70 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Resource": Interface(
+            74..149 @7 InterfaceType {
+                description: None,
+                name: "Resource",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Node",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 113..120 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "width": Component {
+                        origin: Definition,
+                        node: 123..133 @7 FieldDefinition {
+                            description: None,
+                            name: "width",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "height": Component {
+                        origin: Definition,
+                        node: 136..147 @7 FieldDefinition {
+                            description: None,
+                            name: "height",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Image": Interface(
+            151..254 @7 InterfaceType {
+                description: None,
+                name: "Image",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Resource",
+                    },
+                    ComponentName {
+                        origin: Definition,
+                        name: "Node",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 198..205 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "width": Component {
+                        origin: Definition,
+                        node: 208..218 @7 FieldDefinition {
+                            description: None,
+                            name: "width",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "height": Component {
+                        origin: Definition,
+                        node: 221..232 @7 FieldDefinition {
+                            description: None,
+                            name: "height",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "thumbnail": Component {
+                        origin: Definition,
+                        node: 235..252 @7 FieldDefinition {
+                            description: None,
+                            name: "thumbnail",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-44..72 @7 InterfaceTypeDefinition {
-    description: None,
-    name: "Node",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        63..70 @7 FieldDefinition {
-            description: None,
-            name: "id",
-            arguments: [],
-            ty: NonNullNamed(
-                "ID",
-            ),
-            directives: [],
+ExecutableDocument {
+    sources: {
+        7: SourceFile {
+            path: "0007_schema_with_interface_definition.graphql",
+            source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
+            parse_errors: [],
         },
-    ],
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
 }
-74..149 @7 InterfaceTypeDefinition {
-    description: None,
-    name: "Resource",
-    implements_interfaces: [
-        "Node",
-    ],
-    directives: [],
-    fields: [
-        113..120 @7 FieldDefinition {
-            description: None,
-            name: "id",
-            arguments: [],
-            ty: NonNullNamed(
-                "ID",
-            ),
-            directives: [],
-        },
-        123..133 @7 FieldDefinition {
-            description: None,
-            name: "width",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        136..147 @7 FieldDefinition {
-            description: None,
-            name: "height",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-    ],
-}
-151..254 @7 InterfaceTypeDefinition {
-    description: None,
-    name: "Image",
-    implements_interfaces: [
-        "Resource",
-        "Node",
-    ],
-    directives: [],
-    fields: [
-        198..205 @7 FieldDefinition {
-            description: None,
-            name: "id",
-            arguments: [],
-            ty: NonNullNamed(
-                "ID",
-            ),
-            directives: [],
-        },
-        208..218 @7 FieldDefinition {
-            description: None,
-            name: "width",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        221..232 @7 FieldDefinition {
-            description: None,
-            name: "height",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-        235..252 @7 FieldDefinition {
-            description: None,
-            name: "thumbnail",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-    ],
-}
-

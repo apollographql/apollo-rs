@@ -16,9 +16,8 @@ pub(crate) fn validate_arguments(
 
     for argument in arguments {
         let name = &argument.name;
-        if let Some(original) = seen.get(name) {
-            let original_definition = original.unwrap();
-            let redefined_definition = argument.location().unwrap();
+        if let Some(&original_definition) = seen.get(name) {
+            let redefined_definition = argument.location();
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,

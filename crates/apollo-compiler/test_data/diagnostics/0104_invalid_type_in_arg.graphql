@@ -18,3 +18,7 @@ union OperationResult = Operation
 type Operation {
   id: ID!
 }
+
+type Query {
+  x: Int
+}

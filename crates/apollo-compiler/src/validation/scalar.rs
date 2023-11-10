@@ -29,15 +29,15 @@ pub(crate) fn validate_scalar_definition(
         // @specifiedBy directive
         let has_specified_by = scalar_def.directives.has("specifiedBy");
         if !has_specified_by {
-            if let Some(location) = scalar_def.location() {
-                diagnostics.push(
-                    ApolloDiagnostic::new(db, location, DiagnosticData::ScalarSpecificationURL)
-                        .label(Label::new(
-                            location,
-                            "consider adding a @specifiedBy directive to this scalar definition",
-                        )),
-                );
-            }
+            let location = scalar_def.location();
+            diagnostics.push(
+                ApolloDiagnostic::new(db, location, DiagnosticData::ScalarSpecificationURL).label(
+                    Label::new(
+                        location,
+                        "consider adding a @specifiedBy directive to this scalar definition",
+                    ),
+                ),
+            );
         }
 
         diagnostics.extend(super::directive::validate_directives(

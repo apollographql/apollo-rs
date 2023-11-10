@@ -17,11 +17,219 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-10
+# [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 
 ## BREAKING
 
-Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
+- **Make everything know their own name - [SimonSapin], [pull/727] fixing [issue/708].**
+
+  In a few places (but not consistently) a `name` field
+  was omitted from some structs used as map values 
+  on the basis that it would have been redundant with the map key.
+  This reverts that decision,
+  making it the user’s responsibility when mutating documents to keep names consistent.
+
+  * Add a `pub name: Name` field to `executable::Fragment` as well as 
+    `ScalarType`, `ObjectType`, `InterfaceType`, `EnumType`, `UnionType`, and `InputObjectType`
+    in `schema`.
+  * Add a `fn name(&self) -> &Name` method to the `schema::ExtendedType` enum
+  * Add a `pub name: Option<Name>` field to `executable::Operation`
+  * Remove `executable::OperationRef<'_>` 
+    (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
+    replacing its uses with `&Node<Operation>`
+- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` - 
+  [SimonSapin], [pull/732] fixing [issue/711].**
+  The previous names were too similar to `Directive` and `Diagnostic` (singular).
+- **Rename `ComponentStr` to `ComponentName` - [SimonSapin], [pull/713]**
+  and its `node: NodeStr` field to `name: Name`.
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  - **Check validity of `ast::Name`.**
+    `NodeStr` is a smart string type with infallible conversion from `&str`.
+    `ast::Name` used to be a type alias for `NodeStr`, 
+    leaving the possibility of creating one invalid in GraphQL syntax.
+    Validation and serialization would not check this.
+    `Name` is now a wrapper type for `NodeStr`.
+    Its `new` constructor checks validity of the given string and returns a `Result`.
+    A new `name!` macro (see below) creates a `Name` with compile-time checking.
+  - **`OperationType::default_type_name` returns a `Name` instead of `&str`**
+  - **`Type::new_named("x")` is removed. Use `Type::Named(name!("x"))` instead.**
+  - **`ComponentStr` is renamed to `ComponentName`.**
+    It no longer has infallible conversions from `&str` or `String`.
+    Its `node` field is renamed to `name`;
+    the type of that field is changed from `NodeStr` to `Name`.
+  - **`NodeStr` no longer has a `to_component` method, only `Name` does**
+  - **Various function or method parameters changed from `impl Into<Name>` to `Name`,**
+    since there is no longer an infallible conversion from `&str`
+
+## Features
+
+- **Add serialization support for everything - [SimonSapin], [pull/728].**
+
+  `Schema`, `ExecutableDocument`, and all AST types
+  already supported serialization to GraphQL syntax
+  through the `Display` trait and the `.serialize()` method.
+  This is now also the case of all other Rust types
+  representing some element of a GraphQL document:
+  * `schema::Directives`
+  * `schema::ExtendedType`
+  * `schema::ScalarType`
+  * `schema::ObjectType`
+  * `schema::InterfaceType`
+  * `schema::EnumType`
+  * `schema::UnionType`
+  * `schema::InputObjectType`
+  * `executable::Operation`
+  * `executable::Fragment`
+  * `executable::SelectionSet`
+  * `executable::Selection`
+  * `executable::Field`
+  * `executable::InlineFragment`
+  * `executable::FragmentSpread`
+  * `executable::FieldSet`
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  See also the BREAKING section above.
+  - **Add a `name!("example")` macro**,
+    to be imported with `use apollo_compiler::name;`.
+    It creates an `ast::Name` from a string literal, with a compile-time validity checking.
+    A `Name` created this way does not own allocated heap memory or a reference counter,
+    so cloning it is extremely cheap.
+  - **Add allocation-free `NodeStr::from_static`.**
+    This mostly exists to support the `name!` macro, but can also be used on its own:
+    ```rust
+    let s = apollo_compiler::NodeStr::from_static(&"example");
+    assert_eq!(s, "example");
+    ```
+
+## Fixes
+- **Fix crash in validation of self-referential fragments - [goto-bus-stop], [pull/733] fixing [issue/716].**
+  Now fragments that cyclically reference themselves inside a nested field also produce a
+  validation error, instead of causing a stack overflow crash.
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/708]: https://github.com/apollographql/apollo-rs/issues/708
+[issue/710]: https://github.com/apollographql/apollo-rs/issues/710
+[issue/711]: https://github.com/apollographql/apollo-rs/issues/711
+[issue/716]: https://github.com/apollographql/apollo-rs/issues/716
+[pull/713]: https://github.com/apollographql/apollo-rs/pull/713
+[pull/727]: https://github.com/apollographql/apollo-rs/pull/727
+[pull/728]: https://github.com/apollographql/apollo-rs/pull/728
+[pull/732]: https://github.com/apollographql/apollo-rs/pull/732
+[pull/733]: https://github.com/apollographql/apollo-rs/pull/733
+
+
+# [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
+
+## Features
+- Diangostic struct is now public by [SimonSapin] in [11fe454]
+- Improve lowercase enum value diagnostic by [goto-bus-stop] in [pull/725]
+
+## Maintenance 
+- Simplify `SchemaBuilder` internals by [SimonSapin] in [pull/722]
+- Remove validation dead code by [SimonSapin] in [bd5d107]
+- Skip schema AST conversion in ExecutableDocument::validate by [SimonSapin] in [pull/726]
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[11fe454]: https://github.com/apollographql/apollo-rs/commit/11fe454f81b4cfbada4884a22575fa5c812a6ed4
+[bd5d107]: https://github.com/apollographql/apollo-rs/commit/bd5d107eca14a7fc06dd885b2952346326e648cb
+[pull/722]: https://github.com/apollographql/apollo-rs/pull/722
+[pull/725]: https://github.com/apollographql/apollo-rs/pull/725
+[pull/726]: https://github.com/apollographql/apollo-rs/pull/726
+
+
+# [1.0.0-beta.4](https://crates.io/crates/apollo-compiler/1.0.0-beta.4) - 2023-10-16
+
+## Features
+- **JSON Serialisable compiler diagnostics - [lrlna] and [goto-bus-stop], [pull/698]:**
+  This change brings back [JSON error format] for diagnostics introduced by
+  [goto-bus-stop] in [pull/668] for compiler@0.11.3. As a result, diagnostics'
+  line/column numbers are now also accessible as part of the public API.
+
+  ```rust
+  let json = expect_test::expect![[r#"
+    {
+      "message": "an executable document must not contain an object type definition",
+      "locations": [
+        {
+          "line": 2,
+          "column": 1
+        }
+      ]
+    }"#]];
+  let diagnostics = executable.validate(&schema).unwrap_err();
+  diagnostics.iter().for_each(|diag| {
+      assert_eq!(
+          diag.get_line_column(),
+          Some(GraphQLLocation { line: 2, column: 1 })
+      );
+      json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
+  });
+  ```
+## Fixes
+
+- **Don’t emit a validation error for relying on argument default - [SimonSapin], [pull/700]**
+  A field argument or directive argument was incorrectly considered required
+  as soon as it had a non-null type, even if it had a default value.
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[pull/698]: https://github.com/apollographql/apollo-rs/pull/698
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[pull/700]: https://github.com/apollographql/apollo-rs/pull/700
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
+# [1.0.0-beta.3](https://crates.io/crates/apollo-compiler/1.0.0-beta.3) - 2023-10-13
+
+## BREAKING
+
+- **Keep source files in `Arc<Map<…>>` everywhere - [SimonSapin], [pull/696]**
+  Change struct fields from `sources: IndexMap<FileId, Arc<SourceFile>>` (in `Schema`)
+  or `source: Option<(FileId, Arc<SourceFile>)>` (in `Document`, `ExecutablDocument`, `FieldSet`)
+  to `sources: SourceMap`, with:
+  ```rust
+  pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+  ```
+  Cases other than `Schema` still only have zero or one source when created by apollo-compiler,
+  but it is now possible to make more sources available to diagnostics,
+  for example when merging documents:
+  ```rust
+  Arc::make_mut(&mut doc1.sources).extend(doc2.sources.iter().map(|(k, v)| (*k, v.clone())));
+  ```
+
+## Features
+
+- **Add iteration over individual diagnostics - [SimonSapin], [pull/696]:**
+  ```rust
+  let schema = Schema::parse(input, "schema.graphql");
+  if let Err(errors) = schema.validate() {
+      for error in errors.iter() {
+          eprintln!("{error}")
+      }
+  }
+  ```
+
+## Fixes
+
+- **Don’t panic in validation or omit diagnostics when a source location is missing - [SimonSapin], [pull/697]**
+  In apollo-compiler 0.11 every element of the HIR always had a source location because
+  it always came from a parsed input file.
+  In 1.0 source location is always optional.
+  When a node relevant to some diagnostic does not have a source location,
+  the diagnostic should still be emitted but its labels (each printing a bit of source code)
+  may be missing.
+  Essential information should therefore be in the main message, not only in labels.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/696]: https://github.com/apollographql/apollo-rs/pull/696
+[pull/697]: https://github.com/apollographql/apollo-rs/pull/697
+
+# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.2) - 2023-10-10
+
+## BREAKING
+
+**Assorted `Schema` API changes - [SimonSapin], [pull/678]**
 - Type of the `schema_definition` field changed
   from `Option<SchemaDefinition>` to `SchemaDefinition`.
   Default root operations based on object type names

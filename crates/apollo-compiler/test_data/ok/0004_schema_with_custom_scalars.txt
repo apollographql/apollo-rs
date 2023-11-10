@@ -1,44 +1,117 @@
-0..44 @4 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        15..27 @4 FieldDefinition {
-            description: None,
-            name: "website",
-            arguments: [],
-            ty: Named(
-                "URL",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-        31..42 @4 FieldDefinition {
-            description: None,
-            name: "amount",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
+        4: SourceFile {
+            path: "0004_schema_with_custom_scalars.graphql",
+            source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+            parse_errors: [],
         },
-    ],
-}
-46..113 @4 ScalarTypeDefinition {
-    description: None,
-    name: "URL",
-    directives: [
-        57..113 @4 Directive {
-            name: "specifiedBy",
-            arguments: [
-                70..112 @4 Argument {
-                    name: "url",
-                    value: 75..112 @4 String(
-                        "https://tools.ietf.org/html/rfc3986",
-                    ),
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..44 @4 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "website": Component {
+                        origin: Definition,
+                        node: 15..27 @4 FieldDefinition {
+                            description: None,
+                            name: "website",
+                            arguments: [],
+                            ty: Named(
+                                "URL",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "amount": Component {
+                        origin: Definition,
+                        node: 31..42 @4 FieldDefinition {
+                            description: None,
+                            name: "amount",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
                 },
-            ],
-        },
-    ],
+            },
+        ),
+        "URL": Scalar(
+            46..113 @4 ScalarType {
+                description: None,
+                name: "URL",
+                directives: [
+                    Component {
+                        origin: Definition,
+                        node: 57..113 @4 Directive {
+                            name: "specifiedBy",
+                            arguments: [
+                                70..112 @4 Argument {
+                                    name: "url",
+                                    value: 75..112 @4 String(
+                                        "https://tools.ietf.org/html/rfc3986",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        ),
+    },
 }
-
+ExecutableDocument {
+    sources: {
+        4: SourceFile {
+            path: "0004_schema_with_custom_scalars.graphql",
+            source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

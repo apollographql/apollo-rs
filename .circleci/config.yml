@@ -6,6 +6,7 @@ version: 2.1
 orbs:
   rust: circleci/rust@1.6.0
   gh: circleci/github-cli@2.2.0
+  secops: apollo/circleci-secops-orb@2.0.2
 
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
@@ -56,6 +57,22 @@ workflows:
             parameters:
               platform: [linux, macos, windows]
               rust_channel: [stable, nightly]
+  miri:
+    jobs:
+      - miri:
+          name: Miri (rust nightly on linux, subset of tests)
+          matrix:
+            parameters:
+              platform: [linux]
+  security-scans:
+    jobs:
+      - secops/gitleaks:
+          context:
+            - platform-docker-ro
+            - github-orb
+            - secops-oidc
+          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
+          git-revision: << pipeline.git.revision >>
 
 
 
@@ -117,6 +134,23 @@ jobs:
       - run:
           name: Run cargo test
           command: cargo test --all-features
+
+  miri:
+    parameters:
+      platform:
+        type: executor
+    executor: << parameters.platform >>
+    steps:
+      - checkout
+      - install_system_deps:
+          rust_channel: nightly
+          platform: << parameters.platform >>
+      - run:
+          name: Install Miri
+          command: rustup component add miri rust-src
+      - run:
+          name: Run a subset of tests under Miri
+          command: cargo miri test --test main -- node_str
 
 # The folowing are reusable command snippets can be referred to in any `steps`.
 # Commands we currently have: install_system_deps, install_rust_toolchain.

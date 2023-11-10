@@ -1,6 +1,6 @@
 [package]
 name = "apollo-encoder"
-version = "0.7.0"
+version = "0.8.0" # When bumping, also update README.md
 authors = [
     "Irina Shestak <shestak.irina@gmail.com>",
     "Benjamin Coenen <benjamin.coenen@apollographql.com>",

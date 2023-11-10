@@ -1,71 +1,161 @@
-0..43 @5 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        15..23 @5 FieldDefinition {
-            description: None,
-            name: "pet",
-            arguments: [],
-            ty: Named(
-                "Pet",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-        27..40 @5 FieldDefinition {
-            description: None,
-            name: "snacks",
-            arguments: [],
-            ty: Named(
-                "Snack",
-            ),
-            directives: [],
+        5: SourceFile {
+            path: "0005_schema_with_valid_enum_definitions.graphql",
+            source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
+            parse_errors: [],
         },
-    ],
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..43 @5 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "pet": Component {
+                        origin: Definition,
+                        node: 15..23 @5 FieldDefinition {
+                            description: None,
+                            name: "pet",
+                            arguments: [],
+                            ty: Named(
+                                "Pet",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "snacks": Component {
+                        origin: Definition,
+                        node: 27..40 @5 FieldDefinition {
+                            description: None,
+                            name: "snacks",
+                            arguments: [],
+                            ty: Named(
+                                "Snack",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Pet": Enum(
+            45..81 @5 EnumType {
+                description: None,
+                name: "Pet",
+                directives: [],
+                values: {
+                    "CAT": Component {
+                        origin: Definition,
+                        node: 60..63 @5 EnumValueDefinition {
+                            description: None,
+                            value: "CAT",
+                            directives: [],
+                        },
+                    },
+                    "DOG": Component {
+                        origin: Definition,
+                        node: 68..71 @5 EnumValueDefinition {
+                            description: None,
+                            value: "DOG",
+                            directives: [],
+                        },
+                    },
+                    "FOX": Component {
+                        origin: Definition,
+                        node: 76..79 @5 EnumValueDefinition {
+                            description: None,
+                            value: "FOX",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Snack": Enum(
+            83..146 @5 EnumType {
+                description: None,
+                name: "Snack",
+                directives: [],
+                values: {
+                    "THRIVE_PET_FOODS": Component {
+                        origin: Definition,
+                        node: 100..116 @5 EnumValueDefinition {
+                            description: None,
+                            value: "THRIVE_PET_FOODS",
+                            directives: [],
+                        },
+                    },
+                    "LILYS_KITCHEN": Component {
+                        origin: Definition,
+                        node: 121..134 @5 EnumValueDefinition {
+                            description: None,
+                            value: "LILYS_KITCHEN",
+                            directives: [],
+                        },
+                    },
+                    "ACANA": Component {
+                        origin: Definition,
+                        node: 139..144 @5 EnumValueDefinition {
+                            description: None,
+                            value: "ACANA",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-45..81 @5 EnumTypeDefinition {
-    description: None,
-    name: "Pet",
-    directives: [],
-    values: [
-        60..63 @5 EnumValueDefinition {
-            description: None,
-            value: "CAT",
-            directives: [],
+ExecutableDocument {
+    sources: {
+        5: SourceFile {
+            path: "0005_schema_with_valid_enum_definitions.graphql",
+            source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
+            parse_errors: [],
         },
-        68..71 @5 EnumValueDefinition {
-            description: None,
-            value: "DOG",
-            directives: [],
-        },
-        76..79 @5 EnumValueDefinition {
-            description: None,
-            value: "FOX",
-            directives: [],
-        },
-    ],
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
 }
-83..146 @5 EnumTypeDefinition {
-    description: None,
-    name: "Snack",
-    directives: [],
-    values: [
-        100..116 @5 EnumValueDefinition {
-            description: None,
-            value: "THRIVE_PET_FOODS",
-            directives: [],
-        },
-        121..134 @5 EnumValueDefinition {
-            description: None,
-            value: "LILYS_KITCHEN",
-            directives: [],
-        },
-        139..144 @5 EnumValueDefinition {
-            description: None,
-            value: "ACANA",
-            directives: [],
-        },
-    ],
-}
-

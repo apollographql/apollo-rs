@@ -1,67 +1,124 @@
-0..198 @33 SchemaDefinition {
-    description: None,
-    directives: [
-        9..179 @33 Directive {
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
+        },
+        33: SourceFile {
+            path: "0034_built_in_directive_redefinition.graphql",
+            source_text: "schema\n  @deprecated(\n    reason: \"\"\"\n    The person who got promoted by shipping this product has moved on to another team.\n    The service will shut down next month.\n    \"\"\"\n  ) {\n  query: Query\n}\n\ntype Query {\n  importantData: Int\n}\n\ndirective @deprecated(\n  reason: String = \"No longer supported\"\n) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: 0..198 @33 SchemaDefinition {
+        description: None,
+        directives: [
+            Component {
+                origin: Definition,
+                node: 9..179 @33 Directive {
+                    name: "deprecated",
+                    arguments: [
+                        26..175 @33 Argument {
+                            name: "reason",
+                            value: 34..175 @33 String(
+                                "The person who got promoted by shipping this product has moved on to another team.\nThe service will shut down next month.",
+                            ),
+                        },
+                    ],
+                },
+            },
+        ],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": 237..391 @33 DirectiveDefinition {
+            description: None,
             name: "deprecated",
             arguments: [
-                26..175 @33 Argument {
+                262..300 @33 InputValueDefinition {
+                    description: None,
                     name: "reason",
-                    value: 34..175 @33 String(
-                        "The person who got promoted by shipping this product has moved on to another team.\nThe service will shut down next month.",
+                    ty: 270..276 @33 Named(
+                        "String",
                     ),
+                    default_value: Some(
+                        279..300 @33 String(
+                            "No longer supported",
+                        ),
+                    ),
+                    directives: [],
                 },
             ],
+            repeatable: false,
+            locations: [
+                "FIELD_DEFINITION",
+                "ARGUMENT_DEFINITION",
+                "INPUT_FIELD_DEFINITION",
+                "ENUM_VALUE",
+                "SCHEMA",
+            ],
         },
-    ],
-    root_operations: [
-        184..196 @33 (
-            Query,
-            "Query",
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            200..235 @33 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "importantData": Component {
+                        origin: Definition,
+                        node: 215..233 @33 FieldDefinition {
+                            description: None,
+                            name: "importantData",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
         ),
-    ],
+    },
 }
-200..235 @33 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        215..233 @33 FieldDefinition {
-            description: None,
-            name: "importantData",
-            arguments: [],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
+ExecutableDocument {
+    sources: {
+        33: SourceFile {
+            path: "0034_built_in_directive_redefinition.graphql",
+            source_text: "schema\n  @deprecated(\n    reason: \"\"\"\n    The person who got promoted by shipping this product has moved on to another team.\n    The service will shut down next month.\n    \"\"\"\n  ) {\n  query: Query\n}\n\ntype Query {\n  importantData: Int\n}\n\ndirective @deprecated(\n  reason: String = \"No longer supported\"\n) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA\n",
+            parse_errors: [],
         },
-    ],
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
 }
-237..391 @33 DirectiveDefinition {
-    description: None,
-    name: "deprecated",
-    arguments: [
-        262..300 @33 InputValueDefinition {
-            description: None,
-            name: "reason",
-            ty: 270..276 @33 Named(
-                "String",
-            ),
-            default_value: Some(
-                279..300 @33 String(
-                    "No longer supported",
-                ),
-            ),
-            directives: [],
-        },
-    ],
-    repeatable: false,
-    locations: [
-        "FIELD_DEFINITION",
-        "ARGUMENT_DEFINITION",
-        "INPUT_FIELD_DEFINITION",
-        "ENUM_VALUE",
-        "SCHEMA",
-    ],
-}
-

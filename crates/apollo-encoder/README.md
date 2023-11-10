@@ -28,7 +28,7 @@ Or add this to your `Cargo.toml` for a manual installation:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-encoder = "0.7.0"
+apollo-encoder = "0.8.0"
 ```
 
 ## Rust versions

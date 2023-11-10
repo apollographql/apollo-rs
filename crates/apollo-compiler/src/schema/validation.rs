@@ -1,6 +1,6 @@
 use super::BuildError;
 use crate::validation::Details;
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::FileId;
 use crate::InputDatabase;
 use crate::Schema;
@@ -8,10 +8,10 @@ use crate::ValidationDatabase;
 use std::sync::Arc;
 
 pub(crate) fn validate_schema(
-    errors: &mut Diagnostics,
+    errors: &mut DiagnosticList,
     schema: &Schema,
 ) -> Vec<crate::ApolloDiagnostic> {
-    for (&file_id, source) in &schema.sources {
+    for (&file_id, source) in schema.sources.iter() {
         source.validate_parse_errors(errors, file_id)
     }
     for build_error in &schema.build_errors {
@@ -20,7 +20,7 @@ pub(crate) fn validate_schema(
     compiler_validation(errors, schema)
 }
 
-fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
+fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
     match build_error {
         BuildError::ExecutableDefinition { location, .. }
         | BuildError::SchemaDefinitionCollision { location, .. }
@@ -44,10 +44,13 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
 }
 
 /// TODO: replace this with validation based on `Schema` without a database
-fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) -> Vec<crate::ApolloDiagnostic> {
+fn compiler_validation(
+    errors: &mut DiagnosticList,
+    schema: &Schema,
+) -> Vec<crate::ApolloDiagnostic> {
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
-    for (id, source) in &schema.sources {
+    for (id, source) in schema.sources.iter() {
         ids.push(*id);
         compiler.db.set_input(*id, source.into());
     }
@@ -68,10 +71,7 @@ fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) -> Vec<crate::
     let mut warnings_and_advice = Vec::new();
     for diagnostic in compiler.db.validate_type_system() {
         if diagnostic.data.is_error() {
-            errors.push(
-                Some(diagnostic.location),
-                Details::CompilerDiagnostic(diagnostic),
-            )
+            errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
         } else {
             warnings_and_advice.push(diagnostic)
         }

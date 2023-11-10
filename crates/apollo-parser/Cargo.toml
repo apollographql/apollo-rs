@@ -1,6 +1,6 @@
 [package]
 name = "apollo-parser"
-version = "0.7.1"
+version = "0.7.3" # When bumping, also update README.md
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
@@ -22,9 +22,9 @@ rowan = "0.15.5"
 thiserror = "1.0.30"
 
 [dev-dependencies]
+ariadne = "0.3.0"
 indexmap = "2.0.0"
-miette = { version = "3.2.0", features = ["fancy"] }
-apollo-encoder = { path = "../apollo-encoder", version = "0.7.0", features = [
+apollo-encoder = { path = "../apollo-encoder", version = "0.8.0", features = [
     "apollo-parser",
 ] }
 anyhow = "1.0.66"

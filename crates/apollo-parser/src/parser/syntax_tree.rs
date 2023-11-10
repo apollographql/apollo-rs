@@ -57,8 +57,15 @@ pub struct SyntaxTree<T: CstNode = cst::Document> {
     pub(crate) errors: Vec<crate::Error>,
     pub(crate) recursion_limit: LimitTracker,
     pub(crate) token_limit: LimitTracker,
-    _phantom: PhantomData<T>,
+    _phantom: PhantomData<fn() -> T>,
 }
+
+const _: () = {
+    fn assert_send<T: Send>() {}
+    fn assert_sync<T: Sync>() {}
+    let _ = assert_send::<SyntaxTree>;
+    let _ = assert_sync::<SyntaxTree>;
+};
 
 impl<T: CstNode> SyntaxTree<T> {
     /// Get a reference to the syntax tree's errors.

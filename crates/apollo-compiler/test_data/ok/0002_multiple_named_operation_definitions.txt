@@ -1,129 +1,274 @@
-0..41 @2 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "getCatName",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            21..39 @2 Field {
-                alias: None,
-                name: "cat",
-                arguments: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
+        },
+        2: SourceFile {
+            path: "0002_multiple_named_operation_definitions.graphql",
+            source_text: "query getCatName {\n  cat {\n    name\n  }\n}\n\nquery getOwnerName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String,\n  owner: PetOwner\n}\n\ntype PetOwner {\n  name: String\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            109..134 @2 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
                 directives: [],
-                selection_set: [
-                    Field(
-                        31..35 @2 Field {
-                            alias: None,
+                fields: {
+                    "cat": Component {
+                        origin: Definition,
+                        node: 124..132 @2 FieldDefinition {
+                            description: None,
+                            name: "cat",
+                            arguments: [],
+                            ty: Named(
+                                "Pet",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Pet": Object(
+            136..182 @2 ObjectType {
+                description: None,
+                name: "Pet",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 149..161 @2 FieldDefinition {
+                            description: None,
                             name: "name",
                             arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
                             directives: [],
-                            selection_set: [],
                         },
-                    ),
-                ],
-            },
-        ),
-    ],
-}
-43..106 @2 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "getOwnerName",
-    ),
-    variables: [],
-    directives: [],
-    selection_set: [
-        Field(
-            66..104 @2 Field {
-                alias: None,
-                name: "cat",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    Field(
-                        76..100 @2 Field {
-                            alias: None,
+                    },
+                    "owner": Component {
+                        origin: Definition,
+                        node: 165..180 @2 FieldDefinition {
+                            description: None,
                             name: "owner",
                             arguments: [],
+                            ty: Named(
+                                "PetOwner",
+                            ),
                             directives: [],
-                            selection_set: [
-                                Field(
-                                    90..94 @2 Field {
-                                        alias: None,
-                                        name: "name",
-                                        arguments: [],
-                                        directives: [],
-                                        selection_set: [],
-                                    },
+                        },
+                    },
+                },
+            },
+        ),
+        "PetOwner": Object(
+            184..216 @2 ObjectType {
+                description: None,
+                name: "PetOwner",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 202..214 @2 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        2: SourceFile {
+            path: "0002_multiple_named_operation_definitions.graphql",
+            source_text: "query getCatName {\n  cat {\n    name\n  }\n}\n\nquery getOwnerName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String,\n  owner: PetOwner\n}\n\ntype PetOwner {\n  name: String\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "getCatName": 0..41 @2 Operation {
+            operation_type: Query,
+            name: Some(
+                "getCatName",
+            ),
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        21..39 @2 Field {
+                            definition: 124..132 @2 FieldDefinition {
+                                description: None,
+                                name: "cat",
+                                arguments: [],
+                                ty: Named(
+                                    "Pet",
                                 ),
-                            ],
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "cat",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Pet",
+                                selections: [
+                                    Field(
+                                        31..35 @2 Field {
+                                            definition: 149..161 @2 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
                         },
                     ),
                 ],
             },
-        ),
-    ],
-}
-109..134 @2 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        124..132 @2 FieldDefinition {
-            description: None,
-            name: "cat",
-            arguments: [],
-            ty: Named(
-                "Pet",
-            ),
-            directives: [],
         },
-    ],
-}
-136..182 @2 ObjectTypeDefinition {
-    description: None,
-    name: "Pet",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        149..161 @2 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: Named(
-                "String",
+        "getOwnerName": 43..106 @2 Operation {
+            operation_type: Query,
+            name: Some(
+                "getOwnerName",
             ),
+            variables: [],
             directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        66..104 @2 Field {
+                            definition: 124..132 @2 FieldDefinition {
+                                description: None,
+                                name: "cat",
+                                arguments: [],
+                                ty: Named(
+                                    "Pet",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "cat",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Pet",
+                                selections: [
+                                    Field(
+                                        76..100 @2 Field {
+                                            definition: 165..180 @2 FieldDefinition {
+                                                description: None,
+                                                name: "owner",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "PetOwner",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "owner",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "PetOwner",
+                                                selections: [
+                                                    Field(
+                                                        90..94 @2 Field {
+                                                            definition: 202..214 @2 FieldDefinition {
+                                                                description: None,
+                                                                name: "name",
+                                                                arguments: [],
+                                                                ty: Named(
+                                                                    "String",
+                                                                ),
+                                                                directives: [],
+                                                            },
+                                                            alias: None,
+                                                            name: "name",
+                                                            arguments: [],
+                                                            directives: [],
+                                                            selection_set: SelectionSet {
+                                                                ty: "String",
+                                                                selections: [],
+                                                            },
+                                                        },
+                                                    ),
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
         },
-        165..180 @2 FieldDefinition {
-            description: None,
-            name: "owner",
-            arguments: [],
-            ty: Named(
-                "PetOwner",
-            ),
-            directives: [],
-        },
-    ],
+    },
+    fragments: {},
 }
-184..216 @2 ObjectTypeDefinition {
-    description: None,
-    name: "PetOwner",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        202..214 @2 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-    ],
-}
-

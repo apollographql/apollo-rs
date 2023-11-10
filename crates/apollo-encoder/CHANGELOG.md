@@ -17,21 +17,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.8.0] (unreleased) - 2023-mm-dd
+# [0.8.0](https://crates.io/crates/apollo-encoder/0.8.0) - 2023-10-19
 
 ## BREAKING
-- **apollo-parser@0.7.0 - [SimonSapin], [pull/???]**
+- **apollo-parser@0.7.0 - [SimonSapin]**
 
   This updates the version of `apollo-parser` required by the `TryFrom`
   implementations in this crate.
 
-- **apollo-compiler@0.12.0 - [SimonSapin], [pull/???]**
-
-  This updates the version of `apollo-compiler` required by the `TryFrom`
-  implementations in this crate.
+- **removes `TryFrom` from apollo-compiler - [SimonSapin]**
+  `apollo-compiler@1.0.0` can be directly serialised to SDL without requiring
+  apollo-encoder. The `TryFrom` implementation is therefore no longer necessary.
 
 [SimonSapin]: https://github.com/SimonSapin
-[pull/???]: https://github.com/apollographql/apollo-rs/pull/???
 
 # [0.7.0](https://crates.io/crates/apollo-encoder/0.7.0) - 2023-08-18
 
@@ -73,11 +71,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **add `Clone` impl to encoder types - [zackangelo], [pull/515]**
-  Consistently derive `Clone` on all encoder types.  
+  Consistently derive `Clone` on all encoder types.
 
   [zackangelo]: https://github.com/zackangelo
   [pull/515]: https://github.com/apollographql/apollo-rs/pull/515
-  
+
 # [0.5.0](https://crates.io/crates/apollo-encoder/0.5.0) - 2023-02-17
 
 ## BREAKING

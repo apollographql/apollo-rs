@@ -20,20 +20,18 @@ fn unsupported_type(
 
     let mut diagnostic = ApolloDiagnostic::new(
         db,
-        value.location().unwrap(),
+        value.location(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
             ty: declared_type.to_string(),
         },
     );
-    if let Some(type_location) = type_location {
-        diagnostic = diagnostic.label(Label::new(
-            type_location,
-            format!("field declared here as {} type", declared_type),
-        ));
-    }
+    diagnostic = diagnostic.label(Label::new(
+        type_location,
+        format!("field declared here as {} type", declared_type),
+    ));
     diagnostic.label(Label::new(
-        value.location().unwrap(),
+        value.location(),
         format!("argument declared here is of {} type", value.kind()),
     ))
 }
@@ -82,13 +80,13 @@ pub(crate) fn value_of_correct_type2(
                         diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
-                                arg_value.location().unwrap(),
+                                arg_value.location(),
                                 DiagnosticData::IntCoercionError {
                                     value: int.as_str().to_owned(),
                                 },
                             )
                             .label(Label::new(
-                                arg_value.location().unwrap(),
+                                arg_value.location(),
                                 "cannot be coerced to an 32-bit integer",
                             )),
                         )
@@ -99,13 +97,13 @@ pub(crate) fn value_of_correct_type2(
                         diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
-                                arg_value.location().unwrap(),
+                                arg_value.location(),
                                 DiagnosticData::FloatCoercionError {
                                     value: int.as_str().to_owned(),
                                 },
                             )
                             .label(Label::new(
-                                arg_value.location().unwrap(),
+                                arg_value.location(),
                                 "cannot be coerced to a finite 64-bit float",
                             )),
                         )
@@ -126,13 +124,13 @@ pub(crate) fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            arg_value.location().unwrap(),
+                            arg_value.location(),
                             DiagnosticData::FloatCoercionError {
                                 value: float.as_str().to_owned(),
                             },
                         )
                         .label(Label::new(
-                            arg_value.location().unwrap(),
+                            arg_value.location(),
                             "cannot be coerced to a finite 64-bit float",
                         )),
                     )
@@ -215,14 +213,14 @@ pub(crate) fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            value.location().unwrap(),
+                            value.location(),
                             DiagnosticData::UndefinedValue {
                                 value: value.to_string(),
                                 definition: ty.inner_named_type().to_string(),
                             },
                         )
                         .label(Label::new(
-                            arg_value.location().unwrap(),
+                            arg_value.location(),
                             format!("does not exist on `{}` type", ty.inner_named_type()),
                         )),
                     );
@@ -259,14 +257,14 @@ pub(crate) fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            value.location().unwrap(),
+                            value.location(),
                             DiagnosticData::UndefinedValue {
                                 value: name.to_string(),
                                 definition: ty.inner_named_type().to_string(),
                             },
                         )
                         .label(Label::new(
-                            value.location().unwrap(),
+                            value.location(),
                             format!("does not exist on `{}` type", ty.inner_named_type()),
                         )),
                     );
@@ -286,18 +284,17 @@ pub(crate) fn value_of_correct_type2(
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
                         let mut diagnostic = ApolloDiagnostic::new(
                             db,
-                            arg_value.location().unwrap(),
+                            arg_value.location(),
                             DiagnosticData::RequiredArgument {
                                 name: input_name.to_string(),
                             },
                         );
                         diagnostic = diagnostic.label(Label::new(
-                            arg_value.location().unwrap(),
+                            arg_value.location(),
                             format!("missing value for argument `{input_name}`"),
                         ));
-                        if let Some(loc) = f.location() {
-                            diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
-                        }
+                        let loc = f.location();
+                        diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
 
                         diagnostics.push(diagnostic)
                     }

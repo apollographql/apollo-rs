@@ -5,3 +5,7 @@ input Input {
 }
 
 directive @directive(arg2: Int @example) on SCHEMA
+
+type Query {
+  x: Int
+}

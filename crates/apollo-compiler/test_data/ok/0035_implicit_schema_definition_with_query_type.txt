@@ -1,18 +1,83 @@
-0..31 @34 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        17..29 @34 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
+        34: SourceFile {
+            path: "0035_implicit_schema_definition_with_query_type.graphql",
+            source_text: "type Query {\n    name: String\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..31 @34 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 17..29 @34 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
 }
-
+ExecutableDocument {
+    sources: {
+        34: SourceFile {
+            path: "0035_implicit_schema_definition_with_query_type.graphql",
+            source_text: "type Query {\n    name: String\n}",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

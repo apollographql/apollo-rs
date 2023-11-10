@@ -1,203 +1,377 @@
-0..81 @13 OperationDefinition {
-    operation_type: Query,
-    name: Some(
-        "ExampleQuery",
-    ),
-    variables: [
-        19..33 @13 VariableDefinition {
-            name: "variable",
-            ty: 30..33 @13 Named(
-                "Int",
-            ),
-            default_value: None,
-            directives: [],
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+            parse_errors: [],
         },
-    ],
-    directives: [],
-    selection_set: [
-        Field(
-            39..65 @13 Field {
-                alias: None,
-                name: "topProducts",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    Field(
-                        57..61 @13 Field {
-                            alias: None,
-                            name: "name",
-                            arguments: [],
-                            directives: [],
-                            selection_set: [],
-                        },
-                    ),
-                ],
+        13: SourceFile {
+            path: "0013_operation_with_used_variable_in_fragment.graphql",
+            source_text: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... subFrag\n}\n\nfragment subFrag on Query {\n  topProducts {\n    price(setPrice: $variable)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n  reviews: Review\n}\n\ntype Review {\n  message: Message\n}\n\ntype Message {\n  body: String\n  sender(attribute: String): String\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
             },
         ),
-        FragmentSpread(
-            68..79 @13 FragmentSpread {
-                fragment_name: "subFrag",
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            165..233 @13 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
                 directives: [],
-            },
-        ),
-    ],
-}
-83..163 @13 FragmentDefinition {
-    name: "subFrag",
-    type_condition: "Query",
-    directives: [],
-    selection_set: [
-        Field(
-            113..161 @13 Field {
-                alias: None,
-                name: "topProducts",
-                arguments: [],
-                directives: [],
-                selection_set: [
-                    Field(
-                        131..157 @13 Field {
-                            alias: None,
-                            name: "price",
+                fields: {
+                    "topProducts": Component {
+                        origin: Definition,
+                        node: 180..212 @13 FieldDefinition {
+                            description: None,
+                            name: "topProducts",
                             arguments: [
-                                137..156 @13 Argument {
-                                    name: "setPrice",
-                                    value: 147..156 @13 Variable(
-                                        "variable",
+                                192..202 @13 InputValueDefinition {
+                                    description: None,
+                                    name: "first",
+                                    ty: 199..202 @13 Named(
+                                        "Int",
                                     ),
+                                    default_value: None,
+                                    directives: [],
                                 },
                             ],
+                            ty: Named(
+                                "Product",
+                            ),
                             directives: [],
-                            selection_set: [],
+                        },
+                    },
+                    "reviews": Component {
+                        origin: Definition,
+                        node: 216..231 @13 FieldDefinition {
+                            description: None,
+                            name: "reviews",
+                            arguments: [],
+                            ty: Named(
+                                "Review",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Review": Object(
+            235..269 @13 ObjectType {
+                description: None,
+                name: "Review",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "message": Component {
+                        origin: Definition,
+                        node: 251..267 @13 FieldDefinition {
+                            description: None,
+                            name: "message",
+                            arguments: [],
+                            ty: Named(
+                                "Message",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Message": Object(
+            271..338 @13 ObjectType {
+                description: None,
+                name: "Message",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "body": Component {
+                        origin: Definition,
+                        node: 288..300 @13 FieldDefinition {
+                            description: None,
+                            name: "body",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "sender": Component {
+                        origin: Definition,
+                        node: 303..336 @13 FieldDefinition {
+                            description: None,
+                            name: "sender",
+                            arguments: [
+                                310..327 @13 InputValueDefinition {
+                                    description: None,
+                                    name: "attribute",
+                                    ty: 321..327 @13 Named(
+                                        "String",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Product": Object(
+            340..399 @13 ObjectType {
+                description: None,
+                name: "Product",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 357..369 @13 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "price": Component {
+                        origin: Definition,
+                        node: 372..397 @13 FieldDefinition {
+                            description: None,
+                            name: "price",
+                            arguments: [
+                                378..391 @13 InputValueDefinition {
+                                    description: None,
+                                    name: "setPrice",
+                                    ty: 388..391 @13 Named(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        13: SourceFile {
+            path: "0013_operation_with_used_variable_in_fragment.graphql",
+            source_text: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... subFrag\n}\n\nfragment subFrag on Query {\n  topProducts {\n    price(setPrice: $variable)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n  reviews: Review\n}\n\ntype Review {\n  message: Message\n}\n\ntype Message {\n  body: String\n  sender(attribute: String): String\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}\n",
+            parse_errors: [],
+        },
+    },
+    build_errors: [],
+    anonymous_operation: None,
+    named_operations: {
+        "ExampleQuery": 0..81 @13 Operation {
+            operation_type: Query,
+            name: Some(
+                "ExampleQuery",
+            ),
+            variables: [
+                19..33 @13 VariableDefinition {
+                    name: "variable",
+                    ty: 30..33 @13 Named(
+                        "Int",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        39..65 @13 Field {
+                            definition: 180..212 @13 FieldDefinition {
+                                description: None,
+                                name: "topProducts",
+                                arguments: [
+                                    192..202 @13 InputValueDefinition {
+                                        description: None,
+                                        name: "first",
+                                        ty: 199..202 @13 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Product",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "topProducts",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Product",
+                                selections: [
+                                    Field(
+                                        57..61 @13 Field {
+                                            definition: 357..369 @13 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    FragmentSpread(
+                        68..79 @13 FragmentSpread {
+                            fragment_name: "subFrag",
+                            directives: [],
                         },
                     ),
                 ],
             },
-        ),
-    ],
-}
-165..233 @13 ObjectTypeDefinition {
-    description: None,
-    name: "Query",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        180..212 @13 FieldDefinition {
-            description: None,
-            name: "topProducts",
-            arguments: [
-                192..202 @13 InputValueDefinition {
-                    description: None,
-                    name: "first",
-                    ty: 199..202 @13 Named(
-                        "Int",
+        },
+    },
+    fragments: {
+        "subFrag": 83..163 @13 Fragment {
+            name: "subFrag",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        113..161 @13 Field {
+                            definition: 180..212 @13 FieldDefinition {
+                                description: None,
+                                name: "topProducts",
+                                arguments: [
+                                    192..202 @13 InputValueDefinition {
+                                        description: None,
+                                        name: "first",
+                                        ty: 199..202 @13 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Product",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "topProducts",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Product",
+                                selections: [
+                                    Field(
+                                        131..157 @13 Field {
+                                            definition: 372..397 @13 FieldDefinition {
+                                                description: None,
+                                                name: "price",
+                                                arguments: [
+                                                    378..391 @13 InputValueDefinition {
+                                                        description: None,
+                                                        name: "setPrice",
+                                                        ty: 388..391 @13 Named(
+                                                            "Int",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: Named(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "price",
+                                            arguments: [
+                                                137..156 @13 Argument {
+                                                    name: "setPrice",
+                                                    value: 147..156 @13 Variable(
+                                                        "variable",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
                     ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            ty: Named(
-                "Product",
-            ),
-            directives: [],
+                ],
+            },
         },
-        216..231 @13 FieldDefinition {
-            description: None,
-            name: "reviews",
-            arguments: [],
-            ty: Named(
-                "Review",
-            ),
-            directives: [],
-        },
-    ],
+    },
 }
-235..269 @13 ObjectTypeDefinition {
-    description: None,
-    name: "Review",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        251..267 @13 FieldDefinition {
-            description: None,
-            name: "message",
-            arguments: [],
-            ty: Named(
-                "Message",
-            ),
-            directives: [],
-        },
-    ],
-}
-271..338 @13 ObjectTypeDefinition {
-    description: None,
-    name: "Message",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        288..300 @13 FieldDefinition {
-            description: None,
-            name: "body",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-        303..336 @13 FieldDefinition {
-            description: None,
-            name: "sender",
-            arguments: [
-                310..327 @13 InputValueDefinition {
-                    description: None,
-                    name: "attribute",
-                    ty: 321..327 @13 Named(
-                        "String",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-    ],
-}
-340..399 @13 ObjectTypeDefinition {
-    description: None,
-    name: "Product",
-    implements_interfaces: [],
-    directives: [],
-    fields: [
-        357..369 @13 FieldDefinition {
-            description: None,
-            name: "name",
-            arguments: [],
-            ty: Named(
-                "String",
-            ),
-            directives: [],
-        },
-        372..397 @13 FieldDefinition {
-            description: None,
-            name: "price",
-            arguments: [
-                378..391 @13 InputValueDefinition {
-                    description: None,
-                    name: "setPrice",
-                    ty: 388..391 @13 Named(
-                        "Int",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            ty: Named(
-                "Int",
-            ),
-            directives: [],
-        },
-    ],
-}
-
