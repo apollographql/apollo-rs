@@ -1113,13 +1113,32 @@ impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
     }
 }
 
-/// Create a [`Name`] from a string literal, checked for validity at compile time.
+/// Create a [`Name`] from a string literal or identifier, checked for validity at compile time.
 ///
 /// A `Name` created this way does not own allocated heap memory or a reference counter,
 /// so cloning it is extremely cheap.
+///
+/// # Examples
+///
+/// ```
+/// use apollo_compiler::name;
+///
+/// assert_eq!(name!("Query").as_str(), "Query");
+/// assert_eq!(name!(Query).as_str(), "Query");
+/// ```
+///
+/// ```compile_fail
+/// # use apollo_compiler::name;
+/// // error[E0080]: evaluation of constant value failed
+/// // assertion failed: ::apollo_compiler::ast::Name::check_syntax(\"è_é\").is_ok()
+/// let invalid = name!("è_é");
+/// ```
 #[macro_export]
 macro_rules! name {
-    ($value: literal) => {{
+    ($value: ident) => {
+        $crate::name!(stringify!($value))
+    };
+    ($value: expr) => {{
         const _: () = { assert!($crate::ast::Name::check_syntax($value).is_ok()) };
         $crate::ast::Name::new_unchecked($crate::NodeStr::from_static(&$value))
     }};
