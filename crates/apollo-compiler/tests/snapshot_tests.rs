@@ -10,6 +10,7 @@
 use apollo_compiler::ast;
 use apollo_compiler::name;
 use apollo_compiler::schema;
+use apollo_compiler::ty;
 use apollo_compiler::DiagnosticList;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
@@ -266,7 +267,7 @@ fn test_invalid_synthetic_node() {
                     description: Default::default(),
                     name: name!("field"),
                     arguments: Default::default(),
-                    ty: schema::Type::Named(name!("UndefinedType")),
+                    ty: ty!(UndefinedType),
                     directives: Default::default(),
                 }
                 .into(),

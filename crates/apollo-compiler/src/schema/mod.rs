@@ -25,6 +25,7 @@ pub use crate::ast::{
     InputValueDefinition, Name, NamedType, Type, Value,
 };
 use crate::name;
+use crate::ty;
 use crate::validation::DiagnosticList;
 
 /// High-level representation of a GraphQL schema
@@ -485,7 +486,7 @@ impl Schema {
                     description: None,
                     name: name!("__typename"),
                     arguments: Vec::new(),
-                    ty: Type::Named(name!("String")).non_null(),
+                    ty: ty!(String!),
                     directives: ast::DirectiveList::new(),
                 }),
                 // __schema: __Schema!
@@ -493,7 +494,7 @@ impl Schema {
                     description: None,
                     name: name!("__schema"),
                     arguments: Vec::new(),
-                    ty: Type::Named(name!("__Schema")).non_null(),
+                    ty: ty!(__Schema!),
                     directives: ast::DirectiveList::new(),
                 }),
                 // __type(name: String!): __Type
@@ -503,12 +504,12 @@ impl Schema {
                     arguments: vec![InputValueDefinition {
                         description: None,
                         name: name!("name"),
-                        ty: ast::Type::Named(name!("String")).non_null().into(),
+                        ty: ty!(String!).into(),
                         default_value: None,
                         directives: ast::DirectiveList::new(),
                     }
                     .into()],
-                    ty: Type::Named(name!("__Type")),
+                    ty: ty!(__Type),
                     directives: ast::DirectiveList::new(),
                 }),
             ]

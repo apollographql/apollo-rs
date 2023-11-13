@@ -21,12 +21,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Helper features for `Name` - [SimonSapin], [pull/???]:**
+- **Helper features for `Name` and `Type` - [SimonSapin], [pull/739]:**
   * The `name!` macro also accepts an identifier: 
     `name!(Query)` and `name!("Query")` create equivalent `Name` values.
   * `InvalidNameError` now contain a public `NodeStr` for the input string that is invalid,
     and implements `Display`, `Debug`, and `Error` traits.
   * Add `TryFrom` conversion to `Name` from `NodeStr`, `&NodeStr`, `&str`, `String`, and `&String`.
+  * Add a `ty!` macro to build a static `ast::Type` using GraphQL-like syntax.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/739]: https://github.com/apollographql/apollo-rs/pull/739
+
 
 # [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 

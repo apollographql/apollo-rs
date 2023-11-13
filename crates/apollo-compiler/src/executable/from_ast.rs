@@ -1,5 +1,5 @@
 use super::*;
-use crate::name;
+use crate::ty;
 
 pub(crate) struct BuildErrors {
     pub(crate) errors: Vec<BuildError>,
@@ -166,7 +166,7 @@ impl SelectionSet {
                             description: None,
                             name: ast.name.clone(),
                             arguments: Vec::new(),
-                            ty: Type::Named(name!("UNKNOWN")),
+                            ty: ty!(UNKNOWN),
                             directives: Default::default(),
                         }))
                     };
