@@ -1146,11 +1146,12 @@ macro_rules! name {
 
 impl Name {
     /// Creates a new `Name` if the given value is a valid GraphQL name.
-    pub fn new(value: &str) -> Result<Self, InvalidNameError> {
-        if Self::is_valid(value) {
-            Ok(Self::new_unchecked(NodeStr::new(value)))
+    pub fn new(value: impl Into<NodeStr>) -> Result<Self, InvalidNameError> {
+        let value = value.into();
+        if Self::is_valid(&value) {
+            Ok(Self::new_unchecked(value))
         } else {
-            Err(InvalidNameError(NodeStr::new(value)))
+            Err(InvalidNameError(value))
         }
     }
 
@@ -1201,6 +1202,46 @@ impl Name {
             origin,
             name: self.clone(),
         }
+    }
+}
+
+impl TryFrom<NodeStr> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: NodeStr) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<&'_ NodeStr> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: &'_ NodeStr) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<&str> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<String> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<&'_ String> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: &'_ String) -> Result<Self, Self::Error> {
+        Self::new(value)
     }
 }
 

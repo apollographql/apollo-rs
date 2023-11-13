@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     `name!(Query)` and `name!("Query")` create equivalent `Name` values.
   * `InvalidNameError` now contain a public `NodeStr` for the input string that is invalid,
     and implements `Display`, `Debug`, and `Error` traits.
+  * Add `TryFrom` conversion to `Name` from `NodeStr`, `&NodeStr`, `&str`, `String`, and `&String`.
 
 # [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 
