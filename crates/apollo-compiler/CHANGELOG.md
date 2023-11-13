@@ -17,6 +17,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Features
+
+- **Add macro support for `name!(ident)` - [SimonSapin], [pull/???].**
+  `name!(Query)` and `name!("Query")` create equivalent `Name` values.
+
 # [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 
 ## BREAKING
