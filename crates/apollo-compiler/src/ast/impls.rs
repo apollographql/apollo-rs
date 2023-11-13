@@ -1130,7 +1130,7 @@ impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
 /// ```compile_fail
 /// # use apollo_compiler::name;
 /// // error[E0080]: evaluation of constant value failed
-/// // assertion failed: ::apollo_compiler::ast::Name::check_syntax(\"è_é\").is_ok()
+/// // assertion failed: ::apollo_compiler::ast::Name::is_valid(\"è_é\")
 /// let invalid = name!("è_é");
 /// ```
 #[macro_export]
@@ -1139,7 +1139,7 @@ macro_rules! name {
         $crate::name!(stringify!($value))
     };
     ($value: expr) => {{
-        const _: () = { assert!($crate::ast::Name::check_syntax($value).is_ok()) };
+        const _: () = { assert!($crate::ast::Name::is_valid($value)) };
         $crate::ast::Name::new_unchecked($crate::NodeStr::from_static(&$value))
     }};
 }
@@ -1147,7 +1147,11 @@ macro_rules! name {
 impl Name {
     /// Creates a new `Name` if the given value is a valid GraphQL name.
     pub fn new(value: &str) -> Result<Self, InvalidNameError> {
-        Self::check_syntax(value).map(|()| Self::new_unchecked(NodeStr::new(value)))
+        if Self::is_valid(value) {
+            Ok(Self::new_unchecked(NodeStr::new(value)))
+        } else {
+            Err(InvalidNameError(NodeStr::new(value)))
+        }
     }
 
     /// Creates a new `Name` without validity checking.
@@ -1158,28 +1162,28 @@ impl Name {
         Self(value)
     }
 
-    /// Checks whether the given string is a valid GraphQL name.
+    /// Returns whether the given string is a valid GraphQL name.
     ///
     /// <https://spec.graphql.org/October2021/#Name>
-    pub const fn check_syntax(value: &str) -> Result<(), InvalidNameError> {
+    pub const fn is_valid(value: &str) -> bool {
         let bytes = value.as_bytes();
         let Some(&first) = bytes.first() else {
-            return Err(InvalidNameError {});
+            return false;
         };
         // `NameStart` and `NameContinue` are within the ASCII range,
         // so converting from `u8` to `char` here does not affect the result:
         if !Self::char_is_name_start(first as char) {
-            return Err(InvalidNameError {});
+            return false;
         }
         // TODO: iterator when available in const
         let mut i = 1;
         while i < bytes.len() {
             if !Self::char_is_name_continue(bytes[i] as char) {
-                return Err(InvalidNameError {});
+                return false;
             }
             i += 1
         }
-        Ok(())
+        true
     }
 
     /// <https://spec.graphql.org/October2021/#NameStart>
@@ -1259,6 +1263,12 @@ impl PartialOrd<str> for Name {
 impl PartialOrd<&'_ str> for Name {
     fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(*other)
+    }
+}
+
+impl fmt::Debug for InvalidNameError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
     }
 }
 

@@ -67,9 +67,9 @@ pub struct Name(NodeStr);
 /// Refers to the name of a GraphQL type defined elsewhere
 pub type NamedType = Name;
 
-#[derive(Clone, Eq, PartialEq)]
-#[non_exhaustive]
-pub struct InvalidNameError {}
+#[derive(Clone, Eq, PartialEq, thiserror::Error)]
+#[error("`{0}` is not a valid GraphQL name")]
+pub struct InvalidNameError(pub NodeStr);
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Definition {
