@@ -534,6 +534,33 @@ impl VariableDefinition {
     serialize_method!();
 }
 
+/// Create a static [`Type`] with GraphQL-like syntax
+///
+/// ```
+/// use apollo_compiler::ty;
+///
+/// assert_eq!(ty!(Obj).to_string(), "Obj");
+/// assert_eq!(ty!(Obj!).to_string(), "Obj!");
+/// assert_eq!(ty!([Obj]).to_string(), "[Obj]");
+/// assert_eq!(ty!([Obj]!).to_string(), "[Obj]!");
+/// assert_eq!(ty!([[[Obj ] !]]!).to_string(), "[[[Obj]!]]!");
+/// ```
+#[macro_export]
+macro_rules! ty {
+    ($name: ident) => {
+        $crate::ast::Type::Named($crate::name!($name))
+    };
+    ($name: ident !) => {
+        $crate::ast::Type::NonNullNamed($crate::name!($name))
+    };
+    ([ $($tt: tt)+ ]) => {
+        $crate::ast::Type::List(::std::boxed::Box::new($crate::ty!( $($tt)+ )))
+    };
+    ([ $($tt: tt)+ ]!) => {
+        $crate::ast::Type::NonNullList(::std::boxed::Box::new($crate::ty!( $($tt)+ )))
+    };
+}
+
 impl Type {
     /// Returns this type made non-null, if it isn’t already.
     pub fn non_null(self) -> Self {
