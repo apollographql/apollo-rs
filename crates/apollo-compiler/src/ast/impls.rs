@@ -634,6 +634,19 @@ impl Type {
         }
     }
 
+    /// Parse the given source with a field type.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Self, DiagnosticList> {
+        Parser::new().parse_field_type(source_text, path)
+    }
+
     serialize_method!();
 }
 

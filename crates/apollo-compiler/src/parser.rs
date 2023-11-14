@@ -2,7 +2,6 @@ use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::executable;
-use crate::schema;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
@@ -244,7 +243,7 @@ impl Parser {
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> Result<(schema::FieldType, Diagnostics), Diagnostics> {
+    ) -> Result<ast::Type, DiagnosticList> {
         let (tree, source_file) =
             self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
                 parser.parse_type()
@@ -252,14 +251,13 @@ impl Parser {
         let file_id = FileId::new();
 
         let sources: crate::SourceMap = Arc::new([(file_id, source_file)].into());
-        let mut errors = Diagnostics::new(Some(sources.clone()), sources.clone());
+        let mut errors = DiagnosticList::new(Some(sources.clone()), sources.clone());
         for (file_id, source) in sources.iter() {
             source.validate_parse_errors(&mut errors, *file_id)
         }
 
         if let Some(ty) = tree.ty().convert(file_id) {
-            let field_type = schema::FieldType { ty };
-            Ok((field_type, errors))
+            Ok(ty)
         } else {
             Err(errors)
         }

@@ -147,11 +147,6 @@ pub struct InputObjectType {
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
-#[derive(Debug, Clone)]
-pub struct FieldType {
-    pub ty: Type,
-}
-
 /// AST node that has been skipped during conversion to `Schema`
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
@@ -869,21 +864,6 @@ impl DirectiveList {
     }
 
     serialize_method!();
-}
-
-impl FieldType {
-    /// Parse the given source with a field type.
-    ///
-    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
-    /// to identify this source file to users.
-    ///
-    /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(
-        source_text: impl Into<String>,
-        path: impl AsRef<Path>,
-    ) -> Result<(Self, Diagnostics), Diagnostics> {
-        Parser::new().parse_field_type(source_text, path)
-    }
 }
 
 impl std::fmt::Debug for DirectiveList {
