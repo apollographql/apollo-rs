@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Scalar": Scalar(
             0..13 @19 ScalarType {
                 description: None,
+                name: "Scalar",
                 directives: [
                     Component {
                         origin: Extension(
@@ -74,10 +75,11 @@ Schema {
         "Object": Object(
             15..60 @19 ObjectType {
                 description: None,
+                name: "Object",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Intf",
+                        name: "Intf",
                     },
                 },
                 directives: [],
@@ -118,6 +120,7 @@ Schema {
         "Intf": Interface(
             62..94 @19 InterfaceType {
                 description: None,
+                name: "Intf",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -157,6 +160,7 @@ Schema {
         "Input": InputObject(
             96..126 @19 InputObjectType {
                 description: None,
+                name: "Input",
                 directives: [],
                 fields: {
                     "field": Component {
@@ -195,6 +199,7 @@ Schema {
         "Enum": Enum(
             127..150 @19 EnumType {
                 description: None,
+                name: "Enum",
                 directives: [],
                 values: {
                     "MEMBER": Component {
@@ -225,6 +230,7 @@ Schema {
         "Query": Object(
             377..409 @19 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {

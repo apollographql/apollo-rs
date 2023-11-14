@@ -1,4 +1,5 @@
 use super::*;
+use crate::ast::OperationType;
 use indexmap::map::Entry;
 use std::sync::Arc;
 
@@ -33,7 +34,7 @@ impl SchemaBuilder {
                 build_errors: Vec::new(),
                 schema_definition: Node::new(SchemaDefinition {
                     description: None,
-                    directives: Directives::default(),
+                    directives: DirectiveList::default(),
                     query: None,
                     mutation: None,
                     subscription: None,
@@ -119,9 +120,8 @@ impl SchemaBuilder {
                             );
                             entry.insert(extended_def.into());
                         }
-                        Entry::Occupied(_) => {
-                            let (_index, prev_name, previous) =
-                                self.schema.types.get_full_mut(&$def.name).unwrap();
+                        Entry::Occupied(entry) => {
+                            let previous = entry.get();
                             let error = if $is_scalar && previous.is_built_in() {
                                 BuildError::BuiltInScalarTypeRedefinition {
                                     location: $def.location(),
@@ -129,7 +129,7 @@ impl SchemaBuilder {
                             } else {
                                 BuildError::TypeDefinitionCollision {
                                     location: $def.name.location(),
-                                    previous_location: prev_name.location(),
+                                    previous_location: previous.name().location(),
                                     name: $def.name.clone(),
                                 }
                             };
@@ -140,7 +140,7 @@ impl SchemaBuilder {
             }
             macro_rules! type_extension {
                 ($ext: ident, $Kind: ident) => {
-                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&$ext.name) {
+                    if let Some(ty) = self.schema.types.get_mut(&$ext.name) {
                         if let ExtendedType::$Kind(ty) = ty {
                             ty.make_mut()
                                 .extend_ast(&mut self.schema.build_errors, $ext)
@@ -151,7 +151,7 @@ impl SchemaBuilder {
                                     location: $ext.name.location(),
                                     name: $ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty_name.location(),
+                                    def_location: ty.name().location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -268,27 +268,19 @@ impl SchemaBuilder {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
                 // This a macro rather than a closure to generate separate `static`s
-                let mut has_implicit_root_operation = false;
-                macro_rules! default_root_operation {
-                    ($($operation_type: path: $root_operation: expr,)+) => {{
-                        $(
-                            let name = $operation_type.default_type_name();
-                            if let Some(ExtendedType::Object(_)) = schema.types.get(name) {
-                                static OBJECT_TYPE_NAME: OnceLock<ComponentStr> = OnceLock::new();
-                                $root_operation = Some(OBJECT_TYPE_NAME.get_or_init(|| {
-                                    Name::new(name).to_component(ComponentOrigin::Definition)
-                                }).clone());
-                                has_implicit_root_operation = true;
-                            }
-                        )+
-                    }};
-                }
                 let schema_def = schema.schema_definition.make_mut();
-                default_root_operation!(
-                    ast::OperationType::Query: schema_def.query,
-                    ast::OperationType::Mutation: schema_def.mutation,
-                    ast::OperationType::Subscription: schema_def.subscription,
-                );
+                let mut has_implicit_root_operation = false;
+                for (operation_type, root_operation) in [
+                    (OperationType::Query, &mut schema_def.query),
+                    (OperationType::Mutation, &mut schema_def.mutation),
+                    (OperationType::Subscription, &mut schema_def.subscription),
+                ] {
+                    let name = operation_type.default_type_name();
+                    if schema.types.get(&name).is_some_and(|def| def.is_object()) {
+                        *root_operation = Some(name.into());
+                        has_implicit_root_operation = true
+                    }
+                }
 
                 let apply_schema_extensions =
                     // https://github.com/apollographql/apollo-rs/issues/682
@@ -340,7 +332,7 @@ impl SchemaBuilder {
 
 fn adopt_type_extensions(
     schema: &mut Schema,
-    type_name: &NodeStr,
+    type_name: &Name,
     extensions: &[ast::Definition],
 ) -> ExtendedType {
     macro_rules! extend {
@@ -372,35 +364,42 @@ fn adopt_type_extensions(
             }
         };
     }
+    let name = type_name.clone();
     extend! {
         ast::Definition::ScalarTypeExtension => "a scalar type" ScalarType {
             description: Default::default(),
+            name,
             directives: Default::default(),
         }
         ast::Definition::ObjectTypeExtension => "an object type" ObjectType {
             description: Default::default(),
+            name,
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: Default::default(),
         }
         ast::Definition::InterfaceTypeExtension => "an interface type" InterfaceType {
             description: Default::default(),
+            name,
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: Default::default(),
         }
         ast::Definition::UnionTypeExtension => "a union type" UnionType {
             description: Default::default(),
+            name,
             directives: Default::default(),
             members: Default::default(),
         }
         ast::Definition::EnumTypeExtension => "an enum type" EnumType {
             description: Default::default(),
+            name,
             directives: Default::default(),
             values: Default::default(),
         }
         ast::Definition::InputObjectTypeExtension => "an input object type" InputObjectType {
             description: Default::default(),
+            name,
             directives: Default::default(),
             fields: Default::default(),
         }
@@ -450,14 +449,14 @@ impl SchemaDefinition {
         &mut self,
         errors: &mut Vec<BuildError>,
         origin: ComponentOrigin,
-        root_operations: &[Node<(ast::OperationType, Name)>],
+        root_operations: &[Node<(OperationType, Name)>],
     ) {
         for op in root_operations {
             let (operation_type, object_type_name) = &**op;
             let entry = match operation_type {
-                ast::OperationType::Query => &mut self.query,
-                ast::OperationType::Mutation => &mut self.mutation,
-                ast::OperationType::Subscription => &mut self.subscription,
+                OperationType::Query => &mut self.query,
+                OperationType::Mutation => &mut self.mutation,
+                OperationType::Subscription => &mut self.subscription,
             };
             match entry {
                 None => *entry = Some(object_type_name.to_component(origin.clone())),
@@ -479,6 +478,7 @@ impl ScalarType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -516,6 +516,7 @@ impl ObjectType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             implements_interfaces: collect_sticky_set(
                 definition
                     .implements_interfaces
@@ -524,7 +525,7 @@ impl ObjectType {
                 |prev, dup| {
                     errors.push(BuildError::DuplicateImplementsInterfaceInObject {
                         location: dup.location(),
-                        name_at_previous_location: prev.node.clone(),
+                        name_at_previous_location: prev.name.clone(),
                         type_name: definition.name.clone(),
                     })
                 },
@@ -577,7 +578,7 @@ impl ObjectType {
             |prev, dup| {
                 errors.push(BuildError::DuplicateImplementsInterfaceInObject {
                     location: dup.location(),
-                    name_at_previous_location: prev.node.clone(),
+                    name_at_previous_location: prev.name.clone(),
                     type_name: extension.name.clone(),
                 })
             },
@@ -607,6 +608,7 @@ impl InterfaceType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             implements_interfaces: collect_sticky_set(
                 definition
                     .implements_interfaces
@@ -615,7 +617,7 @@ impl InterfaceType {
                 |prev, dup| {
                     errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
                         location: dup.location(),
-                        name_at_previous_location: prev.node.clone(),
+                        name_at_previous_location: prev.name.clone(),
                         type_name: definition.name.clone(),
                     })
                 },
@@ -668,7 +670,7 @@ impl InterfaceType {
             |prev, dup| {
                 errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
                     location: dup.location(),
-                    name_at_previous_location: prev.node.clone(),
+                    name_at_previous_location: prev.name.clone(),
                     type_name: extension.name.clone(),
                 })
             },
@@ -698,6 +700,7 @@ impl UnionType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -711,7 +714,7 @@ impl UnionType {
                 |prev, dup| {
                     errors.push(BuildError::UnionMemberNameCollision {
                         location: dup.location(),
-                        name_at_previous_location: prev.node.clone(),
+                        name_at_previous_location: prev.name.clone(),
                         type_name: definition.name.clone(),
                     })
                 },
@@ -746,7 +749,7 @@ impl UnionType {
             |prev, dup| {
                 errors.push(BuildError::UnionMemberNameCollision {
                     location: dup.location(),
-                    name_at_previous_location: prev.node.clone(),
+                    name_at_previous_location: prev.name.clone(),
                     type_name: extension.name.clone(),
                 })
             },
@@ -762,6 +765,7 @@ impl EnumType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -828,6 +832,7 @@ impl InputObjectType {
     ) -> Node<Self> {
         let mut ty = Self {
             description: definition.description.clone(),
+            name: definition.name.clone(),
             directives: definition
                 .directives
                 .iter()
@@ -915,9 +920,9 @@ fn collect_sticky<'a, V>(
 }
 
 fn extend_sticky_set(
-    set: &mut IndexSet<ComponentStr>,
-    iter: impl IntoIterator<Item = ComponentStr>,
-    mut duplicate: impl FnMut(&ComponentStr, ComponentStr),
+    set: &mut IndexSet<ComponentName>,
+    iter: impl IntoIterator<Item = ComponentName>,
+    mut duplicate: impl FnMut(&ComponentName, ComponentName),
 ) {
     for value in iter.into_iter() {
         match set.get(&value) {
@@ -929,9 +934,9 @@ fn extend_sticky_set(
     }
 }
 fn collect_sticky_set(
-    iter: impl IntoIterator<Item = ComponentStr>,
-    duplicate: impl FnMut(&ComponentStr, ComponentStr),
-) -> IndexSet<ComponentStr> {
+    iter: impl IntoIterator<Item = ComponentName>,
+    duplicate: impl FnMut(&ComponentName, ComponentName),
+) -> IndexSet<ComponentName> {
     let mut set = IndexSet::new();
     extend_sticky_set(&mut set, iter, duplicate);
     set

@@ -18,13 +18,15 @@ mod from_ast;
 mod serialize;
 mod validation;
 
-pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
+pub use self::component::{Component, ComponentName, ComponentOrigin, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
 pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
-use crate::validation::Diagnostics;
+use crate::name;
+use crate::ty;
+use crate::validation::DiagnosticList;
 
 /// High-level representation of a GraphQL schema
 #[derive(Clone)]
@@ -53,20 +55,20 @@ pub struct Schema {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub directives: DirectiveList,
 
     /// Name of the object type for the `query` root operation
-    pub query: Option<ComponentStr>,
+    pub query: Option<ComponentName>,
 
     /// Name of the object type for the `mutation` root operation
-    pub mutation: Option<ComponentStr>,
+    pub mutation: Option<ComponentName>,
 
     /// Name of the object type for the `subscription` root operation
-    pub subscription: Option<ComponentStr>,
+    pub subscription: Option<ComponentName>,
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
-pub struct Directives(pub Vec<Component<Directive>>);
+pub struct DirectiveList(pub Vec<Component<Directive>>);
 
 /// The definition of a named type, with all information from type extensions folded in.
 ///
@@ -84,14 +86,16 @@ pub enum ExtendedType {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub name: Name,
+    pub directives: DirectiveList,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
     pub description: Option<NodeStr>,
-    pub implements_interfaces: IndexSet<ComponentStr>,
-    pub directives: Directives,
+    pub name: Name,
+    pub implements_interfaces: IndexSet<ComponentName>,
+    pub directives: DirectiveList,
 
     /// Explicit field definitions.
     ///
@@ -103,13 +107,10 @@ pub struct ObjectType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterfaceType {
     pub description: Option<NodeStr>,
+    pub name: Name,
+    pub implements_interfaces: IndexSet<ComponentName>,
 
-    /// * Key: name of an implemented interface
-    /// * Value: which interface type extension defined this implementation,
-    ///   or `None` for the interface type definition.
-    pub implements_interfaces: IndexSet<ComponentStr>,
-
-    pub directives: Directives,
+    pub directives: DirectiveList,
 
     /// Explicit field definitions.
     ///
@@ -121,25 +122,28 @@ pub struct InterfaceType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub name: Name,
+    pub directives: DirectiveList,
 
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
-    pub members: IndexSet<ComponentStr>,
+    pub members: IndexSet<ComponentName>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub name: Name,
+    pub directives: DirectiveList,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
     pub description: Option<NodeStr>,
-    pub directives: Directives,
+    pub name: Name,
+    pub directives: DirectiveList,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
@@ -314,8 +318,8 @@ impl Schema {
     }
 
     /// Returns `Err` if invalid, or `Ok` for potential warnings or advice
-    pub fn validate(&self) -> Result<Diagnostics, Diagnostics> {
-        let mut errors = Diagnostics::new(None, self.sources.clone());
+    pub fn validate(&self) -> Result<DiagnosticList, DiagnosticList> {
+        let mut errors = DiagnosticList::new(None, self.sources.clone());
         let warnings_and_advice = validation::validate_schema(&mut errors, self);
         let valid = errors.is_empty();
         for diagnostic in warnings_and_advice {
@@ -394,7 +398,7 @@ impl Schema {
             ast::OperationType::Subscription => &self.schema_definition.subscription,
         }
         .as_ref()
-        .map(|component| &component.node)
+        .map(|component| &component.name)
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -442,7 +446,7 @@ impl Schema {
                 | ExtendedType::InputObject(_) => continue,
             };
             for interface in interfaces {
-                map.entry(interface.node.clone())
+                map.entry(interface.name.clone())
                     .or_default()
                     .insert(ty_name.clone());
             }
@@ -485,33 +489,33 @@ impl Schema {
                 // __typename: String!
                 Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new("__typename"),
+                    name: name!("__typename"),
                     arguments: Vec::new(),
-                    ty: Type::new_named("String").non_null(),
-                    directives: ast::Directives::new(),
+                    ty: ty!(String!),
+                    directives: ast::DirectiveList::new(),
                 }),
                 // __schema: __Schema!
                 Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new("__schema"),
+                    name: name!("__schema"),
                     arguments: Vec::new(),
-                    ty: Type::new_named("__Schema").non_null(),
-                    directives: ast::Directives::new(),
+                    ty: ty!(__Schema!),
+                    directives: ast::DirectiveList::new(),
                 }),
                 // __type(name: String!): __Type
                 Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new("__type"),
+                    name: name!("__type"),
                     arguments: vec![InputValueDefinition {
                         description: None,
-                        name: Name::new("name"),
-                        ty: ast::Type::new_named("String").non_null().into(),
+                        name: name!("name"),
+                        ty: ty!(String!).into(),
                         default_value: None,
-                        directives: ast::Directives::new(),
+                        directives: ast::DirectiveList::new(),
                     }
                     .into()],
-                    ty: Type::new_named("__Type"),
-                    directives: ast::Directives::new(),
+                    ty: ty!(__Type),
+                    directives: ast::DirectiveList::new(),
                 }),
             ]
         });
@@ -592,6 +596,17 @@ impl SchemaDefinition {
 }
 
 impl ExtendedType {
+    pub fn name(&self) -> &Name {
+        match self {
+            Self::Scalar(def) => &def.name,
+            Self::Object(def) => &def.name,
+            Self::Interface(def) => &def.name,
+            Self::Union(def) => &def.name,
+            Self::Enum(def) => &def.name,
+            Self::InputObject(def) => &def.name,
+        }
+    }
+
     /// Return the source location of the type's base definition.
     ///
     /// If the type has extensions, those are not covered by this location.
@@ -674,7 +689,7 @@ impl ExtendedType {
         }
     }
 
-    pub fn directives(&self) -> &Directives {
+    pub fn directives(&self) -> &DirectiveList {
         match self {
             Self::Scalar(ty) => &ty.directives,
             Self::Object(ty) => &ty.directives,
@@ -824,7 +839,7 @@ impl InputObjectType {
     serialize_method!();
 }
 
-impl Directives {
+impl DirectiveList {
     pub const fn new() -> Self {
         Self(Vec::new())
     }
@@ -871,13 +886,13 @@ impl FieldType {
     }
 }
 
-impl std::fmt::Debug for Directives {
+impl std::fmt::Debug for DirectiveList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }
 }
 
-impl std::ops::Deref for Directives {
+impl std::ops::Deref for DirectiveList {
     type Target = Vec<Component<Directive>>;
 
     fn deref(&self) -> &Self::Target {
@@ -885,13 +900,13 @@ impl std::ops::Deref for Directives {
     }
 }
 
-impl std::ops::DerefMut for Directives {
+impl std::ops::DerefMut for DirectiveList {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a> IntoIterator for &'a Directives {
+impl<'a> IntoIterator for &'a DirectiveList {
     type Item = &'a Component<Directive>;
 
     type IntoIter = std::slice::Iter<'a, Component<Directive>>;
@@ -901,7 +916,7 @@ impl<'a> IntoIterator for &'a Directives {
     }
 }
 
-impl<'a> IntoIterator for &'a mut Directives {
+impl<'a> IntoIterator for &'a mut DirectiveList {
     type Item = &'a mut Component<Directive>;
 
     type IntoIter = std::slice::IterMut<'a, Component<Directive>>;
@@ -911,7 +926,7 @@ impl<'a> IntoIterator for &'a mut Directives {
     }
 }
 
-impl<D> FromIterator<D> for Directives
+impl<D> FromIterator<D> for DirectiveList
 where
     D: Into<Component<Directive>>,
 {

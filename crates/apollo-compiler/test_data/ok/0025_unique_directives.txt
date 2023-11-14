@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -65,6 +65,7 @@ Schema {
         "Query": Object(
             70..97 @24 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -97,6 +98,7 @@ ExecutableDocument {
     anonymous_operation: Some(
         99..166 @24 Operation {
             operation_type: Query,
+            name: None,
             variables: [],
             directives: [],
             selection_set: SelectionSet {

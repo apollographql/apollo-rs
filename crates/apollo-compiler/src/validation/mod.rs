@@ -16,11 +16,11 @@ mod union_;
 mod value;
 mod variable;
 
+use crate::ast::Name;
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::FileId;
 use crate::NodeLocation;
-use crate::NodeStr;
 use crate::SourceFile;
 use crate::SourceMap;
 use indexmap::IndexSet;
@@ -31,11 +31,11 @@ use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 /// A collection of diagnostics returned by some validation method
-pub struct Diagnostics(Box<DiagnosticsBoxed>);
+pub struct DiagnosticList(Box<DiagnosticListBoxed>);
 
 /// Box indirection to avoid large `Err` values:
 /// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
-struct DiagnosticsBoxed {
+struct DiagnosticListBoxed {
     sources: Sources,
     diagnostics_data: Vec<DiagnosticData>,
 }
@@ -315,7 +315,7 @@ impl<'a> Diagnostic<'a> {
     }
 }
 
-impl Diagnostics {
+impl DiagnosticList {
     pub fn is_empty(&self) -> bool {
         self.0.diagnostics_data.is_empty()
     }
@@ -342,7 +342,7 @@ impl Diagnostics {
     }
 
     pub(crate) fn new(schema_sources: Option<SourceMap>, self_sources: SourceMap) -> Self {
-        Self(Box::new(DiagnosticsBoxed {
+        Self(Box::new(DiagnosticListBoxed {
             sources: Sources {
                 schema_sources,
                 self_sources,
@@ -376,7 +376,7 @@ impl Diagnostics {
 /// Defaults to ANSI color codes if stderr is a terminal.
 ///
 /// Use alternate formatting to never use colors: `format!("{diagnostics:#}")`
-impl fmt::Display for Diagnostics {
+impl fmt::Display for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
             diagnostic.fmt(f)?
@@ -460,7 +460,7 @@ impl ariadne::Cache<FileId> for &'_ Sources {
     }
 }
 
-impl fmt::Debug for Diagnostics {
+impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
@@ -484,11 +484,11 @@ impl ariadne::Span for NodeLocation {
 
 /// Track used names in a recursive function.
 struct RecursionStack {
-    seen: IndexSet<NodeStr>,
+    seen: IndexSet<Name>,
 }
 
 impl RecursionStack {
-    fn with_root(root: NodeStr) -> Self {
+    fn with_root(root: Name) -> Self {
         let mut seen = IndexSet::new();
         seen.insert(root);
         Self { seen }
@@ -505,10 +505,10 @@ impl RecursionStack {
 /// Pass the result of `guard.push(name)` to recursive calls. Use `guard.contains(name)` to check
 /// if the name was used somewhere up the call stack. When a guard is dropped, its name is removed
 /// from the list.
-struct RecursionGuard<'a>(&'a mut IndexSet<NodeStr>);
+struct RecursionGuard<'a>(&'a mut IndexSet<Name>);
 impl RecursionGuard<'_> {
     /// Mark that we saw a name.
-    fn push(&mut self, name: &NodeStr) -> RecursionGuard<'_> {
+    fn push(&mut self, name: &Name) -> RecursionGuard<'_> {
         debug_assert!(
             self.0.insert(name.clone()),
             "cannot push the same name twice to RecursionGuard, check contains() first"
@@ -516,11 +516,11 @@ impl RecursionGuard<'_> {
         RecursionGuard(self.0)
     }
     /// Check if we saw a name somewhere up the call stack.
-    fn contains(&self, name: &NodeStr) -> bool {
+    fn contains(&self, name: &Name) -> bool {
         self.0.iter().any(|seen| seen == name)
     }
     /// Return the name where we started.
-    fn first(&self) -> Option<&NodeStr> {
+    fn first(&self) -> Option<&Name> {
         self.0.first()
     }
 }

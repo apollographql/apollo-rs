@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Pet": Interface(
             0..33 @22 InterfaceType {
                 description: None,
+                name: "Pet",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "DogCommand": Enum(
             35..67 @22 EnumType {
                 description: None,
+                name: "DogCommand",
                 directives: [],
                 values: {
                     "SIT": Component {
@@ -92,6 +94,7 @@ Schema {
         "CatCommand": Enum(
             69..95 @22 EnumType {
                 description: None,
+                name: "CatCommand",
                 directives: [],
                 values: {
                     "JUMP": Component {
@@ -108,6 +111,7 @@ Schema {
         "Query": Object(
             97..122 @22 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -129,10 +133,11 @@ Schema {
         "Dog": Object(
             124..300 @22 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Pet",
+                        name: "Pet",
                     },
                 },
                 directives: [],
@@ -232,10 +237,11 @@ Schema {
         "Cat": Object(
             302..417 @22 ObjectType {
                 description: None,
+                name: "Cat",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Pet",
+                        name: "Pet",
                     },
                 },
                 directives: [],
@@ -304,6 +310,9 @@ ExecutableDocument {
     named_operations: {
         "barkVolume": 419..478 @22 Operation {
             operation_type: Query,
+            name: Some(
+                "barkVolume",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -342,6 +351,9 @@ ExecutableDocument {
         },
         "doesKnowCommand": 480..542 @22 Operation {
             operation_type: Query,
+            name: Some(
+                "doesKnowCommand",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -380,6 +392,9 @@ ExecutableDocument {
         },
         "isAtLocation": 544..607 @22 Operation {
             operation_type: Query,
+            name: Some(
+                "isAtLocation",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -419,6 +434,7 @@ ExecutableDocument {
     },
     fragments: {
         "safeDifferingFields": 609..732 @22 Fragment {
+            name: "safeDifferingFields",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
@@ -499,6 +515,7 @@ ExecutableDocument {
             },
         },
         "safeDifferingArgs": 734..884 @22 Fragment {
+            name: "safeDifferingArgs",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
@@ -609,6 +626,7 @@ ExecutableDocument {
             },
         },
         "safeDifferingArgOrder": 886..981 @22 Fragment {
+            name: "safeDifferingArgOrder",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",

@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..77 @23 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -113,6 +114,7 @@ ExecutableDocument {
     anonymous_operation: Some(
         156..505 @23 Operation {
             operation_type: Query,
+            name: None,
             variables: [
                 166..197 @23 VariableDefinition {
                     name: "fieldDirective",
@@ -298,6 +300,7 @@ ExecutableDocument {
     named_operations: {},
     fragments: {
         "fragment": 79..154 @23 Fragment {
+            name: "fragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Query",

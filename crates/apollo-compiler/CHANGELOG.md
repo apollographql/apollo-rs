@@ -16,6 +16,124 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation-->
+
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Features
+
+- **Helper features for `Name` and `Type` - [SimonSapin], [pull/739]:**
+  * The `name!` macro also accepts an identifier: 
+    `name!(Query)` and `name!("Query")` create equivalent `Name` values.
+  * `InvalidNameError` now contain a public `NodeStr` for the input string that is invalid,
+    and implements `Display`, `Debug`, and `Error` traits.
+  * Add `TryFrom` conversion to `Name` from `NodeStr`, `&NodeStr`, `&str`, `String`, and `&String`.
+  * Add a `ty!` macro to build a static `ast::Type` using GraphQL-like syntax.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/739]: https://github.com/apollographql/apollo-rs/pull/739
+
+
+# [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
+
+## BREAKING
+
+- **Make everything know their own name - [SimonSapin], [pull/727] fixing [issue/708].**
+
+  In a few places (but not consistently) a `name` field
+  was omitted from some structs used as map values 
+  on the basis that it would have been redundant with the map key.
+  This reverts that decision,
+  making it the user’s responsibility when mutating documents to keep names consistent.
+
+  * Add a `pub name: Name` field to `executable::Fragment` as well as 
+    `ScalarType`, `ObjectType`, `InterfaceType`, `EnumType`, `UnionType`, and `InputObjectType`
+    in `schema`.
+  * Add a `fn name(&self) -> &Name` method to the `schema::ExtendedType` enum
+  * Add a `pub name: Option<Name>` field to `executable::Operation`
+  * Remove `executable::OperationRef<'_>` 
+    (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
+    replacing its uses with `&Node<Operation>`
+- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` - 
+  [SimonSapin], [pull/732] fixing [issue/711].**
+  The previous names were too similar to `Directive` and `Diagnostic` (singular).
+- **Rename `ComponentStr` to `ComponentName` - [SimonSapin], [pull/713]**
+  and its `node: NodeStr` field to `name: Name`.
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  - **Check validity of `ast::Name`.**
+    `NodeStr` is a smart string type with infallible conversion from `&str`.
+    `ast::Name` used to be a type alias for `NodeStr`, 
+    leaving the possibility of creating one invalid in GraphQL syntax.
+    Validation and serialization would not check this.
+    `Name` is now a wrapper type for `NodeStr`.
+    Its `new` constructor checks validity of the given string and returns a `Result`.
+    A new `name!` macro (see below) creates a `Name` with compile-time checking.
+  - **`OperationType::default_type_name` returns a `Name` instead of `&str`**
+  - **`Type::new_named("x")` is removed. Use `Type::Named(name!("x"))` instead.**
+  - **`ComponentStr` is renamed to `ComponentName`.**
+    It no longer has infallible conversions from `&str` or `String`.
+    Its `node` field is renamed to `name`;
+    the type of that field is changed from `NodeStr` to `Name`.
+  - **`NodeStr` no longer has a `to_component` method, only `Name` does**
+  - **Various function or method parameters changed from `impl Into<Name>` to `Name`,**
+    since there is no longer an infallible conversion from `&str`
+
+## Features
+
+- **Add serialization support for everything - [SimonSapin], [pull/728].**
+
+  `Schema`, `ExecutableDocument`, and all AST types
+  already supported serialization to GraphQL syntax
+  through the `Display` trait and the `.serialize()` method.
+  This is now also the case of all other Rust types
+  representing some element of a GraphQL document:
+  * `schema::Directives`
+  * `schema::ExtendedType`
+  * `schema::ScalarType`
+  * `schema::ObjectType`
+  * `schema::InterfaceType`
+  * `schema::EnumType`
+  * `schema::UnionType`
+  * `schema::InputObjectType`
+  * `executable::Operation`
+  * `executable::Fragment`
+  * `executable::SelectionSet`
+  * `executable::Selection`
+  * `executable::Field`
+  * `executable::InlineFragment`
+  * `executable::FragmentSpread`
+  * `executable::FieldSet`
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  See also the BREAKING section above.
+  - **Add a `name!("example")` macro**,
+    to be imported with `use apollo_compiler::name;`.
+    It creates an `ast::Name` from a string literal, with a compile-time validity checking.
+    A `Name` created this way does not own allocated heap memory or a reference counter,
+    so cloning it is extremely cheap.
+  - **Add allocation-free `NodeStr::from_static`.**
+    This mostly exists to support the `name!` macro, but can also be used on its own:
+    ```rust
+    let s = apollo_compiler::NodeStr::from_static(&"example");
+    assert_eq!(s, "example");
+    ```
+
+## Fixes
+- **Fix crash in validation of self-referential fragments - [goto-bus-stop], [pull/733] fixing [issue/716].**
+  Now fragments that cyclically reference themselves inside a nested field also produce a
+  validation error, instead of causing a stack overflow crash.
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/708]: https://github.com/apollographql/apollo-rs/issues/708
+[issue/710]: https://github.com/apollographql/apollo-rs/issues/710
+[issue/711]: https://github.com/apollographql/apollo-rs/issues/711
+[issue/716]: https://github.com/apollographql/apollo-rs/issues/716
+[pull/713]: https://github.com/apollographql/apollo-rs/pull/713
+[pull/727]: https://github.com/apollographql/apollo-rs/pull/727
+[pull/728]: https://github.com/apollographql/apollo-rs/pull/728
+[pull/732]: https://github.com/apollographql/apollo-rs/pull/732
+[pull/733]: https://github.com/apollographql/apollo-rs/pull/733
+
+
 # [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
 
 ## Features

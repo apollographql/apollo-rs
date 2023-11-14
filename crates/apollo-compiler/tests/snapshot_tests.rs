@@ -8,8 +8,10 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset
 
 use apollo_compiler::ast;
+use apollo_compiler::name;
 use apollo_compiler::schema;
-use apollo_compiler::Diagnostics;
+use apollo_compiler::ty;
+use apollo_compiler::DiagnosticList;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
@@ -92,8 +94,8 @@ fn validation() {
 }
 
 fn assert_diagnostics_are_present(
-    schema_validation_errors: &Option<Diagnostics>,
-    executable_validation_errors: &Option<Diagnostics>,
+    schema_validation_errors: &Option<DiagnosticList>,
+    executable_validation_errors: &Option<DiagnosticList>,
     path: &Path,
 ) {
     assert!(
@@ -104,8 +106,8 @@ fn assert_diagnostics_are_present(
 }
 
 fn assert_diagnostics_are_absent(
-    schema_validation_errors: &Option<Diagnostics>,
-    executable_validation_errors: &Option<Diagnostics>,
+    schema_validation_errors: &Option<DiagnosticList>,
+    executable_validation_errors: &Option<DiagnosticList>,
     path: &Path,
 ) {
     if schema_validation_errors.is_some() || executable_validation_errors.is_some() {
@@ -253,18 +255,19 @@ fn project_root() -> PathBuf {
 fn test_invalid_synthetic_node() {
     let mut schema = Schema::new();
     schema.types.insert(
-        "Obj".into(),
+        name!("Obj"),
         schema::ObjectType {
             description: Default::default(),
+            name: name!("Obj"),
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: [(
-                "field".into(),
+                name!("field"),
                 schema::FieldDefinition {
                     description: Default::default(),
-                    name: "field".into(),
+                    name: name!("field"),
                     arguments: Default::default(),
-                    ty: schema::Type::new_named("UndefinedType"),
+                    ty: ty!(UndefinedType),
                     directives: Default::default(),
                 }
                 .into(),
@@ -273,7 +276,7 @@ fn test_invalid_synthetic_node() {
         }
         .into(),
     );
-    schema.schema_definition.make_mut().query = Some("Obj".into());
+    schema.schema_definition.make_mut().query = Some(name!("Obj").into());
     let expected = expect_test::expect![[r#"
         Error: cannot find type `UndefinedType` in this document
     "#]];

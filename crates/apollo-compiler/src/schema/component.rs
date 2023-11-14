@@ -1,6 +1,6 @@
+use crate::ast::Name;
 use crate::Node;
 use crate::NodeLocation;
-use crate::NodeStr;
 use std::hash;
 use std::ops::Deref;
 use std::ops::DerefMut;
@@ -123,89 +123,72 @@ impl<T> From<T> for Component<T> {
 
 /// A string component of a type or `schema`, for example the name of a union member type.
 ///
-/// Wraps a [`NodeStr`] and adds its origin: either a (`schema` or type) definition
+/// Wraps a [`Name`] and adds its origin: either a (`schema` or type) definition
 /// or a specific extension.
 ///
 /// Implements [`Deref`]
-/// so that methods and fields of `NodeStr` and [`str`] can be accessed directly.
+/// so that methods and fields of `Name` and [`str`] can be accessed directly.
 #[derive(Debug, Clone)]
-pub struct ComponentStr {
+pub struct ComponentName {
     pub origin: ComponentOrigin,
-    pub node: NodeStr,
+    pub name: Name,
 }
 
-impl ComponentStr {
-    /// Mark `value` as coming from a synthetic (no source location) definition (not an extension)
-    #[inline]
-    pub fn new(value: &str) -> Self {
-        Self {
-            origin: ComponentOrigin::Definition,
-            node: NodeStr::new(value),
-        }
+impl From<&Name> for ComponentName {
+    fn from(value: &Name) -> Self {
+        value.to_component(ComponentOrigin::Definition)
     }
 }
 
-impl hash::Hash for ComponentStr {
+impl From<Name> for ComponentName {
+    fn from(value: Name) -> Self {
+        value.to_component(ComponentOrigin::Definition)
+    }
+}
+
+impl hash::Hash for ComponentName {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.node.hash(state); // ignore `origin`
+        self.name.hash(state); // ignore `origin`
     }
 }
 
-impl Eq for ComponentStr {}
+impl Eq for ComponentName {}
 
-impl PartialEq for ComponentStr {
+impl PartialEq for ComponentName {
     fn eq(&self, other: &Self) -> bool {
-        self.node == other.node // ignore `origin`
+        self.name == other.name // ignore `origin`
     }
 }
 
-impl PartialEq<str> for ComponentStr {
+impl PartialEq<str> for ComponentName {
     fn eq(&self, other: &str) -> bool {
         self.as_str() == other
     }
 }
 
-impl Deref for ComponentStr {
-    type Target = NodeStr;
+impl Deref for ComponentName {
+    type Target = Name;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
-        &self.node
+        &self.name
     }
 }
 
-impl std::borrow::Borrow<NodeStr> for ComponentStr {
-    fn borrow(&self) -> &NodeStr {
+impl std::borrow::Borrow<Name> for ComponentName {
+    fn borrow(&self) -> &Name {
         self
     }
 }
 
-impl std::borrow::Borrow<str> for ComponentStr {
+impl std::borrow::Borrow<str> for ComponentName {
     fn borrow(&self) -> &str {
         self
     }
 }
 
-impl AsRef<str> for ComponentStr {
+impl AsRef<str> for ComponentName {
     fn as_ref(&self) -> &str {
         self
-    }
-}
-
-impl From<&'_ str> for ComponentStr {
-    fn from(value: &'_ str) -> Self {
-        Self::new(value)
-    }
-}
-
-impl From<&'_ String> for ComponentStr {
-    fn from(value: &'_ String) -> Self {
-        Self::new(value)
-    }
-}
-
-impl From<String> for ComponentStr {
-    fn from(value: String) -> Self {
-        Self::new(&value)
     }
 }

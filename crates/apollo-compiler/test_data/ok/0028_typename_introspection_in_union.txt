@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,15 +47,16 @@ Schema {
         "SearchResult": Union(
             0..35 @27 UnionType {
                 description: None,
+                name: "SearchResult",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Photo",
+                        name: "Photo",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Person",
+                        name: "Person",
                     },
                 },
             },
@@ -63,6 +64,7 @@ Schema {
         "Person": Object(
             37..78 @27 ObjectType {
                 description: None,
+                name: "Person",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -96,6 +98,7 @@ Schema {
         "Photo": Object(
             80..121 @27 ObjectType {
                 description: None,
+                name: "Photo",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -129,6 +132,7 @@ Schema {
         "Query": Object(
             123..171 @27 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -161,6 +165,7 @@ ExecutableDocument {
     anonymous_operation: Some(
         173..292 @27 Operation {
             operation_type: Query,
+            name: None,
             variables: [],
             directives: [],
             selection_set: SelectionSet {

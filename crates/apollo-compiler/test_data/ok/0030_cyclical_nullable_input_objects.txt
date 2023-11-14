@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..60 @29 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -90,6 +91,7 @@ Schema {
         "First": InputObject(
             62..110 @29 InputObjectType {
                 description: None,
+                name: "First",
                 directives: [],
                 fields: {
                     "second": Component {
@@ -122,6 +124,7 @@ Schema {
         "Second": InputObject(
             112..163 @29 InputObjectType {
                 description: None,
+                name: "Second",
                 directives: [],
                 fields: {
                     "third": Component {
@@ -156,6 +159,7 @@ Schema {
         "Third": InputObject(
             165..213 @29 InputObjectType {
                 description: None,
+                name: "Third",
                 directives: [],
                 fields: {
                     "fourth": Component {
@@ -188,6 +192,7 @@ Schema {
         "Fourth": InputObject(
             215..246 @29 InputObjectType {
                 description: None,
+                name: "Fourth",
                 directives: [],
                 fields: {
                     "first": Component {

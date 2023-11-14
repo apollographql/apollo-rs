@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..56 @14 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -78,6 +79,7 @@ Schema {
         "WithAllKindsOfFloats": InputObject(
             58..271 @14 InputObjectType {
                 description: None,
+                name: "WithAllKindsOfFloats",
                 directives: [],
                 fields: {
                     "a_regular_float": Component {

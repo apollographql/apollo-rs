@@ -45,15 +45,15 @@ Schema {
             },
         ],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Mutation",
+                name: "Mutation",
             },
         ),
         subscription: None,
@@ -242,15 +242,16 @@ Schema {
         "AccountType": Union(
             627..675 @15 UnionType {
                 description: None,
+                name: "AccountType",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "PasswordAccount",
+                        name: "PasswordAccount",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "SMSAccount",
+                        name: "SMSAccount",
                     },
                 },
             },
@@ -258,6 +259,7 @@ Schema {
         "Amazon": Object(
             677..711 @15 ObjectType {
                 description: None,
+                name: "Amazon",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -279,15 +281,16 @@ Schema {
         "Body": Union(
             713..738 @15 UnionType {
                 description: None,
+                name: "Body",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Image",
+                        name: "Image",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Text",
+                        name: "Text",
                     },
                 },
             },
@@ -295,10 +298,11 @@ Schema {
         "Book": Object(
             740..1725 @15 ObjectType {
                 description: None,
+                name: "Book",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Product",
+                        name: "Product",
                     },
                 },
                 directives: [
@@ -774,15 +778,16 @@ Schema {
         "Brand": Union(
             1727..1754 @15 UnionType {
                 description: None,
+                name: "Brand",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Ikea",
+                        name: "Ikea",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Amazon",
+                        name: "Amazon",
                     },
                 },
             },
@@ -790,10 +795,11 @@ Schema {
         "Car": Object(
             1756..2103 @15 ObjectType {
                 description: None,
+                name: "Car",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Vehicle",
+                        name: "Vehicle",
                     },
                 },
                 directives: [
@@ -961,6 +967,7 @@ Schema {
         "Error": Object(
             2105..2149 @15 ObjectType {
                 description: None,
+                name: "Error",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -994,10 +1001,11 @@ Schema {
         "Furniture": Object(
             2151..2872 @15 ObjectType {
                 description: None,
+                name: "Furniture",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Product",
+                        name: "Product",
                     },
                 },
                 directives: [
@@ -1347,6 +1355,7 @@ Schema {
         "Ikea": Object(
             2874..2900 @15 ObjectType {
                 description: None,
+                name: "Ikea",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -1368,10 +1377,11 @@ Schema {
         "Image": Object(
             2902..2986 @15 ObjectType {
                 description: None,
+                name: "Image",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "NamedObject",
+                        name: "NamedObject",
                     },
                 },
                 directives: [],
@@ -1406,6 +1416,7 @@ Schema {
         "ImageAttributes": Object(
             2988..3027 @15 ObjectType {
                 description: None,
+                name: "ImageAttributes",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -1427,6 +1438,7 @@ Schema {
         "join__FieldSet": Scalar(
             3029..3097 @15 ScalarType {
                 description: None,
+                name: "join__FieldSet",
                 directives: [
                     Component {
                         origin: Definition,
@@ -1448,6 +1460,7 @@ Schema {
         "join__Graph": Enum(
             3099..3401 @15 EnumType {
                 description: None,
+                name: "join__Graph",
                 directives: [],
                 values: {
                     "ACCOUNTS": Component {
@@ -1612,6 +1625,7 @@ Schema {
         "KeyValue": Object(
             3403..3452 @15 ObjectType {
                 description: None,
+                name: "KeyValue",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -1645,6 +1659,7 @@ Schema {
         "Library": Object(
             3454..3734 @15 ObjectType {
                 description: None,
+                name: "Library",
                 implements_interfaces: {},
                 directives: [
                     Component {
@@ -1801,15 +1816,16 @@ Schema {
         "MetadataOrError": Union(
             3736..3776 @15 UnionType {
                 description: None,
+                name: "MetadataOrError",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "KeyValue",
+                        name: "KeyValue",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Error",
+                        name: "Error",
                     },
                 },
             },
@@ -1817,6 +1833,7 @@ Schema {
         "Mutation": Object(
             3778..4102 @15 ObjectType {
                 description: None,
+                name: "Mutation",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -1980,6 +1997,7 @@ Schema {
         "Name": Object(
             4104..4148 @15 ObjectType {
                 description: None,
+                name: "Name",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -2013,6 +2031,7 @@ Schema {
         "NamedObject": Interface(
             4150..4191 @15 InterfaceType {
                 description: None,
+                name: "NamedObject",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -2034,6 +2053,7 @@ Schema {
         "PasswordAccount": Object(
             4193..4337 @15 ObjectType {
                 description: None,
+                name: "PasswordAccount",
                 implements_interfaces: {},
                 directives: [
                     Component {
@@ -2102,6 +2122,7 @@ Schema {
         "Product": Interface(
             4339..4486 @15 InterfaceType {
                 description: None,
+                name: "Product",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -2197,6 +2218,7 @@ Schema {
         "ProductDetails": Interface(
             4488..4534 @15 InterfaceType {
                 description: None,
+                name: "ProductDetails",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -2218,10 +2240,11 @@ Schema {
         "ProductDetailsBook": Object(
             4536..4620 @15 ObjectType {
                 description: None,
+                name: "ProductDetailsBook",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "ProductDetails",
+                        name: "ProductDetails",
                     },
                 },
                 directives: [],
@@ -2256,10 +2279,11 @@ Schema {
         "ProductDetailsFurniture": Object(
             4622..4714 @15 ObjectType {
                 description: None,
+                name: "ProductDetailsFurniture",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "ProductDetails",
+                        name: "ProductDetails",
                     },
                 },
                 directives: [],
@@ -2294,6 +2318,7 @@ Schema {
         "Query": Object(
             4716..5344 @15 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -2667,6 +2692,7 @@ Schema {
         "Review": Object(
             5346..5710 @15 ObjectType {
                 description: None,
+                name: "Review",
                 implements_interfaces: {},
                 directives: [
                     Component {
@@ -2853,6 +2879,7 @@ Schema {
         "SMSAccount": Object(
             5712..5852 @15 ObjectType {
                 description: None,
+                name: "SMSAccount",
                 implements_interfaces: {},
                 directives: [
                     Component {
@@ -2921,10 +2948,11 @@ Schema {
         "Text": Object(
             5854..5936 @15 ObjectType {
                 description: None,
+                name: "Text",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "NamedObject",
+                        name: "NamedObject",
                     },
                 },
                 directives: [],
@@ -2959,6 +2987,7 @@ Schema {
         "TextAttributes": Object(
             5938..5992 @15 ObjectType {
                 description: None,
+                name: "TextAttributes",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -2992,15 +3021,16 @@ Schema {
         "Thing": Union(
             5994..6018 @15 UnionType {
                 description: None,
+                name: "Thing",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Car",
+                        name: "Car",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Ikea",
+                        name: "Ikea",
                     },
                 },
             },
@@ -3008,6 +3038,7 @@ Schema {
         "UpdateReviewInput": InputObject(
             6020..6072 @15 InputObjectType {
                 description: None,
+                name: "UpdateReviewInput",
                 directives: [],
                 fields: {
                     "id": Component {
@@ -3040,6 +3071,7 @@ Schema {
         "User": Object(
             6074..7017 @15 ObjectType {
                 description: None,
+                name: "User",
                 implements_interfaces: {},
                 directives: [
                     Component {
@@ -3478,6 +3510,7 @@ Schema {
         "UserMetadata": Object(
             7019..7095 @15 ObjectType {
                 description: None,
+                name: "UserMetadata",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -3523,10 +3556,11 @@ Schema {
         "Van": Object(
             7097..7444 @15 ObjectType {
                 description: None,
+                name: "Van",
                 implements_interfaces: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Vehicle",
+                        name: "Vehicle",
                     },
                 },
                 directives: [
@@ -3694,6 +3728,7 @@ Schema {
         "Vehicle": Interface(
             7446..7541 @15 InterfaceType {
                 description: None,
+                name: "Vehicle",
                 implements_interfaces: {},
                 directives: [],
                 fields: {

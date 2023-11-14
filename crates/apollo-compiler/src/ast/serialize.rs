@@ -1,4 +1,6 @@
 use super::*;
+use crate::executable;
+use crate::schema;
 use std::fmt;
 use std::fmt::Display;
 
@@ -320,7 +322,7 @@ fn serialize_object_type_like(
     state: &mut State,
     name: &str,
     implements_interfaces: &[Name],
-    directives: &Directives,
+    directives: &DirectiveList,
     fields: &[Node<FieldDefinition>],
 ) -> Result<(), fmt::Error> {
     state.write(name)?;
@@ -373,7 +375,7 @@ impl UnionTypeDefinition {
 fn serialize_union(
     state: &mut State,
     name: &str,
-    directives: &Directives,
+    directives: &DirectiveList,
     members: &[Name],
 ) -> fmt::Result {
     state.write(name)?;
@@ -535,7 +537,7 @@ impl InputObjectTypeExtension {
     }
 }
 
-impl Directives {
+impl DirectiveList {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         for dir in self {
             state.write(" ")?;
@@ -546,7 +548,7 @@ impl Directives {
 }
 
 impl Directive {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         let Self { name, arguments } = self;
         state.write("@")?;
         state.write(name)?;
@@ -627,7 +629,7 @@ impl EnumValueDefinition {
 }
 
 impl Selection {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         match self {
             Selection::Field(x) => x.serialize_impl(state),
             Selection::FragmentSpread(x) => x.serialize_impl(state),
@@ -637,7 +639,7 @@ impl Selection {
 }
 
 impl Field {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         let Self {
             alias,
             name,
@@ -663,7 +665,7 @@ impl Field {
 }
 
 impl FragmentSpread {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         let Self {
             fragment_name,
             directives,
@@ -675,7 +677,7 @@ impl FragmentSpread {
 }
 
 impl InlineFragment {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         let Self {
             type_condition,
             directives,
@@ -780,7 +782,7 @@ fn comma_separated<T>(
 ///     c
 /// }
 /// ```
-fn curly_brackets_space_separated<T>(
+pub(crate) fn curly_brackets_space_separated<T>(
     state: &mut State,
     values: &[T],
     serialize_one: impl Fn(&mut State, &T) -> fmt::Result,
@@ -905,7 +907,7 @@ impl_display! {
     UnionTypeExtension
     EnumTypeExtension
     InputObjectTypeExtension
-    Directives
+    DirectiveList
     Directive
     VariableDefinition
     FieldDefinition
@@ -918,4 +920,20 @@ impl_display! {
     Value
     crate::Schema
     crate::ExecutableDocument
+    schema::DirectiveList
+    schema::ExtendedType
+    schema::ScalarType
+    schema::ObjectType
+    schema::InterfaceType
+    schema::EnumType
+    schema::UnionType
+    schema::InputObjectType
+    executable::Operation
+    executable::Fragment
+    executable::SelectionSet
+    executable::Selection
+    executable::Field
+    executable::InlineFragment
+    executable::FragmentSpread
+    executable::FieldSet
 }

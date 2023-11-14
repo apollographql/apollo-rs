@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             133..158 @11 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Foo": Object(
             160..183 @11 ObjectType {
                 description: None,
+                name: "Foo",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -89,6 +91,7 @@ Schema {
         "Baz": Object(
             185..206 @11 ObjectType {
                 description: None,
+                name: "Baz",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -122,6 +125,9 @@ ExecutableDocument {
     named_operations: {
         "IntrospectionQuery": 0..51 @11 Operation {
             operation_type: Query,
+            name: Some(
+                "IntrospectionQuery",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -161,6 +167,7 @@ ExecutableDocument {
     },
     fragments: {
         "Bar": 53..100 @11 Fragment {
+            name: "Bar",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Foo",
@@ -197,6 +204,7 @@ ExecutableDocument {
             },
         },
         "Quux": 102..131 @11 Fragment {
+            name: "Quux",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Baz",

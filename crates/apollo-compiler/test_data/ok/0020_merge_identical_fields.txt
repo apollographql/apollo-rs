@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..25 @20 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Dog": Object(
             27..74 @20 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -113,6 +115,9 @@ ExecutableDocument {
     named_operations: {
         "queryPupper": 76..175 @20 Operation {
             operation_type: Query,
+            name: Some(
+                "queryPupper",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -158,6 +163,7 @@ ExecutableDocument {
     },
     fragments: {
         "mergeIdenticalFields": 177..231 @20 Fragment {
+            name: "mergeIdenticalFields",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
@@ -208,6 +214,7 @@ ExecutableDocument {
             },
         },
         "mergeIdenticalAliasesAndFields": 233..319 @20 Fragment {
+            name: "mergeIdenticalAliasesAndFields",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",

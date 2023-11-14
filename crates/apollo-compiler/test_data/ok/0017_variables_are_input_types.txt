@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Dog": Object(
             314..429 @17 ObjectType {
                 description: None,
+                name: "Dog",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -114,6 +115,7 @@ Schema {
         "ComplexInput": InputObject(
             431..484 @17 InputObjectType {
                 description: None,
+                name: "ComplexInput",
                 directives: [],
                 fields: {
                     "name": Component {
@@ -146,6 +148,7 @@ Schema {
         "Query": Object(
             486..600 @17 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -225,6 +228,9 @@ ExecutableDocument {
     named_operations: {
         "takesBoolean": 0..106 @17 Operation {
             operation_type: Query,
+            name: Some(
+                "takesBoolean",
+            ),
             variables: [
                 19..41 @17 VariableDefinition {
                     name: "atOtherHomes",
@@ -304,6 +310,9 @@ ExecutableDocument {
         },
         "takesComplexInput": 108..213 @17 Operation {
             operation_type: Query,
+            name: Some(
+                "takesComplexInput",
+            ),
             variables: [
                 132..159 @17 VariableDefinition {
                     name: "complexInput",
@@ -383,6 +392,9 @@ ExecutableDocument {
         },
         "TakesListOfBooleanBang": 215..311 @17 Operation {
             operation_type: Query,
+            name: Some(
+                "TakesListOfBooleanBang",
+            ),
             variables: [
                 244..265 @17 VariableDefinition {
                     name: "booleans",

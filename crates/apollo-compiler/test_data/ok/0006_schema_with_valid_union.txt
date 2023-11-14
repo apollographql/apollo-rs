@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "SearchQuery",
+                name: "SearchQuery",
             },
         ),
         mutation: None,
@@ -47,15 +47,16 @@ Schema {
         "SearchResult": Union(
             33..68 @6 UnionType {
                 description: None,
+                name: "SearchResult",
                 directives: [],
                 members: {
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Photo",
+                        name: "Photo",
                     },
-                    ComponentStr {
+                    ComponentName {
                         origin: Definition,
-                        node: "Person",
+                        name: "Person",
                     },
                 },
             },
@@ -63,6 +64,7 @@ Schema {
         "Person": Object(
             70..111 @6 ObjectType {
                 description: None,
+                name: "Person",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -96,6 +98,7 @@ Schema {
         "Photo": Object(
             113..154 @6 ObjectType {
                 description: None,
+                name: "Photo",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -129,6 +132,7 @@ Schema {
         "SearchQuery": Object(
             156..210 @6 ObjectType {
                 description: None,
+                name: "SearchQuery",
                 implements_interfaces: {},
                 directives: [],
                 fields: {

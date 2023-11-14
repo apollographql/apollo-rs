@@ -176,7 +176,7 @@ pub(crate) fn validate_implements_interfaces(
         interface
             .implements_interfaces
             .iter()
-            .map(|component| &component.node)
+            .map(|component| &component.name)
             .zip(std::iter::repeat(name))
     });
     for (transitive_interface, via_interface) in transitive_interfaces {

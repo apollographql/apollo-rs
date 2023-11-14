@@ -1,7 +1,10 @@
 use super::*;
+use crate::name;
 use crate::node::NodeLocation;
+use crate::schema::ComponentName;
+use crate::schema::ComponentOrigin;
 use crate::schema::SchemaBuilder;
-use crate::validation::Diagnostics;
+use crate::validation::DiagnosticList;
 use crate::ExecutableDocument;
 use crate::Parser;
 use crate::Schema;
@@ -35,8 +38,8 @@ impl Document {
     /// the GraphQL grammar or where the parser reached a token limit or recursion limit.
     ///
     /// Does not perform any validation beyond this syntactic level.
-    pub fn check_parse_errors(&self) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(None, self.sources.clone());
+    pub fn check_parse_errors(&self) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(None, self.sources.clone());
         for (file_id, source) in self.sources.iter() {
             source.validate_parse_errors(&mut errors, *file_id)
         }
@@ -44,14 +47,14 @@ impl Document {
     }
 
     /// Validate as an executable document, as much as possible without a schema
-    pub fn validate_standalone_executable(&self) -> Result<(), Diagnostics> {
+    pub fn validate_standalone_executable(&self) -> Result<(), DiagnosticList> {
         let type_system_definitions_are_errors = true;
         let executable = crate::executable::from_ast::document_from_ast(
             None,
             self,
             type_system_definitions_are_errors,
         );
-        let mut errors = Diagnostics::new(None, self.sources.clone());
+        let mut errors = DiagnosticList::new(None, self.sources.clone());
         crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
         errors.into_result()
     }
@@ -240,8 +243,8 @@ impl Definition {
         }
     }
 
-    pub fn directives(&self) -> &Directives {
-        static EMPTY: Directives = Directives(Vec::new());
+    pub fn directives(&self) -> &DirectiveList {
+        static EMPTY: DirectiveList = DirectiveList(Vec::new());
         match self {
             Self::DirectiveDefinition(_) => &EMPTY,
             Self::OperationDefinition(def) => &def.directives,
@@ -380,7 +383,7 @@ impl InputObjectTypeExtension {
     serialize_method!();
 }
 
-impl Directives {
+impl DirectiveList {
     pub fn new() -> Self {
         Self(Vec::new())
     }
@@ -412,13 +415,13 @@ impl Directives {
     serialize_method!();
 }
 
-impl std::fmt::Debug for Directives {
+impl std::fmt::Debug for DirectiveList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }
 }
 
-impl std::ops::Deref for Directives {
+impl std::ops::Deref for DirectiveList {
     type Target = Vec<Node<Directive>>;
 
     fn deref(&self) -> &Self::Target {
@@ -426,13 +429,13 @@ impl std::ops::Deref for Directives {
     }
 }
 
-impl std::ops::DerefMut for Directives {
+impl std::ops::DerefMut for DirectiveList {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<'a> IntoIterator for &'a Directives {
+impl<'a> IntoIterator for &'a DirectiveList {
     type Item = &'a Node<Directive>;
 
     type IntoIter = std::slice::Iter<'a, Node<Directive>>;
@@ -442,7 +445,7 @@ impl<'a> IntoIterator for &'a Directives {
     }
 }
 
-impl<'a> IntoIterator for &'a mut Directives {
+impl<'a> IntoIterator for &'a mut DirectiveList {
     type Item = &'a mut Node<Directive>;
 
     type IntoIter = std::slice::IterMut<'a, Node<Directive>>;
@@ -473,11 +476,11 @@ impl OperationType {
     }
 
     /// Get the default name of the object type for this operation type
-    pub const fn default_type_name(self) -> &'static str {
+    pub const fn default_type_name(self) -> NamedType {
         match self {
-            OperationType::Query => "Query",
-            OperationType::Mutation => "Mutation",
-            OperationType::Subscription => "Subscription",
+            OperationType::Query => name!("Query"),
+            OperationType::Mutation => name!("Mutation"),
+            OperationType::Subscription => name!("Subscription"),
         }
     }
 
@@ -531,12 +534,34 @@ impl VariableDefinition {
     serialize_method!();
 }
 
-impl Type {
-    /// Returns a new `Type::Named` with with a synthetic `Name` (not parsed from a source file)
-    pub fn new_named(name: &str) -> Self {
-        Type::Named(Name::new(name))
-    }
+/// Create a static [`Type`] with GraphQL-like syntax
+///
+/// ```
+/// use apollo_compiler::ty;
+///
+/// assert_eq!(ty!(Obj).to_string(), "Obj");
+/// assert_eq!(ty!(Obj!).to_string(), "Obj!");
+/// assert_eq!(ty!([Obj]).to_string(), "[Obj]");
+/// assert_eq!(ty!([Obj]!).to_string(), "[Obj]!");
+/// assert_eq!(ty!([[[Obj ] !]]!).to_string(), "[[[Obj]!]]!");
+/// ```
+#[macro_export]
+macro_rules! ty {
+    ($name: ident) => {
+        $crate::ast::Type::Named($crate::name!($name))
+    };
+    ($name: ident !) => {
+        $crate::ast::Type::NonNullNamed($crate::name!($name))
+    };
+    ([ $($tt: tt)+ ]) => {
+        $crate::ast::Type::List(::std::boxed::Box::new($crate::ty!( $($tt)+ )))
+    };
+    ([ $($tt: tt)+ ]!) => {
+        $crate::ast::Type::NonNullList(::std::boxed::Box::new($crate::ty!( $($tt)+ )))
+    };
+}
 
+impl Type {
     /// Returns this type made non-null, if it isn’t already.
     pub fn non_null(self) -> Self {
         match self {
@@ -1112,6 +1137,206 @@ impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
             name: name.into(),
             value: value.into(),
         })
+    }
+}
+
+/// Create a [`Name`] from a string literal or identifier, checked for validity at compile time.
+///
+/// A `Name` created this way does not own allocated heap memory or a reference counter,
+/// so cloning it is extremely cheap.
+///
+/// # Examples
+///
+/// ```
+/// use apollo_compiler::name;
+///
+/// assert_eq!(name!("Query").as_str(), "Query");
+/// assert_eq!(name!(Query).as_str(), "Query");
+/// ```
+///
+/// ```compile_fail
+/// # use apollo_compiler::name;
+/// // error[E0080]: evaluation of constant value failed
+/// // assertion failed: ::apollo_compiler::ast::Name::is_valid(\"è_é\")
+/// let invalid = name!("è_é");
+/// ```
+#[macro_export]
+macro_rules! name {
+    ($value: ident) => {
+        $crate::name!(stringify!($value))
+    };
+    ($value: expr) => {{
+        const _: () = { assert!($crate::ast::Name::is_valid($value)) };
+        $crate::ast::Name::new_unchecked($crate::NodeStr::from_static(&$value))
+    }};
+}
+
+impl Name {
+    /// Creates a new `Name` if the given value is a valid GraphQL name.
+    pub fn new(value: impl Into<NodeStr>) -> Result<Self, InvalidNameError> {
+        let value = value.into();
+        if Self::is_valid(&value) {
+            Ok(Self::new_unchecked(value))
+        } else {
+            Err(InvalidNameError(value))
+        }
+    }
+
+    /// Creates a new `Name` without validity checking.
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub const fn new_unchecked(value: NodeStr) -> Self {
+        Self(value)
+    }
+
+    /// Returns whether the given string is a valid GraphQL name.
+    ///
+    /// <https://spec.graphql.org/October2021/#Name>
+    pub const fn is_valid(value: &str) -> bool {
+        let bytes = value.as_bytes();
+        let Some(&first) = bytes.first() else {
+            return false;
+        };
+        // `NameStart` and `NameContinue` are within the ASCII range,
+        // so converting from `u8` to `char` here does not affect the result:
+        if !Self::char_is_name_start(first as char) {
+            return false;
+        }
+        // TODO: iterator when available in const
+        let mut i = 1;
+        while i < bytes.len() {
+            if !Self::char_is_name_continue(bytes[i] as char) {
+                return false;
+            }
+            i += 1
+        }
+        true
+    }
+
+    /// <https://spec.graphql.org/October2021/#NameStart>
+    const fn char_is_name_start(c: char) -> bool {
+        matches!(c, 'a'..='z' | 'A'..='Z' | '_')
+    }
+
+    /// <https://spec.graphql.org/October2021/#NameContinue>
+    const fn char_is_name_continue(c: char) -> bool {
+        matches!(c, 'a'..='z' | 'A'..='Z' | '_' | '0'..='9')
+    }
+
+    pub fn to_component(&self, origin: ComponentOrigin) -> ComponentName {
+        ComponentName {
+            origin,
+            name: self.clone(),
+        }
+    }
+}
+
+impl TryFrom<NodeStr> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: NodeStr) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<&'_ NodeStr> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: &'_ NodeStr) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<&str> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<String> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl TryFrom<&'_ String> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: &'_ String) -> Result<Self, Self::Error> {
+        Self::new(value)
+    }
+}
+
+impl std::ops::Deref for Name {
+    type Target = NodeStr;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Display for Name {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+
+impl fmt::Debug for Name {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+
+impl AsRef<NodeStr> for Name {
+    fn as_ref(&self) -> &NodeStr {
+        &self.0
+    }
+}
+
+impl AsRef<str> for Name {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl std::borrow::Borrow<str> for Name {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl PartialEq<str> for Name {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<&'_ str> for Name {
+    fn eq(&self, other: &&'_ str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialOrd<str> for Name {
+    fn partial_cmp(&self, other: &str) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(other)
+    }
+}
+
+impl PartialOrd<&'_ str> for Name {
+    fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(*other)
+    }
+}
+
+impl fmt::Debug for InvalidNameError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
     }
 }
 

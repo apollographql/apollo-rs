@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             0..44 @9 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -80,6 +81,7 @@ Schema {
         "URL": Scalar(
             46..113 @9 ScalarType {
                 description: None,
+                name: "URL",
                 directives: [
                     Component {
                         origin: Definition,
@@ -101,6 +103,7 @@ Schema {
         "Point2D": InputObject(
             115..154 @9 InputObjectType {
                 description: None,
+                name: "Point2D",
                 directives: [],
                 fields: {
                     "x": Component {

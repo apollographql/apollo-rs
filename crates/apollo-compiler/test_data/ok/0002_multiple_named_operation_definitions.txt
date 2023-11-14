@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Query": Object(
             109..134 @2 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -68,6 +69,7 @@ Schema {
         "Pet": Object(
             136..182 @2 ObjectType {
                 description: None,
+                name: "Pet",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -101,6 +103,7 @@ Schema {
         "PetOwner": Object(
             184..216 @2 ObjectType {
                 description: None,
+                name: "PetOwner",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -134,6 +137,9 @@ ExecutableDocument {
     named_operations: {
         "getCatName": 0..41 @2 Operation {
             operation_type: Query,
+            name: Some(
+                "getCatName",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {
@@ -187,6 +193,9 @@ ExecutableDocument {
         },
         "getOwnerName": 43..106 @2 Operation {
             operation_type: Query,
+            name: Some(
+                "getOwnerName",
+            ),
             variables: [],
             directives: [],
             selection_set: SelectionSet {

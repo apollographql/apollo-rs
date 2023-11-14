@@ -16,9 +16,9 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentStr {
+            ComponentName {
                 origin: Definition,
-                node: "Query",
+                name: "Query",
             },
         ),
         mutation: None,
@@ -47,6 +47,7 @@ Schema {
         "Product": Object(
             0..65 @28 ObjectType {
                 description: None,
+                name: "Product",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -82,6 +83,7 @@ Schema {
         "Opts": InputObject(
             67..99 @28 InputObjectType {
                 description: None,
+                name: "Opts",
                 directives: [],
                 fields: {
                     "prop": Component {
@@ -106,6 +108,7 @@ Schema {
         "Query": Object(
             101..154 @28 ObjectType {
                 description: None,
+                name: "Query",
                 implements_interfaces: {},
                 directives: [],
                 fields: {
@@ -150,6 +153,7 @@ ExecutableDocument {
     anonymous_operation: Some(
         156..302 @28 Operation {
             operation_type: Query,
+            name: None,
             variables: [
                 163..186 @28 VariableDefinition {
                     name: "attributeName",
