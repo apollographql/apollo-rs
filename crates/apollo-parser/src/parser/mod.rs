@@ -323,9 +323,7 @@ impl<'a> Parser<'a> {
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current = if let Some(current) = self.current() {
-            current
-        } else {
+        let Some(current) = self.current() else {
             return;
         };
         let is_eof = current.kind == TokenKind::Eof;

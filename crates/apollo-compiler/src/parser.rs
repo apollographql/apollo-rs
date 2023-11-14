@@ -256,8 +256,11 @@ impl Parser {
             source.validate_parse_errors(&mut errors, *file_id)
         }
 
-        if let Some(ty) = tree.ty().convert(file_id) {
-            Ok(ty)
+        if errors.is_empty() {
+            if let Some(ty) = tree.ty().convert(file_id) {
+                return Ok(ty);
+            }
+            unreachable!("conversion is infallible if there were no syntax errors");
         } else {
             Err(errors)
         }
