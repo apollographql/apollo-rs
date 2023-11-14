@@ -153,8 +153,9 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parse selection set tokens. Useful for specifically parsing selections
-    /// sets which are part of specific directives, like `@requires`.
+    /// Parse a selection set with optional outer braces.
+    /// This is the expected format of the string value of the `fields` argument of some directives
+    /// like [`@requires`](https://www.apollographql.com/docs/federation/federated-types/federated-directives/#requires).
     pub fn parse_selection_set(mut self) -> SyntaxTree<SelectionSet> {
         grammar::selection::field_set(&mut self);
 
@@ -176,8 +177,9 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parse type tokens. Useful for specifically parsing field types which are
-    /// part of specific directives, like `@field`.
+    /// Parse a GraphQL type.
+    /// This is the expected format of the string value of the `type` argument
+    /// of some directives like [`@field`](https://specs.apollo.dev/join/v0.3/#@field).
     pub fn parse_type(mut self) -> SyntaxTree<Type> {
         grammar::ty::ty(&mut self);
 
