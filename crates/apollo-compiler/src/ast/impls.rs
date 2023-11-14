@@ -644,7 +644,7 @@ impl Type {
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
     ) -> Result<Self, DiagnosticList> {
-        Parser::new().parse_field_type(source_text, path)
+        Parser::new().parse_type(source_text, path)
     }
 
     serialize_method!();

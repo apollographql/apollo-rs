@@ -196,7 +196,7 @@ impl Parser {
         self.parse_ast(source_text, path).to_mixed()
     }
 
-    /// Parse the given source a selection set with optional outer brackets.
+    /// Parse the given source text as a selection set with optional outer brackets.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -235,11 +235,11 @@ impl Parser {
         }
     }
 
-    /// Parse the given source of a field type.
+    /// Parse the given source text as a reference to a type.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    pub fn parse_field_type(
+    pub fn parse_type(
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,

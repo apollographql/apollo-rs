@@ -191,7 +191,7 @@ impl<'a> Parser<'a> {
             syntax_tree::SyntaxTreeWrapper::Type(tree) => tree,
             syntax_tree::SyntaxTreeWrapper::FieldSet(_)
             | syntax_tree::SyntaxTreeWrapper::Document(_) => {
-                unreachable!("parse constructor can only construct a selection set")
+                unreachable!("parse constructor can only construct a type")
             }
         }
     }
