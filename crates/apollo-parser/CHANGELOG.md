@@ -38,7 +38,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [issue/715]: https://github.com/apollographql/apollo-rs/issues/715
 [fieldtype]: https://specs.apollo.dev/join/v0.3/#@field
 
-# [0.7.3]([unreleased](https://crates.io/crates/apollo-parser/0.7.3)) - 2023-11-07
+# [0.7.3](https://crates.io/crates/apollo-parser/0.7.3) - 2023-11-07
 
 ## Fixes
 
