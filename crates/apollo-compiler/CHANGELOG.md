@@ -32,6 +32,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [SimonSapin]: https://github.com/SimonSapin
 [pull/739]: https://github.com/apollographql/apollo-rs/pull/739
 
+- **Add parsing an `ast::Type` from a string - [lrlna] and [goto-bus-stop], [pull/718] fixing [issue/715]**
+
+  Parses GraphQL type syntax:
+  ```rust
+  use apollo_compiler::ast::Type;
+  let ty = Type::parse("[ListItem!]!")?;
+  ```
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/718]: https://github.com/apollographql/apollo-rs/pull/718
+[issue/715]: https://github.com/apollographql/apollo-rs/issues/715
 
 # [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 

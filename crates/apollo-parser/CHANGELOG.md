@@ -16,6 +16,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [unreleased](https://crates.io/crates/apollo-parser/x.x.x) - 2023-xx-xx
+
+## Features
+- **`parse_type` parses a selection set with optional outer brackets - [lrlna], [pull/718] fixing [issue/715]**
+  This returns a `SyntaxTree<Type>` which instead of `.document() -> cst::Document`
+  has `.type() -> cst::Type`.
+  This is intended to parse the string value of a [`@field(type:)` argument][fieldtype]
+  used in some Apollo Federation directives.
+  ```rust
+  let source = r#"[[NestedList!]]!"#;
+
+  let parser = Parser::new(source);
+  let cst: SyntaxTree<cst::Type> = parser.parse_type();
+  let errors = cst.errors().collect::<Vec<_>>();
+  assert_eq!(errors.len(), 0);
+  ```
+
+[lrlna]: https://github.com/lrlna
+[pull/718]: https://github.com/apollographql/apollo-rs/pull/718
+[issue/715]: https://github.com/apollographql/apollo-rs/issues/715
+[fieldtype]: https://specs.apollo.dev/join/v0.3/#@field
+
 # [0.7.3]([unreleased](https://crates.io/crates/apollo-parser/0.7.3)) - 2023-11-07
 
 ## Fixes
