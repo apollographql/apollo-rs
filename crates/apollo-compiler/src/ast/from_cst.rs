@@ -27,7 +27,7 @@ impl Document {
 }
 
 /// Similar to `TryFrom`, but with an `Option` return type because AST uses Option a lot.
-trait Convert {
+pub(crate) trait Convert {
     type Target;
     fn convert(&self, file_id: FileId) -> Option<Self::Target>;
 }

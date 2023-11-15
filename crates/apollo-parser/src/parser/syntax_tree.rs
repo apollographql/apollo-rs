@@ -49,6 +49,7 @@ use super::LimitTracker;
 pub(crate) enum SyntaxTreeWrapper {
     Document(SyntaxTree<cst::Document>),
     FieldSet(SyntaxTree<cst::SelectionSet>),
+    Type(SyntaxTree<cst::Type>),
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -107,6 +108,25 @@ impl SyntaxTree<cst::SelectionSet> {
     pub fn field_set(&self) -> cst::SelectionSet {
         cst::SelectionSet {
             syntax: self.syntax_node(),
+        }
+    }
+}
+
+impl SyntaxTree<cst::Type> {
+    /// Return the root typed `SelectionSet` node. This is used for parsing
+    /// selection sets defined by @requires directive.
+    pub fn ty(&self) -> cst::Type {
+        match self.syntax_node().kind() {
+            SyntaxKind::NAMED_TYPE => cst::Type::NamedType(cst::NamedType {
+                syntax: self.syntax_node(),
+            }),
+            SyntaxKind::LIST_TYPE => cst::Type::ListType(cst::ListType {
+                syntax: self.syntax_node(),
+            }),
+            SyntaxKind::NON_NULL_TYPE => cst::Type::NonNullType(cst::NonNullType {
+                syntax: self.syntax_node(),
+            }),
+            _ => unreachable!("this should only return Type node"),
         }
     }
 }
@@ -219,6 +239,23 @@ impl SyntaxTreeBuilder {
         token_limit: LimitTracker,
     ) -> SyntaxTreeWrapper {
         SyntaxTreeWrapper::FieldSet(SyntaxTree {
+            green: self.builder.finish(),
+            // TODO: keep the errors in the builder rather than pass it in here?
+            errors,
+            // TODO: keep the recursion and token limits in the builder rather than pass it in here?
+            recursion_limit,
+            token_limit,
+            _phantom: PhantomData,
+        })
+    }
+
+    pub(crate) fn finish_type(
+        self,
+        errors: Vec<Error>,
+        recursion_limit: LimitTracker,
+        token_limit: LimitTracker,
+    ) -> SyntaxTreeWrapper {
+        SyntaxTreeWrapper::Type(SyntaxTree {
             green: self.builder.finish(),
             // TODO: keep the errors in the builder rather than pass it in here?
             errors,

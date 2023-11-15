@@ -8,7 +8,7 @@ pub(crate) mod grammar;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    cst::{Document, SelectionSet},
+    cst::{Document, SelectionSet, Type},
     lexer::Lexer,
     Error, LimitTracker, Token, TokenKind,
 };
@@ -146,12 +146,16 @@ impl<'a> Parser<'a> {
 
         match builder {
             syntax_tree::SyntaxTreeWrapper::Document(tree) => tree,
-            syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
+            syntax_tree::SyntaxTreeWrapper::Type(_)
+            | syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
                 unreachable!("parse constructor can only construct a document")
             }
         }
     }
 
+    /// Parse a selection set with optional outer braces.
+    /// This is the expected format of the string value of the `fields` argument of some directives
+    /// like [`@requires`](https://www.apollographql.com/docs/federation/federated-types/federated-directives/#requires).
     pub fn parse_selection_set(mut self) -> SyntaxTree<SelectionSet> {
         grammar::selection::field_set(&mut self);
 
@@ -166,8 +170,30 @@ impl<'a> Parser<'a> {
 
         match builder {
             syntax_tree::SyntaxTreeWrapper::FieldSet(tree) => tree,
-            syntax_tree::SyntaxTreeWrapper::Document(_) => {
-                unreachable!("parse constructor can only construct a selection set")
+            syntax_tree::SyntaxTreeWrapper::Document(_)
+            | syntax_tree::SyntaxTreeWrapper::Type(_) => {
+                unreachable!("parse_selection_set constructor can only construct a selection set")
+            }
+        }
+    }
+
+    /// Parse a GraphQL type.
+    /// This is the expected format of the string value of the `type` argument
+    /// of some directives like [`@field`](https://specs.apollo.dev/join/v0.3/#@field).
+    pub fn parse_type(mut self) -> SyntaxTree<Type> {
+        grammar::ty::ty(&mut self);
+
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        let builder =
+            builder.finish_type(self.errors, self.recursion_limit, self.lexer.limit_tracker);
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::Type(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::FieldSet(_)
+            | syntax_tree::SyntaxTreeWrapper::Document(_) => {
+                unreachable!("parse_type constructor can only construct a type")
             }
         }
     }
@@ -299,9 +325,7 @@ impl<'a> Parser<'a> {
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current = if let Some(current) = self.current() {
-            current
-        } else {
+        let Some(current) = self.current() else {
             return;
         };
         let is_eof = current.kind == TokenKind::Eof;

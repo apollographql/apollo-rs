@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::executable;
 use crate::schema::SchemaBuilder;
@@ -195,7 +196,7 @@ impl Parser {
         self.parse_ast(source_text, path).to_mixed()
     }
 
-    /// Parse the given source a selection set with optional outer brackets.
+    /// Parse the given source text as a selection set with optional outer brackets.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -231,6 +232,37 @@ impl Parser {
             sources: Arc::new([(file_id, source_file)].into()),
             build_errors: build_errors.errors,
             selection_set,
+        }
+    }
+
+    /// Parse the given source text as a reference to a type.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    pub fn parse_type(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<ast::Type, DiagnosticList> {
+        let (tree, source_file) =
+            self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
+                parser.parse_type()
+            });
+        let file_id = FileId::new();
+
+        let sources: crate::SourceMap = Arc::new([(file_id, source_file)].into());
+        let mut errors = DiagnosticList::new(None, sources.clone());
+        for (file_id, source) in sources.iter() {
+            source.validate_parse_errors(&mut errors, *file_id)
+        }
+
+        if errors.is_empty() {
+            if let Some(ty) = tree.ty().convert(file_id) {
+                return Ok(ty);
+            }
+            unreachable!("conversion is infallible if there were no syntax errors");
+        } else {
+            Err(errors)
         }
     }
 

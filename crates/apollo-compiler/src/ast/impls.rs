@@ -34,7 +34,7 @@ impl Document {
         Self::parser().parse_ast(source_text, path)
     }
 
-    /// Returns [`Diagnostics`] for cases where parsed input does not match
+    /// Returns [`DiagnosticList`] for cases where parsed input does not match
     /// the GraphQL grammar or where the parser reached a token limit or recursion limit.
     ///
     /// Does not perform any validation beyond this syntactic level.
@@ -632,6 +632,19 @@ impl Type {
                 right.is_assignable_to(left)
             }
         }
+    }
+
+    /// Parse the given source text as a reference to a type.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Self, DiagnosticList> {
+        Parser::new().parse_type(source_text, path)
     }
 
     serialize_method!();
