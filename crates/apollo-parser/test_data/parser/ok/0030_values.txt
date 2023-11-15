@@ -1,86 +1,107 @@
-- DOCUMENT@0..114
-    - OPERATION_DEFINITION@0..114
-        - SELECTION_SET@0..114
+- DOCUMENT@0..165
+    - OPERATION_DEFINITION@0..164
+        - SELECTION_SET@0..164
             - L_CURLY@0..1 "{"
             - WHITESPACE@1..6 "\n    "
-            - FIELD@6..112
+            - FIELD@6..162
                 - NAME@6..10
                     - IDENT@6..10 "user"
-                - ARGUMENTS@10..112
+                - ARGUMENTS@10..162
                     - L_PAREN@10..11 "("
-                    - ARGUMENT@11..16
-                        - NAME@11..13
-                            - IDENT@11..13 "id"
-                        - COLON@13..14 ":"
-                        - WHITESPACE@14..15 " "
-                        - INT_VALUE@15..16
-                            - INT@15..16 "4"
-                    - COMMA@16..17 ","
-                    - WHITESPACE@17..18 " "
-                    - ARGUMENT@18..29
-                        - NAME@18..22
-                            - IDENT@18..22 "size"
+                    - WHITESPACE@11..20 "\n        "
+                    - ARGUMENT@20..25
+                        - NAME@20..22
+                            - IDENT@20..22 "id"
                         - COLON@22..23 ":"
                         - WHITESPACE@23..24 " "
-                        - VARIABLE@24..29
-                            - DOLLAR@24..25 "$"
-                            - NAME@25..29
-                                - IDENT@25..29 "size"
-                    - WHITESPACE@29..30 " "
-                    - ARGUMENT@30..45
-                        - NAME@30..35
-                            - IDENT@30..35 "value"
-                        - COLON@35..36 ":"
-                        - WHITESPACE@36..37 " "
-                        - STRING_VALUE@37..45
-                            - STRING@37..45 "\"string\""
-                    - COMMA@45..46 ","
-                    - WHITESPACE@46..47 " "
-                    - ARGUMENT@47..69
-                        - NAME@47..52
-                            - IDENT@47..52 "input"
-                        - COLON@52..53 ":"
-                        - WHITESPACE@53..54 " "
-                        - LIST_VALUE@54..69
-                            - L_BRACK@54..55 "["
-                            - WHITESPACE@55..56 " "
-                            - STRING_VALUE@56..61
-                                - STRING@56..61 "\"one\""
-                            - COMMA@61..62 ","
-                            - WHITESPACE@62..63 " "
-                            - FLOAT_VALUE@63..67
-                                - FLOAT@63..67 "1.34"
+                        - INT_VALUE@24..25
+                            - INT@24..25 "4"
+                    - COMMA@25..26 ","
+                    - WHITESPACE@26..28 "\n\t"
+                    - ARGUMENT@28..39
+                        - NAME@28..32
+                            - IDENT@28..32 "size"
+                        - COLON@32..33 ":"
+                        - WHITESPACE@33..34 " "
+                        - VARIABLE@34..39
+                            - DOLLAR@34..35 "$"
+                            - NAME@35..39
+                                - IDENT@35..39 "size"
+                    - WHITESPACE@39..41 "\n\t"
+                    - ARGUMENT@41..56
+                        - NAME@41..46
+                            - IDENT@41..46 "value"
+                        - COLON@46..47 ":"
+                        - WHITESPACE@47..48 " "
+                        - STRING_VALUE@48..56
+                            - STRING@48..56 "\"string\""
+                    - COMMA@56..57 ","
+                    - WHITESPACE@57..59 "\n\t"
+                    - ARGUMENT@59..81
+                        - NAME@59..64
+                            - IDENT@59..64 "input"
+                        - COLON@64..65 ":"
+                        - WHITESPACE@65..66 " "
+                        - LIST_VALUE@66..81
+                            - L_BRACK@66..67 "["
                             - WHITESPACE@67..68 " "
-                            - R_BRACK@68..69 "]"
-                    - COMMA@69..70 ","
-                    - WHITESPACE@70..71 " "
-                    - ARGUMENT@71..111
-                        - NAME@71..81
-                            - IDENT@71..81 "otherInput"
-                        - COLON@81..82 ":"
-                        - WHITESPACE@82..83 " "
-                        - OBJECT_VALUE@83..111
-                            - L_CURLY@83..84 "{"
-                            - WHITESPACE@84..85 " "
-                            - OBJECT_FIELD@85..95
-                                - NAME@85..88
-                                    - IDENT@85..88 "key"
-                                - COLON@88..89 ":"
-                                - WHITESPACE@89..90 " "
-                                - BOOLEAN_VALUE@90..95
-                                    - false_KW@90..95 "false"
-                            - COMMA@95..96 ","
-                            - WHITESPACE@96..97 " "
-                            - OBJECT_FIELD@97..109
-                                - NAME@97..103
-                                    - IDENT@97..103 "output"
-                                - COLON@103..104 ":"
-                                - WHITESPACE@104..105 " "
-                                - NULL_VALUE@105..109
-                                    - null_KW@105..109 "null"
+                            - STRING_VALUE@68..73
+                                - STRING@68..73 "\"one\""
+                            - COMMA@73..74 ","
+                            - WHITESPACE@74..75 " "
+                            - FLOAT_VALUE@75..79
+                                - FLOAT@75..79 "1.34"
+                            - WHITESPACE@79..80 " "
+                            - R_BRACK@80..81 "]"
+                    - COMMA@81..82 ","
+                    - WHITESPACE@82..84 "\n\t"
+                    - ARGUMENT@84..124
+                        - NAME@84..94
+                            - IDENT@84..94 "otherInput"
+                        - COLON@94..95 ":"
+                        - WHITESPACE@95..96 " "
+                        - OBJECT_VALUE@96..124
+                            - L_CURLY@96..97 "{"
+                            - WHITESPACE@97..98 " "
+                            - OBJECT_FIELD@98..108
+                                - NAME@98..101
+                                    - IDENT@98..101 "key"
+                                - COLON@101..102 ":"
+                                - WHITESPACE@102..103 " "
+                                - BOOLEAN_VALUE@103..108
+                                    - false_KW@103..108 "false"
+                            - COMMA@108..109 ","
                             - WHITESPACE@109..110 " "
-                            - R_CURLY@110..111 "}"
-                    - R_PAREN@111..112 ")"
-            - WHITESPACE@112..113 "\n"
-            - R_CURLY@113..114 "}"
+                            - OBJECT_FIELD@110..122
+                                - NAME@110..116
+                                    - IDENT@110..116 "output"
+                                - COLON@116..117 ":"
+                                - WHITESPACE@117..118 " "
+                                - NULL_VALUE@118..122
+                                    - null_KW@118..122 "null"
+                            - WHITESPACE@122..123 " "
+                            - R_CURLY@123..124 "}"
+                    - WHITESPACE@124..126 "\n\t"
+                    - ARGUMENT@126..139
+                        - NAME@126..135
+                            - IDENT@126..135 "emptyList"
+                        - COLON@135..136 ":"
+                        - WHITESPACE@136..137 " "
+                        - LIST_VALUE@137..139
+                            - L_BRACK@137..138 "["
+                            - R_BRACK@138..139 "]"
+                    - WHITESPACE@139..141 "\n\t"
+                    - ARGUMENT@141..156
+                        - NAME@141..152
+                            - IDENT@141..152 "emptyObject"
+                        - COLON@152..153 ":"
+                        - WHITESPACE@153..154 " "
+                        - OBJECT_VALUE@154..156
+                            - L_CURLY@154..155 "{"
+                            - R_CURLY@155..156 "}"
+                    - WHITESPACE@156..161 "\n    "
+                    - R_PAREN@161..162 ")"
+            - WHITESPACE@162..163 "\n"
+            - R_CURLY@163..164 "}"
+    - WHITESPACE@164..165 "\n"
 recursion limit: 500, high: 2
