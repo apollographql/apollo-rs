@@ -1,0 +1,10 @@
+type Query {
+  foo(arg: [String!]!): String!
+  bar(arg: [String!]): String!
+}
+
+query {
+  a: foo(arg: [null])
+  b: foo(arg: [null, null, "hello"])
+  bar(arg: [null])
+}
