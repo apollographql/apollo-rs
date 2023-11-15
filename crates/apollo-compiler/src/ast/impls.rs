@@ -34,7 +34,7 @@ impl Document {
         Self::parser().parse_ast(source_text, path)
     }
 
-    /// Returns [`Diagnostics`] for cases where parsed input does not match
+    /// Returns [`DiagnosticList`] for cases where parsed input does not match
     /// the GraphQL grammar or where the parser reached a token limit or recursion limit.
     ///
     /// Does not perform any validation beyond this syntactic level.
@@ -634,7 +634,7 @@ impl Type {
         }
     }
 
-    /// Parse the given source with a field type.
+    /// Parse the given source text as a reference to a type.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
