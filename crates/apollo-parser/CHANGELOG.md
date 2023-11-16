@@ -48,6 +48,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   { field(argument: {}) }
   ```
 
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/745]: https://github.com/apollographql/apollo-rs/pull/745
+[issue/744]: https://github.com/apollographql/apollo-rs/issues/744
+
 # [0.7.3](https://crates.io/crates/apollo-parser/0.7.3) - 2023-11-07
 
 ## Fixes
