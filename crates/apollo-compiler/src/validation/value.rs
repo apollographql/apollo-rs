@@ -236,13 +236,12 @@ pub(crate) fn value_of_correct_type(
                 diagnostics.push(unsupported_type(db, arg_value, ty))
             } else {
                 let item_type = ty.same_location(ty.item_type().clone());
-                match &type_definition {
-                    schema::ExtendedType::Scalar(_)
-                    | schema::ExtendedType::Enum(_)
-                    | schema::ExtendedType::InputObject(_) => li.iter().for_each(|v| {
-                        value_of_correct_type(db, &item_type, v, var_defs, diagnostics)
-                    }),
-                    _ => diagnostics.push(unsupported_type(db, arg_value, &item_type)),
+                if type_definition.is_input_type() {
+                    for v in li {
+                        value_of_correct_type(db, &item_type, v, var_defs, diagnostics);
+                    }
+                } else {
+                    diagnostics.push(unsupported_type(db, arg_value, &item_type));
                 }
             }
         }
