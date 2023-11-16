@@ -1,8 +1,5 @@
 //! Ported from graphql-js, 2023-11-16
 //! https://github.com/graphql/graphql-js/blob/0b7590f0a2b65e6210da2e49be0d8e6c27781af2/src/validation/__tests__/ValuesOfCorrectTypeRule-test.ts
-//!
-//! Note all `expect_errors` calls do not check for the kind of errors right now, while in
-//! graphql-js they do.
 use expect_test::Expect;
 use std::sync::OnceLock;
 use unindent::unindent;
