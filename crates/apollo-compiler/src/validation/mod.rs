@@ -196,9 +196,9 @@ impl DiagnosticData {
                 } => {
                     report.with_label_opt(
                         *previous_location,
-                        "previous definition of `@{name}` here",
+                        format_args!("previous definition of `@{name}` here"),
                     );
-                    report.with_label_opt(self.location, "`@{name}` redefined here");
+                    report.with_label_opt(self.location, format_args!("`@{name}` redefined here"));
                     report.with_help("remove or rename one of the definitions");
                 }
                 SchemaBuildError::TypeDefinitionCollision {
@@ -206,9 +206,11 @@ impl DiagnosticData {
                     name,
                     ..
                 } => {
-                    report
-                        .with_label_opt(*previous_location, "previous definition of `{name}` here");
-                    report.with_label_opt(self.location, "`{name}` redefined here");
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `{name}` here"),
+                    );
+                    report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                     report.with_help("remove or rename one of the definitions, or use `extend`");
                 }
                 SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
@@ -231,9 +233,12 @@ impl DiagnosticData {
                 } => {
                     report.with_label_opt(
                         *previous_location,
-                        "previous definition of `{operation_type}` here",
+                        format_args!("previous definition of `{operation_type}` here"),
                     );
-                    report.with_label_opt(self.location, "`{operation_type}` redefined here");
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("`{operation_type}` redefined here"),
+                    );
                 }
                 SchemaBuildError::DuplicateImplementsInterfaceInObject {
                     name_at_previous_location,
@@ -247,9 +252,12 @@ impl DiagnosticData {
                     let name = name_at_previous_location;
                     report.with_label_opt(
                         *previous_location,
-                        "previous implementation of `{name}` here",
+                        format_args!("previous implementation of `{name}` here"),
                     );
-                    report.with_label_opt(self.location, "`{name}` implemented again here");
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("`{name}` implemented again here"),
+                    );
                 }
                 SchemaBuildError::ObjectFieldNameCollision {
                     name_at_previous_location,
@@ -273,9 +281,11 @@ impl DiagnosticData {
                 } => {
                     let previous_location = &name_at_previous_location.location();
                     let name = name_at_previous_location;
-                    report
-                        .with_label_opt(*previous_location, "previous definition of `{name}` here");
-                    report.with_label_opt(self.location, "`{name}` redefined here");
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `{name}` here"),
+                    );
+                    report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                 }
             },
             Details::ExecutableBuildError(err) => match err {
