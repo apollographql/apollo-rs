@@ -54,7 +54,7 @@ pub(crate) fn validate_field(
                 {
                     diagnostics.push(diag)
                 } else {
-                    diagnostics.extend(super::value::validate_values2(
+                    diagnostics.extend(super::value::validate_values(
                         db,
                         &arg_definition.ty,
                         argument,

@@ -280,7 +280,7 @@ pub(crate) fn validate_directives<'dir>(
                         diagnostics.push(diag)
                     } else {
                         let type_diags =
-                            super::value::validate_values2(db, &input_value.ty, argument, var_defs);
+                            super::value::validate_values(db, &input_value.ty, argument, var_defs);
 
                         diagnostics.extend(type_diags);
                     }

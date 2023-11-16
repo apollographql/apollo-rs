@@ -36,21 +36,18 @@ fn unsupported_type(
     ))
 }
 
-//for bigint
-/*
-*/
-pub(crate) fn validate_values2(
+pub(crate) fn validate_values(
     db: &dyn ValidationDatabase,
     ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
-    value_of_correct_type2(db, ty, &argument.value, var_defs, &mut diagnostics);
+    value_of_correct_type(db, ty, &argument.value, var_defs, &mut diagnostics);
     diagnostics
 }
 
-pub(crate) fn value_of_correct_type2(
+pub(crate) fn value_of_correct_type(
     db: &dyn ValidationDatabase,
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
@@ -191,7 +188,7 @@ pub(crate) fn value_of_correct_type2(
                         if var_def.ty.is_non_null() && default_value.is_null() {
                             diagnostics.push(unsupported_type(db, default_value, &var_def.ty))
                         } else {
-                            value_of_correct_type2(
+                            value_of_correct_type(
                                 db,
                                 &var_def.ty,
                                 default_value,
@@ -241,7 +238,7 @@ pub(crate) fn value_of_correct_type2(
             | schema::ExtendedType::Enum(_)
             | schema::ExtendedType::InputObject(_) => li
                 .iter()
-                .for_each(|v| value_of_correct_type2(db, ty, v, var_defs, diagnostics)),
+                .for_each(|v| value_of_correct_type(db, ty, v, var_defs, diagnostics)),
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::Object(obj) => match &type_definition {
@@ -302,7 +299,7 @@ pub(crate) fn value_of_correct_type2(
                     let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);
 
                     if let Some((_, v)) = used_val {
-                        value_of_correct_type2(db, ty, v, var_defs, diagnostics);
+                        value_of_correct_type(db, ty, v, var_defs, diagnostics);
                     }
                 })
             }
