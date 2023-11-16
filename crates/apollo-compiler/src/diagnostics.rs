@@ -1,6 +1,9 @@
 use crate::ast::DirectiveLocation;
+use crate::diagnostic::DiagnosticReport;
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
+use crate::NodeLocation;
+use crate::SourceMap;
 use std::fmt;
 use thiserror::Error;
 
@@ -245,31 +248,18 @@ pub(crate) enum DiagnosticData {
 }
 
 impl ApolloDiagnostic {
-    pub(crate) fn to_report(
-        &self,
-        config: ariadne::Config,
-    ) -> ariadne::Report<'static, NodeLocation> {
-        use ariadne::{ColorGenerator, Report, ReportKind};
+    pub(crate) fn to_report(&self, sources: SourceMap, color: bool) -> DiagnosticReport {
+        use ariadne::ReportKind;
 
-        let mut colors = ColorGenerator::new();
-        let (id, offset) = if let Some(location) = self.location {
-            (location.file_id(), location.offset())
-        } else {
-            (FileId::NONE, 0)
-        };
-        let mut builder = Report::build(ReportKind::Error, id, offset)
-            .with_config(config)
-            .with_message(&self.data);
-        builder.add_labels(self.labels.iter().filter_map(|label| {
-            label.location.map(|loc| {
-                ariadne::Label::new(loc)
-                    .with_message(&label.text)
-                    .with_color(colors.next())
-            })
-        }));
-        if let Some(help) = &self.help {
-            builder = builder.with_help(help);
+        let mut builder = DiagnosticReport::builder(sources, self.location);
+        builder.with_message(&self.data);
+        for label in &self.labels {
+            builder.with_label_opt(label.location, &label.text);
         }
+        if let Some(help) = &self.help {
+            builder.with_help(help);
+        }
+        builder.with_color(color);
         builder.finish()
     }
 }
