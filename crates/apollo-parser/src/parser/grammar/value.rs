@@ -110,11 +110,6 @@ pub(crate) fn object_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
-    if let Some(TokenKind::Name) = p.peek() {
-        object_field(p);
-    } else {
-        p.err("expected Object Value");
-    }
     while let Some(TokenKind::Name) = p.peek() {
         object_field(p);
     }
