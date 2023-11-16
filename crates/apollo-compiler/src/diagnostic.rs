@@ -7,7 +7,7 @@ use std::fmt;
 use std::io;
 use std::ops::Range;
 
-pub type MappedSpan = (FileId, Range<usize>);
+type MappedSpan = (FileId, Range<usize>);
 
 /// Translate a byte-offset location into a char-offset location for use with ariadne.
 fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
