@@ -599,7 +599,7 @@ impl Type {
     /// ```
     pub fn item_type(&self) -> &Self {
         match self {
-            Type::List(inner) | Type::NonNullList(inner) => &inner,
+            Type::List(inner) | Type::NonNullList(inner) => inner,
             ty => ty,
         }
     }
