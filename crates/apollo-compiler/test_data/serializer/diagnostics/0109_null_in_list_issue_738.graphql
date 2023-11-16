@@ -1,10 +1,16 @@
+input WithList {
+  list: [String!]
+}
+
 type Query {
   foo(arg: [String!]!): String!
   bar(arg: [String!]): String!
+  list(arg: WithList): String!
 }
 
 query {
   a: foo(arg: [null])
   b: foo(arg: [null, null, "hello"])
   bar(arg: [null])
+  list(arg: {list: ["ok", null]})
 }
