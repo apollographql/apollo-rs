@@ -69,8 +69,10 @@ pub(crate) fn value_of_correct_type(
         // When expected as an input type, any string (such as "4") or
         // integer (such as 4 or -4) input value should be coerced to ID
         ast::Value::Int(int) => match &type_definition {
+            // Any value is valid for a custom scalar.
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
-            schema::ExtendedType::Scalar(_) => match ty.inner_named_type().as_str() {
+            schema::ExtendedType::Scalar(scalar) => match scalar.name.as_str() {
+                // Any integer sequence is valid for an ID.
                 "ID" => {}
                 "Int" => {
                     if int.try_to_i32().is_err() {
@@ -115,8 +117,9 @@ pub(crate) fn value_of_correct_type(
         // with numeric content, must raise a request error indicating an
         // incorrect type.
         ast::Value::Float(float) => match &type_definition {
+            // Any value is valid for a custom scalar.
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
-            schema::ExtendedType::Scalar(_) if ty.inner_named_type() == "Float" => {
+            schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
                     diagnostics.push(
                         ApolloDiagnostic::new(
@@ -146,9 +149,7 @@ pub(crate) fn value_of_correct_type(
                 // booleans.
                 // string, ids and custom scalars are ok, and
                 // don't need a diagnostic.
-                if scalar.is_built_in()
-                    && !matches!(ty.inner_named_type().as_str(), "String" | "ID")
-                {
+                if scalar.is_built_in() && !matches!(scalar.name.as_str(), "String" | "ID") {
                     diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
@@ -159,7 +160,7 @@ pub(crate) fn value_of_correct_type(
         // indicating an incorrect type.
         ast::Value::Boolean(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in() && ty.inner_named_type().as_str() != "Boolean" {
+                if scalar.is_built_in() && scalar.name.as_str() != "Boolean" {
                     diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
@@ -198,9 +199,6 @@ pub(crate) fn value_of_correct_type(
             }
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
-        // GraphQL has a constant literal to represent enum input values.
-        // GraphQL string literals must not be accepted as an enum input and
-        // instead raise a request error.
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
@@ -210,12 +208,12 @@ pub(crate) fn value_of_correct_type(
                             value.location(),
                             DiagnosticData::UndefinedValue {
                                 value: value.to_string(),
-                                definition: ty.inner_named_type().to_string(),
+                                definition: enum_.name.to_string(),
                             },
                         )
                         .label(Label::new(
                             arg_value.location(),
-                            format!("does not exist on `{}` type", ty.inner_named_type()),
+                            format!("does not exist on `{}` type", enum_.name),
                         )),
                     );
                 }
@@ -257,12 +255,12 @@ pub(crate) fn value_of_correct_type(
                             value.location(),
                             DiagnosticData::UndefinedValue {
                                 value: name.to_string(),
-                                definition: ty.inner_named_type().to_string(),
+                                definition: input_obj.name.to_string(),
                             },
                         )
                         .label(Label::new(
                             value.location(),
-                            format!("does not exist on `{}` type", ty.inner_named_type()),
+                            format!("does not exist on `{}` type", input_obj.name),
                         )),
                     );
                 }
