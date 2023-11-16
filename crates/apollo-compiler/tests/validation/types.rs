@@ -3,10 +3,12 @@
 //!
 //! Note all `expect_errors` calls do not check for the kind of errors right now, while in
 //! graphql-js they do.
+use std::sync::OnceLock;
+
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 
-const GRAPHQL_JS_TEST_SCHEMA: &'static str = r#"
+const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
   interface Mammal {
     mother: Mammal
     father: Mammal
@@ -117,22 +119,28 @@ const GRAPHQL_JS_TEST_SCHEMA: &'static str = r#"
   directive @onField on FIELD
 "#;
 
-fn expect_valid(query: &'static str) {
-    let schema = Schema::parse(GRAPHQL_JS_TEST_SCHEMA, "schema.graphql");
-    schema.validate().unwrap();
+fn test_schema() -> &'static Schema {
+    static SCHEMA: OnceLock<Schema> = OnceLock::new();
 
-    let executable = ExecutableDocument::parse(&schema, query, "query.graphql");
-    executable.validate(&schema).unwrap();
+    SCHEMA.get_or_init(|| {
+        let schema = Schema::parse(GRAPHQL_JS_TEST_SCHEMA, "schema.graphql");
+        schema.validate().unwrap();
+        schema
+    })
+}
+
+fn expect_valid(query: &'static str) {
+    let schema = test_schema();
+
+    let executable = ExecutableDocument::parse(schema, query, "query.graphql");
+    executable.validate(schema).unwrap();
 }
 
 fn expect_errors(query: &'static str) {
-    let schema = Schema::parse(GRAPHQL_JS_TEST_SCHEMA, "schema.graphql");
-    schema.validate().unwrap();
+    let schema = test_schema();
 
-    let executable = ExecutableDocument::parse(&schema, query, "query.graphql");
-    let _errors = executable
-        .validate(&schema)
-        .expect_err("should have errors");
+    let executable = ExecutableDocument::parse(schema, query, "query.graphql");
+    let _errors = executable.validate(schema).expect_err("should have errors");
 }
 
 mod valid_values {
