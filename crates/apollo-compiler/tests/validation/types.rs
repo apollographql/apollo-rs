@@ -129,6 +129,7 @@ fn test_schema() -> &'static Schema {
     })
 }
 
+#[track_caller]
 fn expect_valid(query: &'static str) {
     let schema = test_schema();
 
