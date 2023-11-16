@@ -180,7 +180,7 @@ pub(crate) enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         directive_def: Option<NodeLocation>,
     },
-    #[error("{ty} cannot be represented by a {value} value")]
+    #[error("expected value of type {ty}, found {value}")]
     UnsupportedValueType {
         // input value
         value: String,

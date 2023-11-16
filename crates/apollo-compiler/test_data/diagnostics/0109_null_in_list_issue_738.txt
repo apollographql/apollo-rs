@@ -1,0 +1,45 @@
+Error: expected value of type String!, found Null
+   ╭─[0109_null_in_list_issue_738.graphql:7:16]
+   │
+ 2 │   foo(arg: [String!]!): String!
+   │            ─────┬────  
+   │                 ╰────── field declared here as String! type
+   │ 
+ 7 │   a: foo(arg: [null])
+   │                ──┬─  
+   │                  ╰─── argument declared here is of Null type
+───╯
+Error: expected value of type String!, found Null
+   ╭─[0109_null_in_list_issue_738.graphql:8:16]
+   │
+ 2 │   foo(arg: [String!]!): String!
+   │            ─────┬────  
+   │                 ╰────── field declared here as String! type
+   │ 
+ 8 │   b: foo(arg: [null, null, "hello"])
+   │                ──┬─  
+   │                  ╰─── argument declared here is of Null type
+───╯
+Error: expected value of type String!, found Null
+   ╭─[0109_null_in_list_issue_738.graphql:8:22]
+   │
+ 2 │   foo(arg: [String!]!): String!
+   │            ─────┬────  
+   │                 ╰────── field declared here as String! type
+   │ 
+ 8 │   b: foo(arg: [null, null, "hello"])
+   │                      ──┬─  
+   │                        ╰─── argument declared here is of Null type
+───╯
+Error: expected value of type String!, found Null
+   ╭─[0109_null_in_list_issue_738.graphql:9:13]
+   │
+ 3 │   bar(arg: [String!]): String!
+   │            ────┬────  
+   │                ╰────── field declared here as String! type
+   │ 
+ 9 │   bar(arg: [null])
+   │             ──┬─  
+   │               ╰─── argument declared here is of Null type
+───╯
+

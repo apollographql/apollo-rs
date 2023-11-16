@@ -166,10 +166,12 @@ pub(crate) fn value_of_correct_type(
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::Null => {
-            if !matches!(
-                type_definition,
-                schema::ExtendedType::Enum(_) | schema::ExtendedType::Scalar(_)
-            ) {
+            if ty.is_non_null()
+                || !matches!(
+                    type_definition,
+                    schema::ExtendedType::Enum(_) | schema::ExtendedType::Scalar(_)
+                )
+            {
                 diagnostics.push(unsupported_type(db, arg_value, ty));
             }
         }
@@ -233,14 +235,17 @@ pub(crate) fn value_of_correct_type(
         // of size one, where the single item value is the result of input
         // coercion for the list’s item type on the provided value (note
         // this may apply recursively for nested lists).
-        ast::Value::List(li) => match &type_definition {
-            schema::ExtendedType::Scalar(_)
-            | schema::ExtendedType::Enum(_)
-            | schema::ExtendedType::InputObject(_) => li
-                .iter()
-                .for_each(|v| value_of_correct_type(db, ty, v, var_defs, diagnostics)),
-            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
-        },
+        ast::Value::List(li) => {
+            let item_type = ty.same_location(ty.item_type().clone());
+            match &type_definition {
+                schema::ExtendedType::Scalar(_)
+                | schema::ExtendedType::Enum(_)
+                | schema::ExtendedType::InputObject(_) => li
+                    .iter()
+                    .for_each(|v| value_of_correct_type(db, &item_type, v, var_defs, diagnostics)),
+                _ => diagnostics.push(unsupported_type(db, arg_value, &item_type)),
+            }
+        }
         ast::Value::Object(obj) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => (),
             schema::ExtendedType::InputObject(input_obj) => {
