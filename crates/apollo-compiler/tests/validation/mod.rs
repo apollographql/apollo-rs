@@ -1,6 +1,7 @@
 mod interface;
 mod object;
 mod operation;
+mod types;
 mod variable;
 
 use apollo_compiler::ast;
