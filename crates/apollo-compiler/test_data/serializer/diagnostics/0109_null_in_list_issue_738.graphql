@@ -1,15 +1,17 @@
+scalar CustomScalar @specifiedBy(url: "https://example.com")
+
 input WithList {
   list: [String!]
 }
 
 type Query {
-  foo(arg: [String!]!): String!
+  foo(arg: [CustomScalar!]!): String!
   bar(arg: [String!]): String!
   list(arg: WithList): String!
 }
 
 query {
-  a: foo(arg: [null])
+  a: foo(arg: [null, 1])
   b: foo(arg: [null, null, "hello"])
   bar(arg: [null])
   list(arg: {list: ["ok", null]})

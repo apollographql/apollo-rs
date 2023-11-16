@@ -166,12 +166,7 @@ pub(crate) fn value_of_correct_type(
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::Null => {
-            if ty.is_non_null()
-                || !matches!(
-                    type_definition,
-                    schema::ExtendedType::Enum(_) | schema::ExtendedType::Scalar(_)
-                )
-            {
+            if ty.is_non_null() {
                 diagnostics.push(unsupported_type(db, arg_value, ty));
             }
         }
