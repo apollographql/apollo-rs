@@ -587,6 +587,23 @@ impl Type {
         Type::List(Box::new(self))
     }
 
+    /// If the type is a list type or a non-null list type, return the item type.
+    ///
+    /// # Example
+    /// ```
+    /// use apollo_compiler::ty;
+    /// // Returns the inner type of the list.
+    /// assert_eq!(ty!([Foo!]).item_type(), &ty!(Foo!));
+    /// // Not a list: returns the input.
+    /// assert_eq!(ty!(Foo!).item_type(), &ty!(Foo!));
+    /// ```
+    pub fn item_type(&self) -> &Self {
+        match self {
+            Type::List(inner) | Type::NonNullList(inner) => inner,
+            ty => ty,
+        }
+    }
+
     /// Returns the inner named type, after unwrapping any non-null or list markers.
     pub fn inner_named_type(&self) -> &NamedType {
         match self {

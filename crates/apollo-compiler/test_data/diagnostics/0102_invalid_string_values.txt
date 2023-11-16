@@ -1,4 +1,4 @@
-Error: String cannot be represented by a Int value
+Error: expected value of type String, found Int
     ╭─[0102_invalid_string_values.graphql:71:31]
     │
   8 │   stringArgField(stringArg: String): String
@@ -9,7 +9,7 @@ Error: String cannot be represented by a Int value
     │                               ┬  
     │                               ╰── argument declared here is of Int type
 ────╯
-Error: String cannot be represented by a Float value
+Error: expected value of type String, found Float
     ╭─[0102_invalid_string_values.graphql:77:31]
     │
   8 │   stringArgField(stringArg: String): String
@@ -20,7 +20,7 @@ Error: String cannot be represented by a Float value
     │                               ─┬─  
     │                                ╰─── argument declared here is of Float type
 ────╯
-Error: String cannot be represented by a Boolean value
+Error: expected value of type String, found Boolean
     ╭─[0102_invalid_string_values.graphql:83:31]
     │
   8 │   stringArgField(stringArg: String): String
@@ -31,7 +31,7 @@ Error: String cannot be represented by a Boolean value
     │                               ──┬─  
     │                                 ╰─── argument declared here is of Boolean type
 ────╯
-Error: String cannot be represented by a Enum value
+Error: expected value of type String, found Enum
     ╭─[0102_invalid_string_values.graphql:89:31]
     │
   8 │   stringArgField(stringArg: String): String
@@ -42,7 +42,7 @@ Error: String cannot be represented by a Enum value
     │                               ─┬─  
     │                                ╰─── argument declared here is of Enum type
 ────╯
-Error: Int cannot be represented by a String value
+Error: expected value of type Int, found String
     ╭─[0102_invalid_string_values.graphql:95:25]
     │
   6 │   intArgField(intArg: Int): String
@@ -60,7 +60,7 @@ Error: int cannot represent non 32-bit signed integer value
      │                         ─────────────┬─────────────  
      │                                      ╰─────────────── cannot be coerced to an 32-bit integer
 ─────╯
-Error: Int cannot be represented by a Enum value
+Error: expected value of type Int, found Enum
      ╭─[0102_invalid_string_values.graphql:107:25]
      │
    6 │   intArgField(intArg: Int): String
@@ -71,7 +71,7 @@ Error: Int cannot be represented by a Enum value
      │                         ─┬─  
      │                          ╰─── argument declared here is of Enum type
 ─────╯
-Error: Int cannot be represented by a Float value
+Error: expected value of type Int, found Float
      ╭─[0102_invalid_string_values.graphql:113:25]
      │
    6 │   intArgField(intArg: Int): String
@@ -82,7 +82,7 @@ Error: Int cannot be represented by a Float value
      │                         ─┬─  
      │                          ╰─── argument declared here is of Float type
 ─────╯
-Error: Int cannot be represented by a Float value
+Error: expected value of type Int, found Float
      ╭─[0102_invalid_string_values.graphql:119:25]
      │
    6 │   intArgField(intArg: Int): String
@@ -93,7 +93,7 @@ Error: Int cannot be represented by a Float value
      │                         ──┬──  
      │                           ╰──── argument declared here is of Float type
 ─────╯
-Error: Float cannot be represented by a String value
+Error: expected value of type Float, found String
      ╭─[0102_invalid_string_values.graphql:125:29]
      │
   11 │   floatArgField(floatArg: Float): String
@@ -104,7 +104,7 @@ Error: Float cannot be represented by a String value
      │                             ───┬───  
      │                                ╰───── argument declared here is of String type
 ─────╯
-Error: Float cannot be represented by a Boolean value
+Error: expected value of type Float, found Boolean
      ╭─[0102_invalid_string_values.graphql:131:29]
      │
   11 │   floatArgField(floatArg: Float): String
@@ -115,7 +115,7 @@ Error: Float cannot be represented by a Boolean value
      │                             ──┬─  
      │                               ╰─── argument declared here is of Boolean type
 ─────╯
-Error: Float cannot be represented by a Enum value
+Error: expected value of type Float, found Enum
      ╭─[0102_invalid_string_values.graphql:137:29]
      │
   11 │   floatArgField(floatArg: Float): String
@@ -126,7 +126,7 @@ Error: Float cannot be represented by a Enum value
      │                             ─┬─  
      │                              ╰─── argument declared here is of Enum type
 ─────╯
-Error: Boolean cannot be represented by a Int value
+Error: expected value of type Boolean, found Int
      ╭─[0102_invalid_string_values.graphql:143:33]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
@@ -137,7 +137,7 @@ Error: Boolean cannot be represented by a Int value
      │                                 ┬  
      │                                 ╰── argument declared here is of Int type
 ─────╯
-Error: Boolean cannot be represented by a Float value
+Error: expected value of type Boolean, found Float
      ╭─[0102_invalid_string_values.graphql:149:33]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
@@ -148,7 +148,7 @@ Error: Boolean cannot be represented by a Float value
      │                                 ─┬─  
      │                                  ╰─── argument declared here is of Float type
 ─────╯
-Error: Boolean cannot be represented by a String value
+Error: expected value of type Boolean, found String
      ╭─[0102_invalid_string_values.graphql:155:33]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
@@ -159,7 +159,7 @@ Error: Boolean cannot be represented by a String value
      │                                 ───┬──  
      │                                    ╰──── argument declared here is of String type
 ─────╯
-Error: Boolean cannot be represented by a Enum value
+Error: expected value of type Boolean, found Enum
      ╭─[0102_invalid_string_values.graphql:161:33]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
@@ -170,7 +170,7 @@ Error: Boolean cannot be represented by a Enum value
      │                                 ──┬─  
      │                                   ╰─── argument declared here is of Enum type
 ─────╯
-Error: ID cannot be represented by a Float value
+Error: expected value of type ID, found Float
      ╭─[0102_invalid_string_values.graphql:167:23]
      │
   12 │   idArgField(idArg: ID): String
@@ -181,7 +181,7 @@ Error: ID cannot be represented by a Float value
      │                       ─┬─  
      │                        ╰─── argument declared here is of Float type
 ─────╯
-Error: ID cannot be represented by a Boolean value
+Error: expected value of type ID, found Boolean
      ╭─[0102_invalid_string_values.graphql:173:23]
      │
   12 │   idArgField(idArg: ID): String
@@ -192,7 +192,7 @@ Error: ID cannot be represented by a Boolean value
      │                       ──┬─  
      │                         ╰─── argument declared here is of Boolean type
 ─────╯
-Error: ID cannot be represented by a Enum value
+Error: expected value of type ID, found Enum
      ╭─[0102_invalid_string_values.graphql:179:23]
      │
   12 │   idArgField(idArg: ID): String
@@ -203,7 +203,7 @@ Error: ID cannot be represented by a Enum value
      │                       ────┬────  
      │                           ╰────── argument declared here is of Enum type
 ─────╯
-Error: DogCommand cannot be represented by a Int value
+Error: expected value of type DogCommand, found Int
      ╭─[0102_invalid_string_values.graphql:186:33]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
@@ -214,7 +214,7 @@ Error: DogCommand cannot be represented by a Int value
      │                                 ┬  
      │                                 ╰── argument declared here is of Int type
 ─────╯
-Error: DogCommand cannot be represented by a Float value
+Error: expected value of type DogCommand, found Float
      ╭─[0102_invalid_string_values.graphql:192:33]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
@@ -225,7 +225,7 @@ Error: DogCommand cannot be represented by a Float value
      │                                 ─┬─  
      │                                  ╰─── argument declared here is of Float type
 ─────╯
-Error: DogCommand cannot be represented by a String value
+Error: expected value of type DogCommand, found String
      ╭─[0102_invalid_string_values.graphql:198:33]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
@@ -236,7 +236,7 @@ Error: DogCommand cannot be represented by a String value
      │                                 ──┬──  
      │                                   ╰──── argument declared here is of String type
 ─────╯
-Error: DogCommand cannot be represented by a Boolean value
+Error: expected value of type DogCommand, found Boolean
      ╭─[0102_invalid_string_values.graphql:204:33]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
@@ -261,18 +261,18 @@ Error: value `sit` does not exist on `DogCommand` type
      │                                 ─┬─  
      │                                  ╰─── does not exist on `DogCommand` type
 ─────╯
-Error: [String] cannot be represented by a Int value
+Error: expected value of type String, found Int
      ╭─[0102_invalid_string_values.graphql:222:47]
      │
   13 │   stringListArgField(stringListArg: [String]): String
      │                                     ────┬───  
-     │                                         ╰───── field declared here as [String] type
+     │                                         ╰───── field declared here as String type
      │ 
  222 │     stringListArgField(stringListArg: ["one", 2])
      │                                               ┬  
      │                                               ╰── argument declared here is of Int type
 ─────╯
-Error: [String] cannot be represented by a Int value
+Error: expected value of type [String], found Int
      ╭─[0102_invalid_string_values.graphql:228:39]
      │
   13 │   stringListArgField(stringListArg: [String]): String
@@ -283,7 +283,7 @@ Error: [String] cannot be represented by a Int value
      │                                       ┬  
      │                                       ╰── argument declared here is of Int type
 ─────╯
-Error: Int! cannot be represented by a String value
+Error: expected value of type Int!, found String
      ╭─[0102_invalid_string_values.graphql:235:24]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -294,7 +294,7 @@ Error: Int! cannot be represented by a String value
      │                        ──┬──  
      │                          ╰──── argument declared here is of String type
 ─────╯
-Error: Int! cannot be represented by a String value
+Error: expected value of type Int!, found String
      ╭─[0102_invalid_string_values.graphql:235:37]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -316,7 +316,7 @@ Error: the required argument `req2` is not provided
      │     ────────────┬────────────  
      │                 ╰────────────── missing value for argument `req2`
 ─────╯
-Error: Int! cannot be represented by a String value
+Error: expected value of type Int!, found String
      ╭─[0102_invalid_string_values.graphql:241:24]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -349,6 +349,17 @@ Error: the required argument `req2` is not provided
      │     ────────────┬───────────  
      │                 ╰───────────── missing value for argument `req2`
 ─────╯
+Error: expected value of type Int!, found Null
+     ╭─[0102_invalid_string_values.graphql:247:24]
+     │
+  16 │   multipleReqs(req1: Int!, req2: Int!): String
+     │                      ──┬─  
+     │                        ╰─── field declared here as Int! type
+     │ 
+ 247 │     multipleReqs(req1: null)
+     │                        ──┬─  
+     │                          ╰─── argument declared here is of Null type
+─────╯
 Error: the required argument `requiredField` is not provided
      ╭─[0102_invalid_string_values.graphql:254:33]
      │
@@ -360,16 +371,27 @@ Error: the required argument `requiredField` is not provided
      │                                 ───────┬───────  
      │                                        ╰───────── missing value for argument `requiredField`
 ─────╯
-Error: [String] cannot be represented by a Int value
+Error: expected value of type String, found Int
      ╭─[0102_invalid_string_values.graphql:261:32]
      │
   37 │   stringListField: [String]
      │                    ────┬───  
-     │                        ╰───── field declared here as [String] type
+     │                        ╰───── field declared here as String type
      │ 
  261 │       stringListField: ["one", 2],
      │                                ┬  
      │                                ╰── argument declared here is of Int type
+─────╯
+Error: expected value of type Boolean!, found Null
+     ╭─[0102_invalid_string_values.graphql:271:7]
+     │
+  33 │   nonNullField: Boolean! = false
+     │                 ────┬───  
+     │                     ╰───── field declared here as Boolean! type
+     │ 
+ 271 │       nonNullField: null,
+     │       ─────────┬────────  
+     │                ╰────────── argument declared here is of Null type
 ─────╯
 Error: value `invalidField` does not exist on `ComplexInput` type
      ╭─[0102_invalid_string_values.graphql:280:7]
@@ -378,21 +400,21 @@ Error: value `invalidField` does not exist on `ComplexInput` type
      │       ──────────┬──────────  
      │                 ╰──────────── does not exist on `ComplexInput` type
 ─────╯
-Error: Boolean! cannot be represented by a String value
+Error: expected value of type Boolean!, found String
      ╭─[0102_invalid_string_values.graphql:287:20]
      │
  287 │   dog @include(if: "yes") {
      │                    ──┬──  
      │                      ╰──── argument declared here is of String type
 ─────╯
-Error: Boolean! cannot be represented by a Enum value
+Error: expected value of type Boolean!, found Enum
      ╭─[0102_invalid_string_values.graphql:288:20]
      │
  288 │     name @skip(if: ENUM)
      │                    ──┬─  
      │                      ╰─── argument declared here is of Enum type
 ─────╯
-Error: Int! cannot be represented by a Null value
+Error: expected value of type Int!, found Null
      ╭─[0102_invalid_string_values.graphql:294:14]
      │
  294 │   $a: Int! = null,
@@ -401,7 +423,7 @@ Error: Int! cannot be represented by a Null value
      │                │   
      │                ╰─── argument declared here is of Null type
 ─────╯
-Error: String! cannot be represented by a Null value
+Error: expected value of type String!, found Null
      ╭─[0102_invalid_string_values.graphql:295:17]
      │
  295 │   $b: String! = null,
@@ -421,7 +443,18 @@ Error: the required argument `requiredField` is not provided
      │                      ───────────────────┬───────────────────  
      │                                         ╰───────────────────── missing value for argument `requiredField`
 ─────╯
-Error: Int cannot be represented by a String value
+Error: expected value of type Boolean!, found Null
+     ╭─[0102_invalid_string_values.graphql:296:24]
+     │
+  32 │   requiredField: Boolean!
+     │                  ────┬───  
+     │                      ╰───── field declared here as Boolean! type
+     │ 
+ 296 │   $c: ComplexInput = { requiredField: null, intField: null }
+     │                        ─────────┬─────────  
+     │                                 ╰─────────── argument declared here is of Null type
+─────╯
+Error: expected value of type Int, found String
      ╭─[0102_invalid_string_values.graphql:306:13]
      │
  306 │   $a: Int = "one",
@@ -430,7 +463,7 @@ Error: Int cannot be represented by a String value
      │               │    
      │               ╰──── argument declared here is of String type
 ─────╯
-Error: String cannot be represented by a Int value
+Error: expected value of type String, found Int
      ╭─[0102_invalid_string_values.graphql:307:16]
      │
  307 │   $b: String = 4,
@@ -439,7 +472,7 @@ Error: String cannot be represented by a Int value
      │                │  
      │                ╰── argument declared here is of Int type
 ─────╯
-Error: ComplexInput cannot be represented by a String value
+Error: expected value of type ComplexInput, found String
      ╭─[0102_invalid_string_values.graphql:308:22]
      │
  308 │   $c: ComplexInput = "NotVeryComplex"
@@ -448,7 +481,7 @@ Error: ComplexInput cannot be represented by a String value
      │                              │         
      │                              ╰───────── argument declared here is of String type
 ─────╯
-Error: Boolean! cannot be represented by a Int value
+Error: expected value of type Boolean!, found Int
      ╭─[0102_invalid_string_values.graphql:318:24]
      │
   32 │   requiredField: Boolean!
@@ -459,7 +492,7 @@ Error: Boolean! cannot be represented by a Int value
      │                        ─────────┬────────  
      │                                 ╰────────── argument declared here is of Int type
 ─────╯
-Error: Int cannot be represented by a String value
+Error: expected value of type Int, found String
      ╭─[0102_invalid_string_values.graphql:318:44]
      │
   34 │   intField: Int
@@ -481,12 +514,12 @@ Error: the required argument `requiredField` is not provided
      │                      ──────┬──────  
      │                            ╰──────── missing value for argument `requiredField`
 ─────╯
-Error: [String] cannot be represented by a Int value
+Error: expected value of type String, found Int
      ╭─[0102_invalid_string_values.graphql:335:26]
      │
  335 │   $a: [String] = ["one", 2]
      │       ────┬───           ┬  
-     │           ╰───────────────── field declared here as [String] type
+     │           ╰───────────────── field declared here as String type
      │                          │  
      │                          ╰── argument declared here is of Int type
 ─────╯

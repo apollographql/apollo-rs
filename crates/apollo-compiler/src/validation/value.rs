@@ -36,21 +36,18 @@ fn unsupported_type(
     ))
 }
 
-//for bigint
-/*
-*/
-pub(crate) fn validate_values2(
+pub(crate) fn validate_values(
     db: &dyn ValidationDatabase,
     ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
-    value_of_correct_type2(db, ty, &argument.value, var_defs, &mut diagnostics);
+    value_of_correct_type(db, ty, &argument.value, var_defs, &mut diagnostics);
     diagnostics
 }
 
-pub(crate) fn value_of_correct_type2(
+pub(crate) fn value_of_correct_type(
     db: &dyn ValidationDatabase,
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
@@ -72,8 +69,10 @@ pub(crate) fn value_of_correct_type2(
         // When expected as an input type, any string (such as "4") or
         // integer (such as 4 or -4) input value should be coerced to ID
         ast::Value::Int(int) => match &type_definition {
+            // Any value is valid for a custom scalar.
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
-            schema::ExtendedType::Scalar(_) => match ty.inner_named_type().as_str() {
+            schema::ExtendedType::Scalar(scalar) => match scalar.name.as_str() {
+                // Any integer sequence is valid for an ID.
                 "ID" => {}
                 "Int" => {
                     if int.try_to_i32().is_err() {
@@ -118,8 +117,9 @@ pub(crate) fn value_of_correct_type2(
         // with numeric content, must raise a request error indicating an
         // incorrect type.
         ast::Value::Float(float) => match &type_definition {
+            // Any value is valid for a custom scalar.
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
-            schema::ExtendedType::Scalar(_) if ty.inner_named_type() == "Float" => {
+            schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
                     diagnostics.push(
                         ApolloDiagnostic::new(
@@ -149,9 +149,7 @@ pub(crate) fn value_of_correct_type2(
                 // booleans.
                 // string, ids and custom scalars are ok, and
                 // don't need a diagnostic.
-                if scalar.is_built_in()
-                    && !matches!(ty.inner_named_type().as_str(), "String" | "ID")
-                {
+                if scalar.is_built_in() && !matches!(scalar.name.as_str(), "String" | "ID") {
                     diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
@@ -162,17 +160,14 @@ pub(crate) fn value_of_correct_type2(
         // indicating an incorrect type.
         ast::Value::Boolean(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in() && ty.inner_named_type().as_str() != "Boolean" {
+                if scalar.is_built_in() && scalar.name.as_str() != "Boolean" {
                     diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::Null => {
-            if !matches!(
-                type_definition,
-                schema::ExtendedType::Enum(_) | schema::ExtendedType::Scalar(_)
-            ) {
+            if ty.is_non_null() {
                 diagnostics.push(unsupported_type(db, arg_value, ty));
             }
         }
@@ -191,7 +186,7 @@ pub(crate) fn value_of_correct_type2(
                         if var_def.ty.is_non_null() && default_value.is_null() {
                             diagnostics.push(unsupported_type(db, default_value, &var_def.ty))
                         } else {
-                            value_of_correct_type2(
+                            value_of_correct_type(
                                 db,
                                 &var_def.ty,
                                 default_value,
@@ -204,9 +199,6 @@ pub(crate) fn value_of_correct_type2(
             }
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
-        // GraphQL has a constant literal to represent enum input values.
-        // GraphQL string literals must not be accepted as an enum input and
-        // instead raise a request error.
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
@@ -216,12 +208,12 @@ pub(crate) fn value_of_correct_type2(
                             value.location(),
                             DiagnosticData::UndefinedValue {
                                 value: value.to_string(),
-                                definition: ty.inner_named_type().to_string(),
+                                definition: enum_.name.to_string(),
                             },
                         )
                         .label(Label::new(
                             arg_value.location(),
-                            format!("does not exist on `{}` type", ty.inner_named_type()),
+                            format!("does not exist on `{}` type", enum_.name),
                         )),
                     );
                 }
@@ -236,14 +228,23 @@ pub(crate) fn value_of_correct_type2(
         // of size one, where the single item value is the result of input
         // coercion for the list’s item type on the provided value (note
         // this may apply recursively for nested lists).
-        ast::Value::List(li) => match &type_definition {
-            schema::ExtendedType::Scalar(_)
-            | schema::ExtendedType::Enum(_)
-            | schema::ExtendedType::InputObject(_) => li
-                .iter()
-                .for_each(|v| value_of_correct_type2(db, ty, v, var_defs, diagnostics)),
-            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
-        },
+        ast::Value::List(li) => {
+            let accepts_list = ty.is_list()
+                // A named type can still accept a list if it is a custom scalar.
+                || matches!(type_definition, schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in());
+            if !accepts_list {
+                diagnostics.push(unsupported_type(db, arg_value, ty))
+            } else {
+                let item_type = ty.same_location(ty.item_type().clone());
+                if type_definition.is_input_type() {
+                    for v in li {
+                        value_of_correct_type(db, &item_type, v, var_defs, diagnostics);
+                    }
+                } else {
+                    diagnostics.push(unsupported_type(db, arg_value, &item_type));
+                }
+            }
+        }
         ast::Value::Object(obj) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => (),
             schema::ExtendedType::InputObject(input_obj) => {
@@ -260,12 +261,12 @@ pub(crate) fn value_of_correct_type2(
                             value.location(),
                             DiagnosticData::UndefinedValue {
                                 value: name.to_string(),
-                                definition: ty.inner_named_type().to_string(),
+                                definition: input_obj.name.to_string(),
                             },
                         )
                         .label(Label::new(
                             value.location(),
-                            format!("does not exist on `{}` type", ty.inner_named_type()),
+                            format!("does not exist on `{}` type", input_obj.name),
                         )),
                     );
                 }
@@ -302,7 +303,7 @@ pub(crate) fn value_of_correct_type2(
                     let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);
 
                     if let Some((_, v)) = used_val {
-                        value_of_correct_type2(db, ty, v, var_defs, diagnostics);
+                        value_of_correct_type(db, ty, v, var_defs, diagnostics);
                     }
                 })
             }

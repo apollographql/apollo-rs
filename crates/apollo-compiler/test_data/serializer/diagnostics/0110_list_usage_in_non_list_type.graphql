@@ -1,0 +1,19 @@
+scalar CustomScalar @specifiedBy(url: "https://example.com")
+
+input Args {
+  ok: CustomScalar
+  int: Int!
+  str: String!
+  bool: Boolean!
+  opt: Int
+  id: ID!
+  list: [Int]
+}
+
+type Query {
+  field(args: Args): String!
+}
+
+query {
+  field(args: {ok: [1, "2", 3, []], int: [1, 2, 3], str: ["1"], bool: [true, false], opt: [1, 2, 3], id: [1, "2", 3], list: [1, 2, 3]})
+}
