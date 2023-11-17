@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
 
 ## Features
 
@@ -44,6 +44,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/718]: https://github.com/apollographql/apollo-rs/pull/718
 [issue/715]: https://github.com/apollographql/apollo-rs/issues/715
+
+## Fixes
+
+- **Fix list and null type validation bugs - [goto-bus-stop], [pull/746] fixing [issue/738]**
+  Previous versions of apollo-compiler accepted `null` inside a list even if the list item type
+  was marked as required. Lists were also accepted as inputs to non-list fields. This is now
+  fixed.
+
+  ```graphql
+  input Args {
+    string: String
+    ints: [Int!]
+  }
+  type Query { example(args: Args): Int }
+  query {
+    example(args: {
+      # Used to be accepted, now raises an error
+      string: ["1"]
+      # Used to be accepted, now raises an error
+      ints: [1, 2, null, 4]
+    })
+  }
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/746]: https://github.com/apollographql/apollo-rs/pull/746
+[issue/738]: https://github.com/apollographql/apollo-rs/issues/738
 
 # [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 
