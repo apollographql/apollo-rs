@@ -1,8 +1,4 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema, Node, ValidationDatabase,
-};
+use crate::{ast, diagnostics::ApolloDiagnostic, schema, Node, ValidationDatabase};
 
 pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -25,21 +21,6 @@ pub(crate) fn validate_scalar_definition(
 
     // All built-in scalars must be omitted for brevity.
     if !scalar_def.is_built_in() {
-        // Custom scalars must provide a scalar specification URL via the
-        // @specifiedBy directive
-        let has_specified_by = scalar_def.directives.has("specifiedBy");
-        if !has_specified_by {
-            let location = scalar_def.location();
-            diagnostics.push(
-                ApolloDiagnostic::new(db, location, DiagnosticData::ScalarSpecificationURL).label(
-                    Label::new(
-                        location,
-                        "consider adding a @specifiedBy directive to this scalar definition",
-                    ),
-                ),
-            );
-        }
-
         diagnostics.extend(super::directive::validate_directives(
             db,
             scalar_def

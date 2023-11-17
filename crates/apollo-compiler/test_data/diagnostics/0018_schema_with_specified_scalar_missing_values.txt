@@ -1,8 +1,2 @@
-Advice: custom scalars should provide a scalar specification URL via the @specifiedBy directive
-   ╭─[0018_schema_with_specified_scalar_missing_values.graphql:6:1]
-   │
- 6 │ scalar URL
-   │ ─────┬────  
-   │      ╰────── consider adding a @specifiedBy directive to this scalar definition
-───╯
+Error: missing query root operation type in schema definition
 

@@ -23,7 +23,7 @@ fn main() {
     let executable_result = executable.validate(&schema);
     let has_errors = schema_result.is_err() || executable_result.is_err();
     match schema_result {
-        Ok(warnings) => println!("{warnings}"),
+        Ok(()) => {}
         Err(errors) => println!("{errors}"),
     }
     match executable_result {

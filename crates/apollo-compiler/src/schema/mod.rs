@@ -312,23 +312,11 @@ impl Schema {
         SchemaBuilder::new()
     }
 
-    /// Returns `Err` if invalid, or `Ok` for potential warnings or advice
-    pub fn validate(&self) -> Result<DiagnosticList, DiagnosticList> {
+    /// Returns `Err` if invalid
+    pub fn validate(&self) -> Result<(), DiagnosticList> {
         let mut errors = DiagnosticList::new(None, self.sources.clone());
-        let warnings_and_advice = validation::validate_schema(&mut errors, self);
-        let valid = errors.is_empty();
-        for diagnostic in warnings_and_advice {
-            errors.push(
-                diagnostic.location,
-                crate::validation::Details::CompilerDiagnostic(diagnostic),
-            )
-        }
-        errors.sort();
-        if valid {
-            Ok(errors)
-        } else {
-            Err(errors)
-        }
+        validation::validate_schema(&mut errors, self);
+        errors.into_result()
     }
 
     /// Returns the type with the given name, if it is a scalar type

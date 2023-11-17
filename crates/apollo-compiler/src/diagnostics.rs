@@ -129,8 +129,6 @@ pub(crate) enum DiagnosticData {
     RecursiveInputObjectDefinition { name: String },
     #[error("`{name}` fragment cannot reference itself")]
     RecursiveFragmentDefinition { name: String },
-    #[error("values in an Enum Definition should be capitalized")]
-    CapitalizedValue { value: String },
     #[error("type does not satisfy interface `{interface}`: missing field `{field}`")]
     MissingInterfaceField { interface: String, field: String },
     #[error("the required argument `{name}` is not provided")]
@@ -156,10 +154,6 @@ pub(crate) enum DiagnosticData {
         /// The kind of type that the field is declared with.
         ty: &'static str,
     },
-    #[error(
-        "custom scalars should provide a scalar specification URL via the @specifiedBy directive"
-    )]
-    ScalarSpecificationURL,
     #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
     #[error("unused variable: `{name}`")]
@@ -246,18 +240,6 @@ pub(crate) enum DiagnosticData {
     },
 }
 
-impl DiagnosticData {
-    pub fn is_error(&self) -> bool {
-        !self.is_warning() && !self.is_advice()
-    }
-    pub fn is_warning(&self) -> bool {
-        matches!(self, Self::CapitalizedValue { .. })
-    }
-    pub fn is_advice(&self) -> bool {
-        matches!(self, Self::ScalarSpecificationURL)
-    }
-}
-
 impl ApolloDiagnostic {
     pub(crate) fn to_report(
         &self,
@@ -265,20 +247,13 @@ impl ApolloDiagnostic {
     ) -> ariadne::Report<'static, NodeLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
-        let severity = if self.data.is_advice() {
-            ReportKind::Advice
-        } else if self.data.is_warning() {
-            ReportKind::Warning
-        } else {
-            ReportKind::Error
-        };
         let mut colors = ColorGenerator::new();
         let (id, offset) = if let Some(location) = self.location {
             (location.file_id(), location.offset())
         } else {
             (FileId::NONE, 0)
         };
-        let mut builder = Report::build(severity, id, offset)
+        let mut builder = Report::build(ReportKind::Error, id, offset)
             .with_config(config)
             .with_message(&self.data);
         builder.add_labels(self.labels.iter().filter_map(|label| {

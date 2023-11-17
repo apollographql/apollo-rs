@@ -65,16 +65,7 @@ fn validation() {
             schema_validation_errors = None;
         } else {
             let (schema, executable) = apollo_compiler::parse_mixed(text, filename);
-            schema_validation_errors = match schema.validate() {
-                Ok(warnings) => {
-                    if warnings.to_string().is_empty() {
-                        None
-                    } else {
-                        Some(warnings)
-                    }
-                }
-                Err(e) => Some(e),
-            };
+            schema_validation_errors = schema.validate().err();
             executable_validation_errors = executable.validate(&schema).err();
         };
         let mut formatted = String::new();

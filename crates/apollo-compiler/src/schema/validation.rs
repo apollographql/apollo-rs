@@ -7,10 +7,7 @@ use crate::Schema;
 use crate::ValidationDatabase;
 use std::sync::Arc;
 
-pub(crate) fn validate_schema(
-    errors: &mut DiagnosticList,
-    schema: &Schema,
-) -> Vec<crate::ApolloDiagnostic> {
+pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &Schema) {
     for (&file_id, source) in schema.sources.iter() {
         source.validate_parse_errors(errors, file_id)
     }
@@ -44,10 +41,7 @@ fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
 }
 
 /// TODO: replace this with validation based on `Schema` without a database
-fn compiler_validation(
-    errors: &mut DiagnosticList,
-    schema: &Schema,
-) -> Vec<crate::ApolloDiagnostic> {
+fn compiler_validation(errors: &mut DiagnosticList, schema: &Schema) {
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
     for (id, source) in schema.sources.iter() {
@@ -68,13 +62,7 @@ fn compiler_validation(
         },
     );
     compiler.db.set_source_files(ids);
-    let mut warnings_and_advice = Vec::new();
     for diagnostic in compiler.db.validate_type_system() {
-        if diagnostic.data.is_error() {
-            errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
-        } else {
-            warnings_and_advice.push(diagnostic)
-        }
+        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
-    warnings_and_advice
 }
