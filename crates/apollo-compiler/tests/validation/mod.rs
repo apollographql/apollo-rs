@@ -5,8 +5,8 @@ mod types;
 mod variable;
 
 use apollo_compiler::ast;
+use apollo_compiler::execution::GraphQLLocation;
 use apollo_compiler::ExecutableDocument;
-use apollo_compiler::GraphQLLocation;
 use apollo_compiler::Schema;
 
 #[test]

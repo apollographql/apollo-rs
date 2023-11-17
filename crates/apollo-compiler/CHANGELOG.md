@@ -19,6 +19,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
 
+## BREAKING
+
+- **Move various items from the crate top-level**
+  - To `apollo_compiler::validation`
+    * `Diagnostic`
+    * `DiagnosticList`
+    * `FileId`
+    * `NodeLocation`
+  - To `apollo_compiler::execution`
+    * `GraphQLError`
+    * `GraphQLLocation`
+
 ## Features
 
 - **Helper features for `Name` and `Type` - [SimonSapin], [pull/739]:**

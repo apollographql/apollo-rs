@@ -1,10 +1,6 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::{RecursionGuard, RecursionStack},
-    FileId, Node, NodeLocation, ValidationDatabase,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::{FileId, NodeLocation, RecursionGuard, RecursionStack};
+use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
 
 use super::operation::OperationValidationConfig;

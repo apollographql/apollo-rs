@@ -1,8 +1,8 @@
 use crate::ast;
 use crate::ast::Document;
-use crate::FileId;
+use crate::validation::FileId;
+use crate::validation::NodeLocation;
 use crate::Node;
-use crate::NodeLocation;
 use crate::SourceFile;
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;

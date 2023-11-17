@@ -1,10 +1,6 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::ValidationDatabase,
-    FileId, Node,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::{FileId, ValidationDatabase};
+use crate::{ast, schema, Node};
 
 use super::operation::OperationValidationConfig;
 

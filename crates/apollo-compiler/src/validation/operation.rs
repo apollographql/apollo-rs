@@ -1,8 +1,6 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    name, FileId, Node, ValidationDatabase,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::FileId;
+use crate::{ast, name, Node, ValidationDatabase};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub(crate) struct OperationValidationConfig<'vars> {

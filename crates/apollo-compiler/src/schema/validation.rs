@@ -1,7 +1,7 @@
 use super::BuildError;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
-use crate::FileId;
+use crate::validation::FileId;
 use crate::InputDatabase;
 use crate::Schema;
 use crate::ValidationDatabase;
