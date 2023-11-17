@@ -2,12 +2,12 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
-    validation::{RecursionGuard, RecursionStack},
+    validation::{
+        operation::OperationValidationConfig, CycleError, RecursionGuard, RecursionStack,
+    },
     FileId, Node, NodeLocation, ValidationDatabase,
 };
 use std::collections::{HashMap, HashSet};
-
-use super::operation::OperationValidationConfig;
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
@@ -304,13 +304,13 @@ pub(crate) fn validate_fragment_cycles(
         named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
         selection_set: &[ast::Selection],
         visited: &mut RecursionGuard<'_>,
-    ) -> Result<(), Vec<Node<ast::FragmentSpread>>> {
+    ) -> Result<(), CycleError<ast::FragmentSpread>> {
         for selection in selection_set {
             match selection {
                 ast::Selection::FragmentSpread(spread) => {
                     if visited.contains(&spread.fragment_name) {
                         if visited.first() == Some(&spread.fragment_name) {
-                            return Err(vec![spread.clone()]);
+                            return Err(CycleError::Recursed(vec![spread.clone()]));
                         }
                         continue;
                     }
@@ -319,12 +319,9 @@ pub(crate) fn validate_fragment_cycles(
                         detect_fragment_cycles(
                             named_fragments,
                             &fragment.selection_set,
-                            &mut visited.push(&fragment.name),
+                            &mut visited.push(&fragment.name)?,
                         )
-                        .map_err(|mut trace| {
-                            trace.push(spread.clone());
-                            trace
-                        })?;
+                        .map_err(|error| error.trace(spread))?;
                     }
                 }
                 ast::Selection::InlineFragment(inline) => {
@@ -339,7 +336,7 @@ pub(crate) fn validate_fragment_cycles(
         Ok(())
     }
 
-    let mut visited = RecursionStack::with_root(def.name.clone());
+    let mut visited = RecursionStack::with_root(def.name.clone(), 500);
 
     if let Err(cycle) =
         detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard())
@@ -355,26 +352,28 @@ pub(crate) fn validate_fragment_cycles(
         )
         .label(Label::new(head_location, "recursive fragment definition"));
 
-        if let Some((cyclical_spread, path)) = cycle.split_first() {
-            let mut prev_name = &def.name;
-            for spread in path.iter().rev() {
+        if let CycleError::Recursed(trace) = cycle {
+            if let Some((cyclical_spread, path)) = trace.split_first() {
+                let mut prev_name = &def.name;
+                for spread in path.iter().rev() {
+                    diagnostic = diagnostic.label(Label::new(
+                        spread.location(),
+                        format!(
+                            "`{}` references `{}` here...",
+                            prev_name, spread.fragment_name
+                        ),
+                    ));
+                    prev_name = &spread.fragment_name;
+                }
+
                 diagnostic = diagnostic.label(Label::new(
-                    spread.location(),
+                    cyclical_spread.location(),
                     format!(
-                        "`{}` references `{}` here...",
-                        prev_name, spread.fragment_name
+                        "`{}` circularly references `{}` here",
+                        prev_name, cyclical_spread.fragment_name
                     ),
                 ));
-                prev_name = &spread.fragment_name;
             }
-
-            diagnostic = diagnostic.label(Label::new(
-                cyclical_spread.location(),
-                format!(
-                    "`{}` circularly references `{}` here",
-                    prev_name, cyclical_spread.fragment_name
-                ),
-            ));
         }
 
         diagnostics.push(diagnostic);

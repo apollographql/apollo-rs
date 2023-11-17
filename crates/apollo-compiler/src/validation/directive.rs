@@ -7,6 +7,8 @@ use crate::{
 };
 use std::collections::{HashMap, HashSet};
 
+use super::CycleError;
+
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.
 struct FindRecursiveDirective<'s> {
@@ -18,7 +20,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         def: &schema::ExtendedType,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         match def {
             schema::ExtendedType::Scalar(scalar_type_definition) => {
                 self.directives(seen, &scalar_type_definition.directives)?;
@@ -53,7 +55,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         input_value: &Node<ast::InputValueDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for directive in &input_value.directives {
             self.directive(seen, directive)?;
         }
@@ -70,7 +72,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         enum_value: &Node<ast::EnumValueDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for directive in &enum_value.directives {
             self.directive(seen, directive)?;
         }
@@ -82,7 +84,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         directives: &[schema::Component<ast::Directive>],
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for directive in directives {
             self.directive(seen, directive)?;
         }
@@ -93,17 +95,18 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         directive: &Node<ast::Directive>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         if !seen.contains(&directive.name) {
             if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
-                self.directive_definition(seen.push(&directive.name), def)?;
+                self.directive_definition(seen.push(&directive.name)?, def)
+                    .map_err(|error| error.trace(directive))?;
             }
         } else if seen.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
             // This prevents raising confusing errors when a directive `@b` which is not
             // self-referential uses a directive `@a` that *is*. The error with `@a` should
             // only be reported on its definition, not on `@b`'s.
-            return Err(directive.clone());
+            return Err(CycleError::Recursed(vec![directive.clone()]));
         }
 
         Ok(())
@@ -113,7 +116,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         mut seen: RecursionGuard<'_>,
         def: &Node<ast::DirectiveDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for input_value in &def.arguments {
             self.input_value(&mut seen, input_value)?;
         }
@@ -124,8 +127,8 @@ impl FindRecursiveDirective<'_> {
     fn check(
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
-        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone());
+    ) -> Result<(), CycleError<ast::Directive>> {
+        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone(), 500);
         FindRecursiveDirective { schema }
             .directive_definition(recursion_stack.guard(), directive_def)
     }

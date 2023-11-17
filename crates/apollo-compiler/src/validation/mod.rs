@@ -20,9 +20,11 @@ use crate::ast::Name;
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::FileId;
+use crate::Node;
 use crate::NodeLocation;
 use crate::SourceFile;
 use crate::SourceMap;
+use apollo_parser::LimitTracker;
 use indexmap::IndexSet;
 use std::fmt;
 use std::io;
@@ -482,21 +484,33 @@ impl ariadne::Span for NodeLocation {
     }
 }
 
+#[derive(Debug, Clone, thiserror::Error)]
+#[error("Recursion limit reached")]
+#[non_exhaustive]
+struct RecursionLimitError {}
+
 /// Track used names in a recursive function.
 struct RecursionStack {
     seen: IndexSet<Name>,
+    limit: LimitTracker,
 }
 
 impl RecursionStack {
-    fn with_root(root: Name) -> Self {
+    fn with_root(root: Name, limit: usize) -> Self {
         let mut seen = IndexSet::new();
         seen.insert(root);
-        Self { seen }
+        Self {
+            seen,
+            limit: LimitTracker::new(limit),
+        }
     }
 
     /// Return the actual API for tracking recursive uses.
     pub(crate) fn guard(&mut self) -> RecursionGuard<'_> {
-        RecursionGuard(&mut self.seen)
+        RecursionGuard {
+            seen: &mut self.seen,
+            limit: &mut self.limit,
+        }
     }
 }
 
@@ -505,29 +519,61 @@ impl RecursionStack {
 /// Pass the result of `guard.push(name)` to recursive calls. Use `guard.contains(name)` to check
 /// if the name was used somewhere up the call stack. When a guard is dropped, its name is removed
 /// from the list.
-struct RecursionGuard<'a>(&'a mut IndexSet<Name>);
+struct RecursionGuard<'a> {
+    seen: &'a mut IndexSet<Name>,
+    limit: &'a mut LimitTracker,
+}
 impl RecursionGuard<'_> {
-    /// Mark that we saw a name.
-    fn push(&mut self, name: &Name) -> RecursionGuard<'_> {
+    /// Mark that we saw a name. If there are too many names, return an error.
+    fn push(&mut self, name: &Name) -> Result<RecursionGuard<'_>, RecursionLimitError> {
         debug_assert!(
-            self.0.insert(name.clone()),
+            self.seen.insert(name.clone()),
             "cannot push the same name twice to RecursionGuard, check contains() first"
         );
-        RecursionGuard(self.0)
+        if self.limit.check_and_increment() {
+            Err(RecursionLimitError {})
+        } else {
+            Ok(RecursionGuard {
+                seen: self.seen,
+                limit: self.limit,
+            })
+        }
     }
     /// Check if we saw a name somewhere up the call stack.
     fn contains(&self, name: &Name) -> bool {
-        self.0.iter().any(|seen| seen == name)
+        self.seen.iter().any(|seen| seen == name)
     }
     /// Return the name where we started.
     fn first(&self) -> Option<&Name> {
-        self.0.first()
+        self.seen.first()
     }
 }
 
 impl Drop for RecursionGuard<'_> {
     fn drop(&mut self) {
         // This may already be empty if it's the original `stack.guard()` result, but that's fine
-        self.0.pop();
+        self.seen.pop();
+        self.limit.decrement();
+    }
+}
+
+/// Errors that can happen when chasing potentially cyclical references.
+#[derive(Debug, Clone, thiserror::Error)]
+enum CycleError<T> {
+    /// Detected a cycle, value contains the path from the offending node back to the node where we
+    /// started.
+    #[error("Cycle detected")]
+    Recursed(Vec<Node<T>>),
+    /// Ran into recursion limit before a cycle could be detected.
+    #[error(transparent)]
+    Limit(#[from] RecursionLimitError),
+}
+
+impl<T> CycleError<T> {
+    fn trace(mut self, node: &Node<T>) -> Self {
+        if let Self::Recursed(trace) = &mut self {
+            trace.push(node.clone());
+        }
+        self
     }
 }

@@ -2,7 +2,7 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
-    validation::{RecursionGuard, RecursionStack},
+    validation::{CycleError, RecursionGuard, RecursionStack},
     Node, ValidationDatabase,
 };
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ impl FindRecursiveInputValue<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         def: &Node<ast::InputValueDefinition>,
-    ) -> Result<(), Node<ast::InputValueDefinition>> {
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         return match &*def.ty {
             // NonNull type followed by Named type is the one that's not allowed
             // to be cyclical, so this is only case we care about.
@@ -26,11 +26,12 @@ impl FindRecursiveInputValue<'_> {
             // Everything else may be a cyclical input value.
             ast::Type::NonNullNamed(name) => {
                 if !seen.contains(name) {
-                    if let Some(def) = self.db.ast_types().input_objects.get(name) {
-                        self.input_object_definition(seen.push(name), def)?
+                    if let Some(object_def) = self.db.ast_types().input_objects.get(name) {
+                        self.input_object_definition(seen.push(name)?, object_def)
+                            .map_err(|err| err.trace(def))?
                     }
                 } else if seen.first() == Some(name) {
-                    return Err(def.clone());
+                    return Err(CycleError::Recursed(vec![def.clone()]));
                 }
 
                 Ok(())
@@ -43,7 +44,7 @@ impl FindRecursiveInputValue<'_> {
         &self,
         mut seen: RecursionGuard<'_>,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Result<(), Node<ast::InputValueDefinition>> {
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         for input_value in input_object.fields() {
             self.input_value_definition(&mut seen, input_value)?;
         }
@@ -54,8 +55,9 @@ impl FindRecursiveInputValue<'_> {
     fn check(
         db: &dyn ValidationDatabase,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Result<(), Node<ast::InputValueDefinition>> {
-        let mut recursion_stack = RecursionStack::with_root(input_object.definition.name.clone());
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        let mut recursion_stack =
+            RecursionStack::with_root(input_object.definition.name.clone(), 500);
         FindRecursiveInputValue { db }
             .input_object_definition(recursion_stack.guard(), input_object)
     }
