@@ -1,4 +1,5 @@
-mod validation_db;
+//! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
+//! and other kinds of errors.
 
 mod argument;
 mod directive;
@@ -13,14 +14,14 @@ mod scalar;
 mod schema;
 pub(crate) mod selection;
 mod union_;
+mod validation_db;
 mod value;
 mod variable;
 
 use crate::ast::Name;
 use crate::executable::BuildError as ExecutableBuildError;
+use crate::execution::{GraphQLError, GraphQLLocation};
 use crate::schema::BuildError as SchemaBuildError;
-use crate::FileId;
-use crate::NodeLocation;
 use crate::SourceFile;
 use crate::SourceMap;
 use indexmap::IndexSet;
@@ -29,6 +30,9 @@ use std::io;
 use std::sync::Arc;
 use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
+
+pub use crate::database::FileId;
+pub use crate::node::NodeLocation;
 
 /// A collection of diagnostics returned by some validation method
 pub struct DiagnosticList(Box<DiagnosticListBoxed>);
@@ -50,30 +54,10 @@ struct DiagnosticData {
     details: Details,
 }
 
+/// A single diagnostic in a [`DiagnosticList`]
 pub struct Diagnostic<'a> {
     sources: &'a Sources,
     data: &'a DiagnosticData,
-}
-
-/// A source location (line + column) for a GraphQL error.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLLocation {
-    /// The line number for this location, starting at 1 for the first line.
-    pub line: usize,
-    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
-    /// Values) like [str::chars].
-    pub column: usize,
-}
-
-/// A serializable GraphQL error.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLError {
-    /// The error message.
-    pub message: String,
-
-    /// Locations relevant to the error, if any.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub locations: Vec<GraphQLLocation>,
 }
 
 #[derive(thiserror::Error, Debug)]

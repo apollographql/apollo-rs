@@ -1,10 +1,6 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::{RecursionGuard, RecursionStack},
-    Node, NodeLocation, ValidationDatabase,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
+use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
 
 /// This struct just groups functions that are used to find self-referential directives.

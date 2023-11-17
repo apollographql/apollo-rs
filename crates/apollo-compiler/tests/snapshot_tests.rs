@@ -5,14 +5,14 @@
 // This is also an exact setup as we have in `apollo-parser`, in the future we
 // might want to consider merging the two dirs. (@lrlna)
 
-// Note: ALL #[test] functions must also have #[serial], to make FileId::reset
+// Note: ALL #[test] functions must also have #[serial], to make FileId::reset work correctly
 
 use apollo_compiler::ast;
 use apollo_compiler::name;
 use apollo_compiler::schema;
 use apollo_compiler::ty;
-use apollo_compiler::DiagnosticList;
-use apollo_compiler::FileId;
+use apollo_compiler::validation::DiagnosticList;
+use apollo_compiler::validation::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
 use indexmap::IndexMap;

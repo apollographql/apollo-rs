@@ -2,7 +2,7 @@ use super::sources::SourceType;
 use super::InputDatabase;
 use crate::ast;
 use crate::schema::Name;
-use crate::FileId;
+use crate::validation::FileId;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;

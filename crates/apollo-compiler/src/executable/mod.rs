@@ -20,7 +20,7 @@ pub use crate::ast::{
     VariableDefinition,
 };
 use crate::validation::DiagnosticList;
-use crate::NodeLocation;
+use crate::validation::NodeLocation;
 use std::fmt;
 
 /// Executable definitions, annotated with type information

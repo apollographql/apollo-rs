@@ -1,12 +1,8 @@
-use crate::{
-    ast,
-    diagnostics::ApolloDiagnostic,
-    name, schema,
-    validation::{
-        self, directive, enum_, input_object, interface, object, operation, scalar, union_,
-    },
-    FileId, InputDatabase, Node, ReprDatabase,
+use crate::diagnostics::ApolloDiagnostic;
+use crate::validation::{
+    self, directive, enum_, input_object, interface, object, operation, scalar, union_, FileId,
 };
+use crate::{ast, name, schema, InputDatabase, Node, ReprDatabase};
 use std::collections::HashMap;
 use std::sync::Arc;
 

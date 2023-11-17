@@ -1,6 +1,6 @@
 use crate::ast::DirectiveLocation;
-use crate::FileId;
-use crate::NodeLocation;
+use crate::validation::FileId;
+use crate::validation::NodeLocation;
 use std::fmt;
 use thiserror::Error;
 
