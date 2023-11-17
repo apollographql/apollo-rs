@@ -244,6 +244,8 @@ pub(crate) enum DiagnosticData {
         /// Name of the argument where variable is used
         arg_name: String,
     },
+    #[error("too much recursion")]
+    RecursionError {},
 }
 
 impl DiagnosticData {

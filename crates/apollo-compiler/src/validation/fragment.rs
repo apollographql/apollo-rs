@@ -316,7 +316,6 @@ pub(crate) fn validate_fragment_cycles(
                     }
 
                     if let Some(fragment) = named_fragments.get(&spread.fragment_name) {
-                        println!("going into {}", spread.fragment_name);
                         detect_fragment_cycles(
                             named_fragments,
                             &fragment.selection_set,

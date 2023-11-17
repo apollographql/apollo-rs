@@ -5,14 +5,14 @@ Error: `invalidExample` directive definition cannot reference itself
    │ ────────────┬────────────             ───────┬───────  
    │             ╰────────────────────────────────────────── recursive directive definition
    │                                              │         
-   │                                              ╰───────── refers to itself here
+   │                                              ╰───────── `invalidExample` circularly references `invalidExample` here
 ───╯
 Error: `deprecatedType` directive definition cannot reference itself
     ╭─[0070_self_referential_directive_definition.graphql:11:1]
     │
  10 │ extend scalar String @deprecatedType(reason: "use OurCustomString instead")
     │                      ───────────────────────────┬──────────────────────────  
-    │                                                 ╰──────────────────────────── refers to itself here
+    │                                                 ╰──────────────────────────── `deprecatedType` circularly references `deprecatedType` here
  11 │ directive @deprecatedType(reason: String!) on OBJECT | INTERFACE | ENUM | SCALAR | UNION
     │ ────────────┬────────────  
     │             ╰────────────── recursive directive definition
@@ -21,39 +21,53 @@ Error: `loopA` directive definition cannot reference itself
     ╭─[0070_self_referential_directive_definition.graphql:13:1]
     │
  13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
-    │ ────────┬───────  
-    │         ╰───────── recursive directive definition
-    │ 
+    │ ────────┬───────              ───┬──  
+    │         ╰───────────────────────────── recursive directive definition
+    │                                  │    
+    │                                  ╰──── `loopA` references `loopB` here...
+ 14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopB` references `loopC` here...
  15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
     │                               ───┬──  
-    │                                  ╰──── refers to itself here
+    │                                  ╰──── `loopC` circularly references `loopA` here
 ────╯
 Error: `loopB` directive definition cannot reference itself
     ╭─[0070_self_referential_directive_definition.graphql:14:1]
     │
  13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
     │                               ───┬──  
-    │                                  ╰──── refers to itself here
+    │                                  ╰──── `loopA` circularly references `loopB` here
  14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
-    │ ────────┬───────  
-    │         ╰───────── recursive directive definition
+    │ ────────┬───────              ───┬──  
+    │         ╰───────────────────────────── recursive directive definition
+    │                                  │    
+    │                                  ╰──── `loopB` references `loopC` here...
+ 15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopC` references `loopA` here...
 ────╯
 Error: `loopC` directive definition cannot reference itself
     ╭─[0070_self_referential_directive_definition.graphql:15:1]
     │
+ 13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopA` references `loopB` here...
  14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
     │                               ───┬──  
-    │                                  ╰──── refers to itself here
+    │                                  ╰──── `loopB` circularly references `loopC` here
  15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
-    │ ────────┬───────  
-    │         ╰───────── recursive directive definition
+    │ ────────┬───────              ───┬──  
+    │         ╰───────────────────────────── recursive directive definition
+    │                                  │    
+    │                                  ╰──── `loopC` references `loopA` here...
 ────╯
 Error: `wrong` directive definition cannot reference itself
     ╭─[0070_self_referential_directive_definition.graphql:21:1]
     │
  18 │ extend enum Enum { RECURSIVE @wrong }
     │                              ───┬──  
-    │                                 ╰──── refers to itself here
+    │                                 ╰──── `wrong` circularly references `wrong` here
     │ 
  21 │ directive @wrong(input: InputObject) on INPUT_FIELD_DEFINITION | ENUM_VALUE
     │ ────────┬───────  
