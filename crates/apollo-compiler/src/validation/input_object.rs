@@ -87,23 +87,41 @@ pub(crate) fn validate_input_object_definition(
         Default::default(),
     );
 
-    if let Err(input_val) = FindRecursiveInputValue::check(db, &input_object) {
-        let mut labels = vec![Label::new(
+    if let Err(error) = FindRecursiveInputValue::check(db, &input_object) {
+        let mut diagnostic = ApolloDiagnostic::new(
+            db,
+            input_object.definition.location(),
+            DiagnosticData::RecursiveInputObjectDefinition {
+                name: input_object.definition.name.to_string(),
+            },
+        )
+        .label(Label::new(
             input_object.definition.location(),
             "cyclical input object definition",
-        )];
-        let loc = input_val.location();
-        labels.push(Label::new(loc, "refers to itself here"));
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                input_object.definition.location(),
-                DiagnosticData::RecursiveInputObjectDefinition {
-                    name: input_object.definition.name.to_string(),
-                },
-            )
-            .labels(labels),
-        )
+        ));
+
+        if let CycleError::Recursed(trace) = error {
+            if let Some((cyclical_reference, path)) = trace.split_first() {
+                let mut prev_name = &input_object.definition.name;
+                for reference in path.iter().rev() {
+                    diagnostic = diagnostic.label(Label::new(
+                        reference.location(),
+                        format!("`{}` references `{}` here...", prev_name, reference.name),
+                    ));
+                    prev_name = &reference.name;
+                }
+
+                diagnostic = diagnostic.label(Label::new(
+                    cyclical_reference.location(),
+                    format!(
+                        "`{}` circularly references `{}` here",
+                        prev_name, cyclical_reference.name
+                    ),
+                ));
+            }
+        }
+
+        diagnostics.push(diagnostic);
     }
 
     // Fields in an Input Object Definition must be unique

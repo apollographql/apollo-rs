@@ -150,22 +150,43 @@ pub(crate) fn validate_directive_definition(
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    if let Err(directive) = FindRecursiveDirective::check(&db.schema(), &def) {
+    if let Err(error) = FindRecursiveDirective::check(&db.schema(), &def) {
         let definition_location = def.location();
         let head_location = NodeLocation::recompose(def.location(), def.name.location());
-        let directive_location = directive.location();
+        let mut diagnostic = ApolloDiagnostic::new(
+            db,
+            definition_location,
+            DiagnosticData::RecursiveDirectiveDefinition {
+                name: def.name.to_string(),
+            },
+        )
+        .label(Label::new(head_location, "recursive directive definition"));
 
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                definition_location,
-                DiagnosticData::RecursiveDirectiveDefinition {
-                    name: def.name.to_string(),
-                },
-            )
-            .label(Label::new(head_location, "recursive directive definition"))
-            .label(Label::new(directive_location, "refers to itself here")),
-        );
+        if let CycleError::Recursed(trace) = error {
+            if let Some((cyclical_application, path)) = trace.split_first() {
+                let mut prev_name = &def.name;
+                for directive_application in path.iter().rev() {
+                    diagnostic = diagnostic.label(Label::new(
+                        directive_application.location(),
+                        format!(
+                            "`{}` references `{}` here...",
+                            prev_name, directive_application.name
+                        ),
+                    ));
+                    prev_name = &directive_application.name;
+                }
+
+                diagnostic = diagnostic.label(Label::new(
+                    cyclical_application.location(),
+                    format!(
+                        "`{}` circularly references `{}` here",
+                        prev_name, cyclical_application.name
+                    ),
+                ));
+            }
+        }
+
+        diagnostics.push(diagnostic);
     }
 
     diagnostics

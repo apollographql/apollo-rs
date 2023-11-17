@@ -499,10 +499,9 @@ impl RecursionStack {
     fn with_root(root: Name, limit: usize) -> Self {
         let mut seen = IndexSet::new();
         seen.insert(root);
-        Self {
-            seen,
-            limit: LimitTracker::new(limit),
-        }
+        let mut limit = LimitTracker::new(limit);
+        let _ = limit.check_and_increment();
+        Self { seen, limit }
     }
 
     /// Return the actual API for tracking recursive uses.
