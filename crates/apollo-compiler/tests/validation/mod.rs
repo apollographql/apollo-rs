@@ -1,3 +1,4 @@
+mod fragments;
 mod interface;
 mod object;
 mod operation;
