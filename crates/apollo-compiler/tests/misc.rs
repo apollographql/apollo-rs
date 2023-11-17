@@ -762,14 +762,7 @@ type User
 "#;
 
     let schema = Schema::parse(input, "document.graphql");
-    let warnings = schema.validate().unwrap().to_string_no_color();
-    assert!(
-        warnings.contains(
-            "Advice: custom scalars should provide a scalar specification URL \
-             via the @specifiedBy directive"
-        ),
-        "{warnings}"
-    );
+    schema.validate().unwrap();
 
     let object_names: Vec<_> = schema
         .types

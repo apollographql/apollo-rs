@@ -1,8 +1,4 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    Node, ValidationDatabase,
-};
+use crate::{ast, diagnostics::ApolloDiagnostic, Node, ValidationDatabase};
 
 pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -37,33 +33,11 @@ pub(crate) fn validate_enum_value(
     db: &dyn ValidationDatabase,
     enum_val: &Node<ast::EnumValueDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = super::directive::validate_directives(
+    super::directive::validate_directives(
         db,
         enum_val.directives.iter(),
         ast::DirectiveLocation::EnumValue,
         // enum values don't use variables
         Default::default(),
-    );
-
-    // (convention) Values in an Enum Definition should be capitalized.
-    //
-    // Return a Capitalized Value warning if enum value is not capitalized.
-    if enum_val.value.chars().any(char::is_lowercase) {
-        let location = enum_val.value.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                location,
-                DiagnosticData::CapitalizedValue {
-                    value: enum_val.value.to_string(),
-                },
-            )
-            .label(Label::new(
-                location,
-                format!("consider capitalizing {}", enum_val.value),
-            )),
-        );
-    }
-
-    diagnostics
+    )
 }

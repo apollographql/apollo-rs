@@ -21,15 +21,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-- **Move various items from the crate top-level**
-  - To `apollo_compiler::validation`
+- **API refactor to make it harder to ignore errors - [SimonSapin], [pull/FIXME]:**
+  - Move items from the crate top-level to `apollo_compiler::validation`
     * `Diagnostic`
     * `DiagnosticList`
     * `FileId`
     * `NodeLocation`
-  - To `apollo_compiler::execution`
+  - Move items from the crate top-level to `apollo_compiler::execution`
     * `GraphQLError`
     * `GraphQLLocation`
+  - Remove warning-level and advice-level diagnostics. See [issue/751].
+
+[SimonSapin]: https://github.com/SimonSapin
+[issue/751]: https://github.com/apollographql/apollo-rs/issues/751
+
 
 ## Features
 
