@@ -24,7 +24,6 @@ use crate::Node;
 use crate::NodeLocation;
 use crate::SourceFile;
 use crate::SourceMap;
-use apollo_parser::LimitTracker;
 use indexmap::IndexSet;
 use std::fmt;
 use std::io;
@@ -492,15 +491,20 @@ struct RecursionLimitError {}
 /// Track used names in a recursive function.
 struct RecursionStack {
     seen: IndexSet<Name>,
-    limit: LimitTracker,
+    limit: usize,
 }
 
 impl RecursionStack {
+    fn new(limit: usize) -> Self {
+        Self {
+            seen: IndexSet::new(),
+            limit,
+        }
+    }
+
     fn with_root(root: Name, limit: usize) -> Self {
         let mut seen = IndexSet::new();
         seen.insert(root);
-        let mut limit = LimitTracker::new(limit);
-        let _ = limit.check_and_increment();
         Self { seen, limit }
     }
 
@@ -508,7 +512,7 @@ impl RecursionStack {
     pub(crate) fn guard(&mut self) -> RecursionGuard<'_> {
         RecursionGuard {
             seen: &mut self.seen,
-            limit: &mut self.limit,
+            limit: self.limit,
         }
     }
 }
@@ -520,7 +524,7 @@ impl RecursionStack {
 /// from the list.
 struct RecursionGuard<'a> {
     seen: &'a mut IndexSet<Name>,
-    limit: &'a mut LimitTracker,
+    limit: usize,
 }
 impl RecursionGuard<'_> {
     /// Mark that we saw a name. If there are too many names, return an error.
@@ -529,7 +533,7 @@ impl RecursionGuard<'_> {
             self.seen.insert(name.clone()),
             "cannot push the same name twice to RecursionGuard, check contains() first"
         );
-        if self.limit.check_and_increment() {
+        if self.seen.len() > self.limit {
             Err(RecursionLimitError {})
         } else {
             Ok(RecursionGuard {
@@ -551,8 +555,7 @@ impl RecursionGuard<'_> {
 impl Drop for RecursionGuard<'_> {
     fn drop(&mut self) {
         // This may already be empty if it's the original `stack.guard()` result, but that's fine
-        self.seen.pop();
-        self.limit.decrement();
+        let _ = self.seen.pop();
     }
 }
 
