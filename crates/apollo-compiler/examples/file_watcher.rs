@@ -7,6 +7,7 @@ use std::{
 };
 
 use anyhow::{anyhow, Result};
+use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use notify::{Config, EventKind, PollWatcher, RecursiveMode, Watcher};
@@ -18,7 +19,7 @@ fn main() -> Result<()> {
 }
 
 pub struct FileWatcher {
-    manifest: HashMap<PathBuf, (Schema, ExecutableDocument)>,
+    manifest: HashMap<PathBuf, (Valid<Schema>, Valid<ExecutableDocument>)>,
 }
 
 #[allow(clippy::new_without_default)]
@@ -37,10 +38,6 @@ impl FileWatcher {
         for entry in fs::read_dir(&dir)? {
             let (proposed_document, src_path) = get_schema_and_maybe_path(entry?)?;
             self.add_document(proposed_document, src_path)?;
-        }
-
-        for entry in self.manifest.values() {
-            self.validate(entry);
         }
 
         self.watch_broadcast(dir.as_ref())
@@ -72,8 +69,7 @@ impl FileWatcher {
                                 match fs::read_to_string(&path) {
                                     Ok(contents) => {
                                         println!("changes detected in {}", path.display());
-                                        let path = self.add_document(contents, path)?;
-                                        self.validate(&self.manifest[&path]);
+                                        self.add_document(contents, path)?;
                                     }
                                     Err(e) => {
                                         println!(
@@ -112,18 +108,9 @@ impl FileWatcher {
         src_path: PathBuf,
     ) -> Result<PathBuf, anyhow::Error> {
         let full_path = fs::canonicalize(&src_path)?;
-        let doc = apollo_compiler::parse_mixed(proposed_document, src_path);
+        let doc = apollo_compiler::parse_mixed_validate(proposed_document, src_path).unwrap();
         self.manifest.insert(full_path.clone(), doc);
         Ok(full_path)
-    }
-
-    fn validate(&self, (schema, executable): &(Schema, ExecutableDocument)) {
-        if let Err(err) = schema.validate() {
-            println!("{err}")
-        }
-        if let Err(err) = executable.validate(schema) {
-            println!("{err}")
-        }
     }
 }
 

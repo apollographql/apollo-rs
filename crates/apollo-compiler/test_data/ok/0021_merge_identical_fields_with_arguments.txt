@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         21: SourceFile {
             path: "0021_merge_identical_fields_with_arguments.graphql",
             source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -127,13 +124,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         21: SourceFile {
             path: "0021_merge_identical_fields_with_arguments.graphql",
             source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {
         "queryPupper": 126..204 @21 Operation {

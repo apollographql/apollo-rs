@@ -2,6 +2,7 @@
 
 use apollo_compiler::name;
 use apollo_compiler::schema::ExtendedType;
+use apollo_compiler::validation::Valid;
 use apollo_compiler::Schema;
 
 #[cfg(not(test))]
@@ -9,10 +10,9 @@ fn main() {
     print!("{}", renamed())
 }
 
-fn renamed() -> Schema {
+fn renamed() -> Valid<Schema> {
     let input = "type Query { field: Int }";
-    let mut schema = Schema::parse(input, "schema.graphql");
-    schema.validate().unwrap();
+    let mut schema = Schema::parse(input, "schema.graphql").unwrap();
 
     // 1. Remove the definition from the `types` map, using its old name as a key
     let mut type_def = schema.types.remove("Query").unwrap();
@@ -38,8 +38,7 @@ fn renamed() -> Schema {
         .unwrap()
         .name = new_name;
 
-    schema.validate().unwrap();
-    schema
+    schema.validate().unwrap()
 }
 
 #[test]

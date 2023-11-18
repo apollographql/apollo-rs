@@ -3,6 +3,8 @@ use apollo_compiler::Schema;
 #[test]
 fn find_definitions_with_directive() {
     let schema = r#"
+        type Query { unused: Int }
+
         type ObjectOne @key(field: "id") {
           id: ID!
           inStock: Boolean!
@@ -16,9 +18,11 @@ fn find_definitions_with_directive() {
         type ObjectThree {
             price: Int
         }
+
+        directive @key(field: String) on OBJECT
     "#;
 
-    let schema = Schema::parse(schema, "schema.graphql");
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
 
     let mut key_definition_names: Vec<&str> = schema
         .types
@@ -41,44 +45,45 @@ fn test_schema_reserialize() {
             int: Int,
         }
 
-        extend type implements Inter
+        extend type Query implements Inter
 
         interface Inter {
             string: String
         }
 
-        extend type Query @customDirective;
+        extend type Query @customDirective
 
         extend type Query {
             string: String,
         }
 
-        directive @customDirective on OBJECT;
+        directive @customDirective on OBJECT
     "#;
     // Order is mostly not preserved
-    let expected = expect_test::expect![
-        r#"directive @customDirective on OBJECT
+    let expected = expect_test::expect![[r#"
+        directive @customDirective on OBJECT
 
-type Query {
-  int: Int
-}
+        type Query {
+          int: Int
+        }
 
-extend type Query @customDirective
+        extend type Query @customDirective
 
-extend type Query {
-  withArg(arg: Boolean): String @deprecated
-}
+        extend type Query implements Inter
 
-extend type Query {
-  string: String
-}
+        extend type Query {
+          withArg(arg: Boolean): String @deprecated
+        }
 
-interface Inter {
-  string: String
-}
-"#
-    ];
-    let schema = Schema::parse(input, "schema.graphql");
+        extend type Query {
+          string: String
+        }
+
+        interface Inter {
+          string: String
+        }
+    "#]];
+    let schema = Schema::parse_and_validate(input, "schema.graphql").unwrap();
     expected.assert_eq(&schema.to_string());
 }
 
@@ -106,6 +111,7 @@ fn is_subtype() {
             .parse(base_schema, "base")
             .parse(schema, "schema")
             .build()
+            .unwrap()
     }
 
     fn gen_schema_interfaces(schema: &str) -> Schema {
@@ -131,6 +137,7 @@ fn is_subtype() {
             .parse(base_schema, "base")
             .parse(schema, "schema")
             .build()
+            .unwrap()
     }
 
     let schema = gen_schema_types("union UnionType = Foo | Bar | Baz");
@@ -216,7 +223,6 @@ fn test_default_root_op_name_ignored_with_explicit_schema_def() {
         geneSequence: String!
     }
     "#;
-    let schema = Schema::parse(input, "schema.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "schema.graphql").unwrap();
     assert!(schema.schema_definition.mutation.is_none())
 }

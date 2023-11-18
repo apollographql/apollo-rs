@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         5: SourceFile {
             path: "0005_schema_with_valid_enum_definitions.graphql",
             source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -148,13 +145,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         5: SourceFile {
             path: "0005_schema_with_valid_enum_definitions.graphql",
             source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

@@ -23,11 +23,8 @@ query {
 }
 "#;
 
-    let schema = Schema::parse(input_type_system, "schema.graphql");
-    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
-
-    schema.validate().unwrap();
-    executable.validate(&schema).unwrap();
+    let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
+    ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql").unwrap();
 }
 
 #[test]
@@ -58,11 +55,11 @@ query {
   ]
 }"#]];
 
-    let schema = Schema::parse(input_type_system, "schema.graphql");
-    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
-
-    schema.validate().unwrap();
-    let diagnostics = executable.validate(&schema).unwrap_err();
+    let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
+    let diagnostics =
+        ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
+            .unwrap_err()
+            .errors;
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("an executable document must not contain an object type definition"),
@@ -95,13 +92,10 @@ fragment q on Query {
 }
 "#;
 
-    let schema = Schema::parse(input_type_system, "schema.graphql");
-    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
-
-    schema.validate().unwrap();
-    let errors = executable
-        .validate(&schema)
+    let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
+    let errors = ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
         .unwrap_err()
+        .errors
         .to_string_no_color();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
@@ -143,11 +137,11 @@ fragment q on TestObject {
   ]
 }"#]];
 
-    let schema = Schema::parse(input_type_system, "schema.graphql");
-    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
-
-    schema.validate().unwrap();
-    let diagnostics = executable.validate(&schema).unwrap_err();
+    let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
+    let diagnostics =
+        ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
+            .unwrap_err()
+            .errors;
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
@@ -164,7 +158,7 @@ fragment q on TestObject {
 
 #[test]
 fn validation_without_type_system() {
-    let doc = ast::Document::parse(r#"{ obj { name nickname } }"#, "valid.graphql");
+    let doc = ast::Document::parse(r#"{ obj { name nickname } }"#, "valid.graphql").unwrap();
     // We don't know what `obj` refers to, so assume it is valid.
     doc.validate_standalone_executable().unwrap();
 
@@ -174,7 +168,8 @@ fn validation_without_type_system() {
             query { b }
         "#,
         "dupe_frag.graphql",
-    );
+    )
+    .unwrap();
     let json = expect_test::expect![[r#"
 {
   "message": "compiler error: fragment `A` must be used in an operation",
@@ -209,7 +204,8 @@ fn validation_without_type_system() {
             query { ...A }
         "#,
         "dupe_frag.graphql",
-    );
+    )
+    .unwrap();
     let json = expect_test::expect![[r#"
 {
   "message": "the fragment `A` is defined multiple times in the document",
@@ -237,7 +233,7 @@ fn validation_without_type_system() {
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
 
-    let doc = ast::Document::parse(r#"{ ...A }"#, "unknown_frag.graphql");
+    let doc = ast::Document::parse(r#"{ ...A }"#, "unknown_frag.graphql").unwrap();
     let json = expect_test::expect![[r#"
 {
   "message": "compiler error: cannot find fragment `A` in this document",
@@ -274,6 +270,6 @@ fn validate_variable_usage_without_type_system() {
       }
     }
     "#;
-    let doc = ast::Document::parse(input, "query.graphql");
+    let doc = ast::Document::parse(input, "query.graphql").unwrap();
     doc.validate_standalone_executable().unwrap()
 }

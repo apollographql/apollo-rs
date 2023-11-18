@@ -3,21 +3,16 @@ use crate::ast::Document;
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
 use crate::Node;
-use crate::SourceFile;
+use crate::SourceMap;
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
 use apollo_parser::SyntaxNode;
 use apollo_parser::S;
-use std::sync::Arc;
 
 impl Document {
-    pub(crate) fn from_cst(
-        document: cst::Document,
-        file_id: FileId,
-        source_file: Arc<SourceFile>,
-    ) -> Self {
+    pub(crate) fn from_cst(document: cst::Document, file_id: FileId, sources: SourceMap) -> Self {
         Self {
-            sources: Arc::new([(file_id, source_file)].into()),
+            sources,
             definitions: document
                 .definitions()
                 .filter_map(|def| def.convert(file_id))

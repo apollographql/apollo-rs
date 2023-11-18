@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         8: SourceFile {
             path: "0008_schema_with_directive_definition.graphql",
             source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -141,13 +138,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         8: SourceFile {
             path: "0008_schema_with_directive_definition.graphql",
             source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

@@ -1,4 +1,3 @@
-use super::BuildError;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
@@ -8,36 +7,7 @@ use crate::ValidationDatabase;
 use std::sync::Arc;
 
 pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &Schema) {
-    for (&file_id, source) in schema.sources.iter() {
-        source.validate_parse_errors(errors, file_id)
-    }
-    for build_error in &schema.build_errors {
-        validate_build_error(errors, build_error)
-    }
     compiler_validation(errors, schema)
-}
-
-fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
-    match build_error {
-        BuildError::ExecutableDefinition { location, .. }
-        | BuildError::SchemaDefinitionCollision { location, .. }
-        | BuildError::DirectiveDefinitionCollision { location, .. }
-        | BuildError::TypeDefinitionCollision { location, .. }
-        | BuildError::BuiltInScalarTypeRedefinition { location, .. }
-        | BuildError::OrphanSchemaExtension { location, .. }
-        | BuildError::OrphanTypeExtension { location, .. }
-        | BuildError::TypeExtensionKindMismatch { location, .. }
-        | BuildError::DuplicateRootOperation { location, .. }
-        | BuildError::DuplicateImplementsInterfaceInObject { location, .. }
-        | BuildError::DuplicateImplementsInterfaceInInterface { location, .. }
-        | BuildError::ObjectFieldNameCollision { location, .. }
-        | BuildError::InterfaceFieldNameCollision { location, .. }
-        | BuildError::EnumValueNameCollision { location, .. }
-        | BuildError::UnionMemberNameCollision { location, .. }
-        | BuildError::InputFieldNameCollision { location, .. } => {
-            errors.push(*location, Details::SchemaBuildError(build_error.clone()))
-        }
-    }
 }
 
 /// TODO: replace this with validation based on `Schema` without a database

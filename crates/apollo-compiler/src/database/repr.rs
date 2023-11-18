@@ -2,7 +2,9 @@ use super::sources::SourceType;
 use super::InputDatabase;
 use crate::ast;
 use crate::schema::Name;
+use crate::validation::DiagnosticList;
 use crate::validation::FileId;
+use crate::validation::WithErrors;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -48,31 +50,24 @@ fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
         let ast = db.ast(file_id);
         builder.add_ast_document(&ast, executable_definitions_are_errors);
     }
-    Arc::new(builder.build())
+    match builder.build() {
+        Ok(schema)
+        | Err(WithErrors {
+            partial: schema, ..
+        }) => Arc::new(schema),
+    }
 }
 
 fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {
     let source_type = db.source_type(file_id);
     let type_system_definitions_are_errors = source_type != SourceType::Document;
-    let mut executable = crate::executable::from_ast::document_from_ast(
+    let mut errors = DiagnosticList::new(Default::default());
+    let executable = crate::executable::from_ast::document_from_ast(
         Some(&db.schema()),
         &db.ast(file_id),
+        &mut errors,
         type_system_definitions_are_errors,
     );
-    if source_type == SourceType::Document
-        && executable
-            .sources
-            .iter()
-            .any(|(_id, file)| !file.parse_errors.is_empty())
-    {
-        // Remove parse errors from `executable`, redudant as `schema` has the same ones
-        let sources = Arc::make_mut(&mut executable.sources);
-        for (_id, file) in sources.iter_mut() {
-            if !file.parse_errors.is_empty() {
-                Arc::make_mut(file).parse_errors = Vec::new()
-            }
-        }
-    }
     Arc::new(executable)
 }
 

@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         37: SourceFile {
             path: "0038_argument_default.graphql",
             source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -117,13 +114,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         37: SourceFile {
             path: "0038_argument_default.graphql",
             source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: Some(
         149..185 @37 Operation {
             operation_type: Query,

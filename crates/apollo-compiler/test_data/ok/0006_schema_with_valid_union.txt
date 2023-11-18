@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         6: SourceFile {
             path: "0006_schema_with_valid_union.graphql",
             source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: 0..31 @6 SchemaDefinition {
         description: None,
         directives: [],
@@ -155,13 +152,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         6: SourceFile {
             path: "0006_schema_with_valid_union.graphql",
             source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

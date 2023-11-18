@@ -1,6 +1,6 @@
 use apollo_compiler::executable::Selection;
 use apollo_compiler::name;
-use apollo_compiler::parse_mixed;
+use apollo_compiler::parse_mixed_validate;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
@@ -26,8 +26,8 @@ query ExampleQuery {
 }
       "#;
 
-    let schema = Schema::parse(schema, "schema.graphql");
-    let _doc = ExecutableDocument::parse(&schema, query, "query.graphql");
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    let _doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
 }
 
 #[test]
@@ -65,9 +65,7 @@ type User {
     scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     "#;
 
-    let (schema, doc) = parse_mixed(input, "document.graphql");
-    schema.validate().unwrap();
-    doc.validate(&schema).unwrap();
+    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
     let operation_names: Vec<_> = doc.named_operations.keys().map(|n| n.as_str()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
@@ -106,9 +104,7 @@ type Query {
 }
 "#;
 
-    let (schema, doc) = parse_mixed(input, "document.graphql");
-    schema.validate().unwrap();
-    doc.validate(&schema).unwrap();
+    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
     let op = doc.get_operation(Some("ExampleQuery")).unwrap();
     let field_names: Vec<&str> = op.selection_set.fields().map(|f| f.name.as_str()).collect();
@@ -155,9 +151,7 @@ type Concrete implements Interface {
 union Union = Concrete
 "#;
 
-    let (schema, doc) = parse_mixed(input, "document.graphql");
-    schema.validate().unwrap();
-    doc.validate(&schema).unwrap();
+    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
     let op = doc.get_operation(Some("ExampleQuery")).unwrap();
     let fields: Vec<_> = op.selection_set.fields().collect();
@@ -249,9 +243,7 @@ enum join__Graph {
 }
 "#;
 
-    let (schema, doc) = parse_mixed(input, "document.graphql");
-    schema.validate().unwrap();
-    doc.validate(&schema).unwrap();
+    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
     // Get the types of the two top level fields - topProducts and size
     let get_product_op = doc.get_operation(Some("getProduct")).unwrap();
@@ -318,17 +310,10 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let customer_query = r#"{ customer { id } }"#;
     let colliding_query = r#"query getProduct { topProducts { type, price } }"#;
 
-    let schema = Schema::parse(schema, "schema.graphql");
-    schema.validate().unwrap();
-    ExecutableDocument::parse(&schema, product_query, "query.graphql")
-        .validate(&schema)
-        .unwrap();
-    ExecutableDocument::parse(&schema, customer_query, "query.graphql")
-        .validate(&schema)
-        .unwrap();
-    ExecutableDocument::parse(&schema, colliding_query, "query.graphql")
-        .validate(&schema)
-        .unwrap();
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    ExecutableDocument::parse_and_validate(&schema, product_query, "query.graphql").unwrap();
+    ExecutableDocument::parse_and_validate(&schema, customer_query, "query.graphql").unwrap();
+    ExecutableDocument::parse_and_validate(&schema, colliding_query, "query.graphql").unwrap();
 }
 
 #[test]
@@ -369,11 +354,8 @@ fragment vipCustomer on User {
 }
 "#;
 
-    let schema = Schema::parse(schema, "schema.graphql");
-    let doc = ExecutableDocument::parse(&schema, query, "query.graphql");
-
-    schema.validate().unwrap();
-    doc.validate(&schema).unwrap();
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
 
     let op = doc.get_operation(Some("getProduct")).unwrap();
     let fragment_in_op: Vec<_> = op
@@ -424,9 +406,7 @@ type Result {
 }
 "#;
 
-    let (schema, doc) = parse_mixed(input, "document.graphql");
-    schema.validate().unwrap();
-    doc.validate(&schema).unwrap();
+    let (_schema, _doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 }
 
 #[test]
@@ -440,8 +420,7 @@ type Query {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let directives: Vec<_> = schema
         .get_scalar("URL")
@@ -467,8 +446,7 @@ enum Pet {
 }
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let enum_values: Vec<_> = schema.get_enum("Pet").unwrap().values.keys().collect();
     assert_eq!(enum_values, ["CAT", "DOG", "FOX"]);
@@ -498,8 +476,7 @@ type SearchQuery {
 }
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let union_type = schema.get_union("SearchResult").unwrap();
     let union_members: Vec<_> = union_type.members.iter().collect();
@@ -525,8 +502,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 }
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let locations: Vec<_> = schema.directive_definitions["delegateField"]
         .locations
@@ -553,8 +529,7 @@ input Point2D {
 }
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let fields: Vec<_> = schema
         .get_input_object("Point2D")
@@ -581,8 +556,7 @@ directive @directiveA(name: String) on OBJECT | INTERFACE
 directive @directiveB(name: String) on OBJECT | INTERFACE
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let book_obj = schema.get_object("Book").unwrap();
 
@@ -610,8 +584,7 @@ enum Number {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let person = schema.get_object("Person").unwrap();
 
@@ -660,8 +633,7 @@ input Person {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let person = schema.get_input_object("Person").unwrap();
 
@@ -761,8 +733,7 @@ type User
 }
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let object_names: Vec<_> = schema
         .types
@@ -787,8 +758,7 @@ type Query {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-    let schema = Schema::parse(input, "document.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let (result1, result2) = std::thread::scope(|scope| {
         let thread1 = scope.spawn(|| {
@@ -823,14 +793,15 @@ scalar URL
 "#;
     let query = "{ website }";
 
-    let schema = Schema::parse(sdl, "schema.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
 
     let results = std::thread::scope(|scope| {
         let handles: Vec<_> = (0..2)
             .map(|_| {
                 scope.spawn(|| {
-                    let document = ExecutableDocument::parse(&schema, query, "query.graphql");
+                    let document =
+                        ExecutableDocument::parse_and_validate(&schema, query, "query.graphql")
+                            .unwrap();
                     let selections = &document
                         .anonymous_operation
                         .as_ref()?

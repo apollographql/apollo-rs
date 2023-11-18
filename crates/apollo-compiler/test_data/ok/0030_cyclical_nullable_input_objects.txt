@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         29: SourceFile {
             path: "0030_cyclical_nullable_input_objects.graphql",
             source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -214,13 +211,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         29: SourceFile {
             path: "0030_cyclical_nullable_input_objects.graphql",
             source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

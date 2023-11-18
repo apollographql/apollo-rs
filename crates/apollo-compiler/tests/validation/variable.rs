@@ -1,4 +1,4 @@
-use apollo_compiler::parse_mixed;
+use apollo_compiler::parse_mixed_validate;
 
 #[test]
 fn it_raises_undefined_variable_in_query_error() {
@@ -37,11 +37,7 @@ type Products {
 }
 "#;
 
-    let (schema, executable) = parse_mixed(input, "schema.graphql");
-
-    schema.validate().unwrap();
-    let errors = executable
-        .validate(&schema)
+    let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -74,11 +70,7 @@ type Product {
 }
 "#;
 
-    let (schema, executable) = parse_mixed(input, "schema.graphql");
-
-    schema.validate().unwrap();
-    let errors = executable
-        .validate(&schema)
+    let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -128,11 +120,7 @@ type Product {
 }
 "#;
 
-    let (schema, executable) = parse_mixed(input, "schema.graphql");
-
-    schema.validate().unwrap();
-    let errors = executable
-        .validate(&schema)
+    let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string_no_color();
     assert!(

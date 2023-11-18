@@ -10,10 +10,10 @@ fn test_orphan_extensions() {
     "#;
 
     // By default, orphan extensions are errors:
-    let schema = Schema::parse(input, "schema.graphql");
-    assert!(!schema.schema_definition.directives.has("dir"));
-    assert!(!schema.types.contains_key("Obj"));
-    let err = schema.validate().unwrap_err().to_string_no_color();
+    let invalid = Schema::parse_and_validate(input, "schema.graphql").unwrap_err();
+    assert!(!invalid.partial.schema_definition.directives.has("dir"));
+    assert!(!invalid.partial.types.contains_key("Obj"));
+    let err = invalid.errors.to_string_no_color();
     assert!(
         err.contains("schema extension without a schema definition"),
         "{err}"
@@ -27,7 +27,8 @@ fn test_orphan_extensions() {
     let schema2 = Schema::builder()
         .adopt_orphan_extensions()
         .parse(input, "schema.graphql")
-        .build();
+        .build()
+        .unwrap();
     assert!(schema2.schema_definition.directives.has("dir"));
     assert!(schema2.types["Obj"].directives().has("dir"));
     schema2.validate().unwrap();
@@ -41,14 +42,15 @@ fn test_orphan_extensions_kind_mismatch() {
     directive @dir repeatable on SCHEMA | OBJECT
 "#;
 
-    let schema = Schema::builder()
+    let invalid = Schema::builder()
         .adopt_orphan_extensions()
         .parse(input, "schema.graphql")
-        .build();
-    let type_def = &schema.types["T"];
+        .build()
+        .unwrap_err();
+    let type_def = &invalid.partial.types["T"];
     assert!(type_def.is_object());
     assert_eq!(type_def.directives().get_all("dir").count(), 1);
-    let err = schema.validate().unwrap_err().to_string_no_color();
+    let err = invalid.errors.to_string_no_color();
     assert!(
         err.contains("adding an interface type extension, but `T` is an object type"),
         "{err}"
@@ -64,7 +66,6 @@ fn test_extend_implicit_schema() {
     directive @dir on SCHEMA
 "#;
 
-    let schema = Schema::parse(input, "schema.graphql");
-    schema.validate().unwrap();
+    let schema = Schema::parse_and_validate(input, "schema.graphql").unwrap();
     assert!(schema.schema_definition.directives.has("dir"));
 }

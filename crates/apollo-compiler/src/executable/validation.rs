@@ -1,9 +1,9 @@
-use super::BuildError;
 use super::FieldSet;
 use crate::ast;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
+use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::InputDatabase;
 use crate::Schema;
@@ -15,7 +15,8 @@ pub(crate) fn validate_executable_document(
     schema: &Schema,
     document: &ExecutableDocument,
 ) {
-    validate_common(errors, document);
+    validate_with_or_without_schema(errors, document);
+    validate_with_schema(errors, schema, document);
     compiler_validation(errors, Some(schema), document);
     // TODO
 }
@@ -24,50 +25,23 @@ pub(crate) fn validate_standalone_executable(
     errors: &mut DiagnosticList,
     document: &ExecutableDocument,
 ) {
-    validate_common(errors, document);
+    validate_with_or_without_schema(errors, document);
     compiler_validation(errors, None, document);
 }
 
-pub(crate) fn validate_common(errors: &mut DiagnosticList, document: &ExecutableDocument) {
-    for (file_id, source) in document.sources.iter() {
-        source.validate_parse_errors(errors, *file_id)
-    }
-    for build_error in &document.build_errors {
-        validate_build_error(errors, build_error)
-    }
-    if let Some(operation) = &document.anonymous_operation {
-        if !document.named_operations.is_empty()
-            || document
-                .build_errors
-                .iter()
-                .any(|e| matches!(e, BuildError::AmbiguousAnonymousOperation { .. }))
-        {
-            let location = operation.location();
-            // Not actually a build error from converting from AST,
-            // but reuses the same message formatting
-            errors.push(
-                location,
-                Details::ExecutableBuildError(BuildError::AmbiguousAnonymousOperation { location }),
-            )
-        }
-    }
+fn validate_with_schema(
+    _errors: &mut DiagnosticList,
+    _schema: &Schema,
+    _document: &ExecutableDocument,
+) {
     // TODO
 }
 
-fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
-    let location = match build_error {
-        BuildError::TypeSystemDefinition { location, .. }
-        | BuildError::AmbiguousAnonymousOperation { location }
-        | BuildError::OperationNameCollision { location, .. }
-        | BuildError::FragmentNameCollision { location, .. }
-        | BuildError::UndefinedRootOperation { location, .. }
-        | BuildError::UndefinedField { location, .. }
-        | BuildError::UndefinedTypeInNamedFragmentTypeCondition { location, .. }
-        | BuildError::UndefinedTypeInInlineFragmentTypeCondition { location, .. }
-        | BuildError::SubselectionOnScalarType { location, .. }
-        | BuildError::SubselectionOnEnumType { location, .. } => *location,
-    };
-    errors.push(location, Details::ExecutableBuildError(build_error.clone()))
+pub(crate) fn validate_with_or_without_schema(
+    _errors: &mut DiagnosticList,
+    _document: &ExecutableDocument,
+) {
+    // TODO
 }
 
 /// TODO: replace this with validation based on `ExecutableDocument` without a database
@@ -118,15 +92,9 @@ fn compiler_validation(
 
 pub(crate) fn validate_field_set(
     errors: &mut DiagnosticList,
-    schema: &Schema,
+    schema: &Valid<Schema>,
     field_set: &FieldSet,
 ) {
-    for (file_id, source) in &*field_set.sources {
-        source.validate_parse_errors(errors, *file_id)
-    }
-    for build_error in &field_set.build_errors {
-        validate_build_error(errors, build_error)
-    }
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
     for (id, source) in &*schema.sources {
@@ -138,7 +106,9 @@ pub(crate) fn validate_field_set(
         compiler.db.set_input(*id, source.into());
     }
 
-    compiler.db.set_schema_input(Some(Arc::new(schema.clone())));
+    compiler
+        .db
+        .set_schema_input(Some(Arc::new(schema.as_ref().clone())));
 
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);

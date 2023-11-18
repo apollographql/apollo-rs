@@ -22,19 +22,35 @@ fn main() -> ExitCode {
     let executable_source = std::fs::read_to_string(&executable_filename).unwrap();
 
     let step = format!("Schema parse ({} bytes)", schema_source.len());
-    let schema = timed(&step, || Schema::parse(schema_source, schema_filename));
+    let schema = match timed(&step, || Schema::parse(schema_source, schema_filename)) {
+        Ok(s) => s,
+        Err(errors) => {
+            println!("Schema parse errors:\n{errors}");
+            return ExitCode::FAILURE;
+        }
+    };
 
-    if let Err(errors) = timed("Schema validation", || schema.validate()) {
-        println!("Schema is invalid:\n{errors}")
-    }
+    let schema = match timed("Schema validation", || schema.validate()) {
+        Ok(s) => s,
+        Err(errors) => {
+            println!("Schema is invalid:\n{errors}");
+            return ExitCode::FAILURE;
+        }
+    };
 
-    let step = format!(
-        "Executable document parse ({} bytes)",
-        executable_source.len()
-    );
-    let doc = timed(&step, || {
-        ExecutableDocument::parse(&schema, executable_source, executable_filename)
-    });
+    let doc = match timed(
+        &format!(
+            "Executable document parse ({} bytes)",
+            executable_source.len()
+        ),
+        || ExecutableDocument::parse(&schema, executable_source, executable_filename),
+    ) {
+        Ok(doc) => doc,
+        Err(errors) => {
+            println!("Executable document parse errors:\n{errors}");
+            return ExitCode::FAILURE;
+        }
+    };
 
     if let Err(errors) = timed("Executable document validation", || doc.validate(&schema)) {
         println!("Executable document is invalid:\n{errors}")

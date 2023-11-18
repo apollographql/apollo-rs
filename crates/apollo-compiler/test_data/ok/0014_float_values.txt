@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         14: SourceFile {
             path: "0014_float_values.graphql",
             source_text: "type Query {\n  name(arg: WithAllKindsOfFloats): String\n}\n\ninput WithAllKindsOfFloats {\n  a_regular_float: Float = 1.2\n  an_integer_float: Float = 1234\n  a_float_that_doesnt_fit_an_int: Float = 9876543210\n  list_of_floats: [Float] = [4, 9876543210, 98765432109876543210]\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -165,13 +162,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         14: SourceFile {
             path: "0014_float_values.graphql",
             source_text: "type Query {\n  name(arg: WithAllKindsOfFloats): String\n}\n\ninput WithAllKindsOfFloats {\n  a_regular_float: Float = 1.2\n  an_integer_float: Float = 1234\n  a_float_that_doesnt_fit_an_int: Float = 9876543210\n  list_of_floats: [Float] = [4, 9876543210, 98765432109876543210]\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

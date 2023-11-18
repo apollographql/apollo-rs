@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         26: SourceFile {
             path: "0027_typename_introspection_in_object.graphql",
             source_text: "type Query {\n  id: String\n  name: String\n  birthday: Date\n}\n\nscalar Date @specifiedBy(url: \"datespec.com\")\n\n{\n    name\n    __typename\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -116,13 +113,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         26: SourceFile {
             path: "0027_typename_introspection_in_object.graphql",
             source_text: "type Query {\n  id: String\n  name: String\n  birthday: Date\n}\n\nscalar Date @specifiedBy(url: \"datespec.com\")\n\n{\n    name\n    __typename\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: Some(
         108..135 @26 Operation {
             operation_type: Query,
