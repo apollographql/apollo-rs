@@ -7,6 +7,8 @@ use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::Schema;
 use indexmap::IndexMap;
@@ -29,7 +31,6 @@ pub struct Parser {
 pub struct SourceFile {
     pub(crate) path: PathBuf,
     pub(crate) source_text: String,
-    pub(crate) parse_errors: Vec<apollo_parser::Error>,
     pub(crate) source: OnceLock<MappedSource>,
 }
 
@@ -43,18 +44,16 @@ pub(crate) struct MappedSource {
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
+/// and validate them.
 /// This is mostly useful for unit tests.
 ///
 /// `path` is the filesystem path (or arbitrary string) used in diagnostics
 /// to identify this source file to users.
-///
-/// Parsing is fault-tolerant, so a schema and document are always returned.
-/// TODO: document how to validate
-pub fn parse_mixed(
+pub fn parse_mixed_validate(
     source_text: impl Into<String>,
     path: impl AsRef<Path>,
-) -> (Schema, ExecutableDocument) {
-    Parser::new().parse_mixed(source_text, path)
+) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList> {
+    Parser::new().parse_mixed_validate(source_text, path)
 }
 
 impl Parser {
@@ -80,34 +79,42 @@ impl Parser {
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    ///
-    /// Parsing is fault-tolerant, so a document is always returned.
-    /// In case of a parse error, [`Document::check_parse_errors`] will return relevant information
-    /// and some nodes may be missing in the built document.
     pub fn parse_ast(
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> Document {
-        self.parse_with_file_id(source_text.into(), path.as_ref().to_owned(), FileId::new())
+    ) -> Result<Document, WithErrors<Document>> {
+        let mut errors = DiagnosticList::new(Default::default());
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut errors);
+        errors.into_result_with(ast)
     }
 
-    pub(crate) fn parse_with_file_id(
+    pub(crate) fn parse_ast_inner(
         &mut self,
-        source_text: String,
-        path: PathBuf,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
         file_id: FileId,
+        errors: &mut DiagnosticList,
     ) -> Document {
-        let (tree, source_file) = self.parse_common(source_text, path, |parser| parser.parse());
-        Document::from_cst(tree.document(), file_id, source_file)
+        let tree = self.parse_common(
+            source_text.into(),
+            path.as_ref().to_owned(),
+            file_id,
+            errors,
+            |parser| parser.parse(),
+        );
+        let sources = errors.sources.clone();
+        Document::from_cst(tree.document(), file_id, sources)
     }
 
     pub(crate) fn parse_common<T: apollo_parser::cst::CstNode>(
         &mut self,
         source_text: String,
         path: PathBuf,
+        file_id: FileId,
+        errors: &mut DiagnosticList,
         parse: impl FnOnce(apollo_parser::Parser) -> apollo_parser::SyntaxTree<T>,
-    ) -> (apollo_parser::SyntaxTree<T>, Arc<SourceFile>) {
+    ) -> apollo_parser::SyntaxTree<T> {
         let mut parser = apollo_parser::Parser::new(&source_text);
         if let Some(value) = self.recursion_limit {
             parser = parser.recursion_limit(value)
@@ -121,10 +128,35 @@ impl Parser {
         let source_file = Arc::new(SourceFile {
             path,
             source_text,
-            parse_errors: tree.errors().cloned().collect(),
             source: OnceLock::new(),
         });
-        (tree, source_file)
+        Arc::make_mut(&mut errors.sources).insert(file_id, source_file);
+        for parser_error in tree.errors() {
+            // Silently skip parse errors at index beyond 4 GiB.
+            // Rowan in apollo-parser might complain about files that large
+            // before we get here anyway.
+            let Ok(index) = parser_error.index().try_into() else {
+                continue;
+            };
+            let Ok(len) = parser_error.data().len().try_into() else {
+                continue;
+            };
+            let location = Some(NodeLocation {
+                file_id,
+                text_range: rowan::TextRange::at(index, len),
+            });
+            let details = if parser_error.is_limit() {
+                Details::ParserLimit {
+                    message: parser_error.message().to_owned(),
+                }
+            } else {
+                Details::SyntaxError {
+                    message: parser_error.message().to_owned(),
+                }
+            };
+            errors.push(location, details)
+        }
+        tree
     }
 
     /// Parse the given source text as the sole input file of a schema.
@@ -134,15 +166,14 @@ impl Parser {
     ///
     /// To have multiple files contribute to a schema,
     /// use [`Schema::builder`] and [`Parser::parse_into_schema_builder`].
-    ///
-    /// Parsing is fault-tolerant, so a schema is always returned.
-    /// TODO: document how to validate
     pub fn parse_schema(
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> Schema {
-        self.parse_ast(source_text, path).to_schema()
+    ) -> Result<Schema, WithErrors<Schema>> {
+        let mut builder = Schema::builder();
+        self.parse_into_schema_builder(source_text, path, &mut builder);
+        builder.build()
     }
 
     /// Parse the given source text as an additional input to a schema builder.
@@ -152,73 +183,114 @@ impl Parser {
     ///
     /// This can be used to build a schema from multiple source files.
     ///
-    /// Parsing is fault-tolerant, so this is infallible.
-    /// TODO: document how to validate.
+    /// Errors (if any) are recorded in the builder and returned by [`SchemaBuilder::build`].
     pub fn parse_into_schema_builder(
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
         builder: &mut SchemaBuilder,
     ) {
-        self.parse_ast(source_text, path).to_schema_builder(builder)
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut builder.errors);
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document_not_adding_sources(&ast, executable_definitions_are_errors);
     }
 
     /// Parse the given source text into an executable document, with the given schema.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    ///
-    /// Parsing is fault-tolerant, so a document is always returned.
-    /// TODO: document how to validate
     pub fn parse_executable(
         &mut self,
-        schema: &Schema,
+        schema: &Valid<Schema>,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> ExecutableDocument {
-        self.parse_ast(source_text, path).to_executable(schema)
+    ) -> Result<ExecutableDocument, WithErrors<ExecutableDocument>> {
+        let (document, errors) = self.parse_executable_inner(schema, source_text, path);
+        errors.into_result_with(document)
+    }
+
+    pub(crate) fn parse_executable_inner(
+        &mut self,
+        schema: &Valid<Schema>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> (ExecutableDocument, DiagnosticList) {
+        let mut errors = DiagnosticList::new(Default::default());
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut errors);
+        let document = ast.to_executable_inner(schema, &mut errors);
+        (document, errors)
     }
 
     /// Parse a schema and executable document from the given source text
-    /// containing a mixture of type system definitions and executable definitions.
+    /// containing a mixture of type system definitions and executable definitions,
+    /// and validate them.
     /// This is mostly useful for unit tests.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    ///
-    /// Parsing is fault-tolerant, so a schema and document are always returned.
-    /// TODO: document how to validate
-    pub fn parse_mixed(
+    pub fn parse_mixed_validate(
         &mut self,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> (Schema, ExecutableDocument) {
-        self.parse_ast(source_text, path).to_mixed()
+    ) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList> {
+        let mut builder = SchemaBuilder::new();
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut builder.errors);
+        let executable_definitions_are_errors = false;
+        let type_system_definitions_are_errors = false;
+        builder.add_ast_document_not_adding_sources(&ast, executable_definitions_are_errors);
+        let (schema, mut errors) = builder.build_inner();
+        let executable = crate::executable::from_ast::document_from_ast(
+            Some(&schema),
+            &ast,
+            &mut errors,
+            type_system_definitions_are_errors,
+        );
+        crate::schema::validation::validate_schema(&mut errors, &schema);
+        crate::executable::validation::validate_executable_document(
+            &mut errors,
+            &schema,
+            &executable,
+        );
+        errors
+            .into_result()
+            .map(|()| (Valid(schema), Valid(executable)))
     }
 
     /// Parse the given source text as a selection set with optional outer brackets.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    ///
-    /// Parsing is fault-tolerant, so a selection set node is always returned.
-    /// TODO: document how to validate
     pub fn parse_field_set(
         &mut self,
-        schema: &Schema,
+        schema: &Valid<Schema>,
         type_name: ast::NamedType,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> executable::FieldSet {
-        let (tree, source_file) =
-            self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
-                parser.parse_selection_set()
-            });
+    ) -> Result<executable::FieldSet, WithErrors<executable::FieldSet>> {
+        let (field_set, errors) = self.parse_field_set_inner(schema, type_name, source_text, path);
+        errors.into_result_with(field_set)
+    }
+
+    pub(crate) fn parse_field_set_inner(
+        &mut self,
+        schema: &Valid<Schema>,
+        type_name: ast::NamedType,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> (executable::FieldSet, DiagnosticList) {
         let file_id = FileId::new();
+        let mut errors = DiagnosticList::new(Default::default());
+        let tree = self.parse_common(
+            source_text.into(),
+            path.as_ref().to_owned(),
+            file_id,
+            &mut errors,
+            |parser| parser.parse_selection_set(),
+        );
         let ast = ast::from_cst::convert_selection_set(&tree.field_set(), file_id);
         let mut selection_set = executable::SelectionSet::new(type_name);
         let mut build_errors = executable::from_ast::BuildErrors {
-            errors: Vec::new(),
+            errors: &mut errors,
             path: executable::SelectionPath {
                 nested_fields: Vec::new(),
                 // 🤷
@@ -228,11 +300,11 @@ impl Parser {
             },
         };
         selection_set.extend_from_ast(Some(schema), &mut build_errors, &ast);
-        executable::FieldSet {
-            sources: Arc::new([(file_id, source_file)].into()),
-            build_errors: build_errors.errors,
+        let field_set = executable::FieldSet {
+            sources: errors.sources.clone(),
             selection_set,
-        }
+        };
+        (field_set, errors)
     }
 
     /// Parse the given source text as a reference to a type.
@@ -244,26 +316,20 @@ impl Parser {
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
     ) -> Result<ast::Type, DiagnosticList> {
-        let (tree, source_file) =
-            self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
-                parser.parse_type()
-            });
+        let mut errors = DiagnosticList::new(Default::default());
         let file_id = FileId::new();
-
-        let sources: crate::SourceMap = Arc::new([(file_id, source_file)].into());
-        let mut errors = DiagnosticList::new(sources.clone());
-        for (file_id, source) in sources.iter() {
-            source.validate_parse_errors(&mut errors, *file_id)
-        }
-
-        if errors.is_empty() {
-            if let Some(ty) = tree.ty().convert(file_id) {
-                return Ok(ty);
-            }
-            unreachable!("conversion is infallible if there were no syntax errors");
-        } else {
-            Err(errors)
-        }
+        let tree = self.parse_common(
+            source_text.into(),
+            path.as_ref().to_owned(),
+            file_id,
+            &mut errors,
+            |parser| parser.parse_type(),
+        );
+        errors.into_result().map(|()| {
+            tree.ty()
+                .convert(file_id)
+                .expect("conversion should be infallible if there were no syntax errors")
+        })
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.
@@ -330,34 +396,6 @@ impl SourceFile {
         let (_, line, column) = self.ariadne().get_offset_line(char_index)?;
         Some((line, column))
     }
-
-    pub(crate) fn validate_parse_errors(&self, errors: &mut DiagnosticList, file_id: FileId) {
-        for err in &self.parse_errors {
-            // Silently skip parse errors at index beyond 4 GiB.
-            // Rowan in apollo-parser might complain about files that large
-            // before we get here anyway.
-            let Ok(index) = err.index().try_into() else {
-                continue;
-            };
-            let Ok(len) = err.data().len().try_into() else {
-                continue;
-            };
-            let location = Some(NodeLocation {
-                file_id,
-                text_range: rowan::TextRange::at(index, len),
-            });
-            let details = if err.is_limit() {
-                Details::ParserLimit {
-                    message: err.message().to_owned(),
-                }
-            } else {
-                Details::SyntaxError {
-                    message: err.message().to_owned(),
-                }
-            };
-            errors.push(location, details)
-        }
-    }
 }
 
 impl std::fmt::Debug for SourceFile {
@@ -365,7 +403,6 @@ impl std::fmt::Debug for SourceFile {
         let Self {
             path,
             source_text,
-            parse_errors,
             source: _, // Skipped: it’s a cache and would make debugging other things noisy
         } = self;
         let mut debug_struct = f.debug_struct("SourceFile");
@@ -378,6 +415,6 @@ impl std::fmt::Debug for SourceFile {
                 &format_args!("include_str!(\"built_in.graphql\")"),
             );
         }
-        debug_struct.field("parse_errors", parse_errors).finish()
+        debug_struct.finish()
     }
 }

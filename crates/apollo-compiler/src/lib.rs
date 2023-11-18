@@ -20,7 +20,7 @@ use crate::validation::ValidationDatabase;
 pub use self::executable::ExecutableDocument;
 pub use self::node::Node;
 pub use self::node_str::NodeStr;
-pub use self::parser::{parse_mixed, Parser, SourceFile, SourceMap};
+pub use self::parser::{parse_mixed_validate, Parser, SourceFile, SourceMap};
 pub use self::schema::Schema;
 
 pub(crate) struct ApolloCompiler {

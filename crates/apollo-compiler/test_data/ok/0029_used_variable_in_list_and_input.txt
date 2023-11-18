@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         28: SourceFile {
             path: "0029_used_variable_in_list_and_input.graphql",
             source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -143,13 +140,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         28: SourceFile {
             path: "0029_used_variable_in_list_and_input.graphql",
             source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: Some(
         156..302 @28 Operation {
             operation_type: Query,

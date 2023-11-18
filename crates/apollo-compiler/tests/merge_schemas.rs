@@ -13,7 +13,7 @@ type MergeError = &'static str;
 fn merge_schemas(inputs: &[&str]) -> Result<String, MergeError> {
     let mut merged = Schema::new();
     for &input in inputs {
-        let schema = Schema::parse(input, "schema.graphql");
+        let schema = Schema::parse(input, "schema.graphql").unwrap();
         {
             let merged = merged.schema_definition.make_mut();
             let new = &schema.schema_definition;

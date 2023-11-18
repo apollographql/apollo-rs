@@ -4,6 +4,7 @@ use expect_test::Expect;
 use std::sync::OnceLock;
 use unindent::unindent;
 
+use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 
@@ -118,13 +119,11 @@ const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
   directive @onField on FIELD
 "#;
 
-fn test_schema() -> &'static Schema {
-    static SCHEMA: OnceLock<Schema> = OnceLock::new();
+fn test_schema() -> &'static Valid<Schema> {
+    static SCHEMA: OnceLock<Valid<Schema>> = OnceLock::new();
 
     SCHEMA.get_or_init(|| {
-        let schema = Schema::parse(unindent(GRAPHQL_JS_TEST_SCHEMA), "schema.graphql");
-        schema.validate().unwrap();
-        schema
+        Schema::parse_and_validate(unindent(GRAPHQL_JS_TEST_SCHEMA), "schema.graphql").unwrap()
     })
 }
 
@@ -132,15 +131,15 @@ fn test_schema() -> &'static Schema {
 fn expect_valid(query: &'static str) {
     let schema = test_schema();
 
-    let executable = ExecutableDocument::parse(schema, unindent(query), "query.graphql");
-    executable.validate(schema).unwrap();
+    ExecutableDocument::parse_and_validate(schema, unindent(query), "query.graphql").unwrap();
 }
 
 fn expect_errors(query: &'static str, expect: Expect) {
     let schema = test_schema();
 
-    let executable = ExecutableDocument::parse(schema, unindent(query), "query.graphql");
-    let errors = executable.validate(schema).expect_err("should have errors");
+    let errors = ExecutableDocument::parse_and_validate(schema, unindent(query), "query.graphql")
+        .expect_err("should have errors")
+        .errors;
     expect.assert_eq(&errors.to_string_no_color());
 }
 
@@ -1650,31 +1649,30 @@ mod invalid_input_object_values {
         use apollo_compiler::ExecutableDocument;
         use apollo_compiler::Schema;
 
-        let schema = Schema::parse(
+        let schema = Schema::parse_and_validate(
             "
-            scalar Any
-            type Query {
-              anyArg(arg: Any): String
-            }
-        ",
+                scalar Any
+                type Query {
+                  anyArg(arg: Any): String
+                }
+            ",
             "schema.graphql",
-        );
-        schema.validate().unwrap();
+        )
+        .unwrap();
 
-        let query = ExecutableDocument::parse(
+        ExecutableDocument::parse_and_validate(
             &schema,
             r#"
-            {
-              test1: anyArg(arg: 123)
-              test2: anyArg(arg: "abc")
-              test3: anyArg(arg: [123, "abc"])
-              test4: anyArg(arg: {deep: [123, "abc"]})
-            }
-        "#,
+                {
+                  test1: anyArg(arg: 123)
+                  test2: anyArg(arg: "abc")
+                  test3: anyArg(arg: [123, "abc"])
+                  test4: anyArg(arg: {deep: [123, "abc"]})
+                }
+            "#,
             "query.graphql",
-        );
-
-        query.validate(&schema).unwrap();
+        )
+        .unwrap();
     }
 }
 

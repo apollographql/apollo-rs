@@ -1,4 +1,4 @@
-use apollo_compiler::parse_mixed;
+use apollo_compiler::parse_mixed_validate;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 
@@ -14,19 +14,20 @@ fn get_operations() {
     let several_named_op = r#"query getName { name } query getAnotherName { name }"#;
     let noop = r#""#;
 
-    let schema = Schema::parse(type_system, "ts.graphql");
-    let doc = ExecutableDocument::parse(&schema, op, "op.graphql");
+    let schema = Schema::parse_and_validate(type_system, "ts.graphql").unwrap();
+    let doc = ExecutableDocument::parse_and_validate(&schema, op, "op.graphql").unwrap();
     assert!(doc.get_operation(None).is_ok());
 
-    let doc = ExecutableDocument::parse(&schema, named_op, "op.graphql");
+    let doc = ExecutableDocument::parse_and_validate(&schema, named_op, "op.graphql").unwrap();
     assert!(doc.get_operation(Some("getName")).is_ok());
     assert!(doc.get_operation(None).is_ok());
 
-    let doc = ExecutableDocument::parse(&schema, several_named_op, "op.graphql");
+    let doc =
+        ExecutableDocument::parse_and_validate(&schema, several_named_op, "op.graphql").unwrap();
     assert!(doc.get_operation(Some("getName")).is_ok());
     assert!(doc.get_operation(None).is_err());
 
-    let doc = ExecutableDocument::parse(&schema, noop, "op.graphql");
+    let doc = ExecutableDocument::parse_and_validate(&schema, noop, "op.graphql").unwrap();
     assert!(doc.get_operation(Some("getName")).is_err());
     assert!(doc.get_operation(None).is_err());
 }
@@ -54,7 +55,7 @@ fn is_introspection_operation() {
           }
         }
     "#;
-    let (_, doc) = parse_mixed(query_input, "query.graphql");
+    let (_, doc) = parse_mixed_validate(query_input, "query.graphql").unwrap();
     assert!(doc.named_operations["TypeIntrospect"].is_introspection(&doc));
 }
 
@@ -78,6 +79,7 @@ fn is_not_introspection_operation() {
         }
     "#;
     let mutation_input = r#"
+        type Query { unused: Int }
         type Mutation {
             buyA5Wagyu(pounds: Int): String
         }
@@ -87,8 +89,8 @@ fn is_not_introspection_operation() {
         }
     "#;
 
-    let (_, query_doc) = parse_mixed(query_input, "query.graphql");
-    let (_, mutation_doc) = parse_mixed(mutation_input, "mutation.graphql");
+    let (_, query_doc) = parse_mixed_validate(query_input, "query.graphql").unwrap();
+    let (_, mutation_doc) = parse_mixed_validate(mutation_input, "mutation.graphql").unwrap();
 
     assert!(!query_doc.named_operations["CheckStock"].is_introspection(&query_doc));
     assert!(!mutation_doc.named_operations["PurchaseBasket"].is_introspection(&mutation_doc));
@@ -128,9 +130,10 @@ fn is_introspection_deep() {
           }
         }
       }
-
+    "#;
+    let introspection_fragment = r#"
       fragment onRooten2 on Root {
-         __type(name: "Root") {
+        __type(name: "Root") {
           ...onType
         }
         ... on Root {
@@ -147,8 +150,9 @@ fn is_introspection_deep() {
           name
         }
       }
-
-      fragment onRooten2_not_intro on Root {
+    "#;
+    let non_introspection_fragment = r#"
+      fragment onRooten2 on Root {
         species(id: "Ewok") {
           name
         }
@@ -163,10 +167,12 @@ fn is_introspection_deep() {
      }
     "#;
 
-    let query_input_not_introspect = query_input.replace("...onRooten2", "...onRooten2_not_intro");
+    let query_input_not_introspect = format!("{query_input}{non_introspection_fragment}");
+    let query_input = format!("{query_input}{introspection_fragment}");
 
-    let (_, query_doc) = parse_mixed(query_input, "query.graphql");
-    let (_, query_not_introspect_doc) = parse_mixed(query_input_not_introspect, "query2.graphql");
+    let (_, query_doc) = parse_mixed_validate(query_input, "query.graphql").unwrap();
+    let (_, query_not_introspect_doc) =
+        parse_mixed_validate(query_input_not_introspect, "query2.graphql").unwrap();
 
     assert!(query_doc.named_operations["IntrospectDeepFragments"].is_introspection(&query_doc));
     assert!(
@@ -214,8 +220,9 @@ fn is_introspection_repeated_fragment() {
       }
     "#;
 
-    let (_, query_doc_indirect) = parse_mixed(query_input_indirect, "indirect.graphql");
-    let (_, query_doc_direct) = parse_mixed(query_input_direct, "direct.graphql");
+    let (_, query_doc_indirect) =
+        parse_mixed_validate(query_input_indirect, "indirect.graphql").unwrap();
+    let (_, query_doc_direct) = parse_mixed_validate(query_input_direct, "direct.graphql").unwrap();
 
     assert!(
         query_doc_indirect.named_operations["IntrospectRepeatedIndirectFragment"]

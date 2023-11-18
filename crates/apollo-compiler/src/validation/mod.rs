@@ -1,6 +1,9 @@
 //! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
 //! and other kinds of errors.
 
+#[cfg(doc)]
+use crate::{ExecutableDocument, Schema};
+
 mod argument;
 mod directive;
 mod enum_;
@@ -34,13 +37,99 @@ pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 pub use crate::database::FileId;
 pub use crate::node::NodeLocation;
 
+/// Wraps a [`Schema`] or [`ExecutableDocument`] to mark it
+/// as [valid](https://spec.graphql.org/October2021/#sec-Validation).
+///
+/// This is obtained either by running validation with one of:
+///
+/// * [`Schema::parse_and_validate`]
+/// * [`Schema::validate`]
+/// * [`ExecutableDocument::parse_and_validate`]
+/// * [`ExecutableDocument::validate`]
+///
+/// … or by explicitly skipping it with [`Valid::assert_valid`].
+///
+/// The schema or document inside `Valid<T>` is immutable (`&mut T` is not given out).
+/// It can be extracted with [`into_inner`][Self::into_inner],
+/// such as to mutate it then possibly re-validate it.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Valid<T>(pub(crate) T);
+
+impl<T> Valid<T> {
+    /// Construct a `Valid` document without actually running validation.
+    ///
+    /// The caller takes responsibility to ascertain that
+    /// the document is known through some other means to be valid.
+    /// For example, if it was loaded from some external storag
+    /// where it was only stored after validation.
+    pub fn assert_valid(document: T) -> Self {
+        Self(document)
+    }
+
+    /// Extract the schema or document, such as to mutate it then possibly re-validate it.
+    pub fn into_inner(self) -> T {
+        self.0
+    }
+}
+
+impl<T> std::ops::Deref for Valid<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> AsRef<T> for Valid<T> {
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
+
+impl<T: fmt::Display> fmt::Display for Valid<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+/// A conversion failed with some errors, but also resulted in a partial document.
+///
+/// The [`Debug`][fmt::Debug] trait is implemented by forwarding to [`Self::errors`] and
+/// ignoring [`Self::partial`].
+/// This is so that the panic message prints (only) errors when [`.unwrap()`][Result::unwrap]
+/// is called on a `Result<_, WithError<_>>` value as returned by various APIs.
+pub struct WithErrors<T> {
+    /// The partial result of the conversion.
+    /// Some components may be missing,
+    /// for example if an error causes them not to be representable in the target data structure.
+    pub partial: T,
+
+    /// Errors collected during the conversion.
+    /// Should be non-empty when `WithError` is returned.
+    pub errors: DiagnosticList,
+}
+
+impl<T> fmt::Debug for WithErrors<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.errors.fmt(f)
+    }
+}
+
+impl<T> fmt::Display for WithErrors<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.errors.fmt(f)
+    }
+}
+
 /// A collection of diagnostics returned by some validation method
+#[derive(Clone)]
 pub struct DiagnosticList {
-    sources: SourceMap,
+    pub(crate) sources: SourceMap,
     diagnostics_data: Vec<DiagnosticData>,
 }
 
-struct DiagnosticData {
+#[derive(Clone)]
+pub(crate) struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
 }
@@ -51,7 +140,7 @@ pub struct Diagnostic<'a> {
     data: &'a DiagnosticData,
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum Details {
     #[error("{message}")]
     ParserLimit { message: String },
@@ -323,9 +412,11 @@ impl DiagnosticList {
         format!("{self:#}")
     }
 
-    pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: Details) {
-        self.diagnostics_data
-            .push(DiagnosticData { location, details })
+    pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: impl Into<Details>) {
+        self.diagnostics_data.push(DiagnosticData {
+            location,
+            details: details.into(),
+        })
     }
 
     pub(crate) fn into_result(mut self) -> Result<(), Self> {
@@ -335,6 +426,26 @@ impl DiagnosticList {
             self.diagnostics_data
                 .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
             Err(self)
+        }
+    }
+
+    pub(crate) fn into_result_with<T>(self, value: T) -> Result<T, WithErrors<T>> {
+        match self.into_result() {
+            Ok(()) => Ok(value),
+            Err(errors) => Err(WithErrors {
+                partial: value,
+                errors,
+            }),
+        }
+    }
+
+    pub(crate) fn into_valid_result<T>(self, value: T) -> Result<Valid<T>, WithErrors<T>> {
+        match self.into_result() {
+            Ok(()) => Ok(Valid(value)),
+            Err(errors) => Err(WithErrors {
+                partial: value,
+                errors,
+            }),
         }
     }
 }
@@ -439,6 +550,18 @@ impl ariadne::Span for NodeLocation {
 
     fn end(&self) -> usize {
         self.end_offset()
+    }
+}
+
+impl From<SchemaBuildError> for Details {
+    fn from(value: SchemaBuildError) -> Self {
+        Details::SchemaBuildError(value)
+    }
+}
+
+impl From<ExecutableBuildError> for Details {
+    fn from(value: ExecutableBuildError) -> Self {
+        Details::ExecutableBuildError(value)
     }
 }
 

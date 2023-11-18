@@ -5,6 +5,8 @@ use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::Parser;
 use crate::Schema;
@@ -30,90 +32,85 @@ impl Document {
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
-    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+    pub fn parse(
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Self, WithErrors<Self>> {
         Self::parser().parse_ast(source_text, path)
-    }
-
-    /// Returns [`DiagnosticList`] for cases where parsed input does not match
-    /// the GraphQL grammar or where the parser reached a token limit or recursion limit.
-    ///
-    /// Does not perform any validation beyond this syntactic level.
-    pub fn check_parse_errors(&self) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(self.sources.clone());
-        for (file_id, source) in self.sources.iter() {
-            source.validate_parse_errors(&mut errors, *file_id)
-        }
-        errors.into_result()
     }
 
     /// Validate as an executable document, as much as possible without a schema
     pub fn validate_standalone_executable(&self) -> Result<(), DiagnosticList> {
+        let mut errors = DiagnosticList::new(self.sources.clone());
         let type_system_definitions_are_errors = true;
         let executable = crate::executable::from_ast::document_from_ast(
             None,
             self,
+            &mut errors,
             type_system_definitions_are_errors,
         );
-        let mut errors = DiagnosticList::new(self.sources.clone());
         crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
         errors.into_result()
     }
 
     /// Build a schema with this AST document as its sole input.
-    pub fn to_schema(&self) -> Schema {
+    pub fn to_schema(&self) -> Result<Schema, WithErrors<Schema>> {
         let mut builder = Schema::builder();
         let executable_definitions_are_errors = true;
         builder.add_ast_document(self, executable_definitions_are_errors);
         builder.build()
     }
 
-    /// Add this AST document as an additional input to a schema builder.
-    ///
-    /// This can be used to build a schema from multiple documents or source files.
-    pub fn to_schema_builder(&self, builder: &mut SchemaBuilder) {
-        let executable_definitions_are_errors = true;
-        builder.add_ast_document(self, executable_definitions_are_errors)
+    /// Build an executable document from this AST, with the given schema
+    pub fn to_executable(
+        &self,
+        schema: &Valid<Schema>,
+    ) -> Result<ExecutableDocument, WithErrors<ExecutableDocument>> {
+        let mut errors = DiagnosticList::new(self.sources.clone());
+        let document = self.to_executable_inner(schema, &mut errors);
+        errors.into_result_with(document)
     }
 
-    /// Build an executable document from this AST, with the given schema
-    pub fn to_executable(&self, schema: &Schema) -> ExecutableDocument {
+    pub(crate) fn to_executable_inner(
+        &self,
+        schema: &Valid<Schema>,
+        errors: &mut DiagnosticList,
+    ) -> ExecutableDocument {
         let type_system_definitions_are_errors = true;
         crate::executable::from_ast::document_from_ast(
             Some(schema),
             self,
+            errors,
             type_system_definitions_are_errors,
         )
     }
 
     /// Build a schema and executable document from this AST containing a mixture
-    /// of type system definitions and executable definitions.
+    /// of type system definitions and executable definitions, and validate them.
     /// This is mostly useful for unit tests.
-    pub fn to_mixed(&self) -> (Schema, ExecutableDocument) {
+    pub fn to_mixed_validate(
+        &self,
+    ) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList> {
+        let mut builder = SchemaBuilder::new();
         let executable_definitions_are_errors = false;
         let type_system_definitions_are_errors = false;
-        let mut builder = Schema::builder();
         builder.add_ast_document(self, executable_definitions_are_errors);
-        let schema = builder.build();
-
-        let mut executable = crate::executable::from_ast::document_from_ast(
+        let (schema, mut errors) = builder.build_inner();
+        let executable = crate::executable::from_ast::document_from_ast(
             Some(&schema),
             self,
+            &mut errors,
             type_system_definitions_are_errors,
         );
-        if executable
-            .sources
-            .iter()
-            .any(|(_id, file)| !file.parse_errors.is_empty())
-        {
-            // Remove parse errors from `executable`, redudant as `schema` has the same ones
-            let sources = Arc::make_mut(&mut executable.sources);
-            for (_id, file) in sources.iter_mut() {
-                if !file.parse_errors.is_empty() {
-                    Arc::make_mut(file).parse_errors = Vec::new()
-                }
-            }
-        }
-        (schema, executable)
+        crate::schema::validation::validate_schema(&mut errors, &schema);
+        crate::executable::validation::validate_executable_document(
+            &mut errors,
+            &schema,
+            &executable,
+        );
+        errors
+            .into_result()
+            .map(|()| (Valid(schema), Valid(executable)))
     }
 
     serialize_method!();

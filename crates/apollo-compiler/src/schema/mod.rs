@@ -16,7 +16,7 @@ use std::sync::OnceLock;
 mod component;
 mod from_ast;
 mod serialize;
-mod validation;
+pub(crate) mod validation;
 
 pub use self::component::{Component, ComponentName, ComponentOrigin, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
@@ -27,6 +27,8 @@ pub use crate::ast::{
 use crate::name;
 use crate::ty;
 use crate::validation::DiagnosticList;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
 
 /// High-level representation of a GraphQL schema
 #[derive(Clone)]
@@ -35,10 +37,6 @@ pub struct Schema {
     ///
     /// The schema (including parsed definitions) may have been modified since parsing.
     pub sources: crate::SourceMap,
-
-    /// Errors that occurred when building this schema,
-    /// either parsing a source file or converting from AST.
-    build_errors: Vec<BuildError>,
 
     /// The `schema` definition and its extensions, defining root operations
     pub schema_definition: Node<SchemaDefinition>,
@@ -151,46 +149,36 @@ pub struct InputObjectType {
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
     #[error("a schema document must not contain {describe}")]
-    ExecutableDefinition {
-        location: Option<NodeLocation>,
-        describe: &'static str,
-    },
+    ExecutableDefinition { describe: &'static str },
 
     #[error("must not have multiple `schema` definitions")]
     SchemaDefinitionCollision {
-        location: Option<NodeLocation>,
         previous_location: Option<NodeLocation>,
     },
 
     #[error("the directive `@{name}` is defined multiple times in the schema")]
     DirectiveDefinitionCollision {
-        location: Option<NodeLocation>,
         previous_location: Option<NodeLocation>,
         name: Name,
     },
 
     #[error("the type `{name}` is defined multiple times in the schema")]
     TypeDefinitionCollision {
-        location: Option<NodeLocation>,
         previous_location: Option<NodeLocation>,
         name: Name,
     },
 
     #[error("built-in scalar definitions must be omitted")]
-    BuiltInScalarTypeRedefinition { location: Option<NodeLocation> },
+    BuiltInScalarTypeRedefinition,
 
     #[error("schema extension without a schema definition")]
-    OrphanSchemaExtension { location: Option<NodeLocation> },
+    OrphanSchemaExtension,
 
     #[error("type extension for undefined type `{name}`")]
-    OrphanTypeExtension {
-        location: Option<NodeLocation>,
-        name: Name,
-    },
+    OrphanTypeExtension { name: Name },
 
     #[error("adding {describe_ext}, but `{name}` is {describe_def}")]
     TypeExtensionKindMismatch {
-        location: Option<NodeLocation>,
         name: Name,
         describe_ext: &'static str,
         def_location: Option<NodeLocation>,
@@ -199,7 +187,6 @@ pub(crate) enum BuildError {
 
     #[error("duplicate definitions for the `{operation_type}` root operation type")]
     DuplicateRootOperation {
-        location: Option<NodeLocation>,
         previous_location: Option<NodeLocation>,
         operation_type: &'static str,
     },
@@ -209,7 +196,6 @@ pub(crate) enum BuildError {
          more than once"
     )]
     DuplicateImplementsInterfaceInObject {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -219,7 +205,6 @@ pub(crate) enum BuildError {
          more than once"
     )]
     DuplicateImplementsInterfaceInInterface {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -229,7 +214,6 @@ pub(crate) enum BuildError {
          field of object type `{type_name}`"
     )]
     ObjectFieldNameCollision {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -239,7 +223,6 @@ pub(crate) enum BuildError {
          field of interface type `{type_name}`"
     )]
     InterfaceFieldNameCollision {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -249,7 +232,6 @@ pub(crate) enum BuildError {
          value of enum type `{type_name}`"
     )]
     EnumValueNameCollision {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -259,7 +241,6 @@ pub(crate) enum BuildError {
          member of union type `{type_name}`"
     )]
     UnionMemberNameCollision {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -269,7 +250,6 @@ pub(crate) enum BuildError {
          field of input object type `{type_name}`"
     )]
     InputFieldNameCollision {
-        location: Option<NodeLocation>,
         name_at_previous_location: Name,
         type_name: Name,
     },
@@ -289,15 +269,31 @@ impl Schema {
     /// It can then be filled programatically.
     #[allow(clippy::new_without_default)] // not a great implicit default in generic contexts
     pub fn new() -> Self {
-        SchemaBuilder::new().build()
+        SchemaBuilder::new().build().unwrap()
     }
 
     /// Parse a single source file into a schema, with the default parser configuration.
     ///
     /// Create a [`Parser`] to use different parser configuration.
     /// Use [`builder()`][Self::builder] to build a schema from multiple parsed files.
-    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+    pub fn parse(
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Self, WithErrors<Self>> {
         Parser::default().parse_schema(source_text, path)
+    }
+
+    /// [`parse`][Self::parse] then [`validate`][Self::validate],
+    /// to get a `Valid<Schema>` when mutating it isn’t needed.
+    pub fn parse_and_validate(
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Valid<Self>, WithErrors<Self>> {
+        let mut builder = Schema::builder();
+        Parser::default().parse_into_schema_builder(source_text, path, &mut builder);
+        let (schema, mut errors) = builder.build_inner();
+        validation::validate_schema(&mut errors, &schema);
+        errors.into_valid_result(schema)
     }
 
     /// Returns a new builder for creating a Schema from AST documents,
@@ -312,11 +308,10 @@ impl Schema {
         SchemaBuilder::new()
     }
 
-    /// Returns `Err` if invalid
-    pub fn validate(&self) -> Result<(), DiagnosticList> {
+    pub fn validate(self) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut errors = DiagnosticList::new(self.sources.clone());
-        validation::validate_schema(&mut errors, self);
-        errors.into_result()
+        validation::validate_schema(&mut errors, &self);
+        errors.into_valid_result(self)
     }
 
     /// Returns the type with the given name, if it is a scalar type
@@ -908,8 +903,7 @@ impl Eq for Schema {}
 impl PartialEq for Schema {
     fn eq(&self, other: &Self) -> bool {
         let Self {
-            sources: _,      // ignored
-            build_errors: _, // ignored
+            sources: _, // ignored
             schema_definition: root_operations,
             directive_definitions,
             types,
@@ -996,14 +990,12 @@ impl std::fmt::Debug for Schema {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self {
             sources,
-            build_errors,
             schema_definition,
             directive_definitions,
             types,
         } = self;
         f.debug_struct("Schema")
             .field("sources", sources)
-            .field("build_errors", build_errors)
             .field("schema_definition", schema_definition)
             .field(
                 "directive_definitions",

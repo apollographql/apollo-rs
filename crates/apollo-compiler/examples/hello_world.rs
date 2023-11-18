@@ -7,7 +7,7 @@ fn compile_query() -> Option<Node<executable::Fragment>> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
-    let (_, document) = apollo_compiler::parse_mixed(src, file);
+    let (_, document) = apollo_compiler::parse_mixed_validate(src, file).unwrap();
     let operation_names: Vec<_> = document
         .named_operations
         .keys()

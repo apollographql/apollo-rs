@@ -83,11 +83,9 @@ let input = r#"
   }
 "#;
 
-let schema = Schema::parse(input, "document.graphql");
-
 /// In case of validation errors, the panic message will be nicely formatted
 /// to point at relevant parts of the source file(s)
-schema.validate().unwrap();
+let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 ```
 
 ### Examples
@@ -121,11 +119,9 @@ fn main() {
     }
     "#;
 
-    let schema = Schema::parse(schema_input, "schema.graphql");
-    let document = ExecutableDocument::parse(&schema, query_input, "query.graphql");
-
-    schema.validate().unwrap();
-    document.validate(&schema).unwrap();
+    let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
+        .unwrap();
 
     let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
     let fragment_in_op = op.selection_set.selections.iter().filter_map(|sel| match sel {
@@ -184,11 +180,9 @@ fn main() {
     }
     "#;
 
-    let schema = Schema::parse(schema_input, "schema.graphql");
-    let document = ExecutableDocument::parse(&schema, query_input, "query.graphql");
-
-    schema.validate().unwrap();
-    document.validate(&schema).unwrap();
+    let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
+        .unwrap();
 
     let get_product_op = document
         .get_operation(Some("getProduct"))
@@ -271,12 +265,7 @@ type Cat implements Pet {
 union CatOrDog = Cat | Dog
 "#;
 
-let (schema, executable) = apollo_compiler::parse_mixed(input, "document.graphql");
-
-if let Err(diagnostics) = schema.validate() {
-    println!("{diagnostics}")
-}
-if let Err(diagnostics) = executable.validate(&schema) {
+if let Err(diagnostics) = apollo_compiler::parse_mixed_validate(input, "document.graphql") {
     println!("{diagnostics}")
 }
 ```
