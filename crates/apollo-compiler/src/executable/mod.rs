@@ -22,6 +22,7 @@ pub use crate::ast::{
 use crate::validation::DiagnosticList;
 use crate::validation::NodeLocation;
 use std::fmt;
+use std::sync::Arc;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, Default)]
@@ -228,7 +229,9 @@ impl ExecutableDocument {
     }
 
     pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
+        let mut sources = IndexMap::clone(&schema.sources);
+        sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));
+        let mut errors = DiagnosticList::new(Arc::new(sources));
         validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
@@ -677,7 +680,9 @@ impl FieldSet {
     }
 
     pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
+        let mut sources = IndexMap::clone(&schema.sources);
+        sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));
+        let mut errors = DiagnosticList::new(Arc::new(sources));
         validation::validate_field_set(&mut errors, schema, self);
         errors.into_result()
     }

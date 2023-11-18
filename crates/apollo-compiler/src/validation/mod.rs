@@ -35,18 +35,9 @@ pub use crate::database::FileId;
 pub use crate::node::NodeLocation;
 
 /// A collection of diagnostics returned by some validation method
-pub struct DiagnosticList(Box<DiagnosticListBoxed>);
-
-/// Box indirection to avoid large `Err` values:
-/// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
-struct DiagnosticListBoxed {
-    sources: Sources,
+pub struct DiagnosticList {
+    sources: SourceMap,
     diagnostics_data: Vec<DiagnosticData>,
-}
-
-struct Sources {
-    schema_sources: Option<SourceMap>,
-    self_sources: SourceMap,
 }
 
 struct DiagnosticData {
@@ -56,7 +47,7 @@ struct DiagnosticData {
 
 /// A single diagnostic in a [`DiagnosticList`]
 pub struct Diagnostic<'a> {
-    sources: &'a Sources,
+    sources: &'a SourceMap,
     data: &'a DiagnosticData,
 }
 
@@ -300,19 +291,26 @@ impl<'a> Diagnostic<'a> {
 }
 
 impl DiagnosticList {
+    pub(crate) fn new(sources: SourceMap) -> Self {
+        Self {
+            sources,
+            diagnostics_data: Vec::new(),
+        }
+    }
+
     pub fn is_empty(&self) -> bool {
-        self.0.diagnostics_data.is_empty()
+        self.diagnostics_data.is_empty()
     }
 
     pub fn len(&self) -> usize {
-        self.0.diagnostics_data.len()
+        self.diagnostics_data.len()
     }
 
     pub fn iter(
         &self,
     ) -> impl Iterator<Item = Diagnostic<'_>> + DoubleEndedIterator + ExactSizeIterator {
-        self.0.diagnostics_data.iter().map(|data| Diagnostic {
-            sources: &self.0.sources,
+        self.diagnostics_data.iter().map(|data| Diagnostic {
+            sources: &self.sources,
             data,
         })
     }
@@ -325,35 +323,19 @@ impl DiagnosticList {
         format!("{self:#}")
     }
 
-    pub(crate) fn new(schema_sources: Option<SourceMap>, self_sources: SourceMap) -> Self {
-        Self(Box::new(DiagnosticListBoxed {
-            sources: Sources {
-                schema_sources,
-                self_sources,
-            },
-            diagnostics_data: Vec::new(),
-        }))
-    }
-
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: Details) {
-        self.0
-            .diagnostics_data
+        self.diagnostics_data
             .push(DiagnosticData { location, details })
     }
 
     pub(crate) fn into_result(mut self) -> Result<(), Self> {
-        if self.0.diagnostics_data.is_empty() {
+        if self.diagnostics_data.is_empty() {
             Ok(())
         } else {
-            self.sort();
+            self.diagnostics_data
+                .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
             Err(self)
         }
-    }
-
-    pub(crate) fn sort(&mut self) {
-        self.0
-            .diagnostics_data
-            .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())))
     }
 }
 
@@ -391,20 +373,14 @@ impl fmt::Display for Diagnostic<'_> {
         let color = !f.alternate();
         self.data
             .report(color)
-            .write(self.sources, Adaptor(f))
+            .write(Cache(self.sources), Adaptor(f))
             .map_err(|_| fmt::Error)
     }
 }
 
-impl Sources {
-    pub(crate) fn get(&self, file_id: &FileId) -> Option<&Arc<SourceFile>> {
-        self.self_sources
-            .get(file_id)
-            .or_else(|| self.schema_sources.as_ref()?.get(file_id))
-    }
-}
+struct Cache<'a>(&'a SourceMap);
 
-impl ariadne::Cache<FileId> for &'_ Sources {
+impl ariadne::Cache<FileId> for Cache<'_> {
     fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {
@@ -412,7 +388,7 @@ impl ariadne::Cache<FileId> for &'_ Sources {
                 write!(f, "source file not found: {:?}", self.0)
             }
         }
-        if let Some(source_file) = self.get(file_id) {
+        if let Some(source_file) = self.0.get(file_id) {
             Ok(source_file.ariadne())
         } else if *file_id == FileId::NONE || *file_id == FileId::HACK_TMP {
             static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
@@ -430,7 +406,7 @@ impl ariadne::Cache<FileId> for &'_ Sources {
                     self.0.path().display().fmt(f)
                 }
             }
-            let source_file = self.get(file_id)?;
+            let source_file = self.0.get(file_id)?;
             Some(Box::new(Path(source_file.clone())))
         } else {
             struct NoSourceFile;

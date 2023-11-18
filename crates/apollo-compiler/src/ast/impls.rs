@@ -39,7 +39,7 @@ impl Document {
     ///
     /// Does not perform any validation beyond this syntactic level.
     pub fn check_parse_errors(&self) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(None, self.sources.clone());
+        let mut errors = DiagnosticList::new(self.sources.clone());
         for (file_id, source) in self.sources.iter() {
             source.validate_parse_errors(&mut errors, *file_id)
         }
@@ -54,7 +54,7 @@ impl Document {
             self,
             type_system_definitions_are_errors,
         );
-        let mut errors = DiagnosticList::new(None, self.sources.clone());
+        let mut errors = DiagnosticList::new(self.sources.clone());
         crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
         errors.into_result()
     }

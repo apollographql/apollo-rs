@@ -314,7 +314,7 @@ impl Schema {
 
     /// Returns `Err` if invalid
     pub fn validate(&self) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(None, self.sources.clone());
+        let mut errors = DiagnosticList::new(self.sources.clone());
         validation::validate_schema(&mut errors, self);
         errors.into_result()
     }
