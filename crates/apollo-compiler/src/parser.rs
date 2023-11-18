@@ -251,7 +251,7 @@ impl Parser {
         let file_id = FileId::new();
 
         let sources: crate::SourceMap = Arc::new([(file_id, source_file)].into());
-        let mut errors = DiagnosticList::new(None, sources.clone());
+        let mut errors = DiagnosticList::new(sources.clone());
         for (file_id, source) in sources.iter() {
             source.validate_parse_errors(&mut errors, *file_id)
         }
