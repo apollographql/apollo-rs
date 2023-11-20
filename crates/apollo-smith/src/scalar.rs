@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use arbitrary::Result as ArbitraryResult;
 
@@ -20,7 +20,7 @@ use crate::{
 pub struct ScalarTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 

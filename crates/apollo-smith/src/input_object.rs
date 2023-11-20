@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use arbitrary::Result as ArbitraryResult;
 
@@ -27,7 +27,7 @@ pub struct InputObjectTypeDef {
     // A vector of fields
     pub(crate) fields: Vec<InputValueDef>,
     /// Contains all directives.
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 

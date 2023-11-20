@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use indexmap::{IndexMap, IndexSet};
 
 use apollo_encoder::UnionDefinition;
 use arbitrary::Result as ArbitraryResult;
@@ -21,8 +21,8 @@ use crate::{
 pub struct UnionTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,
-    pub(crate) members: HashSet<Name>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) members: IndexSet<Name>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 
@@ -150,7 +150,7 @@ impl<'a> DocumentBuilder<'a> {
 
         let members = (0..self.u.int_in_range(2..=10)?)
             .map(|_| Ok(self.choose_named_ty(&existing_types)?.name().clone()))
-            .collect::<ArbitraryResult<HashSet<_>>>()?;
+            .collect::<ArbitraryResult<IndexSet<_>>>()?;
 
         Ok(UnionTypeDef {
             name,

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use indexmap::{IndexMap, IndexSet};
 
 use arbitrary::Result as ArbitraryResult;
 
@@ -24,7 +24,7 @@ pub struct FieldDef {
     pub(crate) name: Name,
     pub(crate) arguments_definition: Option<ArgumentsDef>,
     pub(crate) ty: Ty,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
 impl From<FieldDef> for apollo_encoder::FieldDefinition {
@@ -82,7 +82,7 @@ pub struct Field {
     pub(crate) alias: Option<Name>,
     pub(crate) name: Name,
     pub(crate) args: Vec<Argument>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: Option<SelectionSet>,
 }
 
@@ -139,7 +139,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary list of `FieldDef`
     pub fn fields_definition(&mut self, exclude: &[&Name]) -> ArbitraryResult<Vec<FieldDef>> {
         let num_fields = self.u.int_in_range(2..=50usize)?;
-        let mut fields_names = HashSet::with_capacity(num_fields);
+        let mut fields_names = IndexSet::with_capacity(num_fields);
 
         for i in 0..num_fields {
             let name = self.name_with_index(i)?;

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use arbitrary::Result as ArbitraryResult;
 
@@ -21,7 +21,7 @@ pub struct VariableDef {
     name: Name,
     ty: Ty,
     default_value: Option<InputValue>,
-    directives: HashMap<Name, Directive>,
+    directives: IndexMap<Name, Directive>,
 }
 
 impl From<VariableDef> for apollo_encoder::VariableDefinition {

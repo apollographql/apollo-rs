@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use arbitrary::{Arbitrary, Result as ArbitraryResult};
 
@@ -21,7 +21,7 @@ pub struct OperationDef {
     pub(crate) operation_type: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variable_definitions: Vec<VariableDef>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) shorthand: bool,
 }

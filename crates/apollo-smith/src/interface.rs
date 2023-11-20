@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use indexmap::{IndexMap, IndexSet};
 
 use apollo_encoder::InterfaceDefinition;
 use arbitrary::Result as ArbitraryResult;
@@ -25,8 +25,8 @@ use crate::{
 pub struct InterfaceTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) interfaces: HashSet<Name>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) interfaces: IndexSet<Name>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }
@@ -162,16 +162,16 @@ impl<'a> DocumentBuilder<'a> {
         })
     }
 
-    /// Create an arbitrary `HashSet` of implemented interfaces
-    pub fn implements_interfaces(&mut self) -> ArbitraryResult<HashSet<Name>> {
+    /// Create an arbitrary `IndexSet` of implemented interfaces
+    pub fn implements_interfaces(&mut self) -> ArbitraryResult<IndexSet<Name>> {
         if self.interface_type_defs.is_empty() {
-            return Ok(HashSet::new());
+            return Ok(IndexSet::new());
         }
 
         let num_itf = self
             .u
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
-        let mut interface_impls = HashSet::with_capacity(num_itf);
+        let mut interface_impls = IndexSet::with_capacity(num_itf);
 
         for _ in 0..num_itf {
             interface_impls.insert(self.u.choose(&self.interface_type_defs)?.name.clone());

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use indexmap::{IndexMap, IndexSet};
 
 use arbitrary::{Arbitrary, Result as ArbitraryResult};
 
@@ -21,7 +21,7 @@ pub struct DirectiveDef {
     pub(crate) name: Name,
     pub(crate) arguments_definition: Option<ArgumentsDef>,
     pub(crate) repeatable: bool,
-    pub(crate) directive_locations: HashSet<DirectiveLocation>,
+    pub(crate) directive_locations: IndexSet<DirectiveLocation>,
 }
 
 impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
@@ -126,7 +126,7 @@ impl TryFrom<apollo_parser::cst::Directive> for Directive {
 impl Directive {
     pub(crate) fn convert_directives(
         directives: apollo_parser::cst::Directives,
-    ) -> Result<HashMap<Name, Directive>, crate::FromError> {
+    ) -> Result<IndexMap<Name, Directive>, crate::FromError> {
         directives
             .directives()
             .map(|d| Ok((d.name().unwrap().into(), Directive::try_from(d)?)))
@@ -139,9 +139,9 @@ impl<'a> DocumentBuilder<'a> {
     pub fn directives(
         &mut self,
         directive_location: DirectiveLocation,
-    ) -> ArbitraryResult<HashMap<Name, Directive>> {
+    ) -> ArbitraryResult<IndexMap<Name, Directive>> {
         if self.directive_defs.is_empty() {
-            return Ok(HashMap::new());
+            return Ok(IndexMap::new());
         }
 
         let num_directives = self.u.int_in_range(0..=(self.directive_defs.len() - 1))?;
@@ -210,11 +210,11 @@ impl<'a> DocumentBuilder<'a> {
         })
     }
 
-    /// Create an arbitrary `HashSet` of `DirectiveLocation`
-    pub fn directive_locations(&mut self) -> ArbitraryResult<HashSet<DirectiveLocation>> {
+    /// Create an arbitrary `IndexSet` of `DirectiveLocation`
+    pub fn directive_locations(&mut self) -> ArbitraryResult<IndexSet<DirectiveLocation>> {
         (1..self.u.int_in_range(2..=5usize)?)
             .map(|_| self.u.arbitrary())
-            .collect::<ArbitraryResult<HashSet<_>>>()
+            .collect::<ArbitraryResult<IndexSet<_>>>()
     }
 }
 
