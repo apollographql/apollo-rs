@@ -24,9 +24,6 @@ thiserror = "1.0.30"
 [dev-dependencies]
 ariadne = "0.3.0"
 indexmap = "2.0.0"
-apollo-encoder = { path = "../apollo-encoder", version = "0.8.0", features = [
-    "apollo-parser",
-] }
 anyhow = "1.0.66"
 pretty_assertions = "1.3.0"
 annotate-snippets = "0.9.1"

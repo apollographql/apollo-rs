@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "xtask/",
-    "crates/apollo-encoder",
     "crates/apollo-parser",
     "crates/apollo-compiler",
     "crates/apollo-smith",
