@@ -16,6 +16,8 @@ pub(crate) mod operation;
 pub(crate) mod scalar;
 pub(crate) mod schema;
 pub(crate) mod selection_set;
+#[cfg(test)]
+pub(crate) mod snapshot_tests;
 pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
