@@ -1,7 +1,6 @@
-use indexmap::{IndexMap, IndexSet};
-
-use apollo_encoder::UnionDefinition;
+use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::{
     description::Description,
@@ -26,30 +25,27 @@ pub struct UnionTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<UnionTypeDef> for UnionDefinition {
-    fn from(union_ty_def: UnionTypeDef) -> Self {
-        let mut new_union_ty_def = Self::new(union_ty_def.name.into());
-        if let Some(description) = union_ty_def.description {
-            new_union_ty_def.description(description.into())
+impl From<UnionTypeDef> for ast::Definition {
+    fn from(x: UnionTypeDef) -> Self {
+        if x.extend {
+            ast::UnionTypeExtension {
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+                members: x.members.into_iter().map(Into::into).collect(),
+            }
+            .into()
+        } else {
+            ast::UnionTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+                members: x.members.into_iter().map(Into::into).collect(),
+            }
+            .into()
         }
-        union_ty_def
-            .members
-            .into_iter()
-            .for_each(|member| new_union_ty_def.member(member.into()));
-        union_ty_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_union_ty_def.directive(directive.into()));
-
-        if union_ty_def.extend {
-            new_union_ty_def.extend();
-        }
-
-        new_union_ty_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::UnionTypeDefinition> for UnionTypeDef {
     type Error = crate::FromError;
 
@@ -79,7 +75,6 @@ impl TryFrom<apollo_parser::cst::UnionTypeDefinition> for UnionTypeDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::UnionTypeExtension> for UnionTypeDef {
     type Error = crate::FromError;
 

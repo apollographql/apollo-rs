@@ -11,7 +11,6 @@ mod enum_def;
 mod enum_value;
 mod field;
 mod fragment;
-#[cfg(feature = "apollo-parser")]
 mod from_parser;
 mod input_field;
 mod input_object_def;

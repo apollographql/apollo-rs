@@ -27,7 +27,6 @@ use std::fmt::Debug;
 
 use arbitrary::Unstructured;
 
-#[cfg(feature = "parser-impl")]
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum FromError {
     #[error("parse tree is missing a node")]
