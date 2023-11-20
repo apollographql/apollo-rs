@@ -15,7 +15,6 @@ projects which need standards-compliant GraphQL tooling written in Rust. The
 following crates currently exist:
 
 * [**`apollo-compiler`**](crates/apollo-compiler/) - a library to compile and semantically analyze GraphQL query language.
-* [**`apollo-encoder`**](crates/apollo-encoder) - a library to generate GraphQL code (SDL).
 * [**`apollo-parser`**](crates/apollo-parser) - a library to parse the GraphQL query language.
 * [**`apollo-smith`**](crates/apollo-smith) - a test case generator to test GraphQL code (SDL).
 

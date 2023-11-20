@@ -1,6 +1,6 @@
 # Architecture
 
-This document gives an overview of how various bits of `apollo-rs` work together (and separately). `apollo-rs` is intended to be a workspace of several crates to encapsulate generic GraphQL tooling in Rust. Currently this houses [`apollo-parser`], [`apollo-encoder`] and [`apollo-smith`].
+This document gives an overview of how various bits of `apollo-rs` work together (and separately). `apollo-rs` is intended to be a workspace of several crates to encapsulate generic GraphQL tooling in Rust. Currently this houses [`apollo-parser`], [`apollo-compiler`] and [`apollo-smith`].
 
 ## Design Principles
 1. **Prioritizing developer experience.** Elegant and ergonomic APIs is the
@@ -218,7 +218,7 @@ for definition in document.definitions() {
 ```
 
 [`apollo-parser`]: https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-parser
-[`apollo-encoder`]: https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-encoder
+[`apollo-compiler`]: https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-compiler
 [`apollo-smith`]: https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-smith
 [`rust-analyzer`]: https://github.com/rust-analyzer/rust-analyzer
 [`rowan`]: https://github.com/rust-analyzer/rowan
