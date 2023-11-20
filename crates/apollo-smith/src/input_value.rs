@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use crate::{
     description::Description,
@@ -119,7 +119,7 @@ pub struct InputValueDef {
     pub(crate) name: Name,
     pub(crate) ty: Ty,
     pub(crate) default_value: Option<InputValue>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
 impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
@@ -357,7 +357,7 @@ impl<'a> DocumentBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::{HashMap, HashSet};
+    use indexmap::{IndexMap, IndexSet};
 
     use arbitrary::Unstructured;
 
@@ -382,16 +382,16 @@ mod tests {
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
             stack: Vec::new(),
-            chosen_arguments: HashMap::new(),
-            chosen_aliases: HashMap::new(),
+            chosen_arguments: IndexMap::new(),
+            chosen_aliases: IndexMap::new(),
         };
         let my_nested_type = ObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_nested_object"),
             },
-            implements_interfaces: HashSet::new(),
-            directives: HashMap::new(),
+            implements_interfaces: IndexSet::new(),
+            directives: IndexMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -401,7 +401,7 @@ mod tests {
                 ty: Ty::Named(Name {
                     name: String::from("String"),
                 }),
-                directives: HashMap::new(),
+                directives: IndexMap::new(),
             }],
             extend: false,
         };
@@ -411,8 +411,8 @@ mod tests {
             name: Name {
                 name: String::from("my_object"),
             },
-            implements_interfaces: HashSet::new(),
-            directives: HashMap::new(),
+            implements_interfaces: IndexSet::new(),
+            directives: IndexMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -422,7 +422,7 @@ mod tests {
                 ty: Ty::List(Box::new(Ty::Named(Name {
                     name: String::from("my_nested_object"),
                 }))),
-                directives: HashMap::new(),
+                directives: IndexMap::new(),
             }],
             extend: false,
         };

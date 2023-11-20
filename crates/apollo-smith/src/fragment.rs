@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use arbitrary::Result as ArbitraryResult;
 
@@ -20,7 +20,7 @@ use crate::{
 pub struct FragmentDef {
     pub(crate) name: Name,
     pub(crate) type_condition: TypeCondition,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
 }
 
@@ -67,7 +67,7 @@ impl TryFrom<apollo_parser::cst::FragmentDefinition> for FragmentDef {
 #[derive(Debug, Clone)]
 pub struct FragmentSpread {
     pub(crate) name: Name,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
 impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
@@ -112,7 +112,7 @@ impl TryFrom<apollo_parser::cst::FragmentSpread> for FragmentSpread {
 #[derive(Debug, Clone)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<TypeCondition>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
 }
 

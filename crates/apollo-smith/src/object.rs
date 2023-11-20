@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use indexmap::{IndexMap, IndexSet};
 
 use apollo_encoder::ObjectDefinition;
 use arbitrary::Result as ArbitraryResult;
@@ -24,8 +24,8 @@ use crate::{
 pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) implements_interfaces: HashSet<Name>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) implements_interfaces: IndexSet<Name>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }

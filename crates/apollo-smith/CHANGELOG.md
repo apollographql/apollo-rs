@@ -18,10 +18,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Fixes
+
+- **Make serialization ordering deterministic - [SimonSapin], [pull/FIXME]**
+  Internally use `IndexMap` and `IndexSet` instead of `HashMap` and `HashSet`
+
+[SimonSapin]: https://github.com/SimonSapin
+
+
 # [0.5.0](https://crates.io/crates/apollo-smith/0.5.0) - 2023-10-19
 
 ## BREAKING
-- **apollo-parser@0.7.0 - [SimonSapin], [pull/???]**
+- **apollo-parser@0.7.0 - [SimonSapin], [pull/694]**
 
   This updates the version of `apollo-parser` required by the `TryFrom`
   implementations in this crate.
@@ -32,6 +43,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   apollo-encoder. the `tryfrom` implementation is therefore no longer necessary.
 
 [SimonSapin]: https://github.com/SimonSapin
+[pull/694]: https://github.com/apollographql/apollo-rs/pull/694
 
 # [0.4.0](https://crates.io/crates/apollo-smith/0.4.0) - 2023-08-21
 

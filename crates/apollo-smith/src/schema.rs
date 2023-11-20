@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use crate::{
     description::Description,
@@ -18,7 +18,7 @@ use arbitrary::Result as ArbitraryResult;
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     pub(crate) description: Option<Description>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) query: Option<Ty>,
     pub(crate) mutation: Option<Ty>,
     pub(crate) subscription: Option<Ty>,

@@ -1,7 +1,5 @@
-use std::{
-    collections::{HashMap, HashSet},
-    hash::Hash,
-};
+use indexmap::{IndexMap, IndexSet};
+use std::hash::Hash;
 
 use apollo_encoder::{EnumDefinition, EnumValue};
 use arbitrary::Result;
@@ -23,8 +21,8 @@ use crate::{
 pub struct EnumTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) directives: HashMap<Name, Directive>,
-    pub(crate) enum_values_def: HashSet<EnumValueDefinition>,
+    pub(crate) directives: IndexMap<Name, Directive>,
+    pub(crate) enum_values_def: IndexSet<EnumValueDefinition>,
     pub(crate) extend: bool,
 }
 
@@ -115,7 +113,7 @@ impl TryFrom<apollo_parser::cst::EnumTypeExtension> for EnumTypeDef {
 pub struct EnumValueDefinition {
     pub(crate) description: Option<Description>,
     pub(crate) value: Name,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
 impl From<EnumValueDefinition> for EnumValue {
@@ -220,8 +218,8 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `EnumValueDefinition`
-    pub fn enum_values_definition(&mut self) -> Result<HashSet<EnumValueDefinition>> {
-        let mut enum_values_def = HashSet::with_capacity(self.u.int_in_range(2..=10usize)?);
+    pub fn enum_values_definition(&mut self) -> Result<IndexSet<EnumValueDefinition>> {
+        let mut enum_values_def = IndexSet::with_capacity(self.u.int_in_range(2..=10usize)?);
         for i in 0..self.u.int_in_range(2..=10usize)? {
             let description = self
                 .u
