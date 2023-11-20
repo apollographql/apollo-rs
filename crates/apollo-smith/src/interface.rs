@@ -1,7 +1,7 @@
-use indexmap::{IndexMap, IndexSet};
-
-use apollo_encoder::InterfaceDefinition;
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::{
     description::Description,
@@ -31,30 +31,37 @@ pub struct InterfaceTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<InterfaceTypeDef> for InterfaceDefinition {
-    fn from(itf: InterfaceTypeDef) -> Self {
-        let mut itf_def = InterfaceDefinition::new(itf.name.into());
-        if let Some(description) = itf.description {
-            itf_def.description(description.into())
+impl From<InterfaceTypeDef> for ast::Definition {
+    fn from(x: InterfaceTypeDef) -> Self {
+        if x.extend {
+            ast::InterfaceTypeExtension {
+                name: x.name.into(),
+                implements_interfaces: x.interfaces.into_iter().map(Into::into).collect(),
+                directives: Directive::to_ast(x.directives),
+                fields: x
+                    .fields_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
+        } else {
+            ast::InterfaceTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                implements_interfaces: x.interfaces.into_iter().map(Into::into).collect(),
+                directives: Directive::to_ast(x.directives),
+                fields: x
+                    .fields_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
         }
-        itf.fields_def
-            .into_iter()
-            .for_each(|f| itf_def.field(f.into()));
-        itf.directives
-            .into_iter()
-            .for_each(|(_, directive)| itf_def.directive(directive.into()));
-        itf.interfaces
-            .into_iter()
-            .for_each(|interface| itf_def.interface(interface.into()));
-        if itf.extend {
-            itf_def.extend();
-        }
-
-        itf_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::InterfaceTypeDefinition> for InterfaceTypeDef {
     type Error = crate::FromError;
 
@@ -91,7 +98,6 @@ impl TryFrom<apollo_parser::cst::InterfaceTypeDefinition> for InterfaceTypeDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::InterfaceTypeExtension> for InterfaceTypeDef {
     type Error = crate::FromError;
 

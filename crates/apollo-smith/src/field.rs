@@ -1,7 +1,3 @@
-use indexmap::{IndexMap, IndexSet};
-
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     argument::{Argument, ArgumentsDef},
     description::Description,
@@ -11,6 +7,10 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::{IndexMap, IndexSet};
 
 /// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
 ///
@@ -27,26 +27,18 @@ pub struct FieldDef {
     pub(crate) directives: IndexMap<Name, Directive>,
 }
 
-impl From<FieldDef> for apollo_encoder::FieldDefinition {
-    fn from(val: FieldDef) -> Self {
-        let mut field = Self::new(val.name.into(), val.ty.into());
-        if let Some(arg) = val.arguments_definition {
-            arg.input_value_definitions
-                .into_iter()
-                .for_each(|input_val| field.arg(input_val.into()));
+impl From<FieldDef> for ast::FieldDefinition {
+    fn from(x: FieldDef) -> Self {
+        Self {
+            description: x.description.map(Into::into),
+            name: x.name.into(),
+            directives: Directive::to_ast(x.directives),
+            arguments: x.arguments_definition.map(Into::into).unwrap_or_default(),
+            ty: x.ty.into(),
         }
-        if let Some(description) = val.description {
-            field.description(description.into());
-        }
-        val.directives
-            .into_iter()
-            .for_each(|(_dir_name, directive)| field.directive(directive.into()));
-
-        field
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::FieldDefinition> for FieldDef {
     type Error = crate::FromError;
 
@@ -86,25 +78,18 @@ pub struct Field {
     pub(crate) selection_set: Option<SelectionSet>,
 }
 
-impl From<Field> for apollo_encoder::Field {
-    fn from(field: Field) -> Self {
-        let mut new_field = Self::new(field.name.into());
-        new_field.alias(field.alias.map(String::from));
-        field
-            .args
-            .into_iter()
-            .for_each(|arg| new_field.argument(arg.into()));
-        field
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_field.directive(directive.into()));
-        new_field.selection_set(field.selection_set.map(Into::into));
-
-        new_field
+impl From<Field> for ast::Field {
+    fn from(x: Field) -> Self {
+        Self {
+            alias: x.alias.map(Into::into),
+            name: x.name.into(),
+            directives: Directive::to_ast(x.directives),
+            arguments: x.args.into_iter().map(|x| Node::new(x.into())).collect(),
+            selection_set: x.selection_set.map(Into::into).unwrap_or_default(),
+        }
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::Field> for Field {
     type Error = crate::FromError;
 

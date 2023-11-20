@@ -21,10 +21,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2023-mm-dd
 
+## BREAKING
+
+- **Remove the `parser-impl` feature flag - [SimonSapin], [pull/FIXME].**
+  This functionality is now always enabled.
+- **Use apollo-compiler instead of apollo-encoder for serialization - [SimonSapin], [pull/FIXME].**
+  The exact string output may change.
+
 ## Fixes
 
-- **Make serialization ordering deterministic - [SimonSapin], [pull/FIXME]**
-  Internally use `IndexMap` and `IndexSet` instead of `HashMap` and `HashSet`
+- **Make serialization ordering deterministic - [SimonSapin], [pull/FIXME].**
+  Internally use `IndexMap` and `IndexSet` instead of `IndexMap` and `IndexSet`
 
 [SimonSapin]: https://github.com/SimonSapin
 

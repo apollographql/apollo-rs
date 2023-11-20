@@ -14,87 +14,40 @@ const CHARSET: &[u8] =
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Descriptions).
 ///
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Arbitrary)]
-pub struct Description(StringValue);
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Description(String);
 
 impl From<Description> for String {
+    fn from(desc: Description) -> Self {
+        desc.0
+    }
+}
+
+impl From<Description> for apollo_compiler::NodeStr {
     fn from(desc: Description) -> Self {
         desc.0.into()
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::cst::Description> for Description {
     fn from(desc: apollo_parser::cst::Description) -> Self {
-        Description(
-            desc.string_value()
-                .map(|s| s.into())
-                .unwrap_or_else(|| StringValue::Line(Default::default())),
-        )
+        Description(desc.string_value().map(|s| s.into()).unwrap_or_default())
     }
 }
 
 impl From<String> for Description {
     fn from(desc: String) -> Self {
-        Description(StringValue::from(desc))
+        Description(desc)
     }
 }
 
-/// The `__StringValue` type represents a sequence of characters
-///
-/// *StringValue*:
-///     "string" | """string"""
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Descriptions).
-///
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum StringValue {
-    /// Represents a string value between """
-    Block(String),
-    /// Represents a one line string value between "
-    Line(String),
-}
-
-#[cfg(feature = "parser-impl")]
-impl From<apollo_parser::cst::StringValue> for StringValue {
-    fn from(val: apollo_parser::cst::StringValue) -> Self {
-        Self::from(Into::<String>::into(val))
-    }
-}
-
-impl From<StringValue> for String {
-    fn from(str_value: StringValue) -> Self {
-        match str_value {
-            StringValue::Block(str_val) => format!(r#""""{str_val}""""#),
-            StringValue::Line(str_val) => format!(r#"{str_val}""#),
-        }
-    }
-}
-
-impl From<String> for StringValue {
-    fn from(str_value: String) -> Self {
-        // TODO check
-        if str_value.contains(['"', '\t', '\r', '\n']) {
-            return StringValue::Block(str_value);
-        }
-        StringValue::Line(str_value)
-    }
-}
-
-impl Arbitrary<'_> for StringValue {
+impl Arbitrary<'_> for Description {
     fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> ArbitraryResult<Self> {
         let mut arbitrary_str = limited_string_desc(u, 100)?;
         if arbitrary_str.trim_matches('"').is_empty() {
             let _ = write!(arbitrary_str, "{}", u.arbitrary::<usize>()?);
         }
-        let variant_idx = u.int_in_range(0..=1usize)?;
-        let str_value = match variant_idx {
-            0 => Self::Block(arbitrary_str),
-            1 => Self::Line(arbitrary_str),
-            _ => unreachable!(),
-        };
-
-        Ok(str_value)
+        Ok(Self(arbitrary_str))
     }
 }
 
@@ -127,7 +80,6 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> ArbitraryRe
 #[cfg(test)]
 mod tests {
 
-    #[cfg(feature = "parser-impl")]
     #[test]
     fn convert_description_from_parser() {
         use crate::description::Description;

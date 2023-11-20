@@ -1,4 +1,4 @@
-use apollo_encoder::Type_;
+use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use once_cell::sync::Lazy;
 
@@ -28,21 +28,16 @@ pub enum Ty {
     NonNull(Box<Ty>),
 }
 
-impl From<Ty> for Type_ {
+impl From<Ty> for ast::Type {
     fn from(val: Ty) -> Self {
         match val {
-            Ty::Named(name) => Type_::NamedType { name: name.into() },
-            Ty::List(ty) => Type_::List {
-                ty: Box::new((*ty).into()),
-            },
-            Ty::NonNull(ty) => Type_::NonNull {
-                ty: Box::new((*ty).into()),
-            },
+            Ty::Named(name) => Self::Named(name.into()),
+            Ty::List(ty) => Self::from(*ty).list(),
+            Ty::NonNull(ty) => Self::from(*ty).non_null(),
         }
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::cst::Type> for Ty {
     fn from(ty: apollo_parser::cst::Type) -> Self {
         match ty {
@@ -65,7 +60,6 @@ impl From<apollo_parser::cst::Type> for Ty {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::cst::NamedType> for Ty {
     fn from(ty: apollo_parser::cst::NamedType) -> Self {
         Self::Named(ty.name().unwrap().into())

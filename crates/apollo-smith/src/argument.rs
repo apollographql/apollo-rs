@@ -1,10 +1,11 @@
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     input_value::{InputValue, InputValueDef},
     name::Name,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result as ArbitraryResult;
 
 /// The `__ArgumentsDef` type represents an arguments definition
 ///
@@ -18,19 +19,16 @@ pub struct ArgumentsDef {
     pub(crate) input_value_definitions: Vec<InputValueDef>,
 }
 
-impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
+impl From<ArgumentsDef> for Vec<Node<ast::InputValueDefinition>> {
     fn from(args_def: ArgumentsDef) -> Self {
-        apollo_encoder::ArgumentsDefinition::with_values(
-            args_def
-                .input_value_definitions
-                .into_iter()
-                .map(Into::into)
-                .collect(),
-        )
+        args_def
+            .input_value_definitions
+            .into_iter()
+            .map(|x| Node::new(x.into()))
+            .collect()
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::ArgumentsDefinition> for ArgumentsDef {
     type Error = crate::FromError;
 
@@ -56,13 +54,15 @@ pub struct Argument {
     pub(crate) value: InputValue,
 }
 
-impl From<Argument> for apollo_encoder::Argument {
+impl From<Argument> for ast::Argument {
     fn from(arg: Argument) -> Self {
-        Self::new(arg.name.into(), arg.value.into())
+        Self {
+            name: arg.name.into(),
+            value: Node::new(arg.value.into()),
+        }
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::Argument> for Argument {
     type Error = crate::FromError;
 

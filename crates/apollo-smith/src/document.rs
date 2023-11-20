@@ -3,6 +3,7 @@ use crate::{
     input_object::InputObjectTypeDef, interface::InterfaceTypeDef, object::ObjectTypeDef,
     operation::OperationDef, scalar::ScalarTypeDef, schema::SchemaDef, union::UnionTypeDef,
 };
+use apollo_compiler::ast;
 
 /// The `__Document` type represents a GraphQL document.A GraphQL Document describes a complete file or request string operated on by a GraphQL service or client.
 /// A document contains multiple definitions, either executable or representative of a GraphQL type system.
@@ -35,45 +36,44 @@ pub struct Document {
     pub(crate) directive_definitions: Vec<DirectiveDef>,
 }
 
-impl From<Document> for apollo_encoder::Document {
+impl From<Document> for ast::Document {
     fn from(doc: Document) -> Self {
-        let mut new_doc = Self::new();
-        doc.fragment_definitions
-            .into_iter()
-            .for_each(|fragment_def| new_doc.fragment(fragment_def.into()));
-        doc.scalar_type_definitions
-            .into_iter()
-            .for_each(|scalar_type_def| new_doc.scalar(scalar_type_def.into()));
-        if let Some(schema_def) = doc.schema_definition {
-            new_doc.schema(schema_def.into());
+        fn extend(
+            new_doc: &mut ast::Document,
+            items: impl IntoIterator<Item = impl Into<ast::Definition>>,
+        ) {
+            new_doc
+                .definitions
+                .extend(items.into_iter().map(|x| x.into()));
         }
-        doc.object_type_definitions
-            .into_iter()
-            .for_each(|object_type_def| new_doc.object(object_type_def.into()));
-        doc.union_type_definitions
-            .into_iter()
-            .for_each(|union_type_def| new_doc.union(union_type_def.into()));
-        doc.input_object_type_definitions
-            .into_iter()
-            .for_each(|input_object_type_def| new_doc.input_object(input_object_type_def.into()));
-        doc.interface_type_definitions
-            .into_iter()
-            .for_each(|interface_type_def| new_doc.interface(interface_type_def.into()));
-        doc.enum_type_definitions
-            .into_iter()
-            .for_each(|enum_type_def| new_doc.enum_(enum_type_def.into()));
-        doc.directive_definitions
-            .into_iter()
-            .for_each(|directive_def| new_doc.directive(directive_def.into()));
-        doc.operation_definitions
-            .into_iter()
-            .for_each(|operation_def| new_doc.operation(operation_def.into()));
 
+        let Document {
+            operation_definitions,
+            fragment_definitions,
+            schema_definition,
+            scalar_type_definitions,
+            object_type_definitions,
+            interface_type_definitions,
+            union_type_definitions,
+            enum_type_definitions,
+            input_object_type_definitions,
+            directive_definitions,
+        } = doc;
+        let mut new_doc = Self::new();
+        extend(&mut new_doc, operation_definitions);
+        extend(&mut new_doc, fragment_definitions);
+        extend(&mut new_doc, schema_definition);
+        extend(&mut new_doc, scalar_type_definitions);
+        extend(&mut new_doc, object_type_definitions);
+        extend(&mut new_doc, interface_type_definitions);
+        extend(&mut new_doc, union_type_definitions);
+        extend(&mut new_doc, enum_type_definitions);
+        extend(&mut new_doc, input_object_type_definitions);
+        extend(&mut new_doc, directive_definitions);
         new_doc
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::Document> for Document {
     type Error = crate::FromError;
 
@@ -162,6 +162,6 @@ impl TryFrom<apollo_parser::cst::Document> for Document {
 
 impl From<Document> for String {
     fn from(doc: Document) -> Self {
-        apollo_encoder::Document::from(doc).to_string()
+        ast::Document::from(doc).to_string()
     }
 }

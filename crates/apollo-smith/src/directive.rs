@@ -1,13 +1,13 @@
-use indexmap::{IndexMap, IndexSet};
-
-use arbitrary::{Arbitrary, Result as ArbitraryResult};
-
 use crate::{
     argument::{Argument, ArgumentsDef},
     description::Description,
     name::Name,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::{Arbitrary, Result as ArbitraryResult};
+use indexmap::{IndexMap, IndexSet};
 
 /// The `__DirectiveDef` type represents a Directive definition.
 ///
@@ -24,31 +24,26 @@ pub struct DirectiveDef {
     pub(crate) directive_locations: IndexSet<DirectiveLocation>,
 }
 
-impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
+impl From<DirectiveDef> for ast::Definition {
     fn from(dir_def: DirectiveDef) -> Self {
-        let mut new_dir_def = Self::new(dir_def.name.into());
-        if let Some(description) = dir_def.description {
-            new_dir_def.description(description.into())
-        }
-        if let Some(args_def) = dir_def.arguments_definition {
-            args_def
-                .input_value_definitions
+        ast::DirectiveDefinition {
+            description: dir_def.description.map(Into::into),
+            name: dir_def.name.into(),
+            arguments: dir_def
+                .arguments_definition
+                .map(Into::into)
+                .unwrap_or_default(),
+            repeatable: dir_def.repeatable,
+            locations: dir_def
+                .directive_locations
                 .into_iter()
-                .for_each(|input_val_def| new_dir_def.arg(input_val_def.into()));
+                .map(Into::into)
+                .collect(),
         }
-        if dir_def.repeatable {
-            new_dir_def.repeatable();
-        }
-        dir_def
-            .directive_locations
-            .into_iter()
-            .for_each(|dir_loc| new_dir_def.location(dir_loc.into()));
-
-        new_dir_def
+        .into()
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::DirectiveDefinition> for DirectiveDef {
     type Error = crate::FromError;
 
@@ -90,19 +85,19 @@ pub struct Directive {
     pub(crate) arguments: Vec<Argument>,
 }
 
-impl From<Directive> for apollo_encoder::Directive {
+impl From<Directive> for ast::Directive {
     fn from(directive: Directive) -> Self {
-        let mut new_directive = Self::new(directive.name.into());
-        directive
-            .arguments
-            .into_iter()
-            .for_each(|arg| new_directive.arg(arg.into()));
-
-        new_directive
+        Self {
+            name: directive.name.into(),
+            arguments: directive
+                .arguments
+                .into_iter()
+                .map(|a| Node::new(a.into()))
+                .collect(),
+        }
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::Directive> for Directive {
     type Error = crate::FromError;
 
@@ -122,7 +117,6 @@ impl TryFrom<apollo_parser::cst::Directive> for Directive {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl Directive {
     pub(crate) fn convert_directives(
         directives: apollo_parser::cst::Directives,
@@ -131,6 +125,10 @@ impl Directive {
             .directives()
             .map(|d| Ok((d.name().unwrap().into(), Directive::try_from(d)?)))
             .collect()
+    }
+
+    pub(crate) fn to_ast(map: IndexMap<Name, Directive>) -> ast::DirectiveList {
+        map.into_values().map(ast::Directive::from).collect()
     }
 }
 
@@ -242,6 +240,32 @@ pub enum DirectiveLocation {
     InputFieldDefinition,
 }
 
+impl From<DirectiveLocation> for ast::DirectiveLocation {
+    fn from(dl: DirectiveLocation) -> Self {
+        match dl {
+            DirectiveLocation::Query => Self::Query,
+            DirectiveLocation::Mutation => Self::Mutation,
+            DirectiveLocation::Subscription => Self::Subscription,
+            DirectiveLocation::Field => Self::Field,
+            DirectiveLocation::FragmentDefinition => Self::FragmentDefinition,
+            DirectiveLocation::FragmentSpread => Self::FragmentSpread,
+            DirectiveLocation::InlineFragment => Self::InlineFragment,
+            DirectiveLocation::VariableDefinition => Self::VariableDefinition,
+            DirectiveLocation::Schema => Self::Schema,
+            DirectiveLocation::Scalar => Self::Scalar,
+            DirectiveLocation::Object => Self::Object,
+            DirectiveLocation::FieldDefinition => Self::FieldDefinition,
+            DirectiveLocation::ArgumentDefinition => Self::ArgumentDefinition,
+            DirectiveLocation::Interface => Self::Interface,
+            DirectiveLocation::Union => Self::Union,
+            DirectiveLocation::Enum => Self::Enum,
+            DirectiveLocation::EnumValue => Self::EnumValue,
+            DirectiveLocation::InputObject => Self::InputObject,
+            DirectiveLocation::InputFieldDefinition => Self::InputFieldDefinition,
+        }
+    }
+}
+
 impl From<DirectiveLocation> for String {
     fn from(dl: DirectiveLocation) -> Self {
         match dl {
@@ -267,6 +291,7 @@ impl From<DirectiveLocation> for String {
         }
     }
 }
+
 impl From<String> for DirectiveLocation {
     fn from(dl: String) -> Self {
         match dl.as_str() {

@@ -455,6 +455,18 @@ impl<'a> IntoIterator for &'a mut DirectiveList {
     }
 }
 
+impl FromIterator<Node<Directive>> for DirectiveList {
+    fn from_iter<T: IntoIterator<Item = Node<Directive>>>(iter: T) -> Self {
+        Self(iter.into_iter().collect())
+    }
+}
+
+impl FromIterator<Directive> for DirectiveList {
+    fn from_iter<T: IntoIterator<Item = Directive>>(iter: T) -> Self {
+        Self(iter.into_iter().map(Node::new).collect())
+    }
+}
+
 impl Directive {
     pub fn argument_by_name(&self, name: &str) -> Option<&Node<Value>> {
         self.arguments
@@ -1074,6 +1086,108 @@ impl From<Node<EnumTypeExtension>> for Definition {
 impl From<Node<InputObjectTypeExtension>> for Definition {
     fn from(def: Node<InputObjectTypeExtension>) -> Self {
         Self::InputObjectTypeExtension(def)
+    }
+}
+
+impl From<OperationDefinition> for Definition {
+    fn from(def: OperationDefinition) -> Self {
+        Self::OperationDefinition(Node::new(def))
+    }
+}
+
+impl From<FragmentDefinition> for Definition {
+    fn from(def: FragmentDefinition) -> Self {
+        Self::FragmentDefinition(Node::new(def))
+    }
+}
+
+impl From<DirectiveDefinition> for Definition {
+    fn from(def: DirectiveDefinition) -> Self {
+        Self::DirectiveDefinition(Node::new(def))
+    }
+}
+
+impl From<SchemaDefinition> for Definition {
+    fn from(def: SchemaDefinition) -> Self {
+        Self::SchemaDefinition(Node::new(def))
+    }
+}
+
+impl From<ScalarTypeDefinition> for Definition {
+    fn from(def: ScalarTypeDefinition) -> Self {
+        Self::ScalarTypeDefinition(Node::new(def))
+    }
+}
+
+impl From<ObjectTypeDefinition> for Definition {
+    fn from(def: ObjectTypeDefinition) -> Self {
+        Self::ObjectTypeDefinition(Node::new(def))
+    }
+}
+
+impl From<InterfaceTypeDefinition> for Definition {
+    fn from(def: InterfaceTypeDefinition) -> Self {
+        Self::InterfaceTypeDefinition(Node::new(def))
+    }
+}
+
+impl From<UnionTypeDefinition> for Definition {
+    fn from(def: UnionTypeDefinition) -> Self {
+        Self::UnionTypeDefinition(Node::new(def))
+    }
+}
+
+impl From<EnumTypeDefinition> for Definition {
+    fn from(def: EnumTypeDefinition) -> Self {
+        Self::EnumTypeDefinition(Node::new(def))
+    }
+}
+
+impl From<InputObjectTypeDefinition> for Definition {
+    fn from(def: InputObjectTypeDefinition) -> Self {
+        Self::InputObjectTypeDefinition(Node::new(def))
+    }
+}
+
+impl From<SchemaExtension> for Definition {
+    fn from(def: SchemaExtension) -> Self {
+        Self::SchemaExtension(Node::new(def))
+    }
+}
+
+impl From<ScalarTypeExtension> for Definition {
+    fn from(def: ScalarTypeExtension) -> Self {
+        Self::ScalarTypeExtension(Node::new(def))
+    }
+}
+
+impl From<ObjectTypeExtension> for Definition {
+    fn from(def: ObjectTypeExtension) -> Self {
+        Self::ObjectTypeExtension(Node::new(def))
+    }
+}
+
+impl From<InterfaceTypeExtension> for Definition {
+    fn from(def: InterfaceTypeExtension) -> Self {
+        Self::InterfaceTypeExtension(Node::new(def))
+    }
+}
+
+impl From<UnionTypeExtension> for Definition {
+    fn from(def: UnionTypeExtension) -> Self {
+        Self::UnionTypeExtension(Node::new(def))
+    }
+}
+
+impl From<EnumTypeExtension> for Definition {
+    fn from(def: EnumTypeExtension) -> Self {
+        Self::EnumTypeExtension(Node::new(def))
+    }
+}
+
+impl From<InputObjectTypeExtension> for Definition {
+    fn from(def: InputObjectTypeExtension) -> Self {
+        Self::InputObjectTypeExtension(Node::new(def))
     }
 }
 
