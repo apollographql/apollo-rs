@@ -372,6 +372,8 @@ impl<'a> Diagnostic<'a> {
         GraphQLError {
             message: self.message().to_string(),
             locations,
+            path: Default::default(),
+            extensions: Default::default(),
         }
     }
 

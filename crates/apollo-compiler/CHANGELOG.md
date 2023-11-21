@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+- **Add execution-related and introspection functionality - [SimonSapin], [pull/758]:**
+  - Add data structure in `apollo_compiler::execution` for a GraphQL response, its data, and errors.
+    All (de)serializable with `serde`.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/758]: https://github.com/apollographql/apollo-rs/pull/758
+
+
 # [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
 
 ## BREAKING

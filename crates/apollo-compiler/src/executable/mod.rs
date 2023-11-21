@@ -19,6 +19,7 @@ pub use crate::ast::{
     Argument, Directive, DirectiveList, Name, NamedType, OperationType, Type, Value,
     VariableDefinition,
 };
+use crate::execution::RequestError;
 use crate::validation::DiagnosticList;
 use crate::validation::NodeLocation;
 use crate::validation::Valid;
@@ -177,18 +178,6 @@ pub(crate) enum ExecutableDefinitionName {
     Fragment(Name),
 }
 
-/// A request error returned by [`ExecutableDocument::get_operation`]
-///
-/// If `get_operation`’s `name_request` argument was `Some`, this error indicates
-/// that the document does not contain an operation with the requested name.
-///
-/// If `name_request` was `None`, the request is ambiguous
-/// because the document contains multiple operations
-/// (or zero, though the document would be invalid in that case).
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub struct GetOperationError();
-
 impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
@@ -241,7 +230,7 @@ impl ExecutableDocument {
 
     /// Return the relevant operation for a request, or a request error
     ///
-    /// This the [GetOperation](https://spec.graphql.org/October2021/#GetOperation())
+    /// This the [GetOperation()](https://spec.graphql.org/October2021/#GetOperation())
     /// algorithm in the _Executing Requests_ section of the specification.
     ///
     /// A GraphQL request comes with a document (which may contain multiple operations)
@@ -252,10 +241,13 @@ impl ExecutableDocument {
     pub fn get_operation(
         &self,
         name_request: Option<&str>,
-    ) -> Result<&Node<Operation>, GetOperationError> {
+    ) -> Result<&Node<Operation>, RequestError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named_operations.get(name)
+            return self
+                .named_operations
+                .get(name)
+                .ok_or_else(|| RequestError::new(format_args!("no operation named '{name}'")));
         } else if let Some(op) = &self.anonymous_operation {
             // No name request, return the anonymous operation if it’s the only operation
             self.named_operations.is_empty().then_some(op)
@@ -266,17 +258,21 @@ impl ExecutableDocument {
                 .next()
                 .and_then(|op| (self.named_operations.len() == 1).then_some(op))
         }
-        .ok_or(GetOperationError())
+        .ok_or_else(|| RequestError::new("multiple operations but no `operationName`"))
     }
 
     /// Similar to [`get_operation`][Self::get_operation] but returns a mutable reference.
     pub fn get_operation_mut(
         &mut self,
         name_request: Option<&str>,
-    ) -> Result<&mut Operation, GetOperationError> {
+    ) -> Result<&mut Operation, RequestError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named_operations.get_mut(name)
+            return self
+                .named_operations
+                .get_mut(name)
+                .map(Node::make_mut)
+                .ok_or_else(|| RequestError::new(format_args!("no operation named '{name}'")));
         } else if let Some(op) = &mut self.anonymous_operation {
             // No name request, return the anonymous operation if it’s the only operation
             self.named_operations.is_empty().then_some(op)
@@ -289,7 +285,7 @@ impl ExecutableDocument {
                 .and_then(|op| (len == 1).then_some(op))
         }
         .map(Node::make_mut)
-        .ok_or(GetOperationError())
+        .ok_or_else(|| RequestError::new("multiple operations but no `operationName`"))
     }
 
     serialize_method!();
