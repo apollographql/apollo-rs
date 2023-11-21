@@ -11,8 +11,8 @@ fn compile(schema: &str, query: &str) -> (Schema, ExecutableDocument) {
 fn compile_and_validate(schema: &str, query: &str) {
     let schema = Schema::parse(schema, "schema.graphql");
     let doc = ExecutableDocument::parse(&schema, query, "query.graphql");
-    let _ = black_box(schema.validate());
-    let _ = black_box(doc.validate(&schema));
+    let _ = black_box(schema.validate(Default::default()));
+    let _ = black_box(doc.validate(&schema, Default::default()));
 }
 
 fn bench_simple_query_compiler(c: &mut Criterion) {

@@ -59,7 +59,10 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let (schema, _executable) = parse_mixed(input, "doc.graphql");
 
-    let errors = schema.validate().unwrap_err().to_string_no_color();
+    let errors = schema
+        .validate(Default::default())
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains("`coordinates` field must return an output type"),
         "{errors}"

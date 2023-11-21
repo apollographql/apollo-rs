@@ -217,6 +217,6 @@ fn test_default_root_op_name_ignored_with_explicit_schema_def() {
     }
     "#;
     let schema = Schema::parse(input, "schema.graphql");
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     assert!(schema.schema_definition.mutation.is_none())
 }

@@ -12,7 +12,7 @@ fn main() {
 fn renamed() -> Schema {
     let input = "type Query { field: Int }";
     let mut schema = Schema::parse(input, "schema.graphql");
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
 
     // 1. Remove the definition from the `types` map, using its old name as a key
     let mut type_def = schema.types.remove("Query").unwrap();
@@ -38,7 +38,7 @@ fn renamed() -> Schema {
         .unwrap()
         .name = new_name;
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     schema
 }
 

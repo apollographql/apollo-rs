@@ -43,7 +43,7 @@ fn long_fragment_chains_do_not_overflow_stack() {
     );
 
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .expect_err("must have recursion errors");
 
     let expected = expect_test::expect![[r#"

@@ -24,7 +24,7 @@ fn main() -> ExitCode {
     let step = format!("Schema parse ({} bytes)", schema_source.len());
     let schema = timed(&step, || Schema::parse(schema_source, schema_filename));
 
-    if let Err(errors) = timed("Schema validation", || schema.validate()) {
+    if let Err(errors) = timed("Schema validation", || schema.validate(Default::default())) {
         println!("Schema is invalid:\n{errors}")
     }
 
@@ -36,7 +36,9 @@ fn main() -> ExitCode {
         ExecutableDocument::parse(&schema, executable_source, executable_filename)
     });
 
-    if let Err(errors) = timed("Executable document validation", || doc.validate(&schema)) {
+    if let Err(errors) = timed("Executable document validation", || {
+        doc.validate(&schema, Default::default())
+    }) {
         println!("Executable document is invalid:\n{errors}")
     }
 

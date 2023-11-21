@@ -34,9 +34,9 @@ type Cat {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -89,9 +89,9 @@ type Cat implements Pet {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -141,8 +141,8 @@ type Cat implements Pet {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
-    executable.validate(&schema).unwrap();
+    schema.validate(Default::default()).unwrap();
+    executable.validate(&schema, Default::default()).unwrap();
 }
 
 #[test]
@@ -180,9 +180,9 @@ type Cat implements Pet {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -217,9 +217,9 @@ type Product {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(

@@ -19,8 +19,8 @@ fn main() {
     };
 
     let (schema, executable) = apollo_compiler::parse_mixed(source, filename);
-    let schema_result = schema.validate();
-    let executable_result = executable.validate(&schema);
+    let schema_result = schema.validate(Default::default());
+    let executable_result = executable.validate(&schema, Default::default());
     let has_errors = schema_result.is_err() || executable_result.is_err();
     match schema_result {
         Ok(warnings) => println!("{warnings}"),

@@ -1,6 +1,7 @@
 use super::BuildError;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
+use crate::validation::ValidationOptions;
 use crate::FileId;
 use crate::InputDatabase;
 use crate::Schema;
@@ -10,6 +11,7 @@ use std::sync::Arc;
 pub(crate) fn validate_schema(
     errors: &mut DiagnosticList,
     schema: &Schema,
+    options: ValidationOptions,
 ) -> Vec<crate::ApolloDiagnostic> {
     for (&file_id, source) in schema.sources.iter() {
         source.validate_parse_errors(errors, file_id)
@@ -17,7 +19,7 @@ pub(crate) fn validate_schema(
     for build_error in &schema.build_errors {
         validate_build_error(errors, build_error)
     }
-    compiler_validation(errors, schema)
+    compiler_validation(errors, schema, options)
 }
 
 fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
@@ -47,6 +49,7 @@ fn validate_build_error(errors: &mut DiagnosticList, build_error: &BuildError) {
 fn compiler_validation(
     errors: &mut DiagnosticList,
     schema: &Schema,
+    options: ValidationOptions,
 ) -> Vec<crate::ApolloDiagnostic> {
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
@@ -68,6 +71,7 @@ fn compiler_validation(
         },
     );
     compiler.db.set_source_files(ids);
+    compiler.db.set_recursion_limit(options.recursion_limit);
     let mut warnings_and_advice = Vec::new();
     for diagnostic in compiler.db.validate_type_system() {
         if diagnostic.data.is_error() {

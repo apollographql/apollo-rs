@@ -39,9 +39,9 @@ type Products {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -76,9 +76,9 @@ type Product {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -130,9 +130,9 @@ type Product {
 
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     let errors = executable
-        .validate(&schema)
+        .validate(&schema, Default::default())
         .unwrap_err()
         .to_string_no_color();
     assert!(

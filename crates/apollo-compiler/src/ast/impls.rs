@@ -5,6 +5,7 @@ use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
+use crate::validation::ValidationOptions;
 use crate::ExecutableDocument;
 use crate::Parser;
 use crate::Schema;
@@ -47,7 +48,10 @@ impl Document {
     }
 
     /// Validate as an executable document, as much as possible without a schema
-    pub fn validate_standalone_executable(&self) -> Result<(), DiagnosticList> {
+    pub fn validate_standalone_executable(
+        &self,
+        options: ValidationOptions,
+    ) -> Result<(), DiagnosticList> {
         let type_system_definitions_are_errors = true;
         let executable = crate::executable::from_ast::document_from_ast(
             None,
@@ -55,7 +59,11 @@ impl Document {
             type_system_definitions_are_errors,
         );
         let mut errors = DiagnosticList::new(None, self.sources.clone());
-        crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
+        crate::executable::validation::validate_standalone_executable(
+            &mut errors,
+            &executable,
+            options,
+        );
         errors.into_result()
     }
 

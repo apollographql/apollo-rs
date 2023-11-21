@@ -13,7 +13,7 @@ fn common_schema() -> Schema {
         }
     "#;
     let schema = Schema::parse(input, "schema.graphql");
-    schema.validate().unwrap();
+    schema.validate(Default::default()).unwrap();
     schema
 }
 
