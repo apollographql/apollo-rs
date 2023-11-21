@@ -31,7 +31,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     On success they return the schema or document (unmodified) wrapped in a `Valid<_>` marker type,
     which is **immutable**.
   - Change `ExecutableDocument` to require a `&Valid<Schema>` instead of `&Schema`,
-    forcing callers to either run validation or opt out explicitly with `Valid::assert_valid`.
+    forcing callers to either run validation or opt out explicitly with `Valid::assume_valid`.
   - Make `parse_mixed` and `to_mixed` validate both the schema and document.
     Rename them with a `_validate` suffix.
   - Corresponding changes to all of the above in `Parser` method signatures

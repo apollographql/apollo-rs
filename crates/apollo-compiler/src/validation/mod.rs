@@ -47,7 +47,7 @@ pub use crate::node::NodeLocation;
 /// * [`ExecutableDocument::parse_and_validate`]
 /// * [`ExecutableDocument::validate`]
 ///
-/// … or by explicitly skipping it with [`Valid::assert_valid`].
+/// … or by explicitly skipping it with [`Valid::assume_valid`].
 ///
 /// The schema or document inside `Valid<T>` is immutable (`&mut T` is not given out).
 /// It can be extracted with [`into_inner`][Self::into_inner],
@@ -62,7 +62,7 @@ impl<T> Valid<T> {
     /// the document is known through some other means to be valid.
     /// For example, if it was loaded from some external storag
     /// where it was only stored after validation.
-    pub fn assert_valid(document: T) -> Self {
+    pub fn assume_valid(document: T) -> Self {
         Self(document)
     }
 
