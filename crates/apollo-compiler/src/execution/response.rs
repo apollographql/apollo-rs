@@ -1,6 +1,15 @@
 use crate::execution::JsonMap;
+use crate::node::NodeLocation;
+use crate::SourceMap;
 use serde::Deserialize;
 use serde::Serialize;
+
+/// This key is set to (JSON) `true` in [`GraphQLError::extensions`]
+/// when reaching a situtation that should not happen with a valid schema and document.
+///
+/// Since the relevant APIs take `Valid<_>` parameters,
+/// either apollo-compiler has a validation bug or `Valid::assume_valid` was used incorrectly.
+pub const EXTENSION_SUSPECTED_VALIDATION_BUG: &str = "APOLLO_SUSPECTED_VALIDATION_BUG";
 
 /// A [GraphQL response](https://spec.graphql.org/October2021/#sec-Response-Format)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,6 +108,38 @@ pub enum PathElement {
 
     /// The index of the relevant item in a list value
     ListIndex(usize),
+}
+
+impl GraphQLError {
+    /// Call for errors that should not happen with a valid schema and document.
+    /// See [`EXTENSION_SUSPECTED_VALIDATION_BUG`].
+    pub fn validation_bug(mut self) -> Self {
+        self.extensions
+            .insert(EXTENSION_SUSPECTED_VALIDATION_BUG, true.into());
+        self
+    }
+}
+
+impl RequestError {
+    /// Call for errors that should not happen with a valid schema and document.
+    /// See [`EXTENSION_SUSPECTED_VALIDATION_BUG`].
+    pub fn validation_bug(self) -> Self {
+        Self(self.0.validation_bug())
+    }
+}
+
+impl GraphQLLocation {
+    /// Convert a `NodeLocation` to a line and column number
+    pub fn from_node(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
+        let loc = location?;
+        let source = sources.get(&loc.file_id)?;
+        source
+            .get_line_column(loc.offset())
+            .map(|(line, column)| GraphQLLocation {
+                line: line + 1,
+                column: column + 1,
+            })
+    }
 }
 
 impl ResponseData {

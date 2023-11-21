@@ -1,6 +1,8 @@
 #![allow(unstable_name_collisions)] // for `sptr::Strict`
 
+use crate::execution::GraphQLLocation;
 use crate::validation::NodeLocation;
+use crate::SourceMap;
 use sptr::Strict;
 use std::marker::PhantomData;
 use std::mem::size_of;
@@ -153,6 +155,11 @@ impl NodeStr {
     #[inline]
     pub fn location(&self) -> Option<NodeLocation> {
         self.with_heap(|maybe_heap| maybe_heap?.header.header)
+    }
+
+    /// If this string contains a location, convert it to line and column numbers
+    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node(sources, self.location())
     }
 
     #[inline]

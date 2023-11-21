@@ -47,6 +47,7 @@ pub use crate::node::NodeLocation;
 /// * [`Schema::validate`]
 /// * [`ExecutableDocument::parse_and_validate`]
 /// * [`ExecutableDocument::validate`]
+/// * [`coerce_variable_values`][crate::execution::coerce_variable_values]
 ///
 /// … or by explicitly skipping it with [`Valid::assume_valid`].
 ///
@@ -355,14 +356,7 @@ impl DiagnosticData {
 impl<'a> Diagnostic<'a> {
     /// Get the line and column number where this diagnostic was raised.
     pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        let loc = self.data.location?;
-        let source = self.sources.get(&loc.file_id)?;
-        source
-            .get_line_column(loc.offset())
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
+        GraphQLLocation::from_node(self.sources, self.data.location)
     }
 
     /// Get serde_json serialisable version of the current diagnostic.

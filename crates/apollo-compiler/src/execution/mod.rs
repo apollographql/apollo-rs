@@ -4,8 +4,10 @@
 //! [execution]: https://spec.graphql.org/October2021/#sec-Execution
 //! [response]: https://spec.graphql.org/October2021/#sec-Response
 
+mod input_coercion;
 mod response;
 
+pub use self::input_coercion::coerce_variable_values;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
 pub use self::response::PathElement;

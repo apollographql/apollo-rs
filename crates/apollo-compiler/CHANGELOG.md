@@ -22,9 +22,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Add execution-related and introspection functionality - [SimonSapin], [pull/758]:**
   - Add data structure in `apollo_compiler::execution` for a GraphQL response, its data, and errors.
     All (de)serializable with `serde`.
+  - Add [`coerce_variable_values()`] in that same module.
 
 [SimonSapin]: https://github.com/SimonSapin
 [pull/758]: https://github.com/apollographql/apollo-rs/pull/758
+[`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
 
 
 # [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
