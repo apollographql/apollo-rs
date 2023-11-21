@@ -27,6 +27,8 @@ use std::sync::OnceLock;
 ///
 /// `Node<T>` cannot implement [`Borrow<T>`][std::borrow::Borrow] because `Node<T> as Hash`
 /// produces a result (the hash of the cached hash) different from `T as Hash`.
+#[derive(serde::Deserialize)]
+#[serde(from = "T")]
 pub struct Node<T>(triomphe::Arc<NodeInner<T>>);
 
 struct NodeInner<T> {
@@ -282,5 +284,14 @@ impl fmt::Debug for NodeLocation {
             self.end_offset(),
             self.file_id,
         )
+    }
+}
+
+impl<T: serde::Serialize> serde::Serialize for Node<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        T::serialize(self, serializer)
     }
 }

@@ -411,7 +411,6 @@ impl Schema {
     /// of all types in the schema.
     /// If that is repeated for multiple interfaces,
     /// gathering them all at once amorticizes that cost.
-    #[doc(hidden)] // use the Salsa query instead
     pub fn implementers_map(&self) -> HashMap<Name, HashSet<Name>> {
         let mut map = HashMap::<Name, HashSet<Name>>::new();
         for (ty_name, ty) in &self.types {

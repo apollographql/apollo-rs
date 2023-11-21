@@ -104,11 +104,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Add `parse_and_validate` constructors for `Schema` and `ExecutableDocument` - [SimonSapin], 
+- **Add `parse_and_validate` constructors for `Schema` and `ExecutableDocument` - [SimonSapin],
   [pull/752]:**
   when mutating isn’t needed after parsing,
   this returns an immutable `Valid<_>` value in one step.
-- **Serialize multi-line strings as block strings- [SimonSapin], [pull/724]**
+
+- **Implement serde `Serialize` and `Deserialize` for some AST types - [SimonSapin], [pull/760]:**
+  * `Node`
+  * `NodeStr`
+  * `Name`
+  * `IntValue`
+  * `FloatValue`
+  * `Value`
+  Source locations are not preserved through serialization.
+
+- **Add `ast::Definition::as_*() -> Option<&_>` methods for each variant - [SimonSapin], [pull/760]:**
+
+- **Serialize (to GraphQL) multi-line strings as block strings- [SimonSapin], [pull/724]**
   Example before:
   ```graphql
   "Example\n\nDescription description description"
@@ -129,6 +141,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [issue/751]: https://github.com/apollographql/apollo-rs/issues/751
 [pull/724]: https://github.com/apollographql/apollo-rs/pull/724
 [pull/752]: https://github.com/apollographql/apollo-rs/pull/752
+[pull/760]: https://github.com/apollographql/apollo-rs/pull/760
 
 
 # [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
