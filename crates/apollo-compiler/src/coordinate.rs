@@ -41,10 +41,11 @@ macro_rules! coord {
 ///
 /// # Example
 /// ```
+/// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::TypeCoordinate;
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// assert_eq!(TypeCoordinate("Type".try_into()?).to_string(), "Type");
+/// assert_eq!(TypeCoordinate(name!("Type")).to_string(), "Type");
 /// # Ok(()) }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -54,10 +55,11 @@ pub struct TypeCoordinate(pub Name);
 ///
 /// # Example
 /// ```
+/// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::FieldCoordinate;
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// assert_eq!(FieldCoordinate("Type".try_into()?, "field".try_into()?).to_string(), "Type.field");
+/// assert_eq!(FieldCoordinate(name!("Type"), name!("field")).to_string(), "Type.field");
 /// # Ok(()) }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -67,10 +69,11 @@ pub struct FieldCoordinate(pub Name, pub Name);
 ///
 /// # Example
 /// ```
+/// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::FieldArgumentCoordinate;
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// assert_eq!(FieldArgumentCoordinate("Type".try_into()?, "field".try_into()?, "argument".try_into()?).to_string(), "Type.field(argument:)");
+/// assert_eq!(FieldArgumentCoordinate(name!("Type"), name!("field"), name!("argument")).to_string(), "Type.field(argument:)");
 /// # Ok(()) }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -88,12 +91,13 @@ pub struct DirectiveArgumentCoordinate(pub Name, pub Name);
 ///
 /// # Example
 /// ```
+/// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::{SchemaCoordinate, FieldArgumentCoordinate};
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let coord: SchemaCoordinate = "Type.field(argument:)".parse().unwrap();
 /// assert_eq!(coord, SchemaCoordinate::FieldArgument(
-///     FieldArgumentCoordinate("Type".try_into()?, "field".try_into()?, "argument".try_into()?)
+///     FieldArgumentCoordinate(name!("Type"), name!("field"), name!("argument"))
 /// ));
 /// # Ok(()) }
 /// ```
