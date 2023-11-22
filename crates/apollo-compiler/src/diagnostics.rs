@@ -249,9 +249,7 @@ pub(crate) enum DiagnosticData {
 
 impl ApolloDiagnostic {
     pub(crate) fn to_report(&self, sources: SourceMap, color: bool) -> DiagnosticReport {
-        use ariadne::ReportKind;
-
-        let mut builder = DiagnosticReport::builder(sources, self.location);
+        let mut builder = DiagnosticReport::builder(sources, self.location).with_color(color);
         builder.with_message(&self.data);
         for label in &self.labels {
             builder.with_label_opt(label.location, &label.text);
@@ -259,7 +257,6 @@ impl ApolloDiagnostic {
         if let Some(help) = &self.help {
             builder.with_help(help);
         }
-        builder.with_color(color);
         builder.finish()
     }
 }

@@ -162,8 +162,7 @@ impl DiagnosticData {
             return diagnostic.to_report(sources, color);
         }
 
-        let mut report = DiagnosticReport::builder(sources, self.location, ReportKind::Error);
-        report.with_color(color);
+        let mut report = DiagnosticReport::builder(sources, self.location).with_color(color);
         // Main message from `derive(thiserror::Error)` based on `#[error("…")]` attributes:
         report.with_message(&self.details);
         // Every case should also have a label at the main location

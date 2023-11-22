@@ -58,12 +58,18 @@ impl DiagnosticBuilder {
         }
     }
 
-    pub fn with_color(&mut self, color: bool) {
-        // A little shuffling back and forth to configure the colour post-hoc
-        // which doesn't fit well with the ariadne API.
-        let empty = ariadne::Report::build(ReportKind::Error, FileId::NONE, 0);
-        self.report = std::mem::replace(&mut self.report, empty)
-            .with_config(ariadne::Config::default().with_color(color));
+    pub fn with_color(self, color: bool) -> Self {
+        let Self {
+            sources,
+            colors,
+            report,
+        } = self;
+        let report = report.with_config(ariadne::Config::default().with_color(color));
+        Self {
+            sources,
+            colors,
+            report,
+        }
     }
 
     pub fn finish(self) -> DiagnosticReport {
