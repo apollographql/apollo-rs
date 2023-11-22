@@ -18,14 +18,15 @@ fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
     Some((location.file_id, start..end))
 }
 
-pub struct DiagnosticBuilder {
+/// Builder for [`DiagnosticReport`]s.
+pub struct ReportBuilder {
     sources: SourceMap,
     colors: ColorGenerator,
     report: ariadne::ReportBuilder<'static, MappedSpan>,
 }
 
-impl DiagnosticBuilder {
-    pub fn new(sources: SourceMap, location: Option<NodeLocation>) -> Self {
+impl ReportBuilder {
+    fn new(sources: SourceMap, location: Option<NodeLocation>) -> Self {
         let (file_id, range) = location
             .and_then(|location| map_span(&sources, location))
             .unwrap_or((FileId::NONE, 0..0));
@@ -36,18 +37,23 @@ impl DiagnosticBuilder {
         }
     }
 
+    /// Set the main message for the report.
     pub fn with_message(&mut self, message: impl ToString) {
         self.report.set_message(message);
     }
 
+    /// Set the help message for the report, usually a suggestion on how to fix the error.
     pub fn with_help(&mut self, help: impl ToString) {
         self.report.set_help(help);
     }
 
+    /// Set a note for the report, providing additional information that isn't related to a
+    /// source location (when a label should be used).
     pub fn with_note(&mut self, note: impl ToString) {
         self.report.set_note(note);
     }
 
+    /// Add a label at a given location. If the location is `None`, the message is discarded.
     pub fn with_label_opt(&mut self, location: Option<NodeLocation>, message: impl ToString) {
         if let Some(mapped_span) = location.and_then(|location| map_span(&self.sources, location)) {
             self.report.add_label(
@@ -58,6 +64,7 @@ impl DiagnosticBuilder {
         }
     }
 
+    /// Enable or disable colors in the output.
     pub fn with_color(self, color: bool) -> Self {
         let Self {
             sources,
@@ -72,6 +79,7 @@ impl DiagnosticBuilder {
         }
     }
 
+    /// Return the report.
     pub fn finish(self) -> DiagnosticReport {
         DiagnosticReport {
             sources: self.sources,
@@ -80,14 +88,16 @@ impl DiagnosticBuilder {
     }
 }
 
+/// A diagnostic report that can be printed to a CLI with pretty colours and labeled lines of
+/// GraphQL source code.
 pub struct DiagnosticReport {
     sources: SourceMap,
     report: ariadne::Report<'static, MappedSpan>,
 }
 
 impl DiagnosticReport {
-    pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> DiagnosticBuilder {
-        DiagnosticBuilder::new(sources, location)
+    pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> ReportBuilder {
+        ReportBuilder::new(sources, location)
     }
 }
 
