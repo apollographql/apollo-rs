@@ -4,16 +4,23 @@
 //! [execution]: https://spec.graphql.org/October2021/#sec-Execution
 //! [response]: https://spec.graphql.org/October2021/#sec-Response
 
+pub(crate) mod engine;
 mod input_coercion;
+#[macro_use]
+pub(crate) mod resolver;
+mod introspection;
 mod response;
+mod result_coercion;
 
 pub use self::input_coercion::coerce_variable_values;
+pub use self::introspection::SchemaIntrospection;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
 pub use self::response::PathElement;
 pub use self::response::RequestError;
 pub use self::response::Response;
 pub use self::response::ResponseData;
+pub use self::response::EXTENSION_SUSPECTED_VALIDATION_BUG;
 /// Re-export of the version of the `serde_json_bytes` crate used for [`JsonValue`] and [`JsonMap`]
 pub use serde_json_bytes;
 

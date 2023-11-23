@@ -1,13 +1,20 @@
 use crate::ast::Type;
 use crate::ast::Value;
-use crate::executable::Operation;
+use crate::executable::Field;
+use crate::execution::engine::field_error;
+use crate::execution::engine::LinkedPath;
+use crate::execution::engine::PropagateNull;
+use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::RequestError;
 use crate::schema::ExtendedType;
+use crate::schema::FieldDefinition;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
+use crate::Node;
 use crate::Schema;
+use std::collections::HashMap;
 
 macro_rules! request_error {
     ($($arg: tt)+) => {
@@ -247,4 +254,253 @@ fn graphql_value_to_json(
             })
             .collect(),
     }
+}
+
+/// <https://spec.graphql.org/October2021/#sec-Coercing-Field-Arguments>
+pub(crate) fn coerce_argument_values(
+    schema: &Schema,
+    document: &Valid<ExecutableDocument>,
+    variable_values: &Valid<JsonMap>,
+    errors: &mut Vec<GraphQLError>,
+    path: LinkedPath<'_>,
+    field_def: &FieldDefinition,
+    field: &Field,
+) -> Result<JsonMap, PropagateNull> {
+    let mut coerced_values = JsonMap::new();
+    for arg_def in &field_def.arguments {
+        let arg_name = &arg_def.name;
+        if let Some(arg) = field.arguments.iter().find(|arg| arg.name == *arg_name) {
+            if let Value::Variable(var_name) = arg.value.as_ref() {
+                if let Some(var_value) = variable_values.get(var_name.as_str()) {
+                    if var_value.is_null() && arg_def.ty.is_non_null() {
+                        errors.push(field_error(
+                            format!("null value for non-nullable argument {arg_name}"),
+                            path,
+                            arg_def.location(),
+                            &document.sources,
+                        ));
+                        return Err(PropagateNull);
+                    } else {
+                        coerced_values.insert(arg_name.as_str(), var_value.clone());
+                        continue;
+                    }
+                }
+            } else if arg.value.is_null() && arg_def.ty.is_non_null() {
+                errors.push(field_error(
+                    format!("null value for non-nullable argument {arg_name}"),
+                    path,
+                    arg_def.location(),
+                    &document.sources,
+                ));
+                return Err(PropagateNull);
+            } else {
+                let coerced_value = coerce_argument_value(
+                    schema,
+                    document,
+                    variable_values,
+                    errors,
+                    path,
+                    "argument",
+                    "",
+                    "",
+                    arg_name,
+                    &arg_def.ty,
+                    &arg.value,
+                )?;
+                coerced_values.insert(arg_name.as_str(), coerced_value);
+                continue;
+            }
+        }
+        if let Some(default) = &arg_def.default_value {
+            let value =
+                graphql_value_to_json("argument", "", "", arg_name, default).map_err(|err| {
+                    errors.push(err.into_field_error(path, arg_def.location(), &document.sources));
+                    PropagateNull
+                })?;
+            coerced_values.insert(arg_def.name.as_str(), value);
+            continue;
+        }
+        if arg_def.ty.is_non_null() {
+            errors.push(field_error(
+                format!("missing value for required argument {arg_name}"),
+                path,
+                arg_def.location(),
+                &document.sources,
+            ));
+            return Err(PropagateNull);
+        }
+    }
+    Ok(coerced_values)
+}
+
+#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
+fn coerce_argument_value(
+    schema: &Schema,
+    document: &Valid<ExecutableDocument>,
+    variable_values: &Valid<JsonMap>,
+    errors: &mut Vec<GraphQLError>,
+    path: LinkedPath<'_>,
+    kind: &str,
+    parent: &str,
+    sep: &str,
+    name: &str,
+    ty: &Type,
+    value: &Node<Value>,
+) -> Result<JsonValue, PropagateNull> {
+    if value.is_null() {
+        if ty.is_non_null() {
+            errors.push(field_error(
+                format!("null value for non-null {kind} {parent}{sep}{name}"),
+                path,
+                value.location(),
+                &document.sources,
+            ));
+            return Err(PropagateNull);
+        } else {
+            return Ok(JsonValue::Null);
+        }
+    }
+    if let Some(var_name) = value.as_variable() {
+        if let Some(var_value) = variable_values.get(var_name.as_str()) {
+            if var_value.is_null() && ty.is_non_null() {
+                errors.push(field_error(
+                    format!("null variable value for non-null {kind} {parent}{sep}{name}"),
+                    path,
+                    value.location(),
+                    &document.sources,
+                ));
+                return Err(PropagateNull);
+            } else {
+                return Ok(var_value.clone());
+            }
+        } else if ty.is_non_null() {
+            errors.push(field_error(
+                format!("missing variable for non-null {kind} {parent}{sep}{name}"),
+                path,
+                value.location(),
+                &document.sources,
+            ));
+            return Err(PropagateNull);
+        } else {
+            return Ok(JsonValue::Null);
+        }
+    }
+    let ty_name = match ty {
+        Type::List(inner_ty) | Type::NonNullList(inner_ty) => {
+            // https://spec.graphql.org/October2021/#sec-List.Input-Coercion
+            return value
+                .as_list()
+                // If not an array, treat the value as an array of size one:
+                .unwrap_or(std::slice::from_ref(value))
+                .iter()
+                .map(|item| {
+                    coerce_argument_value(
+                        schema,
+                        document,
+                        variable_values,
+                        errors,
+                        path,
+                        kind,
+                        parent,
+                        sep,
+                        name,
+                        inner_ty,
+                        item,
+                    )
+                })
+                .collect();
+        }
+        Type::Named(ty_name) | Type::NonNullNamed(ty_name) => ty_name,
+    };
+    let Some(ty_def) = schema.types.get(ty_name) else {
+        errors.push(
+            field_error(
+                format!("Undefined type {ty_name} for {kind} {parent}{sep}{name}"),
+                path,
+                value.location(),
+                &document.sources,
+            )
+            .validation_bug(),
+        );
+        return Err(PropagateNull);
+    };
+    match ty_def {
+        ExtendedType::InputObject(ty_def) => {
+            // https://spec.graphql.org/October2021/#sec-Input-Objects.Input-Coercion
+            if let Some(object) = value.as_object() {
+                if let Some((key, _value)) = object
+                    .iter()
+                    .find(|(key, _value)| !ty_def.fields.contains_key(key))
+                {
+                    errors.push(field_error(
+                        format!("Input object has key {key} not in type {ty_name}",),
+                        path,
+                        value.location(),
+                        &document.sources,
+                    ));
+                    return Err(PropagateNull);
+                }
+                // `map` converts `&(k, v)` to `(&k, &v)`
+                let object: HashMap<_, _> = object.iter().map(|(k, v)| (k, v)).collect();
+                let mut coerced_object = JsonMap::new();
+                for (field_name, field_def) in &ty_def.fields {
+                    if let Some(field_value) = object.get(field_name) {
+                        let coerced_value = coerce_argument_value(
+                            schema,
+                            document,
+                            variable_values,
+                            errors,
+                            path,
+                            "input field",
+                            ty_name,
+                            ".",
+                            field_name,
+                            &field_def.ty,
+                            field_value,
+                        )?;
+                        coerced_object.insert(field_name.as_str(), coerced_value);
+                    } else if let Some(default) = &field_def.default_value {
+                        let default =
+                            graphql_value_to_json("input field", ty_name, ".", field_name, default)
+                                .map_err(|err| {
+                                    errors.push(err.into_field_error(
+                                        path,
+                                        value.location(),
+                                        &document.sources,
+                                    ));
+                                    PropagateNull
+                                })?;
+                        coerced_object.insert(field_name.as_str(), default);
+                    } else if field_def.ty.is_non_null() {
+                        errors.push(field_error(
+                            format!(
+                                "Missing value for non-null input object field {ty_name}.{field_name}"
+                            ),
+                            path,
+                            value.location(),
+                            &document.sources,
+                        ));
+                        return Err(PropagateNull);
+                    } else {
+                        // Field not required
+                    }
+                }
+                return Ok(coerced_object.into());
+            }
+        }
+        _ => {
+            // For scalar and enums, rely and validation and just convert between Rust types
+            return graphql_value_to_json(kind, parent, sep, name, value).map_err(|err| {
+                errors.push(err.into_field_error(path, value.location(), &document.sources));
+                PropagateNull
+            });
+        }
+    }
+    errors.push(field_error(
+        format!("Could not coerce {kind} {parent}{sep}{name}: {value} to type {ty_name}"),
+        path,
+        value.location(),
+        &document.sources,
+    ));
+    Err(PropagateNull)
 }

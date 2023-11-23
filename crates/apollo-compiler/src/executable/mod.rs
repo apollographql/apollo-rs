@@ -11,6 +11,7 @@ use indexmap::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
 
+pub(crate) mod filtering;
 pub(crate) mod from_ast;
 mod serialize;
 pub(crate) mod validation;
@@ -286,6 +287,20 @@ impl ExecutableDocument {
         }
         .map(Node::make_mut)
         .ok_or_else(|| RequestError::new("multiple operations but no `operationName`"))
+    }
+
+    /// Insert the given operation in either `named_operations` or `anonymous_operation`
+    /// as appropriate, and return the old operation (if any) with that name (or lack thereof).
+    pub fn insert_operation(
+        &mut self,
+        operation: impl Into<Node<Operation>>,
+    ) -> Option<Node<Operation>> {
+        let operation = operation.into();
+        if let Some(name) = &operation.name {
+            self.named_operations.insert(name.clone(), operation)
+        } else {
+            self.anonymous_operation.replace(operation)
+        }
     }
 
     serialize_method!();

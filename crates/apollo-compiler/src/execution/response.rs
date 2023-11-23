@@ -24,6 +24,7 @@ pub struct Response {
     #[serde(default = "ResponseData::absent")]
     pub data: ResponseData,
 
+    /// Reserved for any additional information
     #[serde(skip_serializing_if = "JsonMap::is_empty")]
     #[serde(default)]
     pub extensions: JsonMap,
@@ -83,6 +84,7 @@ pub struct GraphQLError {
     #[serde(default)]
     pub path: Vec<PathElement>,
 
+    /// Reserved for any additional information
     #[serde(skip_serializing_if = "JsonMap::is_empty")]
     #[serde(default)]
     pub extensions: JsonMap,
@@ -108,6 +110,31 @@ pub enum PathElement {
 
     /// The index of the relevant item in a list value
     ListIndex(usize),
+}
+
+impl Response {
+    /// Merge two responses into one, such as to handle
+    /// [`SchemaIntrospection::Both`][crate::execution::SchemaIntrospection::Both].
+    pub fn merge(mut self, mut other: Self) -> Self {
+        match (&mut self.data, other.data) {
+            (ResponseData::Absent, _) | (_, ResponseData::Absent) => {
+                // If either side is a request error (absent data), return a request error
+                self.data = ResponseData::Absent
+            }
+            (ResponseData::Null, _) | (_, ResponseData::Null) => {
+                // Otherwise if either side propagated null from a field error
+                // to the root of the response, return null data.
+                self.data = ResponseData::Null
+            }
+            (ResponseData::Object(self_data), ResponseData::Object(other_data)) => {
+                // Merge two objects/maps
+                self_data.extend(other_data)
+            }
+        }
+        self.errors.append(&mut other.errors);
+        self.extensions.extend(other.extensions);
+        self
+    }
 }
 
 impl GraphQLError {
