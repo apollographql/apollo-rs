@@ -55,10 +55,9 @@ impl FindRecursiveInputValue<'_> {
     fn check(
         db: &dyn ValidationDatabase,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-        recursion_limit: usize,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         let mut recursion_stack =
-            RecursionStack::with_root(input_object.definition.name.clone(), recursion_limit);
+            RecursionStack::with_root(input_object.definition.name.clone(), 500);
         FindRecursiveInputValue { db }
             .input_object_definition(recursion_stack.guard(), input_object)
     }
@@ -88,7 +87,7 @@ pub(crate) fn validate_input_object_definition(
         Default::default(),
     );
 
-    if let Err(error) = FindRecursiveInputValue::check(db, &input_object, db.recursion_limit()) {
+    if let Err(error) = FindRecursiveInputValue::check(db, &input_object) {
         let mut diagnostic = ApolloDiagnostic::new(
             db,
             input_object.definition.location(),

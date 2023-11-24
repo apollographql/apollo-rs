@@ -3,7 +3,6 @@ use super::FieldSet;
 use crate::ast;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
-use crate::validation::ValidationOptions;
 use crate::ExecutableDocument;
 use crate::FileId;
 use crate::InputDatabase;
@@ -15,20 +14,18 @@ pub(crate) fn validate_executable_document(
     errors: &mut DiagnosticList,
     schema: &Schema,
     document: &ExecutableDocument,
-    options: ValidationOptions,
 ) {
     validate_common(errors, document);
-    compiler_validation(errors, Some(schema), document, options);
+    compiler_validation(errors, Some(schema), document);
     // TODO
 }
 
 pub(crate) fn validate_standalone_executable(
     errors: &mut DiagnosticList,
     document: &ExecutableDocument,
-    options: ValidationOptions,
 ) {
     validate_common(errors, document);
-    compiler_validation(errors, None, document, options);
+    compiler_validation(errors, None, document);
 }
 
 pub(crate) fn validate_common(errors: &mut DiagnosticList, document: &ExecutableDocument) {
@@ -78,7 +75,6 @@ fn compiler_validation(
     errors: &mut DiagnosticList,
     schema: Option<&Schema>,
     document: &ExecutableDocument,
-    options: ValidationOptions,
 ) {
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
@@ -96,8 +92,6 @@ fn compiler_validation(
     if let Some(schema) = schema {
         compiler.db.set_schema_input(Some(Arc::new(schema.clone())));
     }
-
-    compiler.db.set_recursion_limit(options.recursion_limit);
 
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);

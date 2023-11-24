@@ -127,10 +127,8 @@ impl FindRecursiveDirective<'_> {
     fn check(
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
-        recursion_limit: usize,
     ) -> Result<(), CycleError<ast::Directive>> {
-        let mut recursion_stack =
-            RecursionStack::with_root(directive_def.name.clone(), recursion_limit);
+        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone(), 500);
         FindRecursiveDirective { schema }
             .directive_definition(recursion_stack.guard(), directive_def)
     }
@@ -152,7 +150,7 @@ pub(crate) fn validate_directive_definition(
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    if let Err(error) = FindRecursiveDirective::check(&db.schema(), &def, db.recursion_limit()) {
+    if let Err(error) = FindRecursiveDirective::check(&db.schema(), &def) {
         let definition_location = def.location();
         let head_location = NodeLocation::recompose(def.location(), def.name.location());
         let mut diagnostic = ApolloDiagnostic::new(

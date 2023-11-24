@@ -53,7 +53,6 @@ Older version may or may not be compatible.
 You can get started with `apollo-compiler`:
 ```rust
 use apollo_compiler::Schema;
-use apollo_compiler::validation::ValidationOptions;
 
 let input = r#"
   interface Pet {
@@ -88,7 +87,7 @@ let schema = Schema::parse(input, "document.graphql");
 
 /// In case of validation errors, the panic message will be nicely formatted
 /// to point at relevant parts of the source file(s)
-schema.validate(ValidationOptions::default()).unwrap();
+schema.validate().unwrap();
 ```
 
 ### Examples
@@ -96,7 +95,6 @@ schema.validate(ValidationOptions::default()).unwrap();
 
 ```rust
 use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
-use apollo_compiler::validation::ValidationOptions;
 
 fn main() {
     let schema_input = r#"
@@ -126,8 +124,8 @@ fn main() {
     let schema = Schema::parse(schema_input, "schema.graphql");
     let document = ExecutableDocument::parse(&schema, query_input, "query.graphql");
 
-    schema.validate(ValidationOptions::default()).unwrap();
-    document.validate(&schema, ValidationOptions::default()).unwrap();
+    schema.validate().unwrap();
+    document.validate(&schema).unwrap();
 
     let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
     let fragment_in_op = op.selection_set.selections.iter().filter_map(|sel| match sel {
@@ -151,7 +149,6 @@ fn main() {
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
 use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
-use apollo_compiler::validation::ValidationOptions;
 
 fn main() {
     let schema_input = r#"
@@ -190,8 +187,8 @@ fn main() {
     let schema = Schema::parse(schema_input, "schema.graphql");
     let document = ExecutableDocument::parse(&schema, query_input, "query.graphql");
 
-    schema.validate(ValidationOptions::default()).unwrap();
-    document.validate(&schema, ValidationOptions::default()).unwrap();
+    schema.validate().unwrap();
+    document.validate(&schema).unwrap();
 
     let get_product_op = document
         .get_operation(Some("getProduct"))
@@ -218,8 +215,6 @@ fn main() {
 
 #### Printing diagnostics for a faulty GraphQL document
 ```rust
-use apollo_compiler::validation::ValidationOptions;
-
 let input = r#"
 query {
   cat {
@@ -278,10 +273,10 @@ union CatOrDog = Cat | Dog
 
 let (schema, executable) = apollo_compiler::parse_mixed(input, "document.graphql");
 
-if let Err(diagnostics) = schema.validate(ValidationOptions::default()) {
+if let Err(diagnostics) = schema.validate() {
     println!("{diagnostics}")
 }
-if let Err(diagnostics) = executable.validate(&schema, ValidationOptions::default()) {
+if let Err(diagnostics) = executable.validate(&schema) {
     println!("{diagnostics}")
 }
 ```

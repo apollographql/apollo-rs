@@ -31,21 +31,6 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
-/// Options for validating documents.
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub struct ValidationOptions {
-    pub recursion_limit: usize,
-}
-
-impl Default for ValidationOptions {
-    fn default() -> Self {
-        Self {
-            recursion_limit: 500,
-        }
-    }
-}
-
 /// A collection of diagnostics returned by some validation method
 pub struct DiagnosticList(Box<DiagnosticListBoxed>);
 

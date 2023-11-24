@@ -27,8 +27,8 @@ query {
     let schema = Schema::parse(input_type_system, "schema.graphql");
     let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    schema.validate(Default::default()).unwrap();
-    executable.validate(&schema, Default::default()).unwrap();
+    schema.validate().unwrap();
+    executable.validate(&schema).unwrap();
 }
 
 #[test]
@@ -62,10 +62,8 @@ query {
     let schema = Schema::parse(input_type_system, "schema.graphql");
     let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    schema.validate(Default::default()).unwrap();
-    let diagnostics = executable
-        .validate(&schema, Default::default())
-        .unwrap_err();
+    schema.validate().unwrap();
+    let diagnostics = executable.validate(&schema).unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("an executable document must not contain an object type definition"),
@@ -101,9 +99,9 @@ fragment q on Query {
     let schema = Schema::parse(input_type_system, "schema.graphql");
     let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    schema.validate(Default::default()).unwrap();
+    schema.validate().unwrap();
     let errors = executable
-        .validate(&schema, Default::default())
+        .validate(&schema)
         .unwrap_err()
         .to_string_no_color();
     assert!(
@@ -149,10 +147,8 @@ fragment q on TestObject {
     let schema = Schema::parse(input_type_system, "schema.graphql");
     let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    schema.validate(Default::default()).unwrap();
-    let diagnostics = executable
-        .validate(&schema, Default::default())
-        .unwrap_err();
+    schema.validate().unwrap();
+    let diagnostics = executable.validate(&schema).unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
@@ -171,8 +167,7 @@ fragment q on TestObject {
 fn validation_without_type_system() {
     let doc = ast::Document::parse(r#"{ obj { name nickname } }"#, "valid.graphql");
     // We don't know what `obj` refers to, so assume it is valid.
-    doc.validate_standalone_executable(Default::default())
-        .unwrap();
+    doc.validate_standalone_executable().unwrap();
 
     let doc = ast::Document::parse(
         r#"
@@ -191,9 +186,7 @@ fn validation_without_type_system() {
     }
   ]
 }"#]];
-    let diagnostics = doc
-        .validate_standalone_executable(Default::default())
-        .unwrap_err();
+    let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("fragment `A` must be used in an operation"),
@@ -228,9 +221,7 @@ fn validation_without_type_system() {
     }
   ]
 }"#]];
-    let diagnostics = doc
-        .validate_standalone_executable(Default::default())
-        .unwrap_err();
+    let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("the fragment `A` is defined multiple times in the document"),
@@ -258,9 +249,7 @@ fn validation_without_type_system() {
     }
   ]
 }"#]];
-    let diagnostics = doc
-        .validate_standalone_executable(Default::default())
-        .unwrap_err();
+    let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string_no_color();
     assert!(
         errors.contains("cannot find fragment `A` in this document"),
@@ -287,6 +276,5 @@ fn validate_variable_usage_without_type_system() {
     }
     "#;
     let doc = ast::Document::parse(input, "query.graphql");
-    doc.validate_standalone_executable(Default::default())
-        .unwrap()
+    doc.validate_standalone_executable().unwrap()
 }

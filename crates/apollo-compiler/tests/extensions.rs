@@ -13,10 +13,7 @@ fn test_orphan_extensions() {
     let schema = Schema::parse(input, "schema.graphql");
     assert!(!schema.schema_definition.directives.has("dir"));
     assert!(!schema.types.contains_key("Obj"));
-    let err = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let err = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         err.contains("schema extension without a schema definition"),
         "{err}"
@@ -33,7 +30,7 @@ fn test_orphan_extensions() {
         .build();
     assert!(schema2.schema_definition.directives.has("dir"));
     assert!(schema2.types["Obj"].directives().has("dir"));
-    schema2.validate(Default::default()).unwrap();
+    schema2.validate().unwrap();
 }
 
 #[test]
@@ -51,10 +48,7 @@ fn test_orphan_extensions_kind_mismatch() {
     let type_def = &schema.types["T"];
     assert!(type_def.is_object());
     assert_eq!(type_def.directives().get_all("dir").count(), 1);
-    let err = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let err = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         err.contains("adding an interface type extension, but `T` is an object type"),
         "{err}"
@@ -71,6 +65,6 @@ fn test_extend_implicit_schema() {
 "#;
 
     let schema = Schema::parse(input, "schema.graphql");
-    schema.validate(Default::default()).unwrap();
+    schema.validate().unwrap();
     assert!(schema.schema_definition.directives.has("dir"));
 }

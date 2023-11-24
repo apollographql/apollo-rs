@@ -118,10 +118,10 @@ impl FileWatcher {
     }
 
     fn validate(&self, (schema, executable): &(Schema, ExecutableDocument)) {
-        if let Err(err) = schema.validate(Default::default()) {
+        if let Err(err) = schema.validate() {
             println!("{err}")
         }
-        if let Err(err) = executable.validate(schema, Default::default()) {
+        if let Err(err) = executable.validate(schema) {
             println!("{err}")
         }
     }

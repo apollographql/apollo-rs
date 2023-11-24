@@ -10,7 +10,7 @@ mod node;
 mod node_str;
 mod parser;
 pub mod schema;
-pub mod validation;
+mod validation;
 
 use crate::database::{InputDatabase, ReprDatabase, RootDatabase, Source};
 use crate::diagnostics::ApolloDiagnostic;

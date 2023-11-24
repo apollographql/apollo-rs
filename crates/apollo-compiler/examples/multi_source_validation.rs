@@ -20,8 +20,8 @@ fn compile_from_dir() -> io::Result<()> {
             let entry = entry?;
             let src = fs::read_to_string(entry.path()).expect("Could not read document file.");
             let (schema, executable) = parse_mixed(&src, entry.path());
-            schema.validate(Default::default()).unwrap();
-            executable.validate(&schema, Default::default()).unwrap();
+            schema.validate().unwrap();
+            executable.validate(&schema).unwrap();
         }
     }
     Ok(())
@@ -42,14 +42,14 @@ fn compile_schema_and_query_files() -> io::Result<()> {
         .parse(src, schema)
         .parse(src_ext, schema_ext)
         .build();
-    schema.validate(Default::default()).unwrap();
+    schema.validate().unwrap();
 
     // get_dog_name is a query-only file
     let query = Path::new("crates/apollo-compiler/examples/documents/get_dog_name.graphql");
     let src = fs::read_to_string(query).expect("Could not read query file.");
     let doc = ExecutableDocument::parse(&schema, src, query);
 
-    doc.validate(&schema, Default::default()).unwrap();
+    doc.validate(&schema).unwrap();
 
     Ok(())
 }
@@ -127,9 +127,9 @@ query getDogName {
 }
     "#;
     let schema = Schema::parse(schema, "schema.graphl");
-    schema.validate(Default::default()).unwrap();
+    schema.validate().unwrap();
     let doc = ExecutableDocument::parse(&schema, query, "query.graphql");
-    doc.validate(&schema, Default::default()).unwrap();
+    doc.validate(&schema).unwrap();
 
     Ok(())
 }

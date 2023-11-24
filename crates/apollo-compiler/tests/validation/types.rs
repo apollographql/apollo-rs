@@ -123,7 +123,7 @@ fn test_schema() -> &'static Schema {
 
     SCHEMA.get_or_init(|| {
         let schema = Schema::parse(unindent(GRAPHQL_JS_TEST_SCHEMA), "schema.graphql");
-        schema.validate(Default::default()).unwrap();
+        schema.validate().unwrap();
         schema
     })
 }
@@ -133,16 +133,14 @@ fn expect_valid(query: &'static str) {
     let schema = test_schema();
 
     let executable = ExecutableDocument::parse(schema, unindent(query), "query.graphql");
-    executable.validate(schema, Default::default()).unwrap();
+    executable.validate(schema).unwrap();
 }
 
 fn expect_errors(query: &'static str, expect: Expect) {
     let schema = test_schema();
 
     let executable = ExecutableDocument::parse(schema, unindent(query), "query.graphql");
-    let errors = executable
-        .validate(schema, Default::default())
-        .expect_err("should have errors");
+    let errors = executable.validate(schema).expect_err("should have errors");
     expect.assert_eq(&errors.to_string_no_color());
 }
 
@@ -1661,7 +1659,7 @@ mod invalid_input_object_values {
         ",
             "schema.graphql",
         );
-        schema.validate(Default::default()).unwrap();
+        schema.validate().unwrap();
 
         let query = ExecutableDocument::parse(
             &schema,
@@ -1676,7 +1674,7 @@ mod invalid_input_object_values {
             "query.graphql",
         );
 
-        query.validate(&schema, Default::default()).unwrap();
+        query.validate(&schema).unwrap();
     }
 }
 

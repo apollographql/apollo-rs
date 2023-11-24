@@ -1,7 +1,6 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
-use crate::validation::ValidationOptions;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
@@ -314,9 +313,9 @@ impl Schema {
     }
 
     /// Returns `Err` if invalid, or `Ok` for potential warnings or advice
-    pub fn validate(&self, options: ValidationOptions) -> Result<DiagnosticList, DiagnosticList> {
+    pub fn validate(&self) -> Result<DiagnosticList, DiagnosticList> {
         let mut errors = DiagnosticList::new(None, self.sources.clone());
-        let warnings_and_advice = validation::validate_schema(&mut errors, self, options);
+        let warnings_and_advice = validation::validate_schema(&mut errors, self);
         let valid = errors.is_empty();
         for diagnostic in warnings_and_advice {
             errors.push(

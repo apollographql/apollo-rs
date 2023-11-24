@@ -38,8 +38,8 @@ fn validation() {
         let file_name = path.file_name().unwrap();
         let (schema, executable) = apollo_compiler::parse_mixed(text, file_name);
 
-        let schema_validation_errors = schema.validate(Default::default()).err();
-        let executable_validation_errors = executable.validate(&schema, Default::default()).err();
+        let schema_validation_errors = schema.validate().err();
+        let executable_validation_errors = executable.validate(&schema).err();
         assert_diagnostics_are_absent(
             &schema_validation_errors,
             &executable_validation_errors,
@@ -56,18 +56,16 @@ fn validation() {
         let schema_validation_errors;
         let executable_validation_errors;
         if is_type_system {
-            schema_validation_errors = Schema::parse(text, filename)
-                .validate(Default::default())
-                .err();
+            schema_validation_errors = Schema::parse(text, filename).validate().err();
             executable_validation_errors = None;
         } else if is_executable {
             executable_validation_errors = ast::Document::parse(text, filename)
-                .validate_standalone_executable(Default::default())
+                .validate_standalone_executable()
                 .err();
             schema_validation_errors = None;
         } else {
             let (schema, executable) = apollo_compiler::parse_mixed(text, filename);
-            schema_validation_errors = match schema.validate(Default::default()) {
+            schema_validation_errors = match schema.validate() {
                 Ok(warnings) => {
                     if warnings.to_string().is_empty() {
                         None
@@ -77,7 +75,7 @@ fn validation() {
                 }
                 Err(e) => Some(e),
             };
-            executable_validation_errors = executable.validate(&schema, Default::default()).err();
+            executable_validation_errors = executable.validate(&schema).err();
         };
         let mut formatted = String::new();
         if let Some(errors) = &schema_validation_errors {
@@ -282,10 +280,5 @@ fn test_invalid_synthetic_node() {
     let expected = expect_test::expect![[r#"
         Error: cannot find type `UndefinedType` in this document
     "#]];
-    expected.assert_eq(
-        &schema
-            .validate(Default::default())
-            .unwrap_err()
-            .to_string_no_color(),
-    );
+    expected.assert_eq(&schema.validate().unwrap_err().to_string_no_color());
 }

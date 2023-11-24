@@ -21,10 +21,7 @@ interface NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let schema = Schema::parse(input, "schema.graphql");
-    let errors = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let errors = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         errors
             .contains("duplicate definitions for the `name` field of interface type `NamedEntity`"),
@@ -58,10 +55,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let schema = Schema::parse(input, "schema.graphql");
 
-    let errors = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let errors = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("the type `NamedEntity` is defined multiple times"),
         "{errors}"
@@ -88,10 +82,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let schema = Schema::parse(input, "schema.graphql");
 
-    let errors = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let errors = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("interface NamedEntity cannot implement itself"),
         "{errors}"
@@ -111,10 +102,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let schema = Schema::parse(input, "schema.graphql");
 
-    let errors = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let errors = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("cannot find type `NewEntity` in this document"),
         "{errors}"
@@ -144,10 +132,7 @@ interface Image implements Resource & Node {
 "#;
     let schema = Schema::parse(input, "schema.graphql");
 
-    let errors = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let errors = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("type does not satisfy interface `Resource`: missing field `width`"),
         "{errors}"
@@ -211,10 +196,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let (schema, _executable) = parse_mixed(input, "doc.graphql");
 
-    let errors = schema
-        .validate(Default::default())
-        .unwrap_err()
-        .to_string_no_color();
+    let errors = schema.validate().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("`coordinates` field must return an output type"),
         "{errors}"

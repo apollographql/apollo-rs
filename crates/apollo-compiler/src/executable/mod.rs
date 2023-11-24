@@ -20,7 +20,6 @@ pub use crate::ast::{
     VariableDefinition,
 };
 use crate::validation::DiagnosticList;
-use crate::validation::ValidationOptions;
 use crate::NodeLocation;
 use std::fmt;
 
@@ -228,13 +227,9 @@ impl ExecutableDocument {
         Parser::new().parse_executable(schema, source_text, path)
     }
 
-    pub fn validate(
-        &self,
-        schema: &Schema,
-        options: ValidationOptions,
-    ) -> Result<(), DiagnosticList> {
+    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
         let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
-        validation::validate_executable_document(&mut errors, schema, self, options);
+        validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
 
