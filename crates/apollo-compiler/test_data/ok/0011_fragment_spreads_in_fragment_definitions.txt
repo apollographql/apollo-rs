@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         11: SourceFile {
             path: "0011_fragment_spreads_in_fragment_definitions.graphql",
             source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -114,13 +111,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         11: SourceFile {
             path: "0011_fragment_spreads_in_fragment_definitions.graphql",
             source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {
         "IntrospectionQuery": 0..51 @11 Operation {

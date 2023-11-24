@@ -1,14 +1,10 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::{RecursionGuard, RecursionStack},
-    FileId, Node, NodeLocation, ValidationDatabase,
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::{
+    FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
 };
+use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
-
-use super::RecursionLimitError;
 
 pub(crate) fn validate_variable_definitions2(
     db: &dyn ValidationDatabase,

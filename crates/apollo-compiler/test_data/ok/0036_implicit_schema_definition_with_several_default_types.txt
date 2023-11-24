@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         35: SourceFile {
             path: "0036_implicit_schema_definition_with_several_default_types.graphql",
             source_text: "type Query {\n    name: String\n}\n\ntype Mutation {\n   add(name: String!): Result!\n}\n\ntype Result {\n  id: String\n}\n\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -129,13 +126,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         35: SourceFile {
             path: "0036_implicit_schema_definition_with_several_default_types.graphql",
             source_text: "type Query {\n    name: String\n}\n\ntype Mutation {\n   add(name: String!): Result!\n}\n\ntype Result {\n  id: String\n}\n\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

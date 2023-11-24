@@ -1,21 +1,23 @@
 use super::*;
 use crate::ty;
 
-pub(crate) struct BuildErrors {
-    pub(crate) errors: Vec<BuildError>,
+pub(crate) struct BuildErrors<'a> {
+    pub(crate) errors: &'a mut DiagnosticList,
     pub(crate) path: SelectionPath,
 }
 
 pub(crate) fn document_from_ast(
     schema: Option<&Schema>,
     document: &ast::Document,
+    errors: &mut DiagnosticList,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
     let mut named_operations = IndexMap::new();
-    let mut anonymous_operation = None;
+    let mut anonymous_operation = None::<Node<Operation>>;
+    let mut multiple_anonymous = false;
     let mut fragments = IndexMap::new();
     let mut errors = BuildErrors {
-        errors: Vec::new(),
+        errors,
         path: SelectionPath {
             nested_fields: Vec::new(),
             // overwritten:
@@ -27,6 +29,12 @@ pub(crate) fn document_from_ast(
         match definition {
             ast::Definition::OperationDefinition(operation) => {
                 if let Some(name) = &operation.name {
+                    if let Some(anonymous) = &anonymous_operation {
+                        errors.errors.push(
+                            anonymous.location(),
+                            BuildError::AmbiguousAnonymousOperation,
+                        )
+                    }
                     if let Entry::Vacant(entry) = named_operations.entry(name.clone()) {
                         errors.path.root = ExecutableDefinitionName::NamedOperation(
                             operation.operation_type,
@@ -35,33 +43,51 @@ pub(crate) fn document_from_ast(
                         if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                             entry.insert(operation.same_location(op));
                         } else {
-                            errors.errors.push(BuildError::UndefinedRootOperation {
-                                location: operation.location(),
-                                operation_type: operation.operation_type.name(),
-                            })
+                            errors.errors.push(
+                                operation.location(),
+                                BuildError::UndefinedRootOperation {
+                                    operation_type: operation.operation_type.name(),
+                                },
+                            )
                         }
                     } else {
                         let (key, _) = named_operations.get_key_value(name).unwrap();
-                        errors.errors.push(BuildError::OperationNameCollision {
-                            location: name.location(),
-                            name_at_previous_location: key.clone(),
-                        });
+                        errors.errors.push(
+                            name.location(),
+                            BuildError::OperationNameCollision {
+                                name_at_previous_location: key.clone(),
+                            },
+                        );
                     }
-                } else if anonymous_operation.is_none() {
+                } else if let Some(previous) = &anonymous_operation {
+                    if !multiple_anonymous {
+                        multiple_anonymous = true;
+                        errors
+                            .errors
+                            .push(previous.location(), BuildError::AmbiguousAnonymousOperation)
+                    }
+                    errors.errors.push(
+                        operation.location(),
+                        BuildError::AmbiguousAnonymousOperation,
+                    )
+                } else if !named_operations.is_empty() {
+                    errors.errors.push(
+                        operation.location(),
+                        BuildError::AmbiguousAnonymousOperation,
+                    )
+                } else {
                     errors.path.root =
                         ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
                     if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                         anonymous_operation = Some(operation.same_location(op));
                     } else {
-                        errors.errors.push(BuildError::UndefinedRootOperation {
-                            location: operation.location(),
-                            operation_type: operation.operation_type.name(),
-                        })
+                        errors.errors.push(
+                            operation.location(),
+                            BuildError::UndefinedRootOperation {
+                                operation_type: operation.operation_type.name(),
+                            },
+                        )
                     }
-                } else {
-                    errors.errors.push(BuildError::AmbiguousAnonymousOperation {
-                        location: operation.location(),
-                    })
                 }
             }
             ast::Definition::FragmentDefinition(fragment) => {
@@ -72,25 +98,28 @@ pub(crate) fn document_from_ast(
                     }
                 } else {
                     let (key, _) = fragments.get_key_value(&fragment.name).unwrap();
-                    errors.errors.push(BuildError::FragmentNameCollision {
-                        location: fragment.name.location(),
-                        name_at_previous_location: key.clone(),
-                    })
+                    errors.errors.push(
+                        fragment.name.location(),
+                        BuildError::FragmentNameCollision {
+                            name_at_previous_location: key.clone(),
+                        },
+                    )
                 }
             }
             _ => {
                 if type_system_definitions_are_errors {
-                    errors.errors.push(BuildError::TypeSystemDefinition {
-                        location: definition.location(),
-                        describe: definition.describe(),
-                    })
+                    errors.errors.push(
+                        definition.location(),
+                        BuildError::TypeSystemDefinition {
+                            describe: definition.describe(),
+                        },
+                    )
                 }
             }
         }
     }
     ExecutableDocument {
         sources: document.sources.clone(),
-        build_errors: errors.errors,
         named_operations,
         anonymous_operation,
         fragments,
@@ -129,13 +158,13 @@ impl Fragment {
     ) -> Option<Self> {
         if let Some(schema) = schema {
             if !schema.types.contains_key(&ast.type_condition) {
-                errors
-                    .errors
-                    .push(BuildError::UndefinedTypeInNamedFragmentTypeCondition {
-                        location: ast.type_condition.location(),
+                errors.errors.push(
+                    ast.type_condition.location(),
+                    BuildError::UndefinedTypeInNamedFragmentTypeCondition {
                         type_name: ast.type_condition.clone(),
                         fragment_name: ast.name.clone(),
-                    });
+                    },
+                );
                 return None;
             }
         }
@@ -183,19 +212,21 @@ impl SelectionSet {
                                 .and_then(|schema| schema.types.get(type_name))
                             {
                                 Some(schema::ExtendedType::Scalar(_)) if !leaf => {
-                                    errors.errors.push(BuildError::SubselectionOnScalarType {
-                                        location: ast.location(),
+                                    errors.errors.push(
+                                        ast.location(),
+                                        BuildError::SubselectionOnScalarType {
+                                            type_name: type_name.clone(),
+                                            path: errors.path.clone(),
+                                        },
+                                    )
+                                }
+                                Some(schema::ExtendedType::Enum(_)) if !leaf => errors.errors.push(
+                                    ast.location(),
+                                    BuildError::SubselectionOnEnumType {
                                         type_name: type_name.clone(),
                                         path: errors.path.clone(),
-                                    })
-                                }
-                                Some(schema::ExtendedType::Enum(_)) if !leaf => {
-                                    errors.errors.push(BuildError::SubselectionOnEnumType {
-                                        location: ast.location(),
-                                        type_name: type_name.clone(),
-                                        path: errors.path.clone(),
-                                    })
-                                }
+                                    },
+                                ),
                                 _ => self.push(
                                     ast.same_location(
                                         Field::new(ast.name.clone(), field_def)
@@ -212,12 +243,14 @@ impl SelectionSet {
                             }
                         }
                         Err(schema::FieldLookupError::NoSuchField(type_name, _)) => {
-                            errors.errors.push(BuildError::UndefinedField {
-                                location: ast.name.location(),
-                                type_name: type_name.clone(),
-                                field_name: ast.name.clone(),
-                                path: errors.path.clone(),
-                            })
+                            errors.errors.push(
+                                ast.name.location(),
+                                BuildError::UndefinedField {
+                                    type_name: type_name.clone(),
+                                    field_name: ast.name.clone(),
+                                    path: errors.path.clone(),
+                                },
+                            )
                         }
                         Err(schema::FieldLookupError::NoSuchType) => {
                             // `self.ty` is the name of a type not definied in the schema.
@@ -245,8 +278,8 @@ impl SelectionSet {
                             if !schema.types.contains_key(type_condition) =>
                         {
                             errors.errors.push(
+                                type_condition.location(),
                                 BuildError::UndefinedTypeInInlineFragmentTypeCondition {
-                                    location: type_condition.location(),
                                     type_name: type_condition.clone(),
                                     path: errors.path.clone(),
                                 },

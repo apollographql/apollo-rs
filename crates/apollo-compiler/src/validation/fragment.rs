@@ -1,12 +1,7 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::{
-        operation::OperationValidationConfig, CycleError, RecursionGuard, RecursionStack,
-    },
-    FileId, Node, NodeLocation, ValidationDatabase,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::operation::OperationValidationConfig;
+use crate::validation::{CycleError, FileId, NodeLocation, RecursionGuard, RecursionStack};
+use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.

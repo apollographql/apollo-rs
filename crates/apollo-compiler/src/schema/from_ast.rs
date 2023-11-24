@@ -1,15 +1,19 @@
 use super::*;
 use crate::ast::OperationType;
+use crate::validation::WithErrors;
 use indexmap::map::Entry;
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
     schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
+    pub(crate) errors: DiagnosticList,
 }
 
+#[derive(Clone)]
 enum SchemaDefinitionStatus {
     Found,
     NoneSoFar {
@@ -27,49 +31,40 @@ impl SchemaBuilder {
     /// Returns a new schema builder initialized with built-in directives, built-in scalars,
     /// and introspection types
     pub fn new() -> Self {
-        let mut builder = SchemaBuilder {
-            adopt_orphan_extensions: false,
-            schema: Schema {
-                sources: Default::default(),
-                build_errors: Vec::new(),
-                schema_definition: Node::new(SchemaDefinition {
-                    description: None,
-                    directives: DirectiveList::default(),
-                    query: None,
-                    mutation: None,
-                    subscription: None,
-                }),
-                directive_definitions: IndexMap::new(),
-                types: IndexMap::new(),
-            },
-            schema_definition: SchemaDefinitionStatus::NoneSoFar {
-                orphan_extensions: Vec::new(),
-            },
-            orphan_type_extensions: IndexMap::new(),
-        };
-
-        static BUILT_IN_TYPES: std::sync::OnceLock<ast::Document> = std::sync::OnceLock::new();
-        let built_in = BUILT_IN_TYPES.get_or_init(|| {
-            let input = include_str!("../built_in_types.graphql").to_owned();
-            let path = "built_in.graphql".into();
-            let id = FileId::BUILT_IN;
-            let document = ast::Document::parser().parse_with_file_id(input, path, id);
-            debug_assert!(document.check_parse_errors().is_ok());
-            document
-        });
-
-        let executable_definitions_are_errors = true;
-        builder.add_ast_document(built_in, executable_definitions_are_errors);
-        debug_assert!(
-            builder.schema.build_errors.is_empty()
-                && builder.orphan_type_extensions.is_empty()
-                && matches!(
-                    &builder.schema_definition,
-                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions }
-                    if orphan_extensions.is_empty()
-                )
-        );
-        builder
+        static BUILT_IN_TYPES: std::sync::OnceLock<SchemaBuilder> = std::sync::OnceLock::new();
+        BUILT_IN_TYPES
+            .get_or_init(|| {
+                let mut builder = SchemaBuilder {
+                    adopt_orphan_extensions: false,
+                    schema: Schema {
+                        sources: Default::default(),
+                        schema_definition: Node::new(SchemaDefinition {
+                            description: None,
+                            directives: DirectiveList::default(),
+                            query: None,
+                            mutation: None,
+                            subscription: None,
+                        }),
+                        directive_definitions: IndexMap::new(),
+                        types: IndexMap::new(),
+                    },
+                    schema_definition: SchemaDefinitionStatus::NoneSoFar {
+                        orphan_extensions: Vec::new(),
+                    },
+                    orphan_type_extensions: IndexMap::new(),
+                    errors: DiagnosticList::new(Default::default()),
+                };
+                let input = include_str!("../built_in_types.graphql").to_owned();
+                let path = "built_in.graphql";
+                let id = FileId::BUILT_IN;
+                let ast =
+                    ast::Document::parser().parse_ast_inner(input, path, id, &mut builder.errors);
+                let executable_definitions_are_errors = true;
+                builder.add_ast_document(&ast, executable_definitions_are_errors);
+                assert!(builder.errors.is_empty());
+                builder
+            })
+            .clone()
     }
 
     /// Configure the builder so that “orphan” schema extensions and type extensions
@@ -102,17 +97,23 @@ impl SchemaBuilder {
         document: &ast::Document,
         executable_definitions_are_errors: bool,
     ) {
-        let sources = Arc::make_mut(&mut self.schema.sources);
-        for (file_id, source_file) in document.sources.iter() {
-            sources.insert(*file_id, source_file.clone());
-        }
+        Arc::make_mut(&mut self.errors.sources)
+            .extend(document.sources.iter().map(|(k, v)| (*k, v.clone())));
+        self.add_ast_document_not_adding_sources(document, executable_definitions_are_errors)
+    }
+
+    pub(crate) fn add_ast_document_not_adding_sources(
+        &mut self,
+        document: &ast::Document,
+        executable_definitions_are_errors: bool,
+    ) {
         for definition in &document.definitions {
             macro_rules! type_definition {
                 ($def: ident, $Type: ident, is_scalar = $is_scalar: literal) => {
                     match self.schema.types.entry($def.name.clone()) {
                         Entry::Vacant(entry) => {
                             let extended_def = $Type::from_ast(
-                                &mut self.schema.build_errors,
+                                &mut self.errors,
                                 $def,
                                 self.orphan_type_extensions
                                     .remove(&$def.name)
@@ -122,18 +123,20 @@ impl SchemaBuilder {
                         }
                         Entry::Occupied(entry) => {
                             let previous = entry.get();
-                            let error = if $is_scalar && previous.is_built_in() {
-                                BuildError::BuiltInScalarTypeRedefinition {
-                                    location: $def.location(),
-                                }
+                            if $is_scalar && previous.is_built_in() {
+                                self.errors.push(
+                                    $def.location(),
+                                    BuildError::BuiltInScalarTypeRedefinition,
+                                )
                             } else {
-                                BuildError::TypeDefinitionCollision {
-                                    location: $def.name.location(),
-                                    previous_location: previous.name().location(),
-                                    name: $def.name.clone(),
-                                }
-                            };
-                            self.schema.build_errors.push(error)
+                                self.errors.push(
+                                    $def.name.location(),
+                                    BuildError::TypeDefinitionCollision {
+                                        previous_location: previous.name().location(),
+                                        name: $def.name.clone(),
+                                    },
+                                )
+                            }
                         }
                     }
                 };
@@ -142,18 +145,17 @@ impl SchemaBuilder {
                 ($ext: ident, $Kind: ident) => {
                     if let Some(ty) = self.schema.types.get_mut(&$ext.name) {
                         if let ExtendedType::$Kind(ty) = ty {
-                            ty.make_mut()
-                                .extend_ast(&mut self.schema.build_errors, $ext)
+                            ty.make_mut().extend_ast(&mut self.errors, $ext)
                         } else {
-                            self.schema
-                                .build_errors
-                                .push(BuildError::TypeExtensionKindMismatch {
-                                    location: $ext.name.location(),
+                            self.errors.push(
+                                $ext.name.location(),
+                                BuildError::TypeExtensionKindMismatch {
                                     name: $ext.name.clone(),
                                     describe_ext: definition.describe(),
                                     def_location: ty.name().location(),
                                     describe_def: ty.describe(),
-                                })
+                                },
+                            )
                         }
                     } else {
                         self.orphan_type_extensions
@@ -166,21 +168,16 @@ impl SchemaBuilder {
             match definition {
                 ast::Definition::SchemaDefinition(def) => match &self.schema_definition {
                     SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
-                        self.schema.schema_definition = SchemaDefinition::from_ast(
-                            &mut self.schema.build_errors,
-                            def,
-                            orphan_extensions,
-                        );
+                        self.schema.schema_definition =
+                            SchemaDefinition::from_ast(&mut self.errors, def, orphan_extensions);
                         self.schema_definition = SchemaDefinitionStatus::Found;
                     }
-                    SchemaDefinitionStatus::Found => {
-                        self.schema
-                            .build_errors
-                            .push(BuildError::SchemaDefinitionCollision {
-                                location: def.location(),
-                                previous_location: self.schema.schema_definition.location(),
-                            })
-                    }
+                    SchemaDefinitionStatus::Found => self.errors.push(
+                        def.location(),
+                        BuildError::SchemaDefinitionCollision {
+                            previous_location: self.schema.schema_definition.location(),
+                        },
+                    ),
                 },
                 ast::Definition::DirectiveDefinition(def) => {
                     match self.schema.directive_definitions.entry(def.name.clone()) {
@@ -196,9 +193,9 @@ impl SchemaBuilder {
                                 // so the new definition won’t be considered built-in.)
                                 *previous = def.clone()
                             } else {
-                                self.schema.build_errors.push(
+                                self.errors.push(
+                                    def.name.location(),
                                     BuildError::DirectiveDefinitionCollision {
-                                        location: def.name.location(),
                                         previous_location: previous.name.location(),
                                         name: def.name.clone(),
                                     },
@@ -230,7 +227,7 @@ impl SchemaBuilder {
                         .schema
                         .schema_definition
                         .make_mut()
-                        .extend_ast(&mut self.schema.build_errors, ext),
+                        .extend_ast(&mut self.errors, ext),
                     SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
                         orphan_extensions.push(ext.clone())
                     }
@@ -244,12 +241,12 @@ impl SchemaBuilder {
                 ast::Definition::OperationDefinition(_)
                 | ast::Definition::FragmentDefinition(_) => {
                     if executable_definitions_are_errors {
-                        self.schema
-                            .build_errors
-                            .push(BuildError::ExecutableDefinition {
-                                location: definition.location(),
+                        self.errors.push(
+                            definition.location(),
+                            BuildError::ExecutableDefinition {
                                 describe: definition.describe(),
-                            })
+                            },
+                        )
                     }
                 }
             }
@@ -257,13 +254,20 @@ impl SchemaBuilder {
     }
 
     /// Returns the schema built from all added documents
-    pub fn build(self) -> Schema {
+    pub fn build(self) -> Result<Schema, WithErrors<Schema>> {
+        let (schema, errors) = self.build_inner();
+        errors.into_result_with(schema)
+    }
+
+    pub(crate) fn build_inner(self) -> (Schema, DiagnosticList) {
         let SchemaBuilder {
             adopt_orphan_extensions,
             mut schema,
             schema_definition,
             orphan_type_extensions,
+            mut errors,
         } = self;
+        schema.sources = errors.sources.clone();
         match schema_definition {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
@@ -295,43 +299,36 @@ impl SchemaBuilder {
                     adopt_orphan_extensions;
                 if apply_schema_extensions {
                     for ext in &orphan_extensions {
-                        schema_def.extend_ast(&mut schema.build_errors, ext)
+                        schema_def.extend_ast(&mut errors, ext)
                     }
                 } else {
-                    schema
-                        .build_errors
-                        .extend(orphan_extensions.into_iter().map(|ext| {
-                            BuildError::OrphanSchemaExtension {
-                                location: ext.location(),
-                            }
-                        }));
+                    for ext in &orphan_extensions {
+                        errors.push(ext.location(), BuildError::OrphanSchemaExtension)
+                    }
                 }
             }
         }
         // https://github.com/apollographql/apollo-rs/pull/678
         if adopt_orphan_extensions {
             for (type_name, extensions) in orphan_type_extensions {
-                let type_def = adopt_type_extensions(&mut schema, &type_name, &extensions);
+                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
                 let previous = schema.types.insert(type_name, type_def);
                 assert!(previous.is_none());
             }
         } else {
-            schema
-                .build_errors
-                .extend(orphan_type_extensions.into_values().flatten().map(|ext| {
+            for extensions in orphan_type_extensions.values() {
+                for ext in extensions {
                     let name = ext.name().unwrap().clone();
-                    BuildError::OrphanTypeExtension {
-                        location: name.location(),
-                        name,
-                    }
-                }));
+                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
+                }
+            }
         }
-        schema
+        (schema, errors)
     }
 }
 
 fn adopt_type_extensions(
-    schema: &mut Schema,
+    errors: &mut DiagnosticList,
     type_name: &Name,
     extensions: &[ast::Definition],
 ) -> ExtendedType {
@@ -343,18 +340,18 @@ fn adopt_type_extensions(
                         let mut def = $empty_def;
                         for ext in extensions {
                             if let $ExtensionVariant(ext) = ext {
-                                def.extend_ast(&mut schema.build_errors, ext)
+                                def.extend_ast(errors, ext)
                             } else {
                                 let ext_name = ext.name().unwrap();
-                                schema
-                                    .build_errors
-                                    .push(BuildError::TypeExtensionKindMismatch {
-                                        location: ext_name.location(),
+                                errors.push(
+                                    ext_name.location(),
+                                    BuildError::TypeExtensionKindMismatch {
                                         name: ext_name.clone(),
                                         describe_ext: ext.describe(),
                                         def_location: type_name.location(),
                                         describe_def: $describe,
-                                    })
+                                    }
+                                )
                             }
                         }
                         def.into()
@@ -408,7 +405,7 @@ fn adopt_type_extensions(
 
 impl SchemaDefinition {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         definition: &Node<ast::SchemaDefinition>,
         extensions: &[Node<ast::SchemaExtension>],
     ) -> Node<Self> {
@@ -434,7 +431,7 @@ impl SchemaDefinition {
         definition.same_location(root)
     }
 
-    fn extend_ast(&mut self, errors: &mut Vec<BuildError>, extension: &Node<ast::SchemaExtension>) {
+    fn extend_ast(&mut self, errors: &mut DiagnosticList, extension: &Node<ast::SchemaExtension>) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
         self.directives.extend(
             extension
@@ -447,7 +444,7 @@ impl SchemaDefinition {
 
     fn add_root_operations(
         &mut self,
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         origin: ComponentOrigin,
         root_operations: &[Node<(OperationType, Name)>],
     ) {
@@ -460,11 +457,13 @@ impl SchemaDefinition {
             };
             match entry {
                 None => *entry = Some(object_type_name.to_component(origin.clone())),
-                Some(previous) => errors.push(BuildError::DuplicateRootOperation {
-                    location: op.location(),
-                    previous_location: previous.location(),
-                    operation_type: operation_type.name(),
-                }),
+                Some(previous) => errors.push(
+                    op.location(),
+                    BuildError::DuplicateRootOperation {
+                        previous_location: previous.location(),
+                        operation_type: operation_type.name(),
+                    },
+                ),
             }
         }
     }
@@ -472,7 +471,7 @@ impl SchemaDefinition {
 
 impl ScalarType {
     fn from_ast(
-        errors: &mut [BuildError],
+        errors: &mut DiagnosticList,
         definition: &Node<ast::ScalarTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -495,7 +494,7 @@ impl ScalarType {
 
     fn extend_ast(
         &mut self,
-        _errors: &mut [BuildError],
+        _errors: &mut DiagnosticList,
         extension: &Node<ast::ScalarTypeExtension>,
     ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
@@ -510,7 +509,7 @@ impl ScalarType {
 
 impl ObjectType {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         definition: &Node<ast::ObjectTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -523,11 +522,13 @@ impl ObjectType {
                     .iter()
                     .map(|name| name.to_component(ComponentOrigin::Definition)),
                 |prev, dup| {
-                    errors.push(BuildError::DuplicateImplementsInterfaceInObject {
-                        location: dup.location(),
-                        name_at_previous_location: prev.name.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup.location(),
+                        BuildError::DuplicateImplementsInterfaceInObject {
+                            name_at_previous_location: prev.name.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
             directives: definition
@@ -541,11 +542,13 @@ impl ObjectType {
                     .iter()
                     .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
                 |prev_key, dup_value| {
-                    errors.push(BuildError::ObjectFieldNameCollision {
-                        location: dup_value.location(),
-                        name_at_previous_location: prev_key.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup_value.location(),
+                        BuildError::ObjectFieldNameCollision {
+                            name_at_previous_location: prev_key.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
         };
@@ -559,7 +562,7 @@ impl ObjectType {
 
     fn extend_ast(
         &mut self,
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         extension: &Node<ast::ObjectTypeExtension>,
     ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
@@ -576,11 +579,13 @@ impl ObjectType {
                 .iter()
                 .map(|name| name.to_component(origin.clone())),
             |prev, dup| {
-                errors.push(BuildError::DuplicateImplementsInterfaceInObject {
-                    location: dup.location(),
-                    name_at_previous_location: prev.name.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup.location(),
+                    BuildError::DuplicateImplementsInterfaceInObject {
+                        name_at_previous_location: prev.name.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         );
         extend_sticky(
@@ -590,11 +595,13 @@ impl ObjectType {
                 .iter()
                 .map(|field| (&field.name, field.to_component(origin.clone()))),
             |prev_key, dup_value| {
-                errors.push(BuildError::ObjectFieldNameCollision {
-                    location: dup_value.location(),
-                    name_at_previous_location: prev_key.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup_value.location(),
+                    BuildError::ObjectFieldNameCollision {
+                        name_at_previous_location: prev_key.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         );
     }
@@ -602,7 +609,7 @@ impl ObjectType {
 
 impl InterfaceType {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         definition: &Node<ast::InterfaceTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -615,11 +622,13 @@ impl InterfaceType {
                     .iter()
                     .map(|name| name.to_component(ComponentOrigin::Definition)),
                 |prev, dup| {
-                    errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
-                        location: dup.location(),
-                        name_at_previous_location: prev.name.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup.location(),
+                        BuildError::DuplicateImplementsInterfaceInInterface {
+                            name_at_previous_location: prev.name.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
             directives: definition
@@ -633,11 +642,13 @@ impl InterfaceType {
                     .iter()
                     .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
                 |prev_key, dup_value| {
-                    errors.push(BuildError::InterfaceFieldNameCollision {
-                        location: dup_value.location(),
-                        name_at_previous_location: prev_key.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup_value.location(),
+                        BuildError::InterfaceFieldNameCollision {
+                            name_at_previous_location: prev_key.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
         };
@@ -651,7 +662,7 @@ impl InterfaceType {
 
     fn extend_ast(
         &mut self,
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         extension: &Node<ast::InterfaceTypeExtension>,
     ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
@@ -668,11 +679,13 @@ impl InterfaceType {
                 .iter()
                 .map(|name| name.to_component(origin.clone())),
             |prev, dup| {
-                errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
-                    location: dup.location(),
-                    name_at_previous_location: prev.name.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup.location(),
+                    BuildError::DuplicateImplementsInterfaceInInterface {
+                        name_at_previous_location: prev.name.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         );
         extend_sticky(
@@ -682,11 +695,13 @@ impl InterfaceType {
                 .iter()
                 .map(|field| (&field.name, field.to_component(origin.clone()))),
             |prev_key, dup_value| {
-                errors.push(BuildError::InterfaceFieldNameCollision {
-                    location: dup_value.location(),
-                    name_at_previous_location: prev_key.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup_value.location(),
+                    BuildError::InterfaceFieldNameCollision {
+                        name_at_previous_location: prev_key.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         );
     }
@@ -694,7 +709,7 @@ impl InterfaceType {
 
 impl UnionType {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         definition: &Node<ast::UnionTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -712,11 +727,13 @@ impl UnionType {
                     .iter()
                     .map(|name| name.to_component(ComponentOrigin::Definition)),
                 |prev, dup| {
-                    errors.push(BuildError::UnionMemberNameCollision {
-                        location: dup.location(),
-                        name_at_previous_location: prev.name.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup.location(),
+                        BuildError::UnionMemberNameCollision {
+                            name_at_previous_location: prev.name.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
         };
@@ -730,7 +747,7 @@ impl UnionType {
 
     fn extend_ast(
         &mut self,
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         extension: &Node<ast::UnionTypeExtension>,
     ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
@@ -747,11 +764,13 @@ impl UnionType {
                 .iter()
                 .map(|name| name.to_component(origin.clone())),
             |prev, dup| {
-                errors.push(BuildError::UnionMemberNameCollision {
-                    location: dup.location(),
-                    name_at_previous_location: prev.name.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup.location(),
+                    BuildError::UnionMemberNameCollision {
+                        name_at_previous_location: prev.name.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         );
     }
@@ -759,7 +778,7 @@ impl UnionType {
 
 impl EnumType {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         definition: &Node<ast::EnumTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -779,11 +798,13 @@ impl EnumType {
                     )
                 }),
                 |prev_key, dup_value| {
-                    errors.push(BuildError::EnumValueNameCollision {
-                        location: dup_value.location(),
-                        name_at_previous_location: prev_key.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup_value.location(),
+                        BuildError::EnumValueNameCollision {
+                            name_at_previous_location: prev_key.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
         };
@@ -797,7 +818,7 @@ impl EnumType {
 
     fn extend_ast(
         &mut self,
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         extension: &Node<ast::EnumTypeExtension>,
     ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
@@ -814,11 +835,13 @@ impl EnumType {
                 .iter()
                 .map(|value_def| (&value_def.value, value_def.to_component(origin.clone()))),
             |prev_key, dup_value| {
-                errors.push(BuildError::EnumValueNameCollision {
-                    location: dup_value.location(),
-                    name_at_previous_location: prev_key.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup_value.location(),
+                    BuildError::EnumValueNameCollision {
+                        name_at_previous_location: prev_key.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         )
     }
@@ -826,7 +849,7 @@ impl EnumType {
 
 impl InputObjectType {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         definition: &Node<ast::InputObjectTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -844,11 +867,13 @@ impl InputObjectType {
                     .iter()
                     .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
                 |prev_key, dup_value| {
-                    errors.push(BuildError::InputFieldNameCollision {
-                        location: dup_value.location(),
-                        name_at_previous_location: prev_key.clone(),
-                        type_name: definition.name.clone(),
-                    })
+                    errors.push(
+                        dup_value.location(),
+                        BuildError::InputFieldNameCollision {
+                            name_at_previous_location: prev_key.clone(),
+                            type_name: definition.name.clone(),
+                        },
+                    )
                 },
             ),
         };
@@ -862,7 +887,7 @@ impl InputObjectType {
 
     fn extend_ast(
         &mut self,
-        errors: &mut Vec<BuildError>,
+        errors: &mut DiagnosticList,
         extension: &Node<ast::InputObjectTypeExtension>,
     ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
@@ -879,11 +904,13 @@ impl InputObjectType {
                 .iter()
                 .map(|field| (&field.name, field.to_component(origin.clone()))),
             |prev_key, dup_value| {
-                errors.push(BuildError::InputFieldNameCollision {
-                    location: dup_value.location(),
-                    name_at_previous_location: prev_key.clone(),
-                    type_name: extension.name.clone(),
-                })
+                errors.push(
+                    dup_value.location(),
+                    BuildError::InputFieldNameCollision {
+                        name_at_previous_location: prev_key.clone(),
+                        type_name: extension.name.clone(),
+                    },
+                )
             },
         )
     }

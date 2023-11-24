@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
-
-use apollo_encoder::ObjectDefinition;
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::{
     description::Description,
@@ -24,37 +24,51 @@ use crate::{
 pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) implements_interfaces: HashSet<Name>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) implements_interfaces: IndexSet<Name>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }
 
-impl From<ObjectTypeDef> for ObjectDefinition {
-    fn from(val: ObjectTypeDef) -> Self {
-        let mut object_def = ObjectDefinition::new(val.name.into());
-        if let Some(description) = val.description {
-            object_def.description(description.into())
+impl From<ObjectTypeDef> for ast::Definition {
+    fn from(x: ObjectTypeDef) -> Self {
+        if x.extend {
+            ast::ObjectTypeExtension {
+                name: x.name.into(),
+                implements_interfaces: x
+                    .implements_interfaces
+                    .into_iter()
+                    .map(Into::into)
+                    .collect(),
+                directives: Directive::to_ast(x.directives),
+                fields: x
+                    .fields_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
+        } else {
+            ast::ObjectTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                implements_interfaces: x
+                    .implements_interfaces
+                    .into_iter()
+                    .map(Into::into)
+                    .collect(),
+                directives: Directive::to_ast(x.directives),
+                fields: x
+                    .fields_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
         }
-        val.implements_interfaces
-            .into_iter()
-            .for_each(|itf| object_def.interface(itf.into()));
-        val.fields_def
-            .into_iter()
-            .for_each(|fd| object_def.field(fd.into()));
-
-        val.directives
-            .into_iter()
-            .for_each(|(_, directive)| object_def.directive(directive.into()));
-        if val.extend {
-            object_def.extend();
-        }
-
-        object_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::ObjectTypeDefinition> for ObjectTypeDef {
     type Error = crate::FromError;
 
@@ -90,7 +104,6 @@ impl TryFrom<apollo_parser::cst::ObjectTypeDefinition> for ObjectTypeDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::ObjectTypeExtension> for ObjectTypeDef {
     type Error = crate::FromError;
 

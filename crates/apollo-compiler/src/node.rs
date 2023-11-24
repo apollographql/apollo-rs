@@ -1,6 +1,6 @@
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
-use crate::FileId;
+use crate::validation::FileId;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use std::collections::hash_map::RandomState;

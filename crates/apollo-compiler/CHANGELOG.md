@@ -19,6 +19,104 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2023-mm-dd
 
+## BREAKING
+
+- **API refactor to make it harder to ignore errors - [SimonSapin], 
+  [pull/752] fixing [issue/709]:**
+  - `ast::Document`, `Schema`, and `ExecutableDocument` not longer contain potential errors
+    that users need to check separately.
+  - Instead, various constructors and methods now return a `Result`,
+    with the `Err` case containing both both errors and a maybe-incomplete value.
+  - Change `validate` methods of `Schema` and `ExecutableDocument` to take ownership of `self`.
+    On success they return the schema or document (unmodified) wrapped in a `Valid<_>` marker type,
+    which is **immutable**.
+  - Change `ExecutableDocument` to require a `&Valid<Schema>` instead of `&Schema`,
+    forcing callers to either run validation or opt out explicitly with `Valid::assume_valid`.
+  - Make `parse_mixed` and `to_mixed` validate both the schema and document.
+    Rename them with a `_validate` suffix.
+  - Corresponding changes to all of the above in `Parser` method signatures
+  - Remove `ast::Document::check_parse_errors`:
+    parse errors are now encoded in the return value of `parse`.
+  - Remove `ast::Document::to_schema_builder`. Use `SchemaBuilder::add_ast` instead.
+  - Move items from the crate top-level to `apollo_compiler::validation`:
+    * `Diagnostic`
+    * `DiagnosticList`
+    * `FileId`
+    * `NodeLocation`
+  - Move items from the crate top-level to `apollo_compiler::execution`:
+    * `GraphQLError`
+    * `GraphQLLocation`
+  - Remove warning-level and advice-level diagnostics. See [issue/751].
+
+  Highlight of signature changes:
+
+  ```diff
+  +struct Valid<T>(T); // Implements `Deref` and `AsRef` but not `DerefMut` or `AsMut`
+  +
+  +struct WithErrors<T> {
+  +    partial: T, // Errors may cause components to be missing
+  +    errors: DiagnosticList,
+  +}
+
+  -pub fn parse_mixed(…) -> (Schema, ExecutableDocument)
+  +pub fn parse_mixed_validate(…)
+  +    -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList>
+
+   impl ast::Document {
+  -    pub fn parse(…) -> Self
+  +    pub fn parse(…) -> Result<Self, WithErrors<Self>>
+
+  -    pub fn to_schema(&self) -> Schema
+  +    pub fn to_schema(&self) -> Result<Schema, WithErrors<Schema>>
+
+  -    pub fn to_executable(&self) -> ExecutableDocument
+  +    pub fn to_executable(&self) -> Result<ExecutableDocument, WithErrors<ExecutableDocument>>
+
+  -    pub fn to_mixed(&self) -> (Schema, ExecutableDocument)
+  +    pub fn to_mixed_validate(
+  +        &self,
+  +    ) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList>
+   }
+
+   impl Schema {
+  -    pub fn parse(…) -> Self
+  -    pub fn validate(&self) -> Result<DiagnosticList, DiagnosticList>
+
+  +    pub fn parse_and_validate(…) -> Result<Valid<Self>, WithErrors<Self>>
+  +    pub fn parse(…) -> Result<Self, WithErrors<Self>>
+  +    pub fn validate(self) -> Result<Valid<Self>, WithErrors<Self>>
+   }
+
+   impl SchemaBuilder {
+  -    pub fn build(self) -> Schema
+  +    pub fn build(self) -> Result<Schema, WithErrors<Schema>>
+   }
+
+   impl ExecutableDocument {
+  -    pub fn parse(schema: &Schema, …) -> Self
+  -    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList>
+
+  +    pub fn parse_and_validate(schema: &Valid<Schema>, …) -> Result<Valid<Self>, WithErrors<Self>>
+  +    pub fn parse(schema: &Valid<Schema>, …) -> Result<Self, WithErrors<Self>>
+  +    pub fn validate(self, schema: &Valid<Schema>) -> Result<Valid<Self>, WithErrors<Self>>
+   }
+  ```
+
+## Features
+
+- **Add `parse_and_validate` constructors for `Schema` and `ExecutableDocument` - [SimonSapin], 
+  [pull/752]:**
+  when mutating isn’t needed after parsing,
+  this returns an immutable `Valid<_>` value in one step.
+
+[SimonSapin]: https://github.com/SimonSapin
+[issue/709]: https://github.com/apollographql/apollo-rs/issues/709
+[issue/751]: https://github.com/apollographql/apollo-rs/issues/751
+[pull/752]: https://github.com/apollographql/apollo-rs/pull/752
+
+
+# [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
+
 ## Features
 
 - **Helper features for `Name` and `Type` - [SimonSapin], [pull/739]:**
@@ -44,6 +142,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/718]: https://github.com/apollographql/apollo-rs/pull/718
 [issue/715]: https://github.com/apollographql/apollo-rs/issues/715
+
+## Fixes
+
+- **Fix list and null type validation bugs - [goto-bus-stop], [pull/746] fixing [issue/738]**
+  Previous versions of apollo-compiler accepted `null` inside a list even if the list item type
+  was marked as required. Lists were also accepted as inputs to non-list fields. This is now
+  fixed.
+
+  ```graphql
+  input Args {
+    string: String
+    ints: [Int!]
+  }
+  type Query { example(args: Args): Int }
+  query {
+    example(args: {
+      # Used to be accepted, now raises an error
+      string: ["1"]
+      # Used to be accepted, now raises an error
+      ints: [1, 2, null, 4]
+    })
+  }
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/746]: https://github.com/apollographql/apollo-rs/pull/746
+[issue/738]: https://github.com/apollographql/apollo-rs/issues/738
 
 # [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
 

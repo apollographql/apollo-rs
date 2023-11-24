@@ -20,8 +20,11 @@ pub use crate::ast::{
     VariableDefinition,
 };
 use crate::validation::DiagnosticList;
-use crate::NodeLocation;
+use crate::validation::NodeLocation;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
 use std::fmt;
+use std::sync::Arc;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, Default)]
@@ -31,10 +34,6 @@ pub struct ExecutableDocument {
     ///
     /// The document may have been modified since.
     pub sources: crate::SourceMap,
-
-    /// Errors that occurred when building this document,
-    /// either parsing a source file or converting from AST.
-    build_errors: Vec<BuildError>,
 
     pub anonymous_operation: Option<Node<Operation>>,
     pub named_operations: IndexMap<Name, Node<Operation>>,
@@ -50,10 +49,6 @@ pub struct FieldSet {
     ///
     /// The document may have been modified since.
     pub sources: crate::SourceMap,
-
-    /// Errors that occurred when building this FieldSet,
-    /// either parsing a source file or converting from AST.
-    pub(crate) build_errors: Vec<BuildError>,
 
     pub selection_set: SelectionSet,
 }
@@ -115,70 +110,53 @@ pub struct InlineFragment {
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
     #[error("an executable document must not contain {describe}")]
-    TypeSystemDefinition {
-        location: Option<NodeLocation>,
-        describe: &'static str,
-    },
+    TypeSystemDefinition { describe: &'static str },
 
     #[error("anonymous operation cannot be selected when the document contains other operations")]
-    AmbiguousAnonymousOperation { location: Option<NodeLocation> },
+    AmbiguousAnonymousOperation,
 
     #[error(
         "the operation `{name_at_previous_location}` is defined multiple times in the document"
     )]
-    OperationNameCollision {
-        location: Option<NodeLocation>,
-        name_at_previous_location: Name,
-    },
+    OperationNameCollision { name_at_previous_location: Name },
 
     #[error(
         "the fragment `{name_at_previous_location}` is defined multiple times in the document"
     )]
-    FragmentNameCollision {
-        location: Option<NodeLocation>,
-        name_at_previous_location: Name,
-    },
+    FragmentNameCollision { name_at_previous_location: Name },
 
     #[error("`{operation_type}` root operation type is not defined")]
-    UndefinedRootOperation {
-        location: Option<NodeLocation>,
-        operation_type: &'static str,
-    },
+    UndefinedRootOperation { operation_type: &'static str },
 
     #[error(
         "type condition `{type_name}` of fragment `{fragment_name}` \
          is not a type defined in the schema"
     )]
     UndefinedTypeInNamedFragmentTypeCondition {
-        location: Option<NodeLocation>,
         type_name: NamedType,
         fragment_name: Name,
     },
 
     #[error("type condition `{type_name}` of inline fragment is not a type defined in the schema")]
     UndefinedTypeInInlineFragmentTypeCondition {
-        location: Option<NodeLocation>,
         type_name: NamedType,
         path: SelectionPath,
     },
 
     #[error("field selection of scalar type `{type_name}` must not have subselections")]
     SubselectionOnScalarType {
-        location: Option<NodeLocation>,
         type_name: NamedType,
         path: SelectionPath,
     },
 
     #[error("field selection of enum type `{type_name}` must not have subselections")]
     SubselectionOnEnumType {
-        location: Option<NodeLocation>,
         type_name: NamedType,
         path: SelectionPath,
     },
 
     #[error("type `{type_name}` does not have a field `{field_name}`")]
     UndefinedField {
-        location: Option<NodeLocation>,
         type_name: NamedType,
         field_name: Name,
         path: SelectionPath,
@@ -223,14 +201,34 @@ impl ExecutableDocument {
     /// to identify this source file to users.
     ///
     /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(schema: &Schema, source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+    pub fn parse(
+        schema: &Valid<Schema>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Self, WithErrors<Self>> {
         Parser::new().parse_executable(schema, source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
-        validation::validate_executable_document(&mut errors, schema, self);
-        errors.into_result()
+    /// [`parse`][Self::parse] then [`validate`][Self::validate],
+    /// to get a `Valid<ExecutableDocument>` when mutating it isn’t needed.
+    pub fn parse_and_validate(
+        schema: &Valid<Schema>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Valid<Self>, WithErrors<Self>> {
+        let (doc, mut errors) = Parser::new().parse_executable_inner(schema, source_text, path);
+        Arc::make_mut(&mut errors.sources)
+            .extend(schema.sources.iter().map(|(k, v)| (*k, v.clone())));
+        validation::validate_executable_document(&mut errors, schema, &doc);
+        errors.into_valid_result(doc)
+    }
+
+    pub fn validate(self, schema: &Valid<Schema>) -> Result<Valid<Self>, WithErrors<Self>> {
+        let mut sources = IndexMap::clone(&schema.sources);
+        sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));
+        let mut errors = DiagnosticList::new(Arc::new(sources));
+        validation::validate_executable_document(&mut errors, schema, &self);
+        errors.into_valid_result(self)
     }
 
     /// Returns an iterator of operations, both anonymous and named
@@ -304,7 +302,6 @@ impl PartialEq for ExecutableDocument {
     fn eq(&self, other: &Self) -> bool {
         let Self {
             sources: _,
-            build_errors: _,
             anonymous_operation,
             named_operations,
             fragments,
@@ -668,16 +665,32 @@ impl FieldSet {
     ///
     /// Create a [`Parser`] to use different parser configuration.
     pub fn parse(
-        schema: &Schema,
+        schema: &Valid<Schema>,
         type_name: NamedType,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
-    ) -> Self {
+    ) -> Result<FieldSet, WithErrors<FieldSet>> {
         Parser::new().parse_field_set(schema, type_name, source_text, path)
     }
 
-    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList> {
-        let mut errors = DiagnosticList::new(Some(schema.sources.clone()), self.sources.clone());
+    /// [`parse`][Self::parse] then [`validate`][Self::validate],
+    /// to get a `Valid<ExecutableDocument>` when mutating it isn’t needed.
+    pub fn parse_and_validate(
+        schema: &Valid<Schema>,
+        type_name: NamedType,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Result<Valid<Self>, WithErrors<Self>> {
+        let (field_set, mut errors) =
+            Parser::new().parse_field_set_inner(schema, type_name, source_text, path);
+        validation::validate_field_set(&mut errors, schema, &field_set);
+        errors.into_valid_result(field_set)
+    }
+
+    pub fn validate(&self, schema: &Valid<Schema>) -> Result<(), DiagnosticList> {
+        let mut sources = IndexMap::clone(&schema.sources);
+        sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));
+        let mut errors = DiagnosticList::new(Arc::new(sources));
         validation::validate_field_set(&mut errors, schema, self);
         errors.into_result()
     }

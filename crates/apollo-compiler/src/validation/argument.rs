@@ -1,11 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    validation::ValidationDatabase,
-    Node, NodeLocation,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::{NodeLocation, ValidationDatabase};
+use crate::{ast, Node};
 
 pub(crate) fn validate_arguments(
     db: &dyn ValidationDatabase,

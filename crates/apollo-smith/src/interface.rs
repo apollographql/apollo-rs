@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
-
-use apollo_encoder::InterfaceDefinition;
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::{
     description::Description,
@@ -25,36 +25,43 @@ use crate::{
 pub struct InterfaceTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) interfaces: HashSet<Name>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) interfaces: IndexSet<Name>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }
 
-impl From<InterfaceTypeDef> for InterfaceDefinition {
-    fn from(itf: InterfaceTypeDef) -> Self {
-        let mut itf_def = InterfaceDefinition::new(itf.name.into());
-        if let Some(description) = itf.description {
-            itf_def.description(description.into())
+impl From<InterfaceTypeDef> for ast::Definition {
+    fn from(x: InterfaceTypeDef) -> Self {
+        if x.extend {
+            ast::InterfaceTypeExtension {
+                name: x.name.into(),
+                implements_interfaces: x.interfaces.into_iter().map(Into::into).collect(),
+                directives: Directive::to_ast(x.directives),
+                fields: x
+                    .fields_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
+        } else {
+            ast::InterfaceTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                implements_interfaces: x.interfaces.into_iter().map(Into::into).collect(),
+                directives: Directive::to_ast(x.directives),
+                fields: x
+                    .fields_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
         }
-        itf.fields_def
-            .into_iter()
-            .for_each(|f| itf_def.field(f.into()));
-        itf.directives
-            .into_iter()
-            .for_each(|(_, directive)| itf_def.directive(directive.into()));
-        itf.interfaces
-            .into_iter()
-            .for_each(|interface| itf_def.interface(interface.into()));
-        if itf.extend {
-            itf_def.extend();
-        }
-
-        itf_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::InterfaceTypeDefinition> for InterfaceTypeDef {
     type Error = crate::FromError;
 
@@ -91,7 +98,6 @@ impl TryFrom<apollo_parser::cst::InterfaceTypeDefinition> for InterfaceTypeDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::InterfaceTypeExtension> for InterfaceTypeDef {
     type Error = crate::FromError;
 
@@ -162,16 +168,16 @@ impl<'a> DocumentBuilder<'a> {
         })
     }
 
-    /// Create an arbitrary `HashSet` of implemented interfaces
-    pub fn implements_interfaces(&mut self) -> ArbitraryResult<HashSet<Name>> {
+    /// Create an arbitrary `IndexSet` of implemented interfaces
+    pub fn implements_interfaces(&mut self) -> ArbitraryResult<IndexSet<Name>> {
         if self.interface_type_defs.is_empty() {
-            return Ok(HashSet::new());
+            return Ok(IndexSet::new());
         }
 
         let num_itf = self
             .u
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
-        let mut interface_impls = HashSet::with_capacity(num_itf);
+        let mut interface_impls = IndexSet::with_capacity(num_itf);
 
         for _ in 0..num_itf {
             interface_impls.insert(self.u.choose(&self.interface_type_defs)?.name.clone());

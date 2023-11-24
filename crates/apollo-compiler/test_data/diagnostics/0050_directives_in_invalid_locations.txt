@@ -1,3 +1,91 @@
+Error: skip directive is not supported for VARIABLE_DEFINITION location
+   ╭─[0050_directives_in_invalid_locations.graphql:1:30]
+   │
+ 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
+   │                              ───────┬───────  
+   │                                     ╰───────── VARIABLE_DEFINITION is not a valid location
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for
+───╯
+Error: skip directive is not supported for QUERY location
+   ╭─[0050_directives_in_invalid_locations.graphql:1:47]
+   │
+ 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
+   │                                               ────────┬───────  
+   │                                                       ╰───────── QUERY is not a valid location
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for
+───╯
+Error: deprecated directive is not supported for FIELD location
+   ╭─[0050_directives_in_invalid_locations.graphql:3:29]
+   │
+ 3 │   response(status: $status) @deprecated
+   │                             ─────┬─────  
+   │                                  ╰─────── FIELD is not a valid location
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for
+───╯
+Error: directiveB directive is not supported for FRAGMENT_SPREAD location
+    ╭─[0050_directives_in_invalid_locations.graphql:5:20]
+    │
+  5 │     pets { ... pet @directiveB }
+    │                    ─────┬─────  
+    │                         ╰─────── FRAGMENT_SPREAD is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding FRAGMENT_SPREAD directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveB directive is not supported for FRAGMENT_DEFINITION location
+    ╭─[0050_directives_in_invalid_locations.graphql:9:21]
+    │
+  9 │ fragment pet on Cat @directiveB {
+    │                     ─────┬─────  
+    │                          ╰─────── FRAGMENT_DEFINITION is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding FRAGMENT_DEFINITION directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveA directive is not supported for INLINE_FRAGMENT location
+    ╭─[0050_directives_in_invalid_locations.graphql:11:14]
+    │
+ 11 │   ... on Pet @directiveA {
+    │              ─────┬─────  
+    │                   ╰─────── INLINE_FRAGMENT is not a valid location
+    │ 
+ 88 │ directive @directiveA on UNION
+    │ ───────────────┬──────────────  
+    │                ╰──────────────── consider adding INLINE_FRAGMENT directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveA directive is not supported for SUBSCRIPTION location
+    ╭─[0050_directives_in_invalid_locations.graphql:16:28]
+    │
+ 16 │ subscription subscriptionA @directiveA {
+    │                            ─────┬─────  
+    │                                 ╰─────── SUBSCRIPTION is not a valid location
+    │ 
+ 88 │ directive @directiveA on UNION
+    │ ───────────────┬──────────────  
+    │                ╰──────────────── consider adding SUBSCRIPTION directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: skip directive is not supported for MUTATION location
+    ╭─[0050_directives_in_invalid_locations.graphql:23:21]
+    │
+ 23 │ mutation myMutation @skip(if: true) {
+    │                     ───────┬───────  
+    │                            ╰───────── MUTATION is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
 Error: skip directive is not supported for INTERFACE location
     ╭─[0050_directives_in_invalid_locations.graphql:27:15]
     │
@@ -114,94 +202,6 @@ Error: directiveB directive is not supported for SCALAR location
  89 │ directive @directiveB on ENUM
     │ ──────────────┬──────────────  
     │               ╰──────────────── consider adding SCALAR directive location here
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
-Error: skip directive is not supported for VARIABLE_DEFINITION location
-   ╭─[0050_directives_in_invalid_locations.graphql:1:30]
-   │
- 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
-   │                              ───────┬───────  
-   │                                     ╰───────── VARIABLE_DEFINITION is not a valid location
-   │ 
-   │ Help: the directive must be used in a location that the service has declared support for
-───╯
-Error: skip directive is not supported for QUERY location
-   ╭─[0050_directives_in_invalid_locations.graphql:1:47]
-   │
- 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
-   │                                               ────────┬───────  
-   │                                                       ╰───────── QUERY is not a valid location
-   │ 
-   │ Help: the directive must be used in a location that the service has declared support for
-───╯
-Error: deprecated directive is not supported for FIELD location
-   ╭─[0050_directives_in_invalid_locations.graphql:3:29]
-   │
- 3 │   response(status: $status) @deprecated
-   │                             ─────┬─────  
-   │                                  ╰─────── FIELD is not a valid location
-   │ 
-   │ Help: the directive must be used in a location that the service has declared support for
-───╯
-Error: directiveB directive is not supported for FRAGMENT_SPREAD location
-    ╭─[0050_directives_in_invalid_locations.graphql:5:20]
-    │
-  5 │     pets { ... pet @directiveB }
-    │                    ─────┬─────  
-    │                         ╰─────── FRAGMENT_SPREAD is not a valid location
-    │ 
- 89 │ directive @directiveB on ENUM
-    │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding FRAGMENT_SPREAD directive location here
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
-Error: directiveB directive is not supported for FRAGMENT_DEFINITION location
-    ╭─[0050_directives_in_invalid_locations.graphql:9:21]
-    │
-  9 │ fragment pet on Cat @directiveB {
-    │                     ─────┬─────  
-    │                          ╰─────── FRAGMENT_DEFINITION is not a valid location
-    │ 
- 89 │ directive @directiveB on ENUM
-    │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding FRAGMENT_DEFINITION directive location here
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
-Error: directiveA directive is not supported for INLINE_FRAGMENT location
-    ╭─[0050_directives_in_invalid_locations.graphql:11:14]
-    │
- 11 │   ... on Pet @directiveA {
-    │              ─────┬─────  
-    │                   ╰─────── INLINE_FRAGMENT is not a valid location
-    │ 
- 88 │ directive @directiveA on UNION
-    │ ───────────────┬──────────────  
-    │                ╰──────────────── consider adding INLINE_FRAGMENT directive location here
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
-Error: directiveA directive is not supported for SUBSCRIPTION location
-    ╭─[0050_directives_in_invalid_locations.graphql:16:28]
-    │
- 16 │ subscription subscriptionA @directiveA {
-    │                            ─────┬─────  
-    │                                 ╰─────── SUBSCRIPTION is not a valid location
-    │ 
- 88 │ directive @directiveA on UNION
-    │ ───────────────┬──────────────  
-    │                ╰──────────────── consider adding SUBSCRIPTION directive location here
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
-Error: skip directive is not supported for MUTATION location
-    ╭─[0050_directives_in_invalid_locations.graphql:23:21]
-    │
- 23 │ mutation myMutation @skip(if: true) {
-    │                     ───────┬───────  
-    │                            ╰───────── MUTATION is not a valid location
     │ 
     │ Help: the directive must be used in a location that the service has declared support for
 ────╯

@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         7: SourceFile {
             path: "0007_schema_with_interface_definition.graphql",
             source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -215,13 +212,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         7: SourceFile {
             path: "0007_schema_with_interface_definition.graphql",
             source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {},
     fragments: {},

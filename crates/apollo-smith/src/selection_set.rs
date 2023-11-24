@@ -1,11 +1,12 @@
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     field::Field,
     fragment::{FragmentSpread, InlineFragment},
     name::Name,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result as ArbitraryResult;
 
 /// The __selectionSet type represents a selection_set type in a fragment spread, an operation or a field
 ///
@@ -18,19 +19,12 @@ pub struct SelectionSet {
     selections: Vec<Selection>,
 }
 
-impl From<SelectionSet> for apollo_encoder::SelectionSet {
+impl From<SelectionSet> for Vec<ast::Selection> {
     fn from(sel_set: SelectionSet) -> Self {
-        let mut new_sel_set = Self::new();
-        sel_set
-            .selections
-            .into_iter()
-            .for_each(|selection| new_sel_set.selection(selection.into()));
-
-        new_sel_set
+        sel_set.selections.into_iter().map(Into::into).collect()
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::SelectionSet> for SelectionSet {
     type Error = crate::FromError;
 
@@ -59,21 +53,20 @@ pub enum Selection {
     InlineFragment(InlineFragment),
 }
 
-impl From<Selection> for apollo_encoder::Selection {
+impl From<Selection> for ast::Selection {
     fn from(selection: Selection) -> Self {
         match selection {
-            Selection::Field(field) => Self::Field(field.into()),
+            Selection::Field(field) => Self::Field(Node::new(field.into())),
             Selection::FragmentSpread(fragment_spread) => {
-                Self::FragmentSpread(fragment_spread.into())
+                Self::FragmentSpread(Node::new(fragment_spread.into()))
             }
             Selection::InlineFragment(inline_fragment) => {
-                Self::InlineFragment(inline_fragment.into())
+                Self::InlineFragment(Node::new(inline_fragment.into()))
             }
         }
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::Selection> for Selection {
     type Error = crate::FromError;
 

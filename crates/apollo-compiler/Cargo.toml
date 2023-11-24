@@ -1,6 +1,6 @@
 [package]
 name = "apollo-compiler"
-version = "1.0.0-beta.6" # When bumping, also update README.md
+version = "1.0.0-beta.7" # When bumping, also update README.md
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
@@ -18,7 +18,7 @@ edition = "2021"
 autotests = false # Most tests/*.rs files are modules of tests/main.rs
 
 [dependencies]
-apollo-parser = { path = "../apollo-parser", version = "0.7.3" }
+apollo-parser = { path = "../apollo-parser", version = "0.7.4" }
 ariadne = { version = "0.3.0", features = ["auto-color"] }
 indexmap = "2.0.0"
 rowan = "0.15.5"

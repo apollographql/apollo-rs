@@ -34,17 +34,14 @@ fn long_fragment_chains_do_not_overflow_stack() {
           }}"
     ));
 
-    let (schema, executable) = apollo_compiler::parse_mixed(
+    let errors = apollo_compiler::parse_mixed_validate(
         format!(
             "type Query {{ a: Int }}
             {query}"
         ),
         "overflow.graphql",
-    );
-
-    let errors = executable
-        .validate(&schema)
-        .expect_err("must have recursion errors");
+    )
+    .expect_err("must have recursion errors");
 
     let expected = expect_test::expect![[r#"
         Error: too much recursion

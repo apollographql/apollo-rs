@@ -52,7 +52,7 @@ fn main() {
           }
         "#;
 
-    let schema = Schema::parse(schema_src, "not-used-here.graphql");
+    let schema = Schema::parse_and_validate(schema_src, "not-used-here.graphql").unwrap();
 
     let query_src0 = r#"query {
           directivesQuery {
@@ -64,7 +64,9 @@ fn main() {
           }
         }
         "#;
-    let query0 = ExecutableDocument::parse(&schema, query_src0, "not-used-here.graphql");
+    let query0 =
+        ExecutableDocument::parse_and_validate(&schema, query_src0, "not-used-here.graphql")
+            .unwrap();
 
     let directives = get_directives_used_in_query(&query0);
     assert_eq!(directives.len(), 4);
@@ -75,7 +77,7 @@ fn main() {
           }
         }
         "#;
-    let query1 = ExecutableDocument::parse(&schema, query_src1, "not-used-here.graphql");
+    let query1 = ExecutableDocument::parse(&schema, query_src1, "not-used-here.graphql").unwrap();
 
     let directives = get_directives_used_in_query(&query1);
     assert_eq!(directives.len(), 2);
@@ -86,7 +88,7 @@ fn main() {
           }
         }
         "#;
-    let query2 = ExecutableDocument::parse(&schema, query_src2, "not-used-here.graphql");
+    let query2 = ExecutableDocument::parse(&schema, query_src2, "not-used-here.graphql").unwrap();
 
     let directives = get_directives_used_in_query(&query2);
     assert_eq!(directives.len(), 0);

@@ -1,12 +1,1 @@
-type Query {
-  pet: Pet,
-}
-
-enum Pet {
-    CAt
-    DOG_gO
-    FOX
-    _fox
-    squirrel
-    PARRot1
-}
+# Placeholder for removed test, to avoid renumbering

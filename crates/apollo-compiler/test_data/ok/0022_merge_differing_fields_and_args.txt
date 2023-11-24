@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         22: SourceFile {
             path: "0022_merge_differing_fields_and_args.graphql",
             source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -299,13 +296,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         22: SourceFile {
             path: "0022_merge_differing_fields_and_args.graphql",
             source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {
         "barkVolume": 419..478 @22 Operation {

@@ -16,7 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [unreleased](https://crates.io/crates/apollo-parser/x.x.x) - 2023-xx-xx
+# [0.7.4](https://crates.io/crates/apollo-parser/0.7.4) - 2023-11-17
 
 ## Features
 - **`parse_type` parses a selection set with optional outer brackets - [lrlna], [pull/718] fixing [issue/715]**

@@ -1,11 +1,12 @@
 use std::io::Read;
+use std::process::ExitCode;
 
 /// A simple program to run the validations implemented by apollo-compiler
 /// and report any errors.
 ///
 /// To use, do:
 /// cargo run --example validate path/to/input.graphql
-fn main() {
+fn main() -> ExitCode {
     let (source, filename) = match std::env::args().nth(1).as_deref() {
         Some("-") | None => {
             let mut source = String::new();
@@ -18,18 +19,11 @@ fn main() {
         ),
     };
 
-    let (schema, executable) = apollo_compiler::parse_mixed(source, filename);
-    let schema_result = schema.validate();
-    let executable_result = executable.validate(&schema);
-    let has_errors = schema_result.is_err() || executable_result.is_err();
-    match schema_result {
-        Ok(warnings) => println!("{warnings}"),
-        Err(errors) => println!("{errors}"),
+    match apollo_compiler::parse_mixed_validate(source, filename) {
+        Ok((_schema, _executable)) => ExitCode::SUCCESS,
+        Err(errors) => {
+            println!("{errors}");
+            ExitCode::FAILURE
+        }
     }
-    match executable_result {
-        Ok(()) => {}
-        Err(errors) => println!("{errors}"),
-    }
-
-    std::process::exit(if has_errors { 1 } else { 0 });
 }

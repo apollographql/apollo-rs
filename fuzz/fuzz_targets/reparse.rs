@@ -15,13 +15,13 @@ fuzz_target!(|input: &str| {
     let _ = env_logger::try_init();
     debug!("{input}");
 
-    let doc = Document::parse(input, "original.graphql");
+    let doc = Document::parse(input, "original.graphql").unwrap_or_else(|invalid| invalid.partial);
     debug!("=> AST:\n{doc:#?}");
 
     let serialized = doc.to_string();
     debug!("=> AST:\n{serialized}");
 
-    let doc2 = Document::parse(&serialized, "reparsed.graphql");
+    let doc2 = Document::parse(&serialized, "reparsed.graphql").unwrap();
     debug!("=> AST reparsed:\n{doc2:#?}");
     debug!("=> AST reparsed:\n{doc2}");
     if doc != doc2 {
@@ -32,11 +32,14 @@ fuzz_target!(|input: &str| {
         )
     }
     if ENABLE_SCHEMA || ENABLE_EXECUTABLE {
-        let (schema, executable) = doc.to_mixed();
+        let Ok((schema, executable)) = doc.to_mixed_validate() else {
+            return;
+        };
         let schema_serialized = schema.to_string();
         let executable_serialized = executable.to_string();
 
-        let schema2 = Schema::parse(&schema_serialized, "schema_reparsed.graphql");
+        let schema2 =
+            Schema::parse_and_validate(&schema_serialized, "schema_reparsed.graphql").unwrap();
         if ENABLE_SCHEMA && schema != schema2 {
             trace!("=> Schema:\n{schema:#?}");
             debug!("=> Schema:\n{schema_serialized}");
@@ -50,11 +53,12 @@ fuzz_target!(|input: &str| {
         }
 
         if ENABLE_EXECUTABLE {
-            let executable2 = ExecutableDocument::parse(
+            let executable2 = ExecutableDocument::parse_and_validate(
                 &schema2,
                 &executable_serialized,
                 "executable_reparsed.graphql",
-            );
+            )
+            .unwrap();
             if executable != executable2 {
                 trace!("=> Executable document:\n{executable:#?}");
                 debug!("=> Executable document:\n{executable_serialized}");

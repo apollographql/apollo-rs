@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         18: SourceFile {
             path: "0018_non_clashing_names.graphql",
             source_text: "# Types, directives, fragments, and operations each have their own namespace.\ntype A @A {\n  a: Int\n}\ntype Query {\n  a: A\n}\n\ndirective @A on OBJECT\n\nfragment A on A {\n  a\n}\n\nquery A {\n  a {\n    ...A\n  }\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -109,13 +106,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         18: SourceFile {
             path: "0018_non_clashing_names.graphql",
             source_text: "# Types, directives, fragments, and operations each have their own namespace.\ntype A @A {\n  a: Int\n}\ntype Query {\n  a: A\n}\n\ndirective @A on OBJECT\n\nfragment A on A {\n  a\n}\n\nquery A {\n  a {\n    ...A\n  }\n}\n",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {
         "A": 173..203 @18 Operation {

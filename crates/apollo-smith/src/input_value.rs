@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     description::Description,
     directive::{Directive, DirectiveLocation},
@@ -7,7 +5,10 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum InputValue {
@@ -22,25 +23,26 @@ pub enum InputValue {
     Object(Vec<(Name, InputValue)>),
 }
 
-impl From<InputValue> for apollo_encoder::Value {
+impl From<InputValue> for ast::Value {
     fn from(input_value: InputValue) -> Self {
         match input_value {
             InputValue::Variable(v) => Self::Variable(v.into()),
-            InputValue::Int(i) => Self::Int(i),
-            InputValue::Float(f) => Self::Float(f),
-            InputValue::String(s) => Self::String(s),
+            InputValue::Int(i) => Self::Int(i.into()),
+            InputValue::Float(f) => Self::Float(f.into()),
+            InputValue::String(s) => Self::String(s.into()),
             InputValue::Boolean(b) => Self::Boolean(b),
             InputValue::Null => Self::Null,
             InputValue::Enum(enm) => Self::Enum(enm.into()),
-            InputValue::List(l) => Self::List(l.into_iter().map(Into::into).collect()),
-            InputValue::Object(o) => {
-                Self::Object(o.into_iter().map(|(n, i)| (n.into(), i.into())).collect())
-            }
+            InputValue::List(l) => Self::List(l.into_iter().map(|v| Node::new(v.into())).collect()),
+            InputValue::Object(o) => Self::Object(
+                o.into_iter()
+                    .map(|(n, i)| (n.into(), Node::new(i.into())))
+                    .collect(),
+            ),
         }
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::DefaultValue> for InputValue {
     type Error = crate::FromError;
 
@@ -49,7 +51,6 @@ impl TryFrom<apollo_parser::cst::DefaultValue> for InputValue {
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::Value> for InputValue {
     type Error = crate::FromError;
 
@@ -119,28 +120,21 @@ pub struct InputValueDef {
     pub(crate) name: Name,
     pub(crate) ty: Ty,
     pub(crate) default_value: Option<InputValue>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
-impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
-    fn from(input_val: InputValueDef) -> Self {
-        let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
-        if let Some(description) = input_val.description {
-            new_input_val.description(description.into())
+impl From<InputValueDef> for ast::InputValueDefinition {
+    fn from(x: InputValueDef) -> Self {
+        Self {
+            description: x.description.map(Into::into),
+            name: x.name.into(),
+            ty: Node::new(x.ty.into()),
+            default_value: x.default_value.map(|x| Node::new(x.into())),
+            directives: Directive::to_ast(x.directives),
         }
-        if let Some(default) = input_val.default_value {
-            new_input_val.default_value(default.into())
-        }
-        input_val
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_input_val.directive(directive.into()));
-
-        new_input_val
     }
 }
 
-#[cfg(feature = "parser-impl")]
 impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
     type Error = crate::FromError;
 
@@ -161,24 +155,6 @@ impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
                 .transpose()?
                 .unwrap_or_default(),
         })
-    }
-}
-
-impl From<InputValueDef> for apollo_encoder::InputField {
-    fn from(input_val: InputValueDef) -> Self {
-        let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
-        if let Some(description) = input_val.description {
-            new_input_val.description(description.into())
-        }
-        if let Some(default) = input_val.default_value {
-            new_input_val.default_value(default.into())
-        }
-        input_val
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_input_val.directive(directive.into()));
-
-        new_input_val
     }
 }
 
@@ -357,7 +333,7 @@ impl<'a> DocumentBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::{HashMap, HashSet};
+    use indexmap::{IndexMap, IndexSet};
 
     use arbitrary::Unstructured;
 
@@ -382,16 +358,16 @@ mod tests {
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
             stack: Vec::new(),
-            chosen_arguments: HashMap::new(),
-            chosen_aliases: HashMap::new(),
+            chosen_arguments: IndexMap::new(),
+            chosen_aliases: IndexMap::new(),
         };
         let my_nested_type = ObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_nested_object"),
             },
-            implements_interfaces: HashSet::new(),
-            directives: HashMap::new(),
+            implements_interfaces: IndexSet::new(),
+            directives: IndexMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -401,7 +377,7 @@ mod tests {
                 ty: Ty::Named(Name {
                     name: String::from("String"),
                 }),
-                directives: HashMap::new(),
+                directives: IndexMap::new(),
             }],
             extend: false,
         };
@@ -411,8 +387,8 @@ mod tests {
             name: Name {
                 name: String::from("my_object"),
             },
-            implements_interfaces: HashSet::new(),
-            directives: HashMap::new(),
+            implements_interfaces: IndexSet::new(),
+            directives: IndexMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -422,7 +398,7 @@ mod tests {
                 ty: Ty::List(Box::new(Ty::Named(Name {
                     name: String::from("my_nested_object"),
                 }))),
-                directives: HashMap::new(),
+                directives: IndexMap::new(),
             }],
             extend: false,
         };
@@ -444,11 +420,14 @@ mod tests {
             }))))
             .unwrap();
 
-        let input_val_str = apollo_encoder::Value::from(input_val).to_string();
+        let input_val_str = apollo_compiler::ast::Value::from(input_val)
+            .serialize()
+            .no_indent()
+            .to_string();
 
         assert_eq!(
             input_val_str.as_str(),
-            "[{ first: [{ value: \"womkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkig\" }, { value: \"C6420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\" }] }]"
+            "[{first: [{value: \"womkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkig\"}, {value: \"C6420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}]}]"
         );
     }
 }

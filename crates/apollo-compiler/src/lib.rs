@@ -6,23 +6,22 @@ pub mod ast;
 mod database;
 mod diagnostics;
 pub mod executable;
+pub mod execution;
 mod node;
 mod node_str;
 mod parser;
 pub mod schema;
-mod validation;
+pub mod validation;
 
 use crate::database::{InputDatabase, ReprDatabase, RootDatabase, Source};
 use crate::diagnostics::ApolloDiagnostic;
 use crate::validation::ValidationDatabase;
 
-pub use self::database::FileId;
 pub use self::executable::ExecutableDocument;
-pub use self::node::{Node, NodeLocation};
+pub use self::node::Node;
 pub use self::node_str::NodeStr;
-pub use self::parser::{parse_mixed, Parser, SourceFile, SourceMap};
+pub use self::parser::{parse_mixed_validate, Parser, SourceFile, SourceMap};
 pub use self::schema::Schema;
-pub use self::validation::{Diagnostic, DiagnosticList, GraphQLError, GraphQLLocation};
 
 pub(crate) struct ApolloCompiler {
     pub db: RootDatabase,

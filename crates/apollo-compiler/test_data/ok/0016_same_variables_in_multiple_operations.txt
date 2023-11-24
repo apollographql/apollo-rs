@@ -3,15 +3,12 @@ Schema {
         -1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
-            parse_errors: [],
         },
         16: SourceFile {
             path: "0016_same_variables_in_multiple_operations.graphql",
             source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     schema_definition: SchemaDefinition {
         description: None,
         directives: [],
@@ -138,13 +135,15 @@ Schema {
 }
 ExecutableDocument {
     sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
         16: SourceFile {
             path: "0016_same_variables_in_multiple_operations.graphql",
             source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
-            parse_errors: [],
         },
     },
-    build_errors: [],
     anonymous_operation: None,
     named_operations: {
         "A": 0..61 @16 Operation {

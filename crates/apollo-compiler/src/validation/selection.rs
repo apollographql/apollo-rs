@@ -1,12 +1,8 @@
 use std::collections::{hash_map::Entry, HashMap};
 
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::ValidationDatabase,
-    FileId, Node,
-};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::{FileId, ValidationDatabase};
+use crate::{ast, schema, Node};
 
 use super::operation::OperationValidationConfig;
 /// TODO(@goto-bus-stop) test pathological query with many of the same field

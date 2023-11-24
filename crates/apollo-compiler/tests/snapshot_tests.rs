@@ -5,14 +5,14 @@
 // This is also an exact setup as we have in `apollo-parser`, in the future we
 // might want to consider merging the two dirs. (@lrlna)
 
-// Note: ALL #[test] functions must also have #[serial], to make FileId::reset
+// Note: ALL #[test] functions must also have #[serial], to make FileId::reset work correctly
 
 use apollo_compiler::ast;
 use apollo_compiler::name;
 use apollo_compiler::schema;
 use apollo_compiler::ty;
-use apollo_compiler::DiagnosticList;
-use apollo_compiler::FileId;
+use apollo_compiler::validation::DiagnosticList;
+use apollo_compiler::validation::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
 use indexmap::IndexMap;
@@ -36,17 +36,18 @@ use std::path::PathBuf;
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let file_name = path.file_name().unwrap();
-        let (schema, executable) = apollo_compiler::parse_mixed(text, file_name);
-
-        let schema_validation_errors = schema.validate().err();
-        let executable_validation_errors = executable.validate(&schema).err();
-        assert_diagnostics_are_absent(
-            &schema_validation_errors,
-            &executable_validation_errors,
-            path,
-        );
-
-        format!("{schema:#?}\n{executable:#?}")
+        match apollo_compiler::parse_mixed_validate(text, file_name) {
+            Err(errors) => {
+                println!("{errors}");
+                panic!(
+                    "There should be no diagnostics in the file {}",
+                    path.display(),
+                );
+            }
+            Ok((schema, executable)) => {
+                format!("{:#?}\n{:#?}", schema.into_inner(), executable.into_inner())
+            }
+        }
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
@@ -56,26 +57,19 @@ fn validation() {
         let schema_validation_errors;
         let executable_validation_errors;
         if is_type_system {
-            schema_validation_errors = Schema::parse(text, filename).validate().err();
+            schema_validation_errors = Schema::parse_and_validate(text, filename)
+                .err()
+                .map(|e| e.errors);
             executable_validation_errors = None;
         } else if is_executable {
-            executable_validation_errors = ast::Document::parse(text, filename)
-                .validate_standalone_executable()
-                .err();
             schema_validation_errors = None;
-        } else {
-            let (schema, executable) = apollo_compiler::parse_mixed(text, filename);
-            schema_validation_errors = match schema.validate() {
-                Ok(warnings) => {
-                    if warnings.to_string().is_empty() {
-                        None
-                    } else {
-                        Some(warnings)
-                    }
-                }
-                Err(e) => Some(e),
+            executable_validation_errors = match ast::Document::parse(text, filename) {
+                Err(e) => Some(e.errors),
+                Ok(ast) => ast.validate_standalone_executable().err(),
             };
-            executable_validation_errors = executable.validate(&schema).err();
+        } else {
+            schema_validation_errors = apollo_compiler::parse_mixed_validate(text, filename).err();
+            executable_validation_errors = None;
         };
         let mut formatted = String::new();
         if let Some(errors) = &schema_validation_errors {
@@ -105,25 +99,6 @@ fn assert_diagnostics_are_present(
     );
 }
 
-fn assert_diagnostics_are_absent(
-    schema_validation_errors: &Option<DiagnosticList>,
-    executable_validation_errors: &Option<DiagnosticList>,
-    path: &Path,
-) {
-    if schema_validation_errors.is_some() || executable_validation_errors.is_some() {
-        if let Some(errors) = schema_validation_errors {
-            println!("{errors}")
-        }
-        if let Some(errors) = executable_validation_errors {
-            println!("{errors}")
-        }
-        panic!(
-            "There should be no diagnostics in the file {:?}",
-            path.display(),
-        );
-    }
-}
-
 #[test]
 #[serial]
 fn serialize_and_reparse_ast() {
@@ -134,11 +109,13 @@ fn serialize_and_reparse_ast() {
         let collected = collect_graphql_files(&test_data_dir, &[subdir]);
         for (input_path, input) in collected {
             let output_path = output_dir.join(input_path.file_name().unwrap());
-            let original = ast::Document::parse(&input, "input.graphql");
+            let original = ast::Document::parse(&input, "input.graphql")
+                .unwrap_or_else(|invalid| invalid.partial);
             let serialized = original.to_string();
             expect_file![output_path].assert_eq(&serialized);
 
-            let round_tripped = ast::Document::parse(&serialized, "serialized.graphql");
+            let round_tripped = ast::Document::parse(&serialized, "serialized.graphql")
+                .unwrap_or_else(|invalid| invalid.partial);
             if original != round_tripped {
                 panic!(
                     "Serialization does not round-trip for {input_path:?}:\n\
@@ -280,5 +257,5 @@ fn test_invalid_synthetic_node() {
     let expected = expect_test::expect![[r#"
         Error: cannot find type `UndefinedType` in this document
     "#]];
-    expected.assert_eq(&schema.validate().unwrap_err().to_string_no_color());
+    expected.assert_eq(&schema.validate().unwrap_err().errors.to_string_no_color());
 }
