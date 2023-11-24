@@ -17,23 +17,33 @@ use std::str::FromStr;
 #[macro_export]
 macro_rules! coord {
     ( @ $name:ident ) => {
-        $crate::coordinate::DirectiveCoordinate($crate::name!($name))
+        $crate::coordinate::DirectiveCoordinate {
+            directive: $crate::name!($name),
+        }
     };
     ( @ $name:ident ( $arg:ident : ) ) => {
-        $crate::coordinate::DirectiveArgumentCoordinate($crate::name!($name), $crate::name!($arg))
+        $crate::coordinate::DirectiveArgumentCoordinate {
+            directive: $crate::name!($name),
+            argument: $crate::name!($arg),
+        }
     };
     ( $name:ident ) => {
-        $crate::coordinate::TypeCoordinate($crate::name!($name))
+        $crate::coordinate::TypeCoordinate {
+            ty: $crate::name!($name),
+        }
     };
     ( $name:ident . $field:ident ) => {
-        $crate::coordinate::FieldCoordinate($crate::name!($name), $crate::name!($field))
+        $crate::coordinate::FieldCoordinate {
+            ty: $crate::name!($name),
+            field: $crate::name!($field),
+        }
     };
     ( $name:ident . $field:ident ( $arg:ident : ) ) => {
-        $crate::coordinate::FieldArgumentCoordinate(
-            $crate::name!($name),
-            $crate::name!($field),
-            $crate::name!($arg),
-        )
+        $crate::coordinate::FieldArgumentCoordinate {
+            ty: $crate::name!($name),
+            field: $crate::name!($field),
+            argument: $crate::name!($arg),
+        }
     };
 }
 
@@ -44,12 +54,12 @@ macro_rules! coord {
 /// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::TypeCoordinate;
 ///
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// assert_eq!(TypeCoordinate(name!("Type")).to_string(), "Type");
-/// # Ok(()) }
+/// assert_eq!(TypeCoordinate { ty: name!("Type") }.to_string(), "Type");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TypeCoordinate(pub Name);
+pub struct TypeCoordinate {
+    pub ty: Name,
+}
 
 /// A schema coordinate targeting a field definition: `Type.field`.
 ///
@@ -58,12 +68,16 @@ pub struct TypeCoordinate(pub Name);
 /// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::FieldCoordinate;
 ///
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// assert_eq!(FieldCoordinate(name!("Type"), name!("field")).to_string(), "Type.field");
-/// # Ok(()) }
+/// assert_eq!(FieldCoordinate {
+///     ty: name!("Type"),
+///     field: name!("field"),
+/// }.to_string(), "Type.field");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FieldCoordinate(pub Name, pub Name);
+pub struct FieldCoordinate {
+    pub ty: Name,
+    pub field: Name,
+}
 
 /// A schema coordinate targeting a field argument definition: `Type.field(argument:)`.
 ///
@@ -72,20 +86,31 @@ pub struct FieldCoordinate(pub Name, pub Name);
 /// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::FieldArgumentCoordinate;
 ///
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// assert_eq!(FieldArgumentCoordinate(name!("Type"), name!("field"), name!("argument")).to_string(), "Type.field(argument:)");
-/// # Ok(()) }
+/// assert_eq!(FieldArgumentCoordinate {
+///     ty: name!("Type"),
+///     field: name!("field"),
+///     argument: name!("argument"),
+/// }.to_string(), "Type.field(argument:)");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FieldArgumentCoordinate(pub Name, pub Name, pub Name);
+pub struct FieldArgumentCoordinate {
+    pub ty: Name,
+    pub field: Name,
+    pub argument: Name,
+}
 
 /// A schema coordinate targeting a directive definition: `@directive`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DirectiveCoordinate(pub Name);
+pub struct DirectiveCoordinate {
+    pub directive: Name,
+}
 
 /// A schema coordinate targeting a directive argument definition: `@directive(argument:)`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DirectiveArgumentCoordinate(pub Name, pub Name);
+pub struct DirectiveArgumentCoordinate {
+    pub directive: Name,
+    pub argument: Name,
+}
 
 /// Any schema coordinate.
 ///
@@ -94,12 +119,14 @@ pub struct DirectiveArgumentCoordinate(pub Name, pub Name);
 /// use apollo_compiler::name;
 /// use apollo_compiler::coordinate::{SchemaCoordinate, FieldArgumentCoordinate};
 ///
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let coord: SchemaCoordinate = "Type.field(argument:)".parse().unwrap();
 /// assert_eq!(coord, SchemaCoordinate::FieldArgument(
-///     FieldArgumentCoordinate(name!("Type"), name!("field"), name!("argument"))
+///     FieldArgumentCoordinate {
+///         ty: name!("Type"),
+///         field: name!("field"),
+///         argument: name!("argument"),
+///     },
 /// ));
-/// # Ok(()) }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SchemaCoordinate {
@@ -121,27 +148,39 @@ pub enum SchemaCoordinateParseError {
 
 impl TypeCoordinate {
     /// Create a schema coordinate that points to a field on this type.
-    pub fn field(self, field: Name) -> FieldCoordinate {
-        FieldCoordinate(self.0, field)
+    pub fn with_field(self, field: Name) -> FieldCoordinate {
+        FieldCoordinate { ty: self.ty, field }
+    }
+}
+
+impl From<Name> for TypeCoordinate {
+    fn from(ty: Name) -> Self {
+        Self { ty }
     }
 }
 
 impl FromStr for TypeCoordinate {
     type Err = SchemaCoordinateParseError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        Ok(Self(Name::try_from(input)?))
+        Ok(Self {
+            ty: Name::try_from(input)?,
+        })
     }
 }
 
 impl FieldCoordinate {
     /// Create a schema coordinate that points to the type this field is on.
-    pub fn type_(self) -> TypeCoordinate {
-        TypeCoordinate(self.0)
+    pub fn type_coordinate(self) -> TypeCoordinate {
+        TypeCoordinate { ty: self.ty }
     }
 
     /// Create a schema coordinate that points to an argument on this field.
-    pub fn argument(self, argument: Name) -> FieldArgumentCoordinate {
-        FieldArgumentCoordinate(self.0, self.1, argument)
+    pub fn with_argument(self, argument: Name) -> FieldArgumentCoordinate {
+        FieldArgumentCoordinate {
+            ty: self.ty,
+            field: self.field,
+            argument,
+        }
     }
 }
 
@@ -151,19 +190,25 @@ impl FromStr for FieldCoordinate {
         let Some((type_name, field)) = input.split_once('.') else {
             return Err(SchemaCoordinateParseError::InvalidFormat);
         };
-        Ok(Self(Name::try_from(type_name)?, Name::try_from(field)?))
+        Ok(Self {
+            ty: Name::try_from(type_name)?,
+            field: Name::try_from(field)?,
+        })
     }
 }
 
 impl FieldArgumentCoordinate {
     /// Create a schema coordinate that points to the type this argument is defined in.
-    pub fn type_(self) -> TypeCoordinate {
-        TypeCoordinate(self.0)
+    pub fn type_coordinate(self) -> TypeCoordinate {
+        TypeCoordinate { ty: self.ty }
     }
 
     /// Create a schema coordinate that points to the field this argument is defined in.
-    pub fn field(self) -> FieldCoordinate {
-        FieldCoordinate(self.0, self.1)
+    pub fn field_coordinate(self) -> FieldCoordinate {
+        FieldCoordinate {
+            ty: self.ty,
+            field: self.field,
+        }
     }
 }
 
@@ -178,14 +223,23 @@ impl FromStr for FieldArgumentCoordinate {
         let Some((argument, ")")) = rest.split_once(':') else {
             return Err(SchemaCoordinateParseError::InvalidFormat);
         };
-        Ok(field.argument(Name::try_from(argument)?))
+        Ok(field.with_argument(Name::try_from(argument)?))
     }
 }
 
 impl DirectiveCoordinate {
     /// Create a schema coordinate that points to an argument of this directive.
-    pub fn argument(self, argument: Name) -> DirectiveArgumentCoordinate {
-        DirectiveArgumentCoordinate(self.0, argument)
+    pub fn with_argument(self, argument: Name) -> DirectiveArgumentCoordinate {
+        DirectiveArgumentCoordinate {
+            directive: self.directive,
+            argument,
+        }
+    }
+}
+
+impl From<Name> for DirectiveCoordinate {
+    fn from(directive: Name) -> Self {
+        Self { directive }
     }
 }
 
@@ -193,7 +247,9 @@ impl FromStr for DirectiveCoordinate {
     type Err = SchemaCoordinateParseError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         if let Some(directive) = input.strip_prefix('@') {
-            Ok(Self(Name::try_from(directive)?))
+            Ok(Self {
+                directive: Name::try_from(directive)?,
+            })
         } else {
             Err(SchemaCoordinateParseError::InvalidFormat)
         }
@@ -202,8 +258,10 @@ impl FromStr for DirectiveCoordinate {
 
 impl DirectiveArgumentCoordinate {
     /// Create a schema coordinate that points to the directive this argument is defined in.
-    pub fn directive(self) -> DirectiveCoordinate {
-        DirectiveCoordinate(self.0)
+    pub fn directive_coordinate(self) -> DirectiveCoordinate {
+        DirectiveCoordinate {
+            directive: self.directive,
+        }
     }
 }
 
@@ -218,41 +276,48 @@ impl FromStr for DirectiveArgumentCoordinate {
         let Some((argument, ")")) = rest.split_once(':') else {
             return Err(SchemaCoordinateParseError::InvalidFormat);
         };
-        Ok(directive.argument(Name::try_from(argument)?))
+        Ok(directive.with_argument(Name::try_from(argument)?))
     }
 }
 
 impl fmt::Display for TypeCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(type_name) = self;
-        write!(f, "{type_name}")
+        let Self { ty } = self;
+        write!(f, "{ty}")
     }
 }
 
 impl fmt::Display for FieldCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(type_name, field) = self;
-        write!(f, "{type_name}.{field}")
+        let Self { ty, field } = self;
+        write!(f, "{ty}.{field}")
     }
 }
 
 impl fmt::Display for FieldArgumentCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(type_name, field, argument) = self;
-        write!(f, "{type_name}.{field}({argument}:)")
+        let Self {
+            ty,
+            field,
+            argument,
+        } = self;
+        write!(f, "{ty}.{field}({argument}:)")
     }
 }
 
 impl fmt::Display for DirectiveCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(directive) = self;
+        let Self { directive } = self;
         write!(f, "@{directive}")
     }
 }
 
 impl fmt::Display for DirectiveArgumentCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(directive, argument) = self;
+        let Self {
+            directive,
+            argument,
+        } = self;
         write!(f, "@{directive}({argument}:)")
     }
 }
