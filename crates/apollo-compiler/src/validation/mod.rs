@@ -483,6 +483,8 @@ impl ariadne::Span for NodeLocation {
     }
 }
 
+const RECURSION_LIMIT: usize = 500;
+
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("Recursion limit reached")]
 #[non_exhaustive]
@@ -491,28 +493,25 @@ struct RecursionLimitError {}
 /// Track used names in a recursive function.
 struct RecursionStack {
     seen: IndexSet<Name>,
-    limit: usize,
 }
 
 impl RecursionStack {
-    fn new(limit: usize) -> Self {
+    fn new() -> Self {
         Self {
             seen: IndexSet::new(),
-            limit,
         }
     }
 
-    fn with_root(root: Name, limit: usize) -> Self {
+    fn with_root(root: Name) -> Self {
         let mut seen = IndexSet::new();
         seen.insert(root);
-        Self { seen, limit }
+        Self { seen }
     }
 
     /// Return the actual API for tracking recursive uses.
     pub(crate) fn guard(&mut self) -> RecursionGuard<'_> {
         RecursionGuard {
             seen: &mut self.seen,
-            limit: self.limit,
         }
     }
 }
@@ -524,7 +523,6 @@ impl RecursionStack {
 /// from the list.
 struct RecursionGuard<'a> {
     seen: &'a mut IndexSet<Name>,
-    limit: usize,
 }
 impl RecursionGuard<'_> {
     /// Mark that we saw a name. If there are too many names, return an error.
@@ -533,13 +531,10 @@ impl RecursionGuard<'_> {
             self.seen.insert(name.clone()),
             "cannot push the same name twice to RecursionGuard, check contains() first"
         );
-        if self.seen.len() > self.limit {
+        if self.seen.len() > RECURSION_LIMIT {
             Err(RecursionLimitError {})
         } else {
-            Ok(RecursionGuard {
-                seen: self.seen,
-                limit: self.limit,
-            })
+            Ok(RecursionGuard { seen: self.seen })
         }
     }
     /// Check if we saw a name somewhere up the call stack.

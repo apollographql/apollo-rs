@@ -128,7 +128,7 @@ impl FindRecursiveDirective<'_> {
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), CycleError<ast::Directive>> {
-        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone(), 500);
+        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone());
         FindRecursiveDirective { schema }
             .directive_definition(recursion_stack.guard(), directive_def)
     }

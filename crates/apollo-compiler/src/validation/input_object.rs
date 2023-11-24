@@ -56,8 +56,7 @@ impl FindRecursiveInputValue<'_> {
         db: &dyn ValidationDatabase,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        let mut recursion_stack =
-            RecursionStack::with_root(input_object.definition.name.clone(), 500);
+        let mut recursion_stack = RecursionStack::with_root(input_object.definition.name.clone());
         FindRecursiveInputValue { db }
             .input_object_definition(recursion_stack.guard(), input_object)
     }
