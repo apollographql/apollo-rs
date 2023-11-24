@@ -27,13 +27,10 @@ use crate::executable::BuildError as ExecutableBuildError;
 use crate::execution::{GraphQLError, GraphQLLocation};
 use crate::schema::BuildError as SchemaBuildError;
 use crate::Node;
-use crate::SourceFile;
 use crate::SourceMap;
-use ariadne::ReportKind;
 use indexmap::IndexSet;
 use std::fmt;
 use std::sync::Arc;
-use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 pub use crate::database::FileId;
@@ -500,67 +497,9 @@ impl fmt::Display for Diagnostic<'_> {
     }
 }
 
-struct Cache<'a>(&'a SourceMap);
-
-impl ariadne::Cache<FileId> for Cache<'_> {
-    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
-        struct NotFound(FileId);
-        impl fmt::Debug for NotFound {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                write!(f, "source file not found: {:?}", self.0)
-            }
-        }
-        if let Some(source_file) = self.0.get(file_id) {
-            Ok(source_file.ariadne())
-        } else if *file_id == FileId::NONE || *file_id == FileId::HACK_TMP {
-            static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
-            Ok(EMPTY.get_or_init(|| ariadne::Source::from("")))
-        } else {
-            Err(Box::new(NotFound(*file_id)))
-        }
-    }
-
-    fn display<'a>(&self, file_id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
-        if *file_id != FileId::NONE {
-            struct Path(Arc<SourceFile>);
-            impl fmt::Display for Path {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.0.path().display().fmt(f)
-                }
-            }
-            let source_file = self.0.get(file_id)?;
-            Some(Box::new(Path(source_file.clone())))
-        } else {
-            struct NoSourceFile;
-            impl fmt::Display for NoSourceFile {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    f.write_str("(no source file)")
-                }
-            }
-            Some(Box::new(NoSourceFile))
-        }
-    }
-}
-
 impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
-    }
-}
-
-impl ariadne::Span for NodeLocation {
-    type SourceId = FileId;
-
-    fn source(&self) -> &FileId {
-        &self.file_id
-    }
-
-    fn start(&self) -> usize {
-        self.offset()
-    }
-
-    fn end(&self) -> usize {
-        self.end_offset()
     }
 }
 

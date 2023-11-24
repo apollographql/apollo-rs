@@ -1,11 +1,15 @@
-use crate::FileId;
-use crate::NodeLocation;
+//! Pretty-printable diagnostic reports for custom errors that reference GraphQL documents.
+use crate::validation::FileId;
+use crate::validation::NodeLocation;
+use crate::SourceFile;
 use crate::SourceMap;
 use ariadne::ColorGenerator;
 use ariadne::ReportKind;
 use std::fmt;
 use std::io;
 use std::ops::Range;
+use std::sync::Arc;
+use std::sync::OnceLock;
 
 type MappedSpan = (FileId, Range<usize>);
 
@@ -96,6 +100,9 @@ pub struct DiagnosticReport {
 }
 
 impl DiagnosticReport {
+    /// Returns a builder for creating diagnostic reports.
+    ///
+    /// Provide GraphQL source files and the main location for the diagnostic.
     pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> ReportBuilder {
         ReportBuilder::new(sources, location)
     }
@@ -119,7 +126,49 @@ impl fmt::Display for DiagnosticReport {
 
         self.report
             // .report(self.sources, color)
-            .write(&self.sources, Adaptor(f))
+            .write(Cache(&self.sources), Adaptor(f))
             .map_err(|_| fmt::Error)
+    }
+}
+
+struct Cache<'a>(&'a SourceMap);
+
+impl ariadne::Cache<FileId> for Cache<'_> {
+    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
+        struct NotFound(FileId);
+        impl fmt::Debug for NotFound {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "source file not found: {:?}", self.0)
+            }
+        }
+        if let Some(source_file) = self.0.get(file_id) {
+            Ok(source_file.ariadne())
+        } else if *file_id == FileId::NONE || *file_id == FileId::HACK_TMP {
+            static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
+            Ok(EMPTY.get_or_init(|| ariadne::Source::from("")))
+        } else {
+            Err(Box::new(NotFound(*file_id)))
+        }
+    }
+
+    fn display<'a>(&self, file_id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
+        if *file_id != FileId::NONE {
+            struct Path(Arc<SourceFile>);
+            impl fmt::Display for Path {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    self.0.path().display().fmt(f)
+                }
+            }
+            let source_file = self.0.get(file_id)?;
+            Some(Box::new(Path(source_file.clone())))
+        } else {
+            struct NoSourceFile;
+            impl fmt::Display for NoSourceFile {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    f.write_str("(no source file)")
+                }
+            }
+            Some(Box::new(NoSourceFile))
+        }
     }
 }
