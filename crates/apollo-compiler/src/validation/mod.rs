@@ -566,7 +566,7 @@ impl From<ExecutableBuildError> for Details {
     }
 }
 
-const RECURSION_LIMIT: usize = 500;
+const RECURSION_LIMIT: usize = 200;
 
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("Recursion limit reached")]
