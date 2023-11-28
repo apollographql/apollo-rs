@@ -333,21 +333,20 @@ pub(crate) fn validate_fragment_cycles(
 
     let mut visited = RecursionStack::with_root(def.name.clone());
 
-    if let Err(cycle) =
-        detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard())
-    {
-        let head_location = NodeLocation::recompose(def.location(), def.name.location());
+    match detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard()) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => {
+            let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
-        let mut diagnostic = ApolloDiagnostic::new(
-            db,
-            def.location(),
-            DiagnosticData::RecursiveFragmentDefinition {
-                name: def.name.to_string(),
-            },
-        )
-        .label(Label::new(head_location, "recursive fragment definition"));
+            let mut diagnostic = ApolloDiagnostic::new(
+                db,
+                def.location(),
+                DiagnosticData::RecursiveFragmentDefinition {
+                    name: def.name.to_string(),
+                },
+            )
+            .label(Label::new(head_location, "recursive fragment definition"));
 
-        if let CycleError::Recursed(trace) = cycle {
             if let Some((cyclical_spread, path)) = trace.split_first() {
                 let mut prev_name = &def.name;
                 for spread in path.iter().rev() {
@@ -369,9 +368,26 @@ pub(crate) fn validate_fragment_cycles(
                     ),
                 ));
             }
-        }
 
-        diagnostics.push(diagnostic);
+            diagnostics.push(diagnostic);
+        }
+        Err(CycleError::Limit(_)) => {
+            let head_location = NodeLocation::recompose(def.location(), def.name.location());
+
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                def.location(),
+                DiagnosticData::DeeplyNestedType {
+                    name: def.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                head_location,
+                "fragment references a very long chain of fragments",
+            ));
+
+            diagnostics.push(diagnostic);
+        }
     }
 
     diagnostics

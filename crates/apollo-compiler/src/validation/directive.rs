@@ -146,19 +146,20 @@ pub(crate) fn validate_directive_definition(
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    if let Err(error) = FindRecursiveDirective::check(&db.schema(), &def) {
-        let definition_location = def.location();
-        let head_location = NodeLocation::recompose(def.location(), def.name.location());
-        let mut diagnostic = ApolloDiagnostic::new(
-            db,
-            definition_location,
-            DiagnosticData::RecursiveDirectiveDefinition {
-                name: def.name.to_string(),
-            },
-        )
-        .label(Label::new(head_location, "recursive directive definition"));
+    match FindRecursiveDirective::check(&db.schema(), &def) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => {
+            let definition_location = def.location();
+            let head_location = NodeLocation::recompose(def.location(), def.name.location());
+            let mut diagnostic = ApolloDiagnostic::new(
+                db,
+                definition_location,
+                DiagnosticData::RecursiveDirectiveDefinition {
+                    name: def.name.to_string(),
+                },
+            )
+            .label(Label::new(head_location, "recursive directive definition"));
 
-        if let CycleError::Recursed(trace) = error {
             if let Some((cyclical_application, path)) = trace.split_first() {
                 let mut prev_name = &def.name;
                 for directive_application in path.iter().rev() {
@@ -180,9 +181,24 @@ pub(crate) fn validate_directive_definition(
                     ),
                 ));
             }
-        }
 
-        diagnostics.push(diagnostic);
+            diagnostics.push(diagnostic);
+        }
+        Err(CycleError::Limit(_)) => {
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                def.location(),
+                DiagnosticData::DeeplyNestedType {
+                    name: def.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                def.location(),
+                "directive references a very long chain of directives",
+            ));
+
+            diagnostics.push(diagnostic);
+        }
     }
 
     diagnostics

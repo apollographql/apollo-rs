@@ -86,20 +86,21 @@ pub(crate) fn validate_input_object_definition(
         Default::default(),
     );
 
-    if let Err(error) = FindRecursiveInputValue::check(db, &input_object) {
-        let mut diagnostic = ApolloDiagnostic::new(
-            db,
-            input_object.definition.location(),
-            DiagnosticData::RecursiveInputObjectDefinition {
-                name: input_object.definition.name.to_string(),
-            },
-        )
-        .label(Label::new(
-            input_object.definition.location(),
-            "cyclical input object definition",
-        ));
+    match FindRecursiveInputValue::check(db, &input_object) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => {
+            let mut diagnostic = ApolloDiagnostic::new(
+                db,
+                input_object.definition.location(),
+                DiagnosticData::RecursiveInputObjectDefinition {
+                    name: input_object.definition.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                input_object.definition.location(),
+                "cyclical input object definition",
+            ));
 
-        if let CycleError::Recursed(trace) = error {
             if let Some((cyclical_reference, path)) = trace.split_first() {
                 let mut prev_name = &input_object.definition.name;
                 for reference in path.iter().rev() {
@@ -118,9 +119,23 @@ pub(crate) fn validate_input_object_definition(
                     ),
                 ));
             }
+            diagnostics.push(diagnostic);
         }
+        Err(CycleError::Limit(_)) => {
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                input_object.definition.location(),
+                DiagnosticData::DeeplyNestedType {
+                    name: input_object.definition.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                input_object.definition.location(),
+                "input object references a very long chain of input objects",
+            ));
 
-        diagnostics.push(diagnostic);
+            diagnostics.push(diagnostic);
+        }
     }
 
     // Fields in an Input Object Definition must be unique

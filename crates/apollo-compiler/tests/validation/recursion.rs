@@ -106,12 +106,12 @@ fn long_fragment_chains_do_not_overflow_stack() {
 
     let expected = expect_test::expect![[r#"
         Error: too much recursion
-        Error: `typeFragment1` fragment cannot reference itself
+        Error: `typeFragment1` contains too much nesting
             ╭─[overflow.graphql:11:11]
             │
          11 │           fragment typeFragment1 on __Type {
             │           ───────────┬──────────  
-            │                      ╰──────────── recursive fragment definition
+            │                      ╰──────────── fragment references a very long chain of fragments
         ────╯
     "#]];
     expected.assert_eq(&errors.to_string_no_color());

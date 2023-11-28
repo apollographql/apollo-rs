@@ -129,6 +129,8 @@ pub(crate) enum DiagnosticData {
     RecursiveInputObjectDefinition { name: String },
     #[error("`{name}` fragment cannot reference itself")]
     RecursiveFragmentDefinition { name: String },
+    #[error("`{name}` contains too much nesting")]
+    DeeplyNestedType { name: String },
     #[error("type does not satisfy interface `{interface}`: missing field `{field}`")]
     MissingInterfaceField { interface: String, field: String },
     #[error("the required argument `{name}` is not provided")]
