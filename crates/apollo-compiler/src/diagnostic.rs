@@ -11,6 +11,9 @@ use std::ops::Range;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
+#[cfg(doc)]
+use crate::{ExecutableDocument, Schema};
+
 type MappedSpan = (FileId, Range<usize>);
 
 /// Translate a byte-offset location into a char-offset location for use with ariadne.
@@ -24,6 +27,11 @@ fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
 
 /// A diagnostic report that can be printed to a CLI with pretty colours and labeled lines of
 /// GraphQL source code.
+///
+/// Custom errors can use this in their `Display` or `Debug` implementations to build a report and
+/// then write it out with [`fmt`].
+///
+/// [`fmt`]: DiagnosticReport::fmt
 pub struct DiagnosticReport {
     sources: SourceMap,
     colors: ColorGenerator,
@@ -34,6 +42,7 @@ impl DiagnosticReport {
     /// Returns a builder for creating diagnostic reports.
     ///
     /// Provide GraphQL source files and the main location for the diagnostic.
+    /// Source files can be obtained from [`Schema::sources`] or [`ExecutableDocument::sources`].
     pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> Self {
         let (file_id, range) = location
             .and_then(|location| map_span(&sources, location))
@@ -72,10 +81,18 @@ impl DiagnosticReport {
         }
     }
 
-    /// Write the report to a [Formatter].
-    pub fn fmt(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    /// Write the report to a [`Write`], with colors.
+    ///
+    /// If colored output is not desired, consider wrapping the [`Write`] with [anstream].
+    ///
+    /// [`Write`]: std::io::Write
+    pub fn write(self, w: impl std::io::Write) -> std::io::Result<()> {
         let report = self.report.finish();
+        report.write(Cache(&self.sources), w)
+    }
 
+    /// Write the report to a [`fmt::Formatter`]. Alternate formatting disables colors.
+    pub fn fmt(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         struct StripColorAdaptor<'a, 'b> {
             f: &'a mut fmt::Formatter<'b>,
             strip: anstream::adapter::StripBytes,
@@ -111,19 +128,13 @@ impl DiagnosticReport {
         }
 
         if f.alternate() {
-            report
-                .write(
-                    Cache(&self.sources),
-                    StripColorAdaptor {
-                        f,
-                        strip: Default::default(),
-                    },
-                )
-                .map_err(|_| fmt::Error)
+            self.write(StripColorAdaptor {
+                f,
+                strip: Default::default(),
+            })
+            .map_err(|_| fmt::Error)
         } else {
-            report
-                .write(Cache(&self.sources), ColorAdaptor { f })
-                .map_err(|_| fmt::Error)
+            self.write(ColorAdaptor { f }).map_err(|_| fmt::Error)
         }
     }
 }
