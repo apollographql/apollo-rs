@@ -1,0 +1,36 @@
+type Subselection {
+  createdAt: Int!
+}
+
+type Issue {
+  createdAt: Int
+  subselection: [Subselection!]
+}
+
+type Query {
+  issue755: Issue
+}
+
+fragment topLevelFragment on Issue {
+  subselection {
+    createdAt
+    ...subselectionFragment
+  }
+  ...collidingTopLevelFragment
+}
+
+fragment collidingTopLevelFragment on Issue {
+  subselection {
+    createdAt
+  }
+}
+
+fragment subselectionFragment on Subselection {
+  createdAt
+}
+
+query {
+  issue755 {
+    ...topLevelFragment
+  }
+}

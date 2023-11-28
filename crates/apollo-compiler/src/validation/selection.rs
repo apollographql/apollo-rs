@@ -176,15 +176,25 @@ pub(crate) fn same_response_shape(
         }
         // 6. Assert: typeA and typeB are both composite types.
         (def_a, def_b) if is_composite(def_a) && is_composite(def_b) => {
+            let Ok(subfield_a_type) = schema.type_field(field_a.against_type, &field_a.field.name)
+            else {
+                // Missing field: error raised elsewhere, we can't check if the type is correct
+                return Ok(());
+            };
+            let Ok(subfield_b_type) = schema.type_field(field_b.against_type, &field_b.field.name)
+            else {
+                // Missing field: error raised elsewhere, we can't check if the type is correct
+                return Ok(());
+            };
             let named_fragments = db.ast_named_fragments(file_id);
             let mut merged_set = operation_fields(
                 &named_fragments,
-                field_a.against_type,
+                &subfield_a_type.name,
                 &field_a.field.selection_set,
             );
             merged_set.extend(operation_fields(
                 &named_fragments,
-                field_b.against_type,
+                &subfield_b_type.name,
                 &field_b.field.selection_set,
             ));
             let grouped_by_name = group_fields_by_name(merged_set);
