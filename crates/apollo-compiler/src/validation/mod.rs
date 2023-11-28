@@ -154,12 +154,12 @@ pub(crate) enum Details {
 }
 
 impl DiagnosticData {
-    fn report(&self, sources: SourceMap, color: bool) -> DiagnosticReport {
+    fn report(&self, sources: SourceMap) -> DiagnosticReport {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
-            return diagnostic.to_report(sources, color);
+            return diagnostic.to_report(sources);
         }
 
-        let mut report = DiagnosticReport::builder(sources, self.location).with_color(color);
+        let mut report = DiagnosticReport::builder(sources, self.location);
         // Main message from `derive(thiserror::Error)` based on `#[error("…")]` attributes:
         report.with_message(&self.details);
         // Every case should also have a label at the main location
@@ -491,9 +491,7 @@ impl fmt::Display for DiagnosticList {
 /// Use alternate formatting to never use colors: `format!("{diagnostic:#}")`
 impl fmt::Display for Diagnostic<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let color = !f.alternate();
-        let report = self.data.report(self.sources.clone(), color);
-        fmt::Display::fmt(&report, f)
+        self.data.report(self.sources.clone()).fmt(f)
     }
 }
 

@@ -246,8 +246,8 @@ pub(crate) enum DiagnosticData {
 }
 
 impl ApolloDiagnostic {
-    pub(crate) fn to_report(&self, sources: SourceMap, color: bool) -> DiagnosticReport {
-        let mut builder = DiagnosticReport::builder(sources, self.location).with_color(color);
+    pub(crate) fn to_report(&self, sources: SourceMap) -> DiagnosticReport {
+        let mut builder = DiagnosticReport::builder(sources, self.location);
         builder.with_message(&self.data);
         for label in &self.labels {
             builder.with_label_opt(label.location, &label.text);

@@ -68,21 +68,6 @@ impl ReportBuilder {
         }
     }
 
-    /// Enable or disable colors in the output.
-    pub fn with_color(self, color: bool) -> Self {
-        let Self {
-            sources,
-            colors,
-            report,
-        } = self;
-        let report = report.with_config(ariadne::Config::default().with_color(color));
-        Self {
-            sources,
-            colors,
-            report,
-        }
-    }
-
     /// Return the report.
     pub fn finish(self) -> DiagnosticReport {
         DiagnosticReport {
@@ -110,12 +95,17 @@ impl DiagnosticReport {
 
 impl fmt::Display for DiagnosticReport {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        struct Adaptor<'a, 'b>(&'a mut fmt::Formatter<'b>);
-
-        impl io::Write for Adaptor<'_, '_> {
+        struct StripColorAdaptor<'a, 'b> {
+            f: &'a mut fmt::Formatter<'b>,
+            strip: anstream::adapter::StripBytes,
+        }
+        impl io::Write for StripColorAdaptor<'_, '_> {
             fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
-                self.0.write_str(s).map_err(|_| io::ErrorKind::Other)?;
+                for printable in self.strip.strip_next(buf) {
+                    let s = std::str::from_utf8(printable).map_err(|_| io::ErrorKind::Other)?;
+                    self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
+                }
+
                 Ok(buf.len())
             }
 
@@ -124,10 +114,36 @@ impl fmt::Display for DiagnosticReport {
             }
         }
 
-        self.report
-            // .report(self.sources, color)
-            .write(Cache(&self.sources), Adaptor(f))
-            .map_err(|_| fmt::Error)
+        struct ColorAdaptor<'a, 'b> {
+            f: &'a mut fmt::Formatter<'b>,
+        }
+        impl io::Write for ColorAdaptor<'_, '_> {
+            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+                let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
+                self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
+                Ok(buf.len())
+            }
+
+            fn flush(&mut self) -> io::Result<()> {
+                Ok(())
+            }
+        }
+
+        if f.alternate() {
+            self.report
+                .write(
+                    Cache(&self.sources),
+                    StripColorAdaptor {
+                        f,
+                        strip: Default::default(),
+                    },
+                )
+                .map_err(|_| fmt::Error)
+        } else {
+            self.report
+                .write(Cache(&self.sources), ColorAdaptor { f })
+                .map_err(|_| fmt::Error)
+        }
     }
 }
 
