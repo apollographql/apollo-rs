@@ -354,7 +354,7 @@ impl DiagnosticData {
                 }
             },
         }
-        report.finish()
+        report
     }
 }
 

@@ -22,15 +22,19 @@ fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
     Some((location.file_id, start..end))
 }
 
-/// Builder for [`DiagnosticReport`]s.
-pub struct ReportBuilder {
+/// A diagnostic report that can be printed to a CLI with pretty colours and labeled lines of
+/// GraphQL source code.
+pub struct DiagnosticReport {
     sources: SourceMap,
     colors: ColorGenerator,
     report: ariadne::ReportBuilder<'static, MappedSpan>,
 }
 
-impl ReportBuilder {
-    fn new(sources: SourceMap, location: Option<NodeLocation>) -> Self {
+impl DiagnosticReport {
+    /// Returns a builder for creating diagnostic reports.
+    ///
+    /// Provide GraphQL source files and the main location for the diagnostic.
+    pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> Self {
         let (file_id, range) = location
             .and_then(|location| map_span(&sources, location))
             .unwrap_or((FileId::NONE, 0..0));
@@ -68,33 +72,10 @@ impl ReportBuilder {
         }
     }
 
-    /// Return the report.
-    pub fn finish(self) -> DiagnosticReport {
-        DiagnosticReport {
-            sources: self.sources,
-            report: self.report.finish(),
-        }
-    }
-}
+    /// Write the report to a [Formatter].
+    pub fn fmt(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let report = self.report.finish();
 
-/// A diagnostic report that can be printed to a CLI with pretty colours and labeled lines of
-/// GraphQL source code.
-pub struct DiagnosticReport {
-    sources: SourceMap,
-    report: ariadne::Report<'static, MappedSpan>,
-}
-
-impl DiagnosticReport {
-    /// Returns a builder for creating diagnostic reports.
-    ///
-    /// Provide GraphQL source files and the main location for the diagnostic.
-    pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> ReportBuilder {
-        ReportBuilder::new(sources, location)
-    }
-}
-
-impl fmt::Display for DiagnosticReport {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         struct StripColorAdaptor<'a, 'b> {
             f: &'a mut fmt::Formatter<'b>,
             strip: anstream::adapter::StripBytes,
@@ -130,7 +111,7 @@ impl fmt::Display for DiagnosticReport {
         }
 
         if f.alternate() {
-            self.report
+            report
                 .write(
                     Cache(&self.sources),
                     StripColorAdaptor {
@@ -140,7 +121,7 @@ impl fmt::Display for DiagnosticReport {
                 )
                 .map_err(|_| fmt::Error)
         } else {
-            self.report
+            report
                 .write(Cache(&self.sources), ColorAdaptor { f })
                 .map_err(|_| fmt::Error)
         }
