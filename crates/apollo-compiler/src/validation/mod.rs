@@ -576,26 +576,28 @@ struct RecursionLimitError {}
 /// Track used names in a recursive function.
 struct RecursionStack {
     seen: IndexSet<Name>,
+    high: usize,
+    limit: usize,
 }
 
 impl RecursionStack {
     fn new() -> Self {
         Self {
             seen: IndexSet::new(),
+            high: 0,
+            limit: RECURSION_LIMIT,
         }
     }
 
     fn with_root(root: Name) -> Self {
-        let mut seen = IndexSet::new();
-        seen.insert(root);
-        Self { seen }
+        let mut stack = Self::new();
+        stack.seen.insert(root);
+        stack
     }
 
     /// Return the actual API for tracking recursive uses.
     pub(crate) fn guard(&mut self) -> RecursionGuard<'_> {
-        RecursionGuard {
-            seen: &mut self.seen,
-        }
+        RecursionGuard(self)
     }
 }
 
@@ -604,36 +606,35 @@ impl RecursionStack {
 /// Pass the result of `guard.push(name)` to recursive calls. Use `guard.contains(name)` to check
 /// if the name was used somewhere up the call stack. When a guard is dropped, its name is removed
 /// from the list.
-struct RecursionGuard<'a> {
-    seen: &'a mut IndexSet<Name>,
-}
+struct RecursionGuard<'a>(&'a mut RecursionStack);
 impl RecursionGuard<'_> {
     /// Mark that we saw a name. If there are too many names, return an error.
     fn push(&mut self, name: &Name) -> Result<RecursionGuard<'_>, RecursionLimitError> {
         debug_assert!(
-            self.seen.insert(name.clone()),
+            self.0.seen.insert(name.clone()),
             "cannot push the same name twice to RecursionGuard, check contains() first"
         );
-        if self.seen.len() > RECURSION_LIMIT {
+        self.0.high = self.0.high.max(self.0.seen.len());
+        if self.0.seen.len() > self.0.limit {
             Err(RecursionLimitError {})
         } else {
-            Ok(RecursionGuard { seen: self.seen })
+            Ok(RecursionGuard(self.0))
         }
     }
     /// Check if we saw a name somewhere up the call stack.
     fn contains(&self, name: &Name) -> bool {
-        self.seen.iter().any(|seen| seen == name)
+        self.0.seen.iter().any(|seen| seen == name)
     }
     /// Return the name where we started.
     fn first(&self) -> Option<&Name> {
-        self.seen.first()
+        self.0.seen.first()
     }
 }
 
 impl Drop for RecursionGuard<'_> {
     fn drop(&mut self) {
         // This may already be empty if it's the original `stack.guard()` result, but that's fine
-        let _ = self.seen.pop();
+        let _ = self.0.seen.pop();
     }
 }
 
