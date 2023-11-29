@@ -3,6 +3,8 @@ use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
 
+use super::CycleError;
+
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.
 struct FindRecursiveDirective<'s> {
@@ -14,7 +16,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         def: &schema::ExtendedType,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         match def {
             schema::ExtendedType::Scalar(scalar_type_definition) => {
                 self.directives(seen, &scalar_type_definition.directives)?;
@@ -49,7 +51,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         input_value: &Node<ast::InputValueDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for directive in &input_value.directives {
             self.directive(seen, directive)?;
         }
@@ -66,7 +68,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         enum_value: &Node<ast::EnumValueDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for directive in &enum_value.directives {
             self.directive(seen, directive)?;
         }
@@ -78,7 +80,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         directives: &[schema::Component<ast::Directive>],
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for directive in directives {
             self.directive(seen, directive)?;
         }
@@ -89,17 +91,18 @@ impl FindRecursiveDirective<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         directive: &Node<ast::Directive>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         if !seen.contains(&directive.name) {
             if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
-                self.directive_definition(seen.push(&directive.name), def)?;
+                self.directive_definition(seen.push(&directive.name)?, def)
+                    .map_err(|error| error.trace(directive))?;
             }
         } else if seen.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
             // This prevents raising confusing errors when a directive `@b` which is not
             // self-referential uses a directive `@a` that *is*. The error with `@a` should
             // only be reported on its definition, not on `@b`'s.
-            return Err(directive.clone());
+            return Err(CycleError::Recursed(vec![directive.clone()]));
         }
 
         Ok(())
@@ -109,7 +112,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         mut seen: RecursionGuard<'_>,
         def: &Node<ast::DirectiveDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         for input_value in &def.arguments {
             self.input_value(&mut seen, input_value)?;
         }
@@ -120,7 +123,7 @@ impl FindRecursiveDirective<'_> {
     fn check(
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
-    ) -> Result<(), Node<ast::Directive>> {
+    ) -> Result<(), CycleError<ast::Directive>> {
         let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone());
         FindRecursiveDirective { schema }
             .directive_definition(recursion_stack.guard(), directive_def)
@@ -143,22 +146,59 @@ pub(crate) fn validate_directive_definition(
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    if let Err(directive) = FindRecursiveDirective::check(&db.schema(), &def) {
-        let definition_location = def.location();
-        let head_location = NodeLocation::recompose(def.location(), def.name.location());
-        let directive_location = directive.location();
-
-        diagnostics.push(
-            ApolloDiagnostic::new(
+    match FindRecursiveDirective::check(&db.schema(), &def) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => {
+            let definition_location = def.location();
+            let head_location = NodeLocation::recompose(def.location(), def.name.location());
+            let mut diagnostic = ApolloDiagnostic::new(
                 db,
                 definition_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
                     name: def.name.to_string(),
                 },
             )
-            .label(Label::new(head_location, "recursive directive definition"))
-            .label(Label::new(directive_location, "refers to itself here")),
-        );
+            .label(Label::new(head_location, "recursive directive definition"));
+
+            if let Some((cyclical_application, path)) = trace.split_first() {
+                let mut prev_name = &def.name;
+                for directive_application in path.iter().rev() {
+                    diagnostic = diagnostic.label(Label::new(
+                        directive_application.location(),
+                        format!(
+                            "`{}` references `{}` here...",
+                            prev_name, directive_application.name
+                        ),
+                    ));
+                    prev_name = &directive_application.name;
+                }
+
+                diagnostic = diagnostic.label(Label::new(
+                    cyclical_application.location(),
+                    format!(
+                        "`{}` circularly references `{}` here",
+                        prev_name, cyclical_application.name
+                    ),
+                ));
+            }
+
+            diagnostics.push(diagnostic);
+        }
+        Err(CycleError::Limit(_)) => {
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                def.location(),
+                DiagnosticData::DeeplyNestedType {
+                    name: def.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                def.location(),
+                "directive references a very long chain of directives",
+            ));
+
+            diagnostics.push(diagnostic);
+        }
     }
 
     diagnostics

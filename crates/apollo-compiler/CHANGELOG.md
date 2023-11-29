@@ -130,6 +130,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/724]: https://github.com/apollographql/apollo-rs/pull/724
 [pull/752]: https://github.com/apollographql/apollo-rs/pull/752
 
+## Fixes
+
+- **Limit recursion in validation - [goto-bus-stop], [pull/748] fixing [issue/742]**
+  Validation now bails out of very long chains of definitions that refer to each other,
+  even if they don't strictly form a cycle. These could previously cause extremely long validation
+  times or stack overflows.
+
+  The limit for input objects and directives is set at 32. For fragments, the limit is set at 100.
+  Based on our datasets, real-world documents don't come anywhere close to this.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/742]: https://github.com/apollographql/apollo-rs/issues/742
+[pull/748]: https://github.com/apollographql/apollo-rs/pull/748
 
 # [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
 

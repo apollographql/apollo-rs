@@ -2,7 +2,7 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
-    validation::{RecursionGuard, RecursionStack},
+    validation::{CycleError, RecursionGuard, RecursionStack},
     Node, ValidationDatabase,
 };
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ impl FindRecursiveInputValue<'_> {
         &self,
         seen: &mut RecursionGuard<'_>,
         def: &Node<ast::InputValueDefinition>,
-    ) -> Result<(), Node<ast::InputValueDefinition>> {
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         return match &*def.ty {
             // NonNull type followed by Named type is the one that's not allowed
             // to be cyclical, so this is only case we care about.
@@ -26,11 +26,12 @@ impl FindRecursiveInputValue<'_> {
             // Everything else may be a cyclical input value.
             ast::Type::NonNullNamed(name) => {
                 if !seen.contains(name) {
-                    if let Some(def) = self.db.ast_types().input_objects.get(name) {
-                        self.input_object_definition(seen.push(name), def)?
+                    if let Some(object_def) = self.db.ast_types().input_objects.get(name) {
+                        self.input_object_definition(seen.push(name)?, object_def)
+                            .map_err(|err| err.trace(def))?
                     }
                 } else if seen.first() == Some(name) {
-                    return Err(def.clone());
+                    return Err(CycleError::Recursed(vec![def.clone()]));
                 }
 
                 Ok(())
@@ -43,7 +44,7 @@ impl FindRecursiveInputValue<'_> {
         &self,
         mut seen: RecursionGuard<'_>,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Result<(), Node<ast::InputValueDefinition>> {
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         for input_value in input_object.fields() {
             self.input_value_definition(&mut seen, input_value)?;
         }
@@ -54,7 +55,7 @@ impl FindRecursiveInputValue<'_> {
     fn check(
         db: &dyn ValidationDatabase,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Result<(), Node<ast::InputValueDefinition>> {
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         let mut recursion_stack = RecursionStack::with_root(input_object.definition.name.clone());
         FindRecursiveInputValue { db }
             .input_object_definition(recursion_stack.guard(), input_object)
@@ -85,23 +86,56 @@ pub(crate) fn validate_input_object_definition(
         Default::default(),
     );
 
-    if let Err(input_val) = FindRecursiveInputValue::check(db, &input_object) {
-        let mut labels = vec![Label::new(
-            input_object.definition.location(),
-            "cyclical input object definition",
-        )];
-        let loc = input_val.location();
-        labels.push(Label::new(loc, "refers to itself here"));
-        diagnostics.push(
-            ApolloDiagnostic::new(
+    match FindRecursiveInputValue::check(db, &input_object) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => {
+            let mut diagnostic = ApolloDiagnostic::new(
                 db,
                 input_object.definition.location(),
                 DiagnosticData::RecursiveInputObjectDefinition {
                     name: input_object.definition.name.to_string(),
                 },
             )
-            .labels(labels),
-        )
+            .label(Label::new(
+                input_object.definition.location(),
+                "cyclical input object definition",
+            ));
+
+            if let Some((cyclical_reference, path)) = trace.split_first() {
+                let mut prev_name = &input_object.definition.name;
+                for reference in path.iter().rev() {
+                    diagnostic = diagnostic.label(Label::new(
+                        reference.location(),
+                        format!("`{}` references `{}` here...", prev_name, reference.name),
+                    ));
+                    prev_name = &reference.name;
+                }
+
+                diagnostic = diagnostic.label(Label::new(
+                    cyclical_reference.location(),
+                    format!(
+                        "`{}` circularly references `{}` here",
+                        prev_name, cyclical_reference.name
+                    ),
+                ));
+            }
+            diagnostics.push(diagnostic);
+        }
+        Err(CycleError::Limit(_)) => {
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                input_object.definition.location(),
+                DiagnosticData::DeeplyNestedType {
+                    name: input_object.definition.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                input_object.definition.location(),
+                "input object references a very long chain of input objects",
+            ));
+
+            diagnostics.push(diagnostic);
+        }
     }
 
     // Fields in an Input Object Definition must be unique

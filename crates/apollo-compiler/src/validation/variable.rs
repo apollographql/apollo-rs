@@ -1,5 +1,7 @@
 use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
-use crate::validation::{FileId, NodeLocation};
+use crate::validation::{
+    FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
+};
 use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
@@ -105,16 +107,11 @@ pub(crate) fn validate_variable_definitions2(
     diagnostics
 }
 
-enum SelectionPathElement<'ast> {
-    Field(&'ast ast::Field),
-    Fragment(&'ast ast::FragmentSpread),
-    InlineFragment(&'ast ast::InlineFragment),
-}
 fn walk_selections(
     document: &ast::Document,
     selections: &[ast::Selection],
     mut f: impl FnMut(&ast::Selection),
-) {
+) -> Result<(), RecursionLimitError> {
     type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
     let named_fragments: NamedFragments = document
         .definitions
@@ -127,55 +124,48 @@ fn walk_selections(
         })
         .collect();
 
-    fn walk_selections_inner<'ast: 'path, 'path>(
+    fn walk_selections_inner<'ast, 'guard>(
         named_fragments: &'ast NamedFragments,
         selections: &'ast [ast::Selection],
-        path: &mut Vec<SelectionPathElement<'path>>,
+        guard: &mut RecursionGuard<'guard>,
         f: &mut dyn FnMut(&ast::Selection),
-    ) {
+    ) -> Result<(), RecursionLimitError> {
         for selection in selections {
             f(selection);
             match selection {
                 ast::Selection::Field(field) => {
-                    path.push(SelectionPathElement::Field(field));
-                    walk_selections_inner(named_fragments, &field.selection_set, path, f);
-                    path.pop();
+                    walk_selections_inner(named_fragments, &field.selection_set, guard, f)?;
                 }
                 ast::Selection::FragmentSpread(fragment) => {
-                    // prevent recursion
-                    if path.iter().any(|element| {
-                        matches!(element, SelectionPathElement::Fragment(walked) if walked.fragment_name == fragment.fragment_name)
-                    }) {
+                    // Prevent chasing a cyclical reference.
+                    // Note we do not report `CycleError::Recursed` here, as that is already caught
+                    // by the cyclical fragment validation--we just need to ensure that we don't
+                    // overflow the stack.
+                    if guard.contains(&fragment.fragment_name) {
                         continue;
                     }
 
-                    path.push(SelectionPathElement::Fragment(fragment));
                     if let Some(fragment_definition) = named_fragments.get(&fragment.fragment_name)
                     {
                         walk_selections_inner(
                             named_fragments,
                             &fragment_definition.selection_set,
-                            path,
+                            &mut guard.push(&fragment.fragment_name)?,
                             f,
-                        );
+                        )?;
                     }
-                    path.pop();
                 }
                 ast::Selection::InlineFragment(fragment) => {
-                    path.push(SelectionPathElement::InlineFragment(fragment));
-                    walk_selections_inner(named_fragments, &fragment.selection_set, path, f);
-                    path.pop();
+                    walk_selections_inner(named_fragments, &fragment.selection_set, guard, f)?;
                 }
             }
         }
+        Ok(())
     }
 
-    walk_selections_inner(
-        &named_fragments,
-        selections,
-        &mut Default::default(),
-        &mut f,
-    );
+    let mut stack = RecursionStack::new().with_limit(100);
+    let result = walk_selections_inner(&named_fragments, selections, &mut stack.guard(), &mut f);
+    result
 }
 
 fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '_ {
@@ -218,6 +208,8 @@ pub(crate) fn validate_unused_variables(
     file_id: FileId,
     operation: Node<ast::OperationDefinition>,
 ) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
     let defined_vars: HashSet<_> = operation
         .variables
         .iter()
@@ -234,24 +226,31 @@ pub(crate) fn validate_unused_variables(
         })
         .collect();
     let mut used_vars = HashSet::<ast::Name>::new();
-    walk_selections(
-        &db.ast(file_id),
-        &operation.selection_set,
-        |selection| match selection {
-            ast::Selection::Field(field) => {
-                used_vars.extend(variables_in_directives(&field.directives));
-                used_vars.extend(variables_in_arguments(&field.arguments));
-            }
-            ast::Selection::FragmentSpread(fragment) => {
-                used_vars.extend(variables_in_directives(&fragment.directives));
-            }
-            ast::Selection::InlineFragment(fragment) => {
-                used_vars.extend(variables_in_directives(&fragment.directives));
-            }
-        },
-    );
-
-    let mut diagnostics = Vec::new();
+    let walked =
+        walk_selections(
+            &db.ast(file_id),
+            &operation.selection_set,
+            |selection| match selection {
+                ast::Selection::Field(field) => {
+                    used_vars.extend(variables_in_directives(&field.directives));
+                    used_vars.extend(variables_in_arguments(&field.arguments));
+                }
+                ast::Selection::FragmentSpread(fragment) => {
+                    used_vars.extend(variables_in_directives(&fragment.directives));
+                }
+                ast::Selection::InlineFragment(fragment) => {
+                    used_vars.extend(variables_in_directives(&fragment.directives));
+                }
+            },
+        );
+    if walked.is_err() {
+        diagnostics.push(ApolloDiagnostic::new(
+            db,
+            None,
+            DiagnosticData::RecursionError {},
+        ));
+        return diagnostics;
+    }
 
     let unused_vars = defined_vars.difference(&used_vars);
 

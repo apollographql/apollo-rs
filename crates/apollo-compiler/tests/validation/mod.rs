@@ -1,6 +1,7 @@
 mod interface;
 mod object;
 mod operation;
+mod recursion;
 mod types;
 mod variable;
 
