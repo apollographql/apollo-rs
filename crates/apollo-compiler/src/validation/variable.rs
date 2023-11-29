@@ -163,7 +163,7 @@ fn walk_selections(
         Ok(())
     }
 
-    let mut stack = RecursionStack::new();
+    let mut stack = RecursionStack::new().with_limit(100);
     let result = walk_selections_inner(&named_fragments, selections, &mut stack.guard(), &mut f);
     result
 }

@@ -331,7 +331,7 @@ pub(crate) fn validate_fragment_cycles(
         Ok(())
     }
 
-    let mut visited = RecursionStack::with_root(def.name.clone());
+    let mut visited = RecursionStack::with_root(def.name.clone()).with_limit(100);
 
     match detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard()) {
         Ok(_) => {}

@@ -566,7 +566,7 @@ impl From<ExecutableBuildError> for Details {
     }
 }
 
-const RECURSION_LIMIT: usize = 200;
+const DEFAULT_RECURSION_LIMIT: usize = 32;
 
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("Recursion limit reached")]
@@ -574,6 +574,7 @@ const RECURSION_LIMIT: usize = 200;
 struct RecursionLimitError {}
 
 /// Track used names in a recursive function.
+#[derive(Debug)]
 struct RecursionStack {
     seen: IndexSet<Name>,
     high: usize,
@@ -585,7 +586,7 @@ impl RecursionStack {
         Self {
             seen: IndexSet::new(),
             high: 0,
-            limit: RECURSION_LIMIT,
+            limit: DEFAULT_RECURSION_LIMIT,
         }
     }
 
@@ -593,6 +594,11 @@ impl RecursionStack {
         let mut stack = Self::new();
         stack.seen.insert(root);
         stack
+    }
+
+    fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
     }
 
     /// Return the actual API for tracking recursive uses.

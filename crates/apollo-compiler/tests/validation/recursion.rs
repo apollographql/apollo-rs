@@ -120,7 +120,7 @@ fn long_fragment_chains_do_not_overflow_stack() {
 #[test]
 fn not_long_enough_fragment_chain_applies_correctly() {
     // Stay just under the recursion limit
-    let query = build_fragment_chain(200);
+    let query = build_fragment_chain(99);
 
     let _ = apollo_compiler::parse_mixed_validate(
         format!(
@@ -134,22 +134,21 @@ fn not_long_enough_fragment_chain_applies_correctly() {
 
 #[test]
 fn long_directive_chains_do_not_overflow_stack() {
-    // Build a schema that applies 1K directives
+    // Build a schema that defines hundreds of directives that all use each other in their
+    // argument list
     // Validating it would take a lot of recursion and a lot of time
-    let schema = build_directive_chain(1_000);
+    let schema = build_directive_chain(500);
 
     let partial = apollo_compiler::Schema::parse_and_validate(schema, "directives.graphql")
         .expect_err("must have recursion errors");
 
-    // The final 199 directives do not cause recursion errors because the chain is less than 200
-    // directives deep.
-    assert_eq!(partial.errors.len(), 801);
+    assert_eq!(partial.errors.len(), 469);
 }
 
 #[test]
 fn not_long_enough_directive_chain_applies_correctly() {
     // Stay just under the recursion limit
-    let schema = build_directive_chain(199);
+    let schema = build_directive_chain(31);
 
     let _schema = apollo_compiler::Schema::parse_and_validate(schema, "directives.graphql")
         .expect("must not have recursion errors");
@@ -159,20 +158,20 @@ fn not_long_enough_directive_chain_applies_correctly() {
 fn long_input_object_chains_do_not_overflow_stack() {
     // Build a very deeply nested input object
     // Validating it would take a lot of recursion and a lot of time
-    let schema = build_input_object_chain(1_000);
+    let schema = build_input_object_chain(500);
 
     let partial = apollo_compiler::Schema::parse_and_validate(schema, "input_objects.graphql")
         .expect_err("must have recursion errors");
 
     // The final 199 input objects do not cause recursion errors because the chain is less than 200
     // directives deep.
-    assert_eq!(partial.errors.len(), 801);
+    assert_eq!(partial.errors.len(), 469);
 }
 
 #[test]
 fn not_long_enough_input_object_chain_applies_correctly() {
     // Stay just under the recursion limit
-    let schema = build_input_object_chain(199);
+    let schema = build_input_object_chain(31);
 
     let _schema = apollo_compiler::Schema::parse_and_validate(schema, "input_objects.graphql")
         .expect("must not have recursion errors");
