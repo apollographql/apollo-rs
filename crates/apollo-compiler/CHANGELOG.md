@@ -121,7 +121,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   even if they don't strictly form a cycle. These could previously cause extremely long validation
   times or stack overflows.
 
-  The limit is set at 200.
+  The limit for input objects and directives is set at 32. For fragments, the limit is set at 100.
+  Based on our datasets, real-world documents don't come anywhere close to this.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [issue/742]: https://github.com/apollographql/apollo-rs/issues/742
