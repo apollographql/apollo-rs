@@ -118,9 +118,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * `Value`
   Source locations are not preserved through serialization.
 
-- **Add `ast::Definition::as_*() -> Option<&_>` methods for each variant - [SimonSapin], [pull/760]:**
+- **Add `ast::Definition::as_*() -> Option<&_>` methods for each variant - [SimonSapin], [pull/760]**
 
-- **Serialize (to GraphQL) multi-line strings as block strings- [SimonSapin], [pull/724]**
+- **Serialize (to GraphQL) multi-line strings as block strings - [SimonSapin], [pull/724]:**
   Example before:
   ```graphql
   "Example\n\nDescription description description"
