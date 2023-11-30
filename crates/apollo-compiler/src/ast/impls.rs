@@ -61,6 +61,16 @@ impl Document {
         builder.build()
     }
 
+    /// Build and validate a schema with this AST document as its sole input.
+    pub fn to_schema_validate(&self) -> Result<Valid<Schema>, WithErrors<Schema>> {
+        let mut builder = Schema::builder();
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document(self, executable_definitions_are_errors);
+        let (schema, mut errors) = builder.build_inner();
+        crate::schema::validation::validate_schema(&mut errors, &schema);
+        errors.into_valid_result(schema)
+    }
+
     /// Build an executable document from this AST, with the given schema
     pub fn to_executable(
         &self,
@@ -69,6 +79,17 @@ impl Document {
         let mut errors = DiagnosticList::new(self.sources.clone());
         let document = self.to_executable_inner(schema, &mut errors);
         errors.into_result_with(document)
+    }
+
+    /// Build and validate an executable document from this AST, with the given schema
+    pub fn to_executable_validate(
+        &self,
+        schema: &Valid<Schema>,
+    ) -> Result<Valid<ExecutableDocument>, WithErrors<ExecutableDocument>> {
+        let mut errors = DiagnosticList::new(self.sources.clone());
+        let document = self.to_executable_inner(schema, &mut errors);
+        crate::executable::validation::validate_executable_document(&mut errors, schema, &document);
+        errors.into_valid_result(document)
     }
 
     pub(crate) fn to_executable_inner(

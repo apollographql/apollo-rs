@@ -381,7 +381,8 @@ impl<'a> Diagnostic<'a> {
 }
 
 impl DiagnosticList {
-    pub(crate) fn new(sources: SourceMap) -> Self {
+    /// Creates an empty diagnostic list with the given source map.
+    pub fn new(sources: SourceMap) -> Self {
         Self {
             sources,
             diagnostics_data: Vec::new(),
@@ -420,12 +421,28 @@ impl DiagnosticList {
         })
     }
 
+    /// Concatenate an `other` list of diagnostics into `self`, and sort them together.
+    pub fn merge(&mut self, other: Self) {
+        if !Arc::ptr_eq(&self.sources, &other.sources) {
+            let sources = Arc::make_mut(&mut self.sources);
+            for (&k, v) in &*other.sources {
+                sources.entry(k).or_insert_with(|| v.clone());
+            }
+        }
+        self.diagnostics_data.extend(other.diagnostics_data);
+        self.sort()
+    }
+
+    fn sort(&mut self) {
+        self.diagnostics_data
+            .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
+    }
+
     pub(crate) fn into_result(mut self) -> Result<(), Self> {
         if self.diagnostics_data.is_empty() {
             Ok(())
         } else {
-            self.diagnostics_data
-                .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
+            self.sort();
             Err(self)
         }
     }
