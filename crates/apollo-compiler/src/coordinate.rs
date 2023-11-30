@@ -368,3 +368,29 @@ impl fmt::Display for SchemaCoordinate {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn invalid_coordinates() {
+        SchemaCoordinate::from_str("Type\\.field(arg:)").expect_err("invalid character");
+        SchemaCoordinate::from_str("@directi^^ve").expect_err("invalid character");
+        SchemaCoordinate::from_str("@directi@ve").expect_err("invalid character");
+        SchemaCoordinate::from_str("@  spaces  ").expect_err("invalid character");
+
+        SchemaCoordinate::from_str("@(:)").expect_err("directive argument syntax without names");
+        SchemaCoordinate::from_str("@dir(:)")
+            .expect_err("directive argument syntax without argument name");
+        SchemaCoordinate::from_str("@(arg:)")
+            .expect_err("directive argument syntax without directive name");
+
+        SchemaCoordinate::from_str("Type.")
+            .expect_err("type attribute syntax without attribute name");
+        SchemaCoordinate::from_str(".field").expect_err("type attribute syntax without type name");
+        SchemaCoordinate::from_str("Type.field(:)")
+            .expect_err("field argument syntax without field name");
+        SchemaCoordinate::from_str("Type.field(arg)").expect_err("field argument syntax without :");
+    }
+}
