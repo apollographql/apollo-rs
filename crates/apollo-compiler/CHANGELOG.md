@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
 
 ## BREAKING
 
@@ -137,13 +137,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   schema { query: MyQuery }
   ```
 
-[SimonSapin]: https://github.com/SimonSapin
-[issue/709]: https://github.com/apollographql/apollo-rs/issues/709
-[issue/751]: https://github.com/apollographql/apollo-rs/issues/751
-[pull/724]: https://github.com/apollographql/apollo-rs/pull/724
-[pull/752]: https://github.com/apollographql/apollo-rs/pull/752
-[pull/760]: https://github.com/apollographql/apollo-rs/pull/760
-
 ## Fixes
 
 - **Limit recursion in validation - [goto-bus-stop], [pull/748] fixing [issue/742]**
@@ -154,9 +147,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The limit for input objects and directives is set at 32. For fragments, the limit is set at 100.
   Based on our datasets, real-world documents don't come anywhere close to this.
 
+[SimonSapin]: https://github.com/SimonSapin
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/709]: https://github.com/apollographql/apollo-rs/issues/709
 [issue/742]: https://github.com/apollographql/apollo-rs/issues/742
+[issue/751]: https://github.com/apollographql/apollo-rs/issues/751
+[pull/724]: https://github.com/apollographql/apollo-rs/pull/724
 [pull/748]: https://github.com/apollographql/apollo-rs/pull/748
+[pull/752]: https://github.com/apollographql/apollo-rs/pull/752
+[pull/760]: https://github.com/apollographql/apollo-rs/pull/760
 
 # [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
 
