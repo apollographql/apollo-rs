@@ -139,7 +139,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Limit recursion in validation - [goto-bus-stop], [pull/748] fixing [issue/742]**
+- **Limit recursion in validation - [goto-bus-stop], [pull/748] fixing [issue/742]:**
   Validation now bails out of very long chains of definitions that refer to each other,
   even if they don't strictly form a cycle. These could previously cause extremely long validation
   times or stack overflows.
