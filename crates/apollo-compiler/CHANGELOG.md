@@ -17,6 +17,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Features
+
+- **Add validation convenience APIs - [SimonSapin], [pull/764]:**
+ * `ast::Document::to_schema_validate`
+ * `ast::Document::to_executable_validate`
+ * `DiagnosticList::new`
+ * `DiagnosticList::merge`
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/765]: https://github.com/apollographql/apollo-rs/pull/764
+
+
 # [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
 
 ## BREAKING
