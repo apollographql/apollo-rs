@@ -1,9 +1,15 @@
+//! Parsing and printing for schema coordinates as described in [the RFC].
+//!
+//! Schema coordinates uniquely point to an item defined in a schema.
+//!
+//! [the RFC]: https://github.com/graphql/graphql-wg/blob/main/rfcs/SchemaCoordinates.md
+
 use crate::ast::InvalidNameError;
 use crate::schema::Name;
 use std::fmt;
 use std::str::FromStr;
 
-/// Create a static coordinate at compile time.
+/// Create a static schema coordinate at compile time.
 ///
 /// ```rust
 /// use apollo_compiler::coord;
@@ -138,11 +144,14 @@ pub enum SchemaCoordinate {
     DirectiveArgument(DirectiveArgumentCoordinate),
 }
 
+/// Errors that can occur while parsing a schema coordinate.
 #[derive(Debug, Clone, thiserror::Error)]
 #[non_exhaustive]
 pub enum SchemaCoordinateParseError {
+    /// Invalid format, eg. unexpected characters
     #[error("invalid schema coordinate")]
     InvalidFormat,
+    /// A name part contains invalid characters
     #[error(transparent)]
     InvalidName(#[from] InvalidNameError),
 }
