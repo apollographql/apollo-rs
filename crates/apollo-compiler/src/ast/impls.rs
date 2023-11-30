@@ -88,7 +88,7 @@ impl Document {
     ) -> Result<Valid<ExecutableDocument>, WithErrors<ExecutableDocument>> {
         let mut errors = DiagnosticList::new(self.sources.clone());
         let document = self.to_executable_inner(schema, &mut errors);
-        crate::executable::validation::validate_standalone_executable(&mut errors, &document);
+        crate::executable::validation::validate_executable_document(&mut errors, schema, &document);
         errors.into_valid_result(document)
     }
 
