@@ -28,7 +28,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  * `DiagnosticList::merge`
 
 [SimonSapin]: https://github.com/SimonSapin
-[pull/765]: https://github.com/apollographql/apollo-rs/pull/764
+[pull/764]: https://github.com/apollographql/apollo-rs/pull/764
 
 
 # [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
