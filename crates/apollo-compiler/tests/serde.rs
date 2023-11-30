@@ -180,7 +180,8 @@ fn test_serde_type() {
         Named(
             "a",
         )
-    "#]].assert_debug_eq(&ty_1);
+    "#]]
+    .assert_debug_eq(&ty_1);
     expect![[r#"
         NonNullList(
             List(
@@ -189,7 +190,8 @@ fn test_serde_type() {
                 ),
             ),
         )
-    "#]].assert_debug_eq(&ty_2);
+    "#]]
+    .assert_debug_eq(&ty_2);
     let json_1 = serde_json::to_string(&ty_1).unwrap();
     let json_2 = serde_json::to_string(&ty_2).unwrap();
     expect![[r#"{"Named":"a"}"#]].assert_eq(&json_1);
