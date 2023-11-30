@@ -1,8 +1,9 @@
 use apollo_compiler::ast;
+use apollo_compiler::ty;
 use expect_test::expect;
 
 #[test]
-fn test_serde_serialization() {
+fn test_serde_value() {
     let input = r#"
         query($var: I = {
             null_field: null,
@@ -170,6 +171,36 @@ fn test_serde_serialization() {
 }
 
 #[test]
+fn test_serde_type() {
+    let ty_1 = ty!(a);
+    let ty_2 = ty!([[a!]]!);
+    expect!["a"].assert_eq(&ty_1.to_string());
+    expect!["[[a!]]!"].assert_eq(&ty_2.to_string());
+    expect![[r#"
+        Named(
+            "a",
+        )
+    "#]].assert_debug_eq(&ty_1);
+    expect![[r#"
+        NonNullList(
+            List(
+                NonNullNamed(
+                    "a",
+                ),
+            ),
+        )
+    "#]].assert_debug_eq(&ty_2);
+    let json_1 = serde_json::to_string(&ty_1).unwrap();
+    let json_2 = serde_json::to_string(&ty_2).unwrap();
+    expect![[r#"{"Named":"a"}"#]].assert_eq(&json_1);
+    expect![[r#"{"NonNullList":{"List":{"NonNullNamed":"a"}}}"#]].assert_eq(&json_2);
+    let ty_1_deserialized: ast::Type = serde_json::from_str(&json_1).unwrap();
+    let ty_2_deserialized: ast::Type = serde_json::from_str(&json_2).unwrap();
+    assert_eq!(ty_1, ty_1_deserialized);
+    assert_eq!(ty_2, ty_2_deserialized);
+}
+
+#[test]
 fn test_serde_deserialization_errors() {
     #[track_caller]
     fn assert_err<T: serde::de::DeserializeOwned>(input: &str, expected: expect_test::Expect) {
@@ -177,14 +208,20 @@ fn test_serde_deserialization_errors() {
     }
     assert_err::<ast::Name>(
         r#""1nvalid""#,
-        expect![[r#"invalid value: string "1nvalid", expected a string in GraphQL Name syntax at line 1 column 9"#]],
+        expect![[
+            r#"invalid value: string "1nvalid", expected a string in GraphQL Name syntax at line 1 column 9"#
+        ]],
     );
     assert_err::<ast::IntValue>(
         r#""+3""#,
-        expect![[r#"invalid value: string "+3", expected a string in GraphQL IntValue syntax at line 1 column 4"#]],
+        expect![[
+            r#"invalid value: string "+3", expected a string in GraphQL IntValue syntax at line 1 column 4"#
+        ]],
     );
     assert_err::<ast::FloatValue>(
         r#""+3.5""#,
-        expect![[r#"invalid value: string "+3.5", expected a string in GraphQL FloatValue syntax at line 1 column 6"#]],
+        expect![[
+            r#"invalid value: string "+3.5", expected a string in GraphQL FloatValue syntax at line 1 column 6"#
+        ]],
     );
 }

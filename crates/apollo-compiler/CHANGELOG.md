@@ -116,6 +116,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * `IntValue`
   * `FloatValue`
   * `Value`
+  * `Type`
   Source locations are not preserved through serialization.
 
 - **Add `ast::Definition::as_*() -> Option<&_>` methods for each variant - [SimonSapin], [pull/760]**
