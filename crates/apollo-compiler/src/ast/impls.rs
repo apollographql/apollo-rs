@@ -1113,7 +1113,7 @@ impl<'de> serde::Deserialize<'de> for IntValue {
     where
         D: serde::Deserializer<'de>,
     {
-        const EXPECTING: &str = "a string a GraphQL IntValue syntax";
+        const EXPECTING: &str = "a string in GraphQL IntValue syntax";
         struct Visitor;
         impl<'de> serde::de::Visitor<'de> for Visitor {
             type Value = IntValue;
@@ -1153,7 +1153,7 @@ impl<'de> serde::Deserialize<'de> for FloatValue {
     where
         D: serde::Deserializer<'de>,
     {
-        const EXPECTING: &str = "a string a GraphQL FloatValue syntax";
+        const EXPECTING: &str = "a string in GraphQL FloatValue syntax";
         struct Visitor;
         impl<'de> serde::de::Visitor<'de> for Visitor {
             type Value = FloatValue;
@@ -1612,7 +1612,7 @@ impl<'de> serde::Deserialize<'de> for Name {
     where
         D: serde::Deserializer<'de>,
     {
-        const EXPECTING: &str = "a string a GraphQL Name syntax";
+        const EXPECTING: &str = "a string in GraphQL Name syntax";
         struct Visitor;
         impl<'de> serde::de::Visitor<'de> for Visitor {
             type Value = Name;

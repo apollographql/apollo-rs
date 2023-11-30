@@ -177,14 +177,14 @@ fn test_serde_deserialization_errors() {
     }
     assert_err::<ast::Name>(
         r#""1nvalid""#,
-        expect![[r#"invalid value: string "1nvalid", expected a string a GraphQL Name syntax at line 1 column 9"#]],
+        expect![[r#"invalid value: string "1nvalid", expected a string in GraphQL Name syntax at line 1 column 9"#]],
     );
     assert_err::<ast::IntValue>(
         r#""+3""#,
-        expect![[r#"invalid value: string "+3", expected a string a GraphQL IntValue syntax at line 1 column 4"#]],
+        expect![[r#"invalid value: string "+3", expected a string in GraphQL IntValue syntax at line 1 column 4"#]],
     );
     assert_err::<ast::FloatValue>(
         r#""+3.5""#,
-        expect![[r#"invalid value: string "+3.5", expected a string a GraphQL FloatValue syntax at line 1 column 6"#]],
+        expect![[r#"invalid value: string "+3.5", expected a string in GraphQL FloatValue syntax at line 1 column 6"#]],
     );
 }
