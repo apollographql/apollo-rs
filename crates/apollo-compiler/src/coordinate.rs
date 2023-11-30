@@ -13,6 +13,7 @@ use std::str::FromStr;
 /// assert_eq!(coord!(Type).to_string(), "Type");
 /// assert_eq!(coord!(Type.field).to_string(), "Type.field");
 /// assert_eq!(coord!(Type.field(arg:)).to_string(), "Type.field(arg:)");
+/// assert_eq!(coord!(EnumType.ENUM_VALUE).to_string(), "EnumType.ENUM_VALUE");
 /// ```
 #[macro_export]
 macro_rules! coord {
@@ -32,10 +33,10 @@ macro_rules! coord {
             ty: $crate::name!($name),
         }
     };
-    ( $name:ident . $field:ident ) => {
-        $crate::coordinate::FieldCoordinate {
+    ( $name:ident . $attribute:ident ) => {
+        $crate::coordinate::TypeAttributeCoordinate {
             ty: $crate::name!($name),
-            field: $crate::name!($field),
+            attribute: $crate::name!($attribute),
         }
     };
     ( $name:ident . $field:ident ( $arg:ident : ) ) => {
@@ -61,22 +62,22 @@ pub struct TypeCoordinate {
     pub ty: Name,
 }
 
-/// A schema coordinate targeting a field definition: `Type.field`.
+/// A schema coordinate targeting a field definition or an enum value: `Type.field`, `Enum.VALUE`.
 ///
 /// # Example
 /// ```
 /// use apollo_compiler::name;
-/// use apollo_compiler::coordinate::FieldCoordinate;
+/// use apollo_compiler::coordinate::TypeAttributeCoordinate;
 ///
-/// assert_eq!(FieldCoordinate {
+/// assert_eq!(TypeAttributeCoordinate {
 ///     ty: name!("Type"),
-///     field: name!("field"),
+///     attribute: name!("field"),
 /// }.to_string(), "Type.field");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FieldCoordinate {
+pub struct TypeAttributeCoordinate {
     pub ty: Name,
-    pub field: Name,
+    pub attribute: Name,
 }
 
 /// A schema coordinate targeting a field argument definition: `Type.field(argument:)`.
@@ -131,7 +132,7 @@ pub struct DirectiveArgumentCoordinate {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SchemaCoordinate {
     Type(TypeCoordinate),
-    Field(FieldCoordinate),
+    TypeAttribute(TypeAttributeCoordinate),
     FieldArgument(FieldArgumentCoordinate),
     Directive(DirectiveCoordinate),
     DirectiveArgument(DirectiveArgumentCoordinate),
@@ -147,9 +148,15 @@ pub enum SchemaCoordinateParseError {
 }
 
 impl TypeCoordinate {
-    /// Create a schema coordinate that points to a field on this type.
-    pub fn with_field(self, field: Name) -> FieldCoordinate {
-        FieldCoordinate { ty: self.ty, field }
+    /// Create a schema coordinate that points to an attribute on this type.
+    ///
+    /// For object types and interfaces, the resulting coordinate points to a field. For enums, the
+    /// resulting coordinate points to a value.
+    pub fn with_attribute(self, attribute: Name) -> TypeAttributeCoordinate {
+        TypeAttributeCoordinate {
+            ty: self.ty,
+            attribute,
+        }
     }
 }
 
@@ -168,23 +175,23 @@ impl FromStr for TypeCoordinate {
     }
 }
 
-impl FieldCoordinate {
-    /// Create a schema coordinate that points to the type this field is on.
+impl TypeAttributeCoordinate {
+    /// Create a schema coordinate that points to the type this attribute is part of.
     pub fn type_coordinate(self) -> TypeCoordinate {
         TypeCoordinate { ty: self.ty }
     }
 
-    /// Create a schema coordinate that points to an argument on this field.
+    /// Assume this attribute is a field, and create a schema coordinate that points to an argument on this field.
     pub fn with_argument(self, argument: Name) -> FieldArgumentCoordinate {
         FieldArgumentCoordinate {
             ty: self.ty,
-            field: self.field,
+            field: self.attribute,
             argument,
         }
     }
 }
 
-impl FromStr for FieldCoordinate {
+impl FromStr for TypeAttributeCoordinate {
     type Err = SchemaCoordinateParseError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let Some((type_name, field)) = input.split_once('.') else {
@@ -192,7 +199,7 @@ impl FromStr for FieldCoordinate {
         };
         Ok(Self {
             ty: Name::try_from(type_name)?,
-            field: Name::try_from(field)?,
+            attribute: Name::try_from(field)?,
         })
     }
 }
@@ -204,10 +211,10 @@ impl FieldArgumentCoordinate {
     }
 
     /// Create a schema coordinate that points to the field this argument is defined in.
-    pub fn field_coordinate(self) -> FieldCoordinate {
-        FieldCoordinate {
+    pub fn field_coordinate(self) -> TypeAttributeCoordinate {
+        TypeAttributeCoordinate {
             ty: self.ty,
-            field: self.field,
+            attribute: self.field,
         }
     }
 }
@@ -218,7 +225,7 @@ impl FromStr for FieldArgumentCoordinate {
         let Some((field, rest)) = input.split_once('(') else {
             return Err(SchemaCoordinateParseError::InvalidFormat);
         };
-        let field = FieldCoordinate::from_str(field)?;
+        let field = TypeAttributeCoordinate::from_str(field)?;
 
         let Some((argument, ")")) = rest.split_once(':') else {
             return Err(SchemaCoordinateParseError::InvalidFormat);
@@ -287,9 +294,12 @@ impl fmt::Display for TypeCoordinate {
     }
 }
 
-impl fmt::Display for FieldCoordinate {
+impl fmt::Display for TypeAttributeCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self { ty, field } = self;
+        let Self {
+            ty,
+            attribute: field,
+        } = self;
         write!(f, "{ty}.{field}")
     }
 }
@@ -332,7 +342,7 @@ impl FromStr for SchemaCoordinate {
         } else {
             FieldArgumentCoordinate::from_str(input)
                 .map(Self::FieldArgument)
-                .or_else(|_| FieldCoordinate::from_str(input).map(Self::Field))
+                .or_else(|_| TypeAttributeCoordinate::from_str(input).map(Self::TypeAttribute))
                 .or_else(|_| TypeCoordinate::from_str(input).map(Self::Type))
         }
     }
@@ -342,7 +352,7 @@ impl fmt::Display for SchemaCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Type(inner) => inner.fmt(f),
-            Self::Field(inner) => inner.fmt(f),
+            Self::TypeAttribute(inner) => inner.fmt(f),
             Self::FieldArgument(inner) => inner.fmt(f),
             Self::Directive(inner) => inner.fmt(f),
             Self::DirectiveArgument(inner) => inner.fmt(f),
