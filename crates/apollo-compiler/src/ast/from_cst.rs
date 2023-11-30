@@ -768,7 +768,7 @@ impl Convert for cst::Name {
         let loc = NodeLocation::new(file_id, self.syntax());
         let token = &self.syntax().first_token()?;
         let str = token.text();
-        debug_assert!(ast::Name::is_valid(str));
+        debug_assert!(ast::Name::valid_syntax(str));
         Some(ast::Name(crate::NodeStr::new_parsed(str, loc)))
     }
 }

@@ -275,7 +275,7 @@ pub struct VariableDefinition {
     pub directives: DirectiveList,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Type {
     Named(NamedType),
     NonNullNamed(NamedType),
@@ -337,7 +337,7 @@ pub struct InlineFragment {
     pub selection_set: Vec<Selection>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Value {
     Null,
     Enum(Name),

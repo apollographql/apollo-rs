@@ -263,6 +263,142 @@ impl Definition {
         }
     }
 
+    pub fn as_operation_definition(&self) -> Option<&Node<OperationDefinition>> {
+        if let Self::OperationDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_fragment_definition(&self) -> Option<&Node<FragmentDefinition>> {
+        if let Self::FragmentDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_directive_definition(&self) -> Option<&Node<DirectiveDefinition>> {
+        if let Self::DirectiveDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_schema_definition(&self) -> Option<&Node<SchemaDefinition>> {
+        if let Self::SchemaDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_scalar_type_definition(&self) -> Option<&Node<ScalarTypeDefinition>> {
+        if let Self::ScalarTypeDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_object_type_definition(&self) -> Option<&Node<ObjectTypeDefinition>> {
+        if let Self::ObjectTypeDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_interface_type_definition(&self) -> Option<&Node<InterfaceTypeDefinition>> {
+        if let Self::InterfaceTypeDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_union_type_definition(&self) -> Option<&Node<UnionTypeDefinition>> {
+        if let Self::UnionTypeDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_enum_type_definition(&self) -> Option<&Node<EnumTypeDefinition>> {
+        if let Self::EnumTypeDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_input_object_type_definition(&self) -> Option<&Node<InputObjectTypeDefinition>> {
+        if let Self::InputObjectTypeDefinition(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_schema_extension(&self) -> Option<&Node<SchemaExtension>> {
+        if let Self::SchemaExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_scalar_type_extension(&self) -> Option<&Node<ScalarTypeExtension>> {
+        if let Self::ScalarTypeExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_object_type_extension(&self) -> Option<&Node<ObjectTypeExtension>> {
+        if let Self::ObjectTypeExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_interface_type_extension(&self) -> Option<&Node<InterfaceTypeExtension>> {
+        if let Self::InterfaceTypeExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_union_type_extension(&self) -> Option<&Node<UnionTypeExtension>> {
+        if let Self::UnionTypeExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_enum_type_extension(&self) -> Option<&Node<EnumTypeExtension>> {
+        if let Self::EnumTypeExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_input_object_type_extension(&self) -> Option<&Node<InputObjectTypeExtension>> {
+        if let Self::InputObjectTypeExtension(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
     serialize_method!();
 }
 
@@ -972,6 +1108,104 @@ impl fmt::Debug for FloatValue {
     }
 }
 
+impl<'de> serde::Deserialize<'de> for IntValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const EXPECTING: &str = "a string in GraphQL IntValue syntax";
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = IntValue;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str(EXPECTING)
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if IntValue::valid_syntax(v) {
+                    Ok(IntValue(v.to_owned()))
+                } else {
+                    Err(E::invalid_value(serde::de::Unexpected::Str(v), &EXPECTING))
+                }
+            }
+
+            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if IntValue::valid_syntax(&v) {
+                    Ok(IntValue(v))
+                } else {
+                    Err(E::invalid_value(serde::de::Unexpected::Str(&v), &EXPECTING))
+                }
+            }
+        }
+        deserializer.deserialize_string(Visitor)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for FloatValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const EXPECTING: &str = "a string in GraphQL FloatValue syntax";
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = FloatValue;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str(EXPECTING)
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if FloatValue::valid_syntax(v) {
+                    Ok(FloatValue(v.to_owned()))
+                } else {
+                    Err(E::invalid_value(serde::de::Unexpected::Str(v), &EXPECTING))
+                }
+            }
+
+            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if FloatValue::valid_syntax(&v) {
+                    Ok(FloatValue(v))
+                } else {
+                    Err(E::invalid_value(serde::de::Unexpected::Str(&v), &EXPECTING))
+                }
+            }
+        }
+        deserializer.deserialize_string(Visitor)
+    }
+}
+
+impl serde::Serialize for IntValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
+impl serde::Serialize for FloatValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
 impl fmt::Display for FloatOverflowError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("value magnitude too large to be converted to `f64`")
@@ -1298,7 +1532,7 @@ impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
 /// ```compile_fail
 /// # use apollo_compiler::name;
 /// // error[E0080]: evaluation of constant value failed
-/// // assertion failed: ::apollo_compiler::ast::Name::is_valid(\"è_é\")
+/// // assertion failed: ::apollo_compiler::ast::Name::valid_syntax(\"è_é\")
 /// let invalid = name!("è_é");
 /// ```
 #[macro_export]
@@ -1307,7 +1541,7 @@ macro_rules! name {
         $crate::name!(stringify!($value))
     };
     ($value: expr) => {{
-        const _: () = { assert!($crate::ast::Name::is_valid($value)) };
+        const _: () = { assert!($crate::ast::Name::valid_syntax($value)) };
         $crate::ast::Name::new_unchecked($crate::NodeStr::from_static(&$value))
     }};
 }
@@ -1316,7 +1550,7 @@ impl Name {
     /// Creates a new `Name` if the given value is a valid GraphQL name.
     pub fn new(value: impl Into<NodeStr>) -> Result<Self, InvalidNameError> {
         let value = value.into();
-        if Self::is_valid(&value) {
+        if Self::valid_syntax(&value) {
             Ok(Self::new_unchecked(value))
         } else {
             Err(InvalidNameError(value))
@@ -1334,7 +1568,7 @@ impl Name {
     /// Returns whether the given string is a valid GraphQL name.
     ///
     /// <https://spec.graphql.org/October2021/#Name>
-    pub const fn is_valid(value: &str) -> bool {
+    pub const fn valid_syntax(value: &str) -> bool {
         let bytes = value.as_bytes();
         let Some(&first) = bytes.first() else {
             return false;
@@ -1370,6 +1604,44 @@ impl Name {
             origin,
             name: self.clone(),
         }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Name {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const EXPECTING: &str = "a string in GraphQL Name syntax";
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = Name;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str(EXPECTING)
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if Name::valid_syntax(v) {
+                    Ok(Name(v.into()))
+                } else {
+                    Err(E::invalid_value(serde::de::Unexpected::Str(v), &EXPECTING))
+                }
+            }
+        }
+        deserializer.deserialize_str(Visitor)
+    }
+}
+
+impl serde::Serialize for Name {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self)
     }
 }
 

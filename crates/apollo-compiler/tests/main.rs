@@ -8,6 +8,7 @@ mod misc;
 mod node_str;
 mod parser;
 mod schema;
+mod serde;
 mod validation;
 
 #[path = "../examples/rename.rs"]
