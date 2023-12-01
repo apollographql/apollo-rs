@@ -507,7 +507,6 @@ impl Schema {
             // __type(name: String!): __Type
             ROOT_QUERY_FIELDS.get()
         } else {
-            // FIXME: not on leaf types
             // __typename: String!
             std::slice::from_ref(&ROOT_QUERY_FIELDS.get()[0])
         }
