@@ -123,7 +123,7 @@ pub(crate) fn validate_field_set(
         },
     );
     compiler.db.set_source_files(ids);
-    let diagnostics = crate::validation::selection::validate_selection_set2(
+    let diagnostics = crate::validation::selection::validate_selection_set(
         &compiler.db,
         ast_id,
         Some(&field_set.selection_set.ty),
