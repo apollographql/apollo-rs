@@ -5,7 +5,8 @@
 //! [the RFC]: https://github.com/graphql/graphql-wg/blob/main/rfcs/SchemaCoordinates.md
 
 use crate::ast::InvalidNameError;
-use crate::schema::Name;
+use crate::ast::Name;
+use crate::schema::NamedType;
 use std::fmt;
 use std::str::FromStr;
 
@@ -65,7 +66,7 @@ macro_rules! coord {
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TypeCoordinate {
-    pub ty: Name,
+    pub ty: NamedType,
 }
 
 /// A schema coordinate targeting a field definition or an enum value: `Type.field`, `Enum.VALUE`.
@@ -82,7 +83,7 @@ pub struct TypeCoordinate {
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TypeAttributeCoordinate {
-    pub ty: Name,
+    pub ty: NamedType,
     pub attribute: Name,
 }
 
@@ -101,7 +102,7 @@ pub struct TypeAttributeCoordinate {
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FieldArgumentCoordinate {
-    pub ty: Name,
+    pub ty: NamedType,
     pub field: Name,
     pub argument: Name,
 }
@@ -169,8 +170,8 @@ impl TypeCoordinate {
     }
 }
 
-impl From<Name> for TypeCoordinate {
-    fn from(ty: Name) -> Self {
+impl From<NamedType> for TypeCoordinate {
+    fn from(ty: NamedType) -> Self {
         Self { ty }
     }
 }
@@ -179,7 +180,7 @@ impl FromStr for TypeCoordinate {
     type Err = SchemaCoordinateParseError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            ty: Name::try_from(input)?,
+            ty: NamedType::try_from(input)?,
         })
     }
 }
@@ -207,7 +208,7 @@ impl FromStr for TypeAttributeCoordinate {
             return Err(SchemaCoordinateParseError::InvalidFormat);
         };
         Ok(Self {
-            ty: Name::try_from(type_name)?,
+            ty: NamedType::try_from(type_name)?,
             attribute: Name::try_from(field)?,
         })
     }
