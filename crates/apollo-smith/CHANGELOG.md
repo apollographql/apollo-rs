@@ -19,22 +19,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [0.6.0-beta.1](https://crates.io/crates/apollo-smith/0.6.0-beta.1) - 2023-11-30
 
 ## BREAKING
 
-- **Remove the `parser-impl` feature flag - [SimonSapin], [pull/FIXME].**
+- **Remove the `parser-impl` feature flag - [SimonSapin], [pull/754].**
   This functionality is now always enabled.
-- **Use apollo-compiler instead of apollo-encoder for serialization - [SimonSapin], [pull/FIXME].**
+- **Use apollo-compiler instead of apollo-encoder for serialization - [SimonSapin], [pull/754].**
   The exact string output may change.
 
 ## Fixes
 
-- **Make serialization ordering deterministic - [SimonSapin], [pull/FIXME].**
+- **Make serialization ordering deterministic - [SimonSapin], [pull/754].**
   Internally use `IndexMap` and `IndexSet` instead of `IndexMap` and `IndexSet`
 
 [SimonSapin]: https://github.com/SimonSapin
-
+[pull/754]: https://github.com/apollographql/apollo-rs/pull/754
 
 # [0.5.0](https://crates.io/crates/apollo-smith/0.5.0) - 2023-10-19
 
