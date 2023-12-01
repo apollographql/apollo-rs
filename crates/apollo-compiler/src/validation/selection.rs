@@ -404,7 +404,7 @@ pub(crate) fn fields_in_set_can_merge(
     }
 }
 
-pub(crate) fn validate_selection_set2(
+pub(crate) fn validate_selection_set(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     against_type: Option<&ast::NamedType>,
