@@ -162,9 +162,9 @@ impl TypeCoordinate {
     ///
     /// For object types and interfaces, the resulting coordinate points to a field. For enums, the
     /// resulting coordinate points to a value.
-    pub fn with_attribute(self, attribute: Name) -> TypeAttributeCoordinate {
+    pub fn with_attribute(&self, attribute: Name) -> TypeAttributeCoordinate {
         TypeAttributeCoordinate {
-            ty: self.ty,
+            ty: self.ty.clone(),
             attribute,
         }
     }
@@ -187,15 +187,17 @@ impl FromStr for TypeCoordinate {
 
 impl TypeAttributeCoordinate {
     /// Create a schema coordinate that points to the type this attribute is part of.
-    pub fn type_coordinate(self) -> TypeCoordinate {
-        TypeCoordinate { ty: self.ty }
+    pub fn type_coordinate(&self) -> TypeCoordinate {
+        TypeCoordinate {
+            ty: self.ty.clone(),
+        }
     }
 
     /// Assume this attribute is a field, and create a schema coordinate that points to an argument on this field.
-    pub fn with_argument(self, argument: Name) -> FieldArgumentCoordinate {
+    pub fn with_argument(&self, argument: Name) -> FieldArgumentCoordinate {
         FieldArgumentCoordinate {
-            ty: self.ty,
-            field: self.attribute,
+            ty: self.ty.clone(),
+            field: self.attribute.clone(),
             argument,
         }
     }
@@ -216,15 +218,17 @@ impl FromStr for TypeAttributeCoordinate {
 
 impl FieldArgumentCoordinate {
     /// Create a schema coordinate that points to the type this argument is defined in.
-    pub fn type_coordinate(self) -> TypeCoordinate {
-        TypeCoordinate { ty: self.ty }
+    pub fn type_coordinate(&self) -> TypeCoordinate {
+        TypeCoordinate {
+            ty: self.ty.clone(),
+        }
     }
 
     /// Create a schema coordinate that points to the field this argument is defined in.
-    pub fn field_coordinate(self) -> TypeAttributeCoordinate {
+    pub fn field_coordinate(&self) -> TypeAttributeCoordinate {
         TypeAttributeCoordinate {
-            ty: self.ty,
-            attribute: self.field,
+            ty: self.ty.clone(),
+            attribute: self.field.clone(),
         }
     }
 }
@@ -240,15 +244,19 @@ impl FromStr for FieldArgumentCoordinate {
         let Some((argument, ")")) = rest.split_once(':') else {
             return Err(SchemaCoordinateParseError::InvalidFormat);
         };
-        Ok(field.with_argument(Name::try_from(argument)?))
+        Ok(Self {
+            ty: field.ty,
+            field: field.attribute,
+            argument: Name::try_from(argument)?,
+        })
     }
 }
 
 impl DirectiveCoordinate {
     /// Create a schema coordinate that points to an argument of this directive.
-    pub fn with_argument(self, argument: Name) -> DirectiveArgumentCoordinate {
+    pub fn with_argument(&self, argument: Name) -> DirectiveArgumentCoordinate {
         DirectiveArgumentCoordinate {
-            directive: self.directive,
+            directive: self.directive.clone(),
             argument,
         }
     }
@@ -275,9 +283,9 @@ impl FromStr for DirectiveCoordinate {
 
 impl DirectiveArgumentCoordinate {
     /// Create a schema coordinate that points to the directive this argument is defined in.
-    pub fn directive_coordinate(self) -> DirectiveCoordinate {
+    pub fn directive_coordinate(&self) -> DirectiveCoordinate {
         DirectiveCoordinate {
-            directive: self.directive,
+            directive: self.directive.clone(),
         }
     }
 }
