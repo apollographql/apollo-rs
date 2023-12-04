@@ -49,7 +49,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.5.0"
+apollo-smith = "0.6.0-beta.1"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
@@ -81,15 +81,7 @@ $ cargo +nightly fuzz run my_apollo_smith_fuzz_target
 
 ## Using `apollo-smith` with `apollo-parser`
 
-You can use `apollo-parser` to generate valid operations in `apollo-smith`. This
-can be done with the `parser-impl` feature flag.
-
-```toml
-## Cargo.toml
-
-[dependencies]
-apollo-smith = { version = "0.3.1", features = ["parser-impl"] }
-```
+You can use `apollo-parser` to generate valid operations in `apollo-smith`.
 
 ```rust,compile_fail
 use std::fs;
@@ -100,19 +92,18 @@ use apollo_smith::{Document, DocumentBuilder};
 use libfuzzer_sys::arbitrary::{Result, Unstructured};
 
 /// This generate an arbitrary valid GraphQL operation
-pub fn generate_valid_operation(input: &[u8]) {
-
+pub fn generate_valid_operation(input: &[u8]) -> Result<String> {
     let parser = Parser::new(&fs::read_to_string("supergraph.graphql").expect("cannot read file"));
 
     let tree = parser.parse();
-    if !tree.errors().is_empty() {
+    if tree.errors().next().is_some() {
         panic!("cannot parse the graphql file");
     }
 
     let mut u = Unstructured::new(input);
 
     // Convert `apollo_parser::Document` into `apollo_smith::Document`.
-    let apollo_smith_doc = Document::from(tree.document());
+    let apollo_smith_doc = Document::try_from(tree.document()).unwrap();
 
     // Create a `DocumentBuilder` given an existing document to match a schema.
     let mut gql_doc = DocumentBuilder::with_document(&mut u, apollo_smith_doc)?;
@@ -120,18 +111,6 @@ pub fn generate_valid_operation(input: &[u8]) {
 
     Ok(operation_def.into())
 }
-```
-
-## Feature flags
-Enable `parser-impl` feature in `apollo-smith` is used to convert
-`apollo-parser` types to `apollo-smith` types. This is useful when you require
-the test-case generator to generate documents based on a given schema.
-
-```toml
-## Cargo.toml
-
-[dependencies]
-apollo-smith = { version = "0.3.1", features = ["parser-impl"] }
 ```
 
 ## Limitations

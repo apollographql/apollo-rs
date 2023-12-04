@@ -55,17 +55,38 @@ pub use crate::node::NodeLocation;
 /// It can be extracted with [`into_inner`][Self::into_inner],
 /// such as to mutate it then possibly re-validate it.
 #[derive(Debug, Clone, Eq, PartialEq)]
+#[repr(transparent)]
 pub struct Valid<T>(pub(crate) T);
 
 impl<T> Valid<T> {
     /// Construct a `Valid` document without actually running validation.
     ///
+    /// This takes ownership of the document.
+    /// See also [`assume_valid_ref`][Self::assume_valid_ref] which only requires a reference.
+    ///
     /// The caller takes responsibility to ascertain that
     /// the document is known through some other means to be valid.
-    /// For example, if it was loaded from some external storag
+    /// For example, if it was loaded from some external storage
     /// where it was only stored after validation.
     pub fn assume_valid(document: T) -> Self {
         Self(document)
+    }
+
+    /// Mark a reference as `Valid` without actually running validation.
+    ///
+    /// See also [`assume_valid`][Self::assume_valid] returns an owned `Valid<T>`
+    /// instead of only a reference.
+    ///
+    /// The caller takes responsibility to ascertain that
+    /// the document is known through some other means to be valid.
+    /// For example, if it was loaded from some external storage
+    /// where it was only stored after validation.
+    pub fn assume_valid_ref(document: &T) -> &Self {
+        let ptr: *const T = document;
+        let ptr: *const Valid<T> = ptr.cast();
+        // SAFETY: `repr(transparent)` makes it valid to transmute `&T` to `&Valid<T>`:
+        // <https://doc.rust-lang.org/nomicon/other-reprs.html#reprtransparent>
+        unsafe { &*ptr }
     }
 
     /// Extract the schema or document, such as to mutate it then possibly re-validate it.
@@ -377,7 +398,8 @@ impl<'a> Diagnostic<'a> {
 }
 
 impl DiagnosticList {
-    pub(crate) fn new(sources: SourceMap) -> Self {
+    /// Creates an empty diagnostic list with the given source map.
+    pub fn new(sources: SourceMap) -> Self {
         Self {
             sources,
             diagnostics_data: Vec::new(),
@@ -416,12 +438,28 @@ impl DiagnosticList {
         })
     }
 
+    /// Concatenate an `other` list of diagnostics into `self`, and sort them together.
+    pub fn merge(&mut self, other: Self) {
+        if !Arc::ptr_eq(&self.sources, &other.sources) {
+            let sources = Arc::make_mut(&mut self.sources);
+            for (&k, v) in &*other.sources {
+                sources.entry(k).or_insert_with(|| v.clone());
+            }
+        }
+        self.diagnostics_data.extend(other.diagnostics_data);
+        self.sort()
+    }
+
+    fn sort(&mut self) {
+        self.diagnostics_data
+            .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
+    }
+
     pub(crate) fn into_result(mut self) -> Result<(), Self> {
         if self.diagnostics_data.is_empty() {
             Ok(())
         } else {
-            self.diagnostics_data
-                .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
+            self.sort();
             Err(self)
         }
     }

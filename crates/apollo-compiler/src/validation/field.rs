@@ -40,7 +40,7 @@ pub(crate) fn validate_field(
                 .find(|val| val.name == argument.name)
                 .cloned();
             if let Some(arg_definition) = arg_definition {
-                if let Some(diag) = super::variable::validate_variable_usage2(
+                if let Some(diag) = super::variable::validate_variable_usage(
                     db,
                     arg_definition.clone(),
                     context.variables,
@@ -108,7 +108,7 @@ pub(crate) fn validate_field(
 
         match validate_leaf_field_selection(db, field.clone(), &field_definition.ty) {
             Err(diag) => diagnostics.push(diag),
-            Ok(_) => diagnostics.extend(super::selection::validate_selection_set2(
+            Ok(_) => diagnostics.extend(super::selection::validate_selection_set(
                 db,
                 file_id,
                 Some(field_definition.ty.inner_named_type()),

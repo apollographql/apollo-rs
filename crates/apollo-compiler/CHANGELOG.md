@@ -37,6 +37,30 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
 
 
+# [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
+
+## Features
+
+- **Add `Valid::assume_valid_ref` - [SimonSapin], [pull/768]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/768]: https://github.com/apollographql/apollo-rs/pull/768
+
+
+# [1.0.0-beta.9](https://crates.io/crates/apollo-compiler/1.0.0-beta.9) - 2023-12-01
+
+## Features
+
+- **Add validation convenience APIs - [SimonSapin], [pull/764]:**
+ * `ast::Document::to_schema_validate`
+ * `ast::Document::to_executable_validate`
+ * `DiagnosticList::new`
+ * `DiagnosticList::merge`
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/764]: https://github.com/apollographql/apollo-rs/pull/764
+
+
 # [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
 
 ## BREAKING

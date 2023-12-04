@@ -305,7 +305,7 @@ pub(crate) fn validate_directives<'dir>(
                 if let Some(input_value) = input_value {
                     // TODO(@goto-bus-stop) do we really need value validation and variable
                     // validation separately?
-                    if let Some(diag) = super::variable::validate_variable_usage2(
+                    if let Some(diag) = super::variable::validate_variable_usage(
                         db,
                         input_value.clone(),
                         var_defs,

@@ -164,7 +164,7 @@ pub(crate) fn validate_inline_fragment(
                 &ast::Selection::InlineFragment(inline.clone()),
             ));
         }
-        diagnostics.extend(super::selection::validate_selection_set2(
+        diagnostics.extend(super::selection::validate_selection_set(
             db,
             file_id,
             inline.type_condition.as_ref().or(against_type),
@@ -270,7 +270,7 @@ pub(crate) fn validate_fragment_definition(
             .contains_key(&fragment.type_condition)
             .then_some(&fragment.type_condition);
 
-        diagnostics.extend(super::selection::validate_selection_set2(
+        diagnostics.extend(super::selection::validate_selection_set(
             db,
             file_id,
             type_condition,

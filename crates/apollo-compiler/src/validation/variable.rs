@@ -6,7 +6,7 @@ use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
-pub(crate) fn validate_variable_definitions2(
+pub(crate) fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
     variables: &[Node<ast::VariableDefinition>],
     has_schema: bool,
@@ -269,7 +269,7 @@ pub(crate) fn validate_unused_variables(
     diagnostics
 }
 
-pub(crate) fn validate_variable_usage2(
+pub(crate) fn validate_variable_usage(
     db: &dyn ValidationDatabase,
     var_usage: Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
@@ -280,7 +280,7 @@ pub(crate) fn validate_variable_usage2(
         // variable_name defined within operation.
         let var_def = var_defs.iter().find(|v| v.name == *var_name);
         if let Some(var_def) = var_def {
-            let is_allowed = is_variable_usage_allowed2(var_def, &var_usage);
+            let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
                     db,
@@ -326,7 +326,7 @@ pub(crate) fn validate_variable_usage2(
     Ok(())
 }
 
-fn is_variable_usage_allowed2(
+fn is_variable_usage_allowed(
     variable_def: &ast::VariableDefinition,
     variable_usage: &ast::InputValueDefinition,
 ) -> bool {

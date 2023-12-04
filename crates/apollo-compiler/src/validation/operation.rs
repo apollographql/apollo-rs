@@ -94,7 +94,7 @@ pub(crate) fn validate_operation(
         operation.operation_type.into(),
         &operation.variables,
     ));
-    diagnostics.extend(super::variable::validate_variable_definitions2(
+    diagnostics.extend(super::variable::validate_variable_definitions(
         db,
         &operation.variables,
         config.has_schema,
@@ -105,7 +105,7 @@ pub(crate) fn validate_operation(
         file_id,
         operation.clone(),
     ));
-    diagnostics.extend(super::selection::validate_selection_set2(
+    diagnostics.extend(super::selection::validate_selection_set(
         db,
         file_id,
         against_type,
