@@ -17,10 +17,9 @@ pub use self::introspection::SchemaIntrospection;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
 pub use self::response::PathElement;
-pub use self::response::RequestError;
 pub use self::response::Response;
 pub use self::response::ResponseData;
-pub use self::response::EXTENSION_SUSPECTED_VALIDATION_BUG;
+pub use self::response::SuspectedValidationBug;
 /// Re-export of the version of the `serde_json_bytes` crate used for [`JsonValue`] and [`JsonMap`]
 pub use serde_json_bytes;
 

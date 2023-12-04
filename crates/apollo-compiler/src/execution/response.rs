@@ -1,15 +1,11 @@
+use crate::execution::engine::path_to_vec;
+use crate::execution::engine::LinkedPath;
+use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
 use crate::node::NodeLocation;
 use crate::SourceMap;
 use serde::Deserialize;
 use serde::Serialize;
-
-/// This key is set to (JSON) `true` in [`GraphQLError::extensions`]
-/// when reaching a situtation that should not happen with a valid schema and document.
-///
-/// Since the relevant APIs take `Valid<_>` parameters,
-/// either apollo-compiler has a validation bug or `Valid::assume_valid` was used incorrectly.
-pub const EXTENSION_SUSPECTED_VALIDATION_BUG: &str = "APOLLO_SUSPECTED_VALIDATION_BUG";
 
 /// A [GraphQL response](https://spec.graphql.org/October2021/#sec-Response-Format)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,16 +48,6 @@ pub enum ResponseData {
     /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
     Absent,
 }
-
-/// A [request error] that aborted the handling of a request before execution started.
-///
-/// [`RequestError`] and [`Result`]`<`[`Response`]`, `[`RequestError`]`>`
-/// can be [converted][std::convert] to [`Response`].
-///
-/// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct RequestError(pub GraphQLError);
 
 /// A serializable [error](https://spec.graphql.org/October2021/#sec-Errors.Error-result-format),
 /// as found in a GraphQL [response][Response].
@@ -112,7 +98,34 @@ pub enum PathElement {
     ListIndex(usize),
 }
 
+/// Returned as an error for situtations that should not happen with a valid schema or document.
+///
+/// Since the relevant APIs take [`Valid<_>`][crate::validation::Valid] parameters,
+/// either apollo-compiler has a validation bug
+/// or [`assume_valid`][crate::validation::Valid::assume_valid] was used incorrectly.
+///
+/// Can be [converted][std::convert] to [`GraphQLError`],
+/// which populates [`extensions`][GraphQLError::extensions]
+/// with a `"APOLLO_SUSPECTED_VALIDATION_BUG": true` entry.
+#[derive(Debug, Clone)]
+pub struct SuspectedValidationBug {
+    pub message: String,
+    pub location: Option<NodeLocation>,
+}
+
 impl Response {
+    /// Create a response for a [request error]:
+    /// handling of a request was aborted before execution started.
+    ///
+    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
+    pub fn from_request_error(error: impl Into<GraphQLError>) -> Self {
+        Self {
+            errors: vec![error.into()],
+            data: ResponseData::Absent,
+            extensions: JsonMap::new(),
+        }
+    }
+
     /// Merge two responses into one, such as to handle
     /// [`SchemaIntrospection::Both`][crate::execution::SchemaIntrospection::Both].
     pub fn merge(mut self, mut other: Self) -> Self {
@@ -134,24 +147,6 @@ impl Response {
         self.errors.append(&mut other.errors);
         self.extensions.extend(other.extensions);
         self
-    }
-}
-
-impl GraphQLError {
-    /// Call for errors that should not happen with a valid schema and document.
-    /// See [`EXTENSION_SUSPECTED_VALIDATION_BUG`].
-    pub fn validation_bug(mut self) -> Self {
-        self.extensions
-            .insert(EXTENSION_SUSPECTED_VALIDATION_BUG, true.into());
-        self
-    }
-}
-
-impl RequestError {
-    /// Call for errors that should not happen with a valid schema and document.
-    /// See [`EXTENSION_SUSPECTED_VALIDATION_BUG`].
-    pub fn validation_bug(self) -> Self {
-        Self(self.0.validation_bug())
     }
 }
 
@@ -196,37 +191,45 @@ impl Serialize for ResponseData {
 
 impl From<Option<JsonMap>> for ResponseData {
     fn from(value: Option<JsonMap>) -> Self {
-        if let Some(data) = value {
-            Self::Object(data)
-        } else {
-            Self::Null
+        match value {
+            Some(data) => Self::Object(data),
+            None => Self::Null,
         }
     }
 }
 
-impl From<RequestError> for Response {
-    fn from(error: RequestError) -> Self {
-        Self {
-            errors: vec![error.0],
-            data: ResponseData::Absent,
-            extensions: JsonMap::new(),
+impl From<Result<JsonMap, PropagateNull>> for ResponseData {
+    fn from(result: Result<JsonMap, PropagateNull>) -> Self {
+        match result {
+            Ok(data) => Self::Object(data),
+            Err(PropagateNull) => Self::Null,
         }
     }
 }
 
-impl From<Result<Response, RequestError>> for Response {
-    fn from(result: Result<Response, RequestError>) -> Self {
-        result.unwrap_or_else(|request_error| request_error.into())
-    }
-}
-
-impl RequestError {
-    pub fn new(message: impl ToString) -> Self {
-        Self(GraphQLError {
-            message: message.to_string(),
-            locations: Default::default(),
-            path: Default::default(),
+impl SuspectedValidationBug {
+    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
+        let Self { message, location } = self;
+        let mut err = GraphQLError {
+            message,
+            locations: GraphQLLocation::from_node(sources, location)
+                .into_iter()
+                .collect(),
+            path: Vec::new(),
             extensions: Default::default(),
-        })
+        };
+        err.extensions
+            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
+        err
+    }
+
+    pub(crate) fn into_field_error(
+        self,
+        sources: &SourceMap,
+        path: LinkedPath<'_>,
+    ) -> GraphQLError {
+        let mut err = self.into_graphql_error(sources);
+        err.path = path_to_vec(path);
+        err
     }
 }

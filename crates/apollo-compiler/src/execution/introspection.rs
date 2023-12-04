@@ -1,11 +1,13 @@
 use crate::executable::filtering::FilteredDocumentBuilder;
 use crate::executable::Field;
+use crate::executable::Operation;
 use crate::executable::OperationType;
-use crate::execution::engine::execute_query_or_mutation;
+use crate::execution::engine::execute_selection_set;
+use crate::execution::engine::ExecutionMode;
 use crate::execution::resolver::ResolvedValue;
 use crate::execution::JsonMap;
-use crate::execution::RequestError;
 use crate::execution::Response;
+use crate::execution::SuspectedValidationBug;
 use crate::schema;
 use crate::schema::Name;
 use crate::validation::Valid;
@@ -61,10 +63,9 @@ impl SchemaIntrospection {
     pub fn execute(
         schema: &Valid<Schema>,
         document: &Valid<ExecutableDocument>,
-        operation_name: Option<&str>,
+        operation: &Operation,
         variable_values: &Valid<JsonMap>,
-    ) -> Result<Self, RequestError> {
-        let operation = document.get_operation(operation_name)?;
+    ) -> Result<Self, SuspectedValidationBug> {
         if operation.operation_type != OperationType::Query {
             return Ok(Self::None);
         }
@@ -96,13 +97,36 @@ impl SchemaIntrospection {
             schema,
             implementers_map,
         });
-        let introspection_response = execute_query_or_mutation(
+        // https://spec.graphql.org/October2021/#ExecuteQuery()
+        let object_type_name = operation.object_type();
+        let object_type_def =
+            schema
+                .get_object(object_type_name)
+                .ok_or_else(|| SuspectedValidationBug {
+                    message: format!(
+                    "Root operation type {object_type_name} is undefined or not an object type."
+                ),
+                    location: None,
+                })?;
+        let mut errors = Vec::new();
+        let path = None; // root: empty path
+        let data = execute_selection_set(
             schema,
             &introspection_document,
             variable_values,
+            &mut errors,
+            path,
+            ExecutionMode::Normal,
+            object_type_name,
+            object_type_def,
             initial_value,
-            operation,
-        )?;
+            &operation.selection_set.selections,
+        );
+        let introspection_response = Response {
+            data: data.into(),
+            errors,
+            extensions: Default::default(),
+        };
         if let Some(filtered_operation) = non_introspection_document {
             Ok(Self::Both {
                 introspection_response,
@@ -123,22 +147,20 @@ impl SchemaIntrospection {
     pub fn execute_with(
         schema: &Valid<Schema>,
         document: &Valid<ExecutableDocument>,
-        operation_name: Option<&str>,
+        operation: &Operation,
         variable_values: &Valid<JsonMap>,
-        execute_non_introspection_parts: impl FnOnce(
-            &Valid<ExecutableDocument>,
-        ) -> Result<Response, RequestError>,
-    ) -> Result<Response, RequestError> {
-        match Self::execute(schema, document, operation_name, variable_values)? {
-            Self::Only(response) => Ok(response),
-            Self::None => execute_non_introspection_parts(document),
-            Self::Both {
+        execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
+    ) -> Response {
+        match Self::execute(schema, document, operation, variable_values) {
+            Ok(Self::Only(response)) => response,
+            Ok(Self::None) => execute_non_introspection_parts(document),
+            Ok(Self::Both {
                 filtered_operation,
                 introspection_response,
-            } => {
-                Ok(execute_non_introspection_parts(&filtered_operation)?
-                    .merge(introspection_response))
+            }) => {
+                execute_non_introspection_parts(&filtered_operation).merge(introspection_response)
             }
+            Err(err) => Response::from_request_error(err.into_graphql_error(&document.sources)),
         }
     }
 }

@@ -138,17 +138,7 @@ impl<'a> ResolvedValue<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::executable::OperationType;
-    use crate::execution::coerce_variable_values;
-    use crate::execution::engine::execute_query_or_mutation;
     use crate::execution::resolver::ResolvedValue;
-    use crate::execution::JsonMap;
-    use crate::execution::RequestError;
-    use crate::execution::Response;
-    use crate::execution::SchemaIntrospection;
-    use crate::validation::Valid;
-    use crate::ExecutableDocument;
-    use crate::Schema;
 
     struct QueryResolver {
         world: String,
@@ -177,39 +167,5 @@ mod tests {
         fn myself_again(&self_) {
             Ok(ResolvedValue::object(*self_))
         }
-    }
-
-    /// <https://spec.graphql.org/October2021/#sec-Executing-Requests>
-    #[allow(unused)]
-    fn execute_request(
-        schema: &Valid<Schema>,
-        document: &Valid<ExecutableDocument>,
-        operation_name: Option<&str>,
-        variable_values: &JsonMap,
-    ) -> Result<Response, RequestError> {
-        let variable_values =
-            coerce_variable_values(schema, document, operation_name, variable_values)?;
-        SchemaIntrospection::execute_with(
-            schema,
-            document,
-            operation_name,
-            &variable_values,
-            |filtered_document| {
-                let operation = filtered_document.get_operation(operation_name)?;
-                let initial_value = match operation.operation_type {
-                    OperationType::Query => QueryResolver {
-                        world: "World".into(),
-                    },
-                    _ => unimplemented!(),
-                };
-                execute_query_or_mutation(
-                    schema,
-                    filtered_document,
-                    &variable_values,
-                    &&initial_value,
-                    operation,
-                )
-            },
-        )
     }
 }

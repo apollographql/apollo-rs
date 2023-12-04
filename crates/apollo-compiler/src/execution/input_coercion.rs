@@ -1,31 +1,34 @@
 use crate::ast::Type;
 use crate::ast::Value;
 use crate::executable::Field;
+use crate::executable::Operation;
 use crate::execution::engine::field_error;
+use crate::execution::engine::path_to_vec;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::PropagateNull;
 use crate::execution::GraphQLError;
+use crate::execution::GraphQLLocation;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
-use crate::execution::RequestError;
+use crate::execution::SuspectedValidationBug;
+use crate::node::NodeLocation;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
+use crate::SourceMap;
 use std::collections::HashMap;
 
-macro_rules! request_error {
-    ($($arg: tt)+) => {
-        return Err(RequestError::new(format_args!($($arg)+)))
-    };
-}
-
-macro_rules! validation_bug {
-    ($($arg: tt)+) => {
-        return Err(RequestError::new(format_args!($($arg)+)).validation_bug())
-    };
+#[derive(Debug, Clone)]
+pub enum InputCoercionError {
+    SuspectedValidationBug(SuspectedValidationBug),
+    // TODO: split into more structured variants?
+    ValueError {
+        message: String,
+        location: Option<NodeLocation>,
+    },
 }
 
 /// Coerce the values of variables from a GraphQL request to the types expected by the operation.
@@ -36,37 +39,24 @@ macro_rules! validation_bug {
 /// in the GraphQL specification.
 pub fn coerce_variable_values(
     schema: &Valid<Schema>,
-    document: &Valid<ExecutableDocument>,
-    operation_name: Option<&str>,
+    operation: &Operation,
     values: &JsonMap,
-) -> Result<Valid<JsonMap>, RequestError> {
-    let operation = document.get_operation(operation_name)?;
+) -> Result<Valid<JsonMap>, InputCoercionError> {
     let mut coerced_values = JsonMap::new();
     for variable_def in &operation.variables {
         let name = variable_def.name.as_str();
         if let Some((key, value)) = values.get_key_value(name) {
-            let value = coerce_variable_value(
-                schema,
-                document,
-                "variable",
-                "",
-                "",
-                name,
-                &variable_def.ty,
-                value,
-            )?;
+            let value =
+                coerce_variable_value(schema, "variable", "", "", name, &variable_def.ty, value)?;
             coerced_values.insert(key.clone(), value);
         } else if let Some(default) = &variable_def.default_value {
-            let value =
-                graphql_value_to_json("variable", "", "", name, default).map_err(|mut err| {
-                    err.0
-                        .locations
-                        .extend(default.line_column(&document.sources));
-                    err
-                })?;
+            let value = graphql_value_to_json("variable default value", "", "", name, default)?;
             coerced_values.insert(name, value);
         } else if variable_def.ty.is_non_null() {
-            request_error!("missing value for non-null variable '{name}'")
+            return Err(InputCoercionError::ValueError {
+                message: format!("missing value for non-null variable '{name}'"),
+                location: variable_def.location(),
+            });
         } else {
             // Nullable variable with no provided value nor explicit default.
             // Spec says nothing for this case, but for the similar case in input objects:
@@ -81,17 +71,19 @@ pub fn coerce_variable_values(
 #[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 fn coerce_variable_value(
     schema: &Valid<Schema>,
-    document: &Valid<ExecutableDocument>,
     kind: &str,
     parent: &str,
     sep: &str,
     name: &str,
     ty: &Type,
     value: &JsonValue,
-) -> Result<JsonValue, RequestError> {
+) -> Result<JsonValue, InputCoercionError> {
     if value.is_null() {
         if ty.is_non_null() {
-            request_error!("null value for non-null {kind} {parent}{sep}{name}")
+            return Err(InputCoercionError::ValueError {
+                message: format!("null value for {kind} {parent}{sep}{name} of non-null type {ty}"),
+                location: None,
+            });
         } else {
             return Ok(JsonValue::Null);
         }
@@ -105,19 +97,23 @@ fn coerce_variable_value(
                 // If not an array, treat the value as an array of size one:
                 .unwrap_or(std::slice::from_ref(value))
                 .iter()
-                .map(|item| {
-                    coerce_variable_value(schema, document, kind, parent, sep, name, inner, item)
-                })
+                .map(|item| coerce_variable_value(schema, kind, parent, sep, name, inner, item))
                 .collect();
         }
         Type::Named(ty_name) | Type::NonNullNamed(ty_name) => ty_name,
     };
     let Some(ty_def) = schema.types.get(ty_name) else {
-        validation_bug!("Undefined type {ty_name} for {kind} {parent}{sep}{name}")
+        Err(SuspectedValidationBug {
+            message: format!("Undefined type {ty_name} for {kind} {parent}{sep}{name}"),
+            location: ty_name.location(),
+        })?
     };
     match ty_def {
         ExtendedType::Object(_) | ExtendedType::Interface(_) | ExtendedType::Union(_) => {
-            validation_bug!("Non-input type {ty_name} for {kind} {parent}{sep}{name}.")
+            Err(SuspectedValidationBug {
+                message: format!("Non-input type {ty_name} for {kind} {parent}{sep}{name}."),
+                location: ty_name.location(),
+            })?
         }
         ExtendedType::Scalar(_) => match ty_name.as_str() {
             "Int" => {
@@ -174,17 +170,19 @@ fn coerce_variable_value(
                     .keys()
                     .find(|key| !ty_def.fields.contains_key(key.as_str()))
                 {
-                    request_error!(
-                        "Input object has key {} not in type {ty_name}",
-                        key.as_str()
-                    )
+                    return Err(InputCoercionError::ValueError {
+                        message: format!(
+                            "Input object has key {} not in type {ty_name}",
+                            key.as_str()
+                        ),
+                        location: None,
+                    });
                 }
                 let mut object = object.clone();
                 for (field_name, field_def) in &ty_def.fields {
                     if let Some(field_value) = object.get_mut(field_name.as_str()) {
                         *field_value = coerce_variable_value(
                             schema,
-                            document,
                             "input field",
                             ty_name,
                             ".",
@@ -193,19 +191,19 @@ fn coerce_variable_value(
                             field_value,
                         )?
                     } else if let Some(default) = &field_def.default_value {
-                        let default =
-                            graphql_value_to_json("input field", ty_name, ".", field_name, default)
-                                .map_err(|mut err| {
-                                    err.0
-                                        .locations
-                                        .extend(default.line_column(&document.sources));
-                                    err
-                                })?;
+                        let default = graphql_value_to_json(
+                            "input field",
+                            ty_name,
+                            ".",
+                            field_name,
+                            default,
+                        )?;
                         object.insert(field_name.as_str(), default);
                     } else if field_def.ty.is_non_null() {
-                        request_error!(
-                            "Missing value for non-null input object field {ty_name}.{field_name}"
-                        )
+                        return Err(InputCoercionError::ValueError {
+                            message: format!("Missing value for non-null input object field {ty_name}.{field_name}"),
+                            location: None,
+                        });
                     } else {
                         // Field not required
                     }
@@ -214,7 +212,10 @@ fn coerce_variable_value(
             }
         }
     }
-    request_error!("Could not coerce {kind} {parent}{sep}{name}: {value} to type {ty_name}")
+    Err(InputCoercionError::ValueError {
+        message: format!("Could not coerce {kind} {parent}{sep}{name}: {value} to type {ty_name}"),
+        location: None,
+    })
 }
 
 fn graphql_value_to_json(
@@ -222,23 +223,34 @@ fn graphql_value_to_json(
     parent: &str,
     sep: &str,
     name: &str,
-    value: &Value,
-) -> Result<JsonValue, RequestError> {
-    match value {
+    value: &Node<Value>,
+) -> Result<JsonValue, InputCoercionError> {
+    match value.as_ref() {
         Value::Null => Ok(JsonValue::Null),
         Value::Variable(_) => {
             // TODO: separate `ContValue` enum without this variant?
-            validation_bug!("Variable in default value of {kind} {parent}{sep}{name}.")
+            Err(InputCoercionError::SuspectedValidationBug(
+                SuspectedValidationBug {
+                    message: format!("Variable in default value of {kind} {parent}{sep}{name}."),
+                    location: value.location(),
+                },
+            ))
         }
         Value::Enum(value) => Ok(value.as_str().into()),
         Value::String(value) => Ok(value.as_str().into()),
         Value::Boolean(value) => Ok((*value).into()),
         // Rely on `serde_json::Number`’s own parser to use whatever precision it supports
-        Value::Int(value) => Ok(JsonValue::Number(value.as_str().parse().or_else(|_| {
-            request_error!("Int value overflow in {kind} {parent}{sep}{name}")
+        Value::Int(i) => Ok(JsonValue::Number(i.as_str().parse().map_err(|_| {
+            InputCoercionError::ValueError {
+                message: format!("IntValue overflow in {kind} {parent}{sep}{name}"),
+                location: value.location(),
+            }
         })?)),
-        Value::Float(value) => Ok(JsonValue::Number(value.as_str().parse().or_else(|_| {
-            request_error!("Float value overflow in {kind} {parent}{sep}{name}")
+        Value::Float(f) => Ok(JsonValue::Number(f.as_str().parse().map_err(|_| {
+            InputCoercionError::ValueError {
+                message: format!("FloatValue overflow in {kind} {parent}{sep}{name}"),
+                location: value.location(),
+            }
         })?)),
         Value::List(value) => value
             .iter()
@@ -314,7 +326,7 @@ pub(crate) fn coerce_argument_values(
         if let Some(default) = &arg_def.default_value {
             let value =
                 graphql_value_to_json("argument", "", "", arg_name, default).map_err(|err| {
-                    errors.push(err.into_field_error(path, arg_def.location(), &document.sources));
+                    errors.push(err.into_field_error(path, &document.sources));
                     PropagateNull
                 })?;
             coerced_values.insert(arg_def.name.as_str(), value);
@@ -414,13 +426,11 @@ fn coerce_argument_value(
     };
     let Some(ty_def) = schema.types.get(ty_name) else {
         errors.push(
-            field_error(
-                format!("Undefined type {ty_name} for {kind} {parent}{sep}{name}"),
-                path,
-                value.location(),
-                &document.sources,
-            )
-            .validation_bug(),
+            SuspectedValidationBug {
+                message: format!("Undefined type {ty_name} for {kind} {parent}{sep}{name}"),
+                location: value.location(),
+            }
+            .into_field_error(&document.sources, path),
         );
         return Err(PropagateNull);
     };
@@ -463,11 +473,7 @@ fn coerce_argument_value(
                         let default =
                             graphql_value_to_json("input field", ty_name, ".", field_name, default)
                                 .map_err(|err| {
-                                    errors.push(err.into_field_error(
-                                        path,
-                                        value.location(),
-                                        &document.sources,
-                                    ));
+                                    errors.push(err.into_field_error(path, &document.sources));
                                     PropagateNull
                                 })?;
                         coerced_object.insert(field_name.as_str(), default);
@@ -491,7 +497,7 @@ fn coerce_argument_value(
         _ => {
             // For scalar and enums, rely and validation and just convert between Rust types
             return graphql_value_to_json(kind, parent, sep, name, value).map_err(|err| {
-                errors.push(err.into_field_error(path, value.location(), &document.sources));
+                errors.push(err.into_field_error(path, &document.sources));
                 PropagateNull
             });
         }
@@ -503,4 +509,30 @@ fn coerce_argument_value(
         &document.sources,
     ));
     Err(PropagateNull)
+}
+
+impl From<SuspectedValidationBug> for InputCoercionError {
+    fn from(value: SuspectedValidationBug) -> Self {
+        Self::SuspectedValidationBug(value)
+    }
+}
+
+impl InputCoercionError {
+    pub(crate) fn into_field_error(
+        self,
+        path: LinkedPath<'_>,
+        sources: &SourceMap,
+    ) -> GraphQLError {
+        match self {
+            InputCoercionError::SuspectedValidationBug(s) => s.into_field_error(sources, path),
+            InputCoercionError::ValueError { message, location } => GraphQLError {
+                message,
+                locations: GraphQLLocation::from_node(sources, location)
+                    .into_iter()
+                    .collect(),
+                path: path_to_vec(path),
+                extensions: Default::default(),
+            },
+        }
+    }
 }

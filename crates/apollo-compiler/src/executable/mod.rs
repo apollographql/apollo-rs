@@ -20,7 +20,6 @@ pub use crate::ast::{
     Argument, Directive, DirectiveList, Name, NamedType, OperationType, Type, Value,
     VariableDefinition,
 };
-use crate::execution::RequestError;
 use crate::validation::DiagnosticList;
 use crate::validation::NodeLocation;
 use crate::validation::Valid;
@@ -179,6 +178,18 @@ pub(crate) enum ExecutableDefinitionName {
     Fragment(Name),
 }
 
+/// A request error returned by [`ExecutableDocument::get_operation`]
+///
+/// If `get_operation`’s `name_request` argument was `Some`, this error indicates
+/// that the document does not contain an operation with the requested name.
+///
+/// If `name_request` was `None`, the request is ambiguous
+/// because the document contains multiple operations
+/// (or zero, though the document would be invalid in that case).
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct GetOperationError();
+
 impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
@@ -242,13 +253,10 @@ impl ExecutableDocument {
     pub fn get_operation(
         &self,
         name_request: Option<&str>,
-    ) -> Result<&Node<Operation>, RequestError> {
+    ) -> Result<&Node<Operation>, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
-            return self
-                .named_operations
-                .get(name)
-                .ok_or_else(|| RequestError::new(format_args!("no operation named '{name}'")));
+            self.named_operations.get(name)
         } else if let Some(op) = &self.anonymous_operation {
             // No name request, return the anonymous operation if it’s the only operation
             self.named_operations.is_empty().then_some(op)
@@ -259,21 +267,17 @@ impl ExecutableDocument {
                 .next()
                 .and_then(|op| (self.named_operations.len() == 1).then_some(op))
         }
-        .ok_or_else(|| RequestError::new("multiple operations but no `operationName`"))
+        .ok_or(GetOperationError())
     }
 
     /// Similar to [`get_operation`][Self::get_operation] but returns a mutable reference.
     pub fn get_operation_mut(
         &mut self,
         name_request: Option<&str>,
-    ) -> Result<&mut Operation, RequestError> {
+    ) -> Result<&mut Operation, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
-            return self
-                .named_operations
-                .get_mut(name)
-                .map(Node::make_mut)
-                .ok_or_else(|| RequestError::new(format_args!("no operation named '{name}'")));
+            self.named_operations.get_mut(name)
         } else if let Some(op) = &mut self.anonymous_operation {
             // No name request, return the anonymous operation if it’s the only operation
             self.named_operations.is_empty().then_some(op)
@@ -286,7 +290,7 @@ impl ExecutableDocument {
                 .and_then(|op| (len == 1).then_some(op))
         }
         .map(Node::make_mut)
-        .ok_or_else(|| RequestError::new("multiple operations but no `operationName`"))
+        .ok_or(GetOperationError())
     }
 
     /// Insert the given operation in either `named_operations` or `anonymous_operation`

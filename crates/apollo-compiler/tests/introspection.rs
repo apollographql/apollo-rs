@@ -27,30 +27,28 @@ fn test() {
     let introspect = |query, variables: JsonMap| {
         let document =
             ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
-        let variables = coerce_variable_values(&schema, &document, None, &variables).unwrap();
+        let operation = document.get_operation(None).unwrap();
+        let variables = coerce_variable_values(&schema, operation, &variables).unwrap();
         let response = SchemaIntrospection::execute_with(
             &schema,
             &document,
-            None,
+            operation,
             &variables,
-            |non_introspection_document| {
-                Ok(Response {
-                    errors: Default::default(),
-                    data: apollo_compiler::execution::ResponseData::Object(Default::default()),
-                    extensions: [(
-                        "NON_INTROSPECTION".into(),
-                        non_introspection_document
-                            .serialize()
-                            .no_indent()
-                            .to_string()
-                            .into(),
-                    )]
-                    .into_iter()
-                    .collect(),
-                })
+            |non_introspection_document| Response {
+                errors: Default::default(),
+                data: apollo_compiler::execution::ResponseData::Object(Default::default()),
+                extensions: [(
+                    "NON_INTROSPECTION".into(),
+                    non_introspection_document
+                        .serialize()
+                        .no_indent()
+                        .to_string()
+                        .into(),
+                )]
+                .into_iter()
+                .collect(),
             },
-        )
-        .unwrap();
+        );
         serde_json::to_string_pretty(&response).unwrap()
     };
 

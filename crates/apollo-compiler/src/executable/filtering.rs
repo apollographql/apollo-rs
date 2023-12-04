@@ -6,7 +6,7 @@ use crate::executable::InlineFragment;
 use crate::executable::Operation;
 use crate::executable::Selection;
 use crate::executable::SelectionSet;
-use crate::execution::RequestError;
+use crate::execution::SuspectedValidationBug;
 use crate::schema;
 use crate::schema::Name;
 use crate::validation::Valid;
@@ -56,7 +56,7 @@ where
         document: &'doc Valid<ExecutableDocument>,
         operation: &'doc Operation,
         remove_selection: Predicate,
-    ) -> Result<Option<Valid<ExecutableDocument>>, RequestError> {
+    ) -> Result<Option<Valid<ExecutableDocument>>, SuspectedValidationBug> {
         let mut builder = Self {
             document,
             remove_selection,
@@ -88,7 +88,7 @@ where
     fn filter_operation(
         &mut self,
         operation: &'doc Operation,
-    ) -> Result<Option<Operation>, RequestError> {
+    ) -> Result<Option<Operation>, SuspectedValidationBug> {
         self.variables_used.clear();
         for var in &operation.variables {
             if let Some(default) = &var.default_value {
@@ -120,7 +120,7 @@ where
     fn filter_selection_set(
         &mut self,
         selection_set: &'doc SelectionSet,
-    ) -> Result<Option<SelectionSet>, RequestError> {
+    ) -> Result<Option<SelectionSet>, SuspectedValidationBug> {
         let selections = selection_set
             .selections
             .iter()
@@ -139,7 +139,7 @@ where
     fn filter_selection(
         &mut self,
         selection: &'doc Selection,
-    ) -> Result<Option<Selection>, RequestError> {
+    ) -> Result<Option<Selection>, SuspectedValidationBug> {
         if (self.remove_selection)(selection) {
             return Ok(None);
         }
@@ -185,13 +185,18 @@ where
                     return Ok(None);
                 }
                 if self.fragments_being_processed.contains(name) {
-                    return Err(RequestError::new("fragment spread cycle").validation_bug());
+                    return Err(SuspectedValidationBug {
+                        message: "fragment spread cycle".to_owned(),
+                        location: fragment_spread.location(),
+                    });
                 }
                 if !self.new_fragments.contains_key(name) {
-                    let fragment_def =
-                        self.document.fragments.get(name).ok_or_else(|| {
-                            RequestError::new("undefined fragment").validation_bug()
-                        })?;
+                    let fragment_def = self.document.fragments.get(name).ok_or_else(|| {
+                        SuspectedValidationBug {
+                            message: "undefined fragment".to_owned(),
+                            location: name.location(),
+                        }
+                    })?;
 
                     let Some(selection_set) =
                         self.filter_selection_set(&fragment_def.selection_set)?

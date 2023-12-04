@@ -1,8 +1,6 @@
 use crate::ast::Name;
 use crate::ast::Value;
 use crate::executable::Field;
-use crate::executable::Operation;
-use crate::executable::OperationType;
 use crate::executable::Selection;
 use crate::execution::input_coercion::coerce_argument_values;
 use crate::execution::resolver::ObjectValue;
@@ -13,8 +11,6 @@ use crate::execution::GraphQLLocation;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::PathElement;
-use crate::execution::RequestError;
-use crate::execution::Response;
 use crate::node::NodeLocation;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
@@ -32,6 +28,8 @@ use std::collections::HashSet;
 pub(crate) enum ExecutionMode {
     /// Allowed to resolve fields in any order, including in parellel
     Normal,
+    /// Top-level fields of a mutation operation must be executed in order
+    #[allow(unused)]
     Sequential,
 }
 
@@ -46,49 +44,6 @@ pub(crate) type LinkedPath<'a> = Option<&'a LinkedPathElement<'a>>;
 pub(crate) struct LinkedPathElement<'a> {
     pub(crate) element: PathElement,
     pub(crate) next: LinkedPath<'a>,
-}
-
-/// * <https://spec.graphql.org/October2021/#ExecuteQuery()>
-/// * <https://spec.graphql.org/October2021/#ExecuteMutation()>
-pub(crate) fn execute_query_or_mutation(
-    schema: &Valid<Schema>,
-    document: &Valid<ExecutableDocument>,
-    variable_values: &Valid<JsonMap>,
-    initial_value: &ObjectValue<'_>,
-    operation: &Operation,
-) -> Result<Response, RequestError> {
-    let object_type_name = operation.object_type();
-    let object_type_def = schema.get_object(object_type_name).ok_or_else(|| {
-        RequestError::new(format!(
-            "Root operation type {object_type_name} is undefined or not an object type."
-        ))
-        .validation_bug()
-    })?;
-    let mut errors = Vec::new();
-    let path = None; // root: empty path
-    let mode = if operation.operation_type == OperationType::Mutation {
-        ExecutionMode::Sequential
-    } else {
-        ExecutionMode::Normal
-    };
-    let data = execute_selection_set(
-        schema,
-        document,
-        variable_values,
-        &mut errors,
-        path,
-        mode,
-        object_type_name,
-        object_type_def,
-        initial_value,
-        &operation.selection_set.selections,
-    )
-    .ok();
-    Ok(Response {
-        data: data.into(),
-        errors,
-        extensions: Default::default(),
-    })
 }
 
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
@@ -359,20 +314,5 @@ pub(crate) fn field_error(
             .into_iter()
             .collect(),
         extensions: Default::default(),
-    }
-}
-
-impl RequestError {
-    pub(crate) fn into_field_error(
-        self,
-        path: LinkedPath<'_>,
-        location: Option<NodeLocation>,
-        sources: &SourceMap,
-    ) -> GraphQLError {
-        let Self(mut err) = self;
-        err.path = path_to_vec(path);
-        err.locations
-            .extend(GraphQLLocation::from_node(sources, location));
-        err
     }
 }

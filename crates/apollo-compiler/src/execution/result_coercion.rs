@@ -11,6 +11,7 @@ use crate::execution::response::PathElement;
 use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
+use crate::execution::SuspectedValidationBug;
 use crate::schema::ExtendedType;
 use crate::schema::Type;
 use crate::validation::Valid;
@@ -32,8 +33,8 @@ pub(crate) fn complete_value<'a, 'b>(
     resolved: ResolvedValue<'a>,
     fields: &'a [&'a Field],
 ) -> Result<JsonValue, PropagateNull> {
-    let new_field_error =
-        |message| field_error(message, path, fields[0].name.location(), &document.sources);
+    let location = fields[0].name.location();
+    let new_field_error = |message| field_error(message, path, location, &document.sources);
     macro_rules! field_error {
         ($($arg: tt)+) => {
             {
@@ -90,12 +91,22 @@ pub(crate) fn complete_value<'a, 'b>(
         Type::Named(name) | Type::NonNullNamed(name) => name,
     };
     let Some(ty_def) = schema.types.get(ty_name) else {
-        errors.push(new_field_error(format!("Undefined type {ty_name}")).validation_bug());
+        errors.push(
+            SuspectedValidationBug {
+                message: format!("Undefined type {ty_name}"),
+                location,
+            }
+            .into_field_error(&document.sources, path),
+        );
         return Err(PropagateNull);
     };
     if let ExtendedType::InputObject(_) = ty_def {
         errors.push(
-            new_field_error(format!("Field with input object type {ty_name}")).validation_bug(),
+            SuspectedValidationBug {
+                message: format!("Field with input object type {ty_name}"),
+                location,
+            }
+            .into_field_error(&document.sources, path),
         );
         return Err(PropagateNull);
     }
