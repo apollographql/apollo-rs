@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Features
+
+- **Add `Valid::assume_valid_ref` - [SimonSapin], [pull/768]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/768]: https://github.com/apollographql/apollo-rs/pull/768
+
+
 # [1.0.0-beta.9](https://crates.io/crates/apollo-compiler/1.0.0-beta.9) - 2023-11-30
 
 ## Features
