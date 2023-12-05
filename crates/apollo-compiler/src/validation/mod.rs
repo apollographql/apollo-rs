@@ -144,6 +144,38 @@ impl<T> fmt::Display for WithErrors<T> {
     }
 }
 
+/// Returned as an error for situtations that should not happen with a valid schema or document.
+///
+/// Since the relevant APIs take [`Valid<_>`][crate::validation::Valid] parameters,
+/// either apollo-compiler has a validation bug
+/// or [`assume_valid`][crate::validation::Valid::assume_valid] was used incorrectly.
+///
+/// Can be [converted][std::convert] to [`GraphQLError`],
+/// which populates [`extensions`][GraphQLError::extensions]
+/// with a `"APOLLO_SUSPECTED_VALIDATION_BUG": true` entry.
+#[derive(Debug, Clone)]
+pub struct SuspectedValidationBug {
+    pub message: String,
+    pub location: Option<NodeLocation>,
+}
+
+impl SuspectedValidationBug {
+    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
+        let Self { message, location } = self;
+        let mut err = GraphQLError {
+            message,
+            locations: GraphQLLocation::from_node(sources, location)
+                .into_iter()
+                .collect(),
+            path: Vec::new(),
+            extensions: Default::default(),
+        };
+        err.extensions
+            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
+        err
+    }
+}
+
 /// A collection of diagnostics returned by some validation method
 #[derive(Clone)]
 pub struct DiagnosticList {

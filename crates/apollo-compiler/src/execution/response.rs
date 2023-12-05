@@ -1,5 +1,3 @@
-use crate::execution::engine::path_to_vec;
-use crate::execution::engine::LinkedPath;
 use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
 use crate::node::NodeLocation;
@@ -98,21 +96,6 @@ pub enum PathElement {
     ListIndex(usize),
 }
 
-/// Returned as an error for situtations that should not happen with a valid schema or document.
-///
-/// Since the relevant APIs take [`Valid<_>`][crate::validation::Valid] parameters,
-/// either apollo-compiler has a validation bug
-/// or [`assume_valid`][crate::validation::Valid::assume_valid] was used incorrectly.
-///
-/// Can be [converted][std::convert] to [`GraphQLError`],
-/// which populates [`extensions`][GraphQLError::extensions]
-/// with a `"APOLLO_SUSPECTED_VALIDATION_BUG": true` entry.
-#[derive(Debug, Clone)]
-pub struct SuspectedValidationBug {
-    pub message: String,
-    pub location: Option<NodeLocation>,
-}
-
 impl Response {
     /// Create a response for a [request error]:
     /// handling of a request was aborted before execution started.
@@ -204,32 +187,5 @@ impl From<Result<JsonMap, PropagateNull>> for ResponseData {
             Ok(data) => Self::Object(data),
             Err(PropagateNull) => Self::Null,
         }
-    }
-}
-
-impl SuspectedValidationBug {
-    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
-        let Self { message, location } = self;
-        let mut err = GraphQLError {
-            message,
-            locations: GraphQLLocation::from_node(sources, location)
-                .into_iter()
-                .collect(),
-            path: Vec::new(),
-            extensions: Default::default(),
-        };
-        err.extensions
-            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
-        err
-    }
-
-    pub(crate) fn into_field_error(
-        self,
-        sources: &SourceMap,
-        path: LinkedPath<'_>,
-    ) -> GraphQLError {
-        let mut err = self.into_graphql_error(sources);
-        err.path = path_to_vec(path);
-        err
     }
 }

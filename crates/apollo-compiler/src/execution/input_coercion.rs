@@ -2,18 +2,15 @@ use crate::ast::Type;
 use crate::ast::Value;
 use crate::executable::Field;
 use crate::executable::Operation;
-use crate::execution::engine::field_error;
-use crate::execution::engine::path_to_vec;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::PropagateNull;
 use crate::execution::GraphQLError;
-use crate::execution::GraphQLLocation;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
-use crate::execution::SuspectedValidationBug;
 use crate::node::NodeLocation;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
+use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
@@ -285,7 +282,7 @@ pub(crate) fn coerce_argument_values(
             if let Value::Variable(var_name) = arg.value.as_ref() {
                 if let Some(var_value) = variable_values.get(var_name.as_str()) {
                     if var_value.is_null() && arg_def.ty.is_non_null() {
-                        errors.push(field_error(
+                        errors.push(GraphQLError::field_error(
                             format!("null value for non-nullable argument {arg_name}"),
                             path,
                             arg_def.location(),
@@ -298,7 +295,7 @@ pub(crate) fn coerce_argument_values(
                     }
                 }
             } else if arg.value.is_null() && arg_def.ty.is_non_null() {
-                errors.push(field_error(
+                errors.push(GraphQLError::field_error(
                     format!("null value for non-nullable argument {arg_name}"),
                     path,
                     arg_def.location(),
@@ -333,7 +330,7 @@ pub(crate) fn coerce_argument_values(
             continue;
         }
         if arg_def.ty.is_non_null() {
-            errors.push(field_error(
+            errors.push(GraphQLError::field_error(
                 format!("missing value for required argument {arg_name}"),
                 path,
                 arg_def.location(),
@@ -361,7 +358,7 @@ fn coerce_argument_value(
 ) -> Result<JsonValue, PropagateNull> {
     if value.is_null() {
         if ty.is_non_null() {
-            errors.push(field_error(
+            errors.push(GraphQLError::field_error(
                 format!("null value for non-null {kind} {parent}{sep}{name}"),
                 path,
                 value.location(),
@@ -375,7 +372,7 @@ fn coerce_argument_value(
     if let Some(var_name) = value.as_variable() {
         if let Some(var_value) = variable_values.get(var_name.as_str()) {
             if var_value.is_null() && ty.is_non_null() {
-                errors.push(field_error(
+                errors.push(GraphQLError::field_error(
                     format!("null variable value for non-null {kind} {parent}{sep}{name}"),
                     path,
                     value.location(),
@@ -386,7 +383,7 @@ fn coerce_argument_value(
                 return Ok(var_value.clone());
             }
         } else if ty.is_non_null() {
-            errors.push(field_error(
+            errors.push(GraphQLError::field_error(
                 format!("missing variable for non-null {kind} {parent}{sep}{name}"),
                 path,
                 value.location(),
@@ -442,7 +439,7 @@ fn coerce_argument_value(
                     .iter()
                     .find(|(key, _value)| !ty_def.fields.contains_key(key))
                 {
-                    errors.push(field_error(
+                    errors.push(GraphQLError::field_error(
                         format!("Input object has key {key} not in type {ty_name}",),
                         path,
                         value.location(),
@@ -478,7 +475,7 @@ fn coerce_argument_value(
                                 })?;
                         coerced_object.insert(field_name.as_str(), default);
                     } else if field_def.ty.is_non_null() {
-                        errors.push(field_error(
+                        errors.push(GraphQLError::field_error(
                             format!(
                                 "Missing value for non-null input object field {ty_name}.{field_name}"
                             ),
@@ -502,7 +499,7 @@ fn coerce_argument_value(
             });
         }
     }
-    errors.push(field_error(
+    errors.push(GraphQLError::field_error(
         format!("Could not coerce {kind} {parent}{sep}{name}: {value} to type {ty_name}"),
         path,
         value.location(),
@@ -525,14 +522,9 @@ impl InputCoercionError {
     ) -> GraphQLError {
         match self {
             InputCoercionError::SuspectedValidationBug(s) => s.into_field_error(sources, path),
-            InputCoercionError::ValueError { message, location } => GraphQLError {
-                message,
-                locations: GraphQLLocation::from_node(sources, location)
-                    .into_iter()
-                    .collect(),
-                path: path_to_vec(path),
-                extensions: Default::default(),
-            },
+            InputCoercionError::ValueError { message, location } => {
+                GraphQLError::field_error(message, path, location, sources)
+            }
         }
     }
 }

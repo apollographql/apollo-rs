@@ -1,6 +1,5 @@
 use crate::executable::Field;
 use crate::execution::engine::execute_selection_set;
-use crate::execution::engine::field_error;
 use crate::execution::engine::try_nullify;
 use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::LinkedPath;
@@ -11,9 +10,9 @@ use crate::execution::response::PathElement;
 use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
-use crate::execution::SuspectedValidationBug;
 use crate::schema::ExtendedType;
 use crate::schema::Type;
+use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Schema;
@@ -34,11 +33,15 @@ pub(crate) fn complete_value<'a, 'b>(
     fields: &'a [&'a Field],
 ) -> Result<JsonValue, PropagateNull> {
     let location = fields[0].name.location();
-    let new_field_error = |message| field_error(message, path, location, &document.sources);
     macro_rules! field_error {
         ($($arg: tt)+) => {
             {
-                errors.push(new_field_error(format!($($arg)+)));
+                errors.push(GraphQLError::field_error(
+                    format_args!($($arg)+),
+                    path,
+                    location,
+                    &document.sources
+                ));
                 return Err(PropagateNull);
             }
         };

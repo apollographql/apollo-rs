@@ -16,6 +16,7 @@ use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::schema::ObjectType;
 use crate::schema::Type;
+use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Schema;
@@ -260,7 +261,7 @@ fn execute_field(
             fields,
         ),
         Err(ResolverError { message }) => {
-            errors.push(field_error(
+            errors.push(GraphQLError::field_error(
                 format!("resolver error: {message}"),
                 path,
                 field.name.location(),
@@ -301,18 +302,32 @@ pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<PathElement> {
     path
 }
 
-pub(crate) fn field_error(
-    message: impl ToString,
-    path: LinkedPath<'_>,
-    location: Option<NodeLocation>,
-    sources: &SourceMap,
-) -> GraphQLError {
-    GraphQLError {
-        message: message.to_string(),
-        path: path_to_vec(path),
-        locations: GraphQLLocation::from_node(sources, location)
-            .into_iter()
-            .collect(),
-        extensions: Default::default(),
+impl GraphQLError {
+    pub(crate) fn field_error(
+        message: impl ToString,
+        path: LinkedPath<'_>,
+        location: Option<NodeLocation>,
+        sources: &SourceMap,
+    ) -> Self {
+        Self {
+            message: message.to_string(),
+            path: path_to_vec(path),
+            locations: GraphQLLocation::from_node(sources, location)
+                .into_iter()
+                .collect(),
+            extensions: Default::default(),
+        }
+    }
+}
+
+impl SuspectedValidationBug {
+    pub(crate) fn into_field_error(
+        self,
+        sources: &SourceMap,
+        path: LinkedPath<'_>,
+    ) -> GraphQLError {
+        let mut err = self.into_graphql_error(sources);
+        err.path = path_to_vec(path);
+        err
     }
 }
