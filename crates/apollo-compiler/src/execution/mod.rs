@@ -14,7 +14,8 @@ mod result_coercion;
 
 pub use self::input_coercion::coerce_variable_values;
 pub use self::input_coercion::InputCoercionError;
-pub use self::introspection::SchemaIntrospection;
+pub use self::introspection::SchemaIntrospectionQuery;
+pub use self::introspection::SchemaIntrospectionSplit;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
 pub use self::response::Response;

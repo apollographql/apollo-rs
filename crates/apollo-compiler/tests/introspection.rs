@@ -1,7 +1,7 @@
 use apollo_compiler::execution::coerce_variable_values;
 use apollo_compiler::execution::JsonMap;
 use apollo_compiler::execution::Response;
-use apollo_compiler::execution::SchemaIntrospection;
+use apollo_compiler::execution::SchemaIntrospectionQuery;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use expect_test::expect;
@@ -29,7 +29,7 @@ fn test() {
             ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
         let operation = document.get_operation(None).unwrap();
         let variables = coerce_variable_values(&schema, operation, &variables).unwrap();
-        let response = SchemaIntrospection::execute_with(
+        let response = SchemaIntrospectionQuery::split_and_execute(
             &schema,
             &document,
             operation,

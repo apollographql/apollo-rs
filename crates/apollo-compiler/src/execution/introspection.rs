@@ -19,11 +19,10 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
-/// Execution for [schema introspection]
+/// Result of splitting [schema introspection] fields from an operation.
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-#[derive(Debug)]
-pub enum SchemaIntrospection {
+pub enum SchemaIntrospectionSplit {
     /// The selected operation does *not* use [schema introspection] fields.
     /// It should be executed unchanged.
     ///
@@ -31,40 +30,40 @@ pub enum SchemaIntrospection {
     None,
 
     /// The selected operation *only* uses [schema introspection] fields.
-    /// This provides the full response, there is nothing else to execute.
+    /// This provides the executable introspection query, there is nothing else to execute.
     ///
     /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    Only(Response),
+    Only(SchemaIntrospectionQuery),
 
     /// The selected operation uses *both* [schema introspection] fields and other fields.
+    /// Each part should be executed, and their responses merged with [`Response::merge`].
     ///
     /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
     Both {
-        /// The response for schema introspection parts of the original operation.
-        introspection_response: Response,
+        /// The executable query for schema introspection parts of the original operation.
+        introspection_query: SchemaIntrospectionQuery,
 
-        /// Contains exactly one operation with schema introspection fields removed,
+        /// The rest of the operation.
+        ///
+        /// This document contains exactly one operation with schema introspection fields removed,
         /// and the fragment definitions it needs.
         /// The operation definition name is preserved,
         /// so either `None` or the original `Option<&str>` name request can be passed
         /// to [`ExecutableDocument::get_operation`] to obtain the one operation.
-        ///
-        /// This operation should be executed separately,
-        /// and its response merged with `introspection_response` using [`Response::merge`].
         filtered_operation: Valid<ExecutableDocument>,
     },
 }
 
-impl SchemaIntrospection {
-    /// Execute the [schema introspection] parts of an operation
-    /// and return the rest to be executed separately.
+pub struct SchemaIntrospectionQuery(Valid<ExecutableDocument>);
+
+impl SchemaIntrospectionSplit {
+    /// Split [schema introspection] fields from an operation.
     ///
     /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    pub fn execute(
+    pub fn split(
         schema: &Valid<Schema>,
         document: &Valid<ExecutableDocument>,
         operation: &Operation,
-        variable_values: &Valid<JsonMap>,
     ) -> Result<Self, SuspectedValidationBug> {
         if operation.operation_type != OperationType::Query {
             return Ok(Self::None);
@@ -92,12 +91,27 @@ impl SchemaIntrospection {
                 sel.as_field()
                     .is_some_and(is_schema_introspection_meta_field)
             })?;
-        let implementers_map = &OnceLock::new();
-        let initial_value = &IntrospectionRootResolver(SchemaWithCache {
-            schema,
-            implementers_map,
-        });
-        // https://spec.graphql.org/October2021/#ExecuteQuery()
+        if let Some(filtered_operation) = non_introspection_document {
+            Ok(Self::Both {
+                introspection_query: SchemaIntrospectionQuery(introspection_document),
+                filtered_operation,
+            })
+        } else {
+            Ok(Self::Only(SchemaIntrospectionQuery(introspection_document)))
+        }
+    }
+}
+
+impl SchemaIntrospectionQuery {
+    pub fn execute(
+        &self,
+        schema: &Valid<Schema>,
+        variable_values: &Valid<JsonMap>,
+    ) -> Result<Response, SuspectedValidationBug> {
+        let operation = self.0.get_operation(None).unwrap();
+        debug_assert_eq!(operation.operation_type, OperationType::Query);
+
+        // https://spec.graphql.org/October2021/#sec-Query
         let object_type_name = operation.object_type();
         let object_type_def =
             schema
@@ -108,11 +122,17 @@ impl SchemaIntrospection {
                 ),
                     location: None,
                 })?;
+        let implementers_map = &OnceLock::new();
+        let initial_value = &IntrospectionRootResolver(SchemaWithCache {
+            schema,
+            implementers_map,
+        });
+
         let mut errors = Vec::new();
-        let path = None; // root: empty path
+        let path = None;
         let data = execute_selection_set(
             schema,
-            &introspection_document,
+            &self.0,
             variable_values,
             &mut errors,
             path,
@@ -122,45 +142,47 @@ impl SchemaIntrospection {
             initial_value,
             &operation.selection_set.selections,
         );
-        let introspection_response = Response {
+        Ok(Response {
             data: data.into(),
             errors,
             extensions: Default::default(),
-        };
-        if let Some(filtered_operation) = non_introspection_document {
-            Ok(Self::Both {
-                introspection_response,
-                filtered_operation,
-            })
-        } else {
-            Ok(Self::Only(introspection_response))
-        }
+        })
     }
 
     /// Execute the [schema introspection] parts of an operation
     /// and wrap a callback to execute the rest (if any).
     ///
-    /// This calls [`execute`][Self::execute]
-    /// and handles each [`SchemaIntrospection`] enum variant as suggested by their documentation.
+    /// This is a convenience wrapper for [`split`][SchemaIntrospectionSplit::split]
+    /// and [`execute`][Self::execute].
     ///
     /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    pub fn execute_with(
+    pub fn split_and_execute(
         schema: &Valid<Schema>,
         document: &Valid<ExecutableDocument>,
         operation: &Operation,
         variable_values: &Valid<JsonMap>,
         execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
     ) -> Response {
-        match Self::execute(schema, document, operation, variable_values) {
-            Ok(Self::Only(response)) => response,
-            Ok(Self::None) => execute_non_introspection_parts(document),
-            Ok(Self::Both {
+        let request_error = |err: SuspectedValidationBug| {
+            Response::from_request_error(err.into_graphql_error(&document.sources))
+        };
+        match SchemaIntrospectionSplit::split(schema, document, operation) {
+            Ok(SchemaIntrospectionSplit::Only(introspection_query)) => introspection_query
+                .execute(schema, variable_values)
+                .unwrap_or_else(request_error),
+            Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
+            Ok(SchemaIntrospectionSplit::Both {
+                introspection_query,
                 filtered_operation,
-                introspection_response,
             }) => {
-                execute_non_introspection_parts(&filtered_operation).merge(introspection_response)
+                let non_introspection_response =
+                    execute_non_introspection_parts(&filtered_operation);
+                let introspection_response = introspection_query
+                    .execute(schema, variable_values)
+                    .unwrap_or_else(request_error);
+                non_introspection_response.merge(introspection_response)
             }
-            Err(err) => Response::from_request_error(err.into_graphql_error(&document.sources)),
+            Err(err) => request_error(err),
         }
     }
 }
