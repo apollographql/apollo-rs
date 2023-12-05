@@ -17,9 +17,9 @@ pub use self::input_coercion::InputCoercionError;
 pub use self::introspection::SchemaIntrospection;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
-pub use self::response::PathElement;
 pub use self::response::Response;
 pub use self::response::ResponseData;
+pub use self::response::ResponseDataPathElement;
 /// Re-export of the version of the `serde_json_bytes` crate used for [`JsonValue`] and [`JsonMap`]
 pub use serde_json_bytes;
 

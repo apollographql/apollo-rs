@@ -6,7 +6,7 @@ use crate::execution::engine::LinkedPath;
 use crate::execution::engine::LinkedPathElement;
 use crate::execution::engine::PropagateNull;
 use crate::execution::resolver::ResolvedValue;
-use crate::execution::response::PathElement;
+use crate::execution::response::ResponseDataPathElement;
 use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
@@ -62,7 +62,7 @@ pub(crate) fn complete_value<'a, 'b>(
                 let mut completed_list = Vec::with_capacity(iter.size_hint().0);
                 for (index, inner_resolved) in iter.enumerate() {
                     let inner_path = LinkedPathElement {
-                        element: PathElement::ListIndex(index),
+                        element: ResponseDataPathElement::ListIndex(index),
                         next: path,
                     };
                     let inner_result = complete_value(

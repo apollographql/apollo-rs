@@ -10,7 +10,7 @@ use crate::execution::GraphQLError;
 use crate::execution::GraphQLLocation;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
-use crate::execution::PathElement;
+use crate::execution::ResponseDataPathElement;
 use crate::node::NodeLocation;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
@@ -43,7 +43,7 @@ pub(crate) struct PropagateNull;
 pub(crate) type LinkedPath<'a> = Option<&'a LinkedPathElement<'a>>;
 
 pub(crate) struct LinkedPathElement<'a> {
-    pub(crate) element: PathElement,
+    pub(crate) element: ResponseDataPathElement,
     pub(crate) next: LinkedPath<'a>,
 }
 
@@ -95,7 +95,7 @@ pub(crate) fn execute_selection_set<'a>(
             JsonValue::from(object_type_name)
         } else {
             let field_path = LinkedPathElement {
-                element: PathElement::Field(response_key.clone()),
+                element: ResponseDataPathElement::Field(response_key.clone()),
                 next: path,
             };
             execute_field(
@@ -292,7 +292,7 @@ pub(crate) fn try_nullify(
     }
 }
 
-pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<PathElement> {
+pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<ResponseDataPathElement> {
     let mut path = Vec::new();
     while let Some(node) = link {
         path.push(node.element.clone());

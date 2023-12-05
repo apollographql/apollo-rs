@@ -66,7 +66,7 @@ pub struct GraphQLError {
     /// [field error]: https://spec.graphql.org/October2021/#sec-Errors.Field-errors
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(default)]
-    pub path: Vec<PathElement>,
+    pub path: Vec<ResponseDataPathElement>,
 
     /// Reserved for any additional information
     #[serde(skip_serializing_if = "JsonMap::is_empty")]
@@ -88,7 +88,7 @@ pub struct GraphQLLocation {
 /// An element of [`GraphQLError::path`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum PathElement {
+pub enum ResponseDataPathElement {
     /// The relevant key in an object value
     Field(crate::ast::Name),
 
