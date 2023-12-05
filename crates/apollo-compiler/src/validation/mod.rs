@@ -52,17 +52,38 @@ pub use crate::node::NodeLocation;
 /// It can be extracted with [`into_inner`][Self::into_inner],
 /// such as to mutate it then possibly re-validate it.
 #[derive(Debug, Clone, Eq, PartialEq)]
+#[repr(transparent)]
 pub struct Valid<T>(pub(crate) T);
 
 impl<T> Valid<T> {
     /// Construct a `Valid` document without actually running validation.
     ///
+    /// This takes ownership of the document.
+    /// See also [`assume_valid_ref`][Self::assume_valid_ref] which only requires a reference.
+    ///
     /// The caller takes responsibility to ascertain that
     /// the document is known through some other means to be valid.
-    /// For example, if it was loaded from some external storag
+    /// For example, if it was loaded from some external storage
     /// where it was only stored after validation.
     pub fn assume_valid(document: T) -> Self {
         Self(document)
+    }
+
+    /// Mark a reference as `Valid` without actually running validation.
+    ///
+    /// See also [`assume_valid`][Self::assume_valid] returns an owned `Valid<T>`
+    /// instead of only a reference.
+    ///
+    /// The caller takes responsibility to ascertain that
+    /// the document is known through some other means to be valid.
+    /// For example, if it was loaded from some external storage
+    /// where it was only stored after validation.
+    pub fn assume_valid_ref(document: &T) -> &Self {
+        let ptr: *const T = document;
+        let ptr: *const Valid<T> = ptr.cast();
+        // SAFETY: `repr(transparent)` makes it valid to transmute `&T` to `&Valid<T>`:
+        // <https://doc.rust-lang.org/nomicon/other-reprs.html#reprtransparent>
+        unsafe { &*ptr }
     }
 
     /// Extract the schema or document, such as to mutate it then possibly re-validate it.
