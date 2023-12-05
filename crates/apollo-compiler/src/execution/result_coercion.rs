@@ -37,7 +37,7 @@ pub(crate) fn complete_value<'a, 'b>(
         ($($arg: tt)+) => {
             {
                 errors.push(GraphQLError::field_error(
-                    format_args!($($arg)+),
+                    format!($($arg)+),
                     path,
                     location,
                     &document.sources

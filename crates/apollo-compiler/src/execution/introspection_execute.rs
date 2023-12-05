@@ -35,13 +35,10 @@ impl SchemaIntrospectionQuery {
         variable_values: &Valid<JsonMap>,
         execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
     ) -> Response {
-        let request_error = |err: SuspectedValidationBug| {
-            Response::from_request_error(err.into_graphql_error(&document.sources))
-        };
         match SchemaIntrospectionSplit::split(schema, document, operation) {
             Ok(SchemaIntrospectionSplit::Only(introspection_query)) => introspection_query
                 .execute(schema, variable_values)
-                .unwrap_or_else(request_error),
+                .unwrap_or_else(|err| err.into_response(&document.sources)),
             Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
             Ok(SchemaIntrospectionSplit::Both {
                 introspection_query,
@@ -51,10 +48,10 @@ impl SchemaIntrospectionQuery {
                     execute_non_introspection_parts(&filtered_operation);
                 let introspection_response = introspection_query
                     .execute(schema, variable_values)
-                    .unwrap_or_else(request_error);
+                    .unwrap_or_else(|err| err.into_response(&document.sources));
                 non_introspection_response.merge(introspection_response)
             }
-            Err(err) => request_error(err),
+            Err(err) => Response::from_request_error(err.into_graphql_error(&document.sources)),
         }
     }
 

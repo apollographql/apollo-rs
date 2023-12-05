@@ -133,6 +133,23 @@ impl Response {
     }
 }
 
+impl GraphQLError {
+    pub fn new(
+        message: impl Into<String>,
+        location: Option<NodeLocation>,
+        sources: &SourceMap,
+    ) -> Self {
+        Self {
+            message: message.into(),
+            locations: GraphQLLocation::from_node(sources, location)
+                .into_iter()
+                .collect(),
+            path: Default::default(),
+            extensions: Default::default(),
+        }
+    }
+}
+
 impl GraphQLLocation {
     /// Convert a `NodeLocation` to a line and column number
     pub fn from_node(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {

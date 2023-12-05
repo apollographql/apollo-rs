@@ -7,7 +7,6 @@ use crate::execution::resolver::ObjectValue;
 use crate::execution::resolver::ResolverError;
 use crate::execution::result_coercion::complete_value;
 use crate::execution::GraphQLError;
-use crate::execution::GraphQLLocation;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::ResponseDataPathElement;
@@ -304,19 +303,14 @@ pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<ResponseDataPathEleme
 
 impl GraphQLError {
     pub(crate) fn field_error(
-        message: impl ToString,
+        message: impl Into<String>,
         path: LinkedPath<'_>,
         location: Option<NodeLocation>,
         sources: &SourceMap,
     ) -> Self {
-        Self {
-            message: message.to_string(),
-            path: path_to_vec(path),
-            locations: GraphQLLocation::from_node(sources, location)
-                .into_iter()
-                .collect(),
-            extensions: Default::default(),
-        }
+        let mut err = Self::new(message, location, sources);
+        err.path = path_to_vec(path);
+        err
     }
 }
 

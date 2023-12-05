@@ -23,7 +23,7 @@ mod variable;
 
 use crate::ast::Name;
 use crate::executable::BuildError as ExecutableBuildError;
-use crate::execution::{GraphQLError, GraphQLLocation};
+use crate::execution::{GraphQLError, GraphQLLocation, Response};
 use crate::schema::BuildError as SchemaBuildError;
 use crate::Node;
 use crate::SourceFile;
@@ -160,19 +160,21 @@ pub struct SuspectedValidationBug {
 }
 
 impl SuspectedValidationBug {
+    /// Convert into a JSON-serializable error as represented in a GraphQL response
     pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
         let Self { message, location } = self;
-        let mut err = GraphQLError {
-            message,
-            locations: GraphQLLocation::from_node(sources, location)
-                .into_iter()
-                .collect(),
-            path: Vec::new(),
-            extensions: Default::default(),
-        };
+        let mut err = GraphQLError::new(message, location, sources);
         err.extensions
             .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
         err
+    }
+
+    /// Convert into a response with this error as a [request error]
+    /// that prevented execution from starting.
+    ///
+    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
+    pub fn into_response(self, sources: &SourceMap) -> Response {
+        Response::from_request_error(self.into_graphql_error(sources))
     }
 }
 

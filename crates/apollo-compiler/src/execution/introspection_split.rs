@@ -7,7 +7,10 @@ use crate::executable::Operation;
 use crate::executable::OperationType;
 use crate::executable::Selection;
 use crate::executable::SelectionSet;
+use crate::execution::GraphQLError;
+use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
+use crate::node::NodeLocation;
 use crate::schema;
 use crate::schema::Name;
 use crate::validation::SuspectedValidationBug;
@@ -15,6 +18,7 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
+use crate::SourceMap;
 use indexmap::IndexMap;
 use std::collections::HashSet;
 
@@ -53,6 +57,14 @@ pub enum SchemaIntrospectionSplit {
     },
 }
 
+pub enum SchemaIntrospectionError {
+    SuspectedValidationBug(SuspectedValidationBug),
+    Unsupported {
+        message: String,
+        location: Option<NodeLocation>,
+    },
+}
+
 impl SchemaIntrospectionSplit {
     /// Split [schema introspection] fields from an operation.
     ///
@@ -61,7 +73,7 @@ impl SchemaIntrospectionSplit {
         schema: &Valid<Schema>,
         document: &Valid<ExecutableDocument>,
         operation: &Operation,
-    ) -> Result<Self, SuspectedValidationBug> {
+    ) -> Result<Self, SchemaIntrospectionError> {
         if operation.operation_type != OperationType::Query {
             return Ok(Self::None);
         }
@@ -337,5 +349,31 @@ where
             | schema::Value::Int(_)
             | schema::Value::Boolean(_) => {}
         }
+    }
+}
+
+impl From<SuspectedValidationBug> for SchemaIntrospectionError {
+    fn from(value: SuspectedValidationBug) -> Self {
+        Self::SuspectedValidationBug(value)
+    }
+}
+
+impl SchemaIntrospectionError {
+    /// Convert into a JSON-serializable error as represented in a GraphQL response
+    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
+        match self {
+            Self::SuspectedValidationBug(s) => s.into_graphql_error(sources),
+            Self::Unsupported { message, location } => {
+                GraphQLError::new(message, location, sources)
+            }
+        }
+    }
+
+    /// Convert into a response with this error as a [request error]
+    /// that prevented execution from starting.
+    ///
+    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
+    pub fn into_response(self, sources: &SourceMap) -> Response {
+        Response::from_request_error(self.into_graphql_error(sources))
     }
 }

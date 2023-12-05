@@ -7,6 +7,7 @@ use crate::execution::engine::PropagateNull;
 use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
+use crate::execution::Response;
 use crate::node::NodeLocation;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
@@ -515,14 +516,30 @@ impl From<SuspectedValidationBug> for InputCoercionError {
 }
 
 impl InputCoercionError {
+    /// Convert into a JSON-serializable error as represented in a GraphQL response
+    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
+        match self {
+            Self::SuspectedValidationBug(s) => s.into_graphql_error(sources),
+            Self::ValueError { message, location } => GraphQLError::new(message, location, sources),
+        }
+    }
+
+    /// Convert into a response with this error as a [request error]
+    /// that prevented execution from starting.
+    ///
+    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
+    pub fn into_response(self, sources: &SourceMap) -> Response {
+        Response::from_request_error(self.into_graphql_error(sources))
+    }
+
     pub(crate) fn into_field_error(
         self,
         path: LinkedPath<'_>,
         sources: &SourceMap,
     ) -> GraphQLError {
         match self {
-            InputCoercionError::SuspectedValidationBug(s) => s.into_field_error(sources, path),
-            InputCoercionError::ValueError { message, location } => {
+            Self::SuspectedValidationBug(s) => s.into_field_error(sources, path),
+            Self::ValueError { message, location } => {
                 GraphQLError::field_error(message, path, location, sources)
             }
         }
