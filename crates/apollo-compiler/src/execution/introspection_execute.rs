@@ -1,5 +1,3 @@
-use crate::executable::filtering::FilteredDocumentBuilder;
-use crate::executable::Field;
 use crate::executable::Operation;
 use crate::executable::OperationType;
 use crate::execution::engine::execute_selection_set;
@@ -7,6 +5,7 @@ use crate::execution::engine::ExecutionMode;
 use crate::execution::resolver::ResolvedValue;
 use crate::execution::JsonMap;
 use crate::execution::Response;
+use crate::execution::SchemaIntrospectionSplit;
 use crate::schema;
 use crate::schema::Name;
 use crate::validation::SuspectedValidationBug;
@@ -19,88 +18,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
-/// Result of splitting [schema introspection] fields from an operation.
-///
-/// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-pub enum SchemaIntrospectionSplit {
-    /// The selected operation does *not* use [schema introspection] fields.
-    /// It should be executed unchanged.
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    None,
-
-    /// The selected operation *only* uses [schema introspection] fields.
-    /// This provides the executable introspection query, there is nothing else to execute.
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    Only(SchemaIntrospectionQuery),
-
-    /// The selected operation uses *both* [schema introspection] fields and other fields.
-    /// Each part should be executed, and their responses merged with [`Response::merge`].
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    Both {
-        /// The executable query for schema introspection parts of the original operation.
-        introspection_query: SchemaIntrospectionQuery,
-
-        /// The rest of the operation.
-        ///
-        /// This document contains exactly one operation with schema introspection fields removed,
-        /// and the fragment definitions it needs.
-        /// The operation definition name is preserved,
-        /// so either `None` or the original `Option<&str>` name request can be passed
-        /// to [`ExecutableDocument::get_operation`] to obtain the one operation.
-        filtered_operation: Valid<ExecutableDocument>,
-    },
-}
-
-pub struct SchemaIntrospectionQuery(Valid<ExecutableDocument>);
-
-impl SchemaIntrospectionSplit {
-    /// Split [schema introspection] fields from an operation.
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    pub fn split(
-        schema: &Valid<Schema>,
-        document: &Valid<ExecutableDocument>,
-        operation: &Operation,
-    ) -> Result<Self, SuspectedValidationBug> {
-        if operation.operation_type != OperationType::Query {
-            return Ok(Self::None);
-        }
-
-        fn is_schema_introspection_meta_field(field: &Node<Field>) -> bool {
-            field.name == "__schema" || field.name == "__type"
-        }
-
-        let Some(introspection_document) =
-            FilteredDocumentBuilder::single_operation(schema, document, operation, |sel| {
-                // Remove fields…
-                sel.as_field().is_some_and(|field| {
-                    // except __schema and __type meta-fields,
-                    // and fields of the schema introspection schema
-                    !is_schema_introspection_meta_field(field) && !field.definition.is_built_in()
-                })
-            })?
-        else {
-            return Ok(Self::None);
-        };
-        let non_introspection_document =
-            FilteredDocumentBuilder::single_operation(schema, document, operation, |sel| {
-                // Remove __schema and __type
-                sel.as_field()
-                    .is_some_and(is_schema_introspection_meta_field)
-            })?;
-        if let Some(filtered_operation) = non_introspection_document {
-            Ok(Self::Both {
-                introspection_query: SchemaIntrospectionQuery(introspection_document),
-                filtered_operation,
-            })
-        } else {
-            Ok(Self::Only(SchemaIntrospectionQuery(introspection_document)))
-        }
-    }
-}
+pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
 
 impl SchemaIntrospectionQuery {
     pub fn execute(

@@ -110,7 +110,7 @@ impl Response {
     }
 
     /// Merge two responses into one, such as to handle
-    /// [`SchemaIntrospection::Both`][crate::execution::SchemaIntrospection::Both].
+    /// [`SchemaIntrospectionSplit::Both`][crate::execution::SchemaIntrospectionSplit::Both].
     pub fn merge(mut self, mut other: Self) -> Self {
         match (&mut self.data, other.data) {
             (ResponseData::Absent, _) | (_, ResponseData::Absent) => {

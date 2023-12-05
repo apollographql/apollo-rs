@@ -11,7 +11,6 @@ use indexmap::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
 
-pub(crate) mod filtering;
 pub(crate) mod from_ast;
 mod serialize;
 pub(crate) mod validation;

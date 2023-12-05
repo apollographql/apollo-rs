@@ -8,14 +8,15 @@ pub(crate) mod engine;
 mod input_coercion;
 #[macro_use]
 pub(crate) mod resolver;
-mod introspection;
+mod introspection_execute;
+mod introspection_split;
 mod response;
 mod result_coercion;
 
 pub use self::input_coercion::coerce_variable_values;
 pub use self::input_coercion::InputCoercionError;
-pub use self::introspection::SchemaIntrospectionQuery;
-pub use self::introspection::SchemaIntrospectionSplit;
+pub use self::introspection_execute::SchemaIntrospectionQuery;
+pub use self::introspection_split::SchemaIntrospectionSplit;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
 pub use self::response::Response;
