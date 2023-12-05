@@ -21,6 +21,43 @@ use std::sync::OnceLock;
 pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
 
 impl SchemaIntrospectionQuery {
+    /// Execute the [schema introspection] parts of an operation
+    /// and wrap a callback to execute the rest (if any).
+    ///
+    /// This is a convenience wrapper for [`split`][SchemaIntrospectionSplit::split]
+    /// and [`execute`][Self::execute].
+    ///
+    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+    pub fn split_and_execute(
+        schema: &Valid<Schema>,
+        document: &Valid<ExecutableDocument>,
+        operation: &Operation,
+        variable_values: &Valid<JsonMap>,
+        execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
+    ) -> Response {
+        let request_error = |err: SuspectedValidationBug| {
+            Response::from_request_error(err.into_graphql_error(&document.sources))
+        };
+        match SchemaIntrospectionSplit::split(schema, document, operation) {
+            Ok(SchemaIntrospectionSplit::Only(introspection_query)) => introspection_query
+                .execute(schema, variable_values)
+                .unwrap_or_else(request_error),
+            Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
+            Ok(SchemaIntrospectionSplit::Both {
+                introspection_query,
+                filtered_operation,
+            }) => {
+                let non_introspection_response =
+                    execute_non_introspection_parts(&filtered_operation);
+                let introspection_response = introspection_query
+                    .execute(schema, variable_values)
+                    .unwrap_or_else(request_error);
+                non_introspection_response.merge(introspection_response)
+            }
+            Err(err) => request_error(err),
+        }
+    }
+
     pub fn execute(
         &self,
         schema: &Valid<Schema>,
@@ -65,43 +102,6 @@ impl SchemaIntrospectionQuery {
             errors,
             extensions: Default::default(),
         })
-    }
-
-    /// Execute the [schema introspection] parts of an operation
-    /// and wrap a callback to execute the rest (if any).
-    ///
-    /// This is a convenience wrapper for [`split`][SchemaIntrospectionSplit::split]
-    /// and [`execute`][Self::execute].
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    pub fn split_and_execute(
-        schema: &Valid<Schema>,
-        document: &Valid<ExecutableDocument>,
-        operation: &Operation,
-        variable_values: &Valid<JsonMap>,
-        execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
-    ) -> Response {
-        let request_error = |err: SuspectedValidationBug| {
-            Response::from_request_error(err.into_graphql_error(&document.sources))
-        };
-        match SchemaIntrospectionSplit::split(schema, document, operation) {
-            Ok(SchemaIntrospectionSplit::Only(introspection_query)) => introspection_query
-                .execute(schema, variable_values)
-                .unwrap_or_else(request_error),
-            Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
-            Ok(SchemaIntrospectionSplit::Both {
-                introspection_query,
-                filtered_operation,
-            }) => {
-                let non_introspection_response =
-                    execute_non_introspection_parts(&filtered_operation);
-                let introspection_response = introspection_query
-                    .execute(schema, variable_values)
-                    .unwrap_or_else(request_error);
-                non_introspection_response.merge(introspection_response)
-            }
-            Err(err) => request_error(err),
-        }
     }
 }
 

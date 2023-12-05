@@ -4,10 +4,10 @@
 //! [execution]: https://spec.graphql.org/October2021/#sec-Execution
 //! [response]: https://spec.graphql.org/October2021/#sec-Response
 
-pub(crate) mod engine;
-mod input_coercion;
 #[macro_use]
-pub(crate) mod resolver;
+mod resolver;
+mod engine;
+mod input_coercion;
 mod introspection_execute;
 mod introspection_split;
 mod response;
@@ -17,6 +17,7 @@ pub use self::input_coercion::coerce_variable_values;
 pub use self::input_coercion::InputCoercionError;
 pub use self::introspection_execute::SchemaIntrospectionQuery;
 pub use self::introspection_split::SchemaIntrospectionSplit;
+pub use self::introspection_split::SchemaIntrospectionSplitError;
 pub use self::response::GraphQLError;
 pub use self::response::GraphQLLocation;
 pub use self::response::Response;
