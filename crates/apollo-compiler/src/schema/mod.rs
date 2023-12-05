@@ -385,22 +385,37 @@ impl Schema {
         type_name: &str,
         field_name: &str,
     ) -> Result<&Component<FieldDefinition>, FieldLookupError<'_>> {
+        use ExtendedType::*;
         let (ty_def_name, ty_def) = self
             .types
             .get_key_value(type_name)
             .ok_or(FieldLookupError::NoSuchType)?;
-        self.meta_fields_definitions(type_name)
-            .iter()
-            .find(|def| def.name == field_name)
-            .or_else(|| match ty_def {
-                ExtendedType::Object(ty) => ty.fields.get(field_name),
-                ExtendedType::Interface(ty) => ty.fields.get(field_name),
-                ExtendedType::Scalar(_)
-                | ExtendedType::Union(_)
-                | ExtendedType::Enum(_)
-                | ExtendedType::InputObject(_) => None,
-            })
-            .ok_or(FieldLookupError::NoSuchField(ty_def_name, ty_def))
+        let explicit_field = match ty_def {
+            Object(ty) => ty.fields.get(field_name),
+            Interface(ty) => ty.fields.get(field_name),
+            Scalar(_) | Union(_) | Enum(_) | InputObject(_) => None,
+        };
+        if let Some(def) = explicit_field {
+            return Ok(def);
+        }
+        let meta = MetaFieldDefinitions::get();
+        if field_name == "__typename" && matches!(ty_def, Object(_) | Interface(_) | Union(_)) {
+            // .validate() errors for __typename at the root of a subscription operation
+            return Ok(&meta.__typename);
+        }
+        if self
+            .schema_definition
+            .query
+            .as_ref()
+            .is_some_and(|query_type| query_type == type_name)
+        {
+            match field_name {
+                "__schema" => return Ok(&meta.__schema),
+                "__type" => return Ok(&meta.__type),
+                _ => {}
+            }
+        }
+        Err(FieldLookupError::NoSuchField(ty_def_name, ty_def))
     }
 
     /// Returns a map of interface names to names of types that implement that interface
@@ -454,62 +469,6 @@ impl Schema {
             | ExtendedType::Enum(_)
             | ExtendedType::InputObject(_) => false,
         })
-    }
-
-    /// Return the meta-fields of the given type
-    pub(crate) fn meta_fields_definitions(
-        &self,
-        type_name: &str,
-    ) -> &'static [Component<FieldDefinition>] {
-        static ROOT_QUERY_FIELDS: LazyLock<[Component<FieldDefinition>; 3]> = LazyLock::new(|| {
-            [
-                // __typename: String!
-                Component::new(FieldDefinition {
-                    description: None,
-                    name: name!("__typename"),
-                    arguments: Vec::new(),
-                    ty: ty!(String!),
-                    directives: ast::DirectiveList::new(),
-                }),
-                // __schema: __Schema!
-                Component::new(FieldDefinition {
-                    description: None,
-                    name: name!("__schema"),
-                    arguments: Vec::new(),
-                    ty: ty!(__Schema!),
-                    directives: ast::DirectiveList::new(),
-                }),
-                // __type(name: String!): __Type
-                Component::new(FieldDefinition {
-                    description: None,
-                    name: name!("__type"),
-                    arguments: vec![InputValueDefinition {
-                        description: None,
-                        name: name!("name"),
-                        ty: ty!(String!).into(),
-                        default_value: None,
-                        directives: ast::DirectiveList::new(),
-                    }
-                    .into()],
-                    ty: ty!(__Type),
-                    directives: ast::DirectiveList::new(),
-                }),
-            ]
-        });
-        if self
-            .schema_definition
-            .query
-            .as_ref()
-            .is_some_and(|n| n == type_name)
-        {
-            // __typename: String!
-            // __schema: __Schema!
-            // __type(name: String!): __Type
-            ROOT_QUERY_FIELDS.get()
-        } else {
-            // __typename: String!
-            std::slice::from_ref(&ROOT_QUERY_FIELDS.get()[0])
-        }
     }
 
     /// Returns whether the type `ty` is defined as is an input type
@@ -1037,21 +996,47 @@ impl std::fmt::Debug for DebugTypes<'_> {
     }
 }
 
-// TODO: use `std::sync::LazyLock` when available https://github.com/rust-lang/rust/issues/109736
-struct LazyLock<T> {
-    value: OnceLock<T>,
-    init: fn() -> T,
+struct MetaFieldDefinitions {
+    __typename: Component<FieldDefinition>,
+    __schema: Component<FieldDefinition>,
+    __type: Component<FieldDefinition>,
 }
 
-impl<T> LazyLock<T> {
-    const fn new(init: fn() -> T) -> Self {
-        Self {
-            value: OnceLock::new(),
-            init,
-        }
-    }
-
-    fn get(&self) -> &T {
-        self.value.get_or_init(self.init)
+impl MetaFieldDefinitions {
+    fn get() -> &'static Self {
+        static DEFS: OnceLock<MetaFieldDefinitions> = OnceLock::new();
+        DEFS.get_or_init(|| Self {
+            // __typename: String!
+            __typename: Component::new(FieldDefinition {
+                description: None,
+                name: name!("__typename"),
+                arguments: Vec::new(),
+                ty: ty!(String!),
+                directives: ast::DirectiveList::new(),
+            }),
+            // __schema: __Schema!
+            __schema: Component::new(FieldDefinition {
+                description: None,
+                name: name!("__schema"),
+                arguments: Vec::new(),
+                ty: ty!(__Schema!),
+                directives: ast::DirectiveList::new(),
+            }),
+            // __type(name: String!): __Type
+            __type: Component::new(FieldDefinition {
+                description: None,
+                name: name!("__type"),
+                arguments: vec![InputValueDefinition {
+                    description: None,
+                    name: name!("name"),
+                    ty: ty!(String!).into(),
+                    default_value: None,
+                    directives: ast::DirectiveList::new(),
+                }
+                .into()],
+                ty: ty!(__Type),
+                directives: ast::DirectiveList::new(),
+            }),
+        })
     }
 }
