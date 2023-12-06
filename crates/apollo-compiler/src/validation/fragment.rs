@@ -1,33 +1,35 @@
+use crate::ast;
 use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::schema;
+use crate::schema::Implementers;
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::{CycleError, FileId, NodeLocation, RecursionGuard, RecursionStack};
-use crate::{ast, schema, Node, ValidationDatabase};
-use std::collections::{HashMap, HashSet};
+use crate::Node;
+use crate::ValidationDatabase;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
 fn get_possible_types(
-    db: &dyn ValidationDatabase,
-    type_name: &ast::Name,
+    type_definition: &schema::ExtendedType,
+    implementers_map: &HashMap<ast::Name, Implementers>,
 ) -> HashSet<ast::NamedType> {
-    let schema = db.schema();
-    let implementers_map = db.implementers_map();
-
-    match schema.types.get(type_name) {
+    match type_definition {
         // 1. If `type` is an object type, return a set containing `type`.
-        Some(schema::ExtendedType::Object(_)) => {
+        schema::ExtendedType::Object(object) => {
             let mut set = HashSet::new();
-            set.insert(type_name.clone());
+            set.insert(object.name.clone());
             set
         }
         // 2. If `type` is an interface type, return the set of object types implementing `type`.
-        Some(schema::ExtendedType::Interface(_)) => implementers_map
-            .get(type_name)
+        schema::ExtendedType::Interface(interface) => implementers_map
+            .get(&interface.name)
             .map(|implementers| implementers.objects.clone())
             .unwrap_or_default(),
         // 3. If `type` is a union type, return the set of possible types of `type`.
-        Some(schema::ExtendedType::Union(union_)) => union_
+        schema::ExtendedType::Union(union_) => union_
             .members
             .iter()
             .map(|component| component.name.clone())
@@ -48,7 +50,7 @@ fn validate_fragment_spread_type(
 
     // Another diagnostic will be raised if the type condition was wrong.
     // We reduce noise by silencing other issues with the fragment.
-    if !schema.types.contains_key(type_condition) {
+    let Some(type_condition_definition) = schema.types.get(type_condition) else {
         return diagnostics;
     };
 
@@ -57,8 +59,10 @@ fn validate_fragment_spread_type(
         return diagnostics;
     };
 
-    let concrete_parent_types = get_possible_types(db, against_type);
-    let concrete_condition_types = get_possible_types(db, type_condition);
+    let implementers_map = db.implementers_map();
+    let concrete_parent_types = get_possible_types(&against_type_definition, &implementers_map);
+    let concrete_condition_types =
+        get_possible_types(&type_condition_definition, &implementers_map);
 
     let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
     if applicable_types.next().is_none() {
