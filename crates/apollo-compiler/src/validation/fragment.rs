@@ -60,9 +60,8 @@ fn validate_fragment_spread_type(
     };
 
     let implementers_map = db.implementers_map();
-    let concrete_parent_types = get_possible_types(&against_type_definition, &implementers_map);
-    let concrete_condition_types =
-        get_possible_types(&type_condition_definition, &implementers_map);
+    let concrete_parent_types = get_possible_types(against_type_definition, &implementers_map);
+    let concrete_condition_types = get_possible_types(type_condition_definition, &implementers_map);
 
     let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
     if applicable_types.next().is_none() {
