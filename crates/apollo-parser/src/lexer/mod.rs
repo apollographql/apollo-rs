@@ -375,6 +375,11 @@ impl<'a> Cursor<'a> {
 
                         state = State::BlockStringLiteral;
                     }
+                    '\\' => {
+                        // We need to stay in the backslash state:
+                        // it's legal to write \\\""" with two literal backslashes
+                        // and then the escape sequence.
+                    }
                     _ => {
                         state = State::BlockStringLiteral;
                     }
