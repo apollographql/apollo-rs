@@ -57,4 +57,7 @@ type Query {
 
   "\n   Leading empty line + indent to preserve"
   f18: Int
+
+  "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote"
+  f19: Int
 }
