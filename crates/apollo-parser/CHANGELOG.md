@@ -16,6 +16,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [x.x.x] (unreleased) - 2023-xx-xx
+
+## Fixes
+- **fix parsing `\\"""` in block string - [goto-bus-stop], [pull/774]**
+  Previously this was parsed as `\` followed by the end of the string,
+  now it's correctly parsed as `\` followed by an escaped `"""`.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/774]: https://github.com/apollographql/apollo-rs/pull/774
+
 # [0.7.4](https://crates.io/crates/apollo-parser/0.7.4) - 2023-11-17
 
 ## Features
