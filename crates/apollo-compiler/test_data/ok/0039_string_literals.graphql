@@ -48,4 +48,13 @@ type Query {
 
   "Trailing quote\""
   f15: Int
+
+  "   Leading whitespace on a single line to preserve"
+  f16: Int
+
+  "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line"
+  f17: Int
+
+  "\n   Leading empty line + indent to preserve"
+  f18: Int
 }

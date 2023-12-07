@@ -918,10 +918,7 @@ fn can_be_block_string(value: &str) -> bool {
     }
 
     let common_indent = {
-        let mut lines = value.split('\n');
-        // Skip the first line, the one following """
-        lines.next();
-
+        let lines = value.split('\n');
         let each_line_indent_utf8_len = lines.filter_map(|line| {
             let after_indent = trim_start_graphql_whitespace(line);
             if !after_indent.is_empty() {
