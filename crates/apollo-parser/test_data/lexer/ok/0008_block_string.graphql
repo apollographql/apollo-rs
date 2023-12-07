@@ -12,3 +12,8 @@ input Filter {
 input Filter {
     title: String
 }
+
+"""
+\\"""
+"""
+scalar LiteralBackslashThenEscape
