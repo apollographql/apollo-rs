@@ -22,8 +22,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Features
 - **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
 
+## Fixes
+- **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/FIXME]**
+  Previously, the leading whitespace would get lost.
+
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
+[pull/FIXME]: https://github.com/apollographql/apollo-rs/pull/FIXME
 
 # [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
 
