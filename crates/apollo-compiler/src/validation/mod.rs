@@ -22,7 +22,7 @@ mod value;
 mod variable;
 
 use crate::ast::Name;
-use crate::diagnostic::DiagnosticReport;
+use crate::diagnostic::{Diagnostic, DiagnosticReport, ToReport};
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::execution::{GraphQLError, GraphQLLocation};
 use crate::schema::BuildError as SchemaBuildError;
@@ -148,14 +148,15 @@ pub struct DiagnosticList {
     diagnostics_data: Vec<DiagnosticData>,
 }
 
+/// TODO(@goto-bus-stop): ideally keep this non public
 #[derive(Clone)]
-pub(crate) struct DiagnosticData {
+pub struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
 }
 
 /// A single diagnostic in a [`DiagnosticList`]
-pub struct Diagnostic<'a> {
+pub struct Diagnostic_<'a> {
     sources: &'a SourceMap,
     data: &'a DiagnosticData,
 }
@@ -174,7 +175,7 @@ pub(crate) enum Details {
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
-impl DiagnosticData {
+impl ToReport for DiagnosticData {
     fn report(&self, sources: SourceMap) -> DiagnosticReport {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
             return diagnostic.to_report(sources);
@@ -379,7 +380,7 @@ impl DiagnosticData {
     }
 }
 
-impl<'a> Diagnostic<'a> {
+impl<'a> Diagnostic_<'a> {
     /// Get the line and column number where this diagnostic was raised.
     pub fn get_line_column(&self) -> Option<GraphQLLocation> {
         let loc = self.data.location?;
@@ -426,10 +427,11 @@ impl DiagnosticList {
 
     pub fn iter(
         &self,
-    ) -> impl Iterator<Item = Diagnostic<'_>> + DoubleEndedIterator + ExactSizeIterator {
+    ) -> impl Iterator<Item = Diagnostic<&'_ DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
+    {
         self.diagnostics_data.iter().map(|data| Diagnostic {
-            sources: &self.sources,
-            data,
+            sources: self.sources.clone(),
+            error: data,
         })
     }
 
@@ -510,7 +512,7 @@ impl fmt::Display for DiagnosticList {
 /// Defaults to ANSI color codes if stderr is a terminal.
 ///
 /// Use alternate formatting to never use colors: `format!("{diagnostic:#}")`
-impl fmt::Display for Diagnostic<'_> {
+impl fmt::Display for Diagnostic_<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.data.report(self.sources.clone()).fmt(f)
     }

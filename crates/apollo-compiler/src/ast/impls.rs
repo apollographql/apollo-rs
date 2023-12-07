@@ -1,4 +1,6 @@
 use super::*;
+use crate::diagnostic::DiagnosticReport;
+use crate::diagnostic::ToReport;
 use crate::name;
 use crate::node::NodeLocation;
 use crate::schema::ComponentName;
@@ -10,6 +12,7 @@ use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::Parser;
 use crate::Schema;
+use crate::SourceMap;
 use std::fmt;
 use std::hash;
 use std::path::Path;
@@ -1771,6 +1774,15 @@ impl PartialOrd<str> for Name {
 impl PartialOrd<&'_ str> for Name {
     fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(*other)
+    }
+}
+
+impl ToReport for InvalidNameError {
+    fn report(&self, sources: SourceMap) -> DiagnosticReport {
+        let mut report = DiagnosticReport::builder(sources, self.0.location());
+        report.with_message(&self);
+        report.with_label_opt(self.0.location(), "cannot be parsed as a GraphQL name");
+        report
     }
 }
 

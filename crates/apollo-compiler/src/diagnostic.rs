@@ -1,4 +1,6 @@
 //! Pretty-printable diagnostic reports for custom errors that reference GraphQL documents.
+//!
+//! The [`Diagnostic`] type wraps errors that implement [`ToReport`].
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
 use crate::SourceFile;
@@ -178,5 +180,115 @@ impl ariadne::Cache<FileId> for Cache<'_> {
             }
             Some(Box::new(NoSourceFile))
         }
+    }
+}
+
+/// A pretty-printable diagnostic.
+#[derive(Debug)]
+pub struct Diagnostic<T> {
+    pub sources: SourceMap,
+    pub error: T,
+}
+
+impl<T> std::ops::Deref for Diagnostic<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &self.error
+    }
+}
+
+impl<T: std::error::Error + ToReport> std::error::Error for Diagnostic<T> {}
+
+impl<T: ToReport> ToReport for &T {
+    fn report(&self, sources: SourceMap) -> DiagnosticReport {
+        ToReport::report(*self, sources)
+    }
+}
+
+impl<T: ToReport> Diagnostic<T> {
+    /// Write the report to a [`Write`], with colors.
+    ///
+    /// If colored output is not desired, consider wrapping the [`Write`] with [`anstream`].
+    ///
+    /// [`Write`]: std::io::Write
+    pub fn write(&self, w: impl std::io::Write) -> std::io::Result<()> {
+        let report = self.error.report(self.sources.clone());
+        report.write(w)
+    }
+}
+
+impl<T: ToReport> fmt::Display for Diagnostic<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        struct StripColorAdaptor<'a, 'b> {
+            f: &'a mut fmt::Formatter<'b>,
+            strip: anstream::adapter::StripBytes,
+        }
+        impl io::Write for StripColorAdaptor<'_, '_> {
+            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+                for printable in self.strip.strip_next(buf) {
+                    let s = std::str::from_utf8(printable).map_err(|_| io::ErrorKind::Other)?;
+                    self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
+                }
+
+                Ok(buf.len())
+            }
+
+            fn flush(&mut self) -> io::Result<()> {
+                Ok(())
+            }
+        }
+
+        struct ColorAdaptor<'a, 'b> {
+            f: &'a mut fmt::Formatter<'b>,
+        }
+        impl io::Write for ColorAdaptor<'_, '_> {
+            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+                let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
+                self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
+                Ok(buf.len())
+            }
+
+            fn flush(&mut self) -> io::Result<()> {
+                Ok(())
+            }
+        }
+
+        if f.alternate() {
+            self.write(StripColorAdaptor {
+                f,
+                strip: Default::default(),
+            })
+            .map_err(|_| fmt::Error)
+        } else {
+            self.write(ColorAdaptor { f }).map_err(|_| fmt::Error)
+        }
+    }
+}
+
+/// Trait for pretty-printing custom error types.
+pub trait ToReport {
+    fn report(&self, sources: SourceMap) -> DiagnosticReport;
+}
+
+/// Extension trait adding a convenience method to custom errors to create a pretty-printable [`Diagnostic`].
+pub trait ErrorExt: Sized {
+    fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>;
+}
+impl<T: ToReport> ErrorExt for T {
+    fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self> {
+        Diagnostic {
+            sources: sources.clone(),
+            error: self,
+        }
+    }
+}
+
+/// Extension trait adding a convenience method to Results to turn the error branch into a pretty-printable [`Diagnostic`].
+pub trait ResultExt<T, E> {
+    fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>>;
+}
+impl<T, E: ToReport> ResultExt<T, E> for Result<T, E> {
+    fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>> {
+        self.map_err(|error| error.to_diagnostic(sources))
     }
 }
