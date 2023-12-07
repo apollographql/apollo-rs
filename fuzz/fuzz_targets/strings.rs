@@ -7,6 +7,8 @@ use libfuzzer_sys::{
 use log::debug;
 
 fuzz_target!(|data: &[u8]| {
+    let _ = env_logger::try_init();
+
     let mut u = Unstructured::new(data);
     let string = String::arbitrary(&mut u).unwrap();
     let mut input = Schema::new();
