@@ -15,28 +15,15 @@ pub(crate) fn validate_arguments(
         let name = &argument.name;
         if let Some(&original_definition) = seen.get(name) {
             let redefined_definition = argument.location();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
+            diagnostics.push(ApolloDiagnostic::new(
+                db,
+                redefined_definition,
+                DiagnosticData::UniqueArgument {
+                    name: name.to_string(),
+                    original_definition,
                     redefined_definition,
-                    DiagnosticData::UniqueArgument {
-                        name: name.to_string(),
-                        original_definition,
-                        redefined_definition,
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previously provided `{name}` here"),
-                    ),
-                    Label::new(
-                        redefined_definition,
-                        format!("`{name}` provided again here"),
-                    ),
-                ])
-                .help(format!("`{name}` argument must only be provided once.")),
-            );
+                },
+            ));
         } else {
             seen.insert(name, argument.location());
         }

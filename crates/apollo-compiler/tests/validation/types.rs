@@ -343,17 +343,17 @@ mod invalid_string_values {
       ",
             expect![[r#"
                 Error: expected value of type String, found Int
-                    ╭─[schema.graphql:80:29]
-                    │
-                 80 │   stringArgField(stringArg: String): String
-                    │                             ───┬──  
-                    │                                ╰──── field declared here as String type
-                    │
-                    ├─[query.graphql:3:31]
+                    ╭─[query.graphql:3:31]
                     │
                   3 │     stringArgField(stringArg: 1)
                     │                               ┬  
-                    │                               ╰── argument declared here is of Int type
+                    │                               ╰── provided value is of Int type
+                    │
+                    ├─[schema.graphql:80:29]
+                    │
+                 80 │   stringArgField(stringArg: String): String
+                    │                             ───┬──  
+                    │                                ╰──── expected type declared here as String
                 ────╯
             "#]],
         );
@@ -371,17 +371,17 @@ mod invalid_string_values {
       ",
             expect![[r#"
                 Error: expected value of type String, found Float
-                    ╭─[schema.graphql:80:29]
-                    │
-                 80 │   stringArgField(stringArg: String): String
-                    │                             ───┬──  
-                    │                                ╰──── field declared here as String type
-                    │
-                    ├─[query.graphql:3:31]
+                    ╭─[query.graphql:3:31]
                     │
                   3 │     stringArgField(stringArg: 1.0)
                     │                               ─┬─  
-                    │                                ╰─── argument declared here is of Float type
+                    │                                ╰─── provided value is of Float type
+                    │
+                    ├─[schema.graphql:80:29]
+                    │
+                 80 │   stringArgField(stringArg: String): String
+                    │                             ───┬──  
+                    │                                ╰──── expected type declared here as String
                 ────╯
             "#]],
         );
@@ -399,17 +399,17 @@ mod invalid_string_values {
       ",
             expect![[r#"
                 Error: expected value of type String, found Boolean
-                    ╭─[schema.graphql:80:29]
-                    │
-                 80 │   stringArgField(stringArg: String): String
-                    │                             ───┬──  
-                    │                                ╰──── field declared here as String type
-                    │
-                    ├─[query.graphql:3:31]
+                    ╭─[query.graphql:3:31]
                     │
                   3 │     stringArgField(stringArg: true)
                     │                               ──┬─  
-                    │                                 ╰─── argument declared here is of Boolean type
+                    │                                 ╰─── provided value is of Boolean type
+                    │
+                    ├─[schema.graphql:80:29]
+                    │
+                 80 │   stringArgField(stringArg: String): String
+                    │                             ───┬──  
+                    │                                ╰──── expected type declared here as String
                 ────╯
             "#]],
         );
@@ -427,17 +427,17 @@ mod invalid_string_values {
       ",
             expect![[r#"
                 Error: expected value of type String, found Enum
-                    ╭─[schema.graphql:80:29]
-                    │
-                 80 │   stringArgField(stringArg: String): String
-                    │                             ───┬──  
-                    │                                ╰──── field declared here as String type
-                    │
-                    ├─[query.graphql:3:31]
+                    ╭─[query.graphql:3:31]
                     │
                   3 │     stringArgField(stringArg: BAR)
                     │                               ─┬─  
-                    │                                ╰─── argument declared here is of Enum type
+                    │                                ╰─── provided value is of Enum type
+                    │
+                    ├─[schema.graphql:80:29]
+                    │
+                 80 │   stringArgField(stringArg: String): String
+                    │                             ───┬──  
+                    │                                ╰──── expected type declared here as String
                 ────╯
             "#]],
         );
@@ -460,17 +460,17 @@ mod invalid_int_values {
       "#,
             expect![[r#"
                 Error: expected value of type Int, found String
-                    ╭─[schema.graphql:78:23]
-                    │
-                 78 │   intArgField(intArg: Int): String
-                    │                       ─┬─  
-                    │                        ╰─── field declared here as Int type
-                    │
-                    ├─[query.graphql:3:25]
+                    ╭─[query.graphql:3:25]
                     │
                   3 │     intArgField(intArg: "3")
                     │                         ─┬─  
-                    │                          ╰─── argument declared here is of String type
+                    │                          ╰─── provided value is of String type
+                    │
+                    ├─[schema.graphql:78:23]
+                    │
+                 78 │   intArgField(intArg: Int): String
+                    │                       ─┬─  
+                    │                        ╰─── expected type declared here as Int
                 ────╯
             "#]],
         );
@@ -492,7 +492,7 @@ mod invalid_int_values {
                    │
                  3 │     intArgField(intArg: 829384293849283498239482938)
                    │                         ─────────────┬─────────────  
-                   │                                      ╰─────────────── cannot be coerced to an 32-bit integer
+                   │                                      ╰─────────────── cannot be coerced to a 32-bit integer
                 ───╯
             "#]],
         );
@@ -510,17 +510,17 @@ mod invalid_int_values {
       ",
             expect![[r#"
                 Error: expected value of type Int, found Enum
-                    ╭─[schema.graphql:78:23]
-                    │
-                 78 │   intArgField(intArg: Int): String
-                    │                       ─┬─  
-                    │                        ╰─── field declared here as Int type
-                    │
-                    ├─[query.graphql:3:25]
+                    ╭─[query.graphql:3:25]
                     │
                   3 │     intArgField(intArg: FOO)
                     │                         ─┬─  
-                    │                          ╰─── argument declared here is of Enum type
+                    │                          ╰─── provided value is of Enum type
+                    │
+                    ├─[schema.graphql:78:23]
+                    │
+                 78 │   intArgField(intArg: Int): String
+                    │                       ─┬─  
+                    │                        ╰─── expected type declared here as Int
                 ────╯
             "#]],
         );
@@ -538,17 +538,17 @@ mod invalid_int_values {
       ",
             expect![[r#"
                 Error: expected value of type Int, found Float
-                    ╭─[schema.graphql:78:23]
-                    │
-                 78 │   intArgField(intArg: Int): String
-                    │                       ─┬─  
-                    │                        ╰─── field declared here as Int type
-                    │
-                    ├─[query.graphql:3:25]
+                    ╭─[query.graphql:3:25]
                     │
                   3 │     intArgField(intArg: 3.0)
                     │                         ─┬─  
-                    │                          ╰─── argument declared here is of Float type
+                    │                          ╰─── provided value is of Float type
+                    │
+                    ├─[schema.graphql:78:23]
+                    │
+                 78 │   intArgField(intArg: Int): String
+                    │                       ─┬─  
+                    │                        ╰─── expected type declared here as Int
                 ────╯
             "#]],
         );
@@ -566,17 +566,17 @@ mod invalid_int_values {
       ",
             expect![[r#"
                 Error: expected value of type Int, found Float
-                    ╭─[schema.graphql:78:23]
-                    │
-                 78 │   intArgField(intArg: Int): String
-                    │                       ─┬─  
-                    │                        ╰─── field declared here as Int type
-                    │
-                    ├─[query.graphql:3:25]
+                    ╭─[query.graphql:3:25]
                     │
                   3 │     intArgField(intArg: 3.333)
                     │                         ──┬──  
-                    │                           ╰──── argument declared here is of Float type
+                    │                           ╰──── provided value is of Float type
+                    │
+                    ├─[schema.graphql:78:23]
+                    │
+                 78 │   intArgField(intArg: Int): String
+                    │                       ─┬─  
+                    │                        ╰─── expected type declared here as Int
                 ────╯
             "#]],
         );
@@ -599,17 +599,17 @@ mod invalid_float_values {
       "#,
             expect![[r#"
                 Error: expected value of type Float, found String
-                    ╭─[schema.graphql:83:27]
-                    │
-                 83 │   floatArgField(floatArg: Float): String
-                    │                           ──┬──  
-                    │                             ╰──── field declared here as Float type
-                    │
-                    ├─[query.graphql:3:29]
+                    ╭─[query.graphql:3:29]
                     │
                   3 │     floatArgField(floatArg: "3.333")
                     │                             ───┬───  
-                    │                                ╰───── argument declared here is of String type
+                    │                                ╰───── provided value is of String type
+                    │
+                    ├─[schema.graphql:83:27]
+                    │
+                 83 │   floatArgField(floatArg: Float): String
+                    │                           ──┬──  
+                    │                             ╰──── expected type declared here as Float
                 ────╯
             "#]],
         );
@@ -627,17 +627,17 @@ mod invalid_float_values {
       ",
             expect![[r#"
                 Error: expected value of type Float, found Boolean
-                    ╭─[schema.graphql:83:27]
-                    │
-                 83 │   floatArgField(floatArg: Float): String
-                    │                           ──┬──  
-                    │                             ╰──── field declared here as Float type
-                    │
-                    ├─[query.graphql:3:29]
+                    ╭─[query.graphql:3:29]
                     │
                   3 │     floatArgField(floatArg: true)
                     │                             ──┬─  
-                    │                               ╰─── argument declared here is of Boolean type
+                    │                               ╰─── provided value is of Boolean type
+                    │
+                    ├─[schema.graphql:83:27]
+                    │
+                 83 │   floatArgField(floatArg: Float): String
+                    │                           ──┬──  
+                    │                             ╰──── expected type declared here as Float
                 ────╯
             "#]],
         );
@@ -655,17 +655,17 @@ mod invalid_float_values {
       ",
             expect![[r#"
                 Error: expected value of type Float, found Enum
-                    ╭─[schema.graphql:83:27]
-                    │
-                 83 │   floatArgField(floatArg: Float): String
-                    │                           ──┬──  
-                    │                             ╰──── field declared here as Float type
-                    │
-                    ├─[query.graphql:3:29]
+                    ╭─[query.graphql:3:29]
                     │
                   3 │     floatArgField(floatArg: FOO)
                     │                             ─┬─  
-                    │                              ╰─── argument declared here is of Enum type
+                    │                              ╰─── provided value is of Enum type
+                    │
+                    ├─[schema.graphql:83:27]
+                    │
+                 83 │   floatArgField(floatArg: Float): String
+                    │                           ──┬──  
+                    │                             ╰──── expected type declared here as Float
                 ────╯
             "#]],
         );
@@ -688,17 +688,17 @@ mod invalid_boolean_values {
       ",
             expect![[r#"
                 Error: expected value of type Boolean, found Int
-                    ╭─[schema.graphql:81:31]
-                    │
-                 81 │   booleanArgField(booleanArg: Boolean): String
-                    │                               ───┬───  
-                    │                                  ╰───── field declared here as Boolean type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     booleanArgField(booleanArg: 2)
                     │                                 ┬  
-                    │                                 ╰── argument declared here is of Int type
+                    │                                 ╰── provided value is of Int type
+                    │
+                    ├─[schema.graphql:81:31]
+                    │
+                 81 │   booleanArgField(booleanArg: Boolean): String
+                    │                               ───┬───  
+                    │                                  ╰───── expected type declared here as Boolean
                 ────╯
             "#]],
         );
@@ -716,17 +716,17 @@ mod invalid_boolean_values {
       ",
             expect![[r#"
                 Error: expected value of type Boolean, found Float
-                    ╭─[schema.graphql:81:31]
-                    │
-                 81 │   booleanArgField(booleanArg: Boolean): String
-                    │                               ───┬───  
-                    │                                  ╰───── field declared here as Boolean type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     booleanArgField(booleanArg: 1.0)
                     │                                 ─┬─  
-                    │                                  ╰─── argument declared here is of Float type
+                    │                                  ╰─── provided value is of Float type
+                    │
+                    ├─[schema.graphql:81:31]
+                    │
+                 81 │   booleanArgField(booleanArg: Boolean): String
+                    │                               ───┬───  
+                    │                                  ╰───── expected type declared here as Boolean
                 ────╯
             "#]],
         );
@@ -744,17 +744,17 @@ mod invalid_boolean_values {
       "#,
             expect![[r#"
                 Error: expected value of type Boolean, found String
-                    ╭─[schema.graphql:81:31]
-                    │
-                 81 │   booleanArgField(booleanArg: Boolean): String
-                    │                               ───┬───  
-                    │                                  ╰───── field declared here as Boolean type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     booleanArgField(booleanArg: "true")
                     │                                 ───┬──  
-                    │                                    ╰──── argument declared here is of String type
+                    │                                    ╰──── provided value is of String type
+                    │
+                    ├─[schema.graphql:81:31]
+                    │
+                 81 │   booleanArgField(booleanArg: Boolean): String
+                    │                               ───┬───  
+                    │                                  ╰───── expected type declared here as Boolean
                 ────╯
             "#]],
         );
@@ -772,17 +772,17 @@ mod invalid_boolean_values {
       ",
             expect![[r#"
                 Error: expected value of type Boolean, found Enum
-                    ╭─[schema.graphql:81:31]
-                    │
-                 81 │   booleanArgField(booleanArg: Boolean): String
-                    │                               ───┬───  
-                    │                                  ╰───── field declared here as Boolean type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     booleanArgField(booleanArg: TRUE)
                     │                                 ──┬─  
-                    │                                   ╰─── argument declared here is of Enum type
+                    │                                   ╰─── provided value is of Enum type
+                    │
+                    ├─[schema.graphql:81:31]
+                    │
+                 81 │   booleanArgField(booleanArg: Boolean): String
+                    │                               ───┬───  
+                    │                                  ╰───── expected type declared here as Boolean
                 ────╯
             "#]],
         );
@@ -805,17 +805,17 @@ mod invalid_id_values {
       ",
             expect![[r#"
                 Error: expected value of type ID, found Float
-                    ╭─[schema.graphql:84:21]
-                    │
-                 84 │   idArgField(idArg: ID): String
-                    │                     ─┬  
-                    │                      ╰── field declared here as ID type
-                    │
-                    ├─[query.graphql:3:23]
+                    ╭─[query.graphql:3:23]
                     │
                   3 │     idArgField(idArg: 1.0)
                     │                       ─┬─  
-                    │                        ╰─── argument declared here is of Float type
+                    │                        ╰─── provided value is of Float type
+                    │
+                    ├─[schema.graphql:84:21]
+                    │
+                 84 │   idArgField(idArg: ID): String
+                    │                     ─┬  
+                    │                      ╰── expected type declared here as ID
                 ────╯
             "#]],
         );
@@ -833,17 +833,17 @@ mod invalid_id_values {
       ",
             expect![[r#"
                 Error: expected value of type ID, found Boolean
-                    ╭─[schema.graphql:84:21]
-                    │
-                 84 │   idArgField(idArg: ID): String
-                    │                     ─┬  
-                    │                      ╰── field declared here as ID type
-                    │
-                    ├─[query.graphql:3:23]
+                    ╭─[query.graphql:3:23]
                     │
                   3 │     idArgField(idArg: true)
                     │                       ──┬─  
-                    │                         ╰─── argument declared here is of Boolean type
+                    │                         ╰─── provided value is of Boolean type
+                    │
+                    ├─[schema.graphql:84:21]
+                    │
+                 84 │   idArgField(idArg: ID): String
+                    │                     ─┬  
+                    │                      ╰── expected type declared here as ID
                 ────╯
             "#]],
         );
@@ -861,17 +861,17 @@ mod invalid_id_values {
       ",
             expect![[r#"
                 Error: expected value of type ID, found Enum
-                    ╭─[schema.graphql:84:21]
-                    │
-                 84 │   idArgField(idArg: ID): String
-                    │                     ─┬  
-                    │                      ╰── field declared here as ID type
-                    │
-                    ├─[query.graphql:3:23]
+                    ╭─[query.graphql:3:23]
                     │
                   3 │     idArgField(idArg: SOMETHING)
                     │                       ────┬────  
-                    │                           ╰────── argument declared here is of Enum type
+                    │                           ╰────── provided value is of Enum type
+                    │
+                    ├─[schema.graphql:84:21]
+                    │
+                 84 │   idArgField(idArg: ID): String
+                    │                     ─┬  
+                    │                      ╰── expected type declared here as ID
                 ────╯
             "#]],
         );
@@ -894,17 +894,17 @@ mod invalid_enum_values {
       ",
             expect![[r#"
                 Error: expected value of type DogCommand, found Int
-                    ╭─[schema.graphql:27:31]
-                    │
-                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
-                    │                               ─────┬────  
-                    │                                    ╰────── field declared here as DogCommand type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     doesKnowCommand(dogCommand: 2)
                     │                                 ┬  
-                    │                                 ╰── argument declared here is of Int type
+                    │                                 ╰── provided value is of Int type
+                    │
+                    ├─[schema.graphql:27:31]
+                    │
+                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+                    │                               ─────┬────  
+                    │                                    ╰────── expected type declared here as DogCommand
                 ────╯
             "#]],
         );
@@ -922,17 +922,17 @@ mod invalid_enum_values {
       ",
             expect![[r#"
                 Error: expected value of type DogCommand, found Float
-                    ╭─[schema.graphql:27:31]
-                    │
-                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
-                    │                               ─────┬────  
-                    │                                    ╰────── field declared here as DogCommand type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     doesKnowCommand(dogCommand: 1.0)
                     │                                 ─┬─  
-                    │                                  ╰─── argument declared here is of Float type
+                    │                                  ╰─── provided value is of Float type
+                    │
+                    ├─[schema.graphql:27:31]
+                    │
+                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+                    │                               ─────┬────  
+                    │                                    ╰────── expected type declared here as DogCommand
                 ────╯
             "#]],
         );
@@ -950,17 +950,17 @@ mod invalid_enum_values {
       "#,
             expect![[r#"
                 Error: expected value of type DogCommand, found String
-                    ╭─[schema.graphql:27:31]
-                    │
-                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
-                    │                               ─────┬────  
-                    │                                    ╰────── field declared here as DogCommand type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     doesKnowCommand(dogCommand: "SIT")
                     │                                 ──┬──  
-                    │                                   ╰──── argument declared here is of String type
+                    │                                   ╰──── provided value is of String type
+                    │
+                    ├─[schema.graphql:27:31]
+                    │
+                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+                    │                               ─────┬────  
+                    │                                    ╰────── expected type declared here as DogCommand
                 ────╯
             "#]],
         );
@@ -978,17 +978,17 @@ mod invalid_enum_values {
       ",
             expect![[r#"
                 Error: expected value of type DogCommand, found Boolean
-                    ╭─[schema.graphql:27:31]
-                    │
-                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
-                    │                               ─────┬────  
-                    │                                    ╰────── field declared here as DogCommand type
-                    │
-                    ├─[query.graphql:3:33]
+                    ╭─[query.graphql:3:33]
                     │
                   3 │     doesKnowCommand(dogCommand: true)
                     │                                 ──┬─  
-                    │                                   ╰─── argument declared here is of Boolean type
+                    │                                   ╰─── provided value is of Boolean type
+                    │
+                    ├─[schema.graphql:27:31]
+                    │
+                 27 │   doesKnowCommand(dogCommand: DogCommand): Boolean
+                    │                               ─────┬────  
+                    │                                    ╰────── expected type declared here as DogCommand
                 ────╯
             "#]],
         );
@@ -1005,13 +1005,21 @@ mod invalid_enum_values {
         }
       ",
             expect![[r#"
-                Error: value `JUGGLE` does not exist on `DogCommand` type
-                   ╭─[query.graphql:3:33]
-                   │
-                 3 │     doesKnowCommand(dogCommand: JUGGLE)
-                   │                                 ───┬──  
-                   │                                    ╰──── does not exist on `DogCommand` type
-                ───╯
+                Error: value `JUGGLE` does not exist on `DogCommand`
+                    ╭─[query.graphql:3:33]
+                    │
+                  3 │     doesKnowCommand(dogCommand: JUGGLE)
+                    │                                 ───┬──  
+                    │                                    ╰──── value does not exist on `DogCommand` enum
+                    │
+                    ├─[schema.graphql:16:1]
+                    │
+                 16 │ ╭─▶ enum DogCommand {
+                    ┆ ┆   
+                 20 │ ├─▶ }
+                    │ │       
+                    │ ╰─────── enum defined here
+                ────╯
             "#]],
         );
     }
@@ -1027,13 +1035,21 @@ mod invalid_enum_values {
         }
       ",
             expect![[r#"
-                Error: value `sit` does not exist on `DogCommand` type
-                   ╭─[query.graphql:3:33]
-                   │
-                 3 │     doesKnowCommand(dogCommand: sit)
-                   │                                 ─┬─  
-                   │                                  ╰─── does not exist on `DogCommand` type
-                ───╯
+                Error: value `sit` does not exist on `DogCommand`
+                    ╭─[query.graphql:3:33]
+                    │
+                  3 │     doesKnowCommand(dogCommand: sit)
+                    │                                 ─┬─  
+                    │                                  ╰─── value does not exist on `DogCommand` enum
+                    │
+                    ├─[schema.graphql:16:1]
+                    │
+                 16 │ ╭─▶ enum DogCommand {
+                    ┆ ┆   
+                 20 │ ├─▶ }
+                    │ │       
+                    │ ╰─────── enum defined here
+                ────╯
             "#]],
         );
     }
@@ -1111,17 +1127,17 @@ mod invalid_list_values {
       "#,
             expect![[r#"
                 Error: expected value of type String, found Int
-                    ╭─[schema.graphql:85:37]
-                    │
-                 85 │   stringListArgField(stringListArg: [String]): String
-                    │                                     ────┬───  
-                    │                                         ╰───── field declared here as String type
-                    │
-                    ├─[query.graphql:3:47]
+                    ╭─[query.graphql:3:47]
                     │
                   3 │     stringListArgField(stringListArg: ["one", 2])
                     │                                               ┬  
-                    │                                               ╰── argument declared here is of Int type
+                    │                                               ╰── provided value is of Int type
+                    │
+                    ├─[schema.graphql:85:37]
+                    │
+                 85 │   stringListArgField(stringListArg: [String]): String
+                    │                                     ────┬───  
+                    │                                         ╰───── expected type declared here as String
                 ────╯
             "#]],
         );
@@ -1139,17 +1155,17 @@ mod invalid_list_values {
       ",
             expect![[r#"
                 Error: expected value of type [String], found Int
-                    ╭─[schema.graphql:85:37]
-                    │
-                 85 │   stringListArgField(stringListArg: [String]): String
-                    │                                     ────┬───  
-                    │                                         ╰───── field declared here as [String] type
-                    │
-                    ├─[query.graphql:3:39]
+                    ╭─[query.graphql:3:39]
                     │
                   3 │     stringListArgField(stringListArg: 1)
                     │                                       ┬  
-                    │                                       ╰── argument declared here is of Int type
+                    │                                       ╰── provided value is of Int type
+                    │
+                    ├─[schema.graphql:85:37]
+                    │
+                 85 │   stringListArgField(stringListArg: [String]): String
+                    │                                     ────┬───  
+                    │                                         ╰───── expected type declared here as [String]
                 ────╯
             "#]],
         );
@@ -1306,30 +1322,30 @@ mod invalid_non_nullable_values {
       "#,
             expect![[r#"
                 Error: expected value of type Int!, found String
-                    ╭─[schema.graphql:89:34]
-                    │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
-                    │                                  ──┬─  
-                    │                                    ╰─── field declared here as Int! type
-                    │
-                    ├─[query.graphql:3:24]
+                    ╭─[query.graphql:3:24]
                     │
                   3 │     multipleReqs(req2: "two", req1: "one")
                     │                        ──┬──  
-                    │                          ╰──── argument declared here is of String type
-                ────╯
-                Error: expected value of type Int!, found String
-                    ╭─[schema.graphql:89:22]
+                    │                          ╰──── provided value is of String type
+                    │
+                    ├─[schema.graphql:89:34]
                     │
                  89 │   multipleReqs(req1: Int!, req2: Int!): String
-                    │                      ──┬─  
-                    │                        ╰─── field declared here as Int! type
-                    │
-                    ├─[query.graphql:3:37]
+                    │                                  ──┬─  
+                    │                                    ╰─── expected type declared here as Int!
+                ────╯
+                Error: expected value of type Int!, found String
+                    ╭─[query.graphql:3:37]
                     │
                   3 │     multipleReqs(req2: "two", req1: "one")
                     │                                     ──┬──  
-                    │                                       ╰──── argument declared here is of String type
+                    │                                       ╰──── provided value is of String type
+                    │
+                    ├─[schema.graphql:89:22]
+                    │
+                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                    │                      ──┬─  
+                    │                        ╰─── expected type declared here as Int!
                 ────╯
             "#]],
         );
@@ -1346,7 +1362,7 @@ mod invalid_non_nullable_values {
         }
       "#,
             expect![[r#"
-                Error: the required argument `req2` is not provided
+                Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provided
                     ╭─[query.graphql:3:5]
                     │
                   3 │     multipleReqs(req1: "one")
@@ -1360,17 +1376,17 @@ mod invalid_non_nullable_values {
                     │                                 ╰────── argument defined here
                 ────╯
                 Error: expected value of type Int!, found String
-                    ╭─[schema.graphql:89:22]
-                    │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
-                    │                      ──┬─  
-                    │                        ╰─── field declared here as Int! type
-                    │
-                    ├─[query.graphql:3:24]
+                    ╭─[query.graphql:3:24]
                     │
                   3 │     multipleReqs(req1: "one")
                     │                        ──┬──  
-                    │                          ╰──── argument declared here is of String type
+                    │                          ╰──── provided value is of String type
+                    │
+                    ├─[schema.graphql:89:22]
+                    │
+                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                    │                      ──┬─  
+                    │                        ╰─── expected type declared here as Int!
                 ────╯
             "#]],
         );
@@ -1387,7 +1403,7 @@ mod invalid_non_nullable_values {
         }
       ",
             expect![[r#"
-                Error: the required argument `req1` is not provided
+                Error: the required argument `ComplicatedArgs.multipleReqs(req1:)` is not provided
                     ╭─[query.graphql:3:5]
                     │
                   3 │     multipleReqs(req1: null)
@@ -1400,7 +1416,7 @@ mod invalid_non_nullable_values {
                     │                ─────┬────  
                     │                     ╰────── argument defined here
                 ────╯
-                Error: the required argument `req2` is not provided
+                Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provided
                     ╭─[query.graphql:3:5]
                     │
                   3 │     multipleReqs(req1: null)
@@ -1414,17 +1430,17 @@ mod invalid_non_nullable_values {
                     │                                 ╰────── argument defined here
                 ────╯
                 Error: expected value of type Int!, found Null
-                    ╭─[schema.graphql:89:22]
-                    │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
-                    │                      ──┬─  
-                    │                        ╰─── field declared here as Int! type
-                    │
-                    ├─[query.graphql:3:24]
+                    ╭─[query.graphql:3:24]
                     │
                   3 │     multipleReqs(req1: null)
                     │                        ──┬─  
-                    │                          ╰─── argument declared here is of Null type
+                    │                          ╰─── provided value is of Null type
+                    │
+                    ├─[schema.graphql:89:22]
+                    │
+                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                    │                      ──┬─  
+                    │                        ╰─── expected type declared here as Int!
                 ────╯
             "#]],
         );
@@ -1540,7 +1556,7 @@ mod invalid_input_object_values {
         }
       ",
             expect![[r#"
-                Error: the required argument `requiredField` is not provided
+                Error: the required argument `ComplexInput.requiredField` is not provided
                     ╭─[query.graphql:3:33]
                     │
                   3 │     complexArgField(complexArg: { intField: 4 })
@@ -1572,17 +1588,17 @@ mod invalid_input_object_values {
       "#,
             expect![[r#"
                 Error: expected value of type String, found Int
-                    ╭─[schema.graphql:65:20]
-                    │
-                 65 │   stringListField: [String]
-                    │                    ────┬───  
-                    │                        ╰───── field declared here as String type
-                    │
-                    ├─[query.graphql:4:32]
+                    ╭─[query.graphql:4:32]
                     │
                   4 │       stringListField: ["one", 2],
                     │                                ┬  
-                    │                                ╰── argument declared here is of Int type
+                    │                                ╰── provided value is of Int type
+                    │
+                    ├─[schema.graphql:65:20]
+                    │
+                 65 │   stringListField: [String]
+                    │                    ────┬───  
+                    │                        ╰───── expected type declared here as String
                 ────╯
             "#]],
         );
@@ -1603,17 +1619,17 @@ mod invalid_input_object_values {
       ",
             expect![[r#"
                 Error: expected value of type Boolean!, found Null
-                    ╭─[schema.graphql:61:17]
-                    │
-                 61 │   nonNullField: Boolean! = false
-                    │                 ────┬───  
-                    │                     ╰───── field declared here as Boolean! type
-                    │
-                    ├─[query.graphql:5:7]
+                    ╭─[query.graphql:5:7]
                     │
                   5 │       nonNullField: null,
                     │       ─────────┬────────  
-                    │                ╰────────── argument declared here is of Null type
+                    │                ╰────────── provided value is of Null type
+                    │
+                    ├─[schema.graphql:61:17]
+                    │
+                 61 │   nonNullField: Boolean! = false
+                    │                 ────┬───  
+                    │                     ╰───── expected type declared here as Boolean!
                 ────╯
             "#]],
         );
@@ -1633,13 +1649,21 @@ mod invalid_input_object_values {
         }
       "#,
             expect![[r#"
-                Error: value `invalidField` does not exist on `ComplexInput` type
-                   ╭─[query.graphql:5:7]
-                   │
-                 5 │       invalidField: "value"
-                   │       ──────────┬──────────  
-                   │                 ╰──────────── does not exist on `ComplexInput` type
-                ───╯
+                Error: field `invalidField` does not exist on `ComplexInput`
+                    ╭─[query.graphql:5:7]
+                    │
+                  5 │       invalidField: "value"
+                    │       ──────────┬──────────  
+                    │                 ╰──────────── value does not exist on `ComplexInput` input object
+                    │
+                    ├─[schema.graphql:59:1]
+                    │
+                 59 │ ╭─▶ input ComplexInput {
+                    ┆ ┆   
+                 66 │ ├─▶ }
+                    │ │       
+                    │ ╰─────── input object defined here
+                ────╯
             "#]],
         );
     }
@@ -1709,19 +1733,31 @@ mod directive_arguments {
       "#,
             expect![[r#"
                 Error: expected value of type Boolean!, found String
-                   ╭─[query.graphql:2:20]
-                   │
-                 2 │   dog @include(if: "yes") {
-                   │                    ──┬──  
-                   │                      ╰──── argument declared here is of String type
-                ───╯
+                     ╭─[query.graphql:2:20]
+                     │
+                   2 │   dog @include(if: "yes") {
+                     │                    ──┬──  
+                     │                      ╰──── provided value is of String type
+                     │
+                     ├─[built_in.graphql:105:7]
+                     │
+                 105 │   if: Boolean!
+                     │       ────┬───  
+                     │           ╰───── expected type declared here as Boolean!
+                ─────╯
                 Error: expected value of type Boolean!, found Enum
-                   ╭─[query.graphql:3:20]
-                   │
-                 3 │     name @skip(if: ENUM)
-                   │                    ──┬─  
-                   │                      ╰─── argument declared here is of Enum type
-                ───╯
+                    ╭─[query.graphql:3:20]
+                    │
+                  3 │     name @skip(if: ENUM)
+                    │                    ──┬─  
+                    │                      ╰─── provided value is of Enum type
+                    │
+                    ├─[built_in.graphql:99:7]
+                    │
+                 99 │   if: Boolean!
+                    │       ────┬───  
+                    │           ╰───── expected type declared here as Boolean!
+                ────╯
             "#]],
         );
     }
@@ -1797,20 +1833,20 @@ mod variable_default_values {
                    │
                  2 │   $a: Int! = null,
                    │       ──┬─   ──┬─  
-                   │         ╰────────── field declared here as Int! type
+                   │         ╰────────── expected type declared here as Int!
                    │                │   
-                   │                ╰─── argument declared here is of Null type
+                   │                ╰─── provided value is of Null type
                 ───╯
                 Error: expected value of type String!, found Null
                    ╭─[query.graphql:3:17]
                    │
                  3 │   $b: String! = null,
                    │       ───┬───   ──┬─  
-                   │          ╰──────────── field declared here as String! type
+                   │          ╰──────────── expected type declared here as String!
                    │                   │   
-                   │                   ╰─── argument declared here is of Null type
+                   │                   ╰─── provided value is of Null type
                 ───╯
-                Error: the required argument `requiredField` is not provided
+                Error: the required argument `ComplexInput.requiredField` is not provided
                     ╭─[query.graphql:4:22]
                     │
                   4 │   $c: ComplexInput = { requiredField: null, intField: null }
@@ -1824,17 +1860,17 @@ mod variable_default_values {
                     │              ╰───────────── argument defined here
                 ────╯
                 Error: expected value of type Boolean!, found Null
-                    ╭─[schema.graphql:60:18]
-                    │
-                 60 │   requiredField: Boolean!
-                    │                  ────┬───  
-                    │                      ╰───── field declared here as Boolean! type
-                    │
-                    ├─[query.graphql:4:24]
+                    ╭─[query.graphql:4:24]
                     │
                   4 │   $c: ComplexInput = { requiredField: null, intField: null }
                     │                        ─────────┬─────────  
-                    │                                 ╰─────────── argument declared here is of Null type
+                    │                                 ╰─────────── provided value is of Null type
+                    │
+                    ├─[schema.graphql:60:18]
+                    │
+                 60 │   requiredField: Boolean!
+                    │                  ────┬───  
+                    │                      ╰───── expected type declared here as Boolean!
                 ────╯
             "#]],
         );
@@ -1863,27 +1899,27 @@ mod variable_default_values {
                    │
                  2 │   $a: Int = "one",
                    │       ─┬─   ──┬──  
-                   │        ╰─────────── field declared here as Int type
+                   │        ╰─────────── expected type declared here as Int
                    │               │    
-                   │               ╰──── argument declared here is of String type
+                   │               ╰──── provided value is of String type
                 ───╯
                 Error: expected value of type String, found Int
                    ╭─[query.graphql:3:16]
                    │
                  3 │   $b: String = 4,
                    │       ───┬──   ┬  
-                   │          ╰──────── field declared here as String type
+                   │          ╰──────── expected type declared here as String
                    │                │  
-                   │                ╰── argument declared here is of Int type
+                   │                ╰── provided value is of Int type
                 ───╯
                 Error: expected value of type ComplexInput, found String
                    ╭─[query.graphql:4:22]
                    │
                  4 │   $c: ComplexInput = "NotVeryComplex"
                    │       ──────┬─────   ────────┬───────  
-                   │             ╰────────────────────────── field declared here as ComplexInput type
+                   │             ╰────────────────────────── expected type declared here as ComplexInput
                    │                              │         
-                   │                              ╰───────── argument declared here is of String type
+                   │                              ╰───────── provided value is of String type
                 ───╯
             "#]],
         );
@@ -1902,30 +1938,30 @@ mod variable_default_values {
       "#,
             expect![[r#"
                 Error: expected value of type Boolean!, found Int
-                    ╭─[schema.graphql:60:18]
-                    │
-                 60 │   requiredField: Boolean!
-                    │                  ────┬───  
-                    │                      ╰───── field declared here as Boolean! type
-                    │
-                    ├─[query.graphql:2:24]
+                    ╭─[query.graphql:2:24]
                     │
                   2 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
                     │                        ─────────┬────────  
-                    │                                 ╰────────── argument declared here is of Int type
+                    │                                 ╰────────── provided value is of Int type
+                    │
+                    ├─[schema.graphql:60:18]
+                    │
+                 60 │   requiredField: Boolean!
+                    │                  ────┬───  
+                    │                      ╰───── expected type declared here as Boolean!
                 ────╯
                 Error: expected value of type Int, found String
-                    ╭─[schema.graphql:62:13]
-                    │
-                 62 │   intField: Int
-                    │             ─┬─  
-                    │              ╰─── field declared here as Int type
-                    │
-                    ├─[query.graphql:2:44]
+                    ╭─[query.graphql:2:44]
                     │
                   2 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
                     │                                            ───────┬───────  
-                    │                                                   ╰───────── argument declared here is of String type
+                    │                                                   ╰───────── provided value is of String type
+                    │
+                    ├─[schema.graphql:62:13]
+                    │
+                 62 │   intField: Int
+                    │             ─┬─  
+                    │              ╰─── expected type declared here as Int
                 ────╯
             "#]],
         );
@@ -1941,7 +1977,7 @@ mod variable_default_values {
         }
       ",
             expect![[r#"
-                Error: the required argument `requiredField` is not provided
+                Error: the required argument `ComplexInput.requiredField` is not provided
                     ╭─[query.graphql:1:47]
                     │
                   1 │ query MissingRequiredField($a: ComplexInput = {intField: 3}) {
@@ -1973,9 +2009,9 @@ mod variable_default_values {
                    │
                  1 │ query InvalidItem($a: [String] = ["one", 2]) {
                    │                       ────┬───           ┬  
-                   │                           ╰───────────────── field declared here as String type
+                   │                           ╰───────────────── expected type declared here as String
                    │                                          │  
-                   │                                          ╰── argument declared here is of Int type
+                   │                                          ╰── provided value is of Int type
                 ───╯
             "#]],
         );

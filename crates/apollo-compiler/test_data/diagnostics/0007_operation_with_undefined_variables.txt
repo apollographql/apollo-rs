@@ -1,5 +1,5 @@
-Error: variable `undefinedVariable` is not defined
-   ╭─[0007_operation_with_undefined_variables.graphql:2:15]
+Error: variable `$undefinedVariable` is not defined
+   ╭─[0007_operation_with_undefined_variables.graphql:2:22]
    │
  2 │   topProducts(first: $undefinedVariable) {
    │                      ─────────┬────────  

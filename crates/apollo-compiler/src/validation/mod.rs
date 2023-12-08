@@ -180,13 +180,13 @@ impl SuspectedValidationBug {
 #[derive(Clone)]
 pub struct DiagnosticList {
     pub(crate) sources: SourceMap,
-    diagnostics_data: Vec<DiagnosticData>,
+    diagnostics_data: Vec<ValidationError>,
 }
 
 // TODO(@goto-bus-stop) Can/should this be non-pub?
 #[derive(thiserror::Error, Debug, Clone)]
 #[error("{details}")]
-pub struct DiagnosticData {
+pub struct ValidationError {
     location: Option<NodeLocation>,
     details: Details,
 }
@@ -205,7 +205,7 @@ pub(crate) enum Details {
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
-impl ToCliReport for DiagnosticData {
+impl ToCliReport for ValidationError {
     fn location(&self) -> Option<NodeLocation> {
         self.location
     }
@@ -430,7 +430,7 @@ impl DiagnosticList {
 
     pub fn iter(
         &self,
-    ) -> impl Iterator<Item = Diagnostic<'_, DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
+    ) -> impl Iterator<Item = Diagnostic<'_, ValidationError>> + DoubleEndedIterator + ExactSizeIterator
     {
         self.diagnostics_data
             .iter()
@@ -438,7 +438,7 @@ impl DiagnosticList {
     }
 
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: impl Into<Details>) {
-        self.diagnostics_data.push(DiagnosticData {
+        self.diagnostics_data.push(ValidationError {
             location,
             details: details.into(),
         })

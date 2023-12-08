@@ -1,98 +1,98 @@
-Error: `cat` field must be of an input type
+Error: `$cat` variable must be of an input type
    ╭─[0056_variables_are_input_types.graphql:1:16]
    │
  1 │ query takesCat($cat: Cat) {
    │                      ─┬─  
-   │                       ╰─── this is of `object` type
+   │                       ╰─── this is an object
    │ 
    │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ───╯
-Error: variable `cat` cannot be used for argument `atOtherHomes` as their types mismatch
+Error: variable `$cat` of type `Cat` cannot be used for argument `atOtherHomes` of type `Boolean`
    ╭─[0056_variables_are_input_types.graphql:3:20]
    │
  1 │ query takesCat($cat: Cat) {
    │                ────┬────  
-   │                    ╰────── variable `cat` of type `Cat` is declared here
+   │                    ╰────── variable `$cat` of type `Cat` is declared here
    │ 
  3 │     isHouseTrained(atOtherHomes: $cat)
    │                    ─────────┬────────  
-   │                             ╰────────── argument `atOtherHomes` of type `Boolean` is declared here
+   │                             ╰────────── variable `$cat` used here
 ───╯
-Error: `dog` field must be of an input type
+Error: `$dog` variable must be of an input type
    ╭─[0056_variables_are_input_types.graphql:7:20]
    │
  7 │ query takesDogBang($dog: Dog!) {
-   │                          ─┬─  
-   │                           ╰─── this is of `object` type
+   │                          ──┬─  
+   │                            ╰─── this is an object
    │ 
    │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ───╯
-Error: variable `dog` cannot be used for argument `atOtherHomes` as their types mismatch
+Error: variable `$dog` of type `Dog!` cannot be used for argument `atOtherHomes` of type `Boolean`
    ╭─[0056_variables_are_input_types.graphql:9:20]
    │
  7 │ query takesDogBang($dog: Dog!) {
    │                    ─────┬────  
-   │                         ╰────── variable `dog` of type `Dog!` is declared here
+   │                         ╰────── variable `$dog` of type `Dog!` is declared here
    │ 
  9 │     isHouseTrained(atOtherHomes: $dog)
    │                    ─────────┬────────  
-   │                             ╰────────── argument `atOtherHomes` of type `Boolean` is declared here
+   │                             ╰────────── variable `$dog` used here
 ───╯
-Error: `pets` field must be of an input type
+Error: `$pets` variable must be of an input type
     ╭─[0056_variables_are_input_types.graphql:13:22]
     │
  13 │ query takesListOfPet($pets: [Pet]) {
-    │                              ─┬─  
-    │                               ╰─── this is of `interface` type
+    │                             ──┬──  
+    │                               ╰──── this is an interface
     │ 
     │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ────╯
-Error: variable `pets` cannot be used for argument `booleanListArg` as their types mismatch
+Error: variable `$pets` of type `[Pet]` cannot be used for argument `booleanListArg` of type `[Boolean!]`
     ╭─[0056_variables_are_input_types.graphql:14:15]
     │
  13 │ query takesListOfPet($pets: [Pet]) {
     │                      ──────┬─────  
-    │                            ╰─────── variable `pets` of type `[Pet]` is declared here
+    │                            ╰─────── variable `$pets` of type `[Pet]` is declared here
  14 │   booleanList(booleanListArg: $pets)
     │               ──────────┬──────────  
-    │                         ╰──────────── argument `booleanListArg` of type `[Boolean!]` is declared here
+    │                         ╰──────────── variable `$pets` used here
 ────╯
-Error: `catOrDog` field must be of an input type
+Error: `$catOrDog` variable must be of an input type
     ╭─[0056_variables_are_input_types.graphql:17:21]
     │
  17 │ query takesCatOrDog($catOrDog: CatOrDog) {
     │                                ────┬───  
-    │                                    ╰───── this is of `union` type
+    │                                    ╰───── this is a union
     │ 
     │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ────╯
-Error: variable `catOrDog` cannot be used for argument `atOtherHomes` as their types mismatch
+Error: variable `$catOrDog` of type `CatOrDog` cannot be used for argument `atOtherHomes` of type `Boolean`
     ╭─[0056_variables_are_input_types.graphql:19:20]
     │
  17 │ query takesCatOrDog($catOrDog: CatOrDog) {
     │                     ─────────┬─────────  
-    │                              ╰─────────── variable `catOrDog` of type `CatOrDog` is declared here
+    │                              ╰─────────── variable `$catOrDog` of type `CatOrDog` is declared here
     │ 
  19 │     isHouseTrained(atOtherHomes: $catOrDog)
     │                    ───────────┬───────────  
-    │                               ╰───────────── argument `atOtherHomes` of type `Boolean` is declared here
+    │                               ╰───────────── variable `$catOrDog` used here
 ────╯
 Error: cannot find type `Dragon` in this document
     ╭─[0056_variables_are_input_types.graphql:23:22]
     │
  23 │ query takesCatOrDog2($catOrDog: Dragon) {
-    │                                 ───┬──  
-    │                                    ╰──── not found in the type system
+    │                      ────────┬────────  
+    │                              ╰────────── not found in this scope
 ────╯
-Error: variable `catOrDog` cannot be used for argument `atOtherHomes` as their types mismatch
+Error: variable `$catOrDog` of type `Dragon` cannot be used for argument `atOtherHomes` of type `Boolean`
     ╭─[0056_variables_are_input_types.graphql:25:20]
     │
  23 │ query takesCatOrDog2($catOrDog: Dragon) {
     │                      ────────┬────────  
-    │                              ╰────────── variable `catOrDog` of type `Dragon` is declared here
+    │                              ╰────────── variable `$catOrDog` of type `Dragon` is declared here
     │ 
  25 │     isHouseTrained(atOtherHomes: $catOrDog)
     │                    ───────────┬───────────  
-    │                               ╰───────────── argument `atOtherHomes` of type `Boolean` is declared here
+    │                               ╰───────────── variable `$catOrDog` used here
 ────╯
 

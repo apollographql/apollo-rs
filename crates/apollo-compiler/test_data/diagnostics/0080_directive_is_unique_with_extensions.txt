@@ -3,30 +3,30 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
    │
  2 │ extend type TestObject @nonRepeatable
    │                        ───────┬──────  
-   │                               ╰──────── directive nonRepeatable called again here
+   │                               ╰──────── directive `@nonRepeatable` called again here
  3 │ type TestObject @nonRepeatable
    │                 ───────┬──────  
-   │                        ╰──────── directive nonRepeatable first called here
+   │                        ╰──────── directive `@nonRepeatable` first called here
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0080_directive_is_unique_with_extensions.graphql:4:24]
    │
  3 │ type TestObject @nonRepeatable
    │                 ───────┬──────  
-   │                        ╰──────── directive nonRepeatable first called here
+   │                        ╰──────── directive `@nonRepeatable` first called here
  4 │ extend type TestObject @nonRepeatable
    │                        ───────┬──────  
-   │                               ╰──────── directive nonRepeatable called again here
+   │                               ╰──────── directive `@nonRepeatable` called again here
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0080_directive_is_unique_with_extensions.graphql:7:22]
    │
  6 │ scalar Scalar @nonRepeatable
    │               ───────┬──────  
-   │                      ╰──────── directive nonRepeatable first called here
+   │                      ╰──────── directive `@nonRepeatable` first called here
  7 │ extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com")
    │                      ───────┬──────  
-   │                             ╰──────── directive nonRepeatable called again here
+   │                             ╰──────── directive `@nonRepeatable` called again here
 ───╯
 Error: the type `Intf` is defined multiple times in the schema
     ╭─[0080_directive_is_unique_with_extensions.graphql:12:11]

@@ -14,10 +14,10 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
     │
   9 │ input UniqueDirective @nonRepeatable {
     │                       ───────┬──────  
-    │                              ╰──────── directive nonRepeatable first called here
+    │                              ╰──────── directive `@nonRepeatable` first called here
     │ 
  12 │ extend input UniqueDirective @nonRepeatable
     │                              ───────┬──────  
-    │                                     ╰──────── directive nonRepeatable called again here
+    │                                     ╰──────── directive `@nonRepeatable` called again here
 ────╯
 

@@ -48,19 +48,13 @@ pub(crate) fn validate_interface_definition(
     // }
     for implements_interface in interface.implements_interfaces() {
         if *implements_interface == interface.definition.name {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    implements_interface.location(),
-                    DiagnosticData::RecursiveInterfaceDefinition {
-                        name: implements_interface.to_string(),
-                    },
-                )
-                .label(Label::new(
-                    implements_interface.location(),
-                    format!("interface {implements_interface} cannot implement itself"),
-                )),
-            );
+            diagnostics.push(ApolloDiagnostic::new(
+                db,
+                implements_interface.location(),
+                DiagnosticData::RecursiveInterfaceDefinition {
+                    name: implements_interface.to_string(),
+                },
+            ));
         }
     }
 
@@ -91,36 +85,17 @@ pub(crate) fn validate_interface_definition(
                 if field_names.contains(&super_field.name) {
                     continue;
                 }
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        interface.definition.location(),
-                        DiagnosticData::MissingInterfaceField {
-                            interface: implements_interface.to_string(),
-                            field: super_field.name.to_string(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            implements_interface.location(),
-                            format!(
-                                "implementation of interface {implements_interface} declared here"
-                            ),
-                        ),
-                        Label::new(
-                            super_field.location(),
-                            format!(
-                                "`{}` was originally defined by {} here",
-                                super_field.name, implements_interface
-                            ),
-                        ),
-                        Label::new(
-                            interface.definition.location(),
-                            format!("add `{}` field to this interface", super_field.name),
-                        ),
-                    ])
-                    .help("An interface must be a super-set of all interfaces it implements"),
-                );
+                diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    interface.definition.location(),
+                    DiagnosticData::MissingInterfaceField {
+                        name: interface.definition.name.to_string(),
+                        implements_location: implements_interface.location(),
+                        interface: implements_interface.to_string(),
+                        field: super_field.name.to_string(),
+                        field_location: super_field.location(),
+                    },
+                ));
             }
         }
     }
@@ -156,16 +131,13 @@ pub(crate) fn validate_implements_interfaces(
 
         // interface_name.loc should always be Some
         let loc = interface_name.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                loc,
-                DiagnosticData::UndefinedDefinition {
-                    name: interface_name.to_string(),
-                },
-            )
-            .label(Label::new(loc, "not found in this scope")),
-        );
+        diagnostics.push(ApolloDiagnostic::new(
+            db,
+            loc,
+            DiagnosticData::UndefinedDefinition {
+                name: interface_name.to_string(),
+            },
+        ));
     }
 
     // Transitively implemented interfaces must be defined on an implementing
@@ -188,25 +160,16 @@ pub(crate) fn validate_implements_interfaces(
         // let via_loc = via_interface
         //     .location();
         let transitive_loc = transitive_interface.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                definition_loc,
-                DiagnosticData::TransitiveImplementedInterfaces {
-                    missing_interface: transitive_interface.to_string(),
-                },
-            )
-            .label(Label::new(
-                transitive_loc,
-                format!(
-                    "implementation of {transitive_interface} declared by {via_interface} here"
-                ),
-            ))
-            .label(Label::new(
-                definition_loc,
-                format!("{transitive_interface} must also be implemented here"),
-            )),
-        );
+        diagnostics.push(ApolloDiagnostic::new(
+            db,
+            definition_loc,
+            DiagnosticData::TransitiveImplementedInterfaces {
+                interface: implementor.name().unwrap().to_string(),
+                via_interface: via_interface.to_string(),
+                missing_interface: transitive_interface.to_string(),
+                transitive_interface_location: transitive_loc,
+            },
+        ));
     }
 
     diagnostics

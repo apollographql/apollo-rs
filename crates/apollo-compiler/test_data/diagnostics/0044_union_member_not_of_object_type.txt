@@ -1,10 +1,10 @@
-Error: `Pet` field must return an object type
+Error: union member `Pet` must be an object type
     ╭─[0044_union_member_not_of_object_type.graphql:17:24]
     │
  17 │ union CatOrDog = Cat | Pet
     │                        ─┬─  
-    │                         ╰─── This is a an interface
+    │                         ╰─── this is an interface
     │ 
-    │ Help: Union members must be of base Object Type.
+    │ Help: Union members must be object types.
 ────╯
 

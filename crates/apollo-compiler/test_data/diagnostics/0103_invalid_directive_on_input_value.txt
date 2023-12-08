@@ -1,4 +1,4 @@
-Error: the required argument `arg` is not provided
+Error: the required argument `@example(arg:)` is not provided
    ╭─[0103_invalid_directive_on_input_value.graphql:4:16]
    │
  1 │ directive @example(arg: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
@@ -9,7 +9,7 @@ Error: the required argument `arg` is not provided
    │                ────┬───  
    │                    ╰───── missing value for argument `arg`
 ───╯
-Error: the required argument `arg` is not provided
+Error: the required argument `@example(arg:)` is not provided
    ╭─[0103_invalid_directive_on_input_value.graphql:7:32]
    │
  1 │ directive @example(arg: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION

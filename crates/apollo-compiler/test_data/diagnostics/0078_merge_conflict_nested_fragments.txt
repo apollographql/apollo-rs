@@ -1,4 +1,4 @@
-Error: operation must not select different types using the same field name `d`
+Error: operation must not select different fields to the same alias `y`
     ╭─[0078_merge_conflict_nested_fragments.graphql:28:3]
     │
  25 │   y: c
@@ -8,10 +8,8 @@ Error: operation must not select different types using the same field name `d`
  28 │   y: d
     │   ──┬─  
     │     ╰─── but the same field `y` is also selected from field `d` here
-    │ 
-    │ Help: Alias is already used for a different field
 ────╯
-Error: operation must not select different types using the same field name `b`
+Error: operation must not select different fields to the same alias `x`
     ╭─[0078_merge_conflict_nested_fragments.graphql:32:3]
     │
  21 │   x: a
@@ -21,7 +19,5 @@ Error: operation must not select different types using the same field name `b`
  32 │   x: b
     │   ──┬─  
     │     ╰─── but the same field `x` is also selected from field `b` here
-    │ 
-    │ Help: Alias is already used for a different field
 ────╯
 

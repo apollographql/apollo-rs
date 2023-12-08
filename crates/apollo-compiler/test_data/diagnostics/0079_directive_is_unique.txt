@@ -3,8 +3,8 @@ Error: non-repeatable directive unique can only be used once per location
     │
  11 │   fieldB @unique @unique
     │          ───┬─── ───┬───  
-    │             ╰───────────── directive unique first called here
+    │             ╰───────────── directive `@unique` first called here
     │                     │     
-    │                     ╰───── directive unique called again here
+    │                     ╰───── directive `@unique` called again here
 ────╯
 

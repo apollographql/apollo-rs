@@ -1,67 +1,43 @@
 Error: interface, union and object types must have a subselection set
-    ╭─[0068_subselection_of_union.graphql:2:3]
-    │
-  2 │   pet1
-    │   ──┬─  
-    │     ╰─── field `pet1` type `CatOrDog` is an union and must select fields
-    │ 
- 21 │ union CatOrDog = Cat | Dog
-    │ ─────────────┬────────────  
-    │              ╰────────────── `CatOrDog` declared here
-────╯
+   ╭─[0068_subselection_of_union.graphql:2:3]
+   │
+ 2 │   pet1
+   │   ──┬─  
+   │     ╰─── CatOrDog.pet1 is a union type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0068_subselection_of_union.graphql:3:3]
-    │
-  3 │   pet2
-    │   ──┬─  
-    │     ╰─── field `pet2` type `CatOrDog` is an union and must select fields
-    │ 
- 21 │ union CatOrDog = Cat | Dog
-    │ ─────────────┬────────────  
-    │              ╰────────────── `CatOrDog` declared here
-────╯
+   ╭─[0068_subselection_of_union.graphql:3:3]
+   │
+ 3 │   pet2
+   │   ──┬─  
+   │     ╰─── CatOrDog.pet2 is a union type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0068_subselection_of_union.graphql:4:3]
-    │
-  4 │   pet3
-    │   ──┬─  
-    │     ╰─── field `pet3` type `CatOrDog` is an union and must select fields
-    │ 
- 21 │ union CatOrDog = Cat | Dog
-    │ ─────────────┬────────────  
-    │              ╰────────────── `CatOrDog` declared here
-────╯
+   ╭─[0068_subselection_of_union.graphql:4:3]
+   │
+ 4 │   pet3
+   │   ──┬─  
+   │     ╰─── CatOrDog.pet3 is a union type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0068_subselection_of_union.graphql:5:3]
-    │
-  5 │   pet4
-    │   ──┬─  
-    │     ╰─── field `pet4` type `CatOrDog` is an union and must select fields
-    │ 
- 21 │ union CatOrDog = Cat | Dog
-    │ ─────────────┬────────────  
-    │              ╰────────────── `CatOrDog` declared here
-────╯
+   ╭─[0068_subselection_of_union.graphql:5:3]
+   │
+ 5 │   pet4
+   │   ──┬─  
+   │     ╰─── CatOrDog.pet4 is a union type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0068_subselection_of_union.graphql:6:3]
-    │
-  6 │   pet5
-    │   ──┬─  
-    │     ╰─── field `pet5` type `CatOrDog` is an union and must select fields
-    │ 
- 21 │ union CatOrDog = Cat | Dog
-    │ ─────────────┬────────────  
-    │              ╰────────────── `CatOrDog` declared here
-────╯
+   ╭─[0068_subselection_of_union.graphql:6:3]
+   │
+ 6 │   pet5
+   │   ──┬─  
+   │     ╰─── CatOrDog.pet5 is a union type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0068_subselection_of_union.graphql:7:3]
-    │
-  7 │   pet6
-    │   ──┬─  
-    │     ╰─── field `pet6` type `CatOrDog` is an union and must select fields
-    │ 
- 21 │ union CatOrDog = Cat | Dog
-    │ ─────────────┬────────────  
-    │              ╰────────────── `CatOrDog` declared here
-────╯
+   ╭─[0068_subselection_of_union.graphql:7:3]
+   │
+ 7 │   pet6
+   │   ──┬─  
+   │     ╰─── CatOrDog.pet6 is a union type and must select fields
+───╯
 

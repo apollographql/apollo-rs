@@ -9,8 +9,8 @@ Error: `coordinates` field must return an output type
     ╭─[0036_object_type_with_non_output_field_types.graphql:21:3]
     │
  21 │   coordinates: Point2D
-    │   ──────────┬─────────  
-    │             ╰─────────── this is an input object
+    │                ───┬───  
+    │                   ╰───── this is an input object
     │ 
     │ Help: Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.
 ────╯

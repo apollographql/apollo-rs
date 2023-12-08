@@ -1,11 +1,11 @@
-Error: `ThisIsAScalar` field must return an object type
+Error: union member `ThisIsAScalar` must be an object type
    ╭─[0100_union_extensions.graphql:8:30]
    │
  8 │ extend union NonObjectType = ThisIsAScalar
    │                              ──────┬──────  
-   │                                    ╰──────── This is a a scalar
+   │                                    ╰──────── this is a scalar
    │ 
-   │ Help: Union members must be of base Object Type.
+   │ Help: Union members must be object types.
 ───╯
 Error: duplicate definitions for the `WithFieldA` member of union type `DuplicateMembers`
     ╭─[0100_union_extensions.graphql:12:33]
@@ -22,9 +22,9 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
     │
  16 │ union DuplicateDirective @nonRepeatable = WithFieldA
     │                          ───────┬──────  
-    │                                 ╰──────── directive nonRepeatable first called here
+    │                                 ╰──────── directive `@nonRepeatable` first called here
  17 │ extend union DuplicateDirective @nonRepeatable = WithFieldB
     │                                 ───────┬──────  
-    │                                        ╰──────── directive nonRepeatable called again here
+    │                                        ╰──────── directive `@nonRepeatable` called again here
 ────╯
 

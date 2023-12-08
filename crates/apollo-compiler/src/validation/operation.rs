@@ -37,29 +37,16 @@ pub(crate) fn validate_operation(
         );
 
         if fields.len() > 1 {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    operation.location(),
-                    DiagnosticData::SingleRootField {
-                        fields: fields.len(),
-                        subscription: (operation.location()),
-                    },
-                )
-                .label(Label::new(
-                    operation.location(),
-                    format!("subscription with {} root fields", fields.len()),
-                ))
-                .help(format!(
-                    "There are {} root fields: {}. This is not allowed.",
-                    fields.len(),
-                    fields
+            diagnostics.push(ApolloDiagnostic::new(
+                db,
+                operation.location(),
+                DiagnosticData::SingleRootField {
+                    fields: fields
                         .iter()
-                        .map(|field| field.field.name.as_str())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )),
-            );
+                        .map(|field| field.field.name.clone())
+                        .collect(),
+                },
+            ));
         }
 
         let has_introspection_fields = fields
@@ -72,19 +59,13 @@ pub(crate) fn validate_operation(
             })
             .map(|field| field.field);
         if let Some(field) = has_introspection_fields {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    field.location(),
-                    DiagnosticData::IntrospectionField {
-                        field: field.name.to_string(),
-                    },
-                )
-                .label(Label::new(
-                    field.location(),
-                    format!("{} is an introspection field", field.name),
-                )),
-            );
+            diagnostics.push(ApolloDiagnostic::new(
+                db,
+                field.location(),
+                DiagnosticData::IntrospectionField {
+                    field: field.name.to_string(),
+                },
+            ));
         }
     }
 

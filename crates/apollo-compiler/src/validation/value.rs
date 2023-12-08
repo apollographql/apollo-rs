@@ -11,29 +11,15 @@ fn unsupported_type(
     value: &Node<ast::Value>,
     declared_type: &Node<ast::Type>,
 ) -> ApolloDiagnostic {
-    // Careful: built in nodes do not have associated source code
-    let type_location = if declared_type.is_built_in() {
-        None
-    } else {
-        declared_type.location()
-    };
-
-    let mut diagnostic = ApolloDiagnostic::new(
+    ApolloDiagnostic::new(
         db,
         value.location(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
             ty: declared_type.to_string(),
+            definition_location: declared_type.location(),
         },
-    );
-    diagnostic = diagnostic.label(Label::new(
-        type_location,
-        format!("field declared here as {} type", declared_type),
-    ));
-    diagnostic.label(Label::new(
-        value.location(),
-        format!("argument declared here is of {} type", value.kind()),
-    ))
+    )
 }
 
 pub(crate) fn validate_values(
@@ -76,36 +62,24 @@ pub(crate) fn value_of_correct_type(
                 "ID" => {}
                 "Int" => {
                     if int.try_to_i32().is_err() {
-                        diagnostics.push(
-                            ApolloDiagnostic::new(
-                                db,
-                                arg_value.location(),
-                                DiagnosticData::IntCoercionError {
-                                    value: int.as_str().to_owned(),
-                                },
-                            )
-                            .label(Label::new(
-                                arg_value.location(),
-                                "cannot be coerced to an 32-bit integer",
-                            )),
-                        )
+                        diagnostics.push(ApolloDiagnostic::new(
+                            db,
+                            arg_value.location(),
+                            DiagnosticData::IntCoercionError {
+                                value: int.as_str().to_owned(),
+                            },
+                        ))
                     }
                 }
                 "Float" => {
                     if int.try_to_f64().is_err() {
-                        diagnostics.push(
-                            ApolloDiagnostic::new(
-                                db,
-                                arg_value.location(),
-                                DiagnosticData::FloatCoercionError {
-                                    value: int.as_str().to_owned(),
-                                },
-                            )
-                            .label(Label::new(
-                                arg_value.location(),
-                                "cannot be coerced to a finite 64-bit float",
-                            )),
-                        )
+                        diagnostics.push(ApolloDiagnostic::new(
+                            db,
+                            arg_value.location(),
+                            DiagnosticData::FloatCoercionError {
+                                value: int.as_str().to_owned(),
+                            },
+                        ))
                     }
                 }
                 _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
@@ -121,19 +95,13 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
             schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            arg_value.location(),
-                            DiagnosticData::FloatCoercionError {
-                                value: float.as_str().to_owned(),
-                            },
-                        )
-                        .label(Label::new(
-                            arg_value.location(),
-                            "cannot be coerced to a finite 64-bit float",
-                        )),
-                    )
+                    diagnostics.push(ApolloDiagnostic::new(
+                        db,
+                        arg_value.location(),
+                        DiagnosticData::FloatCoercionError {
+                            value: float.as_str().to_owned(),
+                        },
+                    ))
                 }
             }
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
@@ -202,20 +170,15 @@ pub(crate) fn value_of_correct_type(
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            value.location(),
-                            DiagnosticData::UndefinedValue {
-                                value: value.to_string(),
-                                definition: enum_.name.to_string(),
-                            },
-                        )
-                        .label(Label::new(
-                            arg_value.location(),
-                            format!("does not exist on `{}` type", enum_.name),
-                        )),
-                    );
+                    diagnostics.push(ApolloDiagnostic::new(
+                        db,
+                        value.location(),
+                        DiagnosticData::UndefinedEnumValue {
+                            value: value.to_string(),
+                            definition: enum_.name.to_string(),
+                            definition_location: enum_.location(),
+                        },
+                    ));
                 }
             }
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
@@ -255,20 +218,15 @@ pub(crate) fn value_of_correct_type(
                 // Add a diagnostic if a value does not exist on the input
                 // object type
                 if let Some((name, value)) = undefined_field {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            value.location(),
-                            DiagnosticData::UndefinedValue {
-                                value: name.to_string(),
-                                definition: input_obj.name.to_string(),
-                            },
-                        )
-                        .label(Label::new(
-                            value.location(),
-                            format!("does not exist on `{}` type", input_obj.name),
-                        )),
-                    );
+                    diagnostics.push(ApolloDiagnostic::new(
+                        db,
+                        value.location(),
+                        DiagnosticData::UndefinedInputValue {
+                            value: name.to_string(),
+                            definition: input_obj.name.to_string(),
+                            definition_location: input_obj.location(),
+                        },
+                    ));
                 }
 
                 input_obj.fields.iter().for_each(|(input_name, f)| {
@@ -283,21 +241,15 @@ pub(crate) fn value_of_correct_type(
                     // is null or missing entirely, an error should be
                     // raised.
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
-                        let mut diagnostic = ApolloDiagnostic::new(
+                        diagnostics.push(ApolloDiagnostic::new(
                             db,
                             arg_value.location(),
                             DiagnosticData::RequiredArgument {
                                 name: input_name.to_string(),
+                                coordinate: format!("{}.{}", input_obj.name, input_name),
+                                definition_location: f.location(),
                             },
-                        );
-                        diagnostic = diagnostic.label(Label::new(
-                            arg_value.location(),
-                            format!("missing value for argument `{input_name}`"),
                         ));
-                        let loc = f.location();
-                        diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
-
-                        diagnostics.push(diagnostic)
                     }
 
                     let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);

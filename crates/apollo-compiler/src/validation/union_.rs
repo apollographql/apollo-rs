@@ -35,43 +35,33 @@ pub(crate) fn validate_union_definition(
         match schema.types.get(union_member) {
             None => {
                 // Union member must be defined.
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        member_location,
-                        DiagnosticData::UndefinedDefinition {
-                            name: union_member.to_string(),
-                        },
-                    )
-                    .label(Label::new(member_location, "not found in this scope")),
-                );
+                diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    member_location,
+                    DiagnosticData::UndefinedDefinition {
+                        name: union_member.to_string(),
+                    },
+                ));
             }
             Some(schema::ExtendedType::Object(_)) => {} // good
             Some(ty) => {
                 // Union member must be of object type.
-                let (particle, kind) = match ty {
+                let kind = match ty {
                     schema::ExtendedType::Object(_) => unreachable!(),
-                    schema::ExtendedType::Scalar(_) => ("a", "scalar"),
-                    schema::ExtendedType::Interface(_) => ("an", "interface"),
-                    schema::ExtendedType::Union(_) => ("an", "union"),
-                    schema::ExtendedType::Enum(_) => ("an", "enum"),
-                    schema::ExtendedType::InputObject(_) => ("an", "input object"),
+                    schema::ExtendedType::Scalar(_) => "scalar",
+                    schema::ExtendedType::Interface(_) => "interface",
+                    schema::ExtendedType::Union(_) => "union",
+                    schema::ExtendedType::Enum(_) => "enum",
+                    schema::ExtendedType::InputObject(_) => "input object",
                 };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        member_location,
-                        DiagnosticData::ObjectType {
-                            name: union_member.to_string(),
-                            ty: kind,
-                        },
-                    )
-                    .label(Label::new(
-                        member_location,
-                        format!("This is a {particle} {kind}"),
-                    ))
-                    .help("Union members must be of base Object Type."),
-                );
+                diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    member_location,
+                    DiagnosticData::UnionMemberObjectType {
+                        name: union_member.to_string(),
+                        ty: kind,
+                    },
+                ));
             }
         }
     }

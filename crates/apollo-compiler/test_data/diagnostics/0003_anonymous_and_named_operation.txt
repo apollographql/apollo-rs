@@ -9,7 +9,7 @@ Error: anonymous operation cannot be selected when the document contains other o
    │     
    │     Help: GraphQL requires operations to be named if the document has more than one
 ───╯
-Error: the required argument `name` is not provided
+Error: the required argument `Mutation.addPet(name:)` is not provided
     ╭─[0003_anonymous_and_named_operation.graphql:6:3]
     │
   6 │ ╭─▶   addPet {

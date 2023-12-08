@@ -36,6 +36,7 @@ pub struct SourceFile {
 
 pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
 
+/// Translate byte offsets to ariadne's char offsets.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct MappedSource {
     ariadne: ariadne::Source,

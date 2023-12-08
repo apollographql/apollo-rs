@@ -86,12 +86,13 @@ pub(crate) fn validate_object_type_definition(
                     db,
                     object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
+                        name: interface.name.to_string(),
+                        implements_location: implements_interface.location(),
                         interface: implements_interface.to_string(),
                         field: interface_field.name.to_string(),
+                        field_location: interface_field.location(),
                     },
-                )
-                .labels(labels)
-                .help("An object must provide all fields required by the interfaces it implements"))
+                ));
             }
         }
     }

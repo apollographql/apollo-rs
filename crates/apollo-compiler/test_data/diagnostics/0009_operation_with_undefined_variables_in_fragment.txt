@@ -1,5 +1,5 @@
-Error: variable `value` is not defined
-    ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:10:11]
+Error: variable `$value` is not defined
+    ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:10:21]
     │
  10 │     price(setPrice: $value)
     │                     ───┬──  

@@ -1,12 +1,10 @@
-Error: the variable `atOtherHomes` is defined multiple times in the document
+Error: the variable `$atOtherHomes` is declared multiple times
    ╭─[0055_duplicate_variable_definitions.graphql:1:49]
    │
  1 │ query houseTrainedQuery($atOtherHomes: Boolean, $atOtherHomes: Boolean) {
    │                         ───────────┬──────────  ───────────┬──────────  
-   │                                    ╰──────────────────────────────────── previous definition of `atOtherHomes` here
+   │                                    ╰──────────────────────────────────── previous definition of `$atOtherHomes` here
    │                                                            │            
-   │                                                            ╰──────────── `atOtherHomes` redefined here
-   │ 
-   │ Help: atOtherHomes must only be defined once in this enum.
+   │                                                            ╰──────────── `$atOtherHomes` defined again here
 ───╯
 

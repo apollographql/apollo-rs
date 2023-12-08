@@ -42,28 +42,23 @@ pub(crate) fn validate_variable_definitions(
                         schema::ExtendedType::Enum(_) => "enum",
                         schema::ExtendedType::InputObject(_) => "input object",
                     };
-                    diagnostics.push(
-                        ApolloDiagnostic::new(db, variable.location(), DiagnosticData::InputType {
-                            name: variable.name.to_string(),
-                            ty: kind,
-                        })
-                        .label(Label::new(ty.inner_named_type().location(), format!("this is of `{kind}` type")))
-                        .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
-                        );
-                }
-                None => diagnostics.push(
-                    ApolloDiagnostic::new(
+                    diagnostics.push(ApolloDiagnostic::new(
                         db,
                         variable.location(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: ty.inner_named_type().to_string(),
+                        DiagnosticData::VariableInputType {
+                            name: variable.name.to_string(),
+                            ty: kind,
+                            type_location: ty.location(),
                         },
-                    )
-                    .label(Label::new(
-                        ty.inner_named_type().location(),
-                        "not found in the type system",
-                    )),
-                ),
+                    ));
+                }
+                None => diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    variable.location(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: ty.inner_named_type().to_string(),
+                    },
+                )),
             }
         }
 
@@ -71,32 +66,15 @@ pub(crate) fn validate_variable_definitions(
             Entry::Occupied(original) => {
                 let original_definition = original.get().location();
                 let redefined_definition = variable.location();
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
+                diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    redefined_definition,
+                    DiagnosticData::UniqueVariable {
+                        name: variable.name.to_string(),
+                        original_definition,
                         redefined_definition,
-                        DiagnosticData::UniqueDefinition {
-                            ty: "variable",
-                            name: variable.name.to_string(),
-                            original_definition,
-                            redefined_definition,
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{}` here", variable.name),
-                        ),
-                        Label::new(
-                            redefined_definition,
-                            format!("`{}` redefined here", variable.name),
-                        ),
-                    ])
-                    .help(format!(
-                        "{} must only be defined once in this enum.",
-                        variable.name
-                    )),
-                );
+                    },
+                ));
             }
             Entry::Vacant(entry) => {
                 entry.insert(variable);
@@ -266,7 +244,6 @@ pub(crate) fn validate_unused_variables(
                 name: unused_var.to_string(),
             },
         )
-        .label(Label::new(loc, "this variable is never used"))
     }));
 
     diagnostics
@@ -289,39 +266,23 @@ pub(crate) fn validate_variable_usage(
                     db,
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
-                        var_name: var_def.name.to_string(),
-                        arg_name: argument.name.to_string(),
+                        variable: var_def.name.to_string(),
+                        variable_type: (*var_def.ty).clone(),
+                        variable_location: var_def.location(),
+                        argument: argument.name.to_string(),
+                        argument_type: (*var_usage.ty).clone(),
+                        argument_location: argument.location(),
                     },
-                )
-                .labels([
-                    Label::new(
-                        var_def.location(),
-                        format!(
-                            "variable `{}` of type `{}` is declared here",
-                            var_def.name, var_def.ty,
-                        ),
-                    ),
-                    Label::new(
-                        argument.location(),
-                        format!(
-                            "argument `{}` of type `{}` is declared here",
-                            argument.name, var_usage.ty,
-                        ),
-                    ),
-                ]));
+                ));
             }
         } else {
             return Err(ApolloDiagnostic::new(
                 db,
-                argument.location(),
+                argument.value.location(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
                 },
-            )
-            .label(Label::new(
-                argument.value.location(),
-                "not found in this scope",
-            )));
+            ));
         }
     }
     // It's super confusing to produce a diagnostic here if either the

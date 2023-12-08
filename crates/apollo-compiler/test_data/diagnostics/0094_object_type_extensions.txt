@@ -24,11 +24,11 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
     │
  17 │ type UniqueDirective @nonRepeatable {
     │                      ───────┬──────  
-    │                             ╰──────── directive nonRepeatable first called here
+    │                             ╰──────── directive `@nonRepeatable` first called here
     │ 
  20 │ extend type UniqueDirective @nonRepeatable {
     │                             ───────┬──────  
-    │                                    ╰──────── directive nonRepeatable called again here
+    │                                    ╰──────── directive `@nonRepeatable` called again here
 ────╯
 Error: object type `UniqueInterfaces` implements interface `Base` more than once
     ╭─[0094_object_type_extensions.graphql:31:41]
@@ -41,7 +41,7 @@ Error: object type `UniqueInterfaces` implements interface `Base` more than once
     │                                         ──┬─  
     │                                           ╰─── `Base` implemented again here
 ────╯
-Error: type does not satisfy interface `ExtendedInterface`: missing field `fail`
+Error: type `ExtendedInterface` does not satisfy interface `ExtendedInterface`: missing field `fail`
     ╭─[0094_object_type_extensions.graphql:38:1]
     │
  38 │ ╭─▶ type ImplementsBaseButNotExtension implements ExtendedInterface {
@@ -50,12 +50,12 @@ Error: type does not satisfy interface `ExtendedInterface`: missing field `fail`
     ┆ ┆   
  40 │ ├─▶ }
     │ │       
-    │ ╰─────── add `fail` field to this object
+    │ ╰─────── add `fail` field to this type
     │ 
  42 │       fail: Boolean
     │       ──────┬──────  
-    │             ╰──────── `fail` was originally defined by ExtendedInterface here
+    │             ╰──────── `ExtendedInterface.fail` originally defined here
     │     
-    │     Help: An object must provide all fields required by the interfaces it implements
+    │     Help: An object or interface must declare all fields required by the interfaces it implements
 ────╯
 

@@ -23,7 +23,7 @@ Error: Transitively implemented interfaces must also be defined on an implementi
    │ │       
    │ ╰─────── B must also be implemented here
 ───╯
-Error: fragment cannot be applied to this type
+Error: fragment `recursive` with type condition `A` cannot be applied to `A`
     ╭─[0091_recursive_interface_definition.graphql:15:9]
     │
   1 │ ╭───▶ interface A implements B {

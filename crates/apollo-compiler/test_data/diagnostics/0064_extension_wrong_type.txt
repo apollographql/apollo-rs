@@ -1,11 +1,11 @@
-Error: `Scalar` field must return an object type
+Error: union member `Scalar` must be an object type
    ╭─[0064_extension_wrong_type.graphql:8:15]
    │
  8 │ union Union = Scalar | Object
    │               ───┬──  
-   │                  ╰──── This is a a scalar
+   │                  ╰──── this is a scalar
    │ 
-   │ Help: Union members must be of base Object Type.
+   │ Help: Union members must be object types.
 ───╯
 Error: adding a union type extension, but `Scalar` is a scalar type
     ╭─[0064_extension_wrong_type.graphql:16:14]

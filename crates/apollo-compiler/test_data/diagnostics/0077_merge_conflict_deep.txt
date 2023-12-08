@@ -1,4 +1,4 @@
-Error: operation must not select different types using the same field name `b`
+Error: operation must not select different fields to the same alias `x`
     ╭─[0077_merge_conflict_deep.graphql:14:5]
     │
  11 │     x: a
@@ -8,7 +8,5 @@ Error: operation must not select different types using the same field name `b`
  14 │     x: b
     │     ──┬─  
     │       ╰─── but the same field `x` is also selected from field `b` here
-    │ 
-    │ Help: Alias is already used for a different field
 ────╯
 

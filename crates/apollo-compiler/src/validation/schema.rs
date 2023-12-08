@@ -17,11 +17,11 @@ pub(crate) fn validate_schema_definition(
         .any(|op| op.0 == ast::OperationType::Query);
     if !has_query {
         let location = schema_definition.definition.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(db, location, DiagnosticData::QueryRootOperationType).label(
-                Label::new(location, "`query` root operation type must be defined here"),
-            ),
-        );
+        diagnostics.push(ApolloDiagnostic::new(
+            db,
+            location,
+            DiagnosticData::QueryRootOperationType,
+        ));
     }
     diagnostics.extend(validate_root_operation_definitions(db, &root_operations));
 
@@ -57,39 +57,32 @@ pub(crate) fn validate_root_operation_definitions(
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
                 let op_loc = name.location();
-                let (particle, kind) = match type_def {
-                    schema::ExtendedType::Scalar(_) => ("an", "scalar"),
-                    schema::ExtendedType::Union(_) => ("an", "union"),
-                    schema::ExtendedType::Enum(_) => ("an", "enum"),
-                    schema::ExtendedType::Interface(_) => ("an", "interface"),
-                    schema::ExtendedType::InputObject(_) => ("an", "input object"),
+                let kind = match type_def {
+                    schema::ExtendedType::Scalar(_) => "scalar",
+                    schema::ExtendedType::Union(_) => "union",
+                    schema::ExtendedType::Enum(_) => "enum",
+                    schema::ExtendedType::Interface(_) => "interface",
+                    schema::ExtendedType::InputObject(_) => "input object",
                     schema::ExtendedType::Object(_) => unreachable!(),
                 };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        op_loc,
-                        DiagnosticData::ObjectType {
-                            name: name.to_string(),
-                            ty: kind,
-                        },
-                    )
-                    .label(Label::new(op_loc, format!("This is {particle} {kind}")))
-                    .help("root operation type must be an object type"),
-                );
+                diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    op_loc,
+                    DiagnosticData::RootOperationObjectType {
+                        name: name.to_string(),
+                        ty: kind,
+                    },
+                ));
             }
         } else {
             let op_loc = name.location();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    op_loc,
-                    DiagnosticData::UndefinedDefinition {
-                        name: name.to_string(),
-                    },
-                )
-                .label(Label::new(op_loc, "not found in this scope")),
-            );
+            diagnostics.push(ApolloDiagnostic::new(
+                db,
+                op_loc,
+                DiagnosticData::UndefinedDefinition {
+                    name: name.to_string(),
+                },
+            ));
         }
     }
 

@@ -3,8 +3,8 @@ Error: `SomeInterface` field must return an object type
    │
  2 │     query: SomeInterface
    │            ──────┬──────  
-   │                  ╰──────── This is an interface
+   │                  ╰──────── this is an interface
    │ 
-   │ Help: root operation type must be an object type
+   │ Help: Root operation type must be an object type.
 ───╯
 

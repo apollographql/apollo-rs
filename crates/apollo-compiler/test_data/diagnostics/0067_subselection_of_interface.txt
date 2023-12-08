@@ -1,79 +1,43 @@
 Error: interface, union and object types must have a subselection set
-    ╭─[0067_subselection_of_interface.graphql:2:3]
-    │
-  2 │       pet1
-    │       ──┬─  
-    │         ╰─── field `pet1` type `Pet` is an interface and must select fields
-    │ 
- 19 │ ╭─▶ interface Pet {
-    ┆ ┆   
- 21 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+   ╭─[0067_subselection_of_interface.graphql:2:3]
+   │
+ 2 │   pet1
+   │   ──┬─  
+   │     ╰─── Pet.pet1 is an interface type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0067_subselection_of_interface.graphql:3:3]
-    │
-  3 │       pet2
-    │       ──┬─  
-    │         ╰─── field `pet2` type `Pet` is an interface and must select fields
-    │ 
- 19 │ ╭─▶ interface Pet {
-    ┆ ┆   
- 21 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+   ╭─[0067_subselection_of_interface.graphql:3:3]
+   │
+ 3 │   pet2
+   │   ──┬─  
+   │     ╰─── Pet.pet2 is an interface type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0067_subselection_of_interface.graphql:4:3]
-    │
-  4 │       pet3
-    │       ──┬─  
-    │         ╰─── field `pet3` type `Pet` is an interface and must select fields
-    │ 
- 19 │ ╭─▶ interface Pet {
-    ┆ ┆   
- 21 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+   ╭─[0067_subselection_of_interface.graphql:4:3]
+   │
+ 4 │   pet3
+   │   ──┬─  
+   │     ╰─── Pet.pet3 is an interface type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0067_subselection_of_interface.graphql:5:3]
-    │
-  5 │       pet4
-    │       ──┬─  
-    │         ╰─── field `pet4` type `Pet` is an interface and must select fields
-    │ 
- 19 │ ╭─▶ interface Pet {
-    ┆ ┆   
- 21 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+   ╭─[0067_subselection_of_interface.graphql:5:3]
+   │
+ 5 │   pet4
+   │   ──┬─  
+   │     ╰─── Pet.pet4 is an interface type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0067_subselection_of_interface.graphql:6:3]
-    │
-  6 │       pet5
-    │       ──┬─  
-    │         ╰─── field `pet5` type `Pet` is an interface and must select fields
-    │ 
- 19 │ ╭─▶ interface Pet {
-    ┆ ┆   
- 21 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+   ╭─[0067_subselection_of_interface.graphql:6:3]
+   │
+ 6 │   pet5
+   │   ──┬─  
+   │     ╰─── Pet.pet5 is an interface type and must select fields
+───╯
 Error: interface, union and object types must have a subselection set
-    ╭─[0067_subselection_of_interface.graphql:7:3]
-    │
-  7 │       pet6
-    │       ──┬─  
-    │         ╰─── field `pet6` type `Pet` is an interface and must select fields
-    │ 
- 19 │ ╭─▶ interface Pet {
-    ┆ ┆   
- 21 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+   ╭─[0067_subselection_of_interface.graphql:7:3]
+   │
+ 7 │   pet6
+   │   ──┬─  
+   │     ╰─── Pet.pet6 is an interface type and must select fields
+───╯
 

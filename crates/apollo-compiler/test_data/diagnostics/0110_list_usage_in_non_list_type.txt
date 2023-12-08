@@ -3,54 +3,54 @@ Error: expected value of type Int!, found List
     │
   5 │   int: Int!
     │        ──┬─  
-    │          ╰─── field declared here as Int! type
+    │          ╰─── expected type declared here as Int!
     │ 
  20 │     int: [1, 2, 3]
     │     ───────┬──────  
-    │            ╰──────── argument declared here is of List type
+    │            ╰──────── provided value is of List type
 ────╯
 Error: expected value of type String!, found List
     ╭─[0110_list_usage_in_non_list_type.graphql:21:5]
     │
   6 │   str: String!
     │        ───┬───  
-    │           ╰───── field declared here as String! type
+    │           ╰───── expected type declared here as String!
     │ 
  21 │     str: ["1"]
     │     ─────┬────  
-    │          ╰────── argument declared here is of List type
+    │          ╰────── provided value is of List type
 ────╯
 Error: expected value of type Boolean!, found List
     ╭─[0110_list_usage_in_non_list_type.graphql:22:5]
     │
   7 │   bool: Boolean!
     │         ────┬───  
-    │             ╰───── field declared here as Boolean! type
+    │             ╰───── expected type declared here as Boolean!
     │ 
  22 │     bool: [true, false]
     │     ─────────┬─────────  
-    │              ╰─────────── argument declared here is of List type
+    │              ╰─────────── provided value is of List type
 ────╯
 Error: expected value of type Int, found List
     ╭─[0110_list_usage_in_non_list_type.graphql:23:5]
     │
   8 │   opt: Int
     │        ─┬─  
-    │         ╰─── field declared here as Int type
+    │         ╰─── expected type declared here as Int
     │ 
  23 │     opt: [1, 2, 3]
     │     ───────┬──────  
-    │            ╰──────── argument declared here is of List type
+    │            ╰──────── provided value is of List type
 ────╯
 Error: expected value of type ID!, found List
     ╭─[0110_list_usage_in_non_list_type.graphql:24:5]
     │
   9 │   id: ID!
     │       ─┬─  
-    │        ╰─── field declared here as ID! type
+    │        ╰─── expected type declared here as ID!
     │ 
  24 │     id: [1, "2", 3]
     │     ───────┬───────  
-    │            ╰───────── argument declared here is of List type
+    │            ╰───────── provided value is of List type
 ────╯
 
