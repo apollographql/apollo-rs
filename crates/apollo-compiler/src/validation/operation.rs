@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::FileId;
 use crate::{ast, name, Node, ValidationDatabase};
 
@@ -15,7 +15,7 @@ pub(crate) fn validate_operation(
     file_id: FileId,
     operation: Node<ast::OperationDefinition>,
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let config = OperationValidationConfig {
@@ -37,7 +37,7 @@ pub(crate) fn validate_operation(
         );
 
         if fields.len() > 1 {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 operation.location(),
                 DiagnosticData::SingleRootField {
                     fields: fields
@@ -58,7 +58,7 @@ pub(crate) fn validate_operation(
             })
             .map(|field| field.field);
         if let Some(field) = has_introspection_fields {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 field.location(),
                 DiagnosticData::IntrospectionField {
                     field: field.name.to_string(),
@@ -99,7 +99,7 @@ pub(crate) fn validate_operation_definitions_inner(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let document = db.ast(file_id);
 
@@ -120,6 +120,6 @@ pub(crate) fn validate_operation_definitions_inner(
 pub(crate) fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     validate_operation_definitions_inner(db, file_id, false)
 }

@@ -1,10 +1,9 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData},
-    schema,
-    validation::{CycleError, RecursionGuard, RecursionStack},
-    Node, ValidationDatabase,
-};
+use crate::ast;
+use crate::schema;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::{CycleError, RecursionGuard, RecursionStack};
+use crate::Node;
+use crate::ValidationDatabase;
 use std::collections::HashMap;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
@@ -64,7 +63,7 @@ impl FindRecursiveInputValue<'_> {
 
 pub(crate) fn validate_input_object_definitions(
     db: &dyn ValidationDatabase,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for input_object in db.ast_types().input_objects.values() {
@@ -77,7 +76,7 @@ pub(crate) fn validate_input_object_definitions(
 pub(crate) fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
     input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = super::directive::validate_directives(
         db,
         input_object.directives(),
@@ -88,7 +87,7 @@ pub(crate) fn validate_input_object_definition(
 
     match FindRecursiveInputValue::check(db, &input_object) {
         Ok(_) => {}
-        Err(CycleError::Recursed(trace)) => diagnostics.push(ApolloDiagnostic::new(
+        Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
             input_object.definition.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
                 name: input_object.definition.name.to_string(),
@@ -96,7 +95,7 @@ pub(crate) fn validate_input_object_definition(
             },
         )),
         Err(CycleError::Limit(_)) => {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 input_object.definition.location(),
                 DiagnosticData::DeeplyNestedType {
                     name: input_object.definition.name.to_string(),
@@ -123,7 +122,7 @@ pub(crate) fn validate_argument_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = validate_input_value_definitions(db, input_values, directive_location);
 
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
@@ -133,7 +132,7 @@ pub(crate) fn validate_argument_definitions(
             let (original_definition, redefined_definition) =
                 (prev_value.location(), input_value.location());
 
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 original_definition,
                 DiagnosticData::UniqueInputValue {
                     name: name.to_string(),
@@ -153,7 +152,7 @@ pub(crate) fn validate_input_value_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let schema = db.schema();
 
     let mut diagnostics = Vec::new();
@@ -177,7 +176,7 @@ pub(crate) fn validate_input_value_definitions(
                     schema::ExtendedType::Enum(_) => unreachable!(),
                     schema::ExtendedType::InputObject(_) => unreachable!(),
                 };
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::InputType {
                         name: input_value.name.to_string(),
@@ -189,7 +188,7 @@ pub(crate) fn validate_input_value_definitions(
         } else {
             let named_type = input_value.ty.inner_named_type();
             let loc = named_type.location();
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 loc,
                 DiagnosticData::UndefinedDefinition {
                     name: named_type.to_string(),

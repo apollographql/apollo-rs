@@ -10,12 +10,12 @@ use std::fmt;
 use thiserror::Error;
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
-pub(crate) struct ApolloDiagnostic {
+pub(crate) struct ValidationError {
     pub location: Option<NodeLocation>,
     pub data: Box<DiagnosticData>,
 }
 
-impl ApolloDiagnostic {
+impl ValidationError {
     pub fn new(location: Option<NodeLocation>, data: DiagnosticData) -> Self {
         Self {
             location,
@@ -24,7 +24,7 @@ impl ApolloDiagnostic {
     }
 }
 
-impl fmt::Display for ApolloDiagnostic {
+impl fmt::Display for ValidationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.data.fmt(f)
     }
@@ -317,7 +317,7 @@ pub(crate) enum DiagnosticData {
     RecursionError {},
 }
 
-impl ApolloDiagnostic {
+impl ValidationError {
     pub(crate) fn report(&self, report: &mut CliReport) {
         report.with_message(&self.data);
 

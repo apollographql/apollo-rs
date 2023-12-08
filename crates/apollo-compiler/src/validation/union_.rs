@@ -1,10 +1,10 @@
 use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData},
-    schema, ValidationDatabase,
+    ast, schema,
+    validation::diagnostics::{DiagnosticData, ValidationError},
+    ValidationDatabase,
 };
 
-pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for def in db.ast_types().unions.values() {
@@ -17,7 +17,7 @@ pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<Apo
 pub(crate) fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = super::directive::validate_directives(
         db,
         union_def.directives(),
@@ -35,7 +35,7 @@ pub(crate) fn validate_union_definition(
         match schema.types.get(union_member) {
             None => {
                 // Union member must be defined.
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     member_location,
                     DiagnosticData::UndefinedDefinition {
                         name: union_member.to_string(),
@@ -53,7 +53,7 @@ pub(crate) fn validate_union_definition(
                     schema::ExtendedType::Enum(_) => "enum",
                     schema::ExtendedType::InputObject(_) => "input object",
                 };
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     member_location,
                     DiagnosticData::UnionMemberObjectType {
                         name: union_member.to_string(),

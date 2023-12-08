@@ -1,7 +1,7 @@
 use crate::ast;
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::schema;
 use crate::schema::Implementers;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::{CycleError, FileId, NodeLocation, RecursionGuard, RecursionStack};
 use crate::Node;
@@ -47,7 +47,7 @@ fn validate_fragment_spread_type(
     against_type: &ast::NamedType,
     type_condition: &ast::NamedType,
     selection: &ast::Selection,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
 
@@ -76,7 +76,7 @@ fn validate_fragment_spread_type(
                 // TODO(@goto-bus-stop) Can we guarantee this unwrap()?
                 let fragment_definition = named_fragments.get(&spread.fragment_name).unwrap();
 
-                ApolloDiagnostic::new(
+                ValidationError::new(
                     spread.location(),
                     DiagnosticData::InvalidFragmentSpread {
                         name: Some(spread.fragment_name.to_string()),
@@ -87,7 +87,7 @@ fn validate_fragment_spread_type(
                     },
                 )
             }
-            ast::Selection::InlineFragment(inline) => ApolloDiagnostic::new(
+            ast::Selection::InlineFragment(inline) => ValidationError::new(
                 inline.location(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
@@ -111,7 +111,7 @@ pub(crate) fn validate_inline_fragment(
     against_type: Option<&ast::NamedType>,
     inline: Node<ast::InlineFragment>,
     context: OperationValidationConfig<'_>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(super::directive::validate_directives(
@@ -164,7 +164,7 @@ pub(crate) fn validate_fragment_spread(
     against_type: Option<&ast::NamedType>,
     spread: Node<ast::FragmentSpread>,
     context: OperationValidationConfig<'_>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(super::directive::validate_directives(
@@ -194,7 +194,7 @@ pub(crate) fn validate_fragment_spread(
             ));
         }
         None => {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 spread.location(),
                 DiagnosticData::UndefinedFragment {
                     name: spread.fragment_name.to_string(),
@@ -211,7 +211,7 @@ pub(crate) fn validate_fragment_definition(
     file_id: FileId,
     fragment: Node<ast::FragmentDefinition>,
     context: OperationValidationConfig<'_>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
 
@@ -265,7 +265,7 @@ pub(crate) fn validate_fragment_cycles(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     def: &Node<ast::FragmentDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     // TODO pass in named fragments from outside this function, so it can be used on fully
@@ -317,7 +317,7 @@ pub(crate) fn validate_fragment_cycles(
         Err(CycleError::Recursed(trace)) => {
             let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 def.location(),
                 DiagnosticData::RecursiveFragmentDefinition {
                     head_location,
@@ -329,7 +329,7 @@ pub(crate) fn validate_fragment_cycles(
         Err(CycleError::Limit(_)) => {
             let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 head_location,
                 DiagnosticData::DeeplyNestedType {
                     name: def.name.to_string(),
@@ -347,7 +347,7 @@ pub(crate) fn validate_fragment_type_condition(
     fragment_name: Option<ast::Name>,
     type_cond: &ast::NamedType,
     fragment_location: Option<NodeLocation>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
 
@@ -365,7 +365,7 @@ pub(crate) fn validate_fragment_type_condition(
         });
 
     if !is_composite {
-        diagnostics.push(ApolloDiagnostic::new(
+        diagnostics.push(ValidationError::new(
             fragment_location,
             DiagnosticData::InvalidFragmentTarget {
                 name: fragment_name,
@@ -381,7 +381,7 @@ pub(crate) fn validate_fragment_used(
     db: &dyn ValidationDatabase,
     fragment: Node<ast::FragmentDefinition>,
     file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let document = db.ast(file_id);
@@ -410,7 +410,7 @@ pub(crate) fn validate_fragment_used(
     //
     // Returns Unused Fragment error.
     if !is_used {
-        diagnostics.push(ApolloDiagnostic::new(
+        diagnostics.push(ValidationError::new(
             fragment.location(),
             DiagnosticData::UnusedFragment {
                 name: fragment_name.to_string(),

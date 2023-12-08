@@ -1,13 +1,13 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData},
+    validation::diagnostics::{DiagnosticData, ValidationError},
     ValidationDatabase,
 };
 use std::collections::HashSet;
 
 pub(crate) fn validate_object_type_definitions(
     db: &dyn ValidationDatabase,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let defs = &db.ast_types().objects;
@@ -21,7 +21,7 @@ pub(crate) fn validate_object_type_definitions(
 pub(crate) fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
     object: ast::TypeWithExtensions<ast::ObjectTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -64,7 +64,7 @@ pub(crate) fn validate_object_type_definition(
                     continue;
                 }
 
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
                         name: interface.name.to_string(),

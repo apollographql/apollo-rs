@@ -1,11 +1,11 @@
 use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData},
-    schema, ValidationDatabase,
+    ast, schema,
+    validation::diagnostics::{DiagnosticData, ValidationError},
+    ValidationDatabase,
 };
 use std::collections::HashSet;
 
-pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for interface in db.ast_types().interfaces.values() {
@@ -18,7 +18,7 @@ pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec
 pub(crate) fn validate_interface_definition(
     db: &dyn ValidationDatabase,
     interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -48,7 +48,7 @@ pub(crate) fn validate_interface_definition(
     // }
     for implements_interface in interface.implements_interfaces() {
         if *implements_interface == interface.definition.name {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 implements_interface.location(),
                 DiagnosticData::RecursiveInterfaceDefinition {
                     name: implements_interface.to_string(),
@@ -84,7 +84,7 @@ pub(crate) fn validate_interface_definition(
                 if field_names.contains(&super_field.name) {
                     continue;
                 }
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     interface.definition.location(),
                     DiagnosticData::MissingInterfaceField {
                         name: interface.definition.name.to_string(),
@@ -105,7 +105,7 @@ pub(crate) fn validate_implements_interfaces(
     db: &dyn ValidationDatabase,
     implementor: &ast::Definition,
     implements_interfaces: &[ast::Name],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -129,7 +129,7 @@ pub(crate) fn validate_implements_interfaces(
 
         // interface_name.loc should always be Some
         let loc = interface_name.location();
-        diagnostics.push(ApolloDiagnostic::new(
+        diagnostics.push(ValidationError::new(
             loc,
             DiagnosticData::UndefinedDefinition {
                 name: interface_name.to_string(),
@@ -157,7 +157,7 @@ pub(crate) fn validate_implements_interfaces(
         // let via_loc = via_interface
         //     .location();
         let transitive_loc = transitive_interface.location();
-        diagnostics.push(ApolloDiagnostic::new(
+        diagnostics.push(ValidationError::new(
             definition_loc,
             DiagnosticData::TransitiveImplementedInterfaces {
                 interface: implementor.name().unwrap().to_string(),

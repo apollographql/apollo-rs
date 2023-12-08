@@ -1,9 +1,11 @@
-use crate::{ast, diagnostics::DiagnosticData, schema, ApolloDiagnostic, Node, ValidationDatabase};
+use crate::{
+    ast, schema, validation::diagnostics::DiagnosticData, Node, ValidationDatabase, ValidationError,
+};
 
 pub(crate) fn validate_schema_definition(
     db: &dyn ValidationDatabase,
     schema_definition: ast::TypeWithExtensions<ast::SchemaDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let root_operations: Vec<_> = schema_definition.root_operations().cloned().collect();
@@ -13,7 +15,7 @@ pub(crate) fn validate_schema_definition(
         .any(|op| op.0 == ast::OperationType::Query);
     if !has_query {
         let location = schema_definition.definition.location();
-        diagnostics.push(ApolloDiagnostic::new(
+        diagnostics.push(ValidationError::new(
             location,
             DiagnosticData::QueryRootOperationType,
         ));
@@ -37,7 +39,7 @@ pub(crate) fn validate_schema_definition(
 pub(crate) fn validate_root_operation_definitions(
     db: &dyn ValidationDatabase,
     root_op_defs: &[Node<(ast::OperationType, ast::NamedType)>],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -60,7 +62,7 @@ pub(crate) fn validate_root_operation_definitions(
                     schema::ExtendedType::InputObject(_) => "input object",
                     schema::ExtendedType::Object(_) => unreachable!(),
                 };
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     op_loc,
                     DiagnosticData::RootOperationObjectType {
                         name: name.to_string(),
@@ -70,7 +72,7 @@ pub(crate) fn validate_root_operation_definitions(
             }
         } else {
             let op_loc = name.location();
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 op_loc,
                 DiagnosticData::UndefinedDefinition {
                     name: name.to_string(),

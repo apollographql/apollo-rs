@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
@@ -133,7 +133,7 @@ impl FindRecursiveDirective<'_> {
 pub(crate) fn validate_directive_definition(
     db: &dyn ValidationDatabase,
     def: Node<ast::DirectiveDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     diagnostics.extend(super::input_object::validate_argument_definitions(
@@ -151,7 +151,7 @@ pub(crate) fn validate_directive_definition(
     match FindRecursiveDirective::check(&db.schema(), &def) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 head_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
                     name: def.name.to_string(),
@@ -159,7 +159,7 @@ pub(crate) fn validate_directive_definition(
                 },
             ));
         }
-        Err(CycleError::Limit(_)) => diagnostics.push(ApolloDiagnostic::new(
+        Err(CycleError::Limit(_)) => diagnostics.push(ValidationError::new(
             head_location,
             DiagnosticData::DeeplyNestedType {
                 name: def.name.to_string(),
@@ -171,7 +171,7 @@ pub(crate) fn validate_directive_definition(
     diagnostics
 }
 
-pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for file_id in db.type_definition_files() {
@@ -192,7 +192,7 @@ pub(crate) fn validate_directives<'dir>(
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let mut seen_directives = HashMap::<_, Option<NodeLocation>>::new();
@@ -212,7 +212,7 @@ pub(crate) fn validate_directives<'dir>(
                 .unwrap_or(true);
 
             if !is_repeatable {
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::UniqueDirective {
                         name: name.to_string(),
@@ -229,7 +229,7 @@ pub(crate) fn validate_directives<'dir>(
             let allowed_loc: HashSet<ast::DirectiveLocation> =
                 HashSet::from_iter(directive_definition.locations.iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::UnsupportedLocation {
                         name: name.to_string(),
@@ -266,7 +266,7 @@ pub(crate) fn validate_directives<'dir>(
                         diagnostics.extend(type_diags);
                     }
                 } else {
-                    diagnostics.push(ApolloDiagnostic::new(
+                    diagnostics.push(ValidationError::new(
                         argument.location(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.clone(),
@@ -290,7 +290,7 @@ pub(crate) fn validate_directives<'dir>(
                 };
 
                 if arg_def.is_required() && is_null && arg_def.default_value.is_none() {
-                    diagnostics.push(ApolloDiagnostic::new(
+                    diagnostics.push(ValidationError::new(
                         dir.location(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.to_string(),
@@ -304,7 +304,7 @@ pub(crate) fn validate_directives<'dir>(
                 }
             }
         } else {
-            diagnostics.push(ApolloDiagnostic::new(
+            diagnostics.push(ValidationError::new(
                 loc,
                 DiagnosticData::UndefinedDirective {
                     name: name.to_string(),

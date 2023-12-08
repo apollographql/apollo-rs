@@ -1,13 +1,12 @@
 use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData},
-    schema,
+    ast, schema,
+    validation::diagnostics::{DiagnosticData, ValidationError},
     validation::ValidationDatabase,
     Node,
 };
 
-fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -> ApolloDiagnostic {
-    ApolloDiagnostic::new(
+fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -> ValidationError {
+    ValidationError::new(
         value.location(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
@@ -22,7 +21,7 @@ pub(crate) fn validate_values(
     ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
     value_of_correct_type(db, ty, &argument.value, var_defs, &mut diagnostics);
     diagnostics
@@ -33,7 +32,7 @@ pub(crate) fn value_of_correct_type(
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
     var_defs: &[Node<ast::VariableDefinition>],
-    diagnostics: &mut Vec<ApolloDiagnostic>,
+    diagnostics: &mut Vec<ValidationError>,
 ) {
     let schema = db.schema();
     let Some(type_definition) = schema.types.get(ty.inner_named_type()) else {
@@ -57,7 +56,7 @@ pub(crate) fn value_of_correct_type(
                 "ID" => {}
                 "Int" => {
                     if int.try_to_i32().is_err() {
-                        diagnostics.push(ApolloDiagnostic::new(
+                        diagnostics.push(ValidationError::new(
                             arg_value.location(),
                             DiagnosticData::IntCoercionError {
                                 value: int.as_str().to_owned(),
@@ -67,7 +66,7 @@ pub(crate) fn value_of_correct_type(
                 }
                 "Float" => {
                     if int.try_to_f64().is_err() {
-                        diagnostics.push(ApolloDiagnostic::new(
+                        diagnostics.push(ValidationError::new(
                             arg_value.location(),
                             DiagnosticData::FloatCoercionError {
                                 value: int.as_str().to_owned(),
@@ -88,7 +87,7 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
             schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
-                    diagnostics.push(ApolloDiagnostic::new(
+                    diagnostics.push(ValidationError::new(
                         arg_value.location(),
                         DiagnosticData::FloatCoercionError {
                             value: float.as_str().to_owned(),
@@ -162,7 +161,7 @@ pub(crate) fn value_of_correct_type(
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
-                    diagnostics.push(ApolloDiagnostic::new(
+                    diagnostics.push(ValidationError::new(
                         value.location(),
                         DiagnosticData::UndefinedEnumValue {
                             value: value.to_string(),
@@ -209,7 +208,7 @@ pub(crate) fn value_of_correct_type(
                 // Add a diagnostic if a value does not exist on the input
                 // object type
                 if let Some((name, value)) = undefined_field {
-                    diagnostics.push(ApolloDiagnostic::new(
+                    diagnostics.push(ValidationError::new(
                         value.location(),
                         DiagnosticData::UndefinedInputValue {
                             value: name.to_string(),
@@ -231,7 +230,7 @@ pub(crate) fn value_of_correct_type(
                     // is null or missing entirely, an error should be
                     // raised.
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
-                        diagnostics.push(ApolloDiagnostic::new(
+                        diagnostics.push(ValidationError::new(
                             arg_value.location(),
                             DiagnosticData::RequiredArgument {
                                 name: input_name.to_string(),

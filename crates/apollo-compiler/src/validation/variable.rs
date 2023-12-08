@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{
     FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
 };
@@ -10,7 +10,7 @@ pub(crate) fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
     variables: &[Node<ast::VariableDefinition>],
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
 
@@ -42,7 +42,7 @@ pub(crate) fn validate_variable_definitions(
                         schema::ExtendedType::Enum(_) => "enum",
                         schema::ExtendedType::InputObject(_) => "input object",
                     };
-                    diagnostics.push(ApolloDiagnostic::new(
+                    diagnostics.push(ValidationError::new(
                         variable.location(),
                         DiagnosticData::VariableInputType {
                             name: variable.name.to_string(),
@@ -51,7 +51,7 @@ pub(crate) fn validate_variable_definitions(
                         },
                     ));
                 }
-                None => diagnostics.push(ApolloDiagnostic::new(
+                None => diagnostics.push(ValidationError::new(
                     variable.location(),
                     DiagnosticData::UndefinedDefinition {
                         name: ty.inner_named_type().to_string(),
@@ -64,7 +64,7 @@ pub(crate) fn validate_variable_definitions(
             Entry::Occupied(original) => {
                 let original_definition = original.get().location();
                 let redefined_definition = variable.location();
-                diagnostics.push(ApolloDiagnostic::new(
+                diagnostics.push(ValidationError::new(
                     redefined_definition,
                     DiagnosticData::UniqueVariable {
                         name: variable.name.to_string(),
@@ -183,7 +183,7 @@ pub(crate) fn validate_unused_variables(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     operation: Node<ast::OperationDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let defined_vars: HashSet<_> = operation
@@ -222,7 +222,7 @@ pub(crate) fn validate_unused_variables(
         },
     );
     if walked.is_err() {
-        diagnostics.push(ApolloDiagnostic::new(
+        diagnostics.push(ValidationError::new(
             None,
             DiagnosticData::RecursionError {},
         ));
@@ -233,7 +233,7 @@ pub(crate) fn validate_unused_variables(
 
     diagnostics.extend(unused_vars.map(|unused_var| {
         let loc = locations[unused_var];
-        ApolloDiagnostic::new(
+        ValidationError::new(
             loc,
             DiagnosticData::UnusedVariable {
                 name: unused_var.to_string(),
@@ -248,7 +248,7 @@ pub(crate) fn validate_variable_usage(
     var_usage: Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
     argument: &Node<ast::Argument>,
-) -> Result<(), ApolloDiagnostic> {
+) -> Result<(), ValidationError> {
     if let ast::Value::Variable(var_name) = &*argument.value {
         // Let var_def be the VariableDefinition named
         // variable_name defined within operation.
@@ -256,7 +256,7 @@ pub(crate) fn validate_variable_usage(
         if let Some(var_def) = var_def {
             let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
             if !is_allowed {
-                return Err(ApolloDiagnostic::new(
+                return Err(ValidationError::new(
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
                         variable: var_def.name.to_string(),
@@ -269,7 +269,7 @@ pub(crate) fn validate_variable_usage(
                 ));
             }
         } else {
-            return Err(ApolloDiagnostic::new(
+            return Err(ValidationError::new(
                 argument.value.location(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),

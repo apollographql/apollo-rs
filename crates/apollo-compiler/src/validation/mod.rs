@@ -21,6 +21,8 @@ mod validation_db;
 mod value;
 mod variable;
 
+pub(crate) mod diagnostics;
+
 use crate::ast::Name;
 use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
 use crate::executable::BuildError as ExecutableBuildError;
@@ -180,13 +182,13 @@ impl SuspectedValidationBug {
 #[derive(Clone)]
 pub struct DiagnosticList {
     pub(crate) sources: SourceMap,
-    diagnostics_data: Vec<ValidationError>,
+    diagnostics_data: Vec<DiagnosticData>,
 }
 
 // TODO(@goto-bus-stop) Can/should this be non-pub?
 #[derive(thiserror::Error, Debug, Clone)]
 #[error("{details}")]
-pub struct ValidationError {
+pub struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
 }
@@ -201,11 +203,12 @@ pub(crate) enum Details {
     SchemaBuildError(SchemaBuildError),
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
+    // TODO: Merge ValidationError into this enum
     #[error("compiler error: {0}")]
-    CompilerDiagnostic(crate::ApolloDiagnostic),
+    CompilerDiagnostic(diagnostics::ValidationError),
 }
 
-impl ToCliReport for ValidationError {
+impl ToCliReport for DiagnosticData {
     fn location(&self) -> Option<NodeLocation> {
         self.location
     }
@@ -430,7 +433,7 @@ impl DiagnosticList {
 
     pub fn iter(
         &self,
-    ) -> impl Iterator<Item = Diagnostic<'_, ValidationError>> + DoubleEndedIterator + ExactSizeIterator
+    ) -> impl Iterator<Item = Diagnostic<'_, DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
     {
         self.diagnostics_data
             .iter()
@@ -438,7 +441,7 @@ impl DiagnosticList {
     }
 
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: impl Into<Details>) {
-        self.diagnostics_data.push(ValidationError {
+        self.diagnostics_data.push(DiagnosticData {
             location,
             details: details.into(),
         })
