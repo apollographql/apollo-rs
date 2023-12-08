@@ -21,7 +21,7 @@ pub(crate) fn validate_field(
         context.variables,
     );
 
-    diagnostics.extend(super::argument::validate_arguments(db, &field.arguments));
+    diagnostics.extend(super::argument::validate_arguments(&field.arguments));
 
     // Return early if we don't know the type--this can happen if we are nested deeply
     // inside a selection set that has a wrong field, or if we are validating a standalone
@@ -41,7 +41,6 @@ pub(crate) fn validate_field(
                 .cloned();
             if let Some(arg_definition) = arg_definition {
                 if let Some(diag) = super::variable::validate_variable_usage(
-                    db,
                     arg_definition.clone(),
                     context.variables,
                     argument,

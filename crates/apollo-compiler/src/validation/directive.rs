@@ -199,7 +199,7 @@ pub(crate) fn validate_directives<'dir>(
 
     let schema = db.schema();
     for dir in dirs {
-        diagnostics.extend(super::argument::validate_arguments(db, &dir.arguments));
+        diagnostics.extend(super::argument::validate_arguments(&dir.arguments));
 
         let name = &dir.name;
         let loc = dir.location();
@@ -252,7 +252,6 @@ pub(crate) fn validate_directives<'dir>(
                     // TODO(@goto-bus-stop) do we really need value validation and variable
                     // validation separately?
                     if let Some(diag) = super::variable::validate_variable_usage(
-                        db,
                         input_value.clone(),
                         var_defs,
                         argument,

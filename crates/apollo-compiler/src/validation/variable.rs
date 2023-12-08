@@ -245,7 +245,6 @@ pub(crate) fn validate_unused_variables(
 }
 
 pub(crate) fn validate_variable_usage(
-    db: &dyn ValidationDatabase,
     var_usage: Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
     argument: &Node<ast::Argument>,

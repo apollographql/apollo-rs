@@ -225,7 +225,6 @@ fn group_fields_by_name(
 
 /// Check if the arguments provided to two fields are the same, so the fields can be merged.
 fn identical_arguments(
-    db: &dyn ValidationDatabase,
     field_a: &Node<ast::Field>,
     field_b: &Node<ast::Field>,
 ) -> Result<(), ApolloDiagnostic> {
@@ -337,7 +336,7 @@ pub(crate) fn fields_in_set_can_merge(
                     continue;
                 }
                 // 2bii. fieldA and fieldB must have identical sets of arguments.
-                if let Err(diagnostic) = identical_arguments(db, field_a.field, field_b.field) {
+                if let Err(diagnostic) = identical_arguments(field_a.field, field_b.field) {
                     diagnostics.push(diagnostic);
                     continue;
                 }

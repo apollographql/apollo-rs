@@ -1,13 +1,10 @@
 use std::collections::HashMap;
 
 use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
-use crate::validation::{NodeLocation, ValidationDatabase};
+use crate::validation::NodeLocation;
 use crate::{ast, Node};
 
-pub(crate) fn validate_arguments(
-    db: &dyn ValidationDatabase,
-    arguments: &[Node<ast::Argument>],
-) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_arguments(arguments: &[Node<ast::Argument>]) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let mut seen = HashMap::<_, Option<NodeLocation>>::new();
 
