@@ -1,6 +1,6 @@
 use super::*;
 use crate::diagnostic::DiagnosticReport;
-use crate::diagnostic::ToReport;
+use crate::diagnostic::ToDiagnostic;
 use crate::name;
 use crate::node::NodeLocation;
 use crate::schema::ComponentName;
@@ -1777,10 +1777,10 @@ impl PartialOrd<&'_ str> for Name {
     }
 }
 
-impl ToReport for InvalidNameError {
+impl ToDiagnostic for InvalidNameError {
     fn report(&self, sources: SourceMap) -> DiagnosticReport {
         let mut report = DiagnosticReport::builder(sources, self.0.location());
-        report.with_message(&self);
+        report.with_message(self);
         report.with_label_opt(self.0.location(), "cannot be parsed as a GraphQL name");
         report
     }

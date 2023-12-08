@@ -1,6 +1,6 @@
 //! Pretty-printable diagnostic reports for custom errors that reference GraphQL documents.
 //!
-//! The [`Diagnostic`] type wraps errors that implement [`ToReport`].
+//! The [`Diagnostic`] type wraps errors that implement [`ToDiagnostic`].
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
 use crate::SourceFile;
@@ -197,15 +197,15 @@ impl<T> std::ops::Deref for Diagnostic<T> {
     }
 }
 
-impl<T: std::error::Error + ToReport> std::error::Error for Diagnostic<T> {}
+impl<T: std::error::Error + ToDiagnostic> std::error::Error for Diagnostic<T> {}
 
-impl<T: ToReport> ToReport for &T {
+impl<T: ToDiagnostic> ToDiagnostic for &T {
     fn report(&self, sources: SourceMap) -> DiagnosticReport {
-        ToReport::report(*self, sources)
+        ToDiagnostic::report(*self, sources)
     }
 }
 
-impl<T: ToReport> Diagnostic<T> {
+impl<T: ToDiagnostic> Diagnostic<T> {
     /// Write the report to a [`Write`], with colors.
     ///
     /// If colored output is not desired, consider wrapping the [`Write`] with [`anstream`].
@@ -217,7 +217,7 @@ impl<T: ToReport> Diagnostic<T> {
     }
 }
 
-impl<T: ToReport> fmt::Display for Diagnostic<T> {
+impl<T: ToDiagnostic> fmt::Display for Diagnostic<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         struct StripColorAdaptor<'a, 'b> {
             f: &'a mut fmt::Formatter<'b>,
@@ -266,16 +266,15 @@ impl<T: ToReport> fmt::Display for Diagnostic<T> {
 }
 
 /// Trait for pretty-printing custom error types.
-pub trait ToReport {
+pub trait ToDiagnostic {
+    /// Create a diagnostic report based on this error type.
     fn report(&self, sources: SourceMap) -> DiagnosticReport;
-}
 
-/// Extension trait adding a convenience method to custom errors to create a pretty-printable [`Diagnostic`].
-pub trait ErrorExt: Sized {
-    fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>;
-}
-impl<T: ToReport> ErrorExt for T {
-    fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self> {
+    /// Returns a pretty-printable diagnostic.
+    fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>
+    where
+        Self: Sized,
+    {
         Diagnostic {
             sources: sources.clone(),
             error: self,
@@ -287,7 +286,7 @@ impl<T: ToReport> ErrorExt for T {
 pub trait ResultExt<T, E> {
     fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>>;
 }
-impl<T, E: ToReport> ResultExt<T, E> for Result<T, E> {
+impl<T, E: ToDiagnostic> ResultExt<T, E> for Result<T, E> {
     fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>> {
         self.map_err(|error| error.to_diagnostic(sources))
     }

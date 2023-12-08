@@ -22,7 +22,7 @@ mod value;
 mod variable;
 
 use crate::ast::Name;
-use crate::diagnostic::{Diagnostic, DiagnosticReport, ToReport};
+use crate::diagnostic::{Diagnostic, DiagnosticReport, ToDiagnostic};
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::execution::{GraphQLError, GraphQLLocation};
 use crate::schema::BuildError as SchemaBuildError;
@@ -175,7 +175,7 @@ pub(crate) enum Details {
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
-impl ToReport for DiagnosticData {
+impl ToDiagnostic for DiagnosticData {
     fn report(&self, sources: SourceMap) -> DiagnosticReport {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
             return diagnostic.to_report(sources);
