@@ -155,12 +155,6 @@ pub struct DiagnosticData {
     details: Details,
 }
 
-/// A single diagnostic in a [`DiagnosticList`]
-pub struct Diagnostic_<'a> {
-    sources: &'a SourceMap,
-    data: &'a DiagnosticData,
-}
-
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum Details {
     #[error("{message}")]
@@ -490,15 +484,6 @@ impl fmt::Display for DiagnosticList {
             diagnostic.fmt(f)?
         }
         Ok(())
-    }
-}
-
-/// Defaults to ANSI color codes if stderr is a terminal.
-///
-/// Use alternate formatting to never use colors: `format!("{diagnostic:#}")`
-impl fmt::Display for Diagnostic_<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.data.report(self.sources.clone()).fmt(f)
     }
 }
 
