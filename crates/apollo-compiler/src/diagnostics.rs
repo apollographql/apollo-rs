@@ -9,20 +9,6 @@ use crate::Node;
 use std::fmt;
 use thiserror::Error;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub(crate) struct Label {
-    pub location: Option<NodeLocation>,
-    pub text: String,
-}
-impl Label {
-    pub fn new(location: Option<NodeLocation>, text: impl Into<String>) -> Self {
-        Self {
-            location,
-            text: text.into(),
-        }
-    }
-}
-
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub(crate) struct ApolloDiagnostic {
     pub location: Option<NodeLocation>,
@@ -30,7 +16,7 @@ pub(crate) struct ApolloDiagnostic {
 }
 
 impl ApolloDiagnostic {
-    pub fn new<DB: ?Sized>(_db: &DB, location: Option<NodeLocation>, data: DiagnosticData) -> Self {
+    pub fn new(location: Option<NodeLocation>, data: DiagnosticData) -> Self {
         Self {
             location,
             data: Box::new(data),

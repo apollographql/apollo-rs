@@ -1,6 +1,6 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData},
     schema,
     validation::ValidationDatabase,
     Node,
@@ -12,7 +12,6 @@ fn unsupported_type(
     declared_type: &Node<ast::Type>,
 ) -> ApolloDiagnostic {
     ApolloDiagnostic::new(
-        db,
         value.location(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
@@ -63,7 +62,6 @@ pub(crate) fn value_of_correct_type(
                 "Int" => {
                     if int.try_to_i32().is_err() {
                         diagnostics.push(ApolloDiagnostic::new(
-                            db,
                             arg_value.location(),
                             DiagnosticData::IntCoercionError {
                                 value: int.as_str().to_owned(),
@@ -74,7 +72,6 @@ pub(crate) fn value_of_correct_type(
                 "Float" => {
                     if int.try_to_f64().is_err() {
                         diagnostics.push(ApolloDiagnostic::new(
-                            db,
                             arg_value.location(),
                             DiagnosticData::FloatCoercionError {
                                 value: int.as_str().to_owned(),
@@ -96,7 +93,6 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         arg_value.location(),
                         DiagnosticData::FloatCoercionError {
                             value: float.as_str().to_owned(),
@@ -171,7 +167,6 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         value.location(),
                         DiagnosticData::UndefinedEnumValue {
                             value: value.to_string(),
@@ -219,7 +214,6 @@ pub(crate) fn value_of_correct_type(
                 // object type
                 if let Some((name, value)) = undefined_field {
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         value.location(),
                         DiagnosticData::UndefinedInputValue {
                             value: name.to_string(),
@@ -242,7 +236,6 @@ pub(crate) fn value_of_correct_type(
                     // raised.
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
                         diagnostics.push(ApolloDiagnostic::new(
-                            db,
                             arg_value.location(),
                             DiagnosticData::RequiredArgument {
                                 name: input_name.to_string(),

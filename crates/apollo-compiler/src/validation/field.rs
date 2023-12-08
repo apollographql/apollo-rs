@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, schema, Node};
 
@@ -61,7 +61,6 @@ pub(crate) fn validate_field(
                 let loc = field_definition.location();
 
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     argument.location(),
                     DiagnosticData::UndefinedArgument {
                         name: argument.name.clone(),
@@ -86,7 +85,6 @@ pub(crate) fn validate_field(
 
             if arg_definition.is_required() && is_null && arg_definition.default_value.is_none() {
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     field.location(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.to_string(),
@@ -162,7 +160,6 @@ pub(crate) fn validate_field_definitions(
                     schema::ExtendedType::Object(_) => unreachable!(),
                 };
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     loc,
                     DiagnosticData::OutputType {
                         name: field.name.to_string(),
@@ -173,7 +170,6 @@ pub(crate) fn validate_field_definitions(
             }
         } else {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 type_location,
                 DiagnosticData::UndefinedDefinition {
                     name: field.ty.inner_named_type().to_string(),
@@ -210,7 +206,6 @@ pub(crate) fn validate_leaf_field_selection(
             _ => return Ok(()),
         };
         Err(ApolloDiagnostic::new(
-            db,
             field.location(),
             DiagnosticData::MissingSubselection {
                 coordinate: format!("{tname}.{fname}"),

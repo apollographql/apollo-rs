@@ -1,6 +1,6 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData},
     schema, ValidationDatabase,
 };
 
@@ -36,7 +36,6 @@ pub(crate) fn validate_union_definition(
             None => {
                 // Union member must be defined.
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     member_location,
                     DiagnosticData::UndefinedDefinition {
                         name: union_member.to_string(),
@@ -55,7 +54,6 @@ pub(crate) fn validate_union_definition(
                     schema::ExtendedType::InputObject(_) => "input object",
                 };
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     member_location,
                     DiagnosticData::UnionMemberObjectType {
                         name: union_member.to_string(),

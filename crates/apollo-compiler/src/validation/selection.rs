@@ -1,6 +1,6 @@
 use std::collections::{hash_map::Entry, HashMap};
 
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, schema, Node};
 
@@ -98,7 +98,6 @@ pub(crate) fn same_response_shape(
 
     let mismatching_type_diagnostic = || {
         ApolloDiagnostic::new(
-            db,
             field_b.field.location(),
             DiagnosticData::ConflictingFieldType {
                 field: field_a.field.response_name().to_string(),
@@ -240,7 +239,6 @@ fn identical_arguments(
     for arg in args_a {
         let Some(other_arg) = args_b.iter().find(|other_arg| other_arg.name == arg.name) else {
             return Err(ApolloDiagnostic::new(
-                db,
                 loc_b,
                 DiagnosticData::ConflictingFieldArgument {
                     field: field_a.name.to_string(),
@@ -255,7 +253,6 @@ fn identical_arguments(
 
         if other_arg.value != arg.value {
             return Err(ApolloDiagnostic::new(
-                db,
                 loc_b,
                 DiagnosticData::ConflictingFieldArgument {
                     field: field_a.name.to_string(),
@@ -272,7 +269,6 @@ fn identical_arguments(
     for arg in args_b {
         if !args_a.iter().any(|other_arg| other_arg.name == arg.name) {
             return Err(ApolloDiagnostic::new(
-                db,
                 loc_b,
                 DiagnosticData::ConflictingFieldArgument {
                     field: field_a.name.to_string(),
@@ -329,7 +325,6 @@ pub(crate) fn fields_in_set_can_merge(
                 // 2bi. fieldA and fieldB must have identical field names.
                 if field_a.field.name != field_b.field.name {
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         field_b.field.location(),
                         DiagnosticData::ConflictingFieldName {
                             field: field_a.field.response_name().to_string(),

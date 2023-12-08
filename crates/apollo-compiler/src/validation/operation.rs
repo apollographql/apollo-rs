@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::validation::FileId;
 use crate::{ast, name, Node, ValidationDatabase};
 
@@ -38,7 +38,6 @@ pub(crate) fn validate_operation(
 
         if fields.len() > 1 {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 operation.location(),
                 DiagnosticData::SingleRootField {
                     fields: fields
@@ -60,7 +59,6 @@ pub(crate) fn validate_operation(
             .map(|field| field.field);
         if let Some(field) = has_introspection_fields {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 field.location(),
                 DiagnosticData::IntrospectionField {
                     field: field.name.to_string(),

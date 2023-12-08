@@ -1,5 +1,5 @@
 use crate::ast;
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::operation::OperationValidationConfig;
@@ -77,7 +77,6 @@ fn validate_fragment_spread_type(
                 let fragment_definition = named_fragments.get(&spread.fragment_name).unwrap();
 
                 ApolloDiagnostic::new(
-                    db,
                     spread.location(),
                     DiagnosticData::InvalidFragmentSpread {
                         name: Some(spread.fragment_name.to_string()),
@@ -89,7 +88,6 @@ fn validate_fragment_spread_type(
                 )
             }
             ast::Selection::InlineFragment(inline) => ApolloDiagnostic::new(
-                db,
                 inline.location(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
@@ -197,7 +195,6 @@ pub(crate) fn validate_fragment_spread(
         }
         None => {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 spread.location(),
                 DiagnosticData::UndefinedFragment {
                     name: spread.fragment_name.to_string(),
@@ -321,7 +318,6 @@ pub(crate) fn validate_fragment_cycles(
             let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 def.location(),
                 DiagnosticData::RecursiveFragmentDefinition {
                     head_location,
@@ -334,7 +330,6 @@ pub(crate) fn validate_fragment_cycles(
             let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 head_location,
                 DiagnosticData::DeeplyNestedType {
                     name: def.name.to_string(),
@@ -371,7 +366,6 @@ pub(crate) fn validate_fragment_type_condition(
 
     if !is_composite {
         diagnostics.push(ApolloDiagnostic::new(
-            db,
             fragment_location,
             DiagnosticData::InvalidFragmentTarget {
                 name: fragment_name,
@@ -417,7 +411,6 @@ pub(crate) fn validate_fragment_used(
     // Returns Unused Fragment error.
     if !is_used {
         diagnostics.push(ApolloDiagnostic::new(
-            db,
             fragment.location(),
             DiagnosticData::UnusedFragment {
                 name: fragment_name.to_string(),

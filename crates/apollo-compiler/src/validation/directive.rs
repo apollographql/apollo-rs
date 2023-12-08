@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
@@ -152,7 +152,6 @@ pub(crate) fn validate_directive_definition(
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 head_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
                     name: def.name.to_string(),
@@ -161,7 +160,6 @@ pub(crate) fn validate_directive_definition(
             ));
         }
         Err(CycleError::Limit(_)) => diagnostics.push(ApolloDiagnostic::new(
-            db,
             head_location,
             DiagnosticData::DeeplyNestedType {
                 name: def.name.to_string(),
@@ -215,7 +213,6 @@ pub(crate) fn validate_directives<'dir>(
 
             if !is_repeatable {
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     loc,
                     DiagnosticData::UniqueDirective {
                         name: name.to_string(),
@@ -233,7 +230,6 @@ pub(crate) fn validate_directives<'dir>(
                 HashSet::from_iter(directive_definition.locations.iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     loc,
                     DiagnosticData::UnsupportedLocation {
                         name: name.to_string(),
@@ -272,7 +268,6 @@ pub(crate) fn validate_directives<'dir>(
                     }
                 } else {
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         argument.location(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.clone(),
@@ -297,7 +292,6 @@ pub(crate) fn validate_directives<'dir>(
 
                 if arg_def.is_required() && is_null && arg_def.default_value.is_none() {
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         dir.location(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.to_string(),
@@ -312,7 +306,6 @@ pub(crate) fn validate_directives<'dir>(
             }
         } else {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 loc,
                 DiagnosticData::UndefinedDirective {
                     name: name.to_string(),

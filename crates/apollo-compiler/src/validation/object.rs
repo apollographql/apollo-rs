@@ -1,6 +1,6 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData},
     ValidationDatabase,
 };
 use std::collections::HashSet;
@@ -64,26 +64,7 @@ pub(crate) fn validate_object_type_definition(
                     continue;
                 }
 
-                let mut labels = vec![
-                    Label::new(
-                        implements_interface.location(),
-                        format!("implementation of interface {implements_interface} declared here"),
-                    ),
-                    Label::new(
-                        object.definition.location(),
-                        format!("add `{}` field to this object", interface_field.name),
-                    ),
-                ];
-                let loc = interface_field.location();
-                labels.push(Label::new(
-                    loc,
-                    format!(
-                        "`{}` was originally defined by {} here",
-                        interface_field.name, implements_interface
-                    ),
-                ));
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
                         name: interface.name.to_string(),

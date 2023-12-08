@@ -1,6 +1,6 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData},
     schema,
     validation::{CycleError, RecursionGuard, RecursionStack},
     Node, ValidationDatabase,
@@ -89,7 +89,6 @@ pub(crate) fn validate_input_object_definition(
     match FindRecursiveInputValue::check(db, &input_object) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => diagnostics.push(ApolloDiagnostic::new(
-            db,
             input_object.definition.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
                 name: input_object.definition.name.to_string(),
@@ -98,7 +97,6 @@ pub(crate) fn validate_input_object_definition(
         )),
         Err(CycleError::Limit(_)) => {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 input_object.definition.location(),
                 DiagnosticData::DeeplyNestedType {
                     name: input_object.definition.name.to_string(),
@@ -136,7 +134,6 @@ pub(crate) fn validate_argument_definitions(
                 (prev_value.location(), input_value.location());
 
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 original_definition,
                 DiagnosticData::UniqueInputValue {
                     name: name.to_string(),
@@ -181,7 +178,6 @@ pub(crate) fn validate_input_value_definitions(
                     schema::ExtendedType::InputObject(_) => unreachable!(),
                 };
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     loc,
                     DiagnosticData::InputType {
                         name: input_value.name.to_string(),
@@ -194,7 +190,6 @@ pub(crate) fn validate_input_value_definitions(
             let named_type = input_value.ty.inner_named_type();
             let loc = named_type.location();
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 loc,
                 DiagnosticData::UndefinedDefinition {
                     name: named_type.to_string(),

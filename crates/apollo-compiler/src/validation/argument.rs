@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::validation::{NodeLocation, ValidationDatabase};
 use crate::{ast, Node};
 
@@ -16,7 +16,6 @@ pub(crate) fn validate_arguments(
         if let Some(&original_definition) = seen.get(name) {
             let redefined_definition = argument.location();
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 redefined_definition,
                 DiagnosticData::UniqueArgument {
                     name: name.to_string(),

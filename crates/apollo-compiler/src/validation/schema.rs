@@ -1,8 +1,4 @@
-use crate::{
-    ast,
-    diagnostics::{DiagnosticData, Label},
-    schema, ApolloDiagnostic, Node, ValidationDatabase,
-};
+use crate::{ast, diagnostics::DiagnosticData, schema, ApolloDiagnostic, Node, ValidationDatabase};
 
 pub(crate) fn validate_schema_definition(
     db: &dyn ValidationDatabase,
@@ -18,7 +14,6 @@ pub(crate) fn validate_schema_definition(
     if !has_query {
         let location = schema_definition.definition.location();
         diagnostics.push(ApolloDiagnostic::new(
-            db,
             location,
             DiagnosticData::QueryRootOperationType,
         ));
@@ -66,7 +61,6 @@ pub(crate) fn validate_root_operation_definitions(
                     schema::ExtendedType::Object(_) => unreachable!(),
                 };
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     op_loc,
                     DiagnosticData::RootOperationObjectType {
                         name: name.to_string(),
@@ -77,7 +71,6 @@ pub(crate) fn validate_root_operation_definitions(
         } else {
             let op_loc = name.location();
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 op_loc,
                 DiagnosticData::UndefinedDefinition {
                     name: name.to_string(),

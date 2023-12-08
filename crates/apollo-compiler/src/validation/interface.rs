@@ -1,6 +1,6 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData},
     schema, ValidationDatabase,
 };
 use std::collections::HashSet;
@@ -49,7 +49,6 @@ pub(crate) fn validate_interface_definition(
     for implements_interface in interface.implements_interfaces() {
         if *implements_interface == interface.definition.name {
             diagnostics.push(ApolloDiagnostic::new(
-                db,
                 implements_interface.location(),
                 DiagnosticData::RecursiveInterfaceDefinition {
                     name: implements_interface.to_string(),
@@ -86,7 +85,6 @@ pub(crate) fn validate_interface_definition(
                     continue;
                 }
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     interface.definition.location(),
                     DiagnosticData::MissingInterfaceField {
                         name: interface.definition.name.to_string(),
@@ -132,7 +130,6 @@ pub(crate) fn validate_implements_interfaces(
         // interface_name.loc should always be Some
         let loc = interface_name.location();
         diagnostics.push(ApolloDiagnostic::new(
-            db,
             loc,
             DiagnosticData::UndefinedDefinition {
                 name: interface_name.to_string(),
@@ -161,7 +158,6 @@ pub(crate) fn validate_implements_interfaces(
         //     .location();
         let transitive_loc = transitive_interface.location();
         diagnostics.push(ApolloDiagnostic::new(
-            db,
             definition_loc,
             DiagnosticData::TransitiveImplementedInterfaces {
                 interface: implementor.name().unwrap().to_string(),

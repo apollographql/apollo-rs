@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData};
 use crate::validation::{
     FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
 };
@@ -43,7 +43,6 @@ pub(crate) fn validate_variable_definitions(
                         schema::ExtendedType::InputObject(_) => "input object",
                     };
                     diagnostics.push(ApolloDiagnostic::new(
-                        db,
                         variable.location(),
                         DiagnosticData::VariableInputType {
                             name: variable.name.to_string(),
@@ -53,7 +52,6 @@ pub(crate) fn validate_variable_definitions(
                     ));
                 }
                 None => diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     variable.location(),
                     DiagnosticData::UndefinedDefinition {
                         name: ty.inner_named_type().to_string(),
@@ -67,7 +65,6 @@ pub(crate) fn validate_variable_definitions(
                 let original_definition = original.get().location();
                 let redefined_definition = variable.location();
                 diagnostics.push(ApolloDiagnostic::new(
-                    db,
                     redefined_definition,
                     DiagnosticData::UniqueVariable {
                         name: variable.name.to_string(),
@@ -226,7 +223,6 @@ pub(crate) fn validate_unused_variables(
     );
     if walked.is_err() {
         diagnostics.push(ApolloDiagnostic::new(
-            db,
             None,
             DiagnosticData::RecursionError {},
         ));
@@ -238,7 +234,6 @@ pub(crate) fn validate_unused_variables(
     diagnostics.extend(unused_vars.map(|unused_var| {
         let loc = locations[unused_var];
         ApolloDiagnostic::new(
-            db,
             loc,
             DiagnosticData::UnusedVariable {
                 name: unused_var.to_string(),
@@ -263,7 +258,6 @@ pub(crate) fn validate_variable_usage(
             let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
-                    db,
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
                         variable: var_def.name.to_string(),
@@ -277,7 +271,6 @@ pub(crate) fn validate_variable_usage(
             }
         } else {
             return Err(ApolloDiagnostic::new(
-                db,
                 argument.value.location(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
