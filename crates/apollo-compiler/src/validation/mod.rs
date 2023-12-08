@@ -380,31 +380,15 @@ impl ToDiagnostic for DiagnosticData {
     }
 }
 
-impl<'a> Diagnostic_<'a> {
+impl Diagnostic<&'_ DiagnosticData> {
     /// Get the line and column number where this diagnostic was raised.
     pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        let loc = self.data.location?;
-        let source = self.sources.get(&loc.file_id)?;
-        source
-            .get_line_column(loc.offset())
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
+        GraphQLLocation::from_node(&self.sources, self.error.location)
     }
 
     /// Get serde_json serialisable version of the current diagnostic.
     pub fn to_json(&self) -> GraphQLError {
-        let locations = self.get_line_column().into_iter().collect();
-
-        GraphQLError {
-            message: self.message().to_string(),
-            locations,
-        }
-    }
-
-    pub fn message(&self) -> &impl fmt::Display {
-        &self.data.details
+        GraphQLError::new(&self.error.details, self.get_line_column())
     }
 }
 
