@@ -18,7 +18,25 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
+/// A document with a single query that only has [schema introspection] fields.
+/// Obtained from [`SchemaIntrospectionSplit::split`].
+///
+/// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
 pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
+
+impl std::ops::Deref for SchemaIntrospectionQuery {
+    type Target = Valid<ExecutableDocument>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for SchemaIntrospectionQuery {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl SchemaIntrospectionQuery {
     /// Execute the [schema introspection] parts of an operation
@@ -31,7 +49,7 @@ impl SchemaIntrospectionQuery {
     pub fn split_and_execute(
         schema: &Valid<Schema>,
         document: &Valid<ExecutableDocument>,
-        operation: &Operation,
+        operation: &Node<Operation>,
         variable_values: &Valid<JsonMap>,
         execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
     ) -> Response {
@@ -42,7 +60,7 @@ impl SchemaIntrospectionQuery {
             Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
             Ok(SchemaIntrospectionSplit::Both {
                 introspection_query,
-                filtered_operation,
+                filtered_document: filtered_operation,
             }) => {
                 let non_introspection_response =
                     execute_non_introspection_parts(&filtered_operation);
@@ -51,10 +69,14 @@ impl SchemaIntrospectionQuery {
                     .unwrap_or_else(|err| err.into_response(&document.sources));
                 non_introspection_response.merge(introspection_response)
             }
-            Err(err) => Response::from_request_error(err.into_graphql_error(&document.sources)),
+            Err(err) => err.into_response(&document.sources),
         }
     }
 
+    /// Execute this query and return either a response with data or a [request error]
+    /// that can also be converted with [`into_response`][SuspectedValidationBug::into_response].
+    ///
+    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
     pub fn execute(
         &self,
         schema: &Valid<Schema>,
