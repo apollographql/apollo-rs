@@ -19,9 +19,8 @@ use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
 use crate::SourceMap;
+use indexmap::map::Entry;
 use indexmap::IndexMap;
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 use std::collections::HashSet;
 
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.
@@ -106,7 +105,7 @@ impl SchemaIntrospectionSplit {
             return Ok(Self::None);
         }
 
-        let mut fragments_info = HashMap::new();
+        let mut fragments_info = IndexMap::new();
         let operation_field_kinds =
             collect_field_kinds(document, &mut fragments_info, &operation.selection_set)?;
         if operation_field_kinds.schema_introspection.is_none() {
@@ -300,7 +299,7 @@ enum Computation<T> {
 /// * Return an "unsupported" error if schema introspection are used nested in other fields.
 fn collect_field_kinds<'doc>(
     document: &'doc Valid<ExecutableDocument>,
-    fragments: &mut HashMap<&'doc Name, Computation<TopLevelFieldKinds<'doc>>>,
+    fragments: &mut IndexMap<&'doc Name, Computation<TopLevelFieldKinds<'doc>>>,
     selection_set: &'doc SelectionSet,
 ) -> Result<TopLevelFieldKinds<'doc>, SchemaIntrospectionError> {
     let mut top_level_field_kinds = TopLevelFieldKinds::default();
@@ -498,9 +497,7 @@ impl<'doc> DocumentBuilder<'doc> {
                 Selection::FragmentSpread(fragment_spread) => {
                     self.visit_directives(&fragment_spread.directives);
                     let name = &fragment_spread.fragment_name;
-                    if let indexmap::map::Entry::Vacant(entry) =
-                        self.new_fragments.entry(name.clone())
-                    {
+                    if let Entry::Vacant(entry) = self.new_fragments.entry(name.clone()) {
                         // Checked in `collect_field_kinds`
                         let fragment_def = &self.original_document.fragments[name];
                         entry.insert(fragment_def.clone());
@@ -531,17 +528,7 @@ impl<'doc> DocumentBuilder<'doc> {
     fn visit_value(&mut self, value: &'doc ast::Value) {
         match value {
             schema::Value::Variable(name) => {
-                let new = self.variables_used.insert(name);
-                if new {
-                    for def in &self.original_operation.variables {
-                        if def.name == *name {
-                            if let Some(default) = &def.default_value {
-                                self.visit_value(default)
-                            }
-                            break;
-                        }
-                    }
-                }
+                self.variables_used.insert(name);
             }
             schema::Value::List(list) => {
                 for value in list {
