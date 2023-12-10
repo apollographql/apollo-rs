@@ -3,21 +3,38 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
+#[derive(Clone, Copy)]
+pub(crate) enum Constness {
+    Const,
+    NotConst,
+}
+
 /// See: https://spec.graphql.org/October2021/#Value
 ///
-/// *Value*
-///     Variable
+/// *Value[Const]*
+///     [if not Cont] Variable
 ///     IntValue
 ///     FloatValue
 ///     StringValue
 ///     BooleanValue
 ///     NullValue
 ///     EnumValue
-///     ListValue
-///     ObjectValue
-pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
+///     ListValue[?Const]
+///     ObjectValue[?Const]
+pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
     match p.peek() {
-        Some(T![$]) => variable::variable(p),
+        Some(T![$]) => {
+            if let Constness::Const = constness {
+                let error_message = "unexpected variable value in a Const context";
+                if pop_on_error {
+                    p.err_and_pop(error_message);
+                } else {
+                    p.err(error_message);
+                }
+            }
+            // Consume the variable name even if const, for better error recovery
+            variable::variable(p);
+        }
         Some(TokenKind::Int) => {
             let _g = p.start_node(SyntaxKind::INT_VALUE);
             p.bump(SyntaxKind::INT);
@@ -48,8 +65,8 @@ pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
                 _ => enum_value(p),
             }
         }
-        Some(T!['[']) => list_value(p),
-        Some(T!['{']) => object_value(p),
+        Some(T!['[']) => list_value(p, constness),
+        Some(T!['{']) => object_value(p, constness),
         _ => {
             let error_message = "expected a valid Value";
             if pop_on_error {
@@ -77,10 +94,10 @@ pub(crate) fn enum_value(p: &mut Parser) {
 
 /// See: https://spec.graphql.org/October2021/#ListValue
 ///
-/// *ListValue*:
+/// *ListValue[Const]*:
 ///     **[** **]**
-///     **[** Value* **]**
-pub(crate) fn list_value(p: &mut Parser) {
+///     **[** Value[?Const]* **]**
+pub(crate) fn list_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
 
@@ -95,7 +112,7 @@ pub(crate) fn list_value(p: &mut Parser) {
                 p.limit_err("parser recursion limit reached");
                 return;
             }
-            value(p, true);
+            value(p, constness, true);
             p.recursion_limit.decrement()
         }
     }
@@ -103,15 +120,15 @@ pub(crate) fn list_value(p: &mut Parser) {
 
 /// See: https://spec.graphql.org/October2021/#ObjectValue
 ///
-/// *ObjectValue*:
+/// *ObjectValue[Const]*:
 ///     **{** **}**
-///     **{** ObjectField* **}**
-pub(crate) fn object_value(p: &mut Parser) {
+///     **{** ObjectField[?Const]* **}**
+pub(crate) fn object_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
     while let Some(TokenKind::Name) = p.peek() {
-        object_field(p);
+        object_field(p, constness);
     }
 
     p.expect(T!['}'], S!['}']);
@@ -119,9 +136,9 @@ pub(crate) fn object_value(p: &mut Parser) {
 
 /// See: https://spec.graphql.org/October2021/#ObjectField
 ///
-/// *ObjectField*:
-///     Name **:** Value
-pub(crate) fn object_field(p: &mut Parser) {
+/// *ObjectField[Const]*:
+///     Name **:** Value[?Const]
+pub(crate) fn object_field(p: &mut Parser, constness: Constness) {
     let _guard = p.start_node(SyntaxKind::OBJECT_FIELD);
     name::name(p);
 
@@ -131,7 +148,7 @@ pub(crate) fn object_field(p: &mut Parser) {
             p.limit_err("parser recursion limit reached");
             return;
         }
-        value(p, true);
+        value(p, constness, true);
         p.recursion_limit.decrement()
     }
 }
@@ -139,11 +156,11 @@ pub(crate) fn object_field(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#DefaultValue
 ///
 /// *DefaultValue*:
-///     **=** Value
+///     **=** Value[Const]
 pub(crate) fn default_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DEFAULT_VALUE);
     p.bump(S![=]);
-    value(p, false);
+    value(p, Constness::Const, false);
 }
 
 #[cfg(test)]

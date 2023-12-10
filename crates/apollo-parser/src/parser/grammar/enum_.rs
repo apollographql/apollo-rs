@@ -1,9 +1,8 @@
 #![allow(clippy::needless_return)]
 
-use crate::{
-    parser::grammar::{description, directive, name, value},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, name, value};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#EnumTypeDefinition
 ///
@@ -26,7 +25,7 @@ pub(crate) fn enum_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::NotConst);
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -37,8 +36,8 @@ pub(crate) fn enum_type_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#EnumTypeExtension
 ///
 // *EnumTypeExtension*:
-///    **extend** **enum** Name Directives? EnumValuesDefinition
-///    **extend** **enum** Name Directives?
+///    **extend** **enum** Name Directives[Const]? EnumValuesDefinition
+///    **extend** **enum** Name Directives[Const]?
 pub(crate) fn enum_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -53,7 +52,7 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
 
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -89,7 +88,7 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#EnumValueDefinition
 ///
 /// *EnumValueDefinition*:
-///     Description? EnumValue Directives?
+///     Description? EnumValue Directives[Const]?
 pub(crate) fn enum_value_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let _guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);
@@ -101,7 +100,7 @@ pub(crate) fn enum_value_definition(p: &mut Parser) {
         value::enum_value(p);
 
         if let Some(T![@]) = p.peek() {
-            directive::directives(p);
+            directive::directives(p, Constness::Const);
         }
     }
 }
