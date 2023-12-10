@@ -1666,6 +1666,12 @@ impl serde::Serialize for Name {
     }
 }
 
+impl From<Name> for NodeStr {
+    fn from(name: Name) -> Self {
+        name.0
+    }
+}
+
 impl TryFrom<NodeStr> for Name {
     type Error = InvalidNameError;
 

@@ -17,8 +17,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [x.x.x] (unreleased) - 2023-xx-xx
 
+## Features
 - **Add execution-related and introspection functionality - [SimonSapin], [pull/758]:**
   - Add data structure in `apollo_compiler::execution` for a GraphQL response, its data, and errors.
     All (de)serializable with `serde`.
@@ -31,11 +32,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     At this time this engine is not exposed in the public API.
     If you’re interested in it [let us know] about your use case!
   - Add `ExecutableDocument::insert_operation` convenience method.
+- **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
 
+## Fixes
+- **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/774]**
+  Previously, the leading whitespace would get lost.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop]
 [SimonSapin]: https://github.com/SimonSapin
 [pull/758]: https://github.com/apollographql/apollo-rs/pull/758
+[pull/773]: https://github.com/apollographql/apollo-rs/pull/773
+[pull/774]: https://github.com/apollographql/apollo-rs/pull/774
 [`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
-
 
 # [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
 
