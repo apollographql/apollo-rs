@@ -44,6 +44,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774
 [`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
+[schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+[let us know]: https://github.com/apollographql/apollo-rs/issues/new?assignees=&labels=triage&projects=&template=feature_request.md
 
 # [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
 
