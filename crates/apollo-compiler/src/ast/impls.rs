@@ -858,6 +858,30 @@ impl Selection {
         }
     }
 
+    pub fn as_field(&self) -> Option<&Node<Field>> {
+        if let Self::Field(x) = self {
+            Some(x)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_fragment_spread(&self) -> Option<&Node<FragmentSpread>> {
+        if let Self::FragmentSpread(x) = self {
+            Some(x)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_inline_fragment(&self) -> Option<&Node<InlineFragment>> {
+        if let Self::InlineFragment(x) = self {
+            Some(x)
+        } else {
+            None
+        }
+    }
+
     serialize_method!();
 }
 
