@@ -113,7 +113,7 @@ pub(crate) enum DiagnosticData {
         definition_location: Option<NodeLocation>,
     },
     #[error(
-        "Transitively implemented interfaces must also be defined on an implementing interface or object"
+        "interface `{interface}` declares that it implements `{via_interface}`, but to do so it must also implement `{missing_interface}`"
     )]
     TransitiveImplementedInterfaces {
         /// Name of the interface definition

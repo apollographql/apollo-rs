@@ -1,4 +1,4 @@
-Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+Error: interface `Query` declares that it implements `Image`, but to do so it must also implement `Resource`
     ╭─[0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:1:1]
     │
   1 │ ╭─▶ type Query implements Image {
@@ -11,7 +11,7 @@ Error: Transitively implemented interfaces must also be defined on an implementi
     │                                ────┬───  
     │                                    ╰───── implementation of Resource declared by Image here
 ────╯
-Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+Error: interface `Image` declares that it implements `Resource`, but to do so it must also implement `Node`
     ╭─[0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:19:1]
     │
  13 │     interface Resource implements Node {

@@ -1,4 +1,4 @@
-Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+Error: interface `Image` declares that it implements `Resource`, but to do so it must also implement `Node`
     ╭─[0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:1]
     │
   9 │     interface Resource implements Node {
