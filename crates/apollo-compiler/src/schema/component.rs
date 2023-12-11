@@ -121,6 +121,15 @@ impl<T> From<T> for Component<T> {
     }
 }
 
+impl<T> From<Node<T>> for Component<T> {
+    fn from(node: Node<T>) -> Self {
+        Component {
+            origin: ComponentOrigin::Definition,
+            node,
+        }
+    }
+}
+
 /// A string component of a type or `schema`, for example the name of a union member type.
 ///
 /// Wraps a [`Name`] and adds its origin: either a (`schema` or type) definition

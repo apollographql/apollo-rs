@@ -7,6 +7,7 @@ mod database;
 mod diagnostics;
 pub mod executable;
 pub mod execution;
+pub mod introspection_client;
 mod node;
 mod node_str;
 mod parser;
