@@ -21,14 +21,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
+- **Convenience accessors for `ast::Selection` enum - [SimonSapin], [pull/777]**
+  `as_field`, `as_inline_fragment`, and `as_fragment_spread`; all returning `Option<&_>`.
 
 ## Fixes
 - **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/774]**
   Previously, the leading whitespace would get lost.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop]
+[SimonSapin]: https://github.com/SimonSapin
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774
+[pull/777]: https://github.com/apollographql/apollo-rs/pull/777
 
 # [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
 

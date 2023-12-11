@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{directive, name, ty, value},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{directive, name, ty, value};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#VariableDefinitions
 ///
@@ -26,7 +25,7 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#VariableDefinition
 ///
 /// *VariableDefinition*:
-///     Variable **:** Type DefaultValue? Directives?
+///     Variable **:** Type DefaultValue? Directives[Const]?
 pub(crate) fn variable_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
     variable(p);
@@ -39,7 +38,7 @@ pub(crate) fn variable_definition(p: &mut Parser) {
                 value::default_value(p);
             }
             if let Some(T![@]) = p.peek() {
-                directive::directives(p)
+                directive::directives(p, Constness::Const)
             }
         } else {
             p.err("expected a Type");
