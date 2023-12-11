@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{directive, name, selection, ty, variable},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{directive, name, selection, ty, variable};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
@@ -65,7 +64,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
 
             if let Some(T![@]) = p.peek() {
-                directive::directives(p);
+                directive::directives(p, Constness::NotConst);
             }
 
             match p.peek() {

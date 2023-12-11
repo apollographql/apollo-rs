@@ -449,6 +449,30 @@ impl Selection {
         }
     }
 
+    pub fn as_field(&self) -> Option<&Node<Field>> {
+        if let Self::Field(field) = self {
+            Some(field)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_inline_fragment(&self) -> Option<&Node<InlineFragment>> {
+        if let Self::InlineFragment(inline) = self {
+            Some(inline)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_fragment_spread(&self) -> Option<&Node<FragmentSpread>> {
+        if let Self::FragmentSpread(spread) = self {
+            Some(spread)
+        } else {
+            None
+        }
+    }
+
     serialize_method!();
 }
 
@@ -485,32 +509,6 @@ impl From<InlineFragment> for Selection {
 impl From<FragmentSpread> for Selection {
     fn from(value: FragmentSpread) -> Self {
         Self::FragmentSpread(Node::new(value))
-    }
-}
-
-impl Selection {
-    pub fn as_field(&self) -> Option<&Node<Field>> {
-        if let Self::Field(field) = self {
-            Some(field)
-        } else {
-            None
-        }
-    }
-
-    pub fn as_inline_fragment(&self) -> Option<&Node<InlineFragment>> {
-        if let Self::InlineFragment(inline) = self {
-            Some(inline)
-        } else {
-            None
-        }
-    }
-
-    pub fn as_fragment_spread(&self) -> Option<&Node<FragmentSpread>> {
-        if let Self::FragmentSpread(spread) = self {
-            Some(spread)
-        } else {
-            None
-        }
     }
 }
 

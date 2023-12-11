@@ -5,16 +5,16 @@ use expect_test::expect;
 #[test]
 fn test_serde_value() {
     let input = r#"
-        query($var: I = {
-            null_field: null,
-            enum_field: EXAMPLE,
-            var_field: $var,
-            string_field: "example"
-            float_field: 1.5
-            int_field: 47
-            list_field: [1, 2, 3]
-        }) {
-            selection
+        query {
+            field(arg: {
+                null_field: null,
+                enum_field: EXAMPLE,
+                var_field: $var,
+                string_field: "example"
+                float_field: 1.5
+                int_field: 47
+                list_field: [1, 2, 3]
+            })
         }
     "#;
     let value = ast::Document::parse(input, "input.graphql")
@@ -22,10 +22,12 @@ fn test_serde_value() {
         .definitions[0]
         .as_operation_definition()
         .unwrap()
-        .variables[0]
-        .default_value
-        .clone()
-        .unwrap();
+        .selection_set[0]
+        .as_field()
+        .unwrap()
+        .arguments[0]
+        .value
+        .clone();
     let graphql = value.to_string();
     let expected_graphql = expect![[r#"
         {

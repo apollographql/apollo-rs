@@ -1,35 +1,34 @@
-use crate::{
-    parser::grammar::{input, name, value},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{input, name, value};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#Argument
 ///
-/// *Argument*:
-///    Name **:** Value
-pub(crate) fn argument(p: &mut Parser) {
+/// *Argument[Const]*:
+///    Name **:** Value[?Const]
+pub(crate) fn argument(p: &mut Parser, constness: Constness) {
     let _guard = p.start_node(SyntaxKind::ARGUMENT);
     name::name(p);
     if let Some(T![:]) = p.peek() {
         p.bump(S![:]);
-        value::value(p, false);
+        value::value(p, constness, false);
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#Arguments
 ///
-/// *Arguments*:
-///    **(** Argument* **)**
-pub(crate) fn arguments(p: &mut Parser) {
+/// *Arguments[Const]*:
+///    **(** Argument[?Const]* **)**
+pub(crate) fn arguments(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     if let Some(TokenKind::Name) = p.peek() {
-        argument(p);
+        argument(p, constness);
     } else {
         p.err("expected an Argument");
     }
     while let Some(TokenKind::Name) = p.peek() {
-        argument(p);
+        argument(p, constness);
     }
     p.expect(T![')'], S![')']);
 }

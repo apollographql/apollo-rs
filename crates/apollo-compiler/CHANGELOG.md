@@ -33,6 +33,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     If you’re interested in it [let us know] about your use case!
   - Add `ExecutableDocument::insert_operation` convenience method.
 - **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
+- **Convenience accessors for `ast::Selection` enum - [SimonSapin], [pull/777]**
+  `as_field`, `as_inline_fragment`, and `as_fragment_spread`; all returning `Option<&_>`.
 
 ## Fixes
 - **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/774]**
@@ -43,6 +45,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/758]: https://github.com/apollographql/apollo-rs/pull/758
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774
+[pull/777]: https://github.com/apollographql/apollo-rs/pull/777
 [`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
 [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
 [let us know]: https://github.com/apollographql/apollo-rs/issues/new?assignees=&labels=triage&projects=&template=feature_request.md
