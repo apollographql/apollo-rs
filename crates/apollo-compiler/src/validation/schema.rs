@@ -1,6 +1,9 @@
-use crate::{
-    ast, schema, validation::diagnostics::DiagnosticData, Node, ValidationDatabase, ValidationError,
-};
+use crate::ast;
+use crate::schema;
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::diagnostics::ValidationError;
+use crate::Node;
+use crate::ValidationDatabase;
 
 pub(crate) fn validate_schema_definition(
     db: &dyn ValidationDatabase,
