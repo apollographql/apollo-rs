@@ -1,7 +1,6 @@
 use crate::ast::DirectiveLocation;
 use crate::diagnostic::DiagnosticReport;
 use crate::validation::NodeLocation;
-use crate::SourceMap;
 use std::fmt;
 use thiserror::Error;
 
@@ -246,8 +245,7 @@ pub(crate) enum DiagnosticData {
 }
 
 impl ApolloDiagnostic {
-    pub(crate) fn to_report(&self, sources: SourceMap) -> DiagnosticReport {
-        let mut report = DiagnosticReport::builder(sources, self.location);
+    pub(crate) fn report(&self, report: &mut DiagnosticReport) {
         report.with_message(&self.data);
         for label in &self.labels {
             report.with_label_opt(label.location, &label.text);
@@ -255,6 +253,5 @@ impl ApolloDiagnostic {
         if let Some(help) = &self.help {
             report.with_help(help);
         }
-        report
     }
 }

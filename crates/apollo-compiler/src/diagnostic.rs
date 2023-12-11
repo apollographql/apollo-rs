@@ -187,6 +187,7 @@ impl ariadne::Cache<FileId> for Cache<'_> {
 #[derive(Debug)]
 pub struct Diagnostic<T> {
     pub sources: SourceMap,
+    pub location: Option<NodeLocation>,
     pub error: T,
 }
 
@@ -200,8 +201,12 @@ impl<T> std::ops::Deref for Diagnostic<T> {
 impl<T: std::error::Error + ToDiagnostic> std::error::Error for Diagnostic<T> {}
 
 impl<T: ToDiagnostic> ToDiagnostic for &T {
-    fn report(&self, sources: SourceMap) -> DiagnosticReport {
-        ToDiagnostic::report(*self, sources)
+    fn location(&self) -> Option<NodeLocation> {
+        ToDiagnostic::location(*self)
+    }
+
+    fn report(&self, report: &mut DiagnosticReport) {
+        ToDiagnostic::report(*self, report)
     }
 }
 
@@ -212,7 +217,8 @@ impl<T: ToDiagnostic> Diagnostic<T> {
     ///
     /// [`Write`]: std::io::Write
     pub fn write(&self, w: impl std::io::Write) -> std::io::Result<()> {
-        let report = self.error.report(self.sources.clone());
+        let mut report = DiagnosticReport::builder(self.sources.clone(), self.error.location());
+        self.error.report(&mut report);
         report.write(w)
     }
 }
@@ -267,8 +273,12 @@ impl<T: ToDiagnostic> fmt::Display for Diagnostic<T> {
 
 /// Trait for pretty-printing custom error types.
 pub trait ToDiagnostic {
+    /// Return the main location for this error. May be `None` if a location doesn't make sense for
+    /// the particular error.
+    fn location(&self) -> Option<NodeLocation>;
+
     /// Create a diagnostic report based on this error type.
-    fn report(&self, sources: SourceMap) -> DiagnosticReport;
+    fn report(&self, report: &mut DiagnosticReport) -> ();
 
     /// Returns a pretty-printable diagnostic.
     fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>
@@ -277,6 +287,7 @@ pub trait ToDiagnostic {
     {
         Diagnostic {
             sources: sources.clone(),
+            location: self.location(),
             error: self,
         }
     }

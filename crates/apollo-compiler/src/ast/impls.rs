@@ -12,7 +12,6 @@ use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::Parser;
 use crate::Schema;
-use crate::SourceMap;
 use std::fmt;
 use std::hash;
 use std::path::Path;
@@ -1778,11 +1777,12 @@ impl PartialOrd<&'_ str> for Name {
 }
 
 impl ToDiagnostic for InvalidNameError {
-    fn report(&self, sources: SourceMap) -> DiagnosticReport {
-        let mut report = DiagnosticReport::builder(sources, self.0.location());
+    fn location(&self) -> Option<NodeLocation> {
+        self.0.location()
+    }
+    fn report(&self, report: &mut DiagnosticReport) {
         report.with_message(self);
         report.with_label_opt(self.0.location(), "cannot be parsed as a GraphQL name");
-        report
     }
 }
 

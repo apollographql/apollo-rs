@@ -170,14 +170,19 @@ pub(crate) enum Details {
 }
 
 impl ToDiagnostic for DiagnosticData {
-    fn report(&self, sources: SourceMap) -> DiagnosticReport {
+    fn location(&self) -> Option<NodeLocation> {
+        self.location
+    }
+
+    fn report(&self, report: &mut DiagnosticReport) {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
-            return diagnostic.to_report(sources);
+            diagnostic.report(report);
+            return;
         }
 
-        let mut report = DiagnosticReport::builder(sources, self.location);
         // Main message from `derive(thiserror::Error)` based on `#[error("…")]` attributes:
         report.with_message(&self.details);
+
         // Every case should also have a label at the main location
         // (preferably saying something not completely redundant with the main message)
         // and may have additional labels.
@@ -370,7 +375,6 @@ impl ToDiagnostic for DiagnosticData {
                 }
             },
         }
-        report
     }
 }
 
@@ -407,10 +411,9 @@ impl DiagnosticList {
         &self,
     ) -> impl Iterator<Item = Diagnostic<&'_ DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
     {
-        self.diagnostics_data.iter().map(|data| Diagnostic {
-            sources: self.sources.clone(),
-            error: data,
-        })
+        self.diagnostics_data
+            .iter()
+            .map(|data| data.to_diagnostic(&self.sources))
     }
 
     /// Returns a human-readable string formatting, without color codes regardless of stderr.
