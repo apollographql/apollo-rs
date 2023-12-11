@@ -152,16 +152,6 @@ fn field_is_schema_introspection(field: &Field) -> bool {
     field.name == "__schema" || field.name == "__type"
 }
 
-fn unsupported_at_non_query_root(field: &Node<Field>) -> SchemaIntrospectionError {
-    SchemaIntrospectionError::Unsupported {
-        message: format!(
-            "Schema introspection field {} is only supported at the root of a query",
-            field.name
-        ),
-        location: field.location(),
-    }
-}
-
 /// Returns an error if schema introspection is used anywhere.
 /// Called for a mutation or subscription operation.
 fn check_non_query<'doc>(
@@ -172,12 +162,12 @@ fn check_non_query<'doc>(
         fragments_visited: &mut HashSet<&'doc Name>,
         fragments_to_visit: &mut HashSet<&'doc Name>,
         selection_set: &'doc SelectionSet,
-    ) -> Result<(), SchemaIntrospectionError> {
+    ) -> Result<(), &'doc Node<Field>> {
         for selection in &selection_set.selections {
             match selection {
                 Selection::Field(field) => {
                     if field_is_schema_introspection(field) {
-                        return Err(unsupported_at_non_query_root(field));
+                        return Err(field);
                     }
                     check_selection_set(
                         fragments_visited,
@@ -200,20 +190,29 @@ fn check_non_query<'doc>(
         }
         Ok(())
     }
+    let unsupported = |field: &Node<Field>| SchemaIntrospectionError::Unsupported {
+        message: format!(
+            "Schema introspection field {} is not supported in a {} operation",
+            field.name, operation.operation_type,
+        ),
+        location: field.location(),
+    };
     let mut fragments_visited = HashSet::new();
     let mut fragments_to_visit = HashSet::new();
     check_selection_set(
         &mut fragments_visited,
         &mut fragments_to_visit,
         &operation.selection_set,
-    )?;
+    )
+    .map_err(unsupported)?;
     while let Some(name) = fragments_to_visit.iter().next().copied() {
         let fragment_def = get_fragment(document, name)?;
         check_selection_set(
             &mut fragments_visited,
             &mut fragments_to_visit,
             &fragment_def.selection_set,
-        )?;
+        )
+        .map_err(unsupported)?;
         fragments_to_visit.remove(name);
         fragments_visited.insert(name);
     }
@@ -318,7 +317,14 @@ fn collect_field_kinds<'doc>(
                     if let Some(schema_introspection_field) =
                         nested_field_kinds.schema_introspection
                     {
-                        return Err(unsupported_at_non_query_root(schema_introspection_field));
+                        return Err(SchemaIntrospectionError::Unsupported {
+                            message: format!(
+                                "Schema introspection field {} is not supported \
+                                 nested in other fields",
+                                schema_introspection_field.name
+                            ),
+                            location: schema_introspection_field.location(),
+                        });
                     }
                     top_level_field_kinds.has_other_fields = true;
                 }

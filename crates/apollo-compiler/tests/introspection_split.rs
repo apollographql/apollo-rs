@@ -76,7 +76,7 @@ fn test_nested() {
     "#;
     let expected = expect![[r#"
         GraphQLError {
-            message: "Schema introspection field __schema is only supported at the root of a query",
+            message: "Schema introspection field __schema is not supported nested in other fields",
             locations: [
                 GraphQLLocation {
                     line: 2,
@@ -98,7 +98,7 @@ fn test_nested_in_fragment() {
     "#;
     let expected = expect![[r#"
         GraphQLError {
-            message: "Schema introspection field __schema is only supported at the root of a query",
+            message: "Schema introspection field __schema is not supported nested in other fields",
             locations: [
                 GraphQLLocation {
                     line: 3,
@@ -119,7 +119,7 @@ fn test_mutation() {
     "#;
     let expected = expect![[r#"
         GraphQLError {
-            message: "Schema introspection field __schema is only supported at the root of a query",
+            message: "Schema introspection field __schema is not supported in a mutation operation",
             locations: [
                 GraphQLLocation {
                     line: 2,
@@ -140,7 +140,7 @@ fn test_mutation_nested() {
     "#;
     let expected = expect![[r#"
         GraphQLError {
-            message: "Schema introspection field __schema is only supported at the root of a query",
+            message: "Schema introspection field __schema is not supported in a mutation operation",
             locations: [
                 GraphQLLocation {
                     line: 2,
