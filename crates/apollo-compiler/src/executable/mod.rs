@@ -241,7 +241,7 @@ impl ExecutableDocument {
 
     /// Return the relevant operation for a request, or a request error
     ///
-    /// This the [GetOperation](https://spec.graphql.org/October2021/#GetOperation())
+    /// This the [GetOperation()](https://spec.graphql.org/October2021/#GetOperation())
     /// algorithm in the _Executing Requests_ section of the specification.
     ///
     /// A GraphQL request comes with a document (which may contain multiple operations)
@@ -290,6 +290,20 @@ impl ExecutableDocument {
         }
         .map(Node::make_mut)
         .ok_or(GetOperationError())
+    }
+
+    /// Insert the given operation in either `named_operations` or `anonymous_operation`
+    /// as appropriate, and return the old operation (if any) with that name (or lack thereof).
+    pub fn insert_operation(
+        &mut self,
+        operation: impl Into<Node<Operation>>,
+    ) -> Option<Node<Operation>> {
+        let operation = operation.into();
+        if let Some(name) = &operation.name {
+            self.named_operations.insert(name.clone(), operation)
+        } else {
+            self.anonymous_operation.replace(operation)
+        }
     }
 
     serialize_method!();

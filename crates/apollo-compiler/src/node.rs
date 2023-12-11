@@ -1,6 +1,8 @@
+use crate::execution::GraphQLLocation;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use crate::validation::FileId;
+use crate::SourceMap;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use std::collections::hash_map::RandomState;
@@ -75,6 +77,11 @@ impl<T> Node<T> {
     /// which defines built-in directives, built-in scalars, and introspection types.
     pub fn is_built_in(&self) -> bool {
         self.location().map(|l| l.file_id()) == Some(FileId::BUILT_IN)
+    }
+
+    /// If this node contains a location, convert it to line and column numbers
+    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node(sources, self.location())
     }
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).

@@ -107,12 +107,13 @@ pub(crate) fn validate_variable_definitions(
     diagnostics
 }
 
+type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
+
 fn walk_selections(
     document: &ast::Document,
     selections: &[ast::Selection],
-    mut f: impl FnMut(&ast::Selection),
+    mut f: impl FnMut(&NamedFragments, &ast::Selection),
 ) -> Result<(), RecursionLimitError> {
-    type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
     let named_fragments: NamedFragments = document
         .definitions
         .iter()
@@ -128,10 +129,10 @@ fn walk_selections(
         named_fragments: &'ast NamedFragments,
         selections: &'ast [ast::Selection],
         guard: &mut RecursionGuard<'guard>,
-        f: &mut dyn FnMut(&ast::Selection),
+        f: &mut dyn FnMut(&NamedFragments, &ast::Selection),
     ) -> Result<(), RecursionLimitError> {
         for selection in selections {
-            f(selection);
+            f(named_fragments, selection);
             match selection {
                 ast::Selection::Field(field) => {
                     walk_selections_inner(named_fragments, &field.selection_set, guard, f)?;
@@ -226,23 +227,25 @@ pub(crate) fn validate_unused_variables(
         })
         .collect();
     let mut used_vars = HashSet::<ast::Name>::new();
-    let walked =
-        walk_selections(
-            &db.ast(file_id),
-            &operation.selection_set,
-            |selection| match selection {
-                ast::Selection::Field(field) => {
-                    used_vars.extend(variables_in_directives(&field.directives));
-                    used_vars.extend(variables_in_arguments(&field.arguments));
+    let walked = walk_selections(
+        &db.ast(file_id),
+        &operation.selection_set,
+        |named_fragments, selection| match selection {
+            ast::Selection::Field(field) => {
+                used_vars.extend(variables_in_directives(&field.directives));
+                used_vars.extend(variables_in_arguments(&field.arguments));
+            }
+            ast::Selection::FragmentSpread(fragment) => {
+                if let Some(fragment_def) = named_fragments.get(&fragment.fragment_name) {
+                    used_vars.extend(variables_in_directives(&fragment_def.directives));
                 }
-                ast::Selection::FragmentSpread(fragment) => {
-                    used_vars.extend(variables_in_directives(&fragment.directives));
-                }
-                ast::Selection::InlineFragment(fragment) => {
-                    used_vars.extend(variables_in_directives(&fragment.directives));
-                }
-            },
-        );
+                used_vars.extend(variables_in_directives(&fragment.directives));
+            }
+            ast::Selection::InlineFragment(fragment) => {
+                used_vars.extend(variables_in_directives(&fragment.directives));
+            }
+        },
+    );
     if walked.is_err() {
         diagnostics.push(ApolloDiagnostic::new(
             db,
