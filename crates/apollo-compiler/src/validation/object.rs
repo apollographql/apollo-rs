@@ -67,7 +67,7 @@ pub(crate) fn validate_object_type_definition(
                 diagnostics.push(ValidationError::new(
                     object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
-                        name: interface.name.to_string(),
+                        name: object.definition.name.to_string(),
                         implements_location: implements_interface.location(),
                         interface: implements_interface.to_string(),
                         field: interface_field.name.to_string(),

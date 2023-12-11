@@ -1,4 +1,4 @@
-Error: type `Node` does not satisfy interface `Node`: missing field `id`
+Error: type `Query` does not satisfy interface `Node`: missing field `id`
    ╭─[0034_object_type_definition_with_missing_transitive_fields.graphql:1:1]
    │
  1 │ ╭─▶ type Query implements Node & Resource {
@@ -15,7 +15,7 @@ Error: type `Node` does not satisfy interface `Node`: missing field `id`
    │     
    │     Help: An object or interface must declare all fields required by the interfaces it implements
 ───╯
-Error: type `Resource` does not satisfy interface `Resource`: missing field `width`
+Error: type `Query` does not satisfy interface `Resource`: missing field `width`
     ╭─[0034_object_type_definition_with_missing_transitive_fields.graphql:1:1]
     │
   1 │ ╭─▶ type Query implements Node & Resource {
