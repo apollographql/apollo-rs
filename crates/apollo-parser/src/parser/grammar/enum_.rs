@@ -25,7 +25,7 @@ pub(crate) fn enum_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p, Constness::NotConst);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {

@@ -12,7 +12,7 @@ pub(crate) enum Constness {
 /// See: https://spec.graphql.org/October2021/#Value
 ///
 /// *Value[Const]*
-///     [if not Cont] Variable
+///     [if not Const] Variable
 ///     IntValue
 ///     FloatValue
 ///     StringValue
