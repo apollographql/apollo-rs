@@ -232,7 +232,7 @@ pub trait ToDiagnostic {
     fn location(&self) -> Option<NodeLocation>;
 
     /// Create a diagnostic report based on this error type.
-    fn report(&self, report: &mut DiagnosticReport) -> ();
+    fn report(&self, report: &mut DiagnosticReport);
 
     /// Returns a pretty-printable diagnostic.
     fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>
