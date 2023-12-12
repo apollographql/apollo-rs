@@ -88,8 +88,6 @@ pub(crate) fn named_type(p: &mut Parser) {
     if let Some(TokenKind::Name) = p.peek() {
         let _g = p.start_node(SyntaxKind::NAMED_TYPE);
         name::name(p);
-    } else {
-        p.err("expected a Name")
     }
 }
 

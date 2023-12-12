@@ -54,7 +54,11 @@ pub(crate) fn type_condition(p: &mut Parser) {
                 p.err("expected 'on'");
             }
 
-            ty::named_type(p)
+            if let Some(TokenKind::Name) = p.peek() {
+                ty::named_type(p)
+            } else {
+                p.err("expected a Name")
+            }
         }
         _ => p.err("expected Type Condition"),
     }
