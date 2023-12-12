@@ -27,6 +27,22 @@ fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
     Some((location.file_id, start..end))
 }
 
+/// Provide a [`std::io::Write`] API for a [`std::fmt::Formatter`].
+struct WriteToFormatter<'a, 'b> {
+    f: &'a mut fmt::Formatter<'b>,
+}
+impl io::Write for WriteToFormatter<'_, '_> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
+        self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
 /// A diagnostic report that can be printed to a CLI with pretty colours and labeled lines of
 /// GraphQL source code.
 ///
@@ -53,6 +69,15 @@ impl DiagnosticReport {
             sources,
             colors: ColorGenerator::new(),
             report: ariadne::Report::build(ReportKind::Error, file_id, range.start),
+        }
+    }
+
+    fn with_color(self, color: bool) -> Self {
+        Self {
+            report: self
+                .report
+                .with_config(ariadne::Config::default().with_color(color)),
+            ..self
         }
     }
 
@@ -83,9 +108,7 @@ impl DiagnosticReport {
         }
     }
 
-    /// Write the report to a [`Write`], with colors.
-    ///
-    /// If colored output is not desired, consider wrapping the [`Write`] with [anstream].
+    /// Write the report to a [`Write`].
     ///
     /// [`Write`]: std::io::Write
     pub fn write(self, w: impl std::io::Write) -> std::io::Result<()> {
@@ -93,51 +116,9 @@ impl DiagnosticReport {
         report.write(Cache(&self.sources), w)
     }
 
-    /// Write the report to a [`fmt::Formatter`]. Alternate formatting disables colors.
+    /// Write the report to a [`fmt::Formatter`].
     pub fn fmt(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        struct StripColorAdaptor<'a, 'b> {
-            f: &'a mut fmt::Formatter<'b>,
-            strip: anstream::adapter::StripBytes,
-        }
-        impl io::Write for StripColorAdaptor<'_, '_> {
-            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                for printable in self.strip.strip_next(buf) {
-                    let s = std::str::from_utf8(printable).map_err(|_| io::ErrorKind::Other)?;
-                    self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
-                }
-
-                Ok(buf.len())
-            }
-
-            fn flush(&mut self) -> io::Result<()> {
-                Ok(())
-            }
-        }
-
-        struct ColorAdaptor<'a, 'b> {
-            f: &'a mut fmt::Formatter<'b>,
-        }
-        impl io::Write for ColorAdaptor<'_, '_> {
-            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
-                self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
-                Ok(buf.len())
-            }
-
-            fn flush(&mut self) -> io::Result<()> {
-                Ok(())
-            }
-        }
-
-        if f.alternate() {
-            self.write(StripColorAdaptor {
-                f,
-                strip: Default::default(),
-            })
-            .map_err(|_| fmt::Error)
-        } else {
-            self.write(ColorAdaptor { f }).map_err(|_| fmt::Error)
-        }
+        self.write(WriteToFormatter { f }).map_err(|_| fmt::Error)
     }
 }
 
@@ -184,7 +165,6 @@ impl ariadne::Cache<FileId> for Cache<'_> {
 }
 
 /// A pretty-printable diagnostic.
-#[derive(Debug)]
 pub struct Diagnostic<T> {
     pub sources: SourceMap,
     pub location: Option<NodeLocation>,
@@ -211,63 +191,37 @@ impl<T: ToDiagnostic> ToDiagnostic for &T {
 }
 
 impl<T: ToDiagnostic> Diagnostic<T> {
-    /// Write the report to a [`Write`], with colors.
-    ///
-    /// If colored output is not desired, consider wrapping the [`Write`] with [`anstream`].
+    /// Produce the diagnostic report, optionally with colors for the CLI.
+    fn report(&self, color: bool) -> DiagnosticReport {
+        let mut report = DiagnosticReport::builder(self.sources.clone(), self.error.location())
+            .with_color(color);
+        self.error.report(&mut report);
+        report
+    }
+
+    /// Pretty-print the diagnostic to a [`Write`].
     ///
     /// [`Write`]: std::io::Write
-    pub fn write(&self, w: impl std::io::Write) -> std::io::Result<()> {
-        let mut report = DiagnosticReport::builder(self.sources.clone(), self.error.location());
-        self.error.report(&mut report);
-        report.write(w)
+    pub fn write(&self, color: bool, w: impl std::io::Write) -> std::io::Result<()> {
+        self.report(color).write(w)
+    }
+}
+
+impl<T: ToDiagnostic> fmt::Debug for Diagnostic<T> {
+    /// Pretty-format the diagnostic, with colors for the CLI.
+    ///
+    /// To output *without* colors, format with `Display`: `format!("{diagnostic}")`
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.report(true).fmt(f)
     }
 }
 
 impl<T: ToDiagnostic> fmt::Display for Diagnostic<T> {
+    /// Pretty-format the diagnostic without colors.
+    ///
+    /// To output *with* colors, format with `Debug`: `format!("{diagnostic:?}")`
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        struct StripColorAdaptor<'a, 'b> {
-            f: &'a mut fmt::Formatter<'b>,
-            strip: anstream::adapter::StripBytes,
-        }
-        impl io::Write for StripColorAdaptor<'_, '_> {
-            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                for printable in self.strip.strip_next(buf) {
-                    let s = std::str::from_utf8(printable).map_err(|_| io::ErrorKind::Other)?;
-                    self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
-                }
-
-                Ok(buf.len())
-            }
-
-            fn flush(&mut self) -> io::Result<()> {
-                Ok(())
-            }
-        }
-
-        struct ColorAdaptor<'a, 'b> {
-            f: &'a mut fmt::Formatter<'b>,
-        }
-        impl io::Write for ColorAdaptor<'_, '_> {
-            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
-                self.f.write_str(s).map_err(|_| io::ErrorKind::Other)?;
-                Ok(buf.len())
-            }
-
-            fn flush(&mut self) -> io::Result<()> {
-                Ok(())
-            }
-        }
-
-        if f.alternate() {
-            self.write(StripColorAdaptor {
-                f,
-                strip: Default::default(),
-            })
-            .map_err(|_| fmt::Error)
-        } else {
-            self.write(ColorAdaptor { f }).map_err(|_| fmt::Error)
-        }
+        self.report(false).fmt(f)
     }
 }
 

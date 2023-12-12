@@ -22,7 +22,7 @@ fn main() -> ExitCode {
     match apollo_compiler::parse_mixed_validate(source, filename) {
         Ok((_schema, _executable)) => ExitCode::SUCCESS,
         Err(errors) => {
-            println!("{errors}");
+            println!("{errors:?}");
             ExitCode::FAILURE
         }
     }

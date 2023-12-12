@@ -517,21 +517,23 @@ impl DiagnosticList {
     }
 }
 
-/// Defaults to ANSI color codes if stderr is a terminal.
-///
-/// Use alternate formatting to never use colors: `format!("{diagnostics:#}")`
+/// Use Debug formatting to output with colors: `format!("{diagnostics:?}")`
 impl fmt::Display for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
-            diagnostic.fmt(f)?
+            fmt::Display::fmt(&diagnostic, f)?
         }
         Ok(())
     }
 }
 
+/// Use Display formatting to output without colors: `format!("{diagnostics}")`
 impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self, f)
+        for diagnostic in self.iter() {
+            fmt::Debug::fmt(&diagnostic, f)?
+        }
+        Ok(())
     }
 }
 
