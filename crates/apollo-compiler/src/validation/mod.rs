@@ -455,14 +455,6 @@ impl DiagnosticList {
             .map(|data| data.to_diagnostic(&self.sources))
     }
 
-    /// Returns a human-readable string formatting, without color codes regardless of stderr.
-    ///
-    /// `Display` and `.to_string()` are meant for printing to stderr,
-    /// and will include ANSI color codes if stderr is detected to be a terminal.
-    pub fn to_string_no_color(&self) -> String {
-        format!("{self:#}")
-    }
-
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: impl Into<Details>) {
         self.diagnostics_data.push(DiagnosticData {
             location,

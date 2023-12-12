@@ -39,7 +39,7 @@ type Products {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("variable `undefinedVariable` is not defined"),
         "{errors}"
@@ -72,7 +72,7 @@ type Product {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("unused variable: `unusedVariable`"),
         "{errors}"
@@ -122,7 +122,7 @@ type Product {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("variable `goldStatus` is not defined"),
         "{errors}"

@@ -140,7 +140,7 @@ fn expect_errors(query: &'static str, expect: Expect) {
     let errors = ExecutableDocument::parse_and_validate(schema, unindent(query), "query.graphql")
         .expect_err("should have errors")
         .errors;
-    expect.assert_eq(&errors.to_string_no_color());
+    expect.assert_eq(&errors.to_string());
 }
 
 mod valid_values {

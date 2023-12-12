@@ -61,7 +61,7 @@ query {
         ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
             .unwrap_err()
             .errors;
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("an executable document must not contain an object type definition"),
         "{errors}"
@@ -97,7 +97,7 @@ fragment q on Query {
     let errors = ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
         "{errors}"
@@ -143,7 +143,7 @@ fragment q on TestObject {
         ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
             .unwrap_err()
             .errors;
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
         "{errors}"
@@ -182,7 +182,7 @@ fn validation_without_type_system() {
   ]
 }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("fragment `A` must be used in an operation"),
         "{errors}"
@@ -218,7 +218,7 @@ fn validation_without_type_system() {
   ]
 }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("the fragment `A` is defined multiple times in the document"),
         "{errors}"
@@ -246,7 +246,7 @@ fn validation_without_type_system() {
   ]
 }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("cannot find fragment `A` in this document"),
         "{errors}"

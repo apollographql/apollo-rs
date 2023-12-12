@@ -257,5 +257,5 @@ fn test_invalid_synthetic_node() {
     let expected = expect_test::expect![[r#"
         Error: cannot find type `UndefinedType` in this document
     "#]];
-    expected.assert_eq(&schema.validate().unwrap_err().errors.to_string_no_color());
+    expected.assert_eq(&schema.validate().unwrap_err().errors.to_string());
 }
