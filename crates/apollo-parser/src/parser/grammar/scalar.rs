@@ -1,12 +1,11 @@
-use crate::{
-    parser::grammar::{description, directive, name},
-    Parser, SyntaxKind, TokenKind, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, name};
+use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/October2021/#ScalarTypeDefinition
 ///
 /// *ScalarTypeDefinition*:
-///     Description? **scalar** Name Directives?
+///     Description? **scalar** Name Directives[Const]?
 pub(crate) fn scalar_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
 
@@ -24,14 +23,14 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#ScalarTypeExtension
 ///
 /// *ScalarTypeExtension*:
-///     **extend** **scalar** Name Directives
+///     **extend** **scalar** Name Directives[Const]
 pub(crate) fn scalar_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -43,7 +42,7 @@ pub(crate) fn scalar_type_extension(p: &mut Parser) {
     }
 
     match p.peek() {
-        Some(T![@]) => directive::directives(p),
+        Some(T![@]) => directive::directives(p, Constness::Const),
         _ => p.err("expected Directives"),
     }
 }

@@ -4,52 +4,35 @@
 //! [execution]: https://spec.graphql.org/October2021/#sec-Execution
 //! [response]: https://spec.graphql.org/October2021/#sec-Response
 
-use crate::node::NodeLocation;
-use crate::SourceMap;
+#[macro_use]
+mod resolver;
+mod engine;
+mod input_coercion;
+mod introspection_execute;
+mod introspection_split;
+mod response;
+mod result_coercion;
 
-/// A source location (line and column numbers) for a [`GraphQLError`].
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLLocation {
-    /// The line number for this location, starting at 1 for the first line.
-    pub line: usize,
-    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
-    /// Values) like [`str::chars`].
-    pub column: usize,
-}
+pub use self::input_coercion::coerce_variable_values;
+pub use self::input_coercion::InputCoercionError;
+pub use self::introspection_execute::SchemaIntrospectionQuery;
+pub use self::introspection_split::SchemaIntrospectionError;
+pub use self::introspection_split::SchemaIntrospectionSplit;
+pub use self::response::GraphQLError;
+pub use self::response::GraphQLLocation;
+pub use self::response::Response;
+pub use self::response::ResponseData;
+pub use self::response::ResponseDataPathElement;
+/// Re-export of the version of the `serde_json_bytes` crate used for [`JsonValue`] and [`JsonMap`]
+pub use serde_json_bytes;
 
-/// A serializable error, as found in a GraphQL response.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct GraphQLError {
-    /// The error message.
-    pub message: String,
+/// A JSON-compatible dynamically-typed value.
+///
+/// Note: [`serde_json_bytes::Value`] is similar
+/// to [`serde_json::Value`][serde_json_bytes::serde_json::Value]
+/// but uses its reference-counted [`ByteString`][serde_json_bytes::ByteString]
+/// for string values and map keys.
+pub type JsonValue = serde_json_bytes::Value;
 
-    /// Locations relevant to the error, if any.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub locations: Vec<GraphQLLocation>,
-}
-
-impl GraphQLLocation {
-    /// Convert a `NodeLocation` to a line and column number
-    pub fn from_node(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
-        let loc = location?;
-        let source = sources.get(&loc.file_id)?;
-        source
-            .get_line_column(loc.offset())
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
-    }
-}
-
-impl GraphQLError {
-    pub fn new(
-        message: impl ToString,
-        locations: impl IntoIterator<Item = GraphQLLocation>,
-    ) -> Self {
-        Self {
-            message: message.to_string(),
-            locations: locations.into_iter().collect(),
-        }
-    }
-}
+/// A JSON-compatible object/map with string keys and dynamically-typed values.
+pub type JsonMap = serde_json_bytes::Map<serde_json_bytes::ByteString, JsonValue>;

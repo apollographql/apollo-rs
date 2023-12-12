@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{argument, description, input, name},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{argument, description, input, name};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#DirectiveDefinition
 ///
@@ -170,27 +169,27 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
 
 /// See: https://spec.graphql.org/October2021/#Directive
 ///
-/// *Directive*:
-///     **@** Name Arguments?
-pub(crate) fn directive(p: &mut Parser) {
+/// *Directive[Const]*:
+///     **@** Name Arguments[?Const]?
+pub(crate) fn directive(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE);
 
     p.expect(T![@], S![@]);
     name::name(p);
 
     if let Some(T!['(']) = p.peek() {
-        argument::arguments(p);
+        argument::arguments(p, constness);
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#Directives
 ///
-/// *Directives*:
-///     Directive*
-pub(crate) fn directives(p: &mut Parser) {
+/// *Directives[Const]*:
+///     Directive[?Const]*
+pub(crate) fn directives(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
     while let Some(T![@]) = p.peek() {
-        directive(p);
+        directive(p, constness);
     }
 }
 

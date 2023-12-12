@@ -2,6 +2,8 @@ mod executable;
 mod extensions;
 mod field_set;
 mod field_type;
+mod introspection;
+mod introspection_split;
 mod merge_schemas;
 /// Formerly in src/lib.rs
 mod misc;

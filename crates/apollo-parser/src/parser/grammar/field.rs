@@ -1,9 +1,8 @@
 #![allow(clippy::needless_return)]
 
-use crate::{
-    parser::grammar::{argument, description, directive, name, selection, ty},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{argument, description, directive, name, selection, ty};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#Field
 ///
@@ -22,11 +21,11 @@ pub(crate) fn field(p: &mut Parser) {
     }
 
     if let Some(T!['(']) = p.peek() {
-        argument::arguments(p);
+        argument::arguments(p, Constness::NotConst);
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::NotConst);
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -51,7 +50,7 @@ pub(crate) fn fields_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#FieldDefinition
 ///
 /// *FieldDefinition*:
-///     Description? Name ArgumentsDefinition? **:** Type Directives?
+///     Description? Name ArgumentsDefinition? **:** Type Directives[Const]?
 pub(crate) fn field_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
 
@@ -71,7 +70,7 @@ pub(crate) fn field_definition(p: &mut Parser) {
             Some(TokenKind::Name) | Some(T!['[']) => {
                 ty::ty(p);
                 if let Some(T![@]) = p.peek() {
-                    directive::directives(p);
+                    directive::directives(p, Constness::Const);
                 }
                 if p.peek().is_some() {
                     return;

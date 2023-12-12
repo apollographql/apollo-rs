@@ -1,14 +1,13 @@
 #![allow(clippy::needless_return)]
 
-use crate::{
-    parser::grammar::{description, directive, name, ty},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, name, ty};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#UnionTypeDefinition
 ///
 /// *UnionTypeDefinition*:
-///     Description? **union** Name Directives? UnionDefMemberTypes?
+///     Description? **union** Name Directives[Const]? UnionDefMemberTypes?
 pub(crate) fn union_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_DEFINITION);
 
@@ -26,7 +25,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T![=]) = p.peek() {
@@ -37,8 +36,8 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#UnionTypeExtension
 ///
 /// *UnionTypeExtension*:
-///     **extend** **union** Name Directives? UnionDefMemberTypes
-///     **extend** **union** Name Directives
+///     **extend** **union** Name Directives[Const]? UnionDefMemberTypes
+///     **extend** **union** Name Directives[Const]
 pub(crate) fn union_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -53,7 +52,7 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
 
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T![=]) = p.peek() {

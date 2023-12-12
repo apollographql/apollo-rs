@@ -24,7 +24,7 @@ mod variable;
 use crate::ast::Name;
 use crate::diagnostic::{Diagnostic, DiagnosticReport, ToDiagnostic};
 use crate::executable::BuildError as ExecutableBuildError;
-use crate::execution::{GraphQLError, GraphQLLocation};
+use crate::execution::{GraphQLError, GraphQLLocation, Response};
 use crate::schema::BuildError as SchemaBuildError;
 use crate::Node;
 use crate::SourceMap;
@@ -45,6 +45,7 @@ pub use crate::node::NodeLocation;
 /// * [`Schema::validate`]
 /// * [`ExecutableDocument::parse_and_validate`]
 /// * [`ExecutableDocument::validate`]
+/// * [`coerce_variable_values`][crate::execution::coerce_variable_values]
 ///
 /// … or by explicitly skipping it with [`Valid::assume_valid`].
 ///
@@ -138,6 +139,40 @@ impl<T> fmt::Debug for WithErrors<T> {
 impl<T> fmt::Display for WithErrors<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.errors.fmt(f)
+    }
+}
+
+/// Returned as an error for situtations that should not happen with a valid schema or document.
+///
+/// Since the relevant APIs take [`Valid<_>`][crate::validation::Valid] parameters,
+/// either apollo-compiler has a validation bug
+/// or [`assume_valid`][crate::validation::Valid::assume_valid] was used incorrectly.
+///
+/// Can be [converted][std::convert] to [`GraphQLError`],
+/// which populates [`extensions`][GraphQLError::extensions]
+/// with a `"APOLLO_SUSPECTED_VALIDATION_BUG": true` entry.
+#[derive(Debug, Clone)]
+pub struct SuspectedValidationBug {
+    pub message: String,
+    pub location: Option<NodeLocation>,
+}
+
+impl SuspectedValidationBug {
+    /// Convert into a JSON-serializable error as represented in a GraphQL response
+    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
+        let Self { message, location } = self;
+        let mut err = GraphQLError::new(message, location, sources);
+        err.extensions
+            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
+        err
+    }
+
+    /// Convert into a response with this error as a [request error]
+    /// that prevented execution from starting.
+    ///
+    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
+    pub fn into_response(self, sources: &SourceMap) -> Response {
+        Response::from_request_error(self.into_graphql_error(sources))
     }
 }
 
@@ -386,7 +421,11 @@ impl Diagnostic<&'_ DiagnosticData> {
 
     /// Get serde_json serialisable version of the current diagnostic.
     pub fn to_json(&self) -> GraphQLError {
-        GraphQLError::new(&self.error.details, self.get_line_column())
+        GraphQLError::new(
+            self.error.details.to_string(),
+            self.error.location,
+            &self.sources,
+        )
     }
 }
 
