@@ -42,6 +42,6 @@
             - WHITESPACE@59..60 "\n"
             - R_CURLY@60..61 "}"
     - WHITESPACE@61..62 "\n"
-- ERROR@17:18 "expected a Name" {
-- ERROR@50:51 "expected a Name" {
+- ERROR@17:18 "expected a Name in Type Condition" {
+- ERROR@50:51 "expected a Name in Type Condition" {
 recursion limit: 500, high: 2
