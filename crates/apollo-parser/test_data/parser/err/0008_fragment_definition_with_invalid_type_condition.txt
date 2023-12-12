@@ -25,5 +25,5 @@
                     - IDENT@42..44 "id"
             - WHITESPACE@44..45 "\n"
             - R_CURLY@45..46 "}"
-- ERROR@22:26 "exptected 'on'" User
+- ERROR@22:26 "expected 'on'" User
 recursion limit: 500, high: 1

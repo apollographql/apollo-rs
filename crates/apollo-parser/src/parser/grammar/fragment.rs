@@ -51,8 +51,9 @@ pub(crate) fn type_condition(p: &mut Parser) {
             if p.peek_data().unwrap() == "on" {
                 p.bump(SyntaxKind::on_KW);
             } else {
-                p.err("exptected 'on'");
+                p.err("expected 'on'");
             }
+
             ty::named_type(p)
         }
         _ => p.err("expected Type Condition"),
