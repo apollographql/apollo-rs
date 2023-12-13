@@ -24,7 +24,7 @@ mod variable;
 use crate::ast::Name;
 use crate::diagnostic::{Diagnostic, DiagnosticReport, ToDiagnostic};
 use crate::executable::BuildError as ExecutableBuildError;
-use crate::execution::{GraphQLError, GraphQLLocation, Response};
+use crate::execution::{GraphQLError, Response};
 use crate::schema::BuildError as SchemaBuildError;
 use crate::Node;
 use crate::SourceMap;
@@ -183,8 +183,9 @@ pub struct DiagnosticList {
     diagnostics_data: Vec<DiagnosticData>,
 }
 
-/// TODO(@goto-bus-stop): ideally keep this non public
-#[derive(Clone)]
+// TODO(@goto-bus-stop) Can/should this be non-pub?
+#[derive(thiserror::Error, Debug, Clone)]
+#[error("{details}")]
 pub struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
@@ -410,22 +411,6 @@ impl ToDiagnostic for DiagnosticData {
                 }
             },
         }
-    }
-}
-
-impl Diagnostic<&'_ DiagnosticData> {
-    /// Get the line and column number where this diagnostic was raised.
-    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(&self.sources, self.error.location)
-    }
-
-    /// Get serde_json serialisable version of the current diagnostic.
-    pub fn to_json(&self) -> GraphQLError {
-        GraphQLError::new(
-            self.error.details.to_string(),
-            self.error.location,
-            &self.sources,
-        )
     }
 }
 

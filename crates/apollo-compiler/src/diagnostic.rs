@@ -1,6 +1,8 @@
 //! Pretty-printable diagnostic reports for custom errors that reference GraphQL documents.
 //!
 //! The [`Diagnostic`] type wraps errors that implement [`ToDiagnostic`].
+use crate::execution::GraphQLError;
+use crate::execution::GraphQLLocation;
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
 use crate::SourceFile;
@@ -191,6 +193,19 @@ impl<T: ToDiagnostic> ToDiagnostic for &T {
 }
 
 impl<T: ToDiagnostic> Diagnostic<T> {
+    /// Get the line and column number where this diagnostic was raised.
+    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node(&self.sources, self.error.location())
+    }
+
+    /// Get a [`serde_json`] serialisable version of the current diagnostic.
+    pub fn to_json(&self) -> GraphQLError
+    where
+        T: ToString,
+    {
+        GraphQLError::new(self.error.to_string(), self.error.location(), &self.sources)
+    }
+
     /// Produce the diagnostic report, optionally with colors for the CLI.
     fn report(&self, color: bool) -> DiagnosticReport {
         let mut report = DiagnosticReport::builder(self.sources.clone(), self.error.location())
