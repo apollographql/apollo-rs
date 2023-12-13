@@ -1,10 +1,73 @@
-//! Pretty-printable diagnostic reports for custom errors that reference GraphQL documents.
+//! Pretty-printable diagnostic reports for errors that reference GraphQL documents.
 //!
-//! The [`Diagnostic`] type wraps errors that implement [`ToDiagnostic`].
+//! # Usage
+//! To use pretty-printing in custom errors, implement the [`ToDiagnostic`] trait.
+//!
+//! ```rust
+//! use apollo_compiler::Schema;
+//! use apollo_compiler::ast::Name;
+//! use apollo_compiler::diagnostic::CliReport;
+//! use apollo_compiler::diagnostic::Diagnostic;
+//! use apollo_compiler::diagnostic::NodeLocation;
+//! use apollo_compiler::diagnostic::ToDiagnostic;
+//!
+//! /// Error type for a small GraphQL schema linter.
+//! #[derive(Debug, thiserror::Error)]
+//! enum LintError {
+//!     #[error("{name} should be PascalCase")]
+//!     InvalidCase { name: Name },
+//!     #[error("Missing @specifiedBy directive on scalar {name}")]
+//!     NoSpecifiedBy {
+//!         location: Option<NodeLocation>,
+//!         name: Name,
+//!     },
+//! }
+//!
+//! impl ToDiagnostic for LintError {
+//!     fn location(&self) -> Option<NodeLocation> {
+//!         match self {
+//!             LintError::InvalidCase { name } => name.location(),
+//!             LintError::NoSpecifiedBy { location, .. } => *location,
+//!         }
+//!     }
+//!
+//!     fn report(&self, report: &mut CliReport) {
+//!         match self {
+//!             LintError::InvalidCase { name } => {
+//!                 report.with_label_opt(name.location(), "should be PascalCase");
+//!                 report.with_help(format!("Try using {}", to_pascal_case(name)));
+//!             }
+//!             LintError::NoSpecifiedBy { location, .. } => {
+//!                 report.with_label_opt(*location, "scalar does not have a specification");
+//!             }
+//!         }
+//!     }
+//! }
+//!
+//! # fn to_pascal_case(name: &str) -> String { todo!() }
+//! ```
+//!
+//! The [`Diagnostic`] type wraps errors that implement [`ToDiagnostic`] and provides
+//! the pretty-printing functionality. [`ToDiagnostic::to_diagnostic`] returns a diagnostic
+//! ready for formatting:
+//!
+//! ```rust
+//! # use apollo_compiler::{Schema, diagnostic::{ToDiagnostic, NodeLocation, CliReport}};
+//! # struct LintError {}
+//! # impl ToDiagnostic for LintError {
+//! #     fn location(&self) -> Option<NodeLocation> { None }
+//! #     fn report(&self, _report: &mut CliReport) {}
+//! # }
+//! fn print_errors(schema: &Schema, errors: &[LintError]) {
+//!     for error in errors {
+//!         // Debug-formatting uses colors.
+//!         eprintln!("{:?}", error.to_diagnostic(&schema.sources));
+//!     }
+//! }
+//! ```
 use crate::execution::GraphQLError;
 use crate::execution::GraphQLLocation;
 use crate::validation::FileId;
-use crate::validation::NodeLocation;
 use crate::SourceFile;
 use crate::SourceMap;
 use ariadne::ColorGenerator;
@@ -14,6 +77,8 @@ use std::io;
 use std::ops::Range;
 use std::sync::Arc;
 use std::sync::OnceLock;
+
+pub use crate::validation::NodeLocation;
 
 #[cfg(doc)]
 use crate::{ExecutableDocument, Schema};
@@ -45,20 +110,20 @@ impl io::Write for WriteToFormatter<'_, '_> {
     }
 }
 
-/// A diagnostic report that can be printed to a CLI with pretty colours and labeled lines of
+/// A diagnostic report that can be printed to a CLI with pretty colors and labeled lines of
 /// GraphQL source code.
 ///
 /// Custom errors can use this in their `Display` or `Debug` implementations to build a report and
 /// then write it out with [`fmt`].
 ///
-/// [`fmt`]: DiagnosticReport::fmt
-pub struct DiagnosticReport {
+/// [`fmt`]: CliReport::fmt
+pub struct CliReport {
     sources: SourceMap,
     colors: ColorGenerator,
     report: ariadne::ReportBuilder<'static, MappedSpan>,
 }
 
-impl DiagnosticReport {
+impl CliReport {
     /// Returns a builder for creating diagnostic reports.
     ///
     /// Provide GraphQL source files and the main location for the diagnostic.
@@ -187,7 +252,7 @@ impl<T: ToDiagnostic> ToDiagnostic for &T {
         ToDiagnostic::location(*self)
     }
 
-    fn report(&self, report: &mut DiagnosticReport) {
+    fn report(&self, report: &mut CliReport) {
         ToDiagnostic::report(*self, report)
     }
 }
@@ -198,7 +263,10 @@ impl<T: ToDiagnostic> Diagnostic<T> {
         GraphQLLocation::from_node(&self.sources, self.error.location())
     }
 
-    /// Get a [`serde_json`] serialisable version of the current diagnostic.
+    /// Get a [`serde`]-serializable version of the current diagnostic. The shape is compatible
+    /// with the JSON error shape described in [the GraphQL spec].
+    ///
+    /// [the GraphQL spec]: https://spec.graphql.org/draft/#sec-Errors
     pub fn to_json(&self) -> GraphQLError
     where
         T: ToString,
@@ -207,9 +275,9 @@ impl<T: ToDiagnostic> Diagnostic<T> {
     }
 
     /// Produce the diagnostic report, optionally with colors for the CLI.
-    fn report(&self, color: bool) -> DiagnosticReport {
-        let mut report = DiagnosticReport::builder(self.sources.clone(), self.error.location())
-            .with_color(color);
+    fn report(&self, color: bool) -> CliReport {
+        let mut report =
+            CliReport::builder(self.sources.clone(), self.error.location()).with_color(color);
         self.error.report(&mut report);
         report
     }
@@ -246,10 +314,13 @@ pub trait ToDiagnostic {
     /// the particular error.
     fn location(&self) -> Option<NodeLocation>;
 
-    /// Create a diagnostic report based on this error type.
-    fn report(&self, report: &mut DiagnosticReport);
+    /// Fill in the report with messages and source code labels.
+    fn report(&self, report: &mut CliReport);
 
     /// Returns a pretty-printable diagnostic.
+    ///
+    /// Provide a source map containing files that may be referenced by the diagnostic. Normally
+    /// this comes from [`Schema::sources`] or [`ExecutableDocument::sources`].
     fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>
     where
         Self: Sized,

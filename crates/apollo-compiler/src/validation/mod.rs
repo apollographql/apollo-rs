@@ -22,7 +22,7 @@ mod value;
 mod variable;
 
 use crate::ast::Name;
-use crate::diagnostic::{Diagnostic, DiagnosticReport, ToDiagnostic};
+use crate::diagnostic::{CliReport, Diagnostic, ToDiagnostic};
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::execution::{GraphQLError, Response};
 use crate::schema::BuildError as SchemaBuildError;
@@ -210,7 +210,7 @@ impl ToDiagnostic for DiagnosticData {
         self.location
     }
 
-    fn report(&self, report: &mut DiagnosticReport) {
+    fn report(&self, report: &mut CliReport) {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
             diagnostic.report(report);
             return;

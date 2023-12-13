@@ -1,5 +1,5 @@
 use super::*;
-use crate::diagnostic::DiagnosticReport;
+use crate::diagnostic::CliReport;
 use crate::diagnostic::ToDiagnostic;
 use crate::name;
 use crate::node::NodeLocation;
@@ -1804,7 +1804,7 @@ impl ToDiagnostic for InvalidNameError {
     fn location(&self) -> Option<NodeLocation> {
         self.0.location()
     }
-    fn report(&self, report: &mut DiagnosticReport) {
+    fn report(&self, report: &mut CliReport) {
         report.with_message(self);
         report.with_label_opt(self.0.location(), "cannot be parsed as a GraphQL name");
     }
