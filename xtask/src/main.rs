@@ -30,12 +30,31 @@ struct Xtask {
 pub enum Command {
     /// Perform code generation for the parser
     Codegen(codegen::Codegen),
+    /// Run clippy
+    Lint,
+}
+
+fn run_clippy() -> Result<()> {
+    let sh = Shell::new()?;
+
+    cmd!(sh, "cargo fmt --all -- --check").run()?;
+
+    cmd!(
+        sh,
+        "cargo clippy --all-targets --all-features -- -D warnings"
+    )
+    .run()?;
+
+    cmd!(sh, "cargo clippy --benches").run()?;
+
+    Ok(())
 }
 
 impl Xtask {
     pub fn run(&self) -> Result<()> {
         match &self.command {
             Command::Codegen(command) => command.run(self.verbose),
+            Command::Lint => run_clippy(),
         }?;
 
         Ok(())
