@@ -234,7 +234,6 @@ impl ariadne::Cache<FileId> for Cache<'_> {
 /// A pretty-printable diagnostic.
 pub struct Diagnostic<T> {
     pub sources: SourceMap,
-    pub location: Option<NodeLocation>,
     pub error: T,
 }
 
@@ -327,7 +326,6 @@ pub trait ToDiagnostic {
     {
         Diagnostic {
             sources: sources.clone(),
-            location: self.location(),
             error: self,
         }
     }
