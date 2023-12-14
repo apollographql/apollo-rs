@@ -63,7 +63,7 @@ cargo fmt --all
 To lint your code:
 ```bash
 rustup component add clippy
-cargo clippy
+cargo xtask lint
 ```
 
 ### IDEs
