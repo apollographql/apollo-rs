@@ -1,12 +1,12 @@
 use super::sources::SourceType;
 use super::InputDatabase;
 use crate::ast;
+use crate::schema::Implementers;
 use crate::schema::Name;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
 use crate::validation::WithErrors;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::sync::Arc;
 
 /// Queries for parsing into the various in-memory representations of GraphQL documents
@@ -33,7 +33,7 @@ pub(crate) trait ReprDatabase: InputDatabase {
     /// If that is repeated for multiple interfaces,
     /// gathering them all at once amorticizes that cost.
     #[salsa::invoke(implementers_map)]
-    fn implementers_map(&self) -> Arc<HashMap<Name, HashSet<Name>>>;
+    fn implementers_map(&self) -> Arc<HashMap<Name, Implementers>>;
 }
 
 fn ast(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ast::Document> {
@@ -71,6 +71,6 @@ fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::Exe
     Arc::new(executable)
 }
 
-fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {
+fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, Implementers>> {
     Arc::new(db.schema().implementers_map())
 }
