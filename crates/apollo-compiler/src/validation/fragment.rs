@@ -6,34 +6,37 @@ use crate::validation::operation::OperationValidationConfig;
 use crate::validation::{CycleError, FileId, NodeLocation, RecursionGuard, RecursionStack};
 use crate::Node;
 use crate::ValidationDatabase;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
-fn get_possible_types(
+fn get_possible_types<'a>(
     type_definition: &schema::ExtendedType,
-    implementers_map: &HashMap<ast::Name, Implementers>,
-) -> HashSet<ast::NamedType> {
+    implementers_map: &'a HashMap<ast::Name, Implementers>,
+) -> Cow<'a, HashSet<ast::NamedType>> {
     match type_definition {
         // 1. If `type` is an object type, return a set containing `type`.
         schema::ExtendedType::Object(object) => {
             let mut set = HashSet::new();
             set.insert(object.name.clone());
-            set
+            Cow::Owned(set)
         }
         // 2. If `type` is an interface type, return the set of object types implementing `type`.
         schema::ExtendedType::Interface(interface) => implementers_map
             .get(&interface.name)
-            .map(|implementers| implementers.objects.clone())
+            .map(|implementers| Cow::Borrowed(&implementers.objects))
             .unwrap_or_default(),
         // 3. If `type` is a union type, return the set of possible types of `type`.
-        schema::ExtendedType::Union(union_) => union_
-            .members
-            .iter()
-            .map(|component| component.name.clone())
-            .collect(),
+        schema::ExtendedType::Union(union_) => Cow::Owned(
+            union_
+                .members
+                .iter()
+                .map(|component| component.name.clone())
+                .collect(),
+        ),
         _ => Default::default(),
     }
 }
