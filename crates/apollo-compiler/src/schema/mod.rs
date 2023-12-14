@@ -145,6 +145,37 @@ pub struct InputObjectType {
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
+/// A collection of type names that implement an interface.
+///
+/// Concrete object types and derived interfaces can be accessed separately.
+///
+/// # Examples
+///
+/// ```rust
+/// use apollo_compiler::schema::Implementers;
+/// # let implementers = Implementers::default();
+///
+/// // introspection must return only concrete implementers.
+/// let possible_types = implementers.objects;
+/// ```
+///
+/// ```rust
+/// use apollo_compiler::schema::Implementers;
+/// # let implementers = Implementers::default();
+///
+/// for name in implementers.iter() {
+///     // iterates both concrete objects and interfaces
+///     println!("{name}");
+/// }
+/// ```
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct Implementers {
+    /// Names of the concrete types that implement an interface.
+    pub objects: HashSet<Name>,
+    /// Names of the interfaces that implement an interface.
+    pub interfaces: HashSet<Name>,
+}
+
 /// AST node that has been skipped during conversion to `Schema`
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
@@ -426,22 +457,31 @@ impl Schema {
     /// of all types in the schema.
     /// If that is repeated for multiple interfaces,
     /// gathering them all at once amorticizes that cost.
-    pub fn implementers_map(&self) -> HashMap<Name, HashSet<Name>> {
-        let mut map = HashMap::<Name, HashSet<Name>>::new();
+    pub fn implementers_map(&self) -> HashMap<Name, Implementers> {
+        let mut map = HashMap::<Name, Implementers>::new();
         for (ty_name, ty) in &self.types {
-            let interfaces = match ty {
-                ExtendedType::Object(def) => &def.implements_interfaces,
-                ExtendedType::Interface(def) => &def.implements_interfaces,
+            match ty {
+                ExtendedType::Object(def) => {
+                    for interface in &def.implements_interfaces {
+                        map.entry(interface.name.clone())
+                            .or_default()
+                            .objects
+                            .insert(ty_name.clone());
+                    }
+                }
+                ExtendedType::Interface(def) => {
+                    for interface in &def.implements_interfaces {
+                        map.entry(interface.name.clone())
+                            .or_default()
+                            .interfaces
+                            .insert(ty_name.clone());
+                    }
+                }
                 ExtendedType::Scalar(_)
                 | ExtendedType::Union(_)
                 | ExtendedType::Enum(_)
-                | ExtendedType::InputObject(_) => continue,
+                | ExtendedType::InputObject(_) => (),
             };
-            for interface in interfaces {
-                map.entry(interface.name.clone())
-                    .or_default()
-                    .insert(ty_name.clone());
-            }
         }
         map
     }
@@ -869,6 +909,15 @@ impl PartialEq for Schema {
         *root_operations == other.schema_definition
             && *directive_definitions == other.directive_definitions
             && *types == other.types
+    }
+}
+
+impl Implementers {
+    /// Iterate over all implementers, including objects and interfaces.
+    ///
+    /// The iteration order is unspecified.
+    pub fn iter(&self) -> impl Iterator<Item = &'_ Name> {
+        self.objects.iter().chain(&self.interfaces)
     }
 }
 
