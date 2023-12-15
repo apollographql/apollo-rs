@@ -22,17 +22,15 @@ mod value;
 mod variable;
 
 use crate::ast::Name;
+use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
 use crate::executable::BuildError as ExecutableBuildError;
-use crate::execution::{GraphQLError, GraphQLLocation, Response};
+use crate::execution::{GraphQLError, Response};
 use crate::schema::BuildError as SchemaBuildError;
 use crate::Node;
-use crate::SourceFile;
 use crate::SourceMap;
 use indexmap::IndexSet;
 use std::fmt;
-use std::io;
 use std::sync::Arc;
-use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 pub use crate::database::FileId;
@@ -185,16 +183,12 @@ pub struct DiagnosticList {
     diagnostics_data: Vec<DiagnosticData>,
 }
 
-#[derive(Clone)]
-pub(crate) struct DiagnosticData {
+// TODO(@goto-bus-stop) Can/should this be non-pub?
+#[derive(thiserror::Error, Debug, Clone)]
+#[error("{details}")]
+pub struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
-}
-
-/// A single diagnostic in a [`DiagnosticList`]
-pub struct Diagnostic<'a> {
-    sources: &'a SourceMap,
-    data: &'a DiagnosticData,
 }
 
 #[derive(thiserror::Error, Debug, Clone)]
@@ -211,38 +205,17 @@ pub(crate) enum Details {
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
-impl DiagnosticData {
-    fn report(&self, color: bool) -> ariadne::Report<'static, NodeLocation> {
-        let config = ariadne::Config::default().with_color(color);
+impl ToCliReport for DiagnosticData {
+    fn location(&self) -> Option<NodeLocation> {
+        self.location
+    }
+
+    fn report(&self, report: &mut CliReport) {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
-            return diagnostic.to_report(config);
+            diagnostic.report(report);
+            return;
         }
 
-        let (id, offset) = if let Some(location) = self.location {
-            (location.file_id(), location.offset())
-        } else {
-            (FileId::NONE, 0)
-        };
-
-        let mut report = ariadne::Report::build::<FileId>(ariadne::ReportKind::Error, id, offset)
-            .with_config(config);
-        let mut colors = ariadne::ColorGenerator::new();
-        macro_rules! opt_label {
-            ($location: expr, $message: literal $(, $args: expr )* $(,)?) => {
-                if let Some(location) = $location {
-                    report.add_label(
-                        ariadne::Label::new(*location)
-                            .with_message(format_args!($message $(, $args)*))
-                            .with_color(colors.next()),
-                    )
-                }
-            };
-            ($message: literal $(, $args: expr )* $(,)?) => {
-                opt_label!(&self.location, $message $(, $args)*)
-            };
-        }
-        // Main message from `derive(thiserror::Error)` based on `#[error("…")]` attributes:
-        report.set_message(&self.details);
         // Every case should also have a label at the main location
         // (preferably saying something not completely redundant with the main message)
         // and may have additional labels.
@@ -250,18 +223,19 @@ impl DiagnosticData {
         // so essential information should be in the main message.
         match &self.details {
             Details::CompilerDiagnostic(_) => unreachable!(),
-            Details::ParserLimit { message, .. } => opt_label!("{message}"),
-            Details::SyntaxError { message, .. } => opt_label!("{message}"),
+            Details::ParserLimit { message, .. } => report.with_label_opt(self.location, message),
+            Details::SyntaxError { message, .. } => report.with_label_opt(self.location, message),
             Details::SchemaBuildError(err) => match err {
-                SchemaBuildError::ExecutableDefinition { .. } => {
-                    opt_label!("remove this definition, or use `parse_mixed()`")
-                }
+                SchemaBuildError::ExecutableDefinition { .. } => report.with_label_opt(
+                    self.location,
+                    "remove this definition, or use `parse_mixed()`",
+                ),
                 SchemaBuildError::SchemaDefinitionCollision {
                     previous_location, ..
                 } => {
-                    opt_label!(previous_location, "previous `schema` definition here");
-                    opt_label!("`schema` redefined here");
-                    report.set_help(
+                    report.with_label_opt(*previous_location, "previous `schema` definition here");
+                    report.with_label_opt(self.location, "`schema` redefined here");
+                    report.with_help(
                         "merge this definition with the previous one, or use `extend schema`",
                     );
                 }
@@ -270,38 +244,51 @@ impl DiagnosticData {
                     name,
                     ..
                 } => {
-                    opt_label!(previous_location, "previous definition of `@{name}` here");
-                    opt_label!("`@{name}` redefined here");
-                    report.set_help("remove or rename one of the definitions");
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `@{name}` here"),
+                    );
+                    report.with_label_opt(self.location, format_args!("`@{name}` redefined here"));
+                    report.with_help("remove or rename one of the definitions");
                 }
                 SchemaBuildError::TypeDefinitionCollision {
                     previous_location,
                     name,
                     ..
                 } => {
-                    opt_label!(previous_location, "previous definition of `{name}` here");
-                    opt_label!("`{name}` redefined here");
-                    report.set_help("remove or rename one of the definitions, or use `extend`");
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `{name}` here"),
+                    );
+                    report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
+                    report.with_help("remove or rename one of the definitions, or use `extend`");
                 }
                 SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
-                    opt_label!("remove this scalar definition");
+                    report.with_label_opt(self.location, "remove this scalar definition");
                 }
-                SchemaBuildError::OrphanSchemaExtension { .. } => opt_label!("extension here"),
-                SchemaBuildError::OrphanTypeExtension { .. } => opt_label!("extension here"),
+                SchemaBuildError::OrphanSchemaExtension { .. } => {
+                    report.with_label_opt(self.location, "extension here")
+                }
+                SchemaBuildError::OrphanTypeExtension { .. } => {
+                    report.with_label_opt(self.location, "extension here")
+                }
                 SchemaBuildError::TypeExtensionKindMismatch { def_location, .. } => {
-                    opt_label!(def_location, "type definition");
-                    opt_label!("extension here")
+                    report.with_label_opt(*def_location, "type definition");
+                    report.with_label_opt(self.location, "extension here")
                 }
                 SchemaBuildError::DuplicateRootOperation {
                     previous_location,
                     operation_type,
                     ..
                 } => {
-                    opt_label!(
-                        previous_location,
-                        "previous definition of `{operation_type}` here"
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `{operation_type}` here"),
                     );
-                    opt_label!("`{operation_type}` redefined here");
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("`{operation_type}` redefined here"),
+                    );
                 }
                 SchemaBuildError::DuplicateImplementsInterfaceInObject {
                     name_at_previous_location,
@@ -313,11 +300,14 @@ impl DiagnosticData {
                 } => {
                     let previous_location = &name_at_previous_location.location();
                     let name = name_at_previous_location;
-                    opt_label!(
-                        previous_location,
-                        "previous implementation of `{name}` here"
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous implementation of `{name}` here"),
                     );
-                    opt_label!("`{name}` implemented again here");
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("`{name}` implemented again here"),
+                    );
                 }
                 SchemaBuildError::ObjectFieldNameCollision {
                     name_at_previous_location,
@@ -341,17 +331,21 @@ impl DiagnosticData {
                 } => {
                     let previous_location = &name_at_previous_location.location();
                     let name = name_at_previous_location;
-                    opt_label!(previous_location, "previous definition of `{name}` here");
-                    opt_label!("`{name}` redefined here");
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `{name}` here"),
+                    );
+                    report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                 }
             },
             Details::ExecutableBuildError(err) => match err {
-                ExecutableBuildError::TypeSystemDefinition { .. } => {
-                    opt_label!("remove this definition, or use `parse_mixed()`")
-                }
+                ExecutableBuildError::TypeSystemDefinition { .. } => report.with_label_opt(
+                    self.location,
+                    "remove this definition, or use `parse_mixed()`",
+                ),
                 ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
-                    opt_label!("provide a name for this definition");
-                    report.set_help(
+                    report.with_label_opt(self.location, "provide a name for this definition");
+                    report.with_help(
                         "GraphQL requires operations to be named if the document has more than one",
                     );
                 }
@@ -365,32 +359,36 @@ impl DiagnosticData {
                 } => {
                     let previous_location = &name_at_previous_location.location();
                     let name = name_at_previous_location;
-                    opt_label!(previous_location, "previous definition of `{name}` here");
-                    opt_label!("`{name}` redefined here");
+                    report.with_label_opt(
+                        *previous_location,
+                        format_args!("previous definition of `{name}` here"),
+                    );
+                    report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                 }
                 ExecutableBuildError::UndefinedRootOperation { operation_type, .. } => {
-                    opt_label!(
-                        "`{operation_type}` is not defined in the schema \
-                         and is therefore not supported"
+                    report.with_label_opt(
+                        self.location,
+                        format_args!(
+                            "`{operation_type}` is not defined in the schema and is therefore not supported"
+                        ),
                     );
-                    report.set_help(format_args!(
-                        "consider defining a `{operation_type}` root operation type \
-                         in your schema"
+                    report.with_help(format_args!(
+                        "consider defining a `{operation_type}` root operation type in your schema"
                     ))
                 }
                 ExecutableBuildError::UndefinedTypeInNamedFragmentTypeCondition { .. } => {
-                    opt_label!("type condition here")
+                    report.with_label_opt(self.location, "type condition here")
                 }
                 ExecutableBuildError::UndefinedTypeInInlineFragmentTypeCondition {
                     path, ..
                 } => {
-                    opt_label!("type condition here");
-                    report.set_note(format_args!("path to the inline fragment: `{path} → ...`"))
+                    report.with_label_opt(self.location, "type condition here");
+                    report.with_note(format_args!("path to the inline fragment: `{path} → ...`"))
                 }
                 ExecutableBuildError::SubselectionOnScalarType { path, .. }
                 | ExecutableBuildError::SubselectionOnEnumType { path, .. } => {
-                    opt_label!("remove subselections here");
-                    report.set_note(format_args!("path to the field: `{path}`"))
+                    report.with_label_opt(self.location, "remove subselections here");
+                    report.with_note(format_args!("path to the field: `{path}`"))
                 }
                 ExecutableBuildError::UndefinedField {
                     field_name,
@@ -398,36 +396,18 @@ impl DiagnosticData {
                     path,
                     ..
                 } => {
-                    opt_label!("field `{field_name}` selected here");
-                    opt_label!(&type_name.location(), "type `{type_name}` defined here");
-                    report.set_note(format_args!("path to the field: `{path}`"))
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("field `{field_name}` selected here"),
+                    );
+                    report.with_label_opt(
+                        type_name.location(),
+                        format_args!("type `{type_name}` defined here"),
+                    );
+                    report.with_note(format_args!("path to the field: `{path}`"))
                 }
             },
         }
-        report.finish()
-    }
-}
-
-impl<'a> Diagnostic<'a> {
-    /// Get the line and column number where this diagnostic was raised.
-    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(self.sources, self.data.location)
-    }
-
-    /// Get serde_json serialisable version of the current diagnostic.
-    pub fn to_json(&self) -> GraphQLError {
-        let locations = self.get_line_column().into_iter().collect();
-
-        GraphQLError {
-            message: self.message().to_string(),
-            locations,
-            path: Default::default(),
-            extensions: Default::default(),
-        }
-    }
-
-    pub fn message(&self) -> &impl fmt::Display {
-        &self.data.details
     }
 }
 
@@ -450,19 +430,11 @@ impl DiagnosticList {
 
     pub fn iter(
         &self,
-    ) -> impl Iterator<Item = Diagnostic<'_>> + DoubleEndedIterator + ExactSizeIterator {
-        self.diagnostics_data.iter().map(|data| Diagnostic {
-            sources: &self.sources,
-            data,
-        })
-    }
-
-    /// Returns a human-readable string formatting, without color codes regardless of stderr.
-    ///
-    /// `Display` and `.to_string()` are meant for printing to stderr,
-    /// and will include ANSI color codes if stderr is detected to be a terminal.
-    pub fn to_string_no_color(&self) -> String {
-        format!("{self:#}")
+    ) -> impl Iterator<Item = Diagnostic<'_, DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
+    {
+        self.diagnostics_data
+            .iter()
+            .map(|data| data.to_diagnostic(&self.sources))
     }
 
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: impl Into<Details>) {
@@ -519,106 +491,23 @@ impl DiagnosticList {
     }
 }
 
-/// Defaults to ANSI color codes if stderr is a terminal.
-///
-/// Use alternate formatting to never use colors: `format!("{diagnostics:#}")`
+/// Use Debug formatting to output with colors: `format!("{diagnostics:?}")`
 impl fmt::Display for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
-            diagnostic.fmt(f)?
+            fmt::Display::fmt(&diagnostic, f)?
         }
         Ok(())
     }
 }
 
-/// Defaults to ANSI color codes if stderr is a terminal.
-///
-/// Use alternate formatting to never use colors: `format!("{diagnostic:#}")`
-impl fmt::Display for Diagnostic<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        struct Adaptor<'a, 'b>(&'a mut fmt::Formatter<'b>);
-
-        impl io::Write for Adaptor<'_, '_> {
-            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-                let s = std::str::from_utf8(buf).map_err(|_| io::ErrorKind::Other)?;
-                self.0.write_str(s).map_err(|_| io::ErrorKind::Other)?;
-                Ok(buf.len())
-            }
-
-            fn flush(&mut self) -> io::Result<()> {
-                Ok(())
-            }
-        }
-
-        let color = !f.alternate();
-        self.data
-            .report(color)
-            .write(Cache(self.sources), Adaptor(f))
-            .map_err(|_| fmt::Error)
-    }
-}
-
-struct Cache<'a>(&'a SourceMap);
-
-impl ariadne::Cache<FileId> for Cache<'_> {
-    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
-        struct NotFound(FileId);
-        impl fmt::Debug for NotFound {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                write!(f, "source file not found: {:?}", self.0)
-            }
-        }
-        if let Some(source_file) = self.0.get(file_id) {
-            Ok(source_file.ariadne())
-        } else if *file_id == FileId::NONE || *file_id == FileId::HACK_TMP {
-            static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
-            Ok(EMPTY.get_or_init(|| ariadne::Source::from("")))
-        } else {
-            Err(Box::new(NotFound(*file_id)))
-        }
-    }
-
-    fn display<'a>(&self, file_id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
-        if *file_id != FileId::NONE {
-            struct Path(Arc<SourceFile>);
-            impl fmt::Display for Path {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.0.path().display().fmt(f)
-                }
-            }
-            let source_file = self.0.get(file_id)?;
-            Some(Box::new(Path(source_file.clone())))
-        } else {
-            struct NoSourceFile;
-            impl fmt::Display for NoSourceFile {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    f.write_str("(no source file)")
-                }
-            }
-            Some(Box::new(NoSourceFile))
-        }
-    }
-}
-
+/// Use Display formatting to output without colors: `format!("{diagnostics}")`
 impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self, f)
-    }
-}
-
-impl ariadne::Span for NodeLocation {
-    type SourceId = FileId;
-
-    fn source(&self) -> &FileId {
-        &self.file_id
-    }
-
-    fn start(&self) -> usize {
-        self.offset()
-    }
-
-    fn end(&self) -> usize {
-        self.end_offset()
+        for diagnostic in self.iter() {
+            fmt::Debug::fmt(&diagnostic, f)?
+        }
+        Ok(())
     }
 }
 

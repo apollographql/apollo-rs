@@ -4,6 +4,7 @@
 mod macros;
 pub mod ast;
 mod database;
+pub mod diagnostic;
 mod diagnostics;
 pub mod executable;
 pub mod execution;

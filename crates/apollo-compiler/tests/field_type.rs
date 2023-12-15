@@ -17,7 +17,7 @@ fn test_invalid_field_type() {
     match Type::parse(input, "field_type.graphql") {
         Ok(parsed) => panic!("Field type should fail to parse, instead got `{parsed}`"),
         Err(errors) => {
-            let errors = errors.to_string_no_color();
+            let errors = errors.to_string();
             assert!(
                 errors.contains("Error: syntax error: expected R_BRACK, got EOF"),
                 "{errors}"
@@ -29,7 +29,7 @@ fn test_invalid_field_type() {
     match Type::parse(input, "field_type.graphql") {
         Ok(parsed) => panic!("Field type should fail to parse, instead got `{parsed}`"),
         Err(diag) => {
-            let errors = diag.to_string_no_color();
+            let errors = diag.to_string();
             assert!(errors.contains("expected item type"), "{errors}");
             assert!(errors.contains("expected R_BRACK, got EOF"), "{errors}");
         }

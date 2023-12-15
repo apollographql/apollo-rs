@@ -23,7 +23,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let errors = Schema::parse_and_validate(input, "schema.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors
             .contains("duplicate definitions for the `name` field of interface type `NamedEntity`"),
@@ -58,7 +58,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let errors = Schema::parse_and_validate(input, "schema.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("the type `NamedEntity` is defined multiple times"),
         "{errors}"
@@ -86,7 +86,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let errors = Schema::parse_and_validate(input, "schema.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("interface NamedEntity cannot implement itself"),
         "{errors}"
@@ -107,7 +107,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let errors = Schema::parse_and_validate(input, "schema.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("cannot find type `NewEntity` in this document"),
         "{errors}"
@@ -138,7 +138,7 @@ interface Image implements Resource & Node {
     let errors = Schema::parse_and_validate(input, "schema.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("type does not satisfy interface `Resource`: missing field `width`"),
         "{errors}"
@@ -202,7 +202,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let errors = parse_mixed_validate(input, "doc.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("`coordinates` field must return an output type"),
         "{errors}"

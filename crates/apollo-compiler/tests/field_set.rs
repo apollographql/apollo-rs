@@ -35,7 +35,7 @@ fn test_invalid_field_sets() {
     let errors = FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("type `Query` does not have a field `name`"),
         "{errors}"
@@ -45,7 +45,7 @@ fn test_invalid_field_sets() {
     let errors = FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("interface, union and object types must have a subselection set"),
         "{errors}"
@@ -59,7 +59,7 @@ fn test_invalid_field_sets() {
     let errors = FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("the argument `arg` is not supported"),
         "{errors}"

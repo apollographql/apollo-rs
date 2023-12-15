@@ -114,7 +114,7 @@ fn long_fragment_chains_do_not_overflow_stack() {
             │                      ╰──────────── fragment references a very long chain of fragments
         ────╯
     "#]];
-    expected.assert_eq(&errors.to_string_no_color());
+    expected.assert_eq(&errors.to_string());
 }
 
 #[test]

@@ -13,7 +13,7 @@ fn test_orphan_extensions() {
     let invalid = Schema::parse_and_validate(input, "schema.graphql").unwrap_err();
     assert!(!invalid.partial.schema_definition.directives.has("dir"));
     assert!(!invalid.partial.types.contains_key("Obj"));
-    let err = invalid.errors.to_string_no_color();
+    let err = invalid.errors.to_string();
     assert!(
         err.contains("schema extension without a schema definition"),
         "{err}"
@@ -50,7 +50,7 @@ fn test_orphan_extensions_kind_mismatch() {
     let type_def = &invalid.partial.types["T"];
     assert!(type_def.is_object());
     assert_eq!(type_def.directives().get_all("dir").count(), 1);
-    let err = invalid.errors.to_string_no_color();
+    let err = invalid.errors.to_string();
     assert!(
         err.contains("adding an interface type extension, but `T` is an object type"),
         "{err}"

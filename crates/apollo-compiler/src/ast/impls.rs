@@ -1,4 +1,6 @@
 use super::*;
+use crate::diagnostic::CliReport;
+use crate::diagnostic::ToCliReport;
 use crate::name;
 use crate::node::NodeLocation;
 use crate::schema::ComponentName;
@@ -1795,6 +1797,15 @@ impl PartialOrd<str> for Name {
 impl PartialOrd<&'_ str> for Name {
     fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(*other)
+    }
+}
+
+impl ToCliReport for InvalidNameError {
+    fn location(&self) -> Option<NodeLocation> {
+        self.0.location()
+    }
+    fn report(&self, report: &mut CliReport) {
+        report.with_label_opt(self.0.location(), "cannot be parsed as a GraphQL name");
     }
 }
 
