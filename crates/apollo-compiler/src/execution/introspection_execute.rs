@@ -111,7 +111,6 @@ impl SchemaIntrospectionQuery {
             &mut errors,
             path,
             ExecutionMode::Normal,
-            object_type_name,
             object_type_def,
             initial_value,
             &operation.selection_set.selections,

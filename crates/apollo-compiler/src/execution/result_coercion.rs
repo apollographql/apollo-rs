@@ -182,7 +182,7 @@ pub(crate) fn complete_value<'a, 'b>(
         }
         ResolvedValue::Object(resolved_obj) => resolved_obj,
     };
-    let (object_type_name, object_type) = match ty_def {
+    let object_type = match ty_def {
         ExtendedType::InputObject(_) => unreachable!(), // early return above
         ExtendedType::Enum(_) | ExtendedType::Scalar(_) => {
             field_error!(
@@ -193,7 +193,7 @@ pub(crate) fn complete_value<'a, 'b>(
         ExtendedType::Interface(_) | ExtendedType::Union(_) => {
             let object_type_name = resolved_obj.type_name();
             if let Some(def) = schema.get_object(object_type_name) {
-                (object_type_name, def)
+                def
             } else {
                 field_error!(
                     "Resolver returned an object of type {object_type_name} \
@@ -203,7 +203,7 @@ pub(crate) fn complete_value<'a, 'b>(
         }
         ExtendedType::Object(def) => {
             debug_assert_eq!(ty_name, resolved_obj.type_name());
-            (ty_name.as_str(), def)
+            def
         }
     };
     execute_selection_set(
@@ -213,7 +213,6 @@ pub(crate) fn complete_value<'a, 'b>(
         errors,
         path,
         mode,
-        object_type_name,
         object_type,
         &*resolved_obj,
         fields
