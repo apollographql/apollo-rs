@@ -433,7 +433,7 @@ impl DiagnosticList {
 
     pub fn iter(
         &self,
-    ) -> impl Iterator<Item = Diagnostic<&'_ DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
+    ) -> impl Iterator<Item = Diagnostic<'_, DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
     {
         self.diagnostics_data
             .iter()

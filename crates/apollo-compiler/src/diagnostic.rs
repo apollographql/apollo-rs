@@ -31,7 +31,7 @@
 //!         }
 //!     }
 //!
-//!     fn report(&self, report: &mut CliReport) {
+//!     fn report(&self, report: &mut CliReport<'_>) {
 //!         match self {
 //!             LintError::InvalidCase { name } => {
 //!                 report.with_label_opt(name.location(), "should be PascalCase");
@@ -84,9 +84,9 @@ pub use crate::validation::NodeLocation;
 use crate::{ExecutableDocument, Schema};
 
 /// A pretty-printable diagnostic.
-pub struct Diagnostic<T> {
-    pub sources: SourceMap,
-    pub error: T,
+pub struct Diagnostic<'s, T> {
+    pub sources: &'s SourceMap,
+    pub error: &'s T,
 }
 
 /// A diagnostic report that can be printed to a CLI with pretty colors and labeled lines of
@@ -96,8 +96,8 @@ pub struct Diagnostic<T> {
 /// then write it out with [`fmt`].
 ///
 /// [`fmt`]: CliReport::fmt
-pub struct CliReport {
-    sources: SourceMap,
+pub struct CliReport<'s> {
+    sources: &'s SourceMap,
     colors: ColorGenerator,
     report: ariadne::ReportBuilder<'static, MappedSpan>,
 }
@@ -118,26 +118,21 @@ pub trait ToDiagnostic {
     fn location(&self) -> Option<NodeLocation>;
 
     /// Fill in the report with messages and source code labels.
-    fn report(&self, report: &mut CliReport);
+    fn report(&self, report: &mut CliReport<'_>);
 
     /// Returns a pretty-printable diagnostic.
     ///
     /// Provide a source map containing files that may be referenced by the diagnostic. Normally
     /// this comes from [`Schema::sources`] or [`ExecutableDocument::sources`].
-    fn to_diagnostic(self, sources: &SourceMap) -> Diagnostic<Self>
+    fn to_diagnostic<'s>(&'s self, sources: &'s SourceMap) -> Diagnostic<'s, Self>
     where
         Self: Sized,
     {
         Diagnostic {
-            sources: sources.clone(),
+            sources,
             error: self,
         }
     }
-}
-
-/// Extension trait adding a convenience method to Results to turn the error branch into a pretty-printable [`Diagnostic`].
-pub trait ResultExt<T, E> {
-    fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>>;
 }
 
 type MappedSpan = (FileId, Range<usize>);
@@ -167,14 +162,14 @@ impl io::Write for WriteToFormatter<'_, '_> {
     }
 }
 
-impl CliReport {
+impl<'s> CliReport<'s> {
     /// Returns a builder for creating diagnostic reports.
     ///
     /// Provide GraphQL source files and the main location for the diagnostic.
     /// Source files can be obtained from [`Schema::sources`] or [`ExecutableDocument::sources`].
-    pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> Self {
+    pub fn builder(sources: &'s SourceMap, location: Option<NodeLocation>) -> Self {
         let (file_id, range) = location
-            .and_then(|location| map_span(&sources, location))
+            .and_then(|location| map_span(sources, location))
             .unwrap_or((FileId::NONE, 0..0));
         Self {
             sources,
@@ -215,7 +210,7 @@ impl CliReport {
 
     /// Add a label at a given location. If the location is `None`, the message is discarded.
     pub fn with_label_opt(&mut self, location: Option<NodeLocation>, message: impl ToString) {
-        if let Some(mapped_span) = location.and_then(|location| map_span(&self.sources, location)) {
+        if let Some(mapped_span) = location.and_then(|location| map_span(self.sources, location)) {
             self.report.add_label(
                 ariadne::Label::new(mapped_span)
                     .with_message(message)
@@ -229,7 +224,7 @@ impl CliReport {
     /// [`Write`]: std::io::Write
     pub fn write(self, w: impl std::io::Write) -> std::io::Result<()> {
         let report = self.report.finish();
-        report.write(Cache(&self.sources), w)
+        report.write(Cache(self.sources), w)
     }
 
     /// Write the report to a [`fmt::Formatter`].
@@ -280,14 +275,14 @@ impl ariadne::Cache<FileId> for Cache<'_> {
     }
 }
 
-impl<T> std::ops::Deref for Diagnostic<T> {
+impl<T> std::ops::Deref for Diagnostic<'_, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
-        &self.error
+        self.error
     }
 }
 
-impl<T: std::error::Error + ToDiagnostic> std::error::Error for Diagnostic<T> {}
+impl<T: std::error::Error + ToDiagnostic> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToDiagnostic> ToDiagnostic for &T {
     fn location(&self) -> Option<NodeLocation> {
@@ -299,10 +294,10 @@ impl<T: ToDiagnostic> ToDiagnostic for &T {
     }
 }
 
-impl<T: ToDiagnostic> Diagnostic<T> {
+impl<T: ToDiagnostic> Diagnostic<'_, T> {
     /// Get the line and column number where this diagnostic was raised.
     pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(&self.sources, self.error.location())
+        GraphQLLocation::from_node(self.sources, self.error.location())
     }
 
     /// Get a [`serde`]-serializable version of the current diagnostic. The shape is compatible
@@ -313,13 +308,12 @@ impl<T: ToDiagnostic> Diagnostic<T> {
     where
         T: ToString,
     {
-        GraphQLError::new(self.error.to_string(), self.error.location(), &self.sources)
+        GraphQLError::new(self.error.to_string(), self.error.location(), self.sources)
     }
 
     /// Produce the diagnostic report, optionally with colors for the CLI.
-    fn report(&self, color: Color) -> CliReport {
-        let mut report =
-            CliReport::builder(self.sources.clone(), self.error.location()).with_color(color);
+    fn report(&self, color: Color) -> CliReport<'_> {
+        let mut report = CliReport::builder(self.sources, self.error.location()).with_color(color);
         self.error.report(&mut report);
         report
     }
@@ -332,7 +326,7 @@ impl<T: ToDiagnostic> Diagnostic<T> {
     }
 }
 
-impl<T: ToDiagnostic> fmt::Debug for Diagnostic<T> {
+impl<T: ToDiagnostic> fmt::Debug for Diagnostic<'_, T> {
     /// Pretty-format the diagnostic, with colors for the CLI.
     ///
     /// The debug formatting expects to be written to stderr and ANSI colors are used if stderr is
@@ -344,18 +338,11 @@ impl<T: ToDiagnostic> fmt::Debug for Diagnostic<T> {
     }
 }
 
-impl<T: ToDiagnostic> fmt::Display for Diagnostic<T> {
+impl<T: ToDiagnostic> fmt::Display for Diagnostic<'_, T> {
     /// Pretty-format the diagnostic without colors.
     ///
     /// To output *with* colors, format with `Debug`: `eprintln!("{diagnostic:?}")`
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.report(Color::Never).fmt(f)
-    }
-}
-
-impl<T, E: ToDiagnostic> ResultExt<T, E> for Result<T, E> {
-    /// Turns the `Err()` branch into a pretty-printable diagnostic.
-    fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>> {
-        self.map_err(|error| error.to_diagnostic(sources))
     }
 }
