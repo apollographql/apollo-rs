@@ -82,6 +82,7 @@ pub use crate::validation::NodeLocation;
 
 #[cfg(doc)]
 use crate::{ExecutableDocument, Schema};
+use std::cell::Cell;
 
 /// An error bundled together with a source map, for conversion either
 /// to a pretty-printable CLI report or to a JSON-serializable GraphQL error.
@@ -256,6 +257,19 @@ impl<'s> CliReport<'s> {
     /// Write the report to a [`fmt::Formatter`].
     pub fn fmt(self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.write(WriteToFormatter { f }).map_err(|_| fmt::Error)
+    }
+
+    /// Write the report to a new [`String`]
+    pub fn into_string(self) -> String {
+        struct OneTimeDisplay<'s>(Cell<Option<CliReport<'s>>>);
+
+        impl fmt::Display for OneTimeDisplay<'_> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                self.0.take().unwrap().fmt(f)
+            }
+        }
+
+        OneTimeDisplay(Cell::new(Some(self))).to_string()
     }
 }
 
