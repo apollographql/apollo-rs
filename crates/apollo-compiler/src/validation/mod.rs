@@ -216,9 +216,6 @@ impl ToCliReport for DiagnosticData {
             return;
         }
 
-        // Main message from `derive(thiserror::Error)` based on `#[error("…")]` attributes:
-        report.with_message(&self.details);
-
         // Every case should also have a label at the main location
         // (preferably saying something not completely redundant with the main message)
         // and may have additional labels.

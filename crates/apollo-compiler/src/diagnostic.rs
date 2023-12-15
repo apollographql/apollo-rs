@@ -53,6 +53,8 @@
 //!
 //! ```rust
 //! # use apollo_compiler::{Schema, diagnostic::{ToCliReport, NodeLocation, CliReport}};
+//! # #[derive(Debug, thiserror::Error)]
+//! # #[error("")]
 //! # struct LintError {}
 //! # impl ToCliReport for LintError {
 //! #     fn location(&self) -> Option<NodeLocation> { None }
@@ -123,16 +125,19 @@ pub enum Color {
 }
 
 /// Conversion to [`CliReport`]
-pub trait ToCliReport {
+pub trait ToCliReport: fmt::Display {
     /// Return the main location for this error. May be `None` if a location doesn't make sense for
     /// the particular error.
     fn location(&self) -> Option<NodeLocation>;
 
-    /// Fill in the report with messages and source code labels.
+    /// Fill in the report with source code labels.
+    ///
+    /// The main message is already set to the output of [`fmt::Display`].
     fn report(&self, report: &mut CliReport<'_>);
 
     fn to_report<'s>(&self, sources: &'s SourceMap, color: Color) -> CliReport<'s> {
         let mut report = CliReport::builder(sources, self.location(), color);
+        report.with_message(self);
         self.report(&mut report);
         report
     }
