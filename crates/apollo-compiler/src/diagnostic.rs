@@ -117,20 +117,20 @@ impl io::Write for WriteToFormatter<'_, '_> {
 /// then write it out with [`fmt`].
 ///
 /// [`fmt`]: CliReport::fmt
-pub struct CliReport {
-    sources: SourceMap,
+pub struct CliReport<'s> {
+    sources: &'s SourceMap,
     colors: ColorGenerator,
     report: ariadne::ReportBuilder<'static, MappedSpan>,
 }
 
-impl CliReport {
+impl<'s> CliReport<'s> {
     /// Returns a builder for creating diagnostic reports.
     ///
     /// Provide GraphQL source files and the main location for the diagnostic.
     /// Source files can be obtained from [`Schema::sources`] or [`ExecutableDocument::sources`].
-    pub fn builder(sources: SourceMap, location: Option<NodeLocation>) -> Self {
+    pub fn builder(sources: &'s SourceMap, location: Option<NodeLocation>) -> Self {
         let (file_id, range) = location
-            .and_then(|location| map_span(&sources, location))
+            .and_then(|location| map_span(sources, location))
             .unwrap_or((FileId::NONE, 0..0));
         Self {
             sources,
@@ -166,7 +166,7 @@ impl CliReport {
 
     /// Add a label at a given location. If the location is `None`, the message is discarded.
     pub fn with_label_opt(&mut self, location: Option<NodeLocation>, message: impl ToString) {
-        if let Some(mapped_span) = location.and_then(|location| map_span(&self.sources, location)) {
+        if let Some(mapped_span) = location.and_then(|location| map_span(self.sources, location)) {
             self.report.add_label(
                 ariadne::Label::new(mapped_span)
                     .with_message(message)
@@ -180,7 +180,7 @@ impl CliReport {
     /// [`Write`]: std::io::Write
     pub fn write(self, w: impl std::io::Write) -> std::io::Result<()> {
         let report = self.report.finish();
-        report.write(Cache(&self.sources), w)
+        report.write(Cache(self.sources), w)
     }
 
     /// Write the report to a [`fmt::Formatter`].
@@ -275,8 +275,7 @@ impl<T: ToDiagnostic> Diagnostic<T> {
 
     /// Produce the diagnostic report, optionally with colors for the CLI.
     fn report(&self, color: bool) -> CliReport {
-        let mut report =
-            CliReport::builder(self.sources.clone(), self.error.location()).with_color(color);
+        let mut report = CliReport::builder(&self.sources, self.error.location()).with_color(color);
         self.error.report(&mut report);
         report
     }
