@@ -102,6 +102,15 @@ pub struct CliReport {
     report: ariadne::ReportBuilder<'static, MappedSpan>,
 }
 
+/// Indicate when to use ANSI colors for printing.
+#[derive(Debug, Clone, Copy)]
+pub enum Color {
+    /// Do not use colors.
+    Never,
+    /// Use colors if stderr is a terminal.
+    StderrIsTerminal,
+}
+
 /// Trait for pretty-printing custom error types.
 pub trait ToDiagnostic {
     /// Return the main location for this error. May be `None` if a location doesn't make sense for
@@ -174,11 +183,16 @@ impl CliReport {
         }
     }
 
-    fn with_color(self, color: bool) -> Self {
+    fn with_color(self, color: Color) -> Self {
+        let enable_color = match color {
+            Color::Never => false,
+            // Rely on ariadne's `auto-color` feature, which uses `concolor` to enable colors
+            // only if stderr is a terminal.
+            Color::StderrIsTerminal => true,
+        };
+        let config = ariadne::Config::default().with_color(enable_color);
         Self {
-            report: self
-                .report
-                .with_config(ariadne::Config::default().with_color(color)),
+            report: self.report.with_config(config),
             ..self
         }
     }
@@ -303,7 +317,7 @@ impl<T: ToDiagnostic> Diagnostic<T> {
     }
 
     /// Produce the diagnostic report, optionally with colors for the CLI.
-    fn report(&self, color: bool) -> CliReport {
+    fn report(&self, color: Color) -> CliReport {
         let mut report =
             CliReport::builder(self.sources.clone(), self.error.location()).with_color(color);
         self.error.report(&mut report);
@@ -313,7 +327,7 @@ impl<T: ToDiagnostic> Diagnostic<T> {
     /// Pretty-print the diagnostic to a [`Write`].
     ///
     /// [`Write`]: std::io::Write
-    pub fn write(&self, color: bool, w: impl std::io::Write) -> std::io::Result<()> {
+    pub fn write(&self, color: Color, w: impl std::io::Write) -> std::io::Result<()> {
         self.report(color).write(w)
     }
 }
@@ -326,7 +340,7 @@ impl<T: ToDiagnostic> fmt::Debug for Diagnostic<T> {
     ///
     /// To output *without* colors, format with `Display`: `format!("{diagnostic}")`
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.report(true).fmt(f)
+        self.report(Color::StderrIsTerminal).fmt(f)
     }
 }
 
@@ -335,11 +349,12 @@ impl<T: ToDiagnostic> fmt::Display for Diagnostic<T> {
     ///
     /// To output *with* colors, format with `Debug`: `eprintln!("{diagnostic:?}")`
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.report(false).fmt(f)
+        self.report(Color::Never).fmt(f)
     }
 }
 
 impl<T, E: ToDiagnostic> ResultExt<T, E> for Result<T, E> {
+    /// Turns the `Err()` branch into a pretty-printable diagnostic.
     fn to_diagnostic(self, sources: &SourceMap) -> Result<T, Diagnostic<E>> {
         self.map_err(|error| error.to_diagnostic(sources))
     }
