@@ -1,6 +1,6 @@
 use super::*;
 use crate::diagnostic::CliReport;
-use crate::diagnostic::ToDiagnostic;
+use crate::diagnostic::ToCliReport;
 use crate::name;
 use crate::node::NodeLocation;
 use crate::schema::ComponentName;
@@ -1800,7 +1800,7 @@ impl PartialOrd<&'_ str> for Name {
     }
 }
 
-impl ToDiagnostic for InvalidNameError {
+impl ToCliReport for InvalidNameError {
     fn location(&self) -> Option<NodeLocation> {
         self.0.location()
     }
