@@ -132,7 +132,7 @@ pub trait ToCliReport {
     fn report(&self, report: &mut CliReport<'_>);
 
     fn to_report<'s>(&self, sources: &'s SourceMap, color: Color) -> CliReport<'s> {
-        let mut report = CliReport::builder(sources, self.location()).with_color(color);
+        let mut report = CliReport::builder(sources, self.location(), color);
         self.report(&mut report);
         report
     }
@@ -194,18 +194,15 @@ impl<'s> CliReport<'s> {
     ///
     /// Provide GraphQL source files and the main location for the diagnostic.
     /// Source files can be obtained from [`Schema::sources`] or [`ExecutableDocument::sources`].
-    pub fn builder(sources: &'s SourceMap, location: Option<NodeLocation>) -> Self {
-        let (file_id, range) = location
+    pub fn builder(
+        sources: &'s SourceMap,
+        main_location: Option<NodeLocation>,
+        color: Color,
+    ) -> Self {
+        let (file_id, range) = main_location
             .and_then(|location| map_span(sources, location))
             .unwrap_or((FileId::NONE, 0..0));
-        Self {
-            sources,
-            colors: ColorGenerator::new(),
-            report: ariadne::Report::build(ReportKind::Error, file_id, range.start),
-        }
-    }
-
-    fn with_color(self, color: Color) -> Self {
+        let report = ariadne::Report::build(ReportKind::Error, file_id, range.start);
         let enable_color = match color {
             Color::Never => false,
             // Rely on ariadne's `auto-color` feature, which uses `concolor` to enable colors
@@ -214,8 +211,9 @@ impl<'s> CliReport<'s> {
         };
         let config = ariadne::Config::default().with_color(enable_color);
         Self {
-            report: self.report.with_config(config),
-            ..self
+            sources,
+            colors: ColorGenerator::new(),
+            report: report.with_config(config),
         }
     }
 
