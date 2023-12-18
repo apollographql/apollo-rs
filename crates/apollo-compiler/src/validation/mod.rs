@@ -204,7 +204,7 @@ pub(crate) enum Details {
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
     // TODO: Merge ValidationError into this enum
-    #[error("compiler error: {0}")]
+    #[error(transparent)]
     CompilerDiagnostic(diagnostics::ValidationError),
 }
 

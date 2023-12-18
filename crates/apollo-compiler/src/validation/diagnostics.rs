@@ -326,8 +326,6 @@ pub(crate) enum DiagnosticData {
 
 impl ValidationError {
     pub(crate) fn report(&self, report: &mut CliReport) {
-        report.with_message(&self.data);
-
         match &*self.data {
             DiagnosticData::UniqueVariable {
                 name,
