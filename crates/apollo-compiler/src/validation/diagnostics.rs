@@ -12,15 +12,12 @@ use thiserror::Error;
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub(crate) struct ValidationError {
     pub location: Option<NodeLocation>,
-    pub data: Box<DiagnosticData>,
+    pub data: DiagnosticData,
 }
 
 impl ValidationError {
     pub fn new(location: Option<NodeLocation>, data: DiagnosticData) -> Self {
-        Self {
-            location,
-            data: Box::new(data),
-        }
+        Self { location, data }
     }
 }
 
@@ -326,7 +323,7 @@ pub(crate) enum DiagnosticData {
 
 impl ValidationError {
     pub(crate) fn report(&self, report: &mut CliReport) {
-        match &*self.data {
+        match &self.data {
             DiagnosticData::UniqueVariable {
                 name,
                 original_definition,
