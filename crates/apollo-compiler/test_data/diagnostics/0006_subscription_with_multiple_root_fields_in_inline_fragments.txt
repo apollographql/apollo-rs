@@ -1,4 +1,4 @@
-Error: subscription operations can only have one root field
+Error: subscription `sub` can only have one root field
    ╭─[0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql:1:1]
    │
  1 │ ╭─▶ subscription sub {

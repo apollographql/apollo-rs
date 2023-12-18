@@ -40,6 +40,7 @@ pub(crate) fn validate_operation(
             diagnostics.push(ValidationError::new(
                 operation.location(),
                 DiagnosticData::SingleRootField {
+                    name: operation.name.clone(),
                     fields: fields
                         .iter()
                         .map(|field| field.field.name.clone())
@@ -61,6 +62,7 @@ pub(crate) fn validate_operation(
             diagnostics.push(ValidationError::new(
                 field.location(),
                 DiagnosticData::IntrospectionField {
+                    name: operation.name.clone(),
                     field: field.name.clone(),
                 },
             ));

@@ -52,8 +52,14 @@ pub(crate) enum DiagnosticData {
         original_definition: Option<NodeLocation>,
         redefined_definition: Option<NodeLocation>,
     },
-    #[error("subscription operations can only have one root field")]
-    SingleRootField { fields: Vec<Name> },
+    #[error(
+        "{} can only have one root field",
+        subscription_name_or_anonymous(&name),
+    )]
+    SingleRootField {
+        name: Option<Name>,
+        fields: Vec<Name>,
+    },
     #[error("the argument `{name}` is not supported by `{coordinate}`")]
     UndefinedArgument {
         name: Name,
@@ -202,8 +208,13 @@ pub(crate) enum DiagnosticData {
         name: Name,
         original_application: Option<NodeLocation>,
     },
-    #[error("subscription operations can not have an introspection field as a root field")]
+    #[error(
+        "{} can not have an introspection field as a root field",
+        subscription_name_or_anonymous(&name),
+    )]
     IntrospectionField {
+        /// Name of the operation
+        name: Option<Name>,
         /// Name of the field
         field: Name,
     },
@@ -244,10 +255,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error(
         "{} must have a composite type in its type condition",
-        .name.as_ref().map_or_else(
-            || "inline fragment".to_string(),
-            |name| format!("fragment `{name}`"),
-        ),
+        fragment_name_or_inline(&name),
     )]
     InvalidFragmentTarget {
         /// Name of the fragment, None if an inline fragment.
@@ -257,10 +265,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error(
         "{} with type condition `{type_condition}` cannot be applied to `{type_name}`",
-        .name.as_ref().map_or_else(
-            || "inline fragment".to_string(),
-            |name| format!("fragment `{name}`"),
-        ),
+        fragment_name_or_inline(&name),
     )]
     InvalidFragmentSpread {
         /// Fragment name or None if it's an inline fragment
@@ -372,7 +377,7 @@ impl ValidationError {
                     "`{name}` must only be defined once in this argument list or input object definition."
                 ));
             }
-            DiagnosticData::SingleRootField { fields } => {
+            DiagnosticData::SingleRootField { fields, .. } => {
                 report.with_label_opt(
                     self.location,
                     format_args!("subscription with {} root fields", fields.len()),
@@ -626,7 +631,7 @@ impl ValidationError {
                     format_args!("directive `@{name}` called again here"),
                 );
             }
-            DiagnosticData::IntrospectionField { field } => {
+            DiagnosticData::IntrospectionField { field, .. } => {
                 report.with_label_opt(
                     self.location,
                     format_args!("{field} is an introspection field"),
@@ -810,5 +815,37 @@ where
             element.fmt(f)?;
         }
         Ok(())
+    }
+}
+
+struct NameOrAnon<'a, T> {
+    name: Option<&'a T>,
+    if_some_prefix: &'a str,
+    if_none: &'a str,
+}
+impl<'a, T> fmt::Display for NameOrAnon<'a, T>
+where
+    T: fmt::Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.name {
+            Some(name) => write!(f, "{} `{}`", self.if_some_prefix, name),
+            None => f.write_str(self.if_none),
+        }
+    }
+}
+
+fn fragment_name_or_inline<'a, T>(name: &'a Option<T>) -> NameOrAnon<'a, T> {
+    NameOrAnon {
+        name: name.as_ref(),
+        if_some_prefix: "fragment",
+        if_none: "inline fragment",
+    }
+}
+fn subscription_name_or_anonymous<'a, T>(name: &'a Option<T>) -> NameOrAnon<'a, T> {
+    NameOrAnon {
+        name: name.as_ref(),
+        if_some_prefix: "subscription",
+        if_none: "anonymous subscription",
     }
 }
