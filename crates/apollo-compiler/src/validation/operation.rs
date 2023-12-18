@@ -61,7 +61,7 @@ pub(crate) fn validate_operation(
             diagnostics.push(ValidationError::new(
                 field.location(),
                 DiagnosticData::IntrospectionField {
-                    field: field.name.to_string(),
+                    field: field.name.clone(),
                 },
             ));
         }

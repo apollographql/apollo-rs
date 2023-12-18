@@ -164,8 +164,8 @@ pub(crate) fn value_of_correct_type(
                     diagnostics.push(ValidationError::new(
                         value.location(),
                         DiagnosticData::UndefinedEnumValue {
-                            value: value.to_string(),
-                            definition: enum_.name.to_string(),
+                            value: value.clone(),
+                            definition: enum_.name.clone(),
                             definition_location: enum_.location(),
                         },
                     ));
@@ -211,8 +211,8 @@ pub(crate) fn value_of_correct_type(
                     diagnostics.push(ValidationError::new(
                         value.location(),
                         DiagnosticData::UndefinedInputValue {
-                            value: name.to_string(),
-                            definition: input_obj.name.to_string(),
+                            value: name.clone(),
+                            definition: input_obj.name.clone(),
                             definition_location: input_obj.location(),
                         },
                     ));
@@ -233,7 +233,7 @@ pub(crate) fn value_of_correct_type(
                         diagnostics.push(ValidationError::new(
                             arg_value.location(),
                             DiagnosticData::RequiredArgument {
-                                name: input_name.to_string(),
+                                name: input_name.clone(),
                                 coordinate: format!("{}.{}", input_obj.name, input_name),
                                 definition_location: f.location(),
                             },

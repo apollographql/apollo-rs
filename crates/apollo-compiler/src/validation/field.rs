@@ -86,7 +86,7 @@ pub(crate) fn validate_field(
                 diagnostics.push(ValidationError::new(
                     field.location(),
                     DiagnosticData::RequiredArgument {
-                        name: arg_definition.name.to_string(),
+                        name: arg_definition.name.clone(),
                         coordinate: format!(
                             "{}.{}({}:)",
                             against_type, field.name, arg_definition.name
@@ -153,7 +153,7 @@ pub(crate) fn validate_field_definitions(
                 diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::OutputType {
-                        name: field.name.to_string(),
+                        name: field.name.clone(),
                         describe_type: field_ty.describe(),
                         type_location,
                     },
@@ -163,7 +163,7 @@ pub(crate) fn validate_field_definitions(
             diagnostics.push(ValidationError::new(
                 type_location,
                 DiagnosticData::UndefinedDefinition {
-                    name: field.ty.inner_named_type().to_string(),
+                    name: field.ty.inner_named_type().clone(),
                 },
             ));
         }

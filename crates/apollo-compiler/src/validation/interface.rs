@@ -51,7 +51,7 @@ pub(crate) fn validate_interface_definition(
             diagnostics.push(ValidationError::new(
                 implements_interface.location(),
                 DiagnosticData::RecursiveInterfaceDefinition {
-                    name: implements_interface.to_string(),
+                    name: implements_interface.clone(),
                 },
             ));
         }
@@ -87,10 +87,10 @@ pub(crate) fn validate_interface_definition(
                 diagnostics.push(ValidationError::new(
                     interface.definition.location(),
                     DiagnosticData::MissingInterfaceField {
-                        name: interface.definition.name.to_string(),
+                        name: interface.definition.name.clone(),
                         implements_location: implements_interface.location(),
-                        interface: implements_interface.to_string(),
-                        field: super_field.name.to_string(),
+                        interface: implements_interface.clone(),
+                        field: super_field.name.clone(),
                         field_location: super_field.location(),
                     },
                 ));
@@ -132,7 +132,7 @@ pub(crate) fn validate_implements_interfaces(
         diagnostics.push(ValidationError::new(
             loc,
             DiagnosticData::UndefinedDefinition {
-                name: interface_name.to_string(),
+                name: interface_name.clone(),
             },
         ));
     }
@@ -160,9 +160,9 @@ pub(crate) fn validate_implements_interfaces(
         diagnostics.push(ValidationError::new(
             definition_loc,
             DiagnosticData::TransitiveImplementedInterfaces {
-                interface: implementor.name().unwrap().to_string(),
-                via_interface: via_interface.to_string(),
-                missing_interface: transitive_interface.to_string(),
+                interface: implementor.name().unwrap().clone(),
+                via_interface: via_interface.clone(),
+                missing_interface: transitive_interface.clone(),
                 transitive_interface_location: transitive_loc,
             },
         ));

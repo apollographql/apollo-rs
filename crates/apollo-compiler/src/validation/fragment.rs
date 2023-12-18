@@ -79,9 +79,9 @@ fn validate_fragment_spread_type(
                 ValidationError::new(
                     spread.location(),
                     DiagnosticData::InvalidFragmentSpread {
-                        name: Some(spread.fragment_name.to_string()),
-                        type_name: against_type.to_string(),
-                        type_condition: type_condition.to_string(),
+                        name: Some(spread.fragment_name.clone()),
+                        type_name: against_type.clone(),
+                        type_condition: type_condition.clone(),
                         fragment_location: fragment_definition.location(),
                         type_location: against_type_definition.location(),
                     },
@@ -91,8 +91,8 @@ fn validate_fragment_spread_type(
                 inline.location(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
-                    type_name: against_type.to_string(),
-                    type_condition: type_condition.to_string(),
+                    type_name: against_type.clone(),
+                    type_condition: type_condition.clone(),
                     fragment_location: inline.location(),
                     type_location: against_type_definition.location(),
                 },
@@ -197,7 +197,7 @@ pub(crate) fn validate_fragment_spread(
             diagnostics.push(ValidationError::new(
                 spread.location(),
                 DiagnosticData::UndefinedFragment {
-                    name: spread.fragment_name.to_string(),
+                    name: spread.fragment_name.clone(),
                 },
             ));
         }
@@ -321,7 +321,7 @@ pub(crate) fn validate_fragment_cycles(
                 def.location(),
                 DiagnosticData::RecursiveFragmentDefinition {
                     head_location,
-                    name: def.name.to_string(),
+                    name: def.name.clone(),
                     trace,
                 },
             ));
@@ -332,7 +332,7 @@ pub(crate) fn validate_fragment_cycles(
             diagnostics.push(ValidationError::new(
                 head_location,
                 DiagnosticData::DeeplyNestedType {
-                    name: def.name.to_string(),
+                    name: def.name.clone(),
                     describe_type: "fragment",
                 },
             ));
@@ -369,7 +369,7 @@ pub(crate) fn validate_fragment_type_condition(
             fragment_location,
             DiagnosticData::InvalidFragmentTarget {
                 name: fragment_name,
-                ty: type_cond.to_string(),
+                ty: type_cond.clone(),
             },
         ));
     }
@@ -413,7 +413,7 @@ pub(crate) fn validate_fragment_used(
         diagnostics.push(ValidationError::new(
             fragment.location(),
             DiagnosticData::UnusedFragment {
-                name: fragment_name.to_string(),
+                name: fragment_name.clone(),
             },
         ))
     }

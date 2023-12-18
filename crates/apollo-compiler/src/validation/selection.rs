@@ -100,7 +100,7 @@ pub(crate) fn same_response_shape(
         ValidationError::new(
             field_b.field.location(),
             DiagnosticData::ConflictingFieldType {
-                field: field_a.field.response_name().to_string(),
+                field: field_a.field.response_name().clone(),
                 original_selection: field_a.field.location(),
                 original_type: full_type_a.ty.clone(),
                 redefined_selection: field_b.field.location(),
@@ -240,8 +240,8 @@ fn identical_arguments(
             return Err(ValidationError::new(
                 loc_b,
                 DiagnosticData::ConflictingFieldArgument {
-                    field: field_a.name.to_string(),
-                    argument: arg.name.to_string(),
+                    field: field_a.name.clone(),
+                    argument: arg.name.clone(),
                     original_selection: loc_a,
                     original_value: Some((*arg.value).clone()),
                     redefined_selection: loc_b,
@@ -254,8 +254,8 @@ fn identical_arguments(
             return Err(ValidationError::new(
                 loc_b,
                 DiagnosticData::ConflictingFieldArgument {
-                    field: field_a.name.to_string(),
-                    argument: arg.name.to_string(),
+                    field: field_a.name.clone(),
+                    argument: arg.name.clone(),
                     original_selection: loc_a,
                     original_value: Some((*arg.value).clone()),
                     redefined_selection: loc_b,
@@ -270,8 +270,8 @@ fn identical_arguments(
             return Err(ValidationError::new(
                 loc_b,
                 DiagnosticData::ConflictingFieldArgument {
-                    field: field_a.name.to_string(),
-                    argument: arg.name.to_string(),
+                    field: field_a.name.clone(),
+                    argument: arg.name.clone(),
                     original_selection: loc_a,
                     original_value: None,
                     redefined_selection: loc_b,
@@ -326,11 +326,11 @@ pub(crate) fn fields_in_set_can_merge(
                     diagnostics.push(ValidationError::new(
                         field_b.field.location(),
                         DiagnosticData::ConflictingFieldName {
-                            field: field_a.field.response_name().to_string(),
+                            field: field_a.field.response_name().clone(),
                             original_selection: field_a.field.location(),
-                            original_name: field_a.field.name.to_string(),
+                            original_name: field_a.field.name.clone(),
                             redefined_selection: field_b.field.location(),
-                            redefined_name: field_b.field.name.to_string(),
+                            redefined_name: field_b.field.name.clone(),
                         },
                     ));
                     continue;

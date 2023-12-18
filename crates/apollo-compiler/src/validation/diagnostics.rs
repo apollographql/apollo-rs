@@ -36,19 +36,19 @@ impl fmt::Display for ValidationError {
 pub(crate) enum DiagnosticData {
     #[error("the variable `${name}` is declared multiple times")]
     UniqueVariable {
-        name: String,
+        name: Name,
         original_definition: Option<NodeLocation>,
         redefined_definition: Option<NodeLocation>,
     },
     #[error("the argument `{name}` is provided multiple times")]
     UniqueArgument {
-        name: String,
+        name: Name,
         original_definition: Option<NodeLocation>,
         redefined_definition: Option<NodeLocation>,
     },
     #[error("the value `{name}` is defined multiple times")]
     UniqueInputValue {
-        name: String,
+        name: Name,
         original_definition: Option<NodeLocation>,
         redefined_definition: Option<NodeLocation>,
     },
@@ -63,52 +63,52 @@ pub(crate) enum DiagnosticData {
     #[error("cannot find type `{name}` in this document")]
     UndefinedDefinition {
         /// Name of the type not in scope
-        name: String,
+        name: Name,
     },
     #[error("cannot find directive `@{name}` in this document")]
     UndefinedDirective {
         /// Name of the missing directive
-        name: String,
+        name: Name,
     },
     #[error("variable `${name}` is not defined")]
     UndefinedVariable {
         /// Name of the variable not in scope
-        name: String,
+        name: Name,
     },
     #[error("cannot find fragment `{name}` in this document")]
     UndefinedFragment {
         /// Name of the fragment not in scope
-        name: String,
+        name: Name,
     },
     #[error("value `{value}` does not exist on `{definition}`")]
     UndefinedEnumValue {
         /// Value of the enum value that doesn't exist
-        value: String,
+        value: Name,
         /// Name of the enum
-        definition: String,
+        definition: Name,
         definition_location: Option<NodeLocation>,
     },
     #[error("field `{value}` does not exist on `{definition}`")]
     UndefinedInputValue {
         /// Value of the input object field that doesn't exist
-        value: String,
+        value: Name,
         /// Name of the input object type
-        definition: String,
+        definition: Name,
         definition_location: Option<NodeLocation>,
     },
     #[error("type `{name}` does not satisfy interface `{interface}`: missing field `{field}`")]
     MissingInterfaceField {
-        name: String,
+        name: Name,
         /// Location of the `implements XYZ` of the interface
         implements_location: Option<NodeLocation>,
-        interface: String,
-        field: String,
+        interface: Name,
+        field: Name,
         /// Location of the definition of the field in the interface
         field_location: Option<NodeLocation>,
     },
     #[error("the required argument `{coordinate}` is not provided")]
     RequiredArgument {
-        name: String,
+        name: Name,
         coordinate: String,
         definition_location: Option<NodeLocation>,
     },
@@ -117,18 +117,18 @@ pub(crate) enum DiagnosticData {
     )]
     TransitiveImplementedInterfaces {
         /// Name of the interface definition
-        interface: String,
+        interface: Name,
         /// Super interface that declares the implementation
-        via_interface: String,
+        via_interface: Name,
         /// Source location where the super interface declares the implementation
         transitive_interface_location: Option<NodeLocation>,
         /// Interface that should be implemented
-        missing_interface: String,
+        missing_interface: Name,
     },
     #[error("`{name}` field must return an output type")]
     OutputType {
         /// Field name.
-        name: String,
+        name: Name,
         /// The kind of type that the field is declared with.
         describe_type: &'static str,
         type_location: Option<NodeLocation>,
@@ -136,7 +136,7 @@ pub(crate) enum DiagnosticData {
     #[error("`{name}` field must be of an input type")]
     InputType {
         /// Field name.
-        name: String,
+        name: Name,
         /// The kind of type that the field is declared with.
         describe_type: &'static str,
         type_location: Option<NodeLocation>,
@@ -144,7 +144,7 @@ pub(crate) enum DiagnosticData {
     #[error("`${name}` variable must be of an input type")]
     VariableInputType {
         /// Variable name.
-        name: String,
+        name: Name,
         /// The kind of type that the variable is declared with.
         describe_type: &'static str,
         type_location: Option<NodeLocation>,
@@ -152,25 +152,25 @@ pub(crate) enum DiagnosticData {
     #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
     #[error("unused variable: `${name}`")]
-    UnusedVariable { name: String },
+    UnusedVariable { name: Name },
     #[error("`{name}` field must return an object type")]
     RootOperationObjectType {
         /// Name of the root operation type
-        name: String,
+        name: Name,
         /// Category of the type
         describe_type: &'static str,
     },
     #[error("union member `{name}` must be an object type")]
     UnionMemberObjectType {
         /// Name of the type in the union
-        name: String,
+        name: Name,
         /// Category of the type
         describe_type: &'static str,
     },
     #[error("{name} directive is not supported for {location} location")]
     UnsupportedLocation {
         /// Name of the directive
-        name: String,
+        name: Name,
         /// The location where the directive is attempted to be used
         location: DirectiveLocation,
         /// Locations that *are* valid for this directive
@@ -199,13 +199,13 @@ pub(crate) enum DiagnosticData {
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {
         /// Name of the non-unique directive.
-        name: String,
+        name: Name,
         original_application: Option<NodeLocation>,
     },
     #[error("subscription operations can not have an introspection field as a root field")]
     IntrospectionField {
         /// Name of the field
-        field: String,
+        field: Name,
     },
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
@@ -215,7 +215,7 @@ pub(crate) enum DiagnosticData {
     #[error("operation must not select different types using the same field name `{field}`")]
     ConflictingFieldType {
         /// Name of the non-unique field.
-        field: String,
+        field: Name,
         original_selection: Option<NodeLocation>,
         original_type: Type,
         redefined_selection: Option<NodeLocation>,
@@ -226,8 +226,8 @@ pub(crate) enum DiagnosticData {
     )]
     ConflictingFieldArgument {
         /// Name of the non-unique field.
-        field: String,
-        argument: String,
+        field: Name,
+        argument: Name,
         original_selection: Option<NodeLocation>,
         original_value: Option<Value>,
         redefined_selection: Option<NodeLocation>,
@@ -236,11 +236,11 @@ pub(crate) enum DiagnosticData {
     #[error("operation must not select different fields to the same alias `{field}`")]
     ConflictingFieldName {
         /// Name of the non-unique field.
-        field: String,
+        field: Name,
         original_selection: Option<NodeLocation>,
-        original_name: String,
+        original_name: Name,
         redefined_selection: Option<NodeLocation>,
-        redefined_name: String,
+        redefined_name: Name,
     },
     #[error(
         "{} must have a composite type in its type condition",
@@ -253,7 +253,7 @@ pub(crate) enum DiagnosticData {
         /// Name of the fragment, None if an inline fragment.
         name: Option<Name>,
         /// Name of the type on which the fragment is declared
-        ty: String,
+        ty: Name,
     },
     #[error(
         "{} with type condition `{type_condition}` cannot be applied to `{type_name}`",
@@ -264,10 +264,10 @@ pub(crate) enum DiagnosticData {
     )]
     InvalidFragmentSpread {
         /// Fragment name or None if it's an inline fragment
-        name: Option<String>,
+        name: Option<Name>,
         /// Type name the fragment is being applied to
-        type_name: String,
-        type_condition: String,
+        type_name: Name,
+        type_condition: Name,
         /// Source location where the fragment is defined
         fragment_location: Option<NodeLocation>,
         /// Source location of the type the fragment is being applied to.
@@ -276,43 +276,43 @@ pub(crate) enum DiagnosticData {
     #[error("fragment `{name}` must be used in an operation")]
     UnusedFragment {
         /// Name of the fragment
-        name: String,
+        name: Name,
     },
     #[error(
         "variable `${variable}` of type `{variable_type}` cannot be used for argument `{argument}` of type `{argument_type}`"
     )]
     DisallowedVariableUsage {
         /// Name of the variable being used in an argument
-        variable: String,
+        variable: Name,
         variable_type: Type,
         variable_location: Option<NodeLocation>,
         /// Name of the argument where variable is used
-        argument: String,
+        argument: Name,
         argument_type: Type,
         argument_location: Option<NodeLocation>,
     },
     #[error("`{name}` directive definition cannot reference itself")]
     RecursiveDirectiveDefinition {
-        name: String,
+        name: Name,
         trace: Vec<Node<ast::Directive>>,
     },
     #[error("interface {name} cannot implement itself")]
-    RecursiveInterfaceDefinition { name: String },
+    RecursiveInterfaceDefinition { name: Name },
     #[error("`{name}` input object cannot reference itself")]
     RecursiveInputObjectDefinition {
-        name: String,
+        name: Name,
         trace: Vec<Node<ast::InputValueDefinition>>,
     },
     #[error("`{name}` fragment cannot reference itself")]
     RecursiveFragmentDefinition {
         /// Source location of just the "fragment FragName" part.
         head_location: Option<NodeLocation>,
-        name: String,
+        name: Name,
         trace: Vec<Node<ast::FragmentSpread>>,
     },
     #[error("`{name}` contains too much nesting")]
     DeeplyNestedType {
-        name: String,
+        name: Name,
         describe_type: &'static str,
     },
     #[error("too much recursion")]

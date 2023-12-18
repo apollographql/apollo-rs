@@ -60,7 +60,7 @@ pub(crate) fn validate_root_operation_definitions(
                 diagnostics.push(ValidationError::new(
                     op_loc,
                     DiagnosticData::RootOperationObjectType {
-                        name: name.to_string(),
+                        name: name.clone(),
                         describe_type: type_def.describe(),
                     },
                 ));
@@ -69,9 +69,7 @@ pub(crate) fn validate_root_operation_definitions(
             let op_loc = name.location();
             diagnostics.push(ValidationError::new(
                 op_loc,
-                DiagnosticData::UndefinedDefinition {
-                    name: name.to_string(),
-                },
+                DiagnosticData::UndefinedDefinition { name: name.clone() },
             ));
         }
     }

@@ -67,10 +67,10 @@ pub(crate) fn validate_object_type_definition(
                 diagnostics.push(ValidationError::new(
                     object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
-                        name: object.definition.name.to_string(),
+                        name: object.definition.name.clone(),
                         implements_location: implements_interface.location(),
-                        interface: implements_interface.to_string(),
-                        field: interface_field.name.to_string(),
+                        interface: implements_interface.clone(),
+                        field: interface_field.name.clone(),
                         field_location: interface_field.location(),
                     },
                 ));

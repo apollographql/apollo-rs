@@ -38,7 +38,7 @@ pub(crate) fn validate_union_definition(
                 diagnostics.push(ValidationError::new(
                     member_location,
                     DiagnosticData::UndefinedDefinition {
-                        name: union_member.to_string(),
+                        name: union_member.clone(),
                     },
                 ));
             }
@@ -48,7 +48,7 @@ pub(crate) fn validate_union_definition(
                 diagnostics.push(ValidationError::new(
                     member_location,
                     DiagnosticData::UnionMemberObjectType {
-                        name: union_member.to_string(),
+                        name: union_member.clone(),
                         describe_type: ty.describe(),
                     },
                 ));

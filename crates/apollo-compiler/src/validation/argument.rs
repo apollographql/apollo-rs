@@ -15,7 +15,7 @@ pub(crate) fn validate_arguments(arguments: &[Node<ast::Argument>]) -> Vec<Valid
             diagnostics.push(ValidationError::new(
                 redefined_definition,
                 DiagnosticData::UniqueArgument {
-                    name: name.to_string(),
+                    name: name.clone(),
                     original_definition,
                     redefined_definition,
                 },

@@ -37,7 +37,7 @@ pub(crate) fn validate_variable_definitions(
                     diagnostics.push(ValidationError::new(
                         variable.location(),
                         DiagnosticData::VariableInputType {
-                            name: variable.name.to_string(),
+                            name: variable.name.clone(),
                             describe_type: type_definition.describe(),
                             type_location: ty.location(),
                         },
@@ -46,7 +46,7 @@ pub(crate) fn validate_variable_definitions(
                 None => diagnostics.push(ValidationError::new(
                     variable.location(),
                     DiagnosticData::UndefinedDefinition {
-                        name: ty.inner_named_type().to_string(),
+                        name: ty.inner_named_type().clone(),
                     },
                 )),
             }
@@ -59,7 +59,7 @@ pub(crate) fn validate_variable_definitions(
                 diagnostics.push(ValidationError::new(
                     redefined_definition,
                     DiagnosticData::UniqueVariable {
-                        name: variable.name.to_string(),
+                        name: variable.name.clone(),
                         original_definition,
                         redefined_definition,
                     },
@@ -228,7 +228,7 @@ pub(crate) fn validate_unused_variables(
         ValidationError::new(
             loc,
             DiagnosticData::UnusedVariable {
-                name: unused_var.to_string(),
+                name: unused_var.clone(),
             },
         )
     }));
@@ -251,10 +251,10 @@ pub(crate) fn validate_variable_usage(
                 return Err(ValidationError::new(
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
-                        variable: var_def.name.to_string(),
+                        variable: var_def.name.clone(),
                         variable_type: (*var_def.ty).clone(),
                         variable_location: var_def.location(),
-                        argument: argument.name.to_string(),
+                        argument: argument.name.clone(),
                         argument_type: (*var_usage.ty).clone(),
                         argument_location: argument.location(),
                     },
@@ -264,7 +264,7 @@ pub(crate) fn validate_variable_usage(
             return Err(ValidationError::new(
                 argument.value.location(),
                 DiagnosticData::UndefinedVariable {
-                    name: var_name.to_string(),
+                    name: var_name.clone(),
                 },
             ));
         }

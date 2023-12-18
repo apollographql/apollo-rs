@@ -154,7 +154,7 @@ pub(crate) fn validate_directive_definition(
             diagnostics.push(ValidationError::new(
                 head_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
-                    name: def.name.to_string(),
+                    name: def.name.clone(),
                     trace,
                 },
             ));
@@ -162,7 +162,7 @@ pub(crate) fn validate_directive_definition(
         Err(CycleError::Limit(_)) => diagnostics.push(ValidationError::new(
             head_location,
             DiagnosticData::DeeplyNestedType {
-                name: def.name.to_string(),
+                name: def.name.clone(),
                 describe_type: "directive",
             },
         )),
@@ -215,7 +215,7 @@ pub(crate) fn validate_directives<'dir>(
                 diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::UniqueDirective {
-                        name: name.to_string(),
+                        name: name.clone(),
                         original_application: original_loc,
                     },
                 ));
@@ -232,7 +232,7 @@ pub(crate) fn validate_directives<'dir>(
                 diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::UnsupportedLocation {
-                        name: name.to_string(),
+                        name: name.clone(),
                         location: dir_loc,
                         valid_locations: directive_definition.locations.clone(),
                         definition_location: directive_definition.location(),
@@ -293,7 +293,7 @@ pub(crate) fn validate_directives<'dir>(
                     diagnostics.push(ValidationError::new(
                         dir.location(),
                         DiagnosticData::RequiredArgument {
-                            name: arg_def.name.to_string(),
+                            name: arg_def.name.clone(),
                             coordinate: format!(
                                 "@{}({}:)",
                                 directive_definition.name, arg_def.name
@@ -306,9 +306,7 @@ pub(crate) fn validate_directives<'dir>(
         } else {
             diagnostics.push(ValidationError::new(
                 loc,
-                DiagnosticData::UndefinedDirective {
-                    name: name.to_string(),
-                },
+                DiagnosticData::UndefinedDirective { name: name.clone() },
             ))
         }
     }

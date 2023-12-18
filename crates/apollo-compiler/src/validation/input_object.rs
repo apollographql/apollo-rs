@@ -89,7 +89,7 @@ pub(crate) fn validate_input_object_definition(
         Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
             input_object.definition.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
-                name: input_object.definition.name.to_string(),
+                name: input_object.definition.name.clone(),
                 trace,
             },
         )),
@@ -97,7 +97,7 @@ pub(crate) fn validate_input_object_definition(
             diagnostics.push(ValidationError::new(
                 input_object.definition.location(),
                 DiagnosticData::DeeplyNestedType {
-                    name: input_object.definition.name.to_string(),
+                    name: input_object.definition.name.clone(),
                     describe_type: "input object",
                 },
             ));
@@ -134,7 +134,7 @@ pub(crate) fn validate_argument_definitions(
             diagnostics.push(ValidationError::new(
                 original_definition,
                 DiagnosticData::UniqueInputValue {
-                    name: name.to_string(),
+                    name: name.clone(),
                     original_definition,
                     redefined_definition,
                 },
@@ -170,7 +170,7 @@ pub(crate) fn validate_input_value_definitions(
                 diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::InputType {
-                        name: input_value.name.to_string(),
+                        name: input_value.name.clone(),
                         describe_type: field_ty.describe(),
                         type_location: input_value.ty.location(),
                     },
@@ -182,7 +182,7 @@ pub(crate) fn validate_input_value_definitions(
             diagnostics.push(ValidationError::new(
                 loc,
                 DiagnosticData::UndefinedDefinition {
-                    name: named_type.to_string(),
+                    name: named_type.clone(),
                 },
             ));
         }
