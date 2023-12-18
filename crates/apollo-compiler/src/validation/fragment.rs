@@ -333,7 +333,7 @@ pub(crate) fn validate_fragment_cycles(
                 head_location,
                 DiagnosticData::DeeplyNestedType {
                     name: def.name.to_string(),
-                    ty: "fragment",
+                    describe_type: "fragment",
                 },
             ));
         }

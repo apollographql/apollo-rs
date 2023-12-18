@@ -1,5 +1,4 @@
 use crate::ast;
-use crate::schema;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{CycleError, RecursionGuard, RecursionStack};
 use crate::Node;
@@ -99,7 +98,7 @@ pub(crate) fn validate_input_object_definition(
                 input_object.definition.location(),
                 DiagnosticData::DeeplyNestedType {
                     name: input_object.definition.name.to_string(),
-                    ty: "input object",
+                    describe_type: "input object",
                 },
             ));
         }
@@ -168,19 +167,11 @@ pub(crate) fn validate_input_value_definitions(
         let loc = input_value.location();
         if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
             if !field_ty.is_input_type() {
-                let kind = match field_ty {
-                    schema::ExtendedType::Scalar(_) => unreachable!(),
-                    schema::ExtendedType::Object(_) => "object",
-                    schema::ExtendedType::Interface(_) => "interface",
-                    schema::ExtendedType::Union(_) => "union",
-                    schema::ExtendedType::Enum(_) => unreachable!(),
-                    schema::ExtendedType::InputObject(_) => unreachable!(),
-                };
                 diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::InputType {
                         name: input_value.name.to_string(),
-                        ty: kind,
+                        describe_type: field_ty.describe(),
                         type_location: input_value.ty.location(),
                     },
                 ));

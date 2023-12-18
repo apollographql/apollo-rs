@@ -1,4 +1,4 @@
-Error: expected value of type Int!, found List
+Error: expected value of type Int!, found a list
     ╭─[0110_list_usage_in_non_list_type.graphql:20:5]
     │
   5 │   int: Int!
@@ -7,9 +7,9 @@ Error: expected value of type Int!, found List
     │ 
  20 │     int: [1, 2, 3]
     │     ───────┬──────  
-    │            ╰──────── provided value is of List type
+    │            ╰──────── provided value is a list
 ────╯
-Error: expected value of type String!, found List
+Error: expected value of type String!, found a list
     ╭─[0110_list_usage_in_non_list_type.graphql:21:5]
     │
   6 │   str: String!
@@ -18,9 +18,9 @@ Error: expected value of type String!, found List
     │ 
  21 │     str: ["1"]
     │     ─────┬────  
-    │          ╰────── provided value is of List type
+    │          ╰────── provided value is a list
 ────╯
-Error: expected value of type Boolean!, found List
+Error: expected value of type Boolean!, found a list
     ╭─[0110_list_usage_in_non_list_type.graphql:22:5]
     │
   7 │   bool: Boolean!
@@ -29,9 +29,9 @@ Error: expected value of type Boolean!, found List
     │ 
  22 │     bool: [true, false]
     │     ─────────┬─────────  
-    │              ╰─────────── provided value is of List type
+    │              ╰─────────── provided value is a list
 ────╯
-Error: expected value of type Int, found List
+Error: expected value of type Int, found a list
     ╭─[0110_list_usage_in_non_list_type.graphql:23:5]
     │
   8 │   opt: Int
@@ -40,9 +40,9 @@ Error: expected value of type Int, found List
     │ 
  23 │     opt: [1, 2, 3]
     │     ───────┬──────  
-    │            ╰──────── provided value is of List type
+    │            ╰──────── provided value is a list
 ────╯
-Error: expected value of type ID!, found List
+Error: expected value of type ID!, found a list
     ╭─[0110_list_usage_in_non_list_type.graphql:24:5]
     │
   9 │   id: ID!
@@ -51,6 +51,6 @@ Error: expected value of type ID!, found List
     │ 
  24 │     id: [1, "2", 3]
     │     ───────┬───────  
-    │            ╰───────── provided value is of List type
+    │            ╰───────── provided value is a list
 ────╯
 

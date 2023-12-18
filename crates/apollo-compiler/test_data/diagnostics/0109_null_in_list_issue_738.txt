@@ -1,4 +1,4 @@
-Error: expected value of type CustomScalar!, found Null
+Error: expected value of type CustomScalar!, found null
     ╭─[0109_null_in_list_issue_738.graphql:14:16]
     │
   8 │   foo(arg: [CustomScalar!]!): String!
@@ -7,9 +7,9 @@ Error: expected value of type CustomScalar!, found Null
     │ 
  14 │   a: foo(arg: [null, 1])
     │                ──┬─  
-    │                  ╰─── provided value is of Null type
+    │                  ╰─── provided value is null
 ────╯
-Error: expected value of type CustomScalar!, found Null
+Error: expected value of type CustomScalar!, found null
     ╭─[0109_null_in_list_issue_738.graphql:15:16]
     │
   8 │   foo(arg: [CustomScalar!]!): String!
@@ -18,9 +18,9 @@ Error: expected value of type CustomScalar!, found Null
     │ 
  15 │   b: foo(arg: [null, null, "hello"])
     │                ──┬─  
-    │                  ╰─── provided value is of Null type
+    │                  ╰─── provided value is null
 ────╯
-Error: expected value of type CustomScalar!, found Null
+Error: expected value of type CustomScalar!, found null
     ╭─[0109_null_in_list_issue_738.graphql:15:22]
     │
   8 │   foo(arg: [CustomScalar!]!): String!
@@ -29,9 +29,9 @@ Error: expected value of type CustomScalar!, found Null
     │ 
  15 │   b: foo(arg: [null, null, "hello"])
     │                      ──┬─  
-    │                        ╰─── provided value is of Null type
+    │                        ╰─── provided value is null
 ────╯
-Error: expected value of type String!, found Null
+Error: expected value of type String!, found null
     ╭─[0109_null_in_list_issue_738.graphql:16:13]
     │
   9 │   bar(arg: [String!]): String!
@@ -40,9 +40,9 @@ Error: expected value of type String!, found Null
     │ 
  16 │   bar(arg: [null])
     │             ──┬─  
-    │               ╰─── provided value is of Null type
+    │               ╰─── provided value is null
 ────╯
-Error: expected value of type String!, found Null
+Error: expected value of type String!, found null
     ╭─[0109_null_in_list_issue_738.graphql:17:27]
     │
   4 │   list: [String!]
@@ -51,6 +51,6 @@ Error: expected value of type String!, found Null
     │ 
  17 │   list(arg: {list: ["ok", null]})
     │                           ──┬─  
-    │                             ╰─── provided value is of Null type
+    │                             ╰─── provided value is null
 ────╯
 

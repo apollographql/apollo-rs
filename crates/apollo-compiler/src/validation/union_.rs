@@ -45,19 +45,11 @@ pub(crate) fn validate_union_definition(
             Some(schema::ExtendedType::Object(_)) => {} // good
             Some(ty) => {
                 // Union member must be of object type.
-                let kind = match ty {
-                    schema::ExtendedType::Object(_) => unreachable!(),
-                    schema::ExtendedType::Scalar(_) => "scalar",
-                    schema::ExtendedType::Interface(_) => "interface",
-                    schema::ExtendedType::Union(_) => "union",
-                    schema::ExtendedType::Enum(_) => "enum",
-                    schema::ExtendedType::InputObject(_) => "input object",
-                };
                 diagnostics.push(ValidationError::new(
                     member_location,
                     DiagnosticData::UnionMemberObjectType {
                         name: union_member.to_string(),
-                        ty: kind,
+                        describe_type: ty.describe(),
                     },
                 ));
             }

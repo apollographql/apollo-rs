@@ -3,7 +3,7 @@ Error: union member `Scalar` must be an object type
    │
  8 │ union Union = Scalar | Object
    │               ───┬──  
-   │                  ╰──── this is a scalar
+   │                  ╰──── this is a scalar type
    │ 
    │ Help: Union members must be object types.
 ───╯

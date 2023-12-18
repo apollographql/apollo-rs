@@ -9,7 +9,7 @@ fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -
     ValidationError::new(
         value.location(),
         DiagnosticData::UnsupportedValueType {
-            value: value.kind().into(),
+            describe_value_type: value.describe(),
             ty: declared_type.to_string(),
             definition_location: declared_type.location(),
         },

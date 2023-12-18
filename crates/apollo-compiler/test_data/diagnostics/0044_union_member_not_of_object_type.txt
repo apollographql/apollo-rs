@@ -3,7 +3,7 @@ Error: union member `Pet` must be an object type
     │
  17 │ union CatOrDog = Cat | Pet
     │                        ─┬─  
-    │                         ╰─── this is an interface
+    │                         ╰─── this is an interface type
     │ 
     │ Help: Union members must be object types.
 ────╯

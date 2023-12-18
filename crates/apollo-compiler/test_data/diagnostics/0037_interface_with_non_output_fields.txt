@@ -10,7 +10,7 @@ Error: `coordinates` field must return an output type
     │
  19 │   coordinates: Point2D
     │                ───┬───  
-    │                   ╰───── this is an input object
+    │                   ╰───── this is an input object type
     │ 
     │ Help: Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.
 ────╯

@@ -150,19 +150,11 @@ pub(crate) fn validate_field_definitions(
         if let Some(field_ty) = schema.types.get(field.ty.inner_named_type()) {
             if !field_ty.is_output_type() {
                 // Output types are unreachable
-                let kind = match field_ty {
-                    schema::ExtendedType::Scalar(_) => unreachable!(),
-                    schema::ExtendedType::Union(_) => unreachable!(),
-                    schema::ExtendedType::Enum(_) => unreachable!(),
-                    schema::ExtendedType::Interface(_) => unreachable!(),
-                    schema::ExtendedType::InputObject(_) => "input object",
-                    schema::ExtendedType::Object(_) => unreachable!(),
-                };
                 diagnostics.push(ValidationError::new(
                     loc,
                     DiagnosticData::OutputType {
                         name: field.name.to_string(),
-                        ty: kind,
+                        describe_type: field_ty.describe(),
                         type_location,
                     },
                 ));
@@ -197,18 +189,19 @@ pub(crate) fn validate_leaf_field_selection(
         None => return Ok(()),
     };
 
-    if is_leaf {
-        let kind = match type_def {
-            schema::ExtendedType::Object(_) => "object",
-            schema::ExtendedType::Interface(_) => "interface",
-            schema::ExtendedType::Union(_) => "union",
-            _ => return Ok(()),
-        };
+    if is_leaf
+        && matches!(
+            type_def,
+            schema::ExtendedType::Object(_)
+                | schema::ExtendedType::Interface(_)
+                | schema::ExtendedType::Union(_)
+        )
+    {
         Err(ValidationError::new(
             field.location(),
             DiagnosticData::MissingSubselection {
                 coordinate: format!("{tname}.{fname}"),
-                ty: kind,
+                describe_type: type_def.describe(),
             },
         ))
     } else {

@@ -3,7 +3,7 @@ Error: `$cat` variable must be of an input type
    │
  1 │ query takesCat($cat: Cat) {
    │                      ─┬─  
-   │                       ╰─── this is an object
+   │                       ╰─── this is an object type
    │ 
    │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ───╯
@@ -23,7 +23,7 @@ Error: `$dog` variable must be of an input type
    │
  7 │ query takesDogBang($dog: Dog!) {
    │                          ──┬─  
-   │                            ╰─── this is an object
+   │                            ╰─── this is an object type
    │ 
    │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ───╯
@@ -43,7 +43,7 @@ Error: `$pets` variable must be of an input type
     │
  13 │ query takesListOfPet($pets: [Pet]) {
     │                             ──┬──  
-    │                               ╰──── this is an interface
+    │                               ╰──── this is an interface type
     │ 
     │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ────╯
@@ -62,7 +62,7 @@ Error: `$catOrDog` variable must be of an input type
     │
  17 │ query takesCatOrDog($catOrDog: CatOrDog) {
     │                                ────┬───  
-    │                                    ╰───── this is a union
+    │                                    ╰───── this is a union type
     │ 
     │ Help: objects, unions, and interfaces cannot be used because variables can only be of input type
 ────╯

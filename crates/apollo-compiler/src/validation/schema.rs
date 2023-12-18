@@ -57,19 +57,11 @@ pub(crate) fn validate_root_operation_definitions(
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
                 let op_loc = name.location();
-                let kind = match type_def {
-                    schema::ExtendedType::Scalar(_) => "scalar",
-                    schema::ExtendedType::Union(_) => "union",
-                    schema::ExtendedType::Enum(_) => "enum",
-                    schema::ExtendedType::Interface(_) => "interface",
-                    schema::ExtendedType::InputObject(_) => "input object",
-                    schema::ExtendedType::Object(_) => unreachable!(),
-                };
                 diagnostics.push(ValidationError::new(
                     op_loc,
                     DiagnosticData::RootOperationObjectType {
                         name: name.to_string(),
-                        ty: kind,
+                        describe_type: type_def.describe(),
                     },
                 ));
             }

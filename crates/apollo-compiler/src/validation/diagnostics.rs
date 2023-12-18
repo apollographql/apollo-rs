@@ -130,7 +130,7 @@ pub(crate) enum DiagnosticData {
         /// Field name.
         name: String,
         /// The kind of type that the field is declared with.
-        ty: &'static str,
+        describe_type: &'static str,
         type_location: Option<NodeLocation>,
     },
     #[error("`{name}` field must be of an input type")]
@@ -138,7 +138,7 @@ pub(crate) enum DiagnosticData {
         /// Field name.
         name: String,
         /// The kind of type that the field is declared with.
-        ty: &'static str,
+        describe_type: &'static str,
         type_location: Option<NodeLocation>,
     },
     #[error("`${name}` variable must be of an input type")]
@@ -146,7 +146,7 @@ pub(crate) enum DiagnosticData {
         /// Variable name.
         name: String,
         /// The kind of type that the variable is declared with.
-        ty: &'static str,
+        describe_type: &'static str,
         type_location: Option<NodeLocation>,
     },
     #[error("missing query root operation type in schema definition")]
@@ -158,14 +158,14 @@ pub(crate) enum DiagnosticData {
         /// Name of the root operation type
         name: String,
         /// Category of the type
-        ty: &'static str,
+        describe_type: &'static str,
     },
     #[error("union member `{name}` must be an object type")]
     UnionMemberObjectType {
         /// Name of the type in the union
         name: String,
         /// Category of the type
-        ty: &'static str,
+        describe_type: &'static str,
     },
     #[error("{name} directive is not supported for {location} location")]
     UnsupportedLocation {
@@ -178,11 +178,10 @@ pub(crate) enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         definition_location: Option<NodeLocation>,
     },
-    #[error("expected value of type {ty}, found {value}")]
+    #[error("expected value of type {ty}, found {describe_value_type}")]
     UnsupportedValueType {
-        /// The kind of value provided. Not a concrete type, but a category like "string", "list",
-        /// "input object".
-        value: String,
+        /// The kind of value provided.
+        describe_value_type: &'static str,
         /// Expected concrete type
         ty: String,
         definition_location: Option<NodeLocation>,
@@ -211,7 +210,7 @@ pub(crate) enum DiagnosticData {
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
         coordinate: String,
-        ty: &'static str,
+        describe_type: &'static str,
     },
     #[error("operation must not select different types using the same field name `{field}`")]
     ConflictingFieldType {
@@ -312,7 +311,10 @@ pub(crate) enum DiagnosticData {
         trace: Vec<Node<ast::FragmentSpread>>,
     },
     #[error("`{name}` contains too much nesting")]
-    DeeplyNestedType { name: String, ty: &'static str },
+    DeeplyNestedType {
+        name: String,
+        describe_type: &'static str,
+    },
     #[error("too much recursion")]
     RecursionError {},
 }
@@ -465,10 +467,12 @@ impl ValidationError {
                 );
                 label_recursive_trace(report, trace, name, |reference| &reference.fragment_name);
             }
-            DiagnosticData::DeeplyNestedType { ty, .. } => {
+            DiagnosticData::DeeplyNestedType { describe_type, .. } => {
                 report.with_label_opt(
                     self.location,
-                    format_args!("references a very long chain of {ty}s in its definition"),
+                    format_args!(
+                        "references a very long chain of {describe_type}s in its definition"
+                    ),
                 );
             }
             DiagnosticData::MissingInterfaceField {
@@ -520,49 +524,50 @@ impl ValidationError {
                     "fragment `{name}` must be used in an operation"
                 ));
             }
-            DiagnosticData::RootOperationObjectType { name: _, ty } => {
-                let particle = particle_for(ty);
-                report.with_label_opt(self.location, format_args!("this is {particle} {ty}"));
+            DiagnosticData::RootOperationObjectType {
+                name: _,
+                describe_type,
+            } => {
+                report.with_label_opt(self.location, format_args!("this is {describe_type}"));
                 report.with_help("Root operation type must be an object type.");
             }
-            DiagnosticData::UnionMemberObjectType { name: _, ty } => {
-                let particle = particle_for(ty);
-                report.with_label_opt(self.location, format_args!("this is {particle} {ty}"));
+            DiagnosticData::UnionMemberObjectType {
+                name: _,
+                describe_type,
+            } => {
+                report.with_label_opt(self.location, format_args!("this is {describe_type}"));
                 report.with_help("Union members must be object types.");
             }
             DiagnosticData::OutputType {
                 name,
-                ty,
+                describe_type,
                 type_location,
             } => {
-                let particle = particle_for(ty);
                 report.with_label_opt(
                     type_location.or(self.location),
-                    format_args!("this is {particle} {ty}"),
+                    format_args!("this is {describe_type}"),
                 );
                 report.with_help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{name}` field to return one of these output types."));
             }
             DiagnosticData::InputType {
                 name,
-                ty,
+                describe_type,
                 type_location,
             } => {
-                let particle = particle_for(ty);
                 report.with_label_opt(
                     type_location.or(self.location),
-                    format_args!("this is {particle} {ty}"),
+                    format_args!("this is {describe_type}"),
                 );
                 report.with_help(format!("Scalars, Enums, and Input Objects are input types. Change `{name}` field to take one of these input types."));
             }
             DiagnosticData::VariableInputType {
                 name: _,
-                ty,
+                describe_type,
                 type_location,
             } => {
-                let particle = particle_for(ty);
                 report.with_label_opt(
                     type_location.or(self.location),
-                    format_args!("this is {particle} {ty}"),
+                    format_args!("this is {describe_type}"),
                 );
                 report.with_help("objects, unions, and interfaces cannot be used because variables can only be of input type");
             }
@@ -589,13 +594,13 @@ impl ValidationError {
                 ));
             }
             DiagnosticData::UnsupportedValueType {
-                value,
+                describe_value_type,
                 ty,
                 definition_location,
             } => {
                 report.with_label_opt(
                     self.location,
-                    format_args!("provided value is of {value} type"),
+                    format_args!("provided value is {describe_value_type}"),
                 );
                 report.with_label_opt(
                     *definition_location,
@@ -627,11 +632,13 @@ impl ValidationError {
                     format_args!("{field} is an introspection field"),
                 );
             }
-            DiagnosticData::MissingSubselection { coordinate, ty } => {
-                let particle = particle_for(ty);
+            DiagnosticData::MissingSubselection {
+                coordinate,
+                describe_type,
+            } => {
                 report.with_label_opt(
                     self.location,
-                    format_args!("{coordinate} is {particle} {ty} type and must select fields"),
+                    format_args!("{coordinate} is {describe_type} and must select fields"),
                 );
             }
             DiagnosticData::ConflictingFieldType {
@@ -760,19 +767,6 @@ impl ValidationError {
             }
             DiagnosticData::RecursionError {} => {}
         }
-    }
-}
-
-/// Get the appropriate particle "a" or "an" for a type category string like "enum" or "interface".
-fn particle_for(thing: &str) -> &'static str {
-    match thing {
-        "enum" => "an",
-        "input object" => "an",
-        "interface" => "an",
-        "object" => "an",
-        "scalar" => "a",
-        "union" => "a",
-        _ => "a(n)",
     }
 }
 

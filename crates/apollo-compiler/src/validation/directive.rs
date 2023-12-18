@@ -163,7 +163,7 @@ pub(crate) fn validate_directive_definition(
             head_location,
             DiagnosticData::DeeplyNestedType {
                 name: def.name.to_string(),
-                ty: "directive",
+                describe_type: "directive",
             },
         )),
     }

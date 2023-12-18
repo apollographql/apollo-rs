@@ -2,7 +2,7 @@ use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{
     FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
 };
-use crate::{ast, schema, Node, ValidationDatabase};
+use crate::{ast, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
@@ -34,19 +34,11 @@ pub(crate) fn validate_variable_definitions(
                     // OK!
                 }
                 Some(type_definition) => {
-                    let kind = match type_definition {
-                        schema::ExtendedType::Scalar(_) => "scalar",
-                        schema::ExtendedType::Object(_) => "object",
-                        schema::ExtendedType::Interface(_) => "interface",
-                        schema::ExtendedType::Union(_) => "union",
-                        schema::ExtendedType::Enum(_) => "enum",
-                        schema::ExtendedType::InputObject(_) => "input object",
-                    };
                     diagnostics.push(ValidationError::new(
                         variable.location(),
                         DiagnosticData::VariableInputType {
                             name: variable.name.to_string(),
-                            ty: kind,
+                            describe_type: type_definition.describe(),
                             type_location: ty.location(),
                         },
                     ));
