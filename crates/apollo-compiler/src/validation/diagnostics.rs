@@ -3,6 +3,8 @@ use crate::ast::DirectiveLocation;
 use crate::ast::Name;
 use crate::ast::Type;
 use crate::ast::Value;
+use crate::coordinate::SchemaCoordinate;
+use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::NodeLocation;
 use crate::Node;
@@ -60,7 +62,7 @@ pub(crate) enum DiagnosticData {
     #[error("the argument `{name}` is not supported by `{coordinate}`")]
     UndefinedArgument {
         name: Name,
-        coordinate: String,
+        coordinate: SchemaCoordinate,
         definition_location: Option<NodeLocation>,
     },
     #[error("cannot find type `{name}` in this document")]
@@ -112,7 +114,13 @@ pub(crate) enum DiagnosticData {
     #[error("the required argument `{coordinate}` is not provided")]
     RequiredArgument {
         name: Name,
-        coordinate: String,
+        coordinate: SchemaCoordinate,
+        definition_location: Option<NodeLocation>,
+    },
+    #[error("the required field `{coordinate}` is not provided")]
+    RequiredField {
+        name: Name,
+        coordinate: TypeAttributeCoordinate,
         definition_location: Option<NodeLocation>,
     },
     #[error(
@@ -217,7 +225,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
-        coordinate: String,
+        coordinate: TypeAttributeCoordinate,
         describe_type: &'static str,
     },
     #[error("operation must not select different types using the same field name `{field}`")]
@@ -404,6 +412,17 @@ impl ValidationError {
                     format_args!("missing value for argument `{name}`"),
                 );
                 report.with_label_opt(*definition_location, "argument defined here");
+            }
+            DiagnosticData::RequiredField {
+                name,
+                coordinate: _,
+                definition_location,
+            } => {
+                report.with_label_opt(
+                    self.location,
+                    format_args!("missing value for field `{name}`"),
+                );
+                report.with_label_opt(*definition_location, "field defined here");
             }
             DiagnosticData::UndefinedDefinition { .. } => {
                 report.with_label_opt(self.location, "not found in this scope");

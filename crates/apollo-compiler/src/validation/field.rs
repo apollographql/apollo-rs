@@ -1,3 +1,4 @@
+use crate::coordinate::{FieldArgumentCoordinate, TypeAttributeCoordinate};
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, schema, Node};
@@ -63,7 +64,11 @@ pub(crate) fn validate_field(
                     argument.location(),
                     DiagnosticData::UndefinedArgument {
                         name: argument.name.clone(),
-                        coordinate: format!("{}.{}", against_type, field.name),
+                        coordinate: TypeAttributeCoordinate {
+                            ty: against_type.clone(),
+                            attribute: field.name.clone(),
+                        }
+                        .into(),
                         definition_location: loc,
                     },
                 ));
@@ -87,10 +92,12 @@ pub(crate) fn validate_field(
                     field.location(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.clone(),
-                        coordinate: format!(
-                            "{}.{}({}:)",
-                            against_type, field.name, arg_definition.name
-                        ),
+                        coordinate: FieldArgumentCoordinate {
+                            ty: against_type.clone(),
+                            field: field.name.clone(),
+                            argument: arg_definition.name.clone(),
+                        }
+                        .into(),
                         definition_location: arg_definition.location(),
                     },
                 ));
@@ -200,7 +207,10 @@ pub(crate) fn validate_leaf_field_selection(
         Err(ValidationError::new(
             field.location(),
             DiagnosticData::MissingSubselection {
-                coordinate: format!("{tname}.{fname}"),
+                coordinate: TypeAttributeCoordinate {
+                    ty: tname.clone(),
+                    attribute: fname.clone(),
+                },
                 describe_type: type_def.describe(),
             },
         ))

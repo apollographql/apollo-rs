@@ -324,6 +324,36 @@ impl FromStr for SchemaCoordinate {
     }
 }
 
+impl From<TypeCoordinate> for SchemaCoordinate {
+    fn from(inner: TypeCoordinate) -> Self {
+        Self::Type(inner)
+    }
+}
+
+impl From<TypeAttributeCoordinate> for SchemaCoordinate {
+    fn from(inner: TypeAttributeCoordinate) -> Self {
+        Self::TypeAttribute(inner)
+    }
+}
+
+impl From<FieldArgumentCoordinate> for SchemaCoordinate {
+    fn from(inner: FieldArgumentCoordinate) -> Self {
+        Self::FieldArgument(inner)
+    }
+}
+
+impl From<DirectiveCoordinate> for SchemaCoordinate {
+    fn from(inner: DirectiveCoordinate) -> Self {
+        Self::Directive(inner)
+    }
+}
+
+impl From<DirectiveArgumentCoordinate> for SchemaCoordinate {
+    fn from(inner: DirectiveArgumentCoordinate) -> Self {
+        Self::DirectiveArgument(inner)
+    }
+}
+
 impl fmt::Display for TypeCoordinate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self { ty } = self;
