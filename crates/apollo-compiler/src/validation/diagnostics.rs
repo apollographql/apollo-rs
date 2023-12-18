@@ -54,7 +54,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error(
         "{} can only have one root field",
-        subscription_name_or_anonymous(&name),
+        subscription_name_or_anonymous(name)
     )]
     SingleRootField {
         name: Option<Name>,
@@ -210,7 +210,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error(
         "{} can not have an introspection field as a root field",
-        subscription_name_or_anonymous(&name),
+        subscription_name_or_anonymous(name)
     )]
     IntrospectionField {
         /// Name of the operation
@@ -255,7 +255,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error(
         "{} must have a composite type in its type condition",
-        fragment_name_or_inline(&name),
+        fragment_name_or_inline(name)
     )]
     InvalidFragmentTarget {
         /// Name of the fragment, None if an inline fragment.
@@ -265,7 +265,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error(
         "{} with type condition `{type_condition}` cannot be applied to `{type_name}`",
-        fragment_name_or_inline(&name),
+        fragment_name_or_inline(name)
     )]
     InvalidFragmentSpread {
         /// Fragment name or None if it's an inline fragment
@@ -821,7 +821,7 @@ struct NameOrAnon<'a, T> {
     if_some_prefix: &'a str,
     if_none: &'a str,
 }
-impl<'a, T> fmt::Display for NameOrAnon<'a, T>
+impl<T> fmt::Display for NameOrAnon<'_, T>
 where
     T: fmt::Display,
 {
@@ -833,14 +833,14 @@ where
     }
 }
 
-fn fragment_name_or_inline<'a, T>(name: &'a Option<T>) -> NameOrAnon<'a, T> {
+fn fragment_name_or_inline<T>(name: &'_ Option<T>) -> NameOrAnon<'_, T> {
     NameOrAnon {
         name: name.as_ref(),
         if_some_prefix: "fragment",
         if_none: "inline fragment",
     }
 }
-fn subscription_name_or_anonymous<'a, T>(name: &'a Option<T>) -> NameOrAnon<'a, T> {
+fn subscription_name_or_anonymous<T>(name: &'_ Option<T>) -> NameOrAnon<'_, T> {
     NameOrAnon {
         name: name.as_ref(),
         if_some_prefix: "subscription",
