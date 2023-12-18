@@ -1,8 +1,6 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
-use crate::coordinate::SchemaLookup;
-use crate::coordinate::SchemaLookupError;
 use crate::validation::FileId;
 use crate::validation::NodeLocation;
 use crate::Node;
@@ -345,22 +343,6 @@ impl Schema {
         let mut errors = DiagnosticList::new(self.sources.clone());
         validation::validate_schema(&mut errors, &self);
         errors.into_valid_result(self)
-    }
-
-    /// Returns the node targeted by the given coordinate.
-    ///
-    /// ```rust
-    /// use apollo_compiler::Schema;
-    /// use apollo_compiler::coord;
-    ///
-    /// let schema = Schema::new();
-    /// let enum_value = schema.lookup(&coord!(__TypeKind.OBJECT)).unwrap();
-    /// ```
-    pub fn lookup<'coord, 'schema, T: SchemaLookup>(
-        &'schema self,
-        coordinate: &'coord T,
-    ) -> Result<T::Output<'schema>, SchemaLookupError<'coord, 'schema>> {
-        coordinate.lookup(self)
     }
 
     /// Returns the type with the given name, if it is a scalar type

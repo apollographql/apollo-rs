@@ -45,7 +45,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Schema coordinates are a compact, human-readable way to uniquely point to an item defined in a schema.
   - `string.parse::<SchemaCoordinate>()` parses a coordinate from a string.
   - Coordinates have a `Display` impl that writes them out with schema coordinate syntax.
-  - `schema.lookup(&coord)` looks up the item pointed to by a coordinate in a schema.
   - The `coord!()` macro creates a static coordinate at compile time from spec syntax.
 
 ## Fixes
