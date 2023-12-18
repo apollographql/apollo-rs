@@ -51,7 +51,7 @@ fn test_invalid_field_sets() {
         "{errors}"
     );
     assert!(
-        errors.contains("field `organization` type `Org` is an object and must select fields"),
+        errors.contains("Org.organization is an object type and must select fields"),
         "{errors}"
     );
 

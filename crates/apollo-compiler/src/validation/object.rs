@@ -1,13 +1,13 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    validation::diagnostics::{DiagnosticData, ValidationError},
     ValidationDatabase,
 };
 use std::collections::HashSet;
 
 pub(crate) fn validate_object_type_definitions(
     db: &dyn ValidationDatabase,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let defs = &db.ast_types().objects;
@@ -21,7 +21,7 @@ pub(crate) fn validate_object_type_definitions(
 pub(crate) fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
     object: ast::TypeWithExtensions<ast::ObjectTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -64,34 +64,16 @@ pub(crate) fn validate_object_type_definition(
                     continue;
                 }
 
-                let mut labels = vec![
-                    Label::new(
-                        implements_interface.location(),
-                        format!("implementation of interface {implements_interface} declared here"),
-                    ),
-                    Label::new(
-                        object.definition.location(),
-                        format!("add `{}` field to this object", interface_field.name),
-                    ),
-                ];
-                let loc = interface_field.location();
-                labels.push(Label::new(
-                    loc,
-                    format!(
-                        "`{}` was originally defined by {} here",
-                        interface_field.name, implements_interface
-                    ),
-                ));
-                diagnostics.push(ApolloDiagnostic::new(
-                    db,
+                diagnostics.push(ValidationError::new(
                     object.definition.location(),
                     DiagnosticData::MissingInterfaceField {
-                        interface: implements_interface.to_string(),
-                        field: interface_field.name.to_string(),
+                        name: object.definition.name.clone(),
+                        implements_location: implements_interface.location(),
+                        interface: implements_interface.clone(),
+                        field: interface_field.name.clone(),
+                        field_location: interface_field.location(),
                     },
-                )
-                .labels(labels)
-                .help("An object must provide all fields required by the interfaces it implements"))
+                ));
             }
         }
     }

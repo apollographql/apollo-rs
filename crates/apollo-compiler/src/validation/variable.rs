@@ -1,8 +1,8 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{
     FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
 };
-use crate::{ast, schema, Node, ValidationDatabase};
+use crate::{ast, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
@@ -10,7 +10,7 @@ pub(crate) fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
     variables: &[Node<ast::VariableDefinition>],
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
 
@@ -34,36 +34,21 @@ pub(crate) fn validate_variable_definitions(
                     // OK!
                 }
                 Some(type_definition) => {
-                    let kind = match type_definition {
-                        schema::ExtendedType::Scalar(_) => "scalar",
-                        schema::ExtendedType::Object(_) => "object",
-                        schema::ExtendedType::Interface(_) => "interface",
-                        schema::ExtendedType::Union(_) => "union",
-                        schema::ExtendedType::Enum(_) => "enum",
-                        schema::ExtendedType::InputObject(_) => "input object",
-                    };
-                    diagnostics.push(
-                        ApolloDiagnostic::new(db, variable.location(), DiagnosticData::InputType {
-                            name: variable.name.to_string(),
-                            ty: kind,
-                        })
-                        .label(Label::new(ty.inner_named_type().location(), format!("this is of `{kind}` type")))
-                        .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
-                        );
-                }
-                None => diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
+                    diagnostics.push(ValidationError::new(
                         variable.location(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: ty.inner_named_type().to_string(),
+                        DiagnosticData::VariableInputType {
+                            name: variable.name.clone(),
+                            describe_type: type_definition.describe(),
+                            type_location: ty.location(),
                         },
-                    )
-                    .label(Label::new(
-                        ty.inner_named_type().location(),
-                        "not found in the type system",
-                    )),
-                ),
+                    ));
+                }
+                None => diagnostics.push(ValidationError::new(
+                    variable.location(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: ty.inner_named_type().clone(),
+                    },
+                )),
             }
         }
 
@@ -71,32 +56,14 @@ pub(crate) fn validate_variable_definitions(
             Entry::Occupied(original) => {
                 let original_definition = original.get().location();
                 let redefined_definition = variable.location();
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
+                diagnostics.push(ValidationError::new(
+                    redefined_definition,
+                    DiagnosticData::UniqueVariable {
+                        name: variable.name.clone(),
+                        original_definition,
                         redefined_definition,
-                        DiagnosticData::UniqueDefinition {
-                            ty: "variable",
-                            name: variable.name.to_string(),
-                            original_definition,
-                            redefined_definition,
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{}` here", variable.name),
-                        ),
-                        Label::new(
-                            redefined_definition,
-                            format!("`{}` redefined here", variable.name),
-                        ),
-                    ])
-                    .help(format!(
-                        "{} must only be defined once in this enum.",
-                        variable.name
-                    )),
-                );
+                    },
+                ));
             }
             Entry::Vacant(entry) => {
                 entry.insert(variable);
@@ -208,7 +175,7 @@ pub(crate) fn validate_unused_variables(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     operation: Node<ast::OperationDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let defined_vars: HashSet<_> = operation
@@ -247,8 +214,7 @@ pub(crate) fn validate_unused_variables(
         },
     );
     if walked.is_err() {
-        diagnostics.push(ApolloDiagnostic::new(
-            db,
+        diagnostics.push(ValidationError::new(
             None,
             DiagnosticData::RecursionError {},
         ));
@@ -259,25 +225,22 @@ pub(crate) fn validate_unused_variables(
 
     diagnostics.extend(unused_vars.map(|unused_var| {
         let loc = locations[unused_var];
-        ApolloDiagnostic::new(
-            db,
+        ValidationError::new(
             loc,
             DiagnosticData::UnusedVariable {
-                name: unused_var.to_string(),
+                name: unused_var.clone(),
             },
         )
-        .label(Label::new(loc, "this variable is never used"))
     }));
 
     diagnostics
 }
 
 pub(crate) fn validate_variable_usage(
-    db: &dyn ValidationDatabase,
     var_usage: Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
     argument: &Node<ast::Argument>,
-) -> Result<(), ApolloDiagnostic> {
+) -> Result<(), ValidationError> {
     if let ast::Value::Variable(var_name) = &*argument.value {
         // Let var_def be the VariableDefinition named
         // variable_name defined within operation.
@@ -285,43 +248,25 @@ pub(crate) fn validate_variable_usage(
         if let Some(var_def) = var_def {
             let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
             if !is_allowed {
-                return Err(ApolloDiagnostic::new(
-                    db,
+                return Err(ValidationError::new(
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
-                        var_name: var_def.name.to_string(),
-                        arg_name: argument.name.to_string(),
+                        variable: var_def.name.clone(),
+                        variable_type: (*var_def.ty).clone(),
+                        variable_location: var_def.location(),
+                        argument: argument.name.clone(),
+                        argument_type: (*var_usage.ty).clone(),
+                        argument_location: argument.location(),
                     },
-                )
-                .labels([
-                    Label::new(
-                        var_def.location(),
-                        format!(
-                            "variable `{}` of type `{}` is declared here",
-                            var_def.name, var_def.ty,
-                        ),
-                    ),
-                    Label::new(
-                        argument.location(),
-                        format!(
-                            "argument `{}` of type `{}` is declared here",
-                            argument.name, var_usage.ty,
-                        ),
-                    ),
-                ]));
+                ));
             }
         } else {
-            return Err(ApolloDiagnostic::new(
-                db,
-                argument.location(),
-                DiagnosticData::UndefinedVariable {
-                    name: var_name.to_string(),
-                },
-            )
-            .label(Label::new(
+            return Err(ValidationError::new(
                 argument.value.location(),
-                "not found in this scope",
-            )));
+                DiagnosticData::UndefinedVariable {
+                    name: var_name.clone(),
+                },
+            ));
         }
     }
     // It's super confusing to produce a diagnostic here if either the

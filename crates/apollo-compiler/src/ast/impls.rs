@@ -991,17 +991,17 @@ impl Value {
         }
     }
 
-    pub fn kind(&self) -> &'static str {
+    pub(crate) fn describe(&self) -> &'static str {
         match self {
-            Value::Null => "Null",
-            Value::Enum(_) => "Enum",
-            Value::Variable(_) => "Variable",
-            Value::String(_) => "String",
-            Value::Float(_) => "Float",
-            Value::Int(_) => "Int",
-            Value::Boolean(_) => "Boolean",
-            Value::List(_) => "List",
-            Value::Object(_) => "Object",
+            Value::Null => "null",
+            Value::Enum(_) => "an enum",
+            Value::Variable(_) => "a variable",
+            Value::String(_) => "a string",
+            Value::Float(_) => "a float",
+            Value::Int(_) => "an integer",
+            Value::Boolean(_) => "a boolean",
+            Value::List(_) => "a list",
+            Value::Object(_) => "an input object",
         }
     }
 

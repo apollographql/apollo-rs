@@ -21,6 +21,8 @@ mod validation_db;
 mod value;
 mod variable;
 
+pub(crate) mod diagnostics;
+
 use crate::ast::Name;
 use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
 use crate::executable::BuildError as ExecutableBuildError;
@@ -201,8 +203,9 @@ pub(crate) enum Details {
     SchemaBuildError(SchemaBuildError),
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
-    #[error("compiler error: {0}")]
-    CompilerDiagnostic(crate::ApolloDiagnostic),
+    // TODO: Merge ValidationError into this enum
+    #[error(transparent)]
+    CompilerDiagnostic(diagnostics::ValidationError),
 }
 
 impl ToCliReport for DiagnosticData {

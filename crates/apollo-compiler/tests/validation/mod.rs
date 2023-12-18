@@ -128,15 +128,15 @@ fragment q on TestObject {
 }
 "#;
     let json = expect_test::expect![[r#"
-{
-  "message": "compiler error: `q` fragment cannot reference itself",
-  "locations": [
-    {
-      "line": 8,
-      "column": 1
-    }
-  ]
-}"#]];
+        {
+          "message": "`q` fragment cannot reference itself",
+          "locations": [
+            {
+              "line": 8,
+              "column": 1
+            }
+          ]
+        }"#]];
 
     let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
     let diagnostics =
@@ -172,15 +172,15 @@ fn validation_without_type_system() {
     )
     .unwrap();
     let json = expect_test::expect![[r#"
-{
-  "message": "compiler error: fragment `A` must be used in an operation",
-  "locations": [
-    {
-      "line": 2,
-      "column": 13
-    }
-  ]
-}"#]];
+        {
+          "message": "fragment `A` must be used in an operation",
+          "locations": [
+            {
+              "line": 2,
+              "column": 13
+            }
+          ]
+        }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string();
     assert!(
@@ -236,15 +236,15 @@ fn validation_without_type_system() {
 
     let doc = ast::Document::parse(r#"{ ...A }"#, "unknown_frag.graphql").unwrap();
     let json = expect_test::expect![[r#"
-{
-  "message": "compiler error: cannot find fragment `A` in this document",
-  "locations": [
-    {
-      "line": 1,
-      "column": 3
-    }
-  ]
-}"#]];
+        {
+          "message": "cannot find fragment `A` in this document",
+          "locations": [
+            {
+              "line": 1,
+              "column": 3
+            }
+          ]
+        }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
     let errors = diagnostics.to_string();
     assert!(

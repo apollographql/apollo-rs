@@ -1,11 +1,11 @@
 use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema, ValidationDatabase,
+    ast, schema,
+    validation::diagnostics::{DiagnosticData, ValidationError},
+    ValidationDatabase,
 };
 use std::collections::HashSet;
 
-pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for interface in db.ast_types().interfaces.values() {
@@ -18,7 +18,7 @@ pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec
 pub(crate) fn validate_interface_definition(
     db: &dyn ValidationDatabase,
     interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -48,19 +48,12 @@ pub(crate) fn validate_interface_definition(
     // }
     for implements_interface in interface.implements_interfaces() {
         if *implements_interface == interface.definition.name {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    implements_interface.location(),
-                    DiagnosticData::RecursiveInterfaceDefinition {
-                        name: implements_interface.to_string(),
-                    },
-                )
-                .label(Label::new(
-                    implements_interface.location(),
-                    format!("interface {implements_interface} cannot implement itself"),
-                )),
-            );
+            diagnostics.push(ValidationError::new(
+                implements_interface.location(),
+                DiagnosticData::RecursiveInterfaceDefinition {
+                    name: implements_interface.clone(),
+                },
+            ));
         }
     }
 
@@ -91,36 +84,16 @@ pub(crate) fn validate_interface_definition(
                 if field_names.contains(&super_field.name) {
                     continue;
                 }
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        interface.definition.location(),
-                        DiagnosticData::MissingInterfaceField {
-                            interface: implements_interface.to_string(),
-                            field: super_field.name.to_string(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            implements_interface.location(),
-                            format!(
-                                "implementation of interface {implements_interface} declared here"
-                            ),
-                        ),
-                        Label::new(
-                            super_field.location(),
-                            format!(
-                                "`{}` was originally defined by {} here",
-                                super_field.name, implements_interface
-                            ),
-                        ),
-                        Label::new(
-                            interface.definition.location(),
-                            format!("add `{}` field to this interface", super_field.name),
-                        ),
-                    ])
-                    .help("An interface must be a super-set of all interfaces it implements"),
-                );
+                diagnostics.push(ValidationError::new(
+                    interface.definition.location(),
+                    DiagnosticData::MissingInterfaceField {
+                        name: interface.definition.name.clone(),
+                        implements_location: implements_interface.location(),
+                        interface: implements_interface.clone(),
+                        field: super_field.name.clone(),
+                        field_location: super_field.location(),
+                    },
+                ));
             }
         }
     }
@@ -132,7 +105,7 @@ pub(crate) fn validate_implements_interfaces(
     db: &dyn ValidationDatabase,
     implementor: &ast::Definition,
     implements_interfaces: &[ast::Name],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -156,16 +129,12 @@ pub(crate) fn validate_implements_interfaces(
 
         // interface_name.loc should always be Some
         let loc = interface_name.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                loc,
-                DiagnosticData::UndefinedDefinition {
-                    name: interface_name.to_string(),
-                },
-            )
-            .label(Label::new(loc, "not found in this scope")),
-        );
+        diagnostics.push(ValidationError::new(
+            loc,
+            DiagnosticData::UndefinedDefinition {
+                name: interface_name.clone(),
+            },
+        ));
     }
 
     // Transitively implemented interfaces must be defined on an implementing
@@ -188,25 +157,15 @@ pub(crate) fn validate_implements_interfaces(
         // let via_loc = via_interface
         //     .location();
         let transitive_loc = transitive_interface.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                definition_loc,
-                DiagnosticData::TransitiveImplementedInterfaces {
-                    missing_interface: transitive_interface.to_string(),
-                },
-            )
-            .label(Label::new(
-                transitive_loc,
-                format!(
-                    "implementation of {transitive_interface} declared by {via_interface} here"
-                ),
-            ))
-            .label(Label::new(
-                definition_loc,
-                format!("{transitive_interface} must also be implemented here"),
-            )),
-        );
+        diagnostics.push(ValidationError::new(
+            definition_loc,
+            DiagnosticData::TransitiveImplementedInterfaces {
+                interface: implementor.name().unwrap().clone(),
+                via_interface: via_interface.clone(),
+                missing_interface: transitive_interface.clone(),
+                transitive_interface_location: transitive_loc,
+            },
+        ));
     }
 
     diagnostics

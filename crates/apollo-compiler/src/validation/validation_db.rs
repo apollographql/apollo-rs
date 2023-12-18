@@ -1,4 +1,4 @@
-use crate::diagnostics::ApolloDiagnostic;
+use crate::validation::diagnostics::ValidationError;
 use crate::validation::{
     self, directive, enum_, input_object, interface, object, operation, scalar, union_, FileId,
 };
@@ -17,101 +17,101 @@ pub(crate) trait ValidationDatabase: InputDatabase + ReprDatabase {
     ) -> Arc<HashMap<ast::Name, Node<ast::FragmentDefinition>>>;
 
     /// Validate all documents.
-    fn validate(&self) -> Vec<ApolloDiagnostic>;
+    fn validate(&self) -> Vec<ValidationError>;
 
     /// Validate the type system, combined of all type system documents known to
     /// the compiler.
     #[salsa::invoke(validate_type_system)]
-    fn validate_type_system(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_type_system(&self) -> Vec<ValidationError>;
 
     /// Validate an executable document.
     #[salsa::invoke(validate_executable)]
-    fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_executable(&self, file_id: FileId) -> Vec<ValidationError>;
 
     /// Validate a standalone executable document, without knowledge of the type system it executes
     /// against.
     ///
     /// This runs a subset of the validations from `validate_executable`.
     #[salsa::invoke(validate_standalone_executable)]
-    fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ValidationError>;
 
     #[salsa::invoke(validation::schema::validate_schema_definition)]
     fn validate_schema_definition(
         &self,
         def: ast::TypeWithExtensions<ast::SchemaDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(scalar::validate_scalar_definitions)]
-    fn validate_scalar_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_scalar_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(scalar::validate_scalar_definition)]
     fn validate_scalar_definition(
         &self,
         scalar_def: Node<schema::ScalarType>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(enum_::validate_enum_definitions)]
-    fn validate_enum_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_enum_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(enum_::validate_enum_definition)]
     fn validate_enum_definition(
         &self,
         enum_: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(union_::validate_union_definitions)]
-    fn validate_union_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_union_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(union_::validate_union_definition)]
     fn validate_union_definition(
         &self,
         union_: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(interface::validate_interface_definitions)]
-    fn validate_interface_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_interface_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(interface::validate_interface_definition)]
     fn validate_interface_definition(
         &self,
         interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(directive::validate_directive_definition)]
     fn validate_directive_definition(
         &self,
         directive_definition: Node<ast::DirectiveDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(directive::validate_directive_definitions)]
-    fn validate_directive_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_directive_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(input_object::validate_input_object_definitions)]
-    fn validate_input_object_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_input_object_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(input_object::validate_input_object_definition)]
     fn validate_input_object_definition(
         &self,
         input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(object::validate_object_type_definitions)]
-    fn validate_object_type_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_object_type_definitions(&self) -> Vec<ValidationError>;
 
     #[salsa::invoke(object::validate_object_type_definition)]
     fn validate_object_type_definition(
         &self,
         def: ast::TypeWithExtensions<ast::ObjectTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(field::validate_field_definitions)]
     fn validate_field_definitions(
         &self,
         fields: Vec<Node<ast::FieldDefinition>>,
-    ) -> Vec<ApolloDiagnostic>;
+    ) -> Vec<ValidationError>;
 
     #[salsa::invoke(operation::validate_operation_definitions)]
-    fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ValidationError>;
 }
 
 fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
@@ -287,7 +287,7 @@ pub(crate) fn ast_named_fragments(
     Arc::new(named_fragments)
 }
 
-pub(crate) fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_type_system());
@@ -299,7 +299,7 @@ pub(crate) fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics
 }
 
-pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.ast_types().schema.clone();
@@ -321,7 +321,7 @@ fn validate_executable_inner(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(super::operation::validate_operation_definitions_inner(
@@ -341,13 +341,13 @@ fn validate_executable_inner(
 pub(crate) fn validate_standalone_executable(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     validate_executable_inner(db, file_id, false)
 }
 
 pub(crate) fn validate_executable(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     validate_executable_inner(db, file_id, true)
 }

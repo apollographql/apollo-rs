@@ -1,10 +1,8 @@
-use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema,
-    validation::{CycleError, RecursionGuard, RecursionStack},
-    Node, ValidationDatabase,
-};
+use crate::ast;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::{CycleError, RecursionGuard, RecursionStack};
+use crate::Node;
+use crate::ValidationDatabase;
 use std::collections::HashMap;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
@@ -64,7 +62,7 @@ impl FindRecursiveInputValue<'_> {
 
 pub(crate) fn validate_input_object_definitions(
     db: &dyn ValidationDatabase,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for input_object in db.ast_types().input_objects.values() {
@@ -77,7 +75,7 @@ pub(crate) fn validate_input_object_definitions(
 pub(crate) fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
     input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = super::directive::validate_directives(
         db,
         input_object.directives(),
@@ -88,53 +86,21 @@ pub(crate) fn validate_input_object_definition(
 
     match FindRecursiveInputValue::check(db, &input_object) {
         Ok(_) => {}
-        Err(CycleError::Recursed(trace)) => {
-            let mut diagnostic = ApolloDiagnostic::new(
-                db,
-                input_object.definition.location(),
-                DiagnosticData::RecursiveInputObjectDefinition {
-                    name: input_object.definition.name.to_string(),
-                },
-            )
-            .label(Label::new(
-                input_object.definition.location(),
-                "cyclical input object definition",
-            ));
-
-            if let Some((cyclical_reference, path)) = trace.split_first() {
-                let mut prev_name = &input_object.definition.name;
-                for reference in path.iter().rev() {
-                    diagnostic = diagnostic.label(Label::new(
-                        reference.location(),
-                        format!("`{}` references `{}` here...", prev_name, reference.name),
-                    ));
-                    prev_name = &reference.name;
-                }
-
-                diagnostic = diagnostic.label(Label::new(
-                    cyclical_reference.location(),
-                    format!(
-                        "`{}` circularly references `{}` here",
-                        prev_name, cyclical_reference.name
-                    ),
-                ));
-            }
-            diagnostics.push(diagnostic);
-        }
+        Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
+            input_object.definition.location(),
+            DiagnosticData::RecursiveInputObjectDefinition {
+                name: input_object.definition.name.clone(),
+                trace,
+            },
+        )),
         Err(CycleError::Limit(_)) => {
-            let diagnostic = ApolloDiagnostic::new(
-                db,
+            diagnostics.push(ValidationError::new(
                 input_object.definition.location(),
                 DiagnosticData::DeeplyNestedType {
-                    name: input_object.definition.name.to_string(),
+                    name: input_object.definition.name.clone(),
+                    describe_type: "input object",
                 },
-            )
-            .label(Label::new(
-                input_object.definition.location(),
-                "input object references a very long chain of input objects",
             ));
-
-            diagnostics.push(diagnostic);
         }
     }
 
@@ -155,36 +121,24 @@ pub(crate) fn validate_argument_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = validate_input_value_definitions(db, input_values, directive_location);
 
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
         let name = &input_value.name;
         if let Some(prev_value) = seen.get(name) {
-            let (original_value, redefined_value) = (prev_value.location(), input_value.location());
+            let (original_definition, redefined_definition) =
+                (prev_value.location(), input_value.location());
 
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    original_value,
-                    DiagnosticData::UniqueInputValue {
-                        name: name.to_string(),
-                        original_value,
-                        redefined_value,
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_value,
-                        format!("previous definition of `{name}` here"),
-                    ),
-                    Label::new(redefined_value, format!("`{name}` redefined here")),
-                ])
-                .help(format!(
-                    "`{name}` field must only be defined once in this input object definition."
-                )),
-            );
+            diagnostics.push(ValidationError::new(
+                original_definition,
+                DiagnosticData::UniqueInputValue {
+                    name: name.clone(),
+                    original_definition,
+                    redefined_definition,
+                },
+            ));
         } else {
             seen.insert(name.clone(), input_value);
         }
@@ -197,7 +151,7 @@ pub(crate) fn validate_input_value_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let schema = db.schema();
 
     let mut diagnostics = Vec::new();
@@ -213,36 +167,24 @@ pub(crate) fn validate_input_value_definitions(
         let loc = input_value.location();
         if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
             if !field_ty.is_input_type() {
-                let (particle, kind) = match field_ty {
-                    schema::ExtendedType::Scalar(_) => unreachable!(),
-                    schema::ExtendedType::Object(_) => ("an", "object"),
-                    schema::ExtendedType::Interface(_) => ("an", "interface"),
-                    schema::ExtendedType::Union(_) => ("a", "union"),
-                    schema::ExtendedType::Enum(_) => unreachable!(),
-                    schema::ExtendedType::InputObject(_) => unreachable!(),
-                };
-                diagnostics.push(
-                    ApolloDiagnostic::new(db, loc, DiagnosticData::InputType {
-                        name: input_value.name.to_string(),
-                        ty: kind,
-                    })
-                        .label(Label::new(loc, format!("this is {particle} {kind}")))
-                        .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to take one of these input types.", input_value.name)),
-                );
+                diagnostics.push(ValidationError::new(
+                    loc,
+                    DiagnosticData::InputType {
+                        name: input_value.name.clone(),
+                        describe_type: field_ty.describe(),
+                        type_location: input_value.ty.location(),
+                    },
+                ));
             }
         } else {
             let named_type = input_value.ty.inner_named_type();
             let loc = named_type.location();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    loc,
-                    DiagnosticData::UndefinedDefinition {
-                        name: named_type.to_string(),
-                    },
-                )
-                .label(Label::new(loc, "not found in this scope")),
-            );
+            diagnostics.push(ValidationError::new(
+                loc,
+                DiagnosticData::UndefinedDefinition {
+                    name: named_type.clone(),
+                },
+            ));
         }
     }
 

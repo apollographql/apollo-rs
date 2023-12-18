@@ -140,7 +140,8 @@ interface Image implements Resource & Node {
         .errors
         .to_string();
     assert!(
-        errors.contains("type does not satisfy interface `Resource`: missing field `width`"),
+        errors
+            .contains("type `Image` does not satisfy interface `Resource`: missing field `width`"),
         "{errors}"
     );
 }

@@ -1,6 +1,6 @@
-use crate::{ast, diagnostics::ApolloDiagnostic, schema, Node, ValidationDatabase};
+use crate::{ast, schema, validation::diagnostics::ValidationError, Node, ValidationDatabase};
 
-pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -16,7 +16,7 @@ pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<Ap
 pub(crate) fn validate_scalar_definition(
     db: &dyn ValidationDatabase,
     scalar_def: Node<schema::ScalarType>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     // All built-in scalars must be omitted for brevity.

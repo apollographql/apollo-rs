@@ -41,11 +41,11 @@ type Products {
         .unwrap_err()
         .to_string();
     assert!(
-        errors.contains("variable `undefinedVariable` is not defined"),
+        errors.contains("variable `$undefinedVariable` is not defined"),
         "{errors}"
     );
     assert!(
-        errors.contains("variable `dimensions` is not defined"),
+        errors.contains("variable `$dimensions` is not defined"),
         "{errors}"
     );
 }
@@ -74,7 +74,7 @@ type Product {
         .unwrap_err()
         .to_string();
     assert!(
-        errors.contains("unused variable: `unusedVariable`"),
+        errors.contains("unused variable: `$unusedVariable`"),
         "{errors}"
     );
 }
@@ -124,11 +124,11 @@ type Product {
         .unwrap_err()
         .to_string();
     assert!(
-        errors.contains("variable `goldStatus` is not defined"),
+        errors.contains("variable `$goldStatus` is not defined"),
         "{errors}"
     );
     assert!(
-        errors.contains("variable `dimensions` is not defined"),
+        errors.contains("variable `$dimensions` is not defined"),
         "{errors}"
     );
 }

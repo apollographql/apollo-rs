@@ -1,208 +1,288 @@
 Error: skip directive is not supported for VARIABLE_DEFINITION location
-   ╭─[0050_directives_in_invalid_locations.graphql:1:30]
-   │
- 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
-   │                              ───────┬───────  
-   │                                     ╰───────── VARIABLE_DEFINITION is not a valid location
-   │ 
-   │ Help: the directive must be used in a location that the service has declared support for
-───╯
+     ╭─[0050_directives_in_invalid_locations.graphql:1:30]
+     │
+   1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
+     │                              ───────┬───────  
+     │                                     ╰───────── directive cannot be used on VARIABLE_DEFINITION
+     │
+     ├─[built_in.graphql:96:1]
+     │
+  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+     ┆ ┆   
+ 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: skip directive is not supported for QUERY location
-   ╭─[0050_directives_in_invalid_locations.graphql:1:47]
-   │
- 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
-   │                                               ────────┬───────  
-   │                                                       ╰───────── QUERY is not a valid location
-   │ 
-   │ Help: the directive must be used in a location that the service has declared support for
-───╯
+     ╭─[0050_directives_in_invalid_locations.graphql:1:47]
+     │
+   1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
+     │                                               ────────┬───────  
+     │                                                       ╰───────── directive cannot be used on QUERY
+     │
+     ├─[built_in.graphql:96:1]
+     │
+  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+     ┆ ┆   
+ 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: deprecated directive is not supported for FIELD location
-   ╭─[0050_directives_in_invalid_locations.graphql:3:29]
-   │
- 3 │   response(status: $status) @deprecated
-   │                             ─────┬─────  
-   │                                  ╰─────── FIELD is not a valid location
-   │ 
-   │ Help: the directive must be used in a location that the service has declared support for
-───╯
+     ╭─[0050_directives_in_invalid_locations.graphql:3:29]
+     │
+   3 │   response(status: $status) @deprecated
+     │                             ─────┬─────  
+     │                                  ╰─────── directive cannot be used on FIELD
+     │
+     ├─[built_in.graphql:108:1]
+     │
+ 108 │ ╭─▶ "Marks an element of a GraphQL schema as no longer supported."
+     ┆ ┆   
+ 117 │ ├─▶ ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+     │ │                                                                                       
+     │ ╰─────────────────────────────────────────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD_DEFINITION, ARGUMENT_DEFINITION, INPUT_FIELD_DEFINITION, ENUM_VALUE
+─────╯
 Error: directiveB directive is not supported for FRAGMENT_SPREAD location
     ╭─[0050_directives_in_invalid_locations.graphql:5:20]
     │
   5 │     pets { ... pet @directiveB }
     │                    ─────┬─────  
-    │                         ╰─────── FRAGMENT_SPREAD is not a valid location
+    │                         ╰─────── directive cannot be used on FRAGMENT_SPREAD
     │ 
  89 │ directive @directiveB on ENUM
     │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding FRAGMENT_SPREAD directive location here
+    │               ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: ENUM
 ────╯
 Error: directiveB directive is not supported for FRAGMENT_DEFINITION location
     ╭─[0050_directives_in_invalid_locations.graphql:9:21]
     │
   9 │ fragment pet on Cat @directiveB {
     │                     ─────┬─────  
-    │                          ╰─────── FRAGMENT_DEFINITION is not a valid location
+    │                          ╰─────── directive cannot be used on FRAGMENT_DEFINITION
     │ 
  89 │ directive @directiveB on ENUM
     │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding FRAGMENT_DEFINITION directive location here
+    │               ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: ENUM
 ────╯
 Error: directiveA directive is not supported for INLINE_FRAGMENT location
     ╭─[0050_directives_in_invalid_locations.graphql:11:14]
     │
  11 │   ... on Pet @directiveA {
     │              ─────┬─────  
-    │                   ╰─────── INLINE_FRAGMENT is not a valid location
+    │                   ╰─────── directive cannot be used on INLINE_FRAGMENT
     │ 
  88 │ directive @directiveA on UNION
     │ ───────────────┬──────────────  
-    │                ╰──────────────── consider adding INLINE_FRAGMENT directive location here
+    │                ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: UNION
 ────╯
 Error: directiveA directive is not supported for SUBSCRIPTION location
     ╭─[0050_directives_in_invalid_locations.graphql:16:28]
     │
  16 │ subscription subscriptionA @directiveA {
     │                            ─────┬─────  
-    │                                 ╰─────── SUBSCRIPTION is not a valid location
+    │                                 ╰─────── directive cannot be used on SUBSCRIPTION
     │ 
  88 │ directive @directiveA on UNION
     │ ───────────────┬──────────────  
-    │                ╰──────────────── consider adding SUBSCRIPTION directive location here
+    │                ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: UNION
 ────╯
 Error: skip directive is not supported for MUTATION location
-    ╭─[0050_directives_in_invalid_locations.graphql:23:21]
-    │
- 23 │ mutation myMutation @skip(if: true) {
-    │                     ───────┬───────  
-    │                            ╰───────── MUTATION is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:23:21]
+     │
+  23 │ mutation myMutation @skip(if: true) {
+     │                     ───────┬───────  
+     │                            ╰───────── directive cannot be used on MUTATION
+     │
+     ├─[built_in.graphql:96:1]
+     │
+  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+     ┆ ┆   
+ 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: skip directive is not supported for INTERFACE location
-    ╭─[0050_directives_in_invalid_locations.graphql:27:15]
-    │
- 27 │ interface Pet @skip(if: true) {
-    │               ───────┬───────  
-    │                      ╰───────── INTERFACE is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:27:15]
+     │
+  27 │ interface Pet @skip(if: true) {
+     │               ───────┬───────  
+     │                      ╰───────── directive cannot be used on INTERFACE
+     │
+     ├─[built_in.graphql:96:1]
+     │
+  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+     ┆ ┆   
+ 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: directiveB directive is not supported for FIELD_DEFINITION location
     ╭─[0050_directives_in_invalid_locations.graphql:32:16]
     │
  32 │   name: String @directiveB
     │                ─────┬─────  
-    │                     ╰─────── FIELD_DEFINITION is not a valid location
+    │                     ╰─────── directive cannot be used on FIELD_DEFINITION
     │ 
  89 │ directive @directiveB on ENUM
     │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding FIELD_DEFINITION directive location here
+    │               ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: ENUM
 ────╯
 Error: include directive is not supported for INPUT_OBJECT location
-    ╭─[0050_directives_in_invalid_locations.graphql:43:15]
-    │
- 43 │ input Example @include(if: true) {
-    │               ─────────┬────────  
-    │                        ╰────────── INPUT_OBJECT is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:43:15]
+     │
+  43 │ input Example @include(if: true) {
+     │               ─────────┬────────  
+     │                        ╰────────── directive cannot be used on INPUT_OBJECT
+     │
+     ├─[built_in.graphql:102:1]
+     │
+ 102 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
+     ┆ ┆   
+ 106 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: include directive is not supported for INPUT_FIELD_DEFINITION location
-    ╭─[0050_directives_in_invalid_locations.graphql:44:17]
-    │
- 44 │   self: Example @include(if: true)
-    │                 ─────────┬────────  
-    │                          ╰────────── INPUT_FIELD_DEFINITION is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:44:17]
+     │
+  44 │   self: Example @include(if: true)
+     │                 ─────────┬────────  
+     │                          ╰────────── directive cannot be used on INPUT_FIELD_DEFINITION
+     │
+     ├─[built_in.graphql:102:1]
+     │
+ 102 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
+     ┆ ┆   
+ 106 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: directiveB directive is not supported for UNION location
     ╭─[0050_directives_in_invalid_locations.graphql:48:16]
     │
  48 │ union CatOrDog @directiveB = Cat | Dog
     │                ─────┬─────  
-    │                     ╰─────── UNION is not a valid location
+    │                     ╰─────── directive cannot be used on UNION
     │ 
  89 │ directive @directiveB on ENUM
     │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding UNION directive location here
+    │               ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: ENUM
 ────╯
 Error: directiveA directive is not supported for ENUM location
     ╭─[0050_directives_in_invalid_locations.graphql:55:13]
     │
  55 │ enum Status @directiveA {
     │             ─────┬─────  
-    │                  ╰─────── ENUM is not a valid location
+    │                  ╰─────── directive cannot be used on ENUM
     │ 
  88 │ directive @directiveA on UNION
     │ ───────────────┬──────────────  
-    │                ╰──────────────── consider adding ENUM directive location here
+    │                ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: UNION
 ────╯
 Error: directiveA directive is not supported for ENUM_VALUE location
     ╭─[0050_directives_in_invalid_locations.graphql:56:9]
     │
  56 │   GREEN @directiveA,
     │         ─────┬─────  
-    │              ╰─────── ENUM_VALUE is not a valid location
+    │              ╰─────── directive cannot be used on ENUM_VALUE
     │ 
  88 │ directive @directiveA on UNION
     │ ───────────────┬──────────────  
-    │                ╰──────────────── consider adding ENUM_VALUE directive location here
+    │                ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: UNION
 ────╯
 Error: deprecated directive is not supported for OBJECT location
-    ╭─[0050_directives_in_invalid_locations.graphql:61:12]
-    │
- 61 │ type Query @deprecated {
-    │            ─────┬─────  
-    │                 ╰─────── OBJECT is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:61:12]
+     │
+  61 │ type Query @deprecated {
+     │            ─────┬─────  
+     │                 ╰─────── directive cannot be used on OBJECT
+     │
+     ├─[built_in.graphql:108:1]
+     │
+ 108 │ ╭─▶ "Marks an element of a GraphQL schema as no longer supported."
+     ┆ ┆   
+ 117 │ ├─▶ ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+     │ │                                                                                       
+     │ ╰─────────────────────────────────────────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD_DEFINITION, ARGUMENT_DEFINITION, INPUT_FIELD_DEFINITION, ENUM_VALUE
+─────╯
 Error: specifiedBy directive is not supported for ARGUMENT_DEFINITION location
-    ╭─[0050_directives_in_invalid_locations.graphql:64:27]
-    │
- 64 │   response(status: String @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")): Status
-    │                           ────────────────────────────┬───────────────────────────  
-    │                                                       ╰───────────────────────────── ARGUMENT_DEFINITION is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:64:27]
+     │
+  64 │   response(status: String @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")): Status
+     │                           ────────────────────────────┬───────────────────────────  
+     │                                                       ╰───────────────────────────── directive cannot be used on ARGUMENT_DEFINITION
+     │
+     ├─[built_in.graphql:119:1]
+     │
+ 119 │ ╭─▶ "Exposes a URL that specifies the behaviour of this scalar."
+     ┆ ┆   
+ 123 │ ├─▶ ) on SCALAR
+     │ │                 
+     │ ╰───────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: SCALAR
+─────╯
 Error: include directive is not supported for SCHEMA location
-    ╭─[0050_directives_in_invalid_locations.graphql:75:8]
-    │
- 75 │ schema @include(if: true) {
-    │        ─────────┬────────  
-    │                 ╰────────── SCHEMA is not a valid location
-    │ 
-    │ Help: the directive must be used in a location that the service has declared support for
-────╯
+     ╭─[0050_directives_in_invalid_locations.graphql:75:8]
+     │
+  75 │ schema @include(if: true) {
+     │        ─────────┬────────  
+     │                 ╰────────── directive cannot be used on SCHEMA
+     │
+     ├─[built_in.graphql:102:1]
+     │
+ 102 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
+     ┆ ┆   
+ 106 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+     │ │                                                    
+     │ ╰──────────────────────────────────────────────────── directive defined here
+     │     
+     │     Help: the directive must be used in a location that the service has declared support for: FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT
+─────╯
 Error: directiveB directive is not supported for SCALAR location
     ╭─[0050_directives_in_invalid_locations.graphql:86:13]
     │
  86 │ scalar spec @directiveB @specifiedBy(url: "https://spec.graphql.org/")
     │             ─────┬─────  
-    │                  ╰─────── SCALAR is not a valid location
+    │                  ╰─────── directive cannot be used on SCALAR
     │ 
  89 │ directive @directiveB on ENUM
     │ ──────────────┬──────────────  
-    │               ╰──────────────── consider adding SCALAR directive location here
+    │               ╰──────────────── directive defined here
     │ 
-    │ Help: the directive must be used in a location that the service has declared support for
+    │ Help: the directive must be used in a location that the service has declared support for: ENUM
 ────╯
 
