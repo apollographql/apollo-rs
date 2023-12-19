@@ -58,6 +58,7 @@ out and leave us any feedback in [the introspection discussion]. More details on
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [SimonSapin]: https://github.com/SimonSapin
 [pull/747]: https://github.com/apollographql/apollo-rs/pull/747
+[pull/757]: https://github.com/apollographql/apollo-rs/pull/757
 [pull/758]: https://github.com/apollographql/apollo-rs/pull/758
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774
