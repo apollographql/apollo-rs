@@ -1,4 +1,4 @@
-Error: subscription operations can not have an introspection field as a root field
+Error: subscription `sub` can not have an introspection field as a root field
    ╭─[0051_subscription_operation_with_root_introspection_field.graphql:2:3]
    │
  2 │   __typename

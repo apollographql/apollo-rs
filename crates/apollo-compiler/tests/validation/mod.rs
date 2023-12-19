@@ -61,7 +61,7 @@ query {
         ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
             .unwrap_err()
             .errors;
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("an executable document must not contain an object type definition"),
         "{errors}"
@@ -97,7 +97,7 @@ fragment q on Query {
     let errors = ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
         .unwrap_err()
         .errors
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
         "{errors}"
@@ -128,22 +128,22 @@ fragment q on TestObject {
 }
 "#;
     let json = expect_test::expect![[r#"
-{
-  "message": "compiler error: `q` fragment cannot reference itself",
-  "locations": [
-    {
-      "line": 8,
-      "column": 1
-    }
-  ]
-}"#]];
+        {
+          "message": "`q` fragment cannot reference itself",
+          "locations": [
+            {
+              "line": 8,
+              "column": 1
+            }
+          ]
+        }"#]];
 
     let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
     let diagnostics =
         ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
             .unwrap_err()
             .errors;
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("`q` fragment cannot reference itself"),
         "{errors}"
@@ -172,17 +172,17 @@ fn validation_without_type_system() {
     )
     .unwrap();
     let json = expect_test::expect![[r#"
-{
-  "message": "compiler error: fragment `A` must be used in an operation",
-  "locations": [
-    {
-      "line": 2,
-      "column": 13
-    }
-  ]
-}"#]];
+        {
+          "message": "fragment `A` must be used in an operation",
+          "locations": [
+            {
+              "line": 2,
+              "column": 13
+            }
+          ]
+        }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("fragment `A` must be used in an operation"),
         "{errors}"
@@ -218,7 +218,7 @@ fn validation_without_type_system() {
   ]
 }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("the fragment `A` is defined multiple times in the document"),
         "{errors}"
@@ -236,17 +236,17 @@ fn validation_without_type_system() {
 
     let doc = ast::Document::parse(r#"{ ...A }"#, "unknown_frag.graphql").unwrap();
     let json = expect_test::expect![[r#"
-{
-  "message": "compiler error: cannot find fragment `A` in this document",
-  "locations": [
-    {
-      "line": 1,
-      "column": 3
-    }
-  ]
-}"#]];
+        {
+          "message": "cannot find fragment `A` in this document",
+          "locations": [
+            {
+              "line": 1,
+              "column": 3
+            }
+          ]
+        }"#]];
     let diagnostics = doc.validate_standalone_executable().unwrap_err();
-    let errors = diagnostics.to_string_no_color();
+    let errors = diagnostics.to_string();
     assert!(
         errors.contains("cannot find fragment `A` in this document"),
         "{errors}"

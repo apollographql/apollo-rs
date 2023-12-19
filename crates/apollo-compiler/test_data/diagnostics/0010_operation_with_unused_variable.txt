@@ -1,8 +1,8 @@
-Error: unused variable: `unusedVariable`
+Error: unused variable: `$unusedVariable`
    ╭─[0010_operation_with_unused_variable.graphql:1:20]
    │
  1 │ query ExampleQuery($unusedVariable: Int) {
    │                    ───────┬───────  
-   │                           ╰───────── this variable is never used
+   │                           ╰───────── variable is never used
 ───╯
 

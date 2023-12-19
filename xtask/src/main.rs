@@ -45,8 +45,6 @@ fn run_clippy() -> Result<()> {
     )
     .run()?;
 
-    cmd!(sh, "cargo clippy --benches").run()?;
-
     Ok(())
 }
 

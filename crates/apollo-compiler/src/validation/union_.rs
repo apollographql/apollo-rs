@@ -1,10 +1,10 @@
 use crate::{
-    ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema, ValidationDatabase,
+    ast, schema,
+    validation::diagnostics::{DiagnosticData, ValidationError},
+    ValidationDatabase,
 };
 
-pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for def in db.ast_types().unions.values() {
@@ -17,7 +17,7 @@ pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<Apo
 pub(crate) fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = super::directive::validate_directives(
         db,
         union_def.directives(),
@@ -35,43 +35,23 @@ pub(crate) fn validate_union_definition(
         match schema.types.get(union_member) {
             None => {
                 // Union member must be defined.
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        member_location,
-                        DiagnosticData::UndefinedDefinition {
-                            name: union_member.to_string(),
-                        },
-                    )
-                    .label(Label::new(member_location, "not found in this scope")),
-                );
+                diagnostics.push(ValidationError::new(
+                    member_location,
+                    DiagnosticData::UndefinedDefinition {
+                        name: union_member.clone(),
+                    },
+                ));
             }
             Some(schema::ExtendedType::Object(_)) => {} // good
             Some(ty) => {
                 // Union member must be of object type.
-                let (particle, kind) = match ty {
-                    schema::ExtendedType::Object(_) => unreachable!(),
-                    schema::ExtendedType::Scalar(_) => ("a", "scalar"),
-                    schema::ExtendedType::Interface(_) => ("an", "interface"),
-                    schema::ExtendedType::Union(_) => ("an", "union"),
-                    schema::ExtendedType::Enum(_) => ("an", "enum"),
-                    schema::ExtendedType::InputObject(_) => ("an", "input object"),
-                };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        member_location,
-                        DiagnosticData::ObjectType {
-                            name: union_member.to_string(),
-                            ty: kind,
-                        },
-                    )
-                    .label(Label::new(
-                        member_location,
-                        format!("This is a {particle} {kind}"),
-                    ))
-                    .help("Union members must be of base Object Type."),
-                );
+                diagnostics.push(ValidationError::new(
+                    member_location,
+                    DiagnosticData::UnionMemberObjectType {
+                        name: union_member.clone(),
+                        describe_type: ty.describe(),
+                    },
+                ));
             }
         }
     }

@@ -1,4 +1,4 @@
-Error: the required argument `req1` is not provided
+Error: the required argument `ComplicatedArgs.multipleReqs(req1:)` is not provided
     ╭─[0054_argument_not_provided.graphql:14:5]
     │
   2 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -9,7 +9,7 @@ Error: the required argument `req1` is not provided
     │     ──────┬─────  
     │           ╰─────── missing value for argument `req1`
 ────╯
-Error: the required argument `req2` is not provided
+Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provided
     ╭─[0054_argument_not_provided.graphql:14:5]
     │
   2 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -20,7 +20,7 @@ Error: the required argument `req2` is not provided
     │     ──────┬─────  
     │           ╰─────── missing value for argument `req2`
 ────╯
-Error: the required argument `req1` is not provided
+Error: the required argument `ComplicatedArgs.multipleReqs(req1:)` is not provided
     ╭─[0054_argument_not_provided.graphql:17:5]
     │
   2 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -31,7 +31,7 @@ Error: the required argument `req1` is not provided
     │     ────────────────┬────────────────  
     │                     ╰────────────────── missing value for argument `req1`
 ────╯
-Error: the required argument `if` is not provided
+Error: the required argument `@skip(if:)` is not provided
     ╭─[0054_argument_not_provided.graphql:21:9]
     │
  21 │   basic @skip @include(wrong: false) {
@@ -45,7 +45,7 @@ Error: the required argument `if` is not provided
     │ │                    
     │ ╰──────────────────── argument defined here
 ────╯
-Error: the required argument `if` is not provided
+Error: the required argument `@include(if:)` is not provided
      ╭─[0054_argument_not_provided.graphql:21:15]
      │
   21 │   basic @skip @include(wrong: false) {
@@ -59,16 +59,16 @@ Error: the required argument `if` is not provided
      │ │                    
      │ ╰──────────────────── argument defined here
 ─────╯
-Error: the argument `wrong` is not supported
+Error: the argument `wrong` is not supported by `@include`
     ╭─[0054_argument_not_provided.graphql:21:24]
     │
  21 │   basic @skip @include(wrong: false) {
-    │               ───────────┬──────────  
-    │                          ╰──────────── argument by this name not found
-    │                          │            
-    │                          ╰──────────── directive declared here
+    │               ───────────┬───┬──────  
+    │                          ╰──────────── @include defined here
+    │                              │        
+    │                              ╰──────── argument by this name not found
 ────╯
-Error: the required argument `req1` is not provided
+Error: the required argument `ComplicatedArgs.multipleReqs(req1:)` is not provided
     ╭─[0054_argument_not_provided.graphql:26:5]
     │
   2 │   multipleReqs(req1: Int!, req2: Int!): String
@@ -79,7 +79,7 @@ Error: the required argument `req1` is not provided
     │     ────────────┬───────────  
     │                 ╰───────────── missing value for argument `req1`
 ────╯
-Error: the required argument `req2` is not provided
+Error: the required argument `ComplicatedArgs.multipleOptAndReq(req2:)` is not provided
     ╭─[0054_argument_not_provided.graphql:27:5]
     │
   3 │   multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String
@@ -90,7 +90,7 @@ Error: the required argument `req2` is not provided
     │     ──────────────┬──────────────  
     │                   ╰──────────────── missing value for argument `req2`
 ────╯
-Error: the required argument `req2` is not provided
+Error: the required argument `ComplicatedArgs.multipleOptAndReq(req2:)` is not provided
     ╭─[0054_argument_not_provided.graphql:28:5]
     │
   3 │   multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String

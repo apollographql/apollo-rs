@@ -3,10 +3,10 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
     │
   8 │ schema @nonRepeatable {
     │        ───────┬──────  
-    │               ╰──────── directive nonRepeatable first called here
+    │               ╰──────── directive `@nonRepeatable` first called here
     │ 
  11 │ extend schema @nonRepeatable
     │               ───────┬──────  
-    │                      ╰──────── directive nonRepeatable called again here
+    │                      ╰──────── directive `@nonRepeatable` called again here
 ────╯
 

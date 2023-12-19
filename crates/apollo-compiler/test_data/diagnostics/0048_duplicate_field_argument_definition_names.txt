@@ -5,9 +5,9 @@ Error: the value `arg` is defined multiple times
    │             ──────┬─────  ──────┬─────  
    │                   ╰───────────────────── previous definition of `arg` here
    │                                 │       
-   │                                 ╰─────── `arg` redefined here
+   │                                 ╰─────── `arg` defined again here
    │ 
-   │ Help: `arg` field must only be defined once in this input object definition.
+   │ Help: `arg` must only be defined once in this argument list or input object definition.
 ───╯
 Error: the value `arg` is defined multiple times
    ╭─[0048_duplicate_field_argument_definition_names.graphql:7:13]
@@ -16,8 +16,8 @@ Error: the value `arg` is defined multiple times
    │             ──────┬─────  ──────┬─────  
    │                   ╰───────────────────── previous definition of `arg` here
    │                                 │       
-   │                                 ╰─────── `arg` redefined here
+   │                                 ╰─────── `arg` defined again here
    │ 
-   │ Help: `arg` field must only be defined once in this input object definition.
+   │ Help: `arg` must only be defined once in this argument list or input object definition.
 ───╯
 

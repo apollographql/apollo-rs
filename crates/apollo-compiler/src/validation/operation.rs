@@ -1,4 +1,4 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::FileId;
 use crate::{ast, name, Node, ValidationDatabase};
 
@@ -15,7 +15,7 @@ pub(crate) fn validate_operation(
     file_id: FileId,
     operation: Node<ast::OperationDefinition>,
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let config = OperationValidationConfig {
@@ -37,29 +37,16 @@ pub(crate) fn validate_operation(
         );
 
         if fields.len() > 1 {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    operation.location(),
-                    DiagnosticData::SingleRootField {
-                        fields: fields.len(),
-                        subscription: (operation.location()),
-                    },
-                )
-                .label(Label::new(
-                    operation.location(),
-                    format!("subscription with {} root fields", fields.len()),
-                ))
-                .help(format!(
-                    "There are {} root fields: {}. This is not allowed.",
-                    fields.len(),
-                    fields
+            diagnostics.push(ValidationError::new(
+                operation.location(),
+                DiagnosticData::SingleRootField {
+                    name: operation.name.clone(),
+                    fields: fields
                         .iter()
-                        .map(|field| field.field.name.as_str())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )),
-            );
+                        .map(|field| field.field.name.clone())
+                        .collect(),
+                },
+            ));
         }
 
         let has_introspection_fields = fields
@@ -72,19 +59,13 @@ pub(crate) fn validate_operation(
             })
             .map(|field| field.field);
         if let Some(field) = has_introspection_fields {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    field.location(),
-                    DiagnosticData::IntrospectionField {
-                        field: field.name.to_string(),
-                    },
-                )
-                .label(Label::new(
-                    field.location(),
-                    format!("{} is an introspection field", field.name),
-                )),
-            );
+            diagnostics.push(ValidationError::new(
+                field.location(),
+                DiagnosticData::IntrospectionField {
+                    name: operation.name.clone(),
+                    field: field.name.clone(),
+                },
+            ));
         }
     }
 
@@ -120,7 +101,7 @@ pub(crate) fn validate_operation_definitions_inner(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     has_schema: bool,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let document = db.ast(file_id);
 
@@ -141,6 +122,6 @@ pub(crate) fn validate_operation_definitions_inner(
 pub(crate) fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     validate_operation_definitions_inner(db, file_id, false)
 }

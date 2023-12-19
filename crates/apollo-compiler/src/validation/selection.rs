@@ -1,6 +1,6 @@
 use std::collections::{hash_map::Entry, HashMap};
 
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, schema, Node};
 
@@ -83,7 +83,7 @@ pub(crate) fn same_response_shape(
     file_id: FileId,
     field_a: FieldAgainstType<'_>,
     field_b: FieldAgainstType<'_>,
-) -> Result<(), ApolloDiagnostic> {
+) -> Result<(), ValidationError> {
     let schema = db.schema();
     // 1. Let typeA be the return type of fieldA.
     let Ok(full_type_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
@@ -97,27 +97,16 @@ pub(crate) fn same_response_shape(
     let mut type_b = &full_type_b.ty;
 
     let mismatching_type_diagnostic = || {
-        ApolloDiagnostic::new(
-            db,
+        ValidationError::new(
             field_b.field.location(),
-            DiagnosticData::ConflictingField {
-                field: field_a.field.name.to_string(),
-                original_selection: (field_a.field.location()),
-                redefined_selection: (field_b.field.location()),
+            DiagnosticData::ConflictingFieldType {
+                field: field_a.field.response_name().clone(),
+                original_selection: field_a.field.location(),
+                original_type: full_type_a.ty.clone(),
+                redefined_selection: field_b.field.location(),
+                redefined_type: full_type_b.ty.clone(),
             },
         )
-        .label(Label::new(
-            field_a.field.location(),
-            format!(
-                "`{}` has type `{}` here",
-                field_a.field.response_name(),
-                full_type_a.ty,
-            ),
-        ))
-        .label(Label::new(
-            field_b.field.location(),
-            format!("but the same field name has type `{}` here", full_type_b.ty),
-        ))
     };
 
     // Steps 3 and 4 of the spec text unwrap both types simultaneously down to the named type.
@@ -236,10 +225,9 @@ fn group_fields_by_name(
 
 /// Check if the arguments provided to two fields are the same, so the fields can be merged.
 fn identical_arguments(
-    db: &dyn ValidationDatabase,
     field_a: &Node<ast::Field>,
     field_b: &Node<ast::Field>,
-) -> Result<(), ApolloDiagnostic> {
+) -> Result<(), ValidationError> {
     let args_a = &field_a.arguments;
     let args_b = &field_b.arguments;
 
@@ -249,56 +237,47 @@ fn identical_arguments(
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
     for arg in args_a {
         let Some(other_arg) = args_b.iter().find(|other_arg| other_arg.name == arg.name) else {
-            return Err(
-                ApolloDiagnostic::new(
-                    db,
-                    loc_b,
-                    DiagnosticData::ConflictingField {
-                        field: field_a.name.to_string(),
-                        original_selection: loc_a,
-                        redefined_selection: loc_b,
-                    },
-                )
-                .label(Label::new(arg.location(), format!("field `{}` is selected with argument `{}` here", field_a.name, arg.name)))
-                .label(Label::new(loc_b, format!("but argument `{}` is not provided here", arg.name)))
-                .help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.")
-            );
+            return Err(ValidationError::new(
+                loc_b,
+                DiagnosticData::ConflictingFieldArgument {
+                    field: field_a.name.clone(),
+                    argument: arg.name.clone(),
+                    original_selection: loc_a,
+                    original_value: Some((*arg.value).clone()),
+                    redefined_selection: loc_b,
+                    redefined_value: None,
+                },
+            ));
         };
 
         if other_arg.value != arg.value {
-            return Err(
-                ApolloDiagnostic::new(
-                    db,
-                    loc_b,
-                    DiagnosticData::ConflictingField {
-                        field: field_a.name.to_string(),
-                        original_selection: loc_a,
-                        redefined_selection: loc_b,
-                    },
-                )
-                .label(Label::new(arg.location(), format!("field `{}` provides one argument value here", field_a.name)))
-                .label(Label::new(other_arg.location(), "but a different value here"))
-                .help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.")
-            );
+            return Err(ValidationError::new(
+                loc_b,
+                DiagnosticData::ConflictingFieldArgument {
+                    field: field_a.name.clone(),
+                    argument: arg.name.clone(),
+                    original_selection: loc_a,
+                    original_value: Some((*arg.value).clone()),
+                    redefined_selection: loc_b,
+                    redefined_value: Some((*other_arg.value).clone()),
+                },
+            ));
         }
     }
     // Check if fieldB provides any arguments that fieldA does not provide.
     for arg in args_b {
         if !args_a.iter().any(|other_arg| other_arg.name == arg.name) {
-            return Err(
-                ApolloDiagnostic::new(
-                    db,
-                    loc_b,
-                    DiagnosticData::ConflictingField {
-                        field: field_a.name.to_string(),
-                        original_selection: loc_a,
-                        redefined_selection: loc_b,
-                    },
-                )
-                .label(Label::new(arg.location(), format!("field `{}` is selected with argument `{}` here", field_b.name, arg.name)))
-                .label(Label::new(loc_a, format!("but argument `{}` is not provided here", arg.name)))
-                .help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.")
-            );
+            return Err(ValidationError::new(
+                loc_b,
+                DiagnosticData::ConflictingFieldArgument {
+                    field: field_a.name.clone(),
+                    argument: arg.name.clone(),
+                    original_selection: loc_a,
+                    original_value: None,
+                    redefined_selection: loc_b,
+                    redefined_value: Some((*arg.value).clone()),
+                },
+            ));
         };
     }
 
@@ -316,7 +295,7 @@ pub(crate) fn fields_in_set_can_merge(
     named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
     against_type: &ast::NamedType,
     selection_set: &[ast::Selection],
-) -> Result<(), Vec<ApolloDiagnostic>> {
+) -> Result<(), Vec<ValidationError>> {
     let schema = db.schema();
 
     // 1. Let `fieldsForName` be the set of selections with a given response name in set including visiting fragments and inline fragments.
@@ -344,38 +323,20 @@ pub(crate) fn fields_in_set_can_merge(
             if field_a.against_type == field_b.against_type {
                 // 2bi. fieldA and fieldB must have identical field names.
                 if field_a.field.name != field_b.field.name {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            field_b.field.location(),
-                            DiagnosticData::ConflictingField {
-                                field: field_b.field.name.to_string(),
-                                original_selection: (field_a.field.location()),
-                                redefined_selection: (field_b.field.location()),
-                            },
-                        )
-                        .label(Label::new(
-                            field_a.field.location(),
-                            format!(
-                                "field `{}` is selected from field `{}` here",
-                                field_a.field.response_name(),
-                                field_a.field.name
-                            ),
-                        ))
-                        .label(Label::new(
-                            field_b.field.location(),
-                            format!(
-                                "but the same field `{}` is also selected from field `{}` here",
-                                field_b.field.response_name(),
-                                field_b.field.name
-                            ),
-                        ))
-                        .help("Alias is already used for a different field"),
-                    );
+                    diagnostics.push(ValidationError::new(
+                        field_b.field.location(),
+                        DiagnosticData::ConflictingFieldName {
+                            field: field_a.field.response_name().clone(),
+                            original_selection: field_a.field.location(),
+                            original_name: field_a.field.name.clone(),
+                            redefined_selection: field_b.field.location(),
+                            redefined_name: field_b.field.name.clone(),
+                        },
+                    ));
                     continue;
                 }
                 // 2bii. fieldA and fieldB must have identical sets of arguments.
-                if let Err(diagnostic) = identical_arguments(db, field_a.field, field_b.field) {
+                if let Err(diagnostic) = identical_arguments(field_a.field, field_b.field) {
                     diagnostics.push(diagnostic);
                     continue;
                 }
@@ -410,7 +371,7 @@ pub(crate) fn validate_selection_set(
     against_type: Option<&ast::NamedType>,
     selection_set: &[ast::Selection],
     context: OperationValidationConfig<'_>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let named_fragments = Some(db.ast_named_fragments(file_id));
@@ -443,7 +404,7 @@ pub(crate) fn validate_selections(
     against_type: Option<&ast::NamedType>,
     selection_set: &[ast::Selection],
     context: OperationValidationConfig<'_>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     for selection in selection_set {

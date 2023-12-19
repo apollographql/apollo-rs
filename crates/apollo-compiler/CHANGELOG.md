@@ -20,6 +20,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 # [x.x.x] (unreleased) - 2023-xx-xx
 
 ## Features
+- **Pretty CLI formatting for custom diagnostics - [goto-bus-stop], [pull/747]:**
+  - A `CliReport` builder API for printing with labeled source code
+    to a monospace text stream with optional ANSI color codes.
+  - A `ToCliReport` trait for converting error types to a `CliReport` when given a source map.
+  - A `Diagnostic` struct for bundling such an error together with a source map
+    and implement `Display`/`Debug` by printing a CLI report
 - **Add execution-related and introspection functionality - [SimonSapin], [pull/758]:**
   - Add data structure in `apollo_compiler::execution` for a GraphQL response, its data, and errors.
     All (de)serializable with `serde`.
@@ -35,6 +41,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
 - **Convenience accessors for `ast::Selection` enum - [SimonSapin], [pull/777]**
   `as_field`, `as_inline_fragment`, and `as_fragment_spread`; all returning `Option<&_>`.
+- **Add schema coordinates - [goto-bus-stop], [pull/757]:**
+  Schema coordinates are a compact, human-readable way to uniquely point to an item defined in a schema.
+  - `string.parse::<SchemaCoordinate>()` parses a coordinate from a string.
+  - Coordinates have a `Display` impl that writes them out with schema coordinate syntax.
+  - The `coord!()` macro creates a static coordinate at compile time from spec syntax.
 
 ## Fixes
 - **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/774]**
@@ -42,6 +53,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [SimonSapin]: https://github.com/SimonSapin
+[pull/747]: https://github.com/apollographql/apollo-rs/pull/747
 [pull/758]: https://github.com/apollographql/apollo-rs/pull/758
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774

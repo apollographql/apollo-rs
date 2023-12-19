@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2023-xx-xx
+# [0.7.5](https://crates.io/crates/apollo-parser/0.7.5) - 2023-12-18
 
 ## Fixes
 - **fix parsing `\\"""` in block string - [goto-bus-stop], [pull/774]**
@@ -26,11 +26,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **emit syntax errors for variables in constant values - [SimonSapin], [pull/777]**
   default values and type system directive arguments are considered constants
   and may not use `$foo` variable values.
+- **emit syntax errors for type condition without a type name [rishabh3112], [pull/781]**
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [SimonSapin]: https://github.com/SimonSapin
+[rishabh3112]: https://github.com/rishabh3112
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774
 [pull/777]: https://github.com/apollographql/apollo-rs/pull/777
+[pull/781]: https://github.com/apollographql/apollo-rs/pull/781
 
 # [0.7.4](https://crates.io/crates/apollo-parser/0.7.4) - 2023-11-17
 

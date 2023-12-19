@@ -7,6 +7,7 @@ use crate::execution::JsonMap;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionSplit;
 use crate::schema;
+use crate::schema::Implementers;
 use crate::schema::Name;
 use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
@@ -15,7 +16,6 @@ use crate::Node;
 use crate::Schema;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::sync::OnceLock;
 
 /// A document with a single query that only has [schema introspection] fields.
@@ -111,7 +111,6 @@ impl SchemaIntrospectionQuery {
             &mut errors,
             path,
             ExecutionMode::Normal,
-            object_type_name,
             object_type_def,
             initial_value,
             &operation.selection_set.selections,
@@ -127,7 +126,7 @@ impl SchemaIntrospectionQuery {
 #[derive(Clone, Copy)]
 struct SchemaWithCache<'a> {
     schema: &'a Schema,
-    implementers_map: &'a OnceLock<HashMap<Name, HashSet<Name>>>,
+    implementers_map: &'a OnceLock<HashMap<Name, Implementers>>,
 }
 
 impl<'a> SchemaWithCache<'a> {
@@ -136,7 +135,7 @@ impl<'a> SchemaWithCache<'a> {
             .get_or_init(|| self.schema.implementers_map())
             .get(interface_name)
             .into_iter()
-            .flatten()
+            .flat_map(Implementers::iter)
     }
 }
 

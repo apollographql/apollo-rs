@@ -7,25 +7,17 @@ Error: field selection of scalar type `Int` must not have subselections
    │ 
    │ Note: path to the field: `query Query → products → price`
 ───╯
-Error: fragments can not be declared on primitive types
-     ╭─[0087_fragment_type_condition_on_composite_types.graphql:7:5]
-     │
-   7 │ ╭─▶     ... on Int {
-     ┆ ┆   
-   9 │ ├─▶     }
-     │ │           
-     │ ╰─────────── fragment declares unsupported type condition `Int`
-     │
-     ├─[built_in.graphql:125:1]
-     │
- 125 │ ╭─▶ """
-     ┆ ┆   
- 129 │ ├─▶ scalar Int
-     │ │                
-     │ ╰──────────────── `Int` is defined here
-     │     
-     │     Help: fragments cannot be defined on enums, scalars and input objects
-─────╯
+Error: inline fragment must have a composite type in its type condition
+   ╭─[0087_fragment_type_condition_on_composite_types.graphql:7:5]
+   │
+ 7 │ ╭─▶     ... on Int {
+   ┆ ┆   
+ 9 │ ├─▶     }
+   │ │           
+   │ ╰─────────── fragment declares unsupported type condition `Int`
+   │     
+   │     Help: fragments cannot be defined on enums, scalars and input objects
+───╯
 Error: type `Int` does not have a field `name`
      ╭─[0087_fragment_type_condition_on_composite_types.graphql:8:7]
      │
@@ -67,25 +59,17 @@ Error: type `Int` does not have a field `name`
      │ 
      │ Note: path to the field: `fragment fragOnScalar → name`
 ─────╯
-Error: fragments can not be declared on primitive types
-     ╭─[0087_fragment_type_condition_on_composite_types.graphql:26:3]
-     │
-  26 │ ╭─▶   ... on Int {
-     ┆ ┆   
-  28 │ ├─▶   }
-     │ │         
-     │ ╰───────── fragment declares unsupported type condition `Int`
-     │
-     ├─[built_in.graphql:125:1]
-     │
- 125 │ ╭─▶ """
-     ┆ ┆   
- 129 │ ├─▶ scalar Int
-     │ │                
-     │ ╰──────────────── `Int` is defined here
-     │     
-     │     Help: fragments cannot be defined on enums, scalars and input objects
-─────╯
+Error: inline fragment must have a composite type in its type condition
+    ╭─[0087_fragment_type_condition_on_composite_types.graphql:26:3]
+    │
+ 26 │ ╭─▶   ... on Int {
+    ┆ ┆   
+ 28 │ ├─▶   }
+    │ │         
+    │ ╰───────── fragment declares unsupported type condition `Int`
+    │     
+    │     Help: fragments cannot be defined on enums, scalars and input objects
+────╯
 Error: type `Int` does not have a field `name`
      ╭─[0087_fragment_type_condition_on_composite_types.graphql:27:5]
      │

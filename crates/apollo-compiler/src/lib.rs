@@ -3,8 +3,9 @@
 #[macro_use]
 mod macros;
 pub mod ast;
+pub mod coordinate;
 mod database;
-mod diagnostics;
+pub mod diagnostic;
 pub mod executable;
 pub mod execution;
 mod node;
@@ -14,7 +15,6 @@ pub mod schema;
 pub mod validation;
 
 use crate::database::{InputDatabase, ReprDatabase, RootDatabase, Source};
-use crate::diagnostics::ApolloDiagnostic;
 use crate::validation::ValidationDatabase;
 
 pub use self::executable::ExecutableDocument;

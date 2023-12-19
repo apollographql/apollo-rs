@@ -34,7 +34,7 @@ type Cat {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains(
             "anonymous operation cannot be selected when the document contains other operations"
@@ -85,7 +85,7 @@ type Cat implements Pet {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("the operation `getName` is defined multiple times in the document"),
         "{errors}"
@@ -169,7 +169,7 @@ type Cat implements Pet {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors
             .contains("`subscription` is not defined in the schema and is therefore not supported"),
@@ -202,7 +202,7 @@ type Product {
 
     let errors = parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
-        .to_string_no_color();
+        .to_string();
     assert!(
         errors.contains("`Query` does not have a field `noName`"),
         "{errors}"

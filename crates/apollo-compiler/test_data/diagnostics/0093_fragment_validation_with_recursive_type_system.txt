@@ -1,4 +1,4 @@
-Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+Error: interface `A` declares that it implements `B`, but to do so it must also implement `A`
    ╭─[0093_fragment_validation_with_recursive_type_system.graphql:2:1]
    │
  2 │ ╭─▶ interface A implements B {
@@ -10,7 +10,7 @@ Error: Transitively implemented interfaces must also be defined on an implementi
    │                            ┬  
    │                            ╰── implementation of A declared by B here
 ───╯
-Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+Error: interface `B` declares that it implements `A`, but to do so it must also implement `B`
    ╭─[0093_fragment_validation_with_recursive_type_system.graphql:6:1]
    │
  2 │     interface A implements B {

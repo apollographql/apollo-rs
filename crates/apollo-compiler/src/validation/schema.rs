@@ -1,13 +1,14 @@
-use crate::{
-    ast,
-    diagnostics::{DiagnosticData, Label},
-    schema, ApolloDiagnostic, Node, ValidationDatabase,
-};
+use crate::ast;
+use crate::schema;
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::diagnostics::ValidationError;
+use crate::Node;
+use crate::ValidationDatabase;
 
 pub(crate) fn validate_schema_definition(
     db: &dyn ValidationDatabase,
     schema_definition: ast::TypeWithExtensions<ast::SchemaDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let root_operations: Vec<_> = schema_definition.root_operations().cloned().collect();
@@ -17,11 +18,10 @@ pub(crate) fn validate_schema_definition(
         .any(|op| op.0 == ast::OperationType::Query);
     if !has_query {
         let location = schema_definition.definition.location();
-        diagnostics.push(
-            ApolloDiagnostic::new(db, location, DiagnosticData::QueryRootOperationType).label(
-                Label::new(location, "`query` root operation type must be defined here"),
-            ),
-        );
+        diagnostics.push(ValidationError::new(
+            location,
+            DiagnosticData::QueryRootOperationType,
+        ));
     }
     diagnostics.extend(validate_root_operation_definitions(db, &root_operations));
 
@@ -42,7 +42,7 @@ pub(crate) fn validate_schema_definition(
 pub(crate) fn validate_root_operation_definitions(
     db: &dyn ValidationDatabase,
     root_op_defs: &[Node<(ast::OperationType, ast::NamedType)>],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -57,39 +57,20 @@ pub(crate) fn validate_root_operation_definitions(
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
                 let op_loc = name.location();
-                let (particle, kind) = match type_def {
-                    schema::ExtendedType::Scalar(_) => ("an", "scalar"),
-                    schema::ExtendedType::Union(_) => ("an", "union"),
-                    schema::ExtendedType::Enum(_) => ("an", "enum"),
-                    schema::ExtendedType::Interface(_) => ("an", "interface"),
-                    schema::ExtendedType::InputObject(_) => ("an", "input object"),
-                    schema::ExtendedType::Object(_) => unreachable!(),
-                };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        op_loc,
-                        DiagnosticData::ObjectType {
-                            name: name.to_string(),
-                            ty: kind,
-                        },
-                    )
-                    .label(Label::new(op_loc, format!("This is {particle} {kind}")))
-                    .help("root operation type must be an object type"),
-                );
+                diagnostics.push(ValidationError::new(
+                    op_loc,
+                    DiagnosticData::RootOperationObjectType {
+                        name: name.clone(),
+                        describe_type: type_def.describe(),
+                    },
+                ));
             }
         } else {
             let op_loc = name.location();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    op_loc,
-                    DiagnosticData::UndefinedDefinition {
-                        name: name.to_string(),
-                    },
-                )
-                .label(Label::new(op_loc, "not found in this scope")),
-            );
+            diagnostics.push(ValidationError::new(
+                op_loc,
+                DiagnosticData::UndefinedDefinition { name: name.clone() },
+            ));
         }
     }
 

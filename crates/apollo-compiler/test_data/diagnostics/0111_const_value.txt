@@ -5,18 +5,18 @@ Error: syntax error: unexpected variable value in a Const context
    │                       ┬  
    │                       ╰── unexpected variable value in a Const context
 ───╯
-Error: variable `var1` is not defined
-    ╭─[0111_const_value.graphql:11:21]
-    │
- 11 │ type Query @someDir(arg: $var1) {
-    │                          ──┬──  
-    │                            ╰──── not found in this scope
-────╯
 Error: syntax error: unexpected variable value in a Const context
     ╭─[0111_const_value.graphql:11:26]
     │
  11 │ type Query @someDir(arg: $var1) {
     │                          ┬  
     │                          ╰── unexpected variable value in a Const context
+────╯
+Error: variable `$var1` is not defined
+    ╭─[0111_const_value.graphql:11:26]
+    │
+ 11 │ type Query @someDir(arg: $var1) {
+    │                          ──┬──  
+    │                            ╰──── not found in this scope
 ────╯
 

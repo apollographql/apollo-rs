@@ -1,4 +1,6 @@
 use super::*;
+use crate::diagnostic::CliReport;
+use crate::diagnostic::ToCliReport;
 use crate::name;
 use crate::node::NodeLocation;
 use crate::schema::ComponentName;
@@ -989,17 +991,17 @@ impl Value {
         }
     }
 
-    pub fn kind(&self) -> &'static str {
+    pub(crate) fn describe(&self) -> &'static str {
         match self {
-            Value::Null => "Null",
-            Value::Enum(_) => "Enum",
-            Value::Variable(_) => "Variable",
-            Value::String(_) => "String",
-            Value::Float(_) => "Float",
-            Value::Int(_) => "Int",
-            Value::Boolean(_) => "Boolean",
-            Value::List(_) => "List",
-            Value::Object(_) => "Object",
+            Value::Null => "null",
+            Value::Enum(_) => "an enum",
+            Value::Variable(_) => "a variable",
+            Value::String(_) => "a string",
+            Value::Float(_) => "a float",
+            Value::Int(_) => "an integer",
+            Value::Boolean(_) => "a boolean",
+            Value::List(_) => "a list",
+            Value::Object(_) => "an input object",
         }
     }
 
@@ -1795,6 +1797,15 @@ impl PartialOrd<str> for Name {
 impl PartialOrd<&'_ str> for Name {
     fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(*other)
+    }
+}
+
+impl ToCliReport for InvalidNameError {
+    fn location(&self) -> Option<NodeLocation> {
+        self.0.location()
+    }
+    fn report(&self, report: &mut CliReport) {
+        report.with_label_opt(self.0.location(), "cannot be parsed as a GraphQL name");
     }
 }
 

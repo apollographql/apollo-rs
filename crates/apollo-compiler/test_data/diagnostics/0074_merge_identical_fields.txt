@@ -1,14 +1,4 @@
-Error: operation must not select different types using the same field name `nickname`
-    ╭─[0074_merge_identical_fields.graphql:19:3]
-    │
- 18 │   name: nickname
-    │   ───────┬──────  
-    │          ╰──────── `name` has type `String` here
- 19 │   name
-    │   ──┬─  
-    │     ╰─── but the same field name has type `String!` here
-────╯
-Error: operation must not select different types using the same field name `nickname`
+Error: operation must not select different types using the same field name `name`
     ╭─[0074_merge_identical_fields.graphql:19:3]
     │
  18 │   name: nickname
@@ -19,6 +9,16 @@ Error: operation must not select different types using the same field name `nick
     │     ╰─── but the same field name has type `String!` here
 ────╯
 Error: operation must not select different types using the same field name `name`
+    ╭─[0074_merge_identical_fields.graphql:19:3]
+    │
+ 18 │   name: nickname
+    │   ───────┬──────  
+    │          ╰──────── `name` has type `String` here
+ 19 │   name
+    │   ──┬─  
+    │     ╰─── but the same field name has type `String!` here
+────╯
+Error: operation must not select different types using the same field name `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
     │
  23 │   fido: name
@@ -28,7 +28,7 @@ Error: operation must not select different types using the same field name `name
     │   ───────┬──────  
     │          ╰──────── but the same field name has type `String` here
 ────╯
-Error: operation must not select different types using the same field name `name`
+Error: operation must not select different types using the same field name `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
     │
  23 │   fido: name

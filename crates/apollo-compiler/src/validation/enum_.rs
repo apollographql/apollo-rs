@@ -1,6 +1,7 @@
-use crate::{ast, diagnostics::ApolloDiagnostic, Node, ValidationDatabase};
+use crate::validation::diagnostics::ValidationError;
+use crate::{ast, Node, ValidationDatabase};
 
-pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for enum_ in db.ast_types().enums.values() {
@@ -13,7 +14,7 @@ pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<Apol
 pub(crate) fn validate_enum_definition(
     db: &dyn ValidationDatabase,
     enum_def: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = super::directive::validate_directives(
         db,
         enum_def.directives(),
@@ -32,7 +33,7 @@ pub(crate) fn validate_enum_definition(
 pub(crate) fn validate_enum_value(
     db: &dyn ValidationDatabase,
     enum_val: &Node<ast::EnumValueDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     super::directive::validate_directives(
         db,
         enum_val.directives.iter(),

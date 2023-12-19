@@ -1,4 +1,6 @@
-use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::coordinate::DirectiveArgumentCoordinate;
+use crate::coordinate::DirectiveCoordinate;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node, ValidationDatabase};
 use std::collections::{HashMap, HashSet};
@@ -133,7 +135,7 @@ impl FindRecursiveDirective<'_> {
 pub(crate) fn validate_directive_definition(
     db: &dyn ValidationDatabase,
     def: Node<ast::DirectiveDefinition>,
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     diagnostics.extend(super::input_object::validate_argument_definitions(
@@ -142,6 +144,8 @@ pub(crate) fn validate_directive_definition(
         ast::DirectiveLocation::ArgumentDefinition,
     ));
 
+    let head_location = NodeLocation::recompose(def.location(), def.name.location());
+
     // A directive definition must not contain the use of a directive which
     // references itself directly.
     //
@@ -149,62 +153,27 @@ pub(crate) fn validate_directive_definition(
     match FindRecursiveDirective::check(&db.schema(), &def) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
-            let definition_location = def.location();
-            let head_location = NodeLocation::recompose(def.location(), def.name.location());
-            let mut diagnostic = ApolloDiagnostic::new(
-                db,
-                definition_location,
+            diagnostics.push(ValidationError::new(
+                head_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
-                    name: def.name.to_string(),
+                    name: def.name.clone(),
+                    trace,
                 },
-            )
-            .label(Label::new(head_location, "recursive directive definition"));
-
-            if let Some((cyclical_application, path)) = trace.split_first() {
-                let mut prev_name = &def.name;
-                for directive_application in path.iter().rev() {
-                    diagnostic = diagnostic.label(Label::new(
-                        directive_application.location(),
-                        format!(
-                            "`{}` references `{}` here...",
-                            prev_name, directive_application.name
-                        ),
-                    ));
-                    prev_name = &directive_application.name;
-                }
-
-                diagnostic = diagnostic.label(Label::new(
-                    cyclical_application.location(),
-                    format!(
-                        "`{}` circularly references `{}` here",
-                        prev_name, cyclical_application.name
-                    ),
-                ));
-            }
-
-            diagnostics.push(diagnostic);
-        }
-        Err(CycleError::Limit(_)) => {
-            let diagnostic = ApolloDiagnostic::new(
-                db,
-                def.location(),
-                DiagnosticData::DeeplyNestedType {
-                    name: def.name.to_string(),
-                },
-            )
-            .label(Label::new(
-                def.location(),
-                "directive references a very long chain of directives",
             ));
-
-            diagnostics.push(diagnostic);
         }
+        Err(CycleError::Limit(_)) => diagnostics.push(ValidationError::new(
+            head_location,
+            DiagnosticData::DeeplyNestedType {
+                name: def.name.clone(),
+                describe_type: "directive",
+            },
+        )),
     }
 
     diagnostics
 }
 
-pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for file_id in db.type_definition_files() {
@@ -225,14 +194,14 @@ pub(crate) fn validate_directives<'dir>(
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
-) -> Vec<ApolloDiagnostic> {
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let mut seen_directives = HashMap::<_, Option<NodeLocation>>::new();
 
     let schema = db.schema();
     for dir in dirs {
-        diagnostics.extend(super::argument::validate_arguments(db, &dir.arguments));
+        diagnostics.extend(super::argument::validate_arguments(&dir.arguments));
 
         let name = &dir.name;
         let loc = dir.location();
@@ -245,25 +214,13 @@ pub(crate) fn validate_directives<'dir>(
                 .unwrap_or(true);
 
             if !is_repeatable {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        loc,
-                        DiagnosticData::UniqueDirective {
-                            name: name.to_string(),
-                            original_call: original_loc,
-                            conflicting_call: loc,
-                        },
-                    )
-                    .label(Label::new(
-                        original_loc,
-                        format!("directive {name} first called here"),
-                    ))
-                    .label(Label::new(
-                        loc,
-                        format!("directive {name} called again here"),
-                    )),
-                );
+                diagnostics.push(ValidationError::new(
+                    loc,
+                    DiagnosticData::UniqueDirective {
+                        name: name.clone(),
+                        original_application: original_loc,
+                    },
+                ));
             }
         } else {
             let loc = NodeLocation::recompose(dir.location(), dir.name.location());
@@ -274,24 +231,15 @@ pub(crate) fn validate_directives<'dir>(
             let allowed_loc: HashSet<ast::DirectiveLocation> =
                 HashSet::from_iter(directive_definition.locations.iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
-                let mut diag = ApolloDiagnostic::new(
-                        db,
-                        loc,
-                        DiagnosticData::UnsupportedLocation {
-                            name: name.to_string(),
-                            dir_loc,
-                            directive_def: directive_definition.location(),
-                        },
-                )
-                    .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
-                    .help("the directive must be used in a location that the service has declared support for");
-                if !directive_definition.is_built_in() {
-                    diag = diag.label(Label::new(
-                        directive_definition.location(),
-                        format!("consider adding {dir_loc} directive location here"),
-                    ));
-                }
-                diagnostics.push(diag)
+                diagnostics.push(ValidationError::new(
+                    loc,
+                    DiagnosticData::UnsupportedLocation {
+                        name: name.clone(),
+                        location: dir_loc,
+                        valid_locations: directive_definition.locations.clone(),
+                        definition_location: directive_definition.location(),
+                    },
+                ));
             }
 
             for argument in &dir.arguments {
@@ -306,7 +254,6 @@ pub(crate) fn validate_directives<'dir>(
                     // TODO(@goto-bus-stop) do we really need value validation and variable
                     // validation separately?
                     if let Some(diag) = super::variable::validate_variable_usage(
-                        db,
                         input_value.clone(),
                         var_defs,
                         argument,
@@ -321,20 +268,17 @@ pub(crate) fn validate_directives<'dir>(
                         diagnostics.extend(type_diags);
                     }
                 } else {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            argument.location(),
-                            DiagnosticData::UndefinedArgument {
-                                name: argument.name.to_string(),
-                            },
-                        )
-                        .label(Label::new(
-                            argument.name.location(),
-                            "argument by this name not found",
-                        ))
-                        .label(Label::new(loc, "directive declared here")),
-                    );
+                    diagnostics.push(ValidationError::new(
+                        argument.location(),
+                        DiagnosticData::UndefinedArgument {
+                            name: argument.name.clone(),
+                            coordinate: DirectiveCoordinate {
+                                directive: dir.name.clone(),
+                            }
+                            .into(),
+                            definition_location: loc,
+                        },
+                    ));
                 }
             }
             for arg_def in &directive_definition.arguments {
@@ -351,34 +295,25 @@ pub(crate) fn validate_directives<'dir>(
                 };
 
                 if arg_def.is_required() && is_null && arg_def.default_value.is_none() {
-                    let mut diagnostic = ApolloDiagnostic::new(
-                        db,
+                    diagnostics.push(ValidationError::new(
                         dir.location(),
                         DiagnosticData::RequiredArgument {
-                            name: arg_def.name.to_string(),
+                            name: arg_def.name.clone(),
+                            coordinate: DirectiveArgumentCoordinate {
+                                directive: directive_definition.name.clone(),
+                                argument: arg_def.name.clone(),
+                            }
+                            .into(),
+                            definition_location: arg_def.location(),
                         },
-                    );
-                    diagnostic = diagnostic.label(Label::new(
-                        dir.location(),
-                        format!("missing value for argument `{}`", arg_def.name),
                     ));
-                    let loc = arg_def.location();
-                    diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
-
-                    diagnostics.push(diagnostic);
                 }
             }
         } else {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    loc,
-                    DiagnosticData::UndefinedDirective {
-                        name: name.to_string(),
-                    },
-                )
-                .label(Label::new(loc, "directive not defined")),
-            )
+            diagnostics.push(ValidationError::new(
+                loc,
+                DiagnosticData::UndefinedDirective { name: name.clone() },
+            ))
         }
     }
 

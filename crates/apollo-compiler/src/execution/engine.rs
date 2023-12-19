@@ -55,7 +55,6 @@ pub(crate) fn execute_selection_set<'a>(
     errors: &mut Vec<GraphQLError>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
-    object_type_name: &str,
     object_type: &ObjectType,
     object_value: &ObjectValue<'_>,
     selections: impl IntoIterator<Item = &'a Selection>,
@@ -65,7 +64,6 @@ pub(crate) fn execute_selection_set<'a>(
         schema,
         document,
         variable_values,
-        object_type_name,
         object_type,
         selections,
         &mut HashSet::new(),
@@ -84,14 +82,14 @@ pub(crate) fn execute_selection_set<'a>(
     for (&response_key, fields) in &grouped_field_set {
         // Indexing should not panic: `collect_fields` only creates a `Vec` to push to it
         let field_name = &fields[0].name;
-        let Ok(field_def) = schema.type_field(object_type_name, field_name) else {
+        let Ok(field_def) = schema.type_field(&object_type.name, field_name) else {
             // TODO: Return a `validation_bug`` field error here?
             // The spec specifically has a “If fieldType is defined” condition,
             // but it being undefined would make the request invalid, right?
             continue;
         };
         let value = if field_name == "__typename" {
-            JsonValue::from(object_type_name)
+            JsonValue::from(object_type.name.as_str())
         } else {
             let field_path = LinkedPathElement {
                 element: ResponseDataPathElement::Field(response_key.clone()),
@@ -120,7 +118,6 @@ fn collect_fields<'a>(
     schema: &Schema,
     document: &'a ExecutableDocument,
     variable_values: &Valid<JsonMap>,
-    object_type_name: &str,
     object_type: &ObjectType,
     selections: impl IntoIterator<Item = &'a Selection>,
     visited_fragments: &mut HashSet<&'a Name>,
@@ -145,19 +142,13 @@ fn collect_fields<'a>(
                 let Some(fragment) = document.fragments.get(&spread.fragment_name) else {
                     continue;
                 };
-                if !does_fragment_type_apply(
-                    schema,
-                    object_type_name,
-                    object_type,
-                    fragment.type_condition(),
-                ) {
+                if !does_fragment_type_apply(schema, object_type, fragment.type_condition()) {
                     continue;
                 }
                 collect_fields(
                     schema,
                     document,
                     variable_values,
-                    object_type_name,
                     object_type,
                     &fragment.selection_set.selections,
                     visited_fragments,
@@ -166,7 +157,7 @@ fn collect_fields<'a>(
             }
             Selection::InlineFragment(inline) => {
                 if let Some(condition) = &inline.type_condition {
-                    if !does_fragment_type_apply(schema, object_type_name, object_type, condition) {
+                    if !does_fragment_type_apply(schema, object_type, condition) {
                         continue;
                     }
                 }
@@ -174,7 +165,6 @@ fn collect_fields<'a>(
                     schema,
                     document,
                     variable_values,
-                    object_type_name,
                     object_type,
                     &inline.selection_set.selections,
                     visited_fragments,
@@ -188,16 +178,15 @@ fn collect_fields<'a>(
 /// <https://spec.graphql.org/October2021/#DoesFragmentTypeApply()>
 fn does_fragment_type_apply(
     schema: &Schema,
-    object_type_name: &str,
     object_type: &ObjectType,
     fragment_type: &Name,
 ) -> bool {
     match schema.types.get(fragment_type) {
-        Some(ExtendedType::Object(_)) => fragment_type == object_type_name,
+        Some(ExtendedType::Object(_)) => *fragment_type == object_type.name,
         Some(ExtendedType::Interface(_)) => {
             object_type.implements_interfaces.contains(fragment_type)
         }
-        Some(ExtendedType::Union(def)) => def.members.contains(object_type_name),
+        Some(ExtendedType::Union(def)) => def.members.contains(&object_type.name),
         // Undefined or not an output type: validation should have caught this
         _ => false,
     }
