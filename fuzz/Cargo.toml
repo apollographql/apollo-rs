@@ -46,3 +46,9 @@ name = "strings"
 path = "fuzz_targets/strings.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "coordinate"
+path = "fuzz_targets/coordinate.rs"
+test = false
+doc = false

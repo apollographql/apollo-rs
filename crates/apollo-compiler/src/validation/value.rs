@@ -1,9 +1,9 @@
-use crate::{
-    ast, schema,
-    validation::diagnostics::{DiagnosticData, ValidationError},
-    validation::ValidationDatabase,
-    Node,
-};
+use crate::ast;
+use crate::coordinate::TypeAttributeCoordinate;
+use crate::schema;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::ValidationDatabase;
+use crate::Node;
 
 fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -> ValidationError {
     ValidationError::new(
@@ -232,9 +232,12 @@ pub(crate) fn value_of_correct_type(
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
                         diagnostics.push(ValidationError::new(
                             arg_value.location(),
-                            DiagnosticData::RequiredArgument {
+                            DiagnosticData::RequiredField {
                                 name: input_name.clone(),
-                                coordinate: format!("{}.{}", input_obj.name, input_name),
+                                coordinate: TypeAttributeCoordinate {
+                                    ty: input_obj.name.clone(),
+                                    attribute: input_name.clone(),
+                                },
                                 definition_location: f.location(),
                             },
                         ));

@@ -372,16 +372,16 @@ Error: expected value of type Int!, found null
      │                        ──┬─  
      │                          ╰─── provided value is null
 ─────╯
-Error: the required argument `ComplexInput.requiredField` is not provided
+Error: the required field `ComplexInput.requiredField` is not provided
      ╭─[0102_invalid_string_values.graphql:254:33]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
-     │              ╰───────────── argument defined here
+     │              ╰───────────── field defined here
      │ 
  254 │     complexArgField(complexArg: { intField: 4 })
      │                                 ───────┬───────  
-     │                                        ╰───────── missing value for argument `requiredField`
+     │                                        ╰───────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type String, found an integer
      ╭─[0102_invalid_string_values.graphql:261:32]
@@ -462,16 +462,16 @@ Error: expected value of type String!, found null
      │                   │   
      │                   ╰─── provided value is null
 ─────╯
-Error: the required argument `ComplexInput.requiredField` is not provided
+Error: the required field `ComplexInput.requiredField` is not provided
      ╭─[0102_invalid_string_values.graphql:296:22]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
-     │              ╰───────────── argument defined here
+     │              ╰───────────── field defined here
      │ 
  296 │   $c: ComplexInput = { requiredField: null, intField: null }
      │                      ───────────────────┬───────────────────  
-     │                                         ╰───────────────────── missing value for argument `requiredField`
+     │                                         ╰───────────────────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type Boolean!, found null
      ╭─[0102_invalid_string_values.graphql:296:24]
@@ -533,16 +533,16 @@ Error: expected value of type Int, found a string
      │                                            ───────┬───────  
      │                                                   ╰───────── provided value is a string
 ─────╯
-Error: the required argument `ComplexInput.requiredField` is not provided
+Error: the required field `ComplexInput.requiredField` is not provided
      ╭─[0102_invalid_string_values.graphql:326:22]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
-     │              ╰───────────── argument defined here
+     │              ╰───────────── field defined here
      │ 
  326 │   $a: ComplexInput = {intField: 3}
      │                      ──────┬──────  
-     │                            ╰──────── missing value for argument `requiredField`
+     │                            ╰──────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type String, found an integer
      ╭─[0102_invalid_string_values.graphql:335:26]

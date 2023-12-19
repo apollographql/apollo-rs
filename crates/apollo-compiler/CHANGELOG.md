@@ -41,6 +41,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
 - **Convenience accessors for `ast::Selection` enum - [SimonSapin], [pull/777]**
   `as_field`, `as_inline_fragment`, and `as_fragment_spread`; all returning `Option<&_>`.
+- **Add schema coordinates - [goto-bus-stop], [pull/757]:**
+  Schema coordinates are a compact, human-readable way to uniquely point to an item defined in a schema.
+  - `string.parse::<SchemaCoordinate>()` parses a coordinate from a string.
+  - Coordinates have a `Display` impl that writes them out with schema coordinate syntax.
+  - The `coord!()` macro creates a static coordinate at compile time from spec syntax.
 
 ## Fixes
 - **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/774]**

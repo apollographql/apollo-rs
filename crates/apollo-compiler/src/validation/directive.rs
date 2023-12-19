@@ -1,3 +1,5 @@
+use crate::coordinate::DirectiveArgumentCoordinate;
+use crate::coordinate::DirectiveCoordinate;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node, ValidationDatabase};
@@ -270,7 +272,10 @@ pub(crate) fn validate_directives<'dir>(
                         argument.location(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.clone(),
-                            coordinate: format!("@{}", dir.name),
+                            coordinate: DirectiveCoordinate {
+                                directive: dir.name.clone(),
+                            }
+                            .into(),
                             definition_location: loc,
                         },
                     ));
@@ -294,10 +299,11 @@ pub(crate) fn validate_directives<'dir>(
                         dir.location(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.clone(),
-                            coordinate: format!(
-                                "@{}({}:)",
-                                directive_definition.name, arg_def.name
-                            ),
+                            coordinate: DirectiveArgumentCoordinate {
+                                directive: directive_definition.name.clone(),
+                                argument: arg_def.name.clone(),
+                            }
+                            .into(),
                             definition_location: arg_def.location(),
                         },
                     ));

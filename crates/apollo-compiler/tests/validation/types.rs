@@ -1556,18 +1556,18 @@ mod invalid_input_object_values {
         }
       ",
             expect![[r#"
-                Error: the required argument `ComplexInput.requiredField` is not provided
+                Error: the required field `ComplexInput.requiredField` is not provided
                     ╭─[query.graphql:3:33]
                     │
                   3 │     complexArgField(complexArg: { intField: 4 })
                     │                                 ───────┬───────  
-                    │                                        ╰───────── missing value for argument `requiredField`
+                    │                                        ╰───────── missing value for field `requiredField`
                     │
                     ├─[schema.graphql:60:3]
                     │
                  60 │   requiredField: Boolean!
                     │   ───────────┬───────────  
-                    │              ╰───────────── argument defined here
+                    │              ╰───────────── field defined here
                 ────╯
             "#]],
         );
@@ -1846,18 +1846,18 @@ mod variable_default_values {
                    │                   │   
                    │                   ╰─── provided value is null
                 ───╯
-                Error: the required argument `ComplexInput.requiredField` is not provided
+                Error: the required field `ComplexInput.requiredField` is not provided
                     ╭─[query.graphql:4:22]
                     │
                   4 │   $c: ComplexInput = { requiredField: null, intField: null }
                     │                      ───────────────────┬───────────────────  
-                    │                                         ╰───────────────────── missing value for argument `requiredField`
+                    │                                         ╰───────────────────── missing value for field `requiredField`
                     │
                     ├─[schema.graphql:60:3]
                     │
                  60 │   requiredField: Boolean!
                     │   ───────────┬───────────  
-                    │              ╰───────────── argument defined here
+                    │              ╰───────────── field defined here
                 ────╯
                 Error: expected value of type Boolean!, found null
                     ╭─[query.graphql:4:24]
@@ -1977,18 +1977,18 @@ mod variable_default_values {
         }
       ",
             expect![[r#"
-                Error: the required argument `ComplexInput.requiredField` is not provided
+                Error: the required field `ComplexInput.requiredField` is not provided
                     ╭─[query.graphql:1:47]
                     │
                   1 │ query MissingRequiredField($a: ComplexInput = {intField: 3}) {
                     │                                               ──────┬──────  
-                    │                                                     ╰──────── missing value for argument `requiredField`
+                    │                                                     ╰──────── missing value for field `requiredField`
                     │
                     ├─[schema.graphql:60:3]
                     │
                  60 │   requiredField: Boolean!
                     │   ───────────┬───────────  
-                    │              ╰───────────── argument defined here
+                    │              ╰───────────── field defined here
                 ────╯
             "#]],
         );
