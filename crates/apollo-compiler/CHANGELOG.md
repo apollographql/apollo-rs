@@ -4,7 +4,7 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2023-mm-dd
+<!-- # [x.x.x] (unreleased) - 2024-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -17,7 +17,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-xx-xx
+# [1.0.0-beta.11](https://crates.io/crates/apollo-compiler/1.0.0-beta.11) - 2023-12-19
+
+This release includes support for GraphQL schema introspection [directly in the
+compiler]. If this is a feature you're interested in, we encourage you to try it
+out and leave us any feedback in [the introspection discussion]. More details on this feature in the changelog below.
 
 ## Features
 - **Pretty CLI formatting for custom diagnostics - [goto-bus-stop], [pull/747]:**
@@ -33,7 +37,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Add `apollo_compiler::execution::SchemaIntrospection`
     providing full execution for the [schema introspection] parts of an operation
     and separating the rest to be executed separately.
-    In order to support all kinds of introspection queries this actually includes
+    In order to support all kinds of introspection queries this includes
     a full execution engine where users provide objects with resolvable fields.
     At this time this engine is not exposed in the public API.
     If you’re interested in it [let us know] about your use case!
@@ -54,13 +58,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [SimonSapin]: https://github.com/SimonSapin
 [pull/747]: https://github.com/apollographql/apollo-rs/pull/747
+[pull/757]: https://github.com/apollographql/apollo-rs/pull/757
 [pull/758]: https://github.com/apollographql/apollo-rs/pull/758
 [pull/773]: https://github.com/apollographql/apollo-rs/pull/773
 [pull/774]: https://github.com/apollographql/apollo-rs/pull/774
 [pull/777]: https://github.com/apollographql/apollo-rs/pull/777
 [`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
 [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-[let us know]: https://github.com/apollographql/apollo-rs/issues/new?assignees=&labels=triage&projects=&template=feature_request.md
+[let us know]: https://github.com/apollographql/apollo-rs/discussions/789
+[directly in the compiler]: https://docs.rs/apollo-compiler/1.0.0-beta.11/apollo_compiler/execution/struct.SchemaIntrospectionQuery.html
+[the introspection discussion]: https://github.com/apollographql/apollo-rs/discussions/788
+
 
 # [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
 
@@ -90,7 +98,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-- **API refactor to make it harder to ignore errors - [SimonSapin], 
+- **API refactor to make it harder to ignore errors - [SimonSapin],
   [pull/752] fixing [issue/709]:**
   - `ast::Document`, `Schema`, and `ExecutableDocument` not longer contain potential errors
     that users need to check separately.
@@ -200,7 +208,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ```graphql
   """
   Example
-  
+
   Description description description
   """
   schema { query: MyQuery }
@@ -231,7 +239,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Features
 
 - **Helper features for `Name` and `Type` - [SimonSapin], [pull/739]:**
-  * The `name!` macro also accepts an identifier: 
+  * The `name!` macro also accepts an identifier:
     `name!(Query)` and `name!("Query")` create equivalent `Name` values.
   * `InvalidNameError` now contain a public `NodeStr` for the input string that is invalid,
     and implements `Display`, `Debug`, and `Error` traits.
@@ -288,20 +296,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Make everything know their own name - [SimonSapin], [pull/727] fixing [issue/708].**
 
   In a few places (but not consistently) a `name` field
-  was omitted from some structs used as map values 
+  was omitted from some structs used as map values
   on the basis that it would have been redundant with the map key.
   This reverts that decision,
   making it the user’s responsibility when mutating documents to keep names consistent.
 
-  * Add a `pub name: Name` field to `executable::Fragment` as well as 
+  * Add a `pub name: Name` field to `executable::Fragment` as well as
     `ScalarType`, `ObjectType`, `InterfaceType`, `EnumType`, `UnionType`, and `InputObjectType`
     in `schema`.
   * Add a `fn name(&self) -> &Name` method to the `schema::ExtendedType` enum
   * Add a `pub name: Option<Name>` field to `executable::Operation`
-  * Remove `executable::OperationRef<'_>` 
+  * Remove `executable::OperationRef<'_>`
     (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
     replacing its uses with `&Node<Operation>`
-- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` - 
+- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` -
   [SimonSapin], [pull/732] fixing [issue/711].**
   The previous names were too similar to `Directive` and `Diagnostic` (singular).
 - **Rename `ComponentStr` to `ComponentName` - [SimonSapin], [pull/713]**
@@ -309,7 +317,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
   - **Check validity of `ast::Name`.**
     `NodeStr` is a smart string type with infallible conversion from `&str`.
-    `ast::Name` used to be a type alias for `NodeStr`, 
+    `ast::Name` used to be a type alias for `NodeStr`,
     leaving the possibility of creating one invalid in GraphQL syntax.
     Validation and serialization would not check this.
     `Name` is now a wrapper type for `NodeStr`.
@@ -388,7 +396,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Diangostic struct is now public by [SimonSapin] in [11fe454]
 - Improve lowercase enum value diagnostic by [goto-bus-stop] in [pull/725]
 
-## Maintenance 
+## Maintenance
 - Simplify `SchemaBuilder` internals by [SimonSapin] in [pull/722]
 - Remove validation dead code by [SimonSapin] in [bd5d107]
 - Skip schema AST conversion in ExecutableDocument::validate by [SimonSapin] in [pull/726]
