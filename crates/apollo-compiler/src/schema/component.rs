@@ -1,6 +1,7 @@
 use crate::ast::Name;
 use crate::validation::NodeLocation;
 use crate::Node;
+use std::fmt;
 use std::hash;
 use std::ops::Deref;
 use std::ops::DerefMut;
@@ -190,5 +191,11 @@ impl std::borrow::Borrow<str> for ComponentName {
 impl AsRef<str> for ComponentName {
     fn as_ref(&self) -> &str {
         self
+    }
+}
+
+impl fmt::Display for ComponentName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.name.fmt(f)
     }
 }
