@@ -202,9 +202,9 @@ fn hash_slow_path<T: Hash>(inner: &NodeInner<T>) -> u64 {
     /// not only for the race described above but also
     /// so that multiple `HarcInner`’s with the same contents have the same hash.
     static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
-    let mut hasher = SHARED_RANDOM.get_or_init(RandomState::new).build_hasher();
-    inner.node.hash(&mut hasher);
-    let mut hash = hasher.finish();
+    let mut hash = SHARED_RANDOM
+        .get_or_init(RandomState::new)
+        .hash_one(&inner.node);
     // Don’t use the marker value for an actual hash
     if hash == HASH_NOT_COMPUTED_YET {
         hash += 1

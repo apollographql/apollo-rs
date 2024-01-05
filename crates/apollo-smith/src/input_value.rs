@@ -59,7 +59,7 @@ impl TryFrom<apollo_parser::cst::Value> for InputValue {
             apollo_parser::cst::Value::Variable(variable) => {
                 Self::Variable(variable.name().unwrap().into())
             }
-            apollo_parser::cst::Value::StringValue(val) => Self::String(val.try_into().unwrap()),
+            apollo_parser::cst::Value::StringValue(val) => Self::String(val.into()),
             apollo_parser::cst::Value::FloatValue(val) => Self::Float(val.try_into()?),
             apollo_parser::cst::Value::IntValue(val) => Self::Int(val.try_into()?),
             apollo_parser::cst::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),

@@ -808,7 +808,7 @@ scalar URL
                         .selection_set
                         .selections;
 
-                    match selections.get(0)? {
+                    match selections.first()? {
                         Selection::Field(field) => {
                             Some(field.definition.ty.inner_named_type().to_string())
                         }

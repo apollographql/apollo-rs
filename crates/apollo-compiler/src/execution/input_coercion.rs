@@ -448,7 +448,7 @@ fn coerce_argument_value(
                     ));
                     return Err(PropagateNull);
                 }
-                // `map` converts `&(k, v)` to `(&k, &v)`
+                #[allow(clippy::map_identity)] // `map` converts `&(k, v)` to `(&k, &v)`
                 let object: HashMap<_, _> = object.iter().map(|(k, v)| (k, v)).collect();
                 let mut coerced_object = JsonMap::new();
                 for (field_name, field_def) in &ty_def.fields {
