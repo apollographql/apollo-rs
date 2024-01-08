@@ -19,11 +19,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2024-mm-dd
 
+## BREAKING
+- **`InputValueDefinition::is_required()` returns false if it has a default value - [goto-bus-stop], [pull/798]**
+  Now `argument.is_required() == true` only if the type is non-null and there is no
+  default value, meaning a value must be provided when it's used.
+
 ## Features
 - **Implement `fmt::Display` for `ComponentName` - [goto-bus-stop], [pull/795]**
 
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/795]: https://github.com/apollographql/apollo-rs/pull/795
+[pull/798]: https://github.com/apollographql/apollo-rs/pull/798
 
 # [1.0.0-beta.11](https://crates.io/crates/apollo-compiler/1.0.0-beta.11) - 2023-12-19
 
