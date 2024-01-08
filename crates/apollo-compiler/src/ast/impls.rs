@@ -840,8 +840,13 @@ impl FieldDefinition {
 }
 
 impl InputValueDefinition {
+    /// Returns true if usage sites are required to provide a value for this input value.
+    ///
+    /// That means:
+    /// - its type is non-null, and
+    /// - it does not have a default value
     pub fn is_required(&self) -> bool {
-        matches!(*self.ty, Type::NonNullNamed(_) | Type::NonNullList(_))
+        self.ty.is_non_null() && self.default_value.is_none()
     }
 
     serialize_method!();

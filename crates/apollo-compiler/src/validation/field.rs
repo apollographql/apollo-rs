@@ -87,7 +87,7 @@ pub(crate) fn validate_field(
                 Some(value) => value.is_null(),
             };
 
-            if arg_definition.is_required() && is_null && arg_definition.default_value.is_none() {
+            if arg_definition.is_required() && is_null {
                 diagnostics.push(ValidationError::new(
                     field.location(),
                     DiagnosticData::RequiredArgument {
