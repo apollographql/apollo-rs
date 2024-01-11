@@ -26,7 +26,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **Implement `fmt::Display` for `ComponentName` - [goto-bus-stop], [pull/795]**
-- **Add `FieldDefinition::argument_by_name` and `DirectiveDefinition::argument_by_name` - [goto-bus-stop], [pull/FIXME]**
+- **Add `FieldDefinition::argument_by_name` and `DirectiveDefinition::argument_by_name` - [goto-bus-stop], [pull/801]**
   - These methods return an argument definition by name, or `None`.
 - **Add `.lookup` methods to schema coordinates - [goto-bus-stop], [pull/FIXME]**
   - `coord!().lookup(&schema)` returns the element at the given coordinate.
@@ -34,6 +34,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/795]: https://github.com/apollographql/apollo-rs/pull/795
 [pull/798]: https://github.com/apollographql/apollo-rs/pull/798
+[pull/801]: https://github.com/apollographql/apollo-rs/pull/801
 
 # [1.0.0-beta.11](https://crates.io/crates/apollo-compiler/1.0.0-beta.11) - 2023-12-19
 
