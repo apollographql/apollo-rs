@@ -117,3 +117,12 @@ impl<'a> DocumentBuilder<'a> {
         })
     }
 }
+
+pub(crate) fn link_import() -> ScalarTypeDef {
+    ScalarTypeDef {
+        name: Name::new(String::from("link__Import")),
+        description: None,
+        directives: Default::default(),
+        extend: false,
+    }
+}

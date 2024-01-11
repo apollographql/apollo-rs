@@ -360,6 +360,7 @@ mod tests {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
+            is_supergraph: false,
         };
         let my_nested_type = ObjectTypeDef {
             description: None,

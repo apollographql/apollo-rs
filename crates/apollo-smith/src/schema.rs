@@ -1,6 +1,8 @@
 use crate::{
+    argument::Argument,
     description::Description,
     directive::{Directive, DirectiveLocation},
+    input_value::InputValue,
     name::Name,
     ty::Ty,
     DocumentBuilder,
@@ -132,7 +134,18 @@ impl<'a> DocumentBuilder<'a> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let directives = self.directives(DirectiveLocation::Schema)?;
+        let mut directives = self.directives(DirectiveLocation::Schema)?;
+        if self.is_supergraph {
+            let link_arg = Argument {
+                name: Name::new(String::from("url")),
+                value: InputValue::String("https://specs.apollo.dev/link/v1.0".into()),
+            };
+            let directive = Directive {
+                name: Name::new(String::from("link")),
+                arguments: vec![link_arg],
+            };
+            directives.insert(Name::new("link".to_string()), directive.into());
+        }
         let named_types: Vec<Ty> = self
             .list_existing_object_types()
             .into_iter()

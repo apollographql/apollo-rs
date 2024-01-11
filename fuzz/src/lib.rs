@@ -6,7 +6,7 @@ pub fn generate_valid_document(input: &[u8]) -> Result<String> {
     drop(env_logger::try_init());
 
     let mut u = Unstructured::new(input);
-    let gql_doc = DocumentBuilder::new(&mut u)?;
+    let gql_doc = DocumentBuilder::new(&mut u, false)?;
     let document = gql_doc.finish();
 
     Ok(document.into())

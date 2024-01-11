@@ -93,6 +93,8 @@ pub struct DocumentBuilder<'a> {
     pub(crate) chosen_arguments: IndexMap<Name, Vec<Argument>>,
     // Useful to keep the same aliases for a specific field name
     pub(crate) chosen_aliases: IndexMap<Name, Name>,
+    // Is this builder creating a supergraph
+    pub(crate) is_supergraph: bool,
 }
 
 impl<'a> Debug for DocumentBuilder<'a> {
@@ -114,7 +116,7 @@ impl<'a> Debug for DocumentBuilder<'a> {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an instance of `DocumentBuilder`
-    pub fn new(u: &'a mut Unstructured<'a>) -> Result<Self> {
+    pub fn new(u: &'a mut Unstructured<'a>, is_supergraph: bool) -> Result<Self> {
         let mut builder = Self {
             u,
             object_type_defs: Vec::new(),
@@ -130,6 +132,7 @@ impl<'a> DocumentBuilder<'a> {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
+            is_supergraph,
         };
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
@@ -162,9 +165,11 @@ impl<'a> DocumentBuilder<'a> {
             builder.input_object_type_defs.push(input_object_type_def);
         }
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let fragment_def = builder.fragment_definition()?;
-            builder.fragment_defs.push(fragment_def);
+        if !builder.is_supergraph {
+            for _ in 0..builder.u.int_in_range(1..=50)? {
+                let fragment_def = builder.fragment_definition()?;
+                builder.fragment_defs.push(fragment_def);
+            }
         }
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
@@ -172,14 +177,27 @@ impl<'a> DocumentBuilder<'a> {
             builder.directive_defs.push(directive_def);
         }
 
+        if builder.is_supergraph {
+            let at_link = directive::at_link();
+            builder.directive_defs.push(at_link);
+
+            let link_import = scalar::link_import();
+            builder.scalar_type_defs.push(link_import);
+
+            let link_purpose = enum_::link_purpose();
+            builder.enum_type_defs.push(link_purpose);
+        }
+
         let schema_def = builder.schema_definition()?;
         builder.schema_def = Some(schema_def);
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let operation_def = builder.operation_definition()?;
-            // Could be None if there is no schema definition (in this case it never happens)
-            if let Some(operation_def) = operation_def {
-                builder.operation_defs.push(operation_def);
+        if !builder.is_supergraph {
+            for _ in 0..builder.u.int_in_range(1..=50)? {
+                let operation_def = builder.operation_definition()?;
+                // Could be None if there is no schema definition (in this case it never happens)
+                if let Some(operation_def) = operation_def {
+                    builder.operation_defs.push(operation_def);
+                }
             }
         }
 
@@ -204,6 +222,7 @@ impl<'a> DocumentBuilder<'a> {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
+            is_supergraph: false,
         };
 
         Ok(builder)
@@ -268,4 +287,19 @@ impl<'a> DocumentBuilder<'a> {
 pub(crate) trait StackedEntity {
     fn name(&self) -> &Name;
     fn fields_def(&self) -> &[FieldDef];
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::DocumentBuilder;
+    use arbitrary::Unstructured;
+
+    #[test]
+    fn link_supergraph() {
+        let mut u = Unstructured::new(&[1, 2, 3]);
+        let gql_doc = DocumentBuilder::new(&mut u, true).unwrap();
+        let document = gql_doc.finish();
+        let document_str = String::from(document);
+        dbg!(document_str);
+    }
 }
