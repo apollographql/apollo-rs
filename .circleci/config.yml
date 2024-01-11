@@ -6,7 +6,7 @@ version: 2.1
 orbs:
   rust: circleci/rust@1.6.1
   gh: circleci/github-cli@2.3.0
-  secops: apollo/circleci-secops-orb@2.0.5
+  secops: apollo/circleci-secops-orb@2.0.6
 
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
@@ -73,8 +73,11 @@ workflows:
             - secops-oidc
           git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
           git-revision: << pipeline.git.revision >>
-
-
+      - secops/semgrep:
+          context:
+            - secops-oidc
+            - github-orb
+          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
 
 # Details of the three jobs: lint, test and wasm
 jobs:
@@ -165,7 +168,7 @@ commands:
     steps:
       - when:
           condition:
-            equal: [ *linux, << parameters.platform >> ]
+            equal: [*linux, << parameters.platform >>]
           steps:
             - run:
                 name: Update apt repositories
@@ -179,7 +182,7 @@ commands:
 
       - when:
           condition:
-            equal: [ *macos, << parameters.platform >> ]
+            equal: [*macos, << parameters.platform >>]
           steps:
             - run:
                 name: Skip homebrew update
@@ -202,14 +205,14 @@ commands:
     steps:
       - unless:
           condition:
-            equal: [ *windows, << parameters.platform >> ]
+            equal: [*windows, << parameters.platform >>]
           steps:
             - rust/install:
                 version: << parameters.rust_channel >>
 
       - when:
           condition:
-            equal: [ *windows, << parameters.platform >> ]
+            equal: [*windows, << parameters.platform >>]
           steps:
             - run:
                 name: Install rustup
