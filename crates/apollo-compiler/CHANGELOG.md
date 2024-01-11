@@ -21,11 +21,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 - **`InputValueDefinition::is_required()` returns false if it has a default value - [goto-bus-stop], [pull/798]**
-  Now `argument.is_required() == true` only if the type is non-null and there is no
-  default value, meaning a value must be provided when it's used.
+  - Now `argument.is_required() == true` only if the type is non-null and there is no
+    default value, meaning a value must be provided when it's used.
 
 ## Features
 - **Implement `fmt::Display` for `ComponentName` - [goto-bus-stop], [pull/795]**
+- **Add `FieldDefinition::argument_by_name` and `DirectiveDefinition::argument_by_name` - [goto-bus-stop], [pull/FIXME]**
+  - These methods return an argument definition by name, or `None`.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/795]: https://github.com/apollographql/apollo-rs/pull/795
