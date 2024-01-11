@@ -79,6 +79,14 @@ pub struct TypeCoordinate {
 
 /// A schema coordinate targeting a field definition or an enum value: `Type.field`, `Enum.VALUE`.
 ///
+/// Type attribute coordinate syntax can refer to object or interface field definitions, input
+/// field definitions, and enum values. [`TypeAttributeCoordinate::lookup`] returns an enum to
+/// account for those possibilities. To look up a specific kind of type attribute, there are
+/// convenience methods:
+/// - [`TypeAttributeCoordinate::lookup_field`] for object or interface fields
+/// - [`TypeAttributeCoordinate::lookup_input_field`] for input fields
+/// - [`TypeAttributeCoordinate::lookup_enum_value`] for enum values
+///
 /// # Example
 /// ```
 /// use apollo_compiler::name;
@@ -305,6 +313,58 @@ impl TypeAttributeCoordinate {
         schema: &'schema Schema,
     ) -> Result<TypeAttributeLookup<'schema>, SchemaLookupError<'coord, 'schema>> {
         Self::lookup_ref(&self.ty, &self.attribute, schema)
+    }
+
+    /// Look up this field definition in a schema. If the attribute does not refer to an object or
+    /// interface field, returns `SchemaLookupError::InvalidType`.
+    pub fn lookup_field<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Component<FieldDefinition>, SchemaLookupError<'coord, 'schema>> {
+        let ty = TypeCoordinate::lookup_ref(&self.ty, schema)?;
+        match ty {
+            ExtendedType::Object(object) => object
+                .fields
+                .get(&self.attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(&self.attribute)),
+            ExtendedType::Interface(interface) => interface
+                .fields
+                .get(&self.attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(&self.attribute)),
+            _ => Err(SchemaLookupError::InvalidType(ty)),
+        }
+    }
+
+    /// Look up this input field definition in a schema. If the attribute does not refer to an
+    /// input field, returns `SchemaLookupError::InvalidType`.
+    pub fn lookup_input_field<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Component<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+        let ty = TypeCoordinate::lookup_ref(&self.ty, schema)?;
+        match ty {
+            ExtendedType::InputObject(object) => object
+                .fields
+                .get(&self.attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(&self.attribute)),
+            _ => Err(SchemaLookupError::InvalidType(ty)),
+        }
+    }
+
+    /// Look up this enum value definition in a schema. If the attribute does not refer to an
+    /// enum, returns `SchemaLookupError::InvalidType`.
+    pub fn lookup_enum_value<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Component<EnumValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+        let ty = TypeCoordinate::lookup_ref(&self.ty, schema)?;
+        match ty {
+            ExtendedType::Enum(enum_) => enum_
+                .values
+                .get(&self.attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(&self.attribute)),
+            _ => Err(SchemaLookupError::InvalidType(ty)),
+        }
     }
 }
 
