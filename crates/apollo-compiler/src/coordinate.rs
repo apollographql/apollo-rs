@@ -6,7 +6,15 @@
 
 use crate::ast::InvalidNameError;
 use crate::ast::Name;
+use crate::schema::Component;
+use crate::schema::DirectiveDefinition;
+use crate::schema::EnumValueDefinition;
+use crate::schema::ExtendedType;
+use crate::schema::FieldDefinition;
+use crate::schema::InputValueDefinition;
 use crate::schema::NamedType;
+use crate::schema::Schema;
+use crate::Node;
 use std::fmt;
 use std::str::FromStr;
 
@@ -157,6 +165,50 @@ pub enum SchemaCoordinateParseError {
     InvalidName(#[from] InvalidNameError),
 }
 
+/// Errors that can occur while looking up a schema coordinate.
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum SchemaLookupError<'coord, 'schema> {
+    /// The requested type does not exist in the schema.
+    #[error("type `{0}` does not exist")]
+    MissingType(&'coord NamedType),
+    /// The requested field or enum value does not exist on its type.
+    #[error("type does not have attribute `{0}`")]
+    MissingAttribute(&'coord Name),
+    /// The requested argument can not be looked up because its type does not support arguments.
+    #[error("type attribute `{0}` is not a field and can not have arguments")]
+    InvalidArgumentAttribute(&'coord Name),
+    /// The requested argument does not exist on its field or directive.
+    #[error("field or directive does not have argument `{0}`")]
+    MissingArgument(&'coord Name),
+    /// The requested field or enum value can not be looked up because its type does not support
+    /// fields.
+    #[error("type does not have attributes")]
+    InvalidType(&'schema ExtendedType),
+}
+
+/// Possible types selected by a type attribute coordinate, of the form `Type.field`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+// Should this be non-exhaustive? Allows for future extension should unions ever be added.
+#[non_exhaustive]
+pub enum TypeAttributeLookup<'schema> {
+    Field(&'schema Component<FieldDefinition>),
+    InputField(&'schema Component<InputValueDefinition>),
+    EnumValue(&'schema Component<EnumValueDefinition>),
+}
+
+/// Possible types selected by a schema coordinate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum SchemaCoordinateLookup<'schema> {
+    Type(&'schema ExtendedType),
+    Directive(&'schema Node<DirectiveDefinition>),
+    Field(&'schema Component<FieldDefinition>),
+    InputField(&'schema Component<InputValueDefinition>),
+    EnumValue(&'schema Component<EnumValueDefinition>),
+    Argument(&'schema Node<InputValueDefinition>),
+}
+
 impl TypeCoordinate {
     /// Create a schema coordinate that points to an attribute on this type.
     ///
@@ -168,11 +220,23 @@ impl TypeCoordinate {
             attribute,
         }
     }
-}
 
-impl From<NamedType> for TypeCoordinate {
-    fn from(ty: NamedType) -> Self {
-        Self { ty }
+    fn lookup_ref<'coord, 'schema>(
+        ty: &'coord NamedType,
+        schema: &'schema Schema,
+    ) -> Result<&'schema ExtendedType, SchemaLookupError<'coord, 'schema>> {
+        schema
+            .types
+            .get(ty)
+            .ok_or(SchemaLookupError::MissingType(ty))
+    }
+
+    /// Look up this type coordinate in a schema.
+    pub fn lookup<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema ExtendedType, SchemaLookupError<'coord, 'schema>> {
+        Self::lookup_ref(&self.ty, schema)
     }
 }
 
@@ -200,6 +264,47 @@ impl TypeAttributeCoordinate {
             field: self.attribute.clone(),
             argument,
         }
+    }
+
+    fn lookup_ref<'coord, 'schema>(
+        ty: &'coord NamedType,
+        attribute: &'coord Name,
+        schema: &'schema Schema,
+    ) -> Result<TypeAttributeLookup<'schema>, SchemaLookupError<'coord, 'schema>> {
+        let ty = TypeCoordinate::lookup_ref(ty, schema)?;
+        match ty {
+            ExtendedType::Enum(enum_) => enum_
+                .values
+                .get(attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(attribute))
+                .map(TypeAttributeLookup::EnumValue),
+            ExtendedType::InputObject(input_object) => input_object
+                .fields
+                .get(attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(attribute))
+                .map(TypeAttributeLookup::InputField),
+            ExtendedType::Object(object) => object
+                .fields
+                .get(attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(attribute))
+                .map(TypeAttributeLookup::Field),
+            ExtendedType::Interface(interface) => interface
+                .fields
+                .get(attribute)
+                .ok_or(SchemaLookupError::MissingAttribute(attribute))
+                .map(TypeAttributeLookup::Field),
+            ExtendedType::Union(_) | ExtendedType::Scalar(_) => {
+                Err(SchemaLookupError::InvalidType(ty))
+            }
+        }
+    }
+
+    /// Look up this type attribute in a schema.
+    pub fn lookup<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<TypeAttributeLookup<'schema>, SchemaLookupError<'coord, 'schema>> {
+        Self::lookup_ref(&self.ty, &self.attribute, schema)
     }
 }
 
@@ -231,6 +336,28 @@ impl FieldArgumentCoordinate {
             attribute: self.field.clone(),
         }
     }
+
+    fn lookup_ref<'coord, 'schema>(
+        ty: &'coord NamedType,
+        field: &'coord Name,
+        argument: &'coord Name,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Node<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+        match TypeAttributeCoordinate::lookup_ref(ty, field, schema)? {
+            TypeAttributeLookup::Field(field) => field
+                .argument_by_name(argument)
+                .ok_or(SchemaLookupError::MissingArgument(argument)),
+            _ => Err(SchemaLookupError::InvalidArgumentAttribute(field)),
+        }
+    }
+
+    /// Look up this argument definition in a schema.
+    pub fn lookup<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Node<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+        Self::lookup_ref(&self.ty, &self.field, &self.argument, schema)
+    }
 }
 
 impl FromStr for FieldArgumentCoordinate {
@@ -260,6 +387,24 @@ impl DirectiveCoordinate {
             argument,
         }
     }
+
+    fn lookup_ref<'coord, 'schema>(
+        directive: &'coord Name,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Node<DirectiveDefinition>, SchemaLookupError<'coord, 'schema>> {
+        schema
+            .directive_definitions
+            .get(directive)
+            .ok_or(SchemaLookupError::MissingType(directive))
+    }
+
+    /// Look up this directive in a schema.
+    pub fn lookup<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Node<DirectiveDefinition>, SchemaLookupError<'coord, 'schema>> {
+        Self::lookup_ref(&self.directive, schema)
+    }
 }
 
 impl From<Name> for DirectiveCoordinate {
@@ -288,6 +433,24 @@ impl DirectiveArgumentCoordinate {
             directive: self.directive.clone(),
         }
     }
+
+    fn lookup_ref<'coord, 'schema>(
+        directive: &'coord Name,
+        argument: &'coord Name,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Node<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+        DirectiveCoordinate::lookup_ref(directive, schema)?
+            .argument_by_name(argument)
+            .ok_or(SchemaLookupError::MissingArgument(argument))
+    }
+
+    /// Look up this directive argument in a schema.
+    pub fn lookup<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<&'schema Node<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+        Self::lookup_ref(&self.directive, &self.argument, schema)
+    }
 }
 
 impl FromStr for DirectiveArgumentCoordinate {
@@ -305,6 +468,74 @@ impl FromStr for DirectiveArgumentCoordinate {
             directive: directive.directive,
             argument: Name::try_from(argument)?,
         })
+    }
+}
+
+impl<'schema> From<&'schema ExtendedType> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema ExtendedType) -> Self {
+        Self::Type(inner)
+    }
+}
+
+impl<'schema> From<&'schema Node<DirectiveDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Node<DirectiveDefinition>) -> Self {
+        Self::Directive(inner)
+    }
+}
+
+impl<'schema> From<&'schema Component<FieldDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Component<FieldDefinition>) -> Self {
+        Self::Field(inner)
+    }
+}
+
+impl<'schema> From<&'schema Component<InputValueDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Component<InputValueDefinition>) -> Self {
+        Self::InputField(inner)
+    }
+}
+
+impl<'schema> From<&'schema Component<EnumValueDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Component<EnumValueDefinition>) -> Self {
+        Self::EnumValue(inner)
+    }
+}
+
+impl<'schema> From<TypeAttributeLookup<'schema>> for SchemaCoordinateLookup<'schema> {
+    fn from(attr: TypeAttributeLookup<'schema>) -> Self {
+        match attr {
+            TypeAttributeLookup::Field(field) => SchemaCoordinateLookup::Field(field),
+            TypeAttributeLookup::InputField(field) => SchemaCoordinateLookup::InputField(field),
+            TypeAttributeLookup::EnumValue(field) => SchemaCoordinateLookup::EnumValue(field),
+        }
+    }
+}
+
+impl<'schema> From<&'schema Node<InputValueDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Node<InputValueDefinition>) -> Self {
+        Self::Argument(inner)
+    }
+}
+
+impl SchemaCoordinate {
+    /// Look up this coordinate in a schema.
+    pub fn lookup<'coord, 'schema>(
+        &'coord self,
+        schema: &'schema Schema,
+    ) -> Result<SchemaCoordinateLookup<'schema>, SchemaLookupError<'coord, 'schema>> {
+        match self {
+            SchemaCoordinate::Type(coordinate) => coordinate.lookup(schema).map(Into::into),
+            SchemaCoordinate::TypeAttribute(coordinate) => {
+                coordinate.lookup(schema).map(Into::into)
+            }
+            SchemaCoordinate::FieldArgument(coordinate) => {
+                coordinate.lookup(schema).map(Into::into)
+            }
+            SchemaCoordinate::Directive(coordinate) => coordinate.lookup(schema).map(Into::into),
+            SchemaCoordinate::DirectiveArgument(coordinate) => {
+                coordinate.lookup(schema).map(Into::into)
+            }
+        }
     }
 }
 
