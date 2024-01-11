@@ -459,6 +459,11 @@ impl FragmentDefinition {
 }
 
 impl DirectiveDefinition {
+    /// Returns the definition of an argument by a given name.
+    pub fn argument_by_name(&self, name: &str) -> Option<&Node<InputValueDefinition>> {
+        self.arguments.iter().find(|argument| argument.name == name)
+    }
+
     serialize_method!();
 }
 
@@ -624,6 +629,7 @@ impl FromIterator<Directive> for DirectiveList {
 }
 
 impl Directive {
+    /// Returns the value provided to the named argument.
     pub fn argument_by_name(&self, name: &str) -> Option<&Node<Value>> {
         self.arguments
             .iter()
@@ -836,6 +842,11 @@ impl Type {
 }
 
 impl FieldDefinition {
+    /// Returns the definition of an argument by a given name.
+    pub fn argument_by_name(&self, name: &str) -> Option<&Node<InputValueDefinition>> {
+        self.arguments.iter().find(|argument| argument.name == name)
+    }
+
     serialize_method!();
 }
 
