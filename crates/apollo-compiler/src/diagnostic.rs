@@ -279,6 +279,8 @@ impl<'s> CliReport<'s> {
 struct Cache<'a>(&'a SourceMap);
 
 impl ariadne::Cache<FileId> for Cache<'_> {
+    type Storage = String;
+
     fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {
@@ -290,7 +292,7 @@ impl ariadne::Cache<FileId> for Cache<'_> {
             Ok(source_file.ariadne())
         } else if *file_id == FileId::NONE || *file_id == FileId::HACK_TMP {
             static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
-            Ok(EMPTY.get_or_init(|| ariadne::Source::from("")))
+            Ok(EMPTY.get_or_init(|| ariadne::Source::from(String::new())))
         } else {
             Err(Box::new(NotFound(*file_id)))
         }

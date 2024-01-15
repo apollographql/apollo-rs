@@ -352,7 +352,9 @@ impl Parser {
 
 impl MappedSource {
     fn new(input: &str) -> Self {
-        let ariadne = ariadne::Source::from(input);
+        // FIXME This string copy is not ideal, but changing to a reference counted string affects
+        // public API
+        let ariadne = ariadne::Source::from(input.to_string());
 
         let mut map = vec![0; input.len() + 1];
         let mut char_index = 0;
