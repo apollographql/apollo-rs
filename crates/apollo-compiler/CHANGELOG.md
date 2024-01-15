@@ -39,11 +39,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - `string.parse::<SchemaCoordinate>()?.lookup(&schema)` returns an enum with all the elements
     that can be looked up using schema coordinates.
 
+## Maintenance
+- **update ariadne to 0.4.0 - [pull/793]**
+  Ariadne is the diagnostic printing crate used for validation errors. v0.4.0 improves memory usage.
+
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/795]: https://github.com/apollographql/apollo-rs/pull/795
 [pull/798]: https://github.com/apollographql/apollo-rs/pull/798
 [pull/801]: https://github.com/apollographql/apollo-rs/pull/801
 [pull/803]: https://github.com/apollographql/apollo-rs/pull/803
+[pull/793]: https://github.com/apollographql/apollo-rs/pull/793
 
 # [1.0.0-beta.11](https://crates.io/crates/apollo-compiler/1.0.0-beta.11) - 2023-12-19
 
