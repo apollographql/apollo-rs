@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.12](https://crates.io/crates/apollo-compiler/1.0.0-beta.12) - 2024-01-15
 
 ## BREAKING
 - **`InputValueDefinition::is_required()` returns false if it has a default value - [goto-bus-stop], [pull/798]**
@@ -29,7 +29,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Add `FieldDefinition::argument_by_name` and `DirectiveDefinition::argument_by_name` - [goto-bus-stop], [pull/801]**
   - These methods return an argument definition by name, or `None`.
 - **Add `.lookup` methods to schema coordinates - [goto-bus-stop], [pull/803]**
-  - `coord!().lookup(&schema)` returns the element at the given coordinate.
+  - `coord!(Type).lookup(&schema)` returns the type definition for `Type`.
+  - `coord!(Type.field).lookup_field(&schema)` returns the field definition for `field`.
+  - `coord!(Enum.VALUE).lookup_enum_value(&schema)` returns the enum value definition for `VALUE`.
+  - `coord!(InputType.field).lookup_input_field(&schema)` returns the input field definition for `field`.
+  - `coord!(Type.field(argument:)).lookup(&schema)` returns the argument definition for `argument`.
+  - `coord!(@directive).lookup(&schema)` returns the directive definition for `@directive`.
+  - `coord!(@directive(argument:)).lookup(&schema)` returns the argument definition for `argument`.
+  - `string.parse::<SchemaCoordinate>()?.lookup(&schema)` returns an enum with all the elements
+    that can be looked up using schema coordinates.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/795]: https://github.com/apollographql/apollo-rs/pull/795
