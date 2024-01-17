@@ -4,6 +4,8 @@ use libfuzzer_sys::fuzz_target;
 use log::debug;
 
 fuzz_target!(|data: &str| {
+    let _ = env_logger::try_init();
+
     let mut input = Schema::new();
     let def = input.schema_definition.make_mut();
     def.description = Some(data.into());

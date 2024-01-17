@@ -6,6 +6,8 @@ use log::debug;
 use std::panic;
 
 fuzz_target!(|data: &[u8]| {
+    let _ = env_logger::try_init();
+
     let doc_generated = match generate_valid_document(data) {
         Ok(d) => d,
         Err(_) => {
