@@ -10,6 +10,12 @@ use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 
+#[derive(Debug, Clone, Copy)]
+pub enum Constness {
+    Const,
+    NonConst,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum InputValue {
     Variable(Name),
@@ -160,8 +166,12 @@ impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InputValue`
-    pub fn input_value(&mut self) -> ArbitraryResult<InputValue> {
-        let val = match self.u.int_in_range(0..=8usize)? {
+    pub fn input_value(&mut self, constness: Constness) -> ArbitraryResult<InputValue> {
+        let index = match constness {
+            Constness::Const => self.u.int_in_range(0..=7usize)?,
+            Constness::NonConst => self.u.int_in_range(0..=8usize)?,
+        };
+        let val = match index {
             // Int
             0 => InputValue::Int(self.u.arbitrary()?),
             // Float
@@ -179,7 +189,7 @@ impl<'a> DocumentBuilder<'a> {
                     let enum_choosed = self.choose_enum()?.clone();
                     InputValue::Enum(self.arbitrary_variant(&enum_choosed)?.clone())
                 } else {
-                    self.input_value()?
+                    self.input_value(constness)?
                 }
             }
             // List
@@ -187,14 +197,14 @@ impl<'a> DocumentBuilder<'a> {
                 // FIXME: it's semantically wrong it should always be the same type inside
                 InputValue::List(
                     (0..self.u.int_in_range(2..=4usize)?)
-                        .map(|_| self.input_value())
+                        .map(|_| self.input_value(constness))
                         .collect::<ArbitraryResult<Vec<_>>>()?,
                 )
             }
             // Object
             7 => InputValue::Object(
                 (0..self.u.int_in_range(2..=4usize)?)
-                    .map(|_| Ok((self.name()?, self.input_value()?)))
+                    .map(|_| Ok((self.name()?, self.input_value(constness)?)))
                     .collect::<ArbitraryResult<Vec<_>>>()?,
             ),
             // Variable TODO: only generate valid variable name (existing variables)
@@ -287,7 +297,7 @@ impl<'a> DocumentBuilder<'a> {
                 .u
                 .arbitrary()
                 .unwrap_or(false)
-                .then(|| self.input_value())
+                .then(|| self.input_value(Constness::Const))
                 .transpose()?;
 
             input_values.push(InputValueDef {
@@ -318,7 +328,7 @@ impl<'a> DocumentBuilder<'a> {
             .u
             .arbitrary()
             .unwrap_or(false)
-            .then(|| self.input_value())
+            .then(|| self.input_value(Constness::Const))
             .transpose()?;
 
         Ok(InputValueDef {

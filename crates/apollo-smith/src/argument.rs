@@ -1,3 +1,4 @@
+use crate::input_value::Constness;
 use crate::{
     input_value::{InputValue, InputValueDef},
     name::Name,
@@ -102,7 +103,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Argument`
     pub fn argument(&mut self) -> ArbitraryResult<Argument> {
         let name = self.name()?;
-        let value = self.input_value()?;
+        let value = self.input_value(Constness::NonConst)?;
 
         Ok(Argument { name, value })
     }
