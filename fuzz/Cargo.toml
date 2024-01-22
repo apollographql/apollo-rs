@@ -19,7 +19,7 @@ libfuzzer-sys = "0.4"
 apollo-compiler = { path = "../crates/apollo-compiler" }
 apollo-parser = { path = "../crates/apollo-parser" }
 apollo-smith = { path = "../crates/apollo-smith" }
-env_logger = "0.10.0"
+env_logger = "0.11.0"
 log = "0.4.14"
 similar-asserts = "1.5.0"
 
