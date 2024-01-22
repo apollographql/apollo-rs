@@ -165,7 +165,7 @@ impl<'a> DocumentBuilder<'a> {
             // Int
             0 => InputValue::Int(self.u.arbitrary()?),
             // Float
-            1 => InputValue::Float(self.u.arbitrary()?),
+            1 => InputValue::Float(self.finite_f64()?),
             // String
             2 => InputValue::String(self.limited_string(40)?),
             // Boolean
@@ -211,7 +211,7 @@ impl<'a> DocumentBuilder<'a> {
                 match ty.name().name.as_str() {
                     "String" => Ok(InputValue::String(doc_builder.limited_string(1000)?)),
                     "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
-                    "Float" => Ok(InputValue::Float(doc_builder.u.arbitrary()?)),
+                    "Float" => Ok(InputValue::Float(doc_builder.finite_f64()?)),
                     "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
                     "ID" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
                     other => {
@@ -328,6 +328,15 @@ impl<'a> DocumentBuilder<'a> {
             default_value,
             directives,
         })
+    }
+
+    fn finite_f64(&mut self) -> arbitrary::Result<f64> {
+        loop {
+            let val: f64 = self.u.arbitrary()?;
+            if val.is_finite() {
+                return Ok(val);
+            }
+        }
     }
 }
 
