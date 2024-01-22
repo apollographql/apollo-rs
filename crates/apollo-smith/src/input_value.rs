@@ -211,7 +211,7 @@ impl<'a> DocumentBuilder<'a> {
                 match ty.name().name.as_str() {
                     "String" => Ok(InputValue::String(doc_builder.limited_string(1000)?)),
                     "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
-                    "Float" => Ok(InputValue::Float(doc_builder.u.arbitrary()?)),
+                    "Float" => Ok(InputValue::Float(doc_builder.finite_f64()?)),
                     "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
                     "ID" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
                     other => {
