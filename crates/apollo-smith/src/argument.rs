@@ -1,3 +1,4 @@
+use crate::input_value::Constness;
 use crate::{
     input_value::{InputValue, InputValueDef},
     name::Name,
@@ -76,10 +77,10 @@ impl TryFrom<apollo_parser::cst::Argument> for Argument {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary vector of `Argument`
-    pub fn arguments(&mut self) -> ArbitraryResult<Vec<Argument>> {
+    pub fn arguments(&mut self, constness: Constness) -> ArbitraryResult<Vec<Argument>> {
         let num_arguments = self.u.int_in_range(0..=4)?;
         let arguments = (0..num_arguments)
-            .map(|_| self.argument())
+            .map(|_| self.argument(constness))
             .collect::<ArbitraryResult<Vec<_>>>()?;
 
         Ok(arguments)
@@ -100,9 +101,9 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `Argument`
-    pub fn argument(&mut self) -> ArbitraryResult<Argument> {
+    pub fn argument(&mut self, constness: Constness) -> ArbitraryResult<Argument> {
         let name = self.name()?;
-        let value = self.input_value()?;
+        let value = self.input_value(constness)?;
 
         Ok(Argument { name, value })
     }
