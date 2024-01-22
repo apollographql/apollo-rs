@@ -165,7 +165,7 @@ impl<'a> DocumentBuilder<'a> {
             // Int
             0 => InputValue::Int(self.u.arbitrary()?),
             // Float
-            1 => InputValue::Float(self.u.arbitrary()?),
+            1 => InputValue::Float(self.finite_f64()?),
             // String
             2 => InputValue::String(self.limited_string(40)?),
             // Boolean
@@ -328,6 +328,15 @@ impl<'a> DocumentBuilder<'a> {
             default_value,
             directives,
         })
+    }
+
+    fn finite_f64(&mut self) -> arbitrary::Result<f64> {
+        loop {
+            let val: f64 = self.u.arbitrary()?;
+            if val.is_finite() {
+                return Ok(val);
+            }
+        }
     }
 }
 
