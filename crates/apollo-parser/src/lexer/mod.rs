@@ -1,4 +1,5 @@
 mod cursor;
+mod lookup;
 mod token;
 mod token_kind;
 
@@ -146,6 +147,26 @@ impl<'a> Cursor<'a> {
             };
             match state {
                 State::Start => {
+                    if let Some(t) = lookup::punctuation_kind(c) {
+                        token.kind = t;
+                        token.data = self.current_str();
+                        return Ok(token);
+                    }
+
+                    if lookup::is_namestart(c) {
+                        token.kind = TokenKind::Name;
+                        state = State::Ident;
+
+                        continue;
+                    }
+
+                    if c != '0' && c.is_ascii_digit() {
+                        token.kind = TokenKind::Int;
+                        state = State::IntegerPart;
+
+                        continue;
+                    }
+
                     match c {
                         '"' => {
                             token.kind = TokenKind::StringValue;
@@ -159,14 +180,6 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Spread;
                             state = State::SpreadOperator;
                         }
-                        c if is_whitespace_assimilated(c) => {
-                            token.kind = TokenKind::Whitespace;
-                            state = State::Whitespace;
-                        }
-                        c if is_name_start(c) => {
-                            token.kind = TokenKind::Name;
-                            state = State::Ident;
-                        }
                         '-' => {
                             token.kind = TokenKind::Int;
                             state = State::MinusSign;
@@ -175,79 +188,9 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Int;
                             state = State::LeadingZero;
                         }
-                        c if c.is_ascii_digit() => {
-                            token.kind = TokenKind::Int;
-                            state = State::IntegerPart;
-                        }
-                        '!' => {
-                            token.kind = TokenKind::Bang;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '$' => {
-                            token.kind = TokenKind::Dollar;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '&' => {
-                            token.kind = TokenKind::Amp;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '(' => {
-                            token.kind = TokenKind::LParen;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        ')' => {
-                            token.kind = TokenKind::RParen;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        ':' => {
-                            token.kind = TokenKind::Colon;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        ',' => {
-                            token.kind = TokenKind::Comma;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '=' => {
-                            token.kind = TokenKind::Eq;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '@' => {
-                            token.kind = TokenKind::At;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '[' => {
-                            token.kind = TokenKind::LBracket;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        ']' => {
-                            token.kind = TokenKind::RBracket;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '{' => {
-                            token.kind = TokenKind::LCurly;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '|' => {
-                            token.kind = TokenKind::Pipe;
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-                        '}' => {
-                            token.kind = TokenKind::RCurly;
-                            token.data = self.current_str();
-                            return Ok(token);
+                        c if is_whitespace_assimilated(c) => {
+                            token.kind = TokenKind::Whitespace;
+                            state = State::Whitespace;
                         }
                         c => {
                             return Err(Error::new(
@@ -412,7 +355,7 @@ impl<'a> Cursor<'a> {
                             self.current_str().to_string(),
                         ));
                     }
-                    _ if is_name_start(c) => {
+                    _ if lookup::is_namestart(c) => {
                         return Err(Error::new(
                             format!("Unexpected character `{c}` as integer suffix"),
                             self.current_str().to_string(),
@@ -433,7 +376,7 @@ impl<'a> Cursor<'a> {
                         token.kind = TokenKind::Float;
                         state = State::ExponentIndicator;
                     }
-                    _ if is_name_start(c) => {
+                    _ if lookup::is_namestart(c) => {
                         return Err(Error::new(
                             format!("Unexpected character `{c}` as integer suffix"),
                             self.current_str().to_string(),
@@ -460,7 +403,7 @@ impl<'a> Cursor<'a> {
                     'e' | 'E' => {
                         state = State::ExponentIndicator;
                     }
-                    _ if c == '.' || is_name_start(c) => {
+                    _ if c == '.' || lookup::is_namestart(c) => {
                         return Err(Error::new(
                             format!("Unexpected character `{c}` as float suffix"),
                             self.current_str().to_string(),
@@ -500,7 +443,7 @@ impl<'a> Cursor<'a> {
                     _ if c.is_ascii_digit() => {
                         state = State::ExponentDigit;
                     }
-                    _ if c == '.' || is_name_start(c) => {
+                    _ if c == '.' || lookup::is_namestart(c) => {
                         return Err(Error::new(
                             format!("Unexpected character `{c}` as float suffix"),
                             self.current_str().to_string(),
@@ -639,11 +582,6 @@ fn is_whitespace_assimilated(c: char) -> bool {
         // https://spec.graphql.org/October2021/#UnicodeBOM
         | '\u{FEFF}' // Unicode BOM (Byte Order Mark)
     )
-}
-
-/// <https://spec.graphql.org/October2021/#NameStart>
-fn is_name_start(c: char) -> bool {
-    matches!(c, 'a'..='z' | 'A'..='Z' | '_')
 }
 
 /// <https://spec.graphql.org/October2021/#NameContinue>
