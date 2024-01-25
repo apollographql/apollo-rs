@@ -198,7 +198,7 @@ pub(crate) fn same_response_shape(
 
             for fields_for_name in grouped_by_name.values() {
                 // 9. Given each pair of members subfieldA and subfieldB in fieldsForName:
-                for (subfield_a, subfield_b) in pair_combinations(&fields_for_name) {
+                for (subfield_a, subfield_b) in pair_combinations(fields_for_name) {
                     // 9a. If SameResponseShape(subfieldA, subfieldB) is false, return false.
                     same_response_shape(db, file_id, *subfield_a, *subfield_b)?;
                 }
