@@ -5,7 +5,15 @@ use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, schema, Node};
 
 use super::operation::OperationValidationConfig;
-/// TODO(@goto-bus-stop) test pathological query with many of the same field
+
+/// Return all possible unordered combinations of 2 elements from a slice.
+fn pair_combinations<T>(slice: &[T]) -> impl Iterator<Item = (&T, &T)> {
+    slice
+        .iter()
+        .enumerate()
+        // Final element will zip with the empty slice and produce no result.
+        .flat_map(|(index, element)| std::iter::repeat(element).zip(&slice[index + 1..]))
+}
 
 /// A field and the type it selects from.
 #[derive(Debug, Clone, Copy)]
@@ -188,12 +196,9 @@ pub(crate) fn same_response_shape(
             ));
             let grouped_by_name = group_fields_by_name(merged_set);
 
-            for (_, fields_for_name) in grouped_by_name {
+            for fields_for_name in grouped_by_name.values() {
                 // 9. Given each pair of members subfieldA and subfieldB in fieldsForName:
-                let Some((subfield_a, rest)) = fields_for_name.split_first() else {
-                    continue;
-                };
-                for subfield_b in rest {
+                for (subfield_a, subfield_b) in pair_combinations(&fields_for_name) {
                     // 9a. If SameResponseShape(subfieldA, subfieldB) is false, return false.
                     same_response_shape(db, file_id, *subfield_a, *subfield_b)?;
                 }
@@ -305,15 +310,12 @@ pub(crate) fn fields_in_set_can_merge(
     let mut diagnostics = vec![];
 
     for (_, fields_for_name) in grouped_by_name {
-        let Some((field_a, rest)) = fields_for_name.split_first() else {
-            continue; // Nothing to merge
-        };
-        let Ok(parent_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
-            continue; // Can't do much if we don't know the type
-        };
-
         // 2. Given each pair of members fieldA and fieldB in fieldsForName:
-        for field_b in rest {
+        for (field_a, field_b) in pair_combinations(&fields_for_name) {
+            let Ok(parent_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
+                continue; // Can't do much if we don't know the type
+            };
+
             // 2a. SameResponseShape(fieldA, fieldB) must be true.
             if let Err(diagnostic) = same_response_shape(db, file_id, *field_a, *field_b) {
                 diagnostics.push(diagnostic);
@@ -438,4 +440,20 @@ pub(crate) fn validate_selections(
     }
 
     diagnostics
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pair_combinations_test() {
+        let pairs = pair_combinations::<i64>(&[1, 2, 3, 4]).collect::<Vec<_>>();
+        assert_eq!(
+            pairs,
+            &[(&1, &2), (&1, &3), (&1, &4), (&2, &3), (&2, &4), (&3, &4)]
+        );
+        let pairs = pair_combinations(&["a", "a", "a"]).collect::<Vec<_>>();
+        assert_eq!(pairs, &[(&"a", &"a"), (&"a", &"a"), (&"a", &"a")]);
+    }
 }
