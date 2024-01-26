@@ -76,43 +76,28 @@ pub(crate) fn operation_fields<'a>(
     )
 }
 
-/// Check if two fields will output the same type.
-///
-/// If the two fields output different types, returns an `Err` containing diagnostic information.
-/// To simply check if outputs are the same, you can use `.is_ok()`:
-/// ```rust,ignore
-/// let is_same = same_response_shape(db, field_a, field_b).is_ok();
-/// // `is_same` is `bool`
-/// ```
-///
-/// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
-pub(crate) fn same_response_shape(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-    field_a: FieldAgainstType<'_>,
-    field_b: FieldAgainstType<'_>,
-) -> Result<(), ValidationError> {
-    let schema = db.schema();
-    // 1. Let typeA be the return type of fieldA.
-    let Ok(full_type_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
-        return Ok(()); // Can't do much if we don't know the type
-    };
-    let mut type_a = &full_type_a.ty;
-    // 2. Let typeB be the return type of fieldB.
-    let Ok(full_type_b) = schema.type_field(field_b.against_type, &field_b.field.name) else {
-        return Ok(()); // Can't do much if we don't know the type
-    };
-    let mut type_b = &full_type_b.ty;
+fn is_composite(ty: &schema::ExtendedType) -> bool {
+    use schema::ExtendedType::*;
+    matches!(ty, Object(_) | Interface(_) | Union(_))
+}
 
+/// Check if the output types of two fields match.
+fn same_output_type_shape(
+    schema: &schema::Schema,
+    field_a: FieldAgainstType<'_>,
+    mut type_a: &ast::Type,
+    field_b: FieldAgainstType<'_>,
+    mut type_b: &ast::Type,
+) -> Result<(), ValidationError> {
     let mismatching_type_diagnostic = || {
         ValidationError::new(
             field_b.field.location(),
             DiagnosticData::ConflictingFieldType {
                 field: field_a.field.response_name().clone(),
                 original_selection: field_a.field.location(),
-                original_type: full_type_a.ty.clone(),
+                original_type: type_a.clone(),
                 redefined_selection: field_b.field.location(),
-                redefined_type: full_type_b.ty.clone(),
+                redefined_type: type_b.clone(),
             },
         )
     };
@@ -153,11 +138,6 @@ pub(crate) fn same_response_shape(
         return Ok(()); // Cannot do much if we don't know the type
     };
 
-    fn is_composite(ty: &schema::ExtendedType) -> bool {
-        type T = schema::ExtendedType;
-        matches!(ty, T::Object(_) | T::Interface(_) | T::Union(_))
-    }
-
     match (def_a, def_b) {
         // 5. If typeA or typeB is Scalar or Enum.
         (
@@ -171,27 +151,63 @@ pub(crate) fn same_response_shape(
                 Err(mismatching_type_diagnostic())
             }
         }
+        // 6. If typeA or typeB is not a composite type, return false.
+        (def_a, def_b) if is_composite(&def_a) && is_composite(&def_b) => Ok(()),
+        _ => Err(mismatching_type_diagnostic()),
+    }
+}
+
+/// Check if two fields will output the same type.
+///
+/// If the two fields output different types, returns an `Err` containing diagnostic information.
+/// To simply check if outputs are the same, you can use `.is_ok()`:
+/// ```rust,ignore
+/// let is_same = same_response_shape(db, field_a, field_b).is_ok();
+/// // `is_same` is `bool`
+/// ```
+///
+/// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
+fn same_response_shape(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+    field_a: FieldAgainstType<'_>,
+    field_b: FieldAgainstType<'_>,
+) -> Result<(), ValidationError> {
+    let schema = db.schema();
+
+    // 1. Let typeA be the return type of fieldA.
+    let Ok(full_type_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
+        return Ok(()); // Can't do much if we don't know the type
+    };
+    let type_a = &full_type_a.ty;
+    // 2. Let typeB be the return type of fieldB.
+    let Ok(full_type_b) = schema.type_field(field_b.against_type, &field_b.field.name) else {
+        return Ok(()); // Can't do much if we don't know the type
+    };
+    let type_b = &full_type_b.ty;
+
+    // Covers steps 3-5 of the spec algorithm.
+    same_output_type_shape(&schema, field_a, type_a, field_b, type_b)?;
+
+    let (Some(def_a), Some(def_b)) = (
+        schema.types.get(type_a.inner_named_type()),
+        schema.types.get(type_b.inner_named_type()),
+    ) else {
+        return Ok(()); // Cannot do much if we don't know the type
+    };
+
+    match (def_a, def_b) {
         // 6. Assert: typeA and typeB are both composite types.
         (def_a, def_b) if is_composite(def_a) && is_composite(def_b) => {
-            let Ok(subfield_a_type) = schema.type_field(field_a.against_type, &field_a.field.name)
-            else {
-                // Missing field: error raised elsewhere, we can't check if the type is correct
-                return Ok(());
-            };
-            let Ok(subfield_b_type) = schema.type_field(field_b.against_type, &field_b.field.name)
-            else {
-                // Missing field: error raised elsewhere, we can't check if the type is correct
-                return Ok(());
-            };
             let named_fragments = db.ast_named_fragments(file_id);
             let mut merged_set = operation_fields(
                 &named_fragments,
-                &subfield_a_type.name,
+                &full_type_a.name,
                 &field_a.field.selection_set,
             );
             merged_set.extend(operation_fields(
                 &named_fragments,
-                &subfield_b_type.name,
+                &full_type_b.name,
                 &field_b.field.selection_set,
             ));
             let grouped_by_name = group_fields_by_name(merged_set);
@@ -228,61 +244,68 @@ fn group_fields_by_name(
     map
 }
 
-/// Check if the arguments provided to two fields are the same, so the fields can be merged.
-fn identical_arguments(
-    field_a: &Node<ast::Field>,
-    field_b: &Node<ast::Field>,
+/// Check if two fields on the same type are the same, so the fields can be merged.
+fn same_field_selection(
+    field_a: FieldAgainstType<'_>,
+    field_b: FieldAgainstType<'_>,
 ) -> Result<(), ValidationError> {
-    let args_a = &field_a.arguments;
-    let args_b = &field_b.arguments;
+    debug_assert_eq!(field_a.against_type, field_b.against_type);
 
-    let loc_a = field_a.location();
-    let loc_b = field_b.location();
+    // 2bi. fieldA and fieldB must have identical field names.
+    if field_a.field.name != field_b.field.name {
+        return Err(ValidationError::new(
+            field_b.field.location(),
+            DiagnosticData::ConflictingFieldName {
+                field: field_a.field.response_name().clone(),
+                original_selection: field_a.field.location(),
+                original_name: field_a.field.name.clone(),
+                redefined_selection: field_b.field.location(),
+                redefined_name: field_b.field.name.clone(),
+            },
+        ));
+    }
+
+    // 2bii. fieldA and fieldB must have identical sets of arguments.
+    let args_a = &field_a.field.arguments;
+    let args_b = &field_b.field.arguments;
+
+    let conflicting_field_argument =
+        |original_arg: Option<&Node<ast::Argument>>,
+         redefined_arg: Option<&Node<ast::Argument>>| {
+            debug_assert!(
+                original_arg.is_some() || redefined_arg.is_some(),
+                "a conflicting field argument error can only exist when at least one field has the argument",
+            );
+
+            // We can take the name from either one of the arguments as they are necessarily the same.
+            let arg = original_arg.or(redefined_arg).unwrap();
+
+            let data = DiagnosticData::ConflictingFieldArgument {
+                // field_a and field_b have the same name so we can use either one.
+                field: field_b.field.name.clone(),
+                argument: arg.name.clone(),
+                original_selection: field_a.field.location(),
+                original_value: original_arg.map(|arg| (*arg.value).clone()),
+                redefined_selection: field_b.field.location(),
+                redefined_value: redefined_arg.map(|arg| (*arg.value).clone()),
+            };
+            ValidationError::new(field_b.field.location(), data)
+        };
 
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
     for arg in args_a {
         let Some(other_arg) = args_b.iter().find(|other_arg| other_arg.name == arg.name) else {
-            return Err(ValidationError::new(
-                loc_b,
-                DiagnosticData::ConflictingFieldArgument {
-                    field: field_a.name.clone(),
-                    argument: arg.name.clone(),
-                    original_selection: loc_a,
-                    original_value: Some((*arg.value).clone()),
-                    redefined_selection: loc_b,
-                    redefined_value: None,
-                },
-            ));
+            return Err(conflicting_field_argument(Some(arg), None));
         };
 
         if other_arg.value != arg.value {
-            return Err(ValidationError::new(
-                loc_b,
-                DiagnosticData::ConflictingFieldArgument {
-                    field: field_a.name.clone(),
-                    argument: arg.name.clone(),
-                    original_selection: loc_a,
-                    original_value: Some((*arg.value).clone()),
-                    redefined_selection: loc_b,
-                    redefined_value: Some((*other_arg.value).clone()),
-                },
-            ));
+            return Err(conflicting_field_argument(Some(arg), Some(other_arg)));
         }
     }
     // Check if fieldB provides any arguments that fieldA does not provide.
     for arg in args_b {
         if !args_a.iter().any(|other_arg| other_arg.name == arg.name) {
-            return Err(ValidationError::new(
-                loc_b,
-                DiagnosticData::ConflictingFieldArgument {
-                    field: field_a.name.clone(),
-                    argument: arg.name.clone(),
-                    original_selection: loc_a,
-                    original_value: None,
-                    redefined_selection: loc_b,
-                    redefined_value: Some((*arg.value).clone()),
-                },
-            ));
+            return Err(conflicting_field_argument(None, Some(arg)));
         };
     }
 
@@ -294,7 +317,7 @@ fn identical_arguments(
 /// If the fields cannot be merged, returns an `Err` containing diagnostic information.
 ///
 /// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
-pub(crate) fn fields_in_set_can_merge(
+fn fields_in_set_can_merge(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
@@ -321,24 +344,12 @@ pub(crate) fn fields_in_set_can_merge(
                 diagnostics.push(diagnostic);
                 continue;
             }
+
             // 2b. If the parent types of fieldA and fieldB are equal or if either is not an Object Type:
             if field_a.against_type == field_b.against_type {
                 // 2bi. fieldA and fieldB must have identical field names.
-                if field_a.field.name != field_b.field.name {
-                    diagnostics.push(ValidationError::new(
-                        field_b.field.location(),
-                        DiagnosticData::ConflictingFieldName {
-                            field: field_a.field.response_name().clone(),
-                            original_selection: field_a.field.location(),
-                            original_name: field_a.field.name.clone(),
-                            redefined_selection: field_b.field.location(),
-                            redefined_name: field_b.field.name.clone(),
-                        },
-                    ));
-                    continue;
-                }
                 // 2bii. fieldA and fieldB must have identical sets of arguments.
-                if let Err(diagnostic) = identical_arguments(field_a.field, field_b.field) {
+                if let Err(diagnostic) = same_field_selection(*field_a, *field_b) {
                     diagnostics.push(diagnostic);
                     continue;
                 }
