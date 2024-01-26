@@ -1,13 +1,13 @@
 Error: operation must not select different fields to the same alias `y`
-    ╭─[0078_merge_conflict_nested_fragments.graphql:28:3]
+    ╭─[0078_merge_conflict_nested_fragments.graphql:25:3]
     │
  25 │   y: c
     │   ──┬─  
-    │     ╰─── field `y` is selected from field `c` here
+    │     ╰─── but the same field `y` is also selected from field `c` here
     │ 
  28 │   y: d
     │   ──┬─  
-    │     ╰─── but the same field `y` is also selected from field `d` here
+    │     ╰─── field `y` is selected from field `d` here
 ────╯
 Error: operation must not select different fields to the same alias `x`
     ╭─[0078_merge_conflict_nested_fragments.graphql:32:3]

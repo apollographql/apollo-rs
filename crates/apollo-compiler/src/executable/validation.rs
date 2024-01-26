@@ -30,11 +30,32 @@ pub(crate) fn validate_standalone_executable(
 }
 
 fn validate_with_schema(
-    _errors: &mut DiagnosticList,
-    _schema: &Schema,
-    _document: &ExecutableDocument,
+    errors: &mut DiagnosticList,
+    schema: &Schema,
+    document: &ExecutableDocument,
 ) {
-    // TODO
+    let mut compiler_diagnostics = vec![];
+    for operation in document.all_operations() {
+        crate::validation::selection::fields_in_set_can_merge(
+            schema,
+            document,
+            &operation.selection_set,
+            &mut compiler_diagnostics,
+        );
+    }
+
+    for fragment in document.fragments.values() {
+        crate::validation::selection::fields_in_set_can_merge(
+            schema,
+            document,
+            &fragment.selection_set,
+            &mut compiler_diagnostics,
+        );
+    }
+
+    for diagnostic in compiler_diagnostics {
+        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
+    }
 }
 
 pub(crate) fn validate_with_or_without_schema(
