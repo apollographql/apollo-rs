@@ -116,7 +116,7 @@ impl SchemaBuilder {
                                 &mut self.errors,
                                 $def,
                                 self.orphan_type_extensions
-                                    .remove(&$def.name)
+                                    .shift_remove(&$def.name)
                                     .unwrap_or_default(),
                             );
                             entry.insert(extended_def.into());
