@@ -15,7 +15,7 @@ fn renamed() -> Valid<Schema> {
     let mut schema = Schema::parse(input, "schema.graphql").unwrap();
 
     // 1. Remove the definition from the `types` map, using its old name as a key
-    let mut type_def = schema.types.remove("Query").unwrap();
+    let mut type_def = schema.types.shift_remove("Query").unwrap();
 
     // 2. Set the new name in the struct
     let ExtendedType::Object(obj) = &mut type_def else {
