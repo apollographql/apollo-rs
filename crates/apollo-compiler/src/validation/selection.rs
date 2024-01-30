@@ -1,6 +1,6 @@
 use super::operation::OperationValidationConfig;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::{FileId, ValidationDatabase};
+use crate::validation::{CycleError, FileId, RecursionGuard, RecursionStack, ValidationDatabase};
 use crate::{ast, executable, schema, Node};
 use indexmap::IndexMap;
 use std::collections::{hash_map::Entry, HashMap};
@@ -81,6 +81,51 @@ fn is_composite(ty: &schema::ExtendedType) -> bool {
     matches!(ty, Object(_) | Interface(_) | Union(_))
 }
 
+/// Check if a selection set contains a fragment cycle, meaning we can't run recursive
+/// validations on it.
+fn contains_any_fragment_cycle(
+    fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
+    selection_set: &executable::SelectionSet,
+) -> bool {
+    let mut visited = RecursionStack::new().with_limit(100);
+
+    return detect_fragment_cycle_inner(fragments, selection_set, &mut visited.guard()).is_err();
+
+    fn detect_fragment_cycle_inner(
+        fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
+        selection_set: &executable::SelectionSet,
+        visited: &mut RecursionGuard<'_>,
+    ) -> Result<(), CycleError<()>> {
+        for selection in &selection_set.selections {
+            match selection {
+                executable::Selection::FragmentSpread(spread) => {
+                    if visited.contains(&spread.fragment_name) {
+                        if visited.first() == Some(&spread.fragment_name) {
+                            return Err(CycleError::Recursed(vec![]));
+                        }
+                        continue;
+                    }
+
+                    if let Some(fragment) = fragments.get(&spread.fragment_name) {
+                        detect_fragment_cycle_inner(
+                            fragments,
+                            &fragment.selection_set,
+                            &mut visited.push(&fragment.name)?,
+                        )?;
+                    }
+                }
+                executable::Selection::InlineFragment(inline) => {
+                    detect_fragment_cycle_inner(fragments, &inline.selection_set, visited)?;
+                }
+                executable::Selection::Field(field) => {
+                    detect_fragment_cycle_inner(fragments, &field.selection_set, visited)?;
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
 /// https://tech.new-work.se/graphql-overlapping-fields-can-be-merged-fast-ea6e92e0a01
 pub(crate) fn fields_in_set_can_merge(
     schema: &schema::Schema,
@@ -88,6 +133,10 @@ pub(crate) fn fields_in_set_can_merge(
     selection_set: &executable::SelectionSet,
     diagnostics: &mut Vec<ValidationError>,
 ) {
+    if contains_any_fragment_cycle(&document.fragments, selection_set) {
+        return;
+    }
+
     let fields = expand_selections(&document.fragments, &[selection_set]);
 
     same_response_shape_by_name(schema, &document.fragments, &fields, diagnostics);
