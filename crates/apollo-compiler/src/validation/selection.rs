@@ -164,13 +164,15 @@ pub(crate) fn fields_in_set_can_merge(
                     diagnostics.push(err);
                     continue;
                 }
-
-                let merged_set = expand_selections(
-                    fragments,
-                    &[&field_a.field.selection_set, &field_b.field.selection_set],
-                );
-                same_response_shape_by_name(schema, fragments, &merged_set, diagnostics);
             }
+
+            let nested_selection_sets = fields_for_name
+                .iter()
+                .map(|selection| &selection.field.selection_set)
+                .filter(|set| !set.selections.is_empty())
+                .collect::<Vec<_>>();
+            let merged_set = expand_selections(fragments, &nested_selection_sets);
+            same_response_shape_by_name(schema, fragments, &merged_set, diagnostics);
         }
     }
 
