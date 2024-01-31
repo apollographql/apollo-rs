@@ -17,7 +17,7 @@ impl<'a> Token<'a> {
     }
 
     /// Get a reference to the token's data.
-    pub fn data(&self) -> &str {
+    pub fn data(&self) -> &'a str {
         self.data
     }
 
