@@ -591,6 +591,11 @@ impl Field {
         schema.types.get(self.ty().inner_named_type())
     }
 
+    /// Returns the argument by a given name.
+    pub fn argument_by_name(&self, name: &str) -> Option<&'_ Node<Argument>> {
+        self.arguments.iter().find(|argument| argument.name == name)
+    }
+
     serialize_method!();
 }
 

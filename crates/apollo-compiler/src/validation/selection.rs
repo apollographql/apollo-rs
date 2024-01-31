@@ -182,23 +182,68 @@ pub(crate) fn fields_in_set_can_merge(
         fields: &[FieldSelection],
         diagnostics: &mut Vec<ValidationError>,
     ) {
-        for fields_for_name in group_selections_by_output_name(fields.iter().cloned()).values() {
-            for (field_a, field_b) in pair_combinations(fields_for_name) {
-                if field_a.parent_type == field_b.parent_type {
-                    // 2bi. fieldA and fieldB must have identical field names.
-                    // 2bii. fieldA and fieldB must have identical sets of arguments.
-                    if let Err(diagnostic) = same_field_selection(field_a, field_b) {
+        for (_, fields_for_name) in
+            group_selections_by_output_name(fields.iter().cloned()).into_iter()
+        {
+            for fields_for_parents in
+                group_selections_by_common_parents(schema, fields_for_name.into_iter())
+            {
+                // 2bi. fieldA and fieldB must have identical field names.
+                // 2bii. fieldA and fieldB must have identical sets of arguments.
+                // The same arguments check is reflexive so we don't need to check all
+                // combinations.
+                let Some((field_a, rest)) = fields_for_parents.split_first() else {
+                    continue;
+                };
+                for (field_a, field_b) in std::iter::repeat(field_a).zip(rest.iter()) {
+                    if let Err(diagnostic) = same_name_and_arguments(field_a, field_b) {
                         diagnostics.push(diagnostic);
                         continue;
                     }
-
-                    let merged_set = expand_selections(
-                        fragments,
-                        &[&field_a.field.selection_set, &field_b.field.selection_set],
-                    );
-                    same_for_common_parents_by_name(schema, fragments, &merged_set, diagnostics);
                 }
+
+                let nested_selection_sets = fields_for_parents
+                    .iter()
+                    .map(|selection| &selection.field.selection_set)
+                    .filter(|set| !set.selections.is_empty())
+                    .collect::<Vec<_>>();
+                let merged_set = expand_selections(fragments, &nested_selection_sets);
+                same_for_common_parents_by_name(schema, fragments, &merged_set, diagnostics);
             }
+        }
+    }
+
+    fn group_selections_by_common_parents(
+        schema: &schema::Schema,
+        selections: impl Iterator<Item = FieldSelection>,
+    ) -> Vec<Vec<FieldSelection>> {
+        let mut abstract_parents = vec![];
+        let mut concrete_parents = HashMap::<_, Vec<_>>::new();
+        for selection in selections {
+            match schema.types.get(&selection.parent_type) {
+                Some(schema::ExtendedType::Object(object)) => {
+                    concrete_parents
+                        .entry(object.name.clone())
+                        .or_default()
+                        .push(selection);
+                }
+                Some(schema::ExtendedType::Interface(_) | schema::ExtendedType::Union(_)) => {
+                    abstract_parents.push(selection);
+                }
+                _ => {}
+            }
+        }
+
+        if concrete_parents.is_empty() {
+            vec![abstract_parents]
+        } else {
+            concrete_parents
+                .into_iter()
+                .map(|(_name, mut group)| {
+                    group.extend(abstract_parents.iter().cloned());
+                    group
+                })
+                .collect()
         }
     }
 
@@ -338,7 +383,7 @@ pub(crate) fn fields_in_set_can_merge(
     }
 
     /// Check if two field selections from the same type are the same, so the fields can be merged.
-    fn same_field_selection(
+    fn same_name_and_arguments(
         field_a: &FieldSelection,
         field_b: &FieldSelection,
     ) -> Result<(), ValidationError> {
@@ -359,9 +404,6 @@ pub(crate) fn fields_in_set_can_merge(
         }
 
         // 2bii. fieldA and fieldB must have identical sets of arguments.
-        let args_a = &field_a.field.arguments;
-        let args_b = &field_b.field.arguments;
-
         let conflicting_field_argument =
             |original_arg: Option<&Node<ast::Argument>>,
              redefined_arg: Option<&Node<ast::Argument>>| {
@@ -386,8 +428,8 @@ pub(crate) fn fields_in_set_can_merge(
             };
 
         // Check if fieldB provides the same argument names and values as fieldA (order-independent).
-        for arg in args_a {
-            let Some(other_arg) = args_b.iter().find(|other_arg| other_arg.name == arg.name) else {
+        for arg in &field_a.field.arguments {
+            let Some(other_arg) = field_b.field.argument_by_name(&arg.name) else {
                 return Err(conflicting_field_argument(Some(arg), None));
             };
 
@@ -396,8 +438,8 @@ pub(crate) fn fields_in_set_can_merge(
             }
         }
         // Check if fieldB provides any arguments that fieldA does not provide.
-        for arg in args_b {
-            if !args_a.iter().any(|other_arg| other_arg.name == arg.name) {
+        for arg in &field_b.field.arguments {
+            if field_a.field.argument_by_name(&arg.name).is_none() {
                 return Err(conflicting_field_argument(None, Some(arg)));
             };
         }
