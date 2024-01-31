@@ -135,8 +135,7 @@ pub(crate) fn fields_in_set_can_merge(
         for fields_for_name in group_selections_by_output_name(fields.iter().cloned()).values() {
             for (field_a, field_b) in pair_combinations(fields_for_name) {
                 // Covers steps 3-5 of the spec algorithm.
-                if let Err(err) = same_output_type_shape(&schema, field_a.clone(), field_b.clone())
-                {
+                if let Err(err) = same_output_type_shape(schema, field_a.clone(), field_b.clone()) {
                     diagnostics.push(err);
                     continue;
                 }
@@ -214,8 +213,8 @@ pub(crate) fn fields_in_set_can_merge(
             vec![abstract_parents]
         } else {
             concrete_parents
-                .into_iter()
-                .map(|(_name, mut group)| {
+                .into_values()
+                .map(|mut group| {
                     group.extend(abstract_parents.iter().cloned());
                     group
                 })
@@ -315,7 +314,7 @@ pub(crate) fn fields_in_set_can_merge(
                 }
             }
             // 6. If typeA or typeB is not a composite type, return false.
-            (def_a, def_b) if is_composite(&def_a) && is_composite(&def_b) => Ok(()),
+            (def_a, def_b) if is_composite(def_a) && is_composite(def_b) => Ok(()),
             _ => Err(mismatching_type_diagnostic()),
         }
     }
