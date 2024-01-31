@@ -6,15 +6,6 @@ use indexmap::IndexMap;
 use std::collections::{hash_map::Entry, HashMap};
 use std::collections::{HashSet, VecDeque};
 
-/// Return all possible unordered combinations of 2 elements from a slice.
-fn pair_combinations<T>(slice: &[T]) -> impl Iterator<Item = (&T, &T)> {
-    slice
-        .iter()
-        .enumerate()
-        // Final element will zip with the empty slice and produce no result.
-        .flat_map(|(index, element)| std::iter::repeat(element).zip(&slice[index + 1..]))
-}
-
 /// Represents a field selected against a parent type.
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct FieldSelection<'a> {
@@ -133,7 +124,10 @@ pub(crate) fn fields_in_set_can_merge(
         diagnostics: &mut Vec<ValidationError>,
     ) {
         for fields_for_name in group_selections_by_output_name(fields.iter().copied()).values() {
-            for (field_a, field_b) in pair_combinations(fields_for_name) {
+            let Some((field_a, rest)) = fields_for_name.split_first() else {
+                continue;
+            };
+            for (field_a, field_b) in std::iter::repeat(field_a).zip(rest.iter()) {
                 // Covers steps 3-5 of the spec algorithm.
                 if let Err(err) = same_output_type_shape(schema, *field_a, *field_b) {
                     diagnostics.push(err);
@@ -445,20 +439,4 @@ pub(crate) fn validate_selections(
     }
 
     diagnostics
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn pair_combinations_test() {
-        let pairs = pair_combinations::<i64>(&[1, 2, 3, 4]).collect::<Vec<_>>();
-        assert_eq!(
-            pairs,
-            &[(&1, &2), (&1, &3), (&1, &4), (&2, &3), (&2, &4), (&3, &4)]
-        );
-        let pairs = pair_combinations(&["a", "a", "a"]).collect::<Vec<_>>();
-        assert_eq!(pairs, &[(&"a", &"a"), (&"a", &"a"), (&"a", &"a")]);
-    }
 }
