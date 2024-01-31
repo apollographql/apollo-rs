@@ -135,7 +135,7 @@ pub(crate) fn fields_in_set_can_merge(
         for fields_for_name in group_selections_by_output_name(fields.iter().copied()).values() {
             for (field_a, field_b) in pair_combinations(fields_for_name) {
                 // Covers steps 3-5 of the spec algorithm.
-                if let Err(err) = same_output_type_shape(schema, field_a.clone(), field_b.clone()) {
+                if let Err(err) = same_output_type_shape(schema, *field_a, *field_b) {
                     diagnostics.push(err);
                     continue;
                 }
