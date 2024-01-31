@@ -15,65 +15,49 @@ fn pair_combinations<T>(slice: &[T]) -> impl Iterator<Item = (&T, &T)> {
         .flat_map(|(index, element)| std::iter::repeat(element).zip(&slice[index + 1..]))
 }
 
-/// A field and the type it selects from.
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct FieldAgainstType<'a> {
-    pub against_type: &'a ast::NamedType,
-    pub field: &'a Node<ast::Field>,
+/// Represents a field selected against a parent type.
+#[derive(Debug, Clone)]
+pub(crate) struct FieldSelection {
+    /// The type of the selection set this field selection is part of.
+    pub parent_type: ast::NamedType,
+    pub field: Node<executable::Field>,
 }
 
-// TODO(@goto-bus-stop) remove intermediate allocations
-pub(crate) fn operation_fields<'a>(
-    named_fragments: &'a HashMap<ast::Name, Node<ast::FragmentDefinition>>,
-    against_type: &'a ast::NamedType,
-    selections: &'a [ast::Selection],
-) -> Vec<FieldAgainstType<'a>> {
-    fn inner<'a>(
-        named_fragments: &'a HashMap<ast::Name, Node<ast::FragmentDefinition>>,
-        seen: &mut std::collections::HashSet<ast::Name>,
-        against_type: &'a ast::NamedType,
-        selections: &'a [ast::Selection],
-    ) -> Vec<FieldAgainstType<'a>> {
-        selections
-            .iter()
-            .flat_map(|selection| match selection {
-                ast::Selection::Field(field) => vec![FieldAgainstType {
-                    against_type,
-                    field,
-                }],
-                ast::Selection::InlineFragment(inline) => inner(
-                    named_fragments,
-                    seen,
-                    inline.type_condition.as_ref().unwrap_or(against_type),
-                    &inline.selection_set,
-                ),
-                ast::Selection::FragmentSpread(spread) => {
-                    if seen.contains(&spread.fragment_name) {
-                        return vec![];
-                    }
-                    seen.insert(spread.fragment_name.clone());
+/// Expand one or more selection sets to a list of all fields selected.
+pub(crate) fn expand_selections(
+    fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
+    selection_sets: &[&executable::SelectionSet],
+) -> Vec<FieldSelection> {
+    let mut selections = vec![];
+    let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.iter().copied().collect();
+    let mut seen_fragments = HashSet::new();
 
-                    named_fragments
-                        .get(&spread.fragment_name)
-                        .map(|fragment| {
-                            inner(
-                                named_fragments,
-                                seen,
-                                &fragment.type_condition,
-                                &fragment.selection_set,
-                            )
-                        })
-                        .unwrap_or_default()
+    while let Some(next_set) = queue.pop_front() {
+        for selection in &next_set.selections {
+            match selection {
+                executable::Selection::Field(field) => selections.push(FieldSelection {
+                    parent_type: next_set.ty.clone(),
+                    field: field.clone(),
+                }),
+                executable::Selection::InlineFragment(spread) => {
+                    queue.push_back(&spread.selection_set)
                 }
-            })
-            .collect()
+                executable::Selection::FragmentSpread(spread)
+                    if !seen_fragments.contains(&spread.fragment_name) =>
+                {
+                    seen_fragments.insert(&spread.fragment_name);
+                    if let Some(fragment) = fragments.get(&spread.fragment_name) {
+                        queue.push_back(&fragment.selection_set);
+                    }
+                }
+                executable::Selection::FragmentSpread(_) => {
+                    // Already seen
+                }
+            }
+        }
     }
-    inner(
-        named_fragments,
-        &mut Default::default(),
-        against_type,
-        selections,
-    )
+
+    selections
 }
 
 fn is_composite(ty: &schema::ExtendedType) -> bool {
@@ -141,14 +125,6 @@ pub(crate) fn fields_in_set_can_merge(
 
     same_response_shape_by_name(schema, &document.fragments, &fields, diagnostics);
     same_for_common_parents_by_name(schema, &document.fragments, &fields, diagnostics);
-
-    /// Represents a field selected against a parent type.
-    #[derive(Debug, Clone)]
-    struct FieldSelection {
-        /// The type of the selection set this field selection is part of.
-        parent_type: ast::NamedType,
-        field: Node<executable::Field>,
-    }
 
     fn same_response_shape_by_name(
         schema: &schema::Schema,
@@ -245,44 +221,6 @@ pub(crate) fn fields_in_set_can_merge(
                 })
                 .collect()
         }
-    }
-
-    /// Expand one or more selection sets to a list of all fields selected.
-    fn expand_selections(
-        fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
-        selection_sets: &[&executable::SelectionSet],
-    ) -> Vec<FieldSelection> {
-        let mut selections = vec![];
-        let mut queue: VecDeque<&executable::SelectionSet> =
-            selection_sets.iter().copied().collect();
-        let mut seen_fragments = HashSet::new();
-
-        while let Some(next_set) = queue.pop_front() {
-            for selection in &next_set.selections {
-                match selection {
-                    executable::Selection::Field(field) => selections.push(FieldSelection {
-                        parent_type: next_set.ty.clone(),
-                        field: field.clone(),
-                    }),
-                    executable::Selection::InlineFragment(spread) => {
-                        queue.push_back(&spread.selection_set)
-                    }
-                    executable::Selection::FragmentSpread(spread)
-                        if !seen_fragments.contains(&spread.fragment_name) =>
-                    {
-                        seen_fragments.insert(&spread.fragment_name);
-                        if let Some(fragment) = fragments.get(&spread.fragment_name) {
-                            queue.push_back(&fragment.selection_set);
-                        }
-                    }
-                    executable::Selection::FragmentSpread(_) => {
-                        // Already seen
-                    }
-                }
-            }
-        }
-
-        selections
     }
 
     fn group_selections_by_output_name(

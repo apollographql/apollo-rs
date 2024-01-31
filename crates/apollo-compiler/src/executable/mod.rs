@@ -327,8 +327,24 @@ impl PartialEq for ExecutableDocument {
 }
 
 impl Operation {
+    /// Returns the name of the schema type this operation selects against.
     pub fn object_type(&self) -> &NamedType {
         &self.selection_set.ty
+    }
+
+    /// Returns true if this is a query operation.
+    pub fn is_query(&self) -> bool {
+        self.operation_type == OperationType::Query
+    }
+
+    /// Returns true if this is a mutation operation.
+    pub fn is_mutation(&self) -> bool {
+        self.operation_type == OperationType::Mutation
+    }
+
+    /// Returns true if this is a subscription operation.
+    pub fn is_subscription(&self) -> bool {
+        self.operation_type == OperationType::Subscription
     }
 
     /// Return whether this operation is a query that only selects introspection meta-fields:

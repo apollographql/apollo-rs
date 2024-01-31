@@ -1,6 +1,6 @@
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::FileId;
-use crate::{ast, name, Node, ValidationDatabase};
+use crate::{ast, executable, Node, ValidationDatabase};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub(crate) struct OperationValidationConfig<'vars> {
@@ -10,31 +10,14 @@ pub(crate) struct OperationValidationConfig<'vars> {
     pub variables: &'vars [Node<ast::VariableDefinition>],
 }
 
-pub(crate) fn validate_operation(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-    operation: Node<ast::OperationDefinition>,
-    has_schema: bool,
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-
-    let config = OperationValidationConfig {
-        has_schema,
-        variables: &operation.variables,
-    };
-
-    let schema = db.schema();
-    let against_type = schema.root_operation(operation.operation_type);
-
-    let named_fragments = db.ast_named_fragments(file_id);
-    let q = name!("Query");
-
-    if operation.operation_type == ast::OperationType::Subscription {
-        let fields = super::selection::operation_fields(
-            &named_fragments,
-            against_type.unwrap_or(&q),
-            &operation.selection_set,
-        );
+pub(crate) fn validate_subscription(
+    document: &executable::ExecutableDocument,
+    operation: &Node<executable::Operation>,
+    diagnostics: &mut Vec<ValidationError>,
+) {
+    if operation.is_subscription() {
+        let fields =
+            super::selection::expand_selections(&document.fragments, &[&operation.selection_set]);
 
         if fields.len() > 1 {
             diagnostics.push(ValidationError::new(
@@ -57,7 +40,7 @@ pub(crate) fn validate_operation(
                     "__type" | "__schema" | "__typename"
                 )
             })
-            .map(|field| field.field);
+            .map(|field| &field.field);
         if let Some(field) = has_introspection_fields {
             diagnostics.push(ValidationError::new(
                 field.location(),
@@ -68,6 +51,23 @@ pub(crate) fn validate_operation(
             ));
         }
     }
+}
+
+pub(crate) fn validate_operation(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+    operation: Node<ast::OperationDefinition>,
+    has_schema: bool,
+) -> Vec<ValidationError> {
+    let mut diagnostics = vec![];
+
+    let config = OperationValidationConfig {
+        has_schema,
+        variables: &operation.variables,
+    };
+
+    let schema = db.schema();
+    let against_type = schema.root_operation(operation.operation_type);
 
     diagnostics.extend(super::directive::validate_directives(
         db,
