@@ -13,7 +13,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("directive") = p.peek_data().as_deref() {
+    if let Some("directive") = p.peek_data() {
         p.bump(SyntaxKind::directive_KW);
     }
 
@@ -38,13 +38,13 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     }
 
     if let Some(node) = p.peek_data() {
-        if node.as_str() == "repeatable" {
+        if node == "repeatable" {
             p.bump(SyntaxKind::repeatable_KW);
         }
     }
 
     if let Some(node) = p.peek_data() {
-        match node.as_str() {
+        match node {
             "on" => p.bump(SyntaxKind::on_KW),
             _ => p.err("expected Directive Locations"),
         }
@@ -74,7 +74,7 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
 
     if let Some(TokenKind::Name) = p.peek() {
         let loc = p.peek_data().unwrap();
-        match loc.as_str() {
+        match loc {
             "QUERY" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::QUERY_KW);

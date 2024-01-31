@@ -42,8 +42,8 @@ pub(crate) fn document(p: &mut Parser) {
     doc.finish_node();
 }
 
-fn select_definition(def: String, p: &mut Parser) {
-    match def.as_str() {
+fn select_definition(def: &str, p: &mut Parser) {
+    match def {
         "directive" => directive::directive_definition(p),
         "enum" => enum_::enum_type_definition(p),
         "extend" => extensions::extensions(p),

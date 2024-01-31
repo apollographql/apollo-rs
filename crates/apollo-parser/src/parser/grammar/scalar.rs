@@ -13,7 +13,7 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("scalar") = p.peek_data().as_deref() {
+    if let Some("scalar") = p.peek_data() {
         p.bump(SyntaxKind::scalar_KW);
     }
 
