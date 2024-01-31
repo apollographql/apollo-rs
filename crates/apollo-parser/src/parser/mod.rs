@@ -240,7 +240,7 @@ impl<'input> Parser<'input> {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> Option<Token<'input>> {
+    pub(crate) fn current(&mut self) -> Option<&Token<'input>> {
         self.peek_token()
     }
 
@@ -429,11 +429,11 @@ impl<'input> Parser<'input> {
     }
 
     /// Peek the next Token and return it.
-    pub(crate) fn peek_token(&mut self) -> Option<Token<'input>> {
+    pub(crate) fn peek_token(&mut self) -> Option<&Token<'input>> {
         if self.current_token.is_none() {
             self.current_token = self.next_token();
         }
-        self.current_token
+        self.current_token.as_ref()
     }
 
     /// Peek Token `n` and return it.
