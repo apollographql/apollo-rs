@@ -51,14 +51,6 @@ pub(crate) enum DiagnosticData {
         original_definition: Option<NodeLocation>,
         redefined_definition: Option<NodeLocation>,
     },
-    #[error(
-        "{} can only have one root field",
-        subscription_name_or_anonymous(name)
-    )]
-    SingleRootField {
-        name: Option<Name>,
-        fields: Vec<Name>,
-    },
     #[error("the argument `{name}` is not supported by `{coordinate}`")]
     UndefinedArgument {
         name: Name,
@@ -212,16 +204,6 @@ pub(crate) enum DiagnosticData {
         /// Name of the non-unique directive.
         name: Name,
         original_application: Option<NodeLocation>,
-    },
-    #[error(
-        "{} can not have an introspection field as a root field",
-        subscription_name_or_anonymous(name)
-    )]
-    IntrospectionField {
-        /// Name of the operation
-        name: Option<Name>,
-        /// Name of the field
-        field: Name,
     },
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
@@ -378,17 +360,6 @@ impl ValidationError {
                 );
                 report.with_help(format_args!(
                     "`{name}` must only be defined once in this argument list or input object definition."
-                ));
-            }
-            DiagnosticData::SingleRootField { fields, .. } => {
-                report.with_label_opt(
-                    self.location,
-                    format_args!("subscription with {} root fields", fields.len()),
-                );
-                report.with_help(format_args!(
-                    "There are {} root fields: {}. This is not allowed.",
-                    fields.len(),
-                    CommaSeparated(fields)
                 ));
             }
             DiagnosticData::UndefinedArgument {
@@ -645,12 +616,6 @@ impl ValidationError {
                     format_args!("directive `@{name}` called again here"),
                 );
             }
-            DiagnosticData::IntrospectionField { field, .. } => {
-                report.with_label_opt(
-                    self.location,
-                    format_args!("{field} is an introspection field"),
-                );
-            }
             DiagnosticData::MissingSubselection {
                 coordinate,
                 describe_type,
@@ -832,10 +797,11 @@ where
     }
 }
 
-struct NameOrAnon<'a, T> {
-    name: Option<&'a T>,
-    if_some_prefix: &'a str,
-    if_none: &'a str,
+/// Formatter that describes a name, or describes an anonymous element if there is no name.
+pub(crate) struct NameOrAnon<'a, T> {
+    pub name: Option<&'a T>,
+    pub if_some_prefix: &'a str,
+    pub if_none: &'a str,
 }
 impl<T> fmt::Display for NameOrAnon<'_, T>
 where
@@ -854,12 +820,5 @@ fn fragment_name_or_inline<T>(name: &'_ Option<T>) -> NameOrAnon<'_, T> {
         name: name.as_ref(),
         if_some_prefix: "fragment",
         if_none: "inline fragment",
-    }
-}
-fn subscription_name_or_anonymous<T>(name: &'_ Option<T>) -> NameOrAnon<'_, T> {
-    NameOrAnon {
-        name: name.as_ref(),
-        if_some_prefix: "subscription",
-        if_none: "anonymous subscription",
     }
 }

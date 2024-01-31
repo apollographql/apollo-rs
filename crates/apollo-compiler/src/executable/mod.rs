@@ -161,6 +161,34 @@ pub(crate) enum BuildError {
         field_name: Name,
         path: SelectionPath,
     },
+
+    #[error(
+        "{} can only have one root field",
+        subscription_name_or_anonymous(name)
+    )]
+    SubscriptionUsesMultipleFields {
+        name: Option<Name>,
+        fields: Vec<Name>,
+    },
+
+    #[error(
+        "{} can not have an introspection field as a root field",
+        subscription_name_or_anonymous(name)
+    )]
+    SubscriptionUsesIntrospection {
+        /// Name of the operation
+        name: Option<Name>,
+        /// Name of the introspection field
+        field: Name,
+    },
+}
+
+fn subscription_name_or_anonymous(name: &Option<Name>) -> impl std::fmt::Display + '_ {
+    crate::validation::diagnostics::NameOrAnon {
+        name: name.as_ref(),
+        if_some_prefix: "subscription",
+        if_none: "anonymous subscription",
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

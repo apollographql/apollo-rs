@@ -36,11 +36,7 @@ fn validate_with_schema(
 ) {
     let mut compiler_diagnostics = vec![];
     for operation in document.all_operations() {
-        crate::validation::operation::validate_subscription(
-            document,
-            operation,
-            &mut compiler_diagnostics,
-        );
+        crate::validation::operation::validate_subscription(document, operation, errors);
         crate::validation::selection::fields_in_set_can_merge(
             schema,
             document,

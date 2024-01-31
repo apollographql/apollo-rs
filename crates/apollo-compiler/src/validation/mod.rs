@@ -409,6 +409,23 @@ impl ToCliReport for DiagnosticData {
                     );
                     report.with_note(format_args!("path to the field: `{path}`"))
                 }
+                ExecutableBuildError::SubscriptionUsesMultipleFields { fields, .. } => {
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("subscription with {} root fields", fields.len()),
+                    );
+                    report.with_help(format_args!(
+                        "There are {} root fields: {}. This is not allowed.",
+                        fields.len(),
+                        CommaSeparated(fields)
+                    ));
+                }
+                ExecutableBuildError::SubscriptionUsesIntrospection { field, .. } => {
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("{field} is an introspection field"),
+                    );
+                }
             },
         }
     }
@@ -622,5 +639,24 @@ impl<T> CycleError<T> {
             trace.push(node.clone());
         }
         self
+    }
+}
+
+struct CommaSeparated<'a, It>(&'a It);
+impl<'a, T, It> fmt::Display for CommaSeparated<'a, It>
+where
+    T: fmt::Display,
+    &'a It: IntoIterator<Item = T>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut it = self.0.into_iter();
+        if let Some(element) = it.next() {
+            element.fmt(f)?;
+        }
+        for element in it {
+            f.write_str(", ")?;
+            element.fmt(f)?;
+        }
+        Ok(())
     }
 }

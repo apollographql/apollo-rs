@@ -1,4 +1,5 @@
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::diagnostics::ValidationError;
+use crate::validation::DiagnosticList;
 use crate::validation::FileId;
 use crate::{ast, executable, Node, ValidationDatabase};
 
@@ -13,23 +14,23 @@ pub(crate) struct OperationValidationConfig<'vars> {
 pub(crate) fn validate_subscription(
     document: &executable::ExecutableDocument,
     operation: &Node<executable::Operation>,
-    diagnostics: &mut Vec<ValidationError>,
+    diagnostics: &mut DiagnosticList,
 ) {
     if operation.is_subscription() {
         let fields =
             super::selection::expand_selections(&document.fragments, &[&operation.selection_set]);
 
         if fields.len() > 1 {
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 operation.location(),
-                DiagnosticData::SingleRootField {
+                executable::BuildError::SubscriptionUsesMultipleFields {
                     name: operation.name.clone(),
                     fields: fields
                         .iter()
                         .map(|field| field.field.name.clone())
                         .collect(),
                 },
-            ));
+            );
         }
 
         let has_introspection_fields = fields
@@ -42,13 +43,13 @@ pub(crate) fn validate_subscription(
             })
             .map(|field| &field.field);
         if let Some(field) = has_introspection_fields {
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 field.location(),
-                DiagnosticData::IntrospectionField {
+                executable::BuildError::SubscriptionUsesIntrospection {
                     name: operation.name.clone(),
                     field: field.name.clone(),
                 },
-            ));
+            );
         }
     }
 }
