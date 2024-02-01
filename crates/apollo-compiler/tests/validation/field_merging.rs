@@ -265,16 +265,6 @@ fn same_aliases_with_different_field_targets() {
                │   ───────┬──────  
                │          ╰──────── but the same field `fido` is also selected from field `nickname` here
             ───╯
-            Error: operation must not select different fields to the same alias `fido`
-               ╭─[query.graphql:3:3]
-               │
-             2 │   fido: name
-               │   ─────┬────  
-               │        ╰────── field `fido` is selected from field `name` here
-             3 │   fido: nickname
-               │   ───────┬──────  
-               │          ╰──────── but the same field `fido` is also selected from field `nickname` here
-            ───╯
         "#]],
     );
 }
@@ -319,16 +309,6 @@ fn alias_masking_direct_field_access() {
                │   ──┬─  
                │     ╰─── but the same field `name` is also selected from field `name` here
             ───╯
-            Error: operation must not select different fields to the same alias `name`
-               ╭─[query.graphql:3:3]
-               │
-             2 │   name: nickname
-               │   ───────┬──────  
-               │          ╰──────── field `name` is selected from field `nickname` here
-             3 │   name
-               │   ──┬─  
-               │     ╰─── but the same field `name` is also selected from field `name` here
-            ───╯
         "#]],
     );
 }
@@ -345,18 +325,6 @@ fn different_args_second_adds_argument() {
       { dog { ...conflictingArgs } }
     "#,
         expect![[r#"
-            Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
-               ╭─[query.graphql:3:3]
-               │
-             2 │   doesKnowCommand
-               │   ───────┬───────  
-               │          ╰───────── but argument `dogCommand` is not provided here
-             3 │   doesKnowCommand(dogCommand: HEEL)
-               │   ────────────────┬────────────────  
-               │                   ╰────────────────── field `doesKnowCommand` is selected with argument `dogCommand` here
-               │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
-            ───╯
             Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
                ╭─[query.graphql:3:3]
                │
@@ -397,18 +365,6 @@ fn different_args_second_missess_argument() {
                │ 
                │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
             ───╯
-            Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
-               ╭─[query.graphql:3:3]
-               │
-             2 │   doesKnowCommand(dogCommand: SIT)
-               │   ────────────────┬───────────────  
-               │                   ╰───────────────── field `doesKnowCommand` is selected with argument `dogCommand` here
-             3 │   doesKnowCommand
-               │   ───────┬───────  
-               │          ╰───────── but argument `dogCommand` is not provided here
-               │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
-            ───╯
         "#]],
     );
 }
@@ -437,18 +393,6 @@ fn conflicting_arg_values() {
                │ 
                │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
             ───╯
-            Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
-               ╭─[query.graphql:3:3]
-               │
-             2 │   doesKnowCommand(dogCommand: SIT)
-               │   ────────────────┬───────────────  
-               │                   ╰───────────────── field `doesKnowCommand` provides one argument value here
-             3 │   doesKnowCommand(dogCommand: HEEL)
-               │   ────────────────┬────────────────  
-               │                   ╰────────────────── but a different value here
-               │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
-            ───╯
         "#]],
     );
 }
@@ -465,18 +409,6 @@ fn conflicting_arg_names() {
       { dog { ...conflictingArgs } }
     "#,
         expect![[r#"
-            Error: operation must not provide conflicting field arguments for the same field name `isAtLocation`
-               ╭─[query.graphql:3:3]
-               │
-             2 │   isAtLocation(x: 0)
-               │   ─────────┬────────  
-               │            ╰────────── field `isAtLocation` is selected with argument `x` here
-             3 │   isAtLocation(y: 0)
-               │   ─────────┬────────  
-               │            ╰────────── but argument `x` is not provided here
-               │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
-            ───╯
             Error: operation must not provide conflicting field arguments for the same field name `isAtLocation`
                ╭─[query.graphql:3:3]
                │

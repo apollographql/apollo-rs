@@ -45,15 +45,6 @@ fn validate_with_schema(
         );
     }
 
-    for fragment in document.fragments.values() {
-        crate::validation::selection::fields_in_set_can_merge(
-            schema,
-            document,
-            &fragment.selection_set,
-            &mut compiler_diagnostics,
-        );
-    }
-
     for diagnostic in compiler_diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
