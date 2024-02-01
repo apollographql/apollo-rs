@@ -364,7 +364,7 @@ pub(crate) fn fields_in_set_can_merge(
                 return Err(conflicting_field_argument(Some(arg), None));
             };
 
-            if other_arg.value != arg.value {
+            if !same_value(&other_arg.value, &arg.value) {
                 return Err(conflicting_field_argument(Some(arg), Some(other_arg)));
             }
         }
@@ -376,6 +376,36 @@ pub(crate) fn fields_in_set_can_merge(
         }
 
         Ok(())
+    }
+
+    /// Compare two input values, with two special cases for objects: assuming no duplicate keys,
+    /// and order-independence.
+    fn same_value(left: &ast::Value, right: &ast::Value) -> bool {
+        match (left, right) {
+            (ast::Value::Null, ast::Value::Null) => true,
+            (ast::Value::Enum(left), ast::Value::Enum(right)) => left == right,
+            (ast::Value::Variable(left), ast::Value::Variable(right)) => left == right,
+            (ast::Value::String(left), ast::Value::String(right)) => left == right,
+            (ast::Value::Float(left), ast::Value::Float(right)) => left == right,
+            (ast::Value::Int(left), ast::Value::Int(right)) => left == right,
+            (ast::Value::Boolean(left), ast::Value::Boolean(right)) => left == right,
+            (ast::Value::List(left), ast::Value::List(right)) => left
+                .iter()
+                .zip(right.iter())
+                .all(|(left, right)| same_value(left, right)),
+            (ast::Value::Object(left), ast::Value::Object(right)) if left.len() == right.len() => {
+                // This check could miss out on keys that exist in `right`, but not in `left`, if `left` contains duplicate keys.
+                // We assume that that doesn't happen. GraphQL does not support duplicate keys and
+                // that is checked elsewhere in validation.
+                left.iter().all(|(key, value)| {
+                    right
+                        .iter()
+                        .find(|(other_key, _)| key == other_key)
+                        .is_some_and(|(_, other_value)| same_value(value, other_value))
+                })
+            }
+            _ => false,
+        }
     }
 }
 
