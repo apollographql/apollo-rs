@@ -14,7 +14,7 @@ pub(crate) fn input_object_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("input") = p.peek_data().as_deref() {
+    if let Some("input") = p.peek_data() {
         p.bump(SyntaxKind::input_KW);
     }
 

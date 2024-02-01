@@ -88,7 +88,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
 pub(crate) fn operation_type(p: &mut Parser) {
     if let Some(node) = p.peek_data() {
         let _g = p.start_node(SyntaxKind::OPERATION_TYPE);
-        match node.as_str() {
+        match node {
             "query" => p.bump(SyntaxKind::query_KW),
             "subscription" => p.bump(SyntaxKind::subscription_KW),
             "mutation" => p.bump(SyntaxKind::mutation_KW),

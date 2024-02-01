@@ -13,7 +13,7 @@ pub(crate) fn schema_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("schema") = p.peek_data().as_deref() {
+    if let Some("schema") = p.peek_data() {
         p.bump(SyntaxKind::schema_KW);
     }
 
