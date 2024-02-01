@@ -318,8 +318,6 @@ pub(crate) fn fields_in_set_can_merge(
         field_a: FieldSelection<'_>,
         field_b: FieldSelection<'_>,
     ) -> Result<(), ValidationError> {
-        debug_assert_eq!(field_a.parent_type, field_b.parent_type);
-
         // 2bi. fieldA and fieldB must have identical field names.
         if field_a.field.name != field_b.field.name {
             return Err(ValidationError::new(
