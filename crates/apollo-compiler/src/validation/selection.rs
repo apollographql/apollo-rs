@@ -117,6 +117,8 @@ pub(crate) fn fields_in_set_can_merge(
     same_response_shape_by_name(schema, &document.fragments, &fields, diagnostics);
     same_for_common_parents_by_name(schema, &document.fragments, &fields, diagnostics);
 
+    /// Given a set of fields, do all the fields that contribute to 1 output name have the same
+    /// shape?
     fn same_response_shape_by_name(
         schema: &schema::Schema,
         fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
@@ -145,6 +147,8 @@ pub(crate) fn fields_in_set_can_merge(
         }
     }
 
+    /// Given a set of fields, do all the fields selecting from potentially overlapping types
+    /// select the same thing?
     fn same_for_common_parents_by_name(
         schema: &schema::Schema,
         fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
@@ -182,6 +186,9 @@ pub(crate) fn fields_in_set_can_merge(
         }
     }
 
+    /// Returns potentially overlapping groups of fields. Fields overlap if they are selected from
+    /// the same concrete type or if they are selected from an abstract type (future schema changes
+    /// can make any abstract type overlap with any other type).
     fn group_selections_by_common_parents<'doc>(
         schema: &schema::Schema,
         selections: impl Iterator<Item = FieldSelection<'doc>>,
@@ -313,7 +320,7 @@ pub(crate) fn fields_in_set_can_merge(
         }
     }
 
-    /// Check if two field selections from the same type are the same, so the fields can be merged.
+    /// Check if two field selections from the overlapping types are the same, so the fields can be merged.
     fn same_name_and_arguments(
         field_a: FieldSelection<'_>,
         field_b: FieldSelection<'_>,
