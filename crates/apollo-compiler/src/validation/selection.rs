@@ -17,10 +17,10 @@ pub(crate) struct FieldSelection<'a> {
 /// Expand one or more selection sets to a list of all fields selected.
 pub(crate) fn expand_selections<'doc>(
     fragments: &'doc IndexMap<ast::Name, Node<executable::Fragment>>,
-    selection_sets: &[&'doc executable::SelectionSet],
+    selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
-    let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.iter().copied().collect();
+    let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.collect();
     let mut seen_fragments = HashSet::new();
 
     while let Some(next_set) = queue.pop_front() {
@@ -112,7 +112,7 @@ pub(crate) fn fields_in_set_can_merge(
         return;
     }
 
-    let fields = expand_selections(&document.fragments, &[selection_set]);
+    let fields = expand_selections(&document.fragments, std::iter::once(selection_set));
 
     same_response_shape_by_name(schema, &document.fragments, &fields, diagnostics);
     same_for_common_parents_by_name(schema, &document.fragments, &fields, diagnostics);
@@ -139,10 +139,8 @@ pub(crate) fn fields_in_set_can_merge(
 
             let nested_selection_sets = fields_for_name
                 .iter()
-                .map(|selection| &selection.field.selection_set)
-                .filter(|set| !set.selections.is_empty())
-                .collect::<Vec<_>>();
-            let merged_set = expand_selections(fragments, &nested_selection_sets);
+                .map(|selection| &selection.field.selection_set);
+            let merged_set = expand_selections(fragments, nested_selection_sets);
             same_response_shape_by_name(schema, fragments, &merged_set, diagnostics);
         }
     }
@@ -177,10 +175,8 @@ pub(crate) fn fields_in_set_can_merge(
 
                 let nested_selection_sets = fields_for_parents
                     .iter()
-                    .map(|selection| &selection.field.selection_set)
-                    .filter(|set| !set.selections.is_empty())
-                    .collect::<Vec<_>>();
-                let merged_set = expand_selections(fragments, &nested_selection_sets);
+                    .map(|selection| &selection.field.selection_set);
+                let merged_set = expand_selections(fragments, nested_selection_sets);
                 same_for_common_parents_by_name(schema, fragments, &merged_set, diagnostics);
             }
         }

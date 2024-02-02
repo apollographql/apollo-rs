@@ -17,8 +17,10 @@ pub(crate) fn validate_subscription(
     diagnostics: &mut DiagnosticList,
 ) {
     if operation.is_subscription() {
-        let fields =
-            super::selection::expand_selections(&document.fragments, &[&operation.selection_set]);
+        let fields = super::selection::expand_selections(
+            &document.fragments,
+            std::iter::once(&operation.selection_set),
+        );
 
         if fields.len() > 1 {
             diagnostics.push(
