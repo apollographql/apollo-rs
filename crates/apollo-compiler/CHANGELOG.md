@@ -17,6 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## Features
+- **New field merging validation implementation - [goto-bus-stop], [pull/816]**
+  - Uses the much more scalable [Xing algorithm].
+  - This also fixes some invalid selections that were previously accepted by apollo-compiler.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop]
+[pull/816]: https://github.com/apollographql/apollo-rs/pull/816
+[Xing algorithm]: https://tech.new-work.se/graphql-overlapping-fields-can-be-merged-fast-ea6e92e0a01
+
 # [1.0.0-beta.12](https://crates.io/crates/apollo-compiler/1.0.0-beta.12) - 2024-01-15
 
 ## BREAKING
