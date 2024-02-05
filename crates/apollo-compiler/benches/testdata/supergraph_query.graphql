@@ -1,10 +1,5 @@
 query Query {
-  allProducts {
-    id
+  topProducts {
     sku
-    createdBy {
-      email
-      totalProductsCreated
-    }
   }
 }

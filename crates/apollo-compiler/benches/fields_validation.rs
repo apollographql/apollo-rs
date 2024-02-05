@@ -36,5 +36,68 @@ fn bench_many_same_nested_field(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_many_same_field, bench_many_same_nested_field);
-criterion_main!(benches);
+fn bench_many_types(c: &mut Criterion) {
+    let schema = Schema::parse_and_validate(
+        "
+        interface Abstract {
+          field: Abstract
+          leaf: Int
+        }
+        interface Abstract1 {
+          field: Abstract
+          leaf: Int
+        }
+        interface Abstract2 {
+          field: Abstract
+          leaf: Int
+        }
+        type Concrete1 implements Abstract & Abstract1 {
+          field: Abstract
+          leaf: Int
+        }
+        type Concrete2 implements Abstract & Abstract2 {
+          field: Abstract
+          leaf: Int
+        }
+        type Query {
+            field: Abstract
+        }
+    ",
+        "schema.graphql",
+    )
+    .unwrap();
+    let query = format!(
+        "
+        fragment multiply on Abstract {{
+           field {{
+             ... on Abstract1 {{ field {{ leaf }} }}
+             ... on Abstract2 {{ field {{ leaf }} }}
+             ... on Concrete1 {{ field {{ leaf }} }}
+             ... on Concrete2 {{ field {{ leaf }} }}
+           }}
+        }}
+
+        query DeepAbstractConcrete {{
+            {open}{close}
+        }}
+    ",
+        open = "field { ...multiply ".repeat(100),
+        close = "}".repeat(100)
+    );
+
+    c.bench_function("many_types", move |b| {
+        b.iter(|| {
+            let doc =
+                ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
+            black_box(doc);
+        });
+    });
+}
+
+criterion_group!(
+    fields,
+    bench_many_same_field,
+    bench_many_same_nested_field,
+    bench_many_types,
+);
+criterion_main!(fields);

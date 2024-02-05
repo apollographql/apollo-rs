@@ -69,20 +69,20 @@ pub struct Fragment {
     pub selection_set: SelectionSet,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectionSet {
     pub ty: NamedType,
     pub selections: Vec<Selection>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
     Field(Node<Field>),
     FragmentSpread(Node<FragmentSpread>),
     InlineFragment(Node<InlineFragment>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Field {
     /// The definition of this field in an object type or interface type definition in the schema
     pub definition: Node<schema::FieldDefinition>,
@@ -93,13 +93,13 @@ pub struct Field {
     pub selection_set: SelectionSet,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
     pub directives: DirectiveList,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
     pub directives: DirectiveList,

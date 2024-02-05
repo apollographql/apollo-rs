@@ -1,5 +1,6 @@
 use super::FieldSet;
 use crate::ast;
+use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
@@ -35,14 +36,11 @@ fn validate_with_schema(
     document: &ExecutableDocument,
 ) {
     let mut compiler_diagnostics = vec![];
+
+    let mut fields_in_set_can_merge = FieldsInSetCanMerge::new(schema, document);
     for operation in document.all_operations() {
         crate::validation::operation::validate_subscription(document, operation, errors);
-        crate::validation::selection::fields_in_set_can_merge(
-            schema,
-            document,
-            &operation.selection_set,
-            &mut compiler_diagnostics,
-        );
+        fields_in_set_can_merge.validate(&operation.selection_set, &mut compiler_diagnostics);
     }
 
     for diagnostic in compiler_diagnostics {
