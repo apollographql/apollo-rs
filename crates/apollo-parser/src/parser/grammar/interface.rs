@@ -13,7 +13,7 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("interface") = p.peek_data().as_deref() {
+    if let Some("interface") = p.peek_data() {
         p.bump(SyntaxKind::interface_KW);
     }
 
@@ -22,7 +22,7 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
-    if let Some("implements") = p.peek_data().as_deref() {
+    if let Some("implements") = p.peek_data() {
         object::implements_interfaces(p);
     }
 
@@ -53,7 +53,7 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
-    if let Some("implements") = p.peek_data().as_deref() {
+    if let Some("implements") = p.peek_data() {
         meets_requirements = true;
         object::implements_interfaces(p);
     }

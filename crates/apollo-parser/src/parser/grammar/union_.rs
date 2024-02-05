@@ -15,7 +15,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("union") = p.peek_data().as_deref() {
+    if let Some("union") = p.peek_data() {
         p.bump(SyntaxKind::union_KW);
     }
 

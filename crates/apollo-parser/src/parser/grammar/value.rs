@@ -49,7 +49,7 @@ pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
         }
         Some(TokenKind::Name) => {
             let node = p.peek_data().unwrap();
-            match node.as_str() {
+            match node {
                 "true" => {
                     let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
                     p.bump(SyntaxKind::true_KW);
@@ -85,7 +85,7 @@ pub(crate) fn enum_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUE);
     let name = p.peek_data().unwrap();
 
-    if matches!(name.as_str(), "true" | "false" | "null") {
+    if matches!(name, "true" | "false" | "null") {
         p.err("unexpected Enum Value");
     }
 

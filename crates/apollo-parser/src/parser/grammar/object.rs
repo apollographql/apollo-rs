@@ -15,7 +15,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("type") = p.peek_data().as_deref() {
+    if let Some("type") = p.peek_data() {
         p.bump(SyntaxKind::type_KW);
     }
 
@@ -61,7 +61,7 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
-    if let Some("implements") = p.peek_data().as_deref() {
+    if let Some("implements") = p.peek_data() {
         meets_requirements = true;
         implements_interfaces(p);
     }

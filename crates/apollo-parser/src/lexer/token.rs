@@ -11,17 +11,17 @@ pub struct Token<'a> {
 }
 
 impl<'a> Token<'a> {
-    /// Get a reference to the token's kind.
+    /// Returns the kind of token.
     pub fn kind(&self) -> TokenKind {
         self.kind
     }
 
-    /// Get a reference to the token's data.
-    pub fn data(&self) -> &str {
+    /// Returns the source text for this token.
+    pub fn data(&self) -> &'a str {
         self.data
     }
 
-    /// Get a reference to the token's loc.
+    /// Returns the byte offset of this token in the source text.
     pub fn index(&self) -> usize {
         self.index
     }

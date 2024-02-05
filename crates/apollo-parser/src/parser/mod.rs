@@ -74,14 +74,14 @@ pub(crate) use token_text::TokenText;
 /// let document = cst.document();
 /// ```
 #[derive(Debug)]
-pub struct Parser<'a> {
-    lexer: Lexer<'a>,
+pub struct Parser<'input> {
+    lexer: Lexer<'input>,
     /// Store one lookahead token so we don't need to reparse things as much.
-    current_token: Option<Token<'a>>,
+    current_token: Option<Token<'input>>,
     /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// Ignored tokens that should be added to the tree.
-    ignored: Vec<Token<'a>>,
+    ignored: Vec<Token<'input>>,
     /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
     /// The limit to apply to parsing.
@@ -103,9 +103,9 @@ pub struct Parser<'a> {
 /// Defaulting to around a quarter of that, to keep a comfortable safety margin.
 const DEFAULT_RECURSION_LIMIT: usize = 500;
 
-impl<'a> Parser<'a> {
+impl<'input> Parser<'input> {
     /// Create a new instance of a parser given an input string.
-    pub fn new(input: &'a str) -> Self {
+    pub fn new(input: &'input str) -> Self {
         let lexer = Lexer::new(input);
 
         Self {
@@ -240,7 +240,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> Option<&Token> {
+    pub(crate) fn current(&mut self) -> Option<&Token<'input>> {
         self.peek_token()
     }
 
@@ -329,10 +329,7 @@ impl<'a> Parser<'a> {
             return;
         };
         let is_eof = current.kind == TokenKind::Eof;
-        // TODO(@goto-bus-stop) this allocation is only required if we have an
-        // error, but has to be done eagerly here as the &str reference gets
-        // invalidated by `self.at()`. Can we avoid that?
-        let data = current.data().to_string();
+        let data = current.data();
         let index = current.index();
 
         if self.at(token) {
@@ -345,7 +342,7 @@ impl<'a> Parser<'a> {
             Error::eof(message, index)
         } else {
             let message = format!("expected {kind:?}, got {data}");
-            Error::with_loc(message, data, index)
+            Error::with_loc(message, data.to_string(), index)
         };
 
         self.push_err(err);
@@ -366,7 +363,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Gets the next token from the lexer.
-    fn next_token(&mut self) -> Option<Token<'a>> {
+    fn next_token(&mut self) -> Option<Token<'input>> {
         for res in &mut self.lexer {
             match res {
                 Err(err) => {
@@ -385,7 +382,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Consume a token from the lexer.
-    pub(crate) fn pop(&mut self) -> Token<'a> {
+    pub(crate) fn pop(&mut self) -> Token<'input> {
         if let Some(token) = self.current_token.take() {
             return token;
         }
@@ -432,7 +429,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek the next Token and return it.
-    pub(crate) fn peek_token(&mut self) -> Option<&Token> {
+    pub(crate) fn peek_token(&mut self) -> Option<&Token<'input>> {
         if self.current_token.is_none() {
             self.current_token = self.next_token();
         }
@@ -440,7 +437,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek Token `n` and return it.
-    pub(crate) fn peek_token_n(&self, n: usize) -> Option<Token> {
+    pub(crate) fn peek_token_n(&self, n: usize) -> Option<Token<'input>> {
         self.peek_n_inner(n)
     }
 
@@ -449,7 +446,7 @@ impl<'a> Parser<'a> {
         self.peek_n_inner(n).map(|token| token.kind())
     }
 
-    fn peek_n_inner(&self, n: usize) -> Option<Token> {
+    fn peek_n_inner(&self, n: usize) -> Option<Token<'input>> {
         self.current_token
             .iter()
             .cloned()
@@ -461,13 +458,13 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek next Token's `data` property.
-    pub(crate) fn peek_data(&mut self) -> Option<String> {
-        self.peek_token().map(|token| token.data().to_string())
+    pub(crate) fn peek_data(&mut self) -> Option<&'input str> {
+        self.peek_token().map(|token| token.data())
     }
 
     /// Peek `n` Token's `data` property.
-    pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
-        self.peek_token_n(n).map(|token| token.data().to_string())
+    pub(crate) fn peek_data_n(&self, n: usize) -> Option<&'input str> {
+        self.peek_token_n(n).map(|token| token.data())
     }
 }
 
