@@ -11,6 +11,7 @@ pub(crate) mod input_object;
 pub(crate) mod input_value;
 pub(crate) mod interface;
 pub(crate) mod name;
+mod next;
 pub(crate) mod object;
 pub(crate) mod operation;
 pub(crate) mod scalar;
