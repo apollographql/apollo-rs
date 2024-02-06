@@ -8,15 +8,17 @@ Error: operation must not select different types using the same field name `name
     │   ──┬─  
     │     ╰─── but the same field name has type `String!` here
 ────╯
-Error: operation must not select different fields to the same alias `name`
+Error: cannot select multiple fields into the same alias `name`
     ╭─[0074_merge_identical_fields.graphql:19:3]
     │
  18 │   name: nickname
     │   ───────┬──────  
-    │          ╰──────── field `name` is selected from field `nickname` here
+    │          ╰──────── `name` is selected from `Dog.nickname` here
  19 │   name
     │   ──┬─  
-    │     ╰─── but the same field `name` is also selected from field `name` here
+    │     ╰─── `name` is selected from `Dog.name` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
 Error: operation must not select different types using the same field name `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
@@ -28,14 +30,16 @@ Error: operation must not select different types using the same field name `fido
     │   ───────┬──────  
     │          ╰──────── but the same field name has type `String` here
 ────╯
-Error: operation must not select different fields to the same alias `fido`
+Error: cannot select multiple fields into the same alias `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
     │
  23 │   fido: name
     │   ─────┬────  
-    │        ╰────── field `fido` is selected from field `name` here
+    │        ╰────── `fido` is selected from `Dog.name` here
  24 │   fido: nickname
     │   ───────┬──────  
-    │          ╰──────── but the same field `fido` is also selected from field `nickname` here
+    │          ╰──────── `fido` is selected from `Dog.nickname` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
 

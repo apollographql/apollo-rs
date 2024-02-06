@@ -1,23 +1,27 @@
-Error: operation must not select different fields to the same alias `y`
+Error: cannot select multiple fields into the same alias `y`
     ╭─[0078_merge_conflict_nested_fragments.graphql:25:3]
     │
  25 │   y: c
     │   ──┬─  
-    │     ╰─── but the same field `y` is also selected from field `c` here
+    │     ╰─── `y` is selected from `T.c` here
     │ 
  28 │   y: d
     │   ──┬─  
-    │     ╰─── field `y` is selected from field `d` here
+    │     ╰─── `y` is selected from `T.d` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
-Error: operation must not select different fields to the same alias `x`
+Error: cannot select multiple fields into the same alias `x`
     ╭─[0078_merge_conflict_nested_fragments.graphql:32:3]
     │
  21 │   x: a
     │   ──┬─  
-    │     ╰─── field `x` is selected from field `a` here
+    │     ╰─── `x` is selected from `T.a` here
     │ 
  32 │   x: b
     │   ──┬─  
-    │     ╰─── but the same field `x` is also selected from field `b` here
+    │     ╰─── `x` is selected from `T.b` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
 

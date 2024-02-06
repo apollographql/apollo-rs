@@ -231,14 +231,14 @@ pub(crate) enum DiagnosticData {
         redefined_selection: Option<NodeLocation>,
         redefined_value: Option<Value>,
     },
-    #[error("operation must not select different fields to the same alias `{field}`")]
+    #[error("cannot select multiple fields into the same alias `{alias}`")]
     ConflictingFieldName {
         /// Name of the non-unique field.
-        field: Name,
-        original_selection: Option<NodeLocation>,
-        original_name: Name,
-        redefined_selection: Option<NodeLocation>,
-        redefined_name: Name,
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_selection: TypeAttributeCoordinate,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_selection: TypeAttributeCoordinate,
     },
     #[error(
         "{} must have a composite type in its type condition",
@@ -682,20 +682,22 @@ impl ValidationError {
                 report.with_help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.");
             }
             DiagnosticData::ConflictingFieldName {
-                field,
+                alias: field,
                 original_selection,
-                original_name,
-                redefined_selection,
-                redefined_name,
+                original_location,
+                conflicting_selection,
+                conflicting_location,
             } => {
                 report.with_label_opt(
-                    *original_selection,
-                    format_args!("field `{field}` is selected from field `{original_name}` here"),
+                    *original_location,
+                    format_args!("`{field}` is selected from `{original_selection}` here"),
                 );
                 report.with_label_opt(
-                    *redefined_selection,
-                    format_args!("but the same field `{field}` is also selected from field `{redefined_name}` here"),
+                    *conflicting_location,
+                    format_args!("`{field}` is selected from `{conflicting_selection}` here"),
                 );
+
+                report.with_help("Both fields may be present on the schema type, so it's not clear which one should be used to fill the response");
             }
             DiagnosticData::InvalidFragmentTarget { name: _, ty } => {
                 report.with_label_opt(

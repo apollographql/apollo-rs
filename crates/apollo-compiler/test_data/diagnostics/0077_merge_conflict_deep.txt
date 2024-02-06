@@ -1,12 +1,14 @@
-Error: operation must not select different fields to the same alias `x`
+Error: cannot select multiple fields into the same alias `x`
     ╭─[0077_merge_conflict_deep.graphql:14:5]
     │
  11 │     x: a
     │     ──┬─  
-    │       ╰─── field `x` is selected from field `a` here
+    │       ╰─── `x` is selected from `O.a` here
     │ 
  14 │     x: b
     │     ──┬─  
-    │       ╰─── but the same field `x` is also selected from field `b` here
+    │       ╰─── `x` is selected from `O.b` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
 

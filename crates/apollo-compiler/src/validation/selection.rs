@@ -1,4 +1,5 @@
 use super::operation::OperationValidationConfig;
+use crate::coordinate::TypeAttributeCoordinate;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{CycleError, FileId, RecursionGuard, RecursionStack, ValidationDatabase};
 use crate::{ast, executable, schema, Node};
@@ -14,6 +15,15 @@ pub(crate) struct FieldSelection<'a> {
     /// The type of the selection set this field selection is part of.
     pub parent_type: &'a ast::NamedType,
     pub field: &'a Node<executable::Field>,
+}
+
+impl FieldSelection<'_> {
+    pub fn coordinate(&self) -> TypeAttributeCoordinate {
+        TypeAttributeCoordinate {
+            ty: self.parent_type.clone(),
+            attribute: self.field.name.clone(),
+        }
+    }
 }
 
 /// Expand one or more selection sets to a list of all fields selected.
@@ -113,11 +123,11 @@ fn same_name_and_arguments(
         return Err(ValidationError::new(
             field_b.field.location(),
             DiagnosticData::ConflictingFieldName {
-                field: field_a.field.response_key().clone(),
-                original_selection: field_a.field.location(),
-                original_name: field_a.field.name.clone(),
-                redefined_selection: field_b.field.location(),
-                redefined_name: field_b.field.name.clone(),
+                alias: field_a.field.response_key().clone(),
+                original_location: field_a.field.location(),
+                original_selection: field_a.coordinate(),
+                conflicting_location: field_b.field.location(),
+                conflicting_selection: field_b.coordinate(),
             },
         ));
     }

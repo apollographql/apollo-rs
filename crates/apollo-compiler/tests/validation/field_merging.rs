@@ -255,15 +255,17 @@ fn same_aliases_with_different_field_targets() {
       { dog { ...sameAliasesWithDifferentFieldTargets } }
     "#,
         expect![[r#"
-            Error: operation must not select different fields to the same alias `fido`
+            Error: cannot select multiple fields into the same alias `fido`
                ╭─[query.graphql:3:3]
                │
              2 │   fido: name
                │   ─────┬────  
-               │        ╰────── field `fido` is selected from field `name` here
+               │        ╰────── `fido` is selected from `Dog.name` here
              3 │   fido: nickname
                │   ───────┬──────  
-               │          ╰──────── but the same field `fido` is also selected from field `nickname` here
+               │          ╰──────── `fido` is selected from `Dog.nickname` here
+               │ 
+               │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
             ───╯
         "#]],
     );
@@ -299,15 +301,17 @@ fn alias_masking_direct_field_access() {
       { dog { ...aliasMaskingDirectFieldAccess } }
     "#,
         expect![[r#"
-            Error: operation must not select different fields to the same alias `name`
+            Error: cannot select multiple fields into the same alias `name`
                ╭─[query.graphql:3:3]
                │
              2 │   name: nickname
                │   ───────┬──────  
-               │          ╰──────── field `name` is selected from field `nickname` here
+               │          ╰──────── `name` is selected from `Dog.nickname` here
              3 │   name
                │   ──┬─  
-               │     ╰─── but the same field `name` is also selected from field `name` here
+               │     ╰─── `name` is selected from `Dog.name` here
+               │ 
+               │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
             ───╯
         "#]],
     );
@@ -1225,15 +1229,17 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different fields to the same alias `val`
+                Error: cannot select multiple fields into the same alias `val`
                    ╭─[query.graphql:6:9]
                    │
                  5 │         val: scalar
                    │         ─────┬─────  
-                   │              ╰─────── field `val` is selected from field `scalar` here
+                   │              ╰─────── `val` is selected from `StringBox.scalar` here
                  6 │         val: unrelatedField
                    │         ─────────┬─────────  
-                   │                  ╰─────────── but the same field `val` is also selected from field `unrelatedField` here
+                   │                  ╰─────────── `val` is selected from `StringBox.unrelatedField` here
+                   │ 
+                   │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ───╯
             "#]],
         );
@@ -1345,16 +1351,18 @@ mod return_types {
                     │       ─┬  
                     │        ╰── but the same field name has type `ID` here
                 ────╯
-                Error: operation must not select different fields to the same alias `id`
+                Error: cannot select multiple fields into the same alias `id`
                     ╭─[query.graphql:15:7]
                     │
                   6 │         id: name
                     │         ────┬───  
-                    │             ╰───── field `id` is selected from field `name` here
+                    │             ╰───── `id` is selected from `Node.name` here
                     │ 
                  15 │       id
                     │       ─┬  
-                    │        ╰── but the same field `id` is also selected from field `id` here
+                    │        ╰── `id` is selected from `Node.id` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
             "#]],
         );
