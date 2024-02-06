@@ -475,13 +475,68 @@ fn different_order_input_args() {
     );
 }
 
-#[test]
-fn conflicts_in_fragments() {
-    expect_errors(
-        r#"
+mod field_conflicts {
+    use apollo_compiler::validation::Valid;
+    use apollo_compiler::ExecutableDocument;
+    use apollo_compiler::Schema;
+    use expect_test::expect;
+    use expect_test::Expect;
+    use std::sync::OnceLock;
+    use unindent::unindent;
+
+    const CONFLICT_TEST_SCHEMA: &str = r#"
+      type Type {
+        a: Int
+        b: Int
+        c: Int
+        d: Int
+      }
+
+      type T {
+        a: Boolean
+        b: Boolean
+        c: Boolean
+        d: Boolean
+
+        deepField: Type
+      }
+
+      type Query {
+        f1: Type
+        f2: Type
+        f3: Type
+
+        field: T
+      }
+    "#;
+
+    fn test_schema() -> &'static Valid<Schema> {
+        static SCHEMA: OnceLock<Valid<Schema>> = OnceLock::new();
+
+        SCHEMA.get_or_init(|| {
+            Schema::parse_and_validate(unindent(CONFLICT_TEST_SCHEMA), "schema.graphql").unwrap()
+        })
+    }
+
+    fn expect_errors(query: &'static str, expect: Expect) {
+        let schema = test_schema();
+
+        let errors =
+            ExecutableDocument::parse_and_validate(schema, unindent(query), "query.graphql")
+                .expect_err("should have errors")
+                .errors;
+        expect.assert_eq(&errors.to_string());
+    }
+
+    #[test]
+    fn conflicts_in_fragments() {
+        expect_errors(
+            r#"
       {
-        ...A
-        ...B
+        f1 {
+          ...A
+          ...B
+        }
       }
       fragment A on Type {
         x: a
@@ -490,43 +545,28 @@ fn conflicts_in_fragments() {
         x: b
       }
     "#,
-        expect![[r#"
-            Error: cannot find fragment `A` in this document
-               ╭─[query.graphql:2:3]
-               │
-             2 │   ...A
-               │   ──┬─  
-               │     ╰─── fragment `A` is not defined
-            ───╯
-            Error: cannot find fragment `B` in this document
-               ╭─[query.graphql:3:3]
-               │
-             3 │   ...B
-               │   ──┬─  
-               │     ╰─── fragment `B` is not defined
-            ───╯
-            Error: type condition `Type` of fragment `A` is not a type defined in the schema
-               ╭─[query.graphql:5:15]
-               │
-             5 │ fragment A on Type {
-               │               ──┬─  
-               │                 ╰─── type condition here
-            ───╯
-            Error: type condition `Type` of fragment `B` is not a type defined in the schema
-               ╭─[query.graphql:8:15]
-               │
-             8 │ fragment B on Type {
-               │               ──┬─  
-               │                 ╰─── type condition here
-            ───╯
-        "#]],
-    );
-}
+            expect![[r#"
+                Error: cannot select multiple fields into the same alias `x`
+                    ╭─[query.graphql:11:3]
+                    │
+                  8 │   x: a
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.a` here
+                    │ 
+                 11 │   x: b
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.b` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+            "#]],
+        );
+    }
 
-#[test]
-fn dedupe_conflicts() {
-    expect_errors(
-        r#"
+    #[test]
+    fn dedupe_conflicts() {
+        expect_errors(
+            r#"
       {
         f1 {
           ...A
@@ -549,172 +589,144 @@ fn dedupe_conflicts() {
         x: b
       }
     "#,
-        expect![[r#"
-            Error: type `QueryRoot` does not have a field `f1`
-                ╭─[query.graphql:2:3]
-                │
-              2 │   f1 {
-                │   ─┬  
-                │    ╰── field `f1` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → f1`
-            ────╯
-            Error: type `QueryRoot` does not have a field `f2`
-                ╭─[query.graphql:6:3]
-                │
-              6 │   f2 {
-                │   ─┬  
-                │    ╰── field `f2` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → f2`
-            ────╯
-            Error: type `QueryRoot` does not have a field `f3`
-                ╭─[query.graphql:10:3]
-                │
-             10 │   f3 {
-                │   ─┬  
-                │    ╰── field `f3` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → f3`
-            ────╯
-            Error: type condition `Type` of fragment `A` is not a type defined in the schema
-                ╭─[query.graphql:16:15]
-                │
-             16 │ fragment A on Type {
-                │               ──┬─  
-                │                 ╰─── type condition here
-            ────╯
-            Error: type condition `Type` of fragment `B` is not a type defined in the schema
-                ╭─[query.graphql:19:15]
-                │
-             19 │ fragment B on Type {
-                │               ──┬─  
-                │                 ╰─── type condition here
-            ────╯
-        "#]],
-    );
-}
+            expect![[r#"
+                Error: cannot select multiple fields into the same alias `x`
+                    ╭─[query.graphql:17:3]
+                    │
+                 17 │   x: a
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.a` here
+                    │ 
+                 20 │   x: b
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.b` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+                Error: cannot select multiple fields into the same alias `x`
+                    ╭─[query.graphql:17:3]
+                    │
+                 13 │     x: c
+                    │     ──┬─  
+                    │       ╰─── `x` is selected from `Type.c` here
+                    │ 
+                 17 │   x: a
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.a` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+                Error: cannot select multiple fields into the same alias `x`
+                    ╭─[query.graphql:20:3]
+                    │
+                 17 │   x: a
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.a` here
+                    │ 
+                 20 │   x: b
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.b` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+                Error: cannot select multiple fields into the same alias `x`
+                    ╭─[query.graphql:20:3]
+                    │
+                 13 │     x: c
+                    │     ──┬─  
+                    │       ╰─── `x` is selected from `Type.c` here
+                    │ 
+                 20 │   x: b
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.b` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+            "#]],
+        );
+    }
 
-#[test]
-fn deep_conflict() {
-    expect_errors(
-        r#"
+    #[test]
+    fn deep_conflict() {
+        expect_errors(
+            r#"
       {
-        field {
+        f1 {
           x: a
         },
-        field {
+        f1 {
           x: b
         }
       }
     "#,
-        expect![[r#"
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:2:3]
-                │
-              2 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:5:3]
-                │
-              5 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-        "#]],
-    );
-}
+            expect![[r#"
+                Error: cannot select multiple fields into the same alias `x`
+                   ╭─[query.graphql:6:5]
+                   │
+                 3 │     x: a
+                   │     ──┬─  
+                   │       ╰─── `x` is selected from `Type.a` here
+                   │ 
+                 6 │     x: b
+                   │     ──┬─  
+                   │       ╰─── `x` is selected from `Type.b` here
+                   │ 
+                   │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ───╯
+            "#]],
+        );
+    }
 
-#[test]
-fn deep_conflict_multiple_issues() {
-    expect_errors(
-        r#"
+    #[test]
+    fn deep_conflict_multiple_issues() {
+        expect_errors(
+            r#"
       {
-        field {
+        f1 {
           x: a
           y: c
         },
-        field {
+        f1 {
           x: b
           y: d
         }
       }
     "#,
-        expect![[r#"
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:2:3]
-                │
-              2 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:6:3]
-                │
-              6 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-        "#]],
-    );
-}
+            expect![[r#"
+                Error: cannot select multiple fields into the same alias `x`
+                   ╭─[query.graphql:7:5]
+                   │
+                 3 │     x: a
+                   │     ──┬─  
+                   │       ╰─── `x` is selected from `Type.a` here
+                   │ 
+                 7 │     x: b
+                   │     ──┬─  
+                   │       ╰─── `x` is selected from `Type.b` here
+                   │ 
+                   │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ───╯
+                Error: cannot select multiple fields into the same alias `y`
+                   ╭─[query.graphql:8:5]
+                   │
+                 4 │     y: c
+                   │     ──┬─  
+                   │       ╰─── `y` is selected from `Type.c` here
+                   │ 
+                 8 │     y: d
+                   │     ──┬─  
+                   │       ╰─── `y` is selected from `Type.d` here
+                   │ 
+                   │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ───╯
+            "#]],
+        );
+    }
 
-#[test]
-fn very_deep_conflict() {
-    expect_errors(
-        r#"
+    #[test]
+    fn very_deep_conflict() {
+        expect_errors(
+            r#"
       {
         field {
           deepField {
@@ -728,45 +740,28 @@ fn very_deep_conflict() {
         }
       }
     "#,
-        expect![[r#"
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:2:3]
-                │
-              2 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:7:3]
-                │
-              7 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-        "#]],
-    );
-}
+            expect![[r#"
+                Error: cannot select multiple fields into the same alias `x`
+                   ╭─[query.graphql:9:7]
+                   │
+                 4 │       x: a
+                   │       ──┬─  
+                   │         ╰─── `x` is selected from `Type.a` here
+                   │ 
+                 9 │       x: b
+                   │       ──┬─  
+                   │         ╰─── `x` is selected from `Type.b` here
+                   │ 
+                   │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ───╯
+            "#]],
+        );
+    }
 
-#[test]
-fn deep_conflict_in_fragments() {
-    expect_errors(
-        r#"
+    #[test]
+    fn deep_conflict_in_fragments() {
+        expect_errors(
+            r#"
       {
         field {
           ...F
@@ -790,67 +785,36 @@ fn deep_conflict_in_fragments() {
         x: b
       }
     "#,
-        expect![[r#"
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:2:3]
-                │
-              2 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-            Error: type `QueryRoot` does not have a field `field`
-                ╭─[query.graphql:5:3]
-                │
-              5 │   field {
-                │   ──┬──  
-                │     ╰──── field `field` selected here
-                │
-                ├─[schema.graphql:95:6]
-                │
-             95 │ type QueryRoot {
-                │      ────┬────  
-                │          ╰────── type `QueryRoot` defined here
-                │ 
-                │ Note: path to the field: `query → field`
-            ────╯
-            Error: type condition `T` of fragment `F` is not a type defined in the schema
-               ╭─[query.graphql:9:15]
-               │
-             9 │ fragment F on T {
-               │               ┬  
-               │               ╰── type condition here
-            ───╯
-            Error: type condition `T` of fragment `G` is not a type defined in the schema
-                ╭─[query.graphql:13:15]
-                │
-             13 │ fragment G on T {
-                │               ┬  
-                │               ╰── type condition here
-            ────╯
-            Error: type condition `T` of fragment `I` is not a type defined in the schema
-                ╭─[query.graphql:16:15]
-                │
-             16 │ fragment I on T {
-                │               ┬  
-                │               ╰── type condition here
-            ────╯
-            Error: type condition `T` of fragment `J` is not a type defined in the schema
-                ╭─[query.graphql:20:15]
-                │
-             20 │ fragment J on T {
-                │               ┬  
-                │               ╰── type condition here
-            ────╯
-        "#]],
-    );
+            expect![[r#"
+                Error: cannot select multiple fields into the same alias `y`
+                    ╭─[query.graphql:14:3]
+                    │
+                 14 │   y: c
+                    │   ──┬─  
+                    │     ╰─── `y` is selected from `T.c` here
+                    │ 
+                 17 │   y: d
+                    │   ──┬─  
+                    │     ╰─── `y` is selected from `T.d` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+                Error: cannot select multiple fields into the same alias `x`
+                    ╭─[query.graphql:21:3]
+                    │
+                 10 │   x: a
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `T.a` here
+                    │ 
+                 21 │   x: b
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `T.b` here
+                    │ 
+                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
+                ────╯
+            "#]],
+        );
+    }
 }
 
 mod return_types {
