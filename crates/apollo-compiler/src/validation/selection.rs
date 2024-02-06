@@ -3,10 +3,10 @@ use crate::coordinate::TypeAttributeCoordinate;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{CycleError, FileId, RecursionGuard, RecursionStack, ValidationDatabase};
 use crate::{ast, executable, schema, Node};
+use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::cell::OnceCell;
-use std::collections::{hash_map::Entry, HashMap};
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::rc::Rc;
 
 /// Represents a field selected against a parent type.
@@ -304,7 +304,7 @@ impl OnceBool {
 /// Represents a merged field set that may or may not be valid.
 struct MergedFieldSet<'doc> {
     selections: Vec<FieldSelection<'doc>>,
-    grouped_by_output_names: OnceCell<HashMap<ast::Name, Vec<FieldSelection<'doc>>>>,
+    grouped_by_output_names: OnceCell<IndexMap<ast::Name, Vec<FieldSelection<'doc>>>>,
     grouped_by_common_parents: OnceCell<Vec<Vec<FieldSelection<'doc>>>>,
     same_response_shape_guard: OnceBool,
     same_for_common_parents_guard: OnceBool,
@@ -407,9 +407,9 @@ impl<'doc> MergedFieldSet<'doc> {
         }
     }
 
-    fn group_by_output_name(&self) -> &HashMap<schema::Name, Vec<FieldSelection<'doc>>> {
+    fn group_by_output_name(&self) -> &IndexMap<schema::Name, Vec<FieldSelection<'doc>>> {
         self.grouped_by_output_names.get_or_init(|| {
-            let mut map = HashMap::new();
+            let mut map = IndexMap::new();
             for selection in &self.selections {
                 match map.entry(selection.field.response_key().clone()) {
                     Entry::Vacant(entry) => {
@@ -430,7 +430,7 @@ impl<'doc> MergedFieldSet<'doc> {
     fn group_by_common_parents(&self, schema: &schema::Schema) -> &Vec<Vec<FieldSelection<'doc>>> {
         self.grouped_by_common_parents.get_or_init(|| {
             let mut abstract_parents = vec![];
-            let mut concrete_parents = HashMap::<_, Vec<_>>::new();
+            let mut concrete_parents = IndexMap::<_, Vec<_>>::new();
             for selection in &self.selections {
                 match schema.types.get(selection.parent_type) {
                     Some(schema::ExtendedType::Object(object)) => {
