@@ -23,6 +23,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **New field merging validation implementation - [goto-bus-stop], [pull/816]**
   - Uses the much more scalable [Xing algorithm].
   - This also fixes some invalid selections that were previously accepted by apollo-compiler.
+  - Selections in fragment definitions are now only validated in the context of the operations they
+    are used in, reducing duplicate error reports for invalid fragments. This means invalid *unused*
+    fragments do not produce field merging errors, but they will still raise a different error because
+    fragments being unused is also an error according to the spec.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop]
 [pull/816]: https://github.com/apollographql/apollo-rs/pull/816
