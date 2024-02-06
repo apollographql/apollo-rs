@@ -329,7 +329,7 @@ fn different_args_second_adds_argument() {
       { dog { ...conflictingArgs } }
     "#,
         expect![[r#"
-            Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
+            Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
                ╭─[query.graphql:3:3]
                │
              2 │   doesKnowCommand
@@ -337,9 +337,9 @@ fn different_args_second_adds_argument() {
                │          ╰───────── but argument `dogCommand` is not provided here
              3 │   doesKnowCommand(dogCommand: HEEL)
                │   ────────────────┬────────────────  
-               │                   ╰────────────────── field `doesKnowCommand` is selected with argument `dogCommand` here
+               │                   ╰────────────────── `doesKnowCommand` is selected with argument `dogCommand` here
                │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+               │ Help: The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate
             ───╯
         "#]],
     );
@@ -357,17 +357,17 @@ fn different_args_second_missess_argument() {
       { dog { ...conflictingArgs } }
     "#,
         expect![[r#"
-            Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
+            Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
                ╭─[query.graphql:3:3]
                │
              2 │   doesKnowCommand(dogCommand: SIT)
                │   ────────────────┬───────────────  
-               │                   ╰───────────────── field `doesKnowCommand` is selected with argument `dogCommand` here
+               │                   ╰───────────────── `doesKnowCommand` is selected with argument `dogCommand` here
              3 │   doesKnowCommand
                │   ───────┬───────  
                │          ╰───────── but argument `dogCommand` is not provided here
                │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+               │ Help: The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate
             ───╯
         "#]],
     );
@@ -385,17 +385,17 @@ fn conflicting_arg_values() {
       { dog { ...conflictingArgs } }
     "#,
         expect![[r#"
-            Error: operation must not provide conflicting field arguments for the same field name `doesKnowCommand`
+            Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
                ╭─[query.graphql:3:3]
                │
              2 │   doesKnowCommand(dogCommand: SIT)
                │   ────────────────┬───────────────  
-               │                   ╰───────────────── field `doesKnowCommand` provides one argument value here
+               │                   ╰───────────────── `Dog.doesKnowCommand(dogCommand:)` is used with one argument value here
              3 │   doesKnowCommand(dogCommand: HEEL)
                │   ────────────────┬────────────────  
                │                   ╰────────────────── but a different value here
                │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+               │ Help: The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate
             ───╯
         "#]],
     );
@@ -413,17 +413,17 @@ fn conflicting_arg_names() {
       { dog { ...conflictingArgs } }
     "#,
         expect![[r#"
-            Error: operation must not provide conflicting field arguments for the same field name `isAtLocation`
+            Error: operation must not provide conflicting field arguments for the same name `isAtLocation`
                ╭─[query.graphql:3:3]
                │
              2 │   isAtLocation(x: 0)
                │   ─────────┬────────  
-               │            ╰────────── field `isAtLocation` is selected with argument `x` here
+               │            ╰────────── `isAtLocation` is selected with argument `x` here
              3 │   isAtLocation(y: 0)
                │   ─────────┬────────  
                │            ╰────────── but argument `x` is not provided here
                │ 
-               │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+               │ Help: The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate
             ───╯
         "#]],
     );
@@ -967,16 +967,16 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `scalar`
+                Error: operation must not select different types using the same name `scalar`
                    ╭─[query.graphql:7:7]
                    │
                  4 │       scalar
                    │       ───┬──  
-                   │          ╰──── `scalar` has type `Int` here
+                   │          ╰──── `scalar` is selected from `IntBox.scalar: Int` here
                    │ 
                  7 │       scalar
                    │       ───┬──  
-                   │          ╰──── but the same field name has type `String!` here
+                   │          ╰──── `scalar` is selected from `NonNullStringBox1.scalar: String!` here
                 ───╯
             "#]],
         );
@@ -1020,16 +1020,16 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `scalar`
+                Error: operation must not select different types using the same name `scalar`
                    ╭─[query.graphql:7:7]
                    │
                  4 │       scalar
                    │       ───┬──  
-                   │          ╰──── `scalar` has type `Int` here
+                   │          ╰──── `scalar` is selected from `IntBox.scalar: Int` here
                    │ 
                  7 │       scalar
                    │       ───┬──  
-                   │          ╰──── but the same field name has type `String` here
+                   │          ╰──── `scalar` is selected from `StringBox.scalar: String` here
                 ───╯
             "#]],
         );
@@ -1118,16 +1118,16 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `scalar`
+                Error: operation must not select different types using the same name `scalar`
                    ╭─[query.graphql:7:7]
                    │
                  4 │       scalar
                    │       ───┬──  
-                   │          ╰──── `scalar` has type `String!` here
+                   │          ╰──── `scalar` is selected from `NonNullStringBox1.scalar: String!` here
                    │ 
                  7 │       scalar
                    │       ───┬──  
-                   │          ╰──── but the same field name has type `String` here
+                   │          ╰──── `scalar` is selected from `StringBox.scalar: String` here
                 ───╯
             "#]],
         );
@@ -1153,20 +1153,20 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `box`
+                Error: operation must not select different types using the same name `box`
                     ╭─[query.graphql:9:7]
                     │
                   4 │ ╭───▶       box: listStringBox {
                     ┆ ┆     
                   6 │ ├───▶       }
                     │ │               
-                    │ ╰─────────────── `box` has type `[StringBox]` here
+                    │ ╰─────────────── `box` is selected from `IntBox.listStringBox: [StringBox]` here
                     │ 
                   9 │   ╭─▶       box: stringBox {
                     ┆   ┆   
                  11 │   ├─▶       }
                     │   │             
-                    │   ╰───────────── but the same field name has type `StringBox` here
+                    │   ╰───────────── `box` is selected from `StringBox.stringBox: StringBox` here
                 ────╯
             "#]],
         );
@@ -1189,20 +1189,20 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `box`
+                Error: operation must not select different types using the same name `box`
                     ╭─[query.graphql:9:7]
                     │
                   4 │   ╭─▶       box: stringBox {
                     ┆   ┆   
                   6 │   ├─▶       }
                     │   │             
-                    │   ╰───────────── `box` has type `StringBox` here
+                    │   ╰───────────── `box` is selected from `IntBox.stringBox: StringBox` here
                     │ 
                   9 │ ╭───▶       box: listStringBox {
                     ┆ ┆     
                  11 │ ├───▶       }
                     │ │               
-                    │ ╰─────────────── but the same field name has type `[StringBox]` here
+                    │ ╰─────────────── `box` is selected from `StringBox.listStringBox: [StringBox]` here
                 ────╯
             "#]],
         );
@@ -1265,16 +1265,16 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `scalar`
+                Error: operation must not select different types using the same name `scalar`
                     ╭─[query.graphql:10:9]
                     │
                   5 │         scalar
                     │         ───┬──  
-                    │            ╰──── `scalar` has type `String` here
+                    │            ╰──── `scalar` is selected from `StringBox.scalar: String` here
                     │ 
                  10 │         scalar
                     │         ───┬──  
-                    │            ╰──── but the same field name has type `Int` here
+                    │            ╰──── `scalar` is selected from `IntBox.scalar: Int` here
                 ────╯
             "#]],
         );
@@ -1340,16 +1340,16 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: operation must not select different types using the same field name `id`
+                Error: operation must not select different types using the same name `id`
                     ╭─[query.graphql:15:7]
                     │
                   6 │         id: name
                     │         ────┬───  
-                    │             ╰───── `id` has type `String` here
+                    │             ╰───── `id` is selected from `Node.name: String` here
                     │ 
                  15 │       id
                     │       ─┬  
-                    │        ╰── but the same field name has type `ID` here
+                    │        ╰── `id` is selected from `Node.id: ID` here
                 ────╯
                 Error: cannot select multiple fields into the same alias `id`
                     ╭─[query.graphql:15:7]

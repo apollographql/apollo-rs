@@ -3,6 +3,7 @@ use crate::ast::DirectiveLocation;
 use crate::ast::Name;
 use crate::ast::Type;
 use crate::ast::Value;
+use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
@@ -210,26 +211,27 @@ pub(crate) enum DiagnosticData {
         coordinate: TypeAttributeCoordinate,
         describe_type: &'static str,
     },
-    #[error("operation must not select different types using the same field name `{field}`")]
+    #[error("operation must not select different types using the same name `{alias}`")]
     ConflictingFieldType {
-        /// Name of the non-unique field.
-        field: Name,
-        original_selection: Option<NodeLocation>,
+        /// Name or alias of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_coordinate: TypeAttributeCoordinate,
         original_type: Type,
-        redefined_selection: Option<NodeLocation>,
-        redefined_type: Type,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_coordinate: TypeAttributeCoordinate,
+        conflicting_type: Type,
     },
-    #[error(
-        "operation must not provide conflicting field arguments for the same field name `{field}`"
-    )]
+    #[error("operation must not provide conflicting field arguments for the same name `{alias}`")]
     ConflictingFieldArgument {
-        /// Name of the non-unique field.
-        field: Name,
-        argument: Name,
-        original_selection: Option<NodeLocation>,
+        /// Name or alias of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_coordinate: FieldArgumentCoordinate,
         original_value: Option<Value>,
-        redefined_selection: Option<NodeLocation>,
-        redefined_value: Option<Value>,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_coordinate: FieldArgumentCoordinate,
+        conflicting_value: Option<Value>,
     },
     #[error("cannot select multiple fields into the same alias `{alias}`")]
     ConflictingFieldName {
@@ -626,60 +628,68 @@ impl ValidationError {
                 );
             }
             DiagnosticData::ConflictingFieldType {
-                field,
-                original_selection,
+                alias,
+                original_location,
+                original_coordinate,
                 original_type,
-                redefined_selection,
-                redefined_type,
+                conflicting_location,
+                conflicting_coordinate,
+                conflicting_type,
             } => {
                 report.with_label_opt(
-                    *original_selection,
-                    format_args!("`{field}` has type `{original_type}` here"),
+                    *original_location,
+                    format_args!(
+                        "`{alias}` is selected from `{original_coordinate}: {original_type}` here"
+                    ),
                 );
                 report.with_label_opt(
-                    *redefined_selection,
-                    format_args!("but the same field name has type `{redefined_type}` here"),
+                    *conflicting_location,
+                    format_args!("`{alias}` is selected from `{conflicting_coordinate}: {conflicting_type}` here"),
                 );
             }
             DiagnosticData::ConflictingFieldArgument {
-                field,
-                argument,
-                original_selection,
+                alias,
+                original_location,
+                original_coordinate,
                 original_value,
-                redefined_selection,
-                redefined_value,
+                conflicting_location,
+                conflicting_coordinate: _,
+                conflicting_value,
             } => {
-                match (original_value, redefined_value) {
+                let argument = &original_coordinate.argument;
+                match (original_value, conflicting_value) {
                     (Some(_), Some(_)) => {
                         report.with_label_opt(
-                            *original_selection,
-                            format_args!("field `{field}` provides one argument value here"),
+                            *original_location,
+                            format_args!(
+                                "`{original_coordinate}` is used with one argument value here"
+                            ),
                         );
-                        report.with_label_opt(*redefined_selection, "but a different value here");
+                        report.with_label_opt(*conflicting_location, "but a different value here");
                     }
                     (Some(_), None) => {
                         report.with_label_opt(
-                            *original_selection,
-                            format!("field `{field}` is selected with argument `{argument}` here",),
+                            *original_location,
+                            format!("`{alias}` is selected with argument `{argument}` here",),
                         );
                         report.with_label_opt(
-                            *redefined_selection,
+                            *conflicting_location,
                             format!("but argument `{argument}` is not provided here"),
                         );
                     }
                     (None, Some(_)) => {
                         report.with_label_opt(
-                            *redefined_selection,
-                            format!("field `{field}` is selected with argument `{argument}` here",),
+                            *conflicting_location,
+                            format!("`{alias}` is selected with argument `{argument}` here",),
                         );
                         report.with_label_opt(
-                            *original_selection,
+                            *original_location,
                             format!("but argument `{argument}` is not provided here"),
                         );
                     }
                     (None, None) => unreachable!(),
                 }
-                report.with_help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.");
+                report.with_help("The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate");
             }
             DiagnosticData::ConflictingFieldName {
                 alias: field,

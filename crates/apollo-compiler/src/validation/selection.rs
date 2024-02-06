@@ -146,12 +146,13 @@ fn same_name_and_arguments(
 
             let data = DiagnosticData::ConflictingFieldArgument {
                 // field_a and field_b have the same name so we can use either one.
-                field: field_b.field.name.clone(),
-                argument: arg.name.clone(),
-                original_selection: field_a.field.location(),
+                alias: field_b.field.name.clone(),
+                original_location: field_a.field.location(),
+                original_coordinate: field_a.coordinate().with_argument(arg.name.clone()),
                 original_value: original_arg.map(|arg| (*arg.value).clone()),
-                redefined_selection: field_b.field.location(),
-                redefined_value: redefined_arg.map(|arg| (*arg.value).clone()),
+                conflicting_location: field_b.field.location(),
+                conflicting_coordinate: field_b.coordinate().with_argument(arg.name.clone()),
+                conflicting_value: redefined_arg.map(|arg| (*arg.value).clone()),
             };
             ValidationError::new(field_b.field.location(), data)
         };
@@ -221,11 +222,13 @@ fn same_output_type_shape(
         ValidationError::new(
             selection_b.field.location(),
             DiagnosticData::ConflictingFieldType {
-                field: selection_a.field.response_key().clone(),
-                original_selection: selection_a.field.location(),
+                alias: selection_a.field.response_key().clone(),
+                original_location: selection_a.field.location(),
+                original_coordinate: selection_a.coordinate(),
                 original_type: field_a.ty.clone(),
-                redefined_selection: selection_b.field.location(),
-                redefined_type: field_b.ty.clone(),
+                conflicting_location: selection_b.field.location(),
+                conflicting_coordinate: selection_b.coordinate(),
+                conflicting_type: field_b.ty.clone(),
             },
         )
     };

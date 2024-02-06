@@ -1,12 +1,12 @@
-Error: operation must not select different types using the same field name `overlapping`
+Error: operation must not select different types using the same name `overlapping`
     ╭─[0113_partially_overlapping_fragments.graphql:27:16]
     │
  24 │     ... on B { overlapping }
     │                ─────┬─────  
-    │                     ╰─────── `overlapping` has type `Int!` here
+    │                     ╰─────── `overlapping` is selected from `B.overlapping: Int!` here
     │ 
  27 │     ... on C { overlapping }
     │                ─────┬─────  
-    │                     ╰─────── but the same field name has type `Int` here
+    │                     ╰─────── `overlapping` is selected from `C.overlapping: Int` here
 ────╯
 
