@@ -2,10 +2,11 @@ use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::{Name, Type};
 use std::ops::{Deref, DerefMut};
 
-pub(crate) struct Existing<'u, 'ue, 'e>(pub &'e mut Unstructured<'u, 'ue>);
+pub(crate) struct Existing<'u, 'ue, 'e>(pub(crate) &'e mut Unstructured<'u, 'ue>);
 impl<'u, 'ue, 'e> Existing<'u, 'ue, 'e> {
     pub(crate) fn type_name(&mut self) -> arbitrary::Result<Name> {
         let names = self.schema().types.keys().cloned().collect::<Vec<_>>();
+        assert!(!names.is_empty());
         Ok(self.choose(&names)?.clone())
     }
 

@@ -1,3 +1,4 @@
+use crate::next::document::Document;
 use crate::next::existing::Existing;
 use crate::next::invalid::Invalid;
 use crate::next::valid::Valid;
@@ -42,10 +43,17 @@ impl<'u, 'ue> Unstructured<'u, 'ue> {
     pub(crate) fn existing(&mut self) -> Existing<'u, 'ue, '_> {
         Existing(self)
     }
-
     pub(crate) fn invalid(&mut self) -> Invalid<'u, 'ue, '_> {
         Invalid(self)
     }
+
+    pub(crate) fn document<'d, 'ad>(
+        &mut self,
+        doc: &'ad mut apollo_compiler::ast::Document,
+    ) -> Document<'u, 'ue, '_, 'ad> {
+        Document { u: self, doc }
+    }
+
     pub(crate) fn schema(&self) -> &apollo_compiler::Schema {
         &self.schema
     }
@@ -58,6 +66,16 @@ impl<'u, 'ue> Unstructured<'u, 'ue> {
         loop {
             if let Ok(name) = Name::new(self.arbitrary_node_str()?) {
                 return Ok(name);
+            }
+        }
+    }
+
+    pub(crate) fn arbitrary_unique_name(&mut self, existing: &Vec<&Name>) -> Result<Name> {
+        loop {
+            if let Ok(name) = self.arbitrary_name() {
+                if !existing.contains(&&name) {
+                    return Ok(name);
+                }
             }
         }
     }

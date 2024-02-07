@@ -4,6 +4,7 @@ use crate::next::mutations::{all_mutations, Mutation};
 use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::Document;
 
+mod document;
 mod existing;
 mod invalid;
 mod mutations;
@@ -18,14 +19,19 @@ pub fn build_document(u: &mut arbitrary::Unstructured) -> Result<()> {
         u.arbitrary()
             .expect("fuzzer must be able to generate a bool")
     });
+    if mutations.is_empty() {
+        return Ok(());
+    }
 
     let mut schema = apollo_compiler::Schema::builder()
         .add_ast(&doc)
         .build()
         .expect("initial document must be valid");
     for _ in 0..1000 {
-        let (valid_mutation, was_applied) =
-            apply_mutation(&mut Unstructured::new(u, &schema), &mut doc, &mut mutations)?;
+        let u = &mut Unstructured::new(u, &schema);
+        let mutation = u.choose(&mut mutations)?;
+        let was_applied1 = mutation.apply(u, &mut doc)?;
+        let (valid_mutation, was_applied) = (mutation.is_valid(), was_applied1);
         if was_applied {
             match apollo_compiler::Schema::builder().add_ast(&doc).build() {
                 Ok(new_schema) if valid_mutation => schema = new_schema,
@@ -44,12 +50,13 @@ pub fn build_document(u: &mut arbitrary::Unstructured) -> Result<()> {
     Ok(())
 }
 
-fn apply_mutation(
-    u: &mut Unstructured,
-    doc: &mut Document,
-    mutations: &mut Vec<Box<dyn Mutation>>,
-) -> Result<(bool, bool)> {
-    let mutation = &mutations[u.int_in_range(0..=mutations.len() - 1)?];
-    let was_applied = mutation.apply(u, doc)?;
-    Ok((mutation.is_valid(), was_applied))
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test() {
+        let mut u = arbitrary::Unstructured::new(&[0; 32]);
+        if let Err(e) = super::build_document(&mut u) {
+            panic!("error: {:?}", e);
+        };
+    }
 }

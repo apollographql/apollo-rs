@@ -1,3 +1,4 @@
+mod add_field;
 mod add_object_type_definition;
 mod remove_all_fields;
 
