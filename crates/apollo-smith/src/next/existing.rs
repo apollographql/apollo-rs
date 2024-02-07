@@ -11,13 +11,8 @@ impl<'u, 'ue, 'e> Existing<'u, 'ue, 'e> {
     }
 
     pub(crate) fn ty(&mut self) -> arbitrary::Result<Type> {
-        let idx = self.int_in_range(0..=3)?;
-        Ok(match idx {
-            0 => Type::Named(self.existing().type_name()?.clone()),
-            1 => Type::NonNullNamed(self.existing().type_name()?.clone()),
-            2 => Type::List(Box::new(self.existing().ty()?)),
-            _ => Type::NonNullList(Box::new(self.existing().ty()?)),
-        })
+        let name = self.type_name()?;
+        self.wrap_ty(name)
     }
 }
 

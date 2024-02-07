@@ -2,7 +2,7 @@ use crate::next::document::Document;
 use crate::next::existing::Existing;
 use crate::next::invalid::Invalid;
 use crate::next::valid::Valid;
-use apollo_compiler::ast::Name;
+use apollo_compiler::ast::{Name, Type};
 use apollo_compiler::NodeStr;
 use arbitrary::Result;
 use std::ops::{Deref, DerefMut};
@@ -78,5 +78,22 @@ impl<'u, 'ue> Unstructured<'u, 'ue> {
                 }
             }
         }
+    }
+
+    pub(crate) fn wrap_ty(&mut self, name: Name) -> Result<Type> {
+        let depth = self.int_in_range(0..=10)?;
+        let mut ty = if self.arbitrary()? {
+            Type::Named(name.clone())
+        } else {
+            Type::NonNullNamed(name.clone())
+        };
+        for _ in 0..depth {
+            if self.arbitrary()? {
+                ty = Type::List(Box::new(ty))
+            } else {
+                ty = Type::NonNullList(Box::new(ty))
+            }
+        }
+        Ok(ty)
     }
 }
