@@ -1,5 +1,5 @@
 use crate::next::unstructured::Unstructured;
-use apollo_compiler::ast::ObjectTypeDefinition;
+use apollo_compiler::ast::{FieldDefinition, ObjectTypeDefinition};
 use std::ops::{Deref, DerefMut};
 
 pub(crate) struct Document<'u, 'ue, 'd, 'ad> {
@@ -9,7 +9,26 @@ pub(crate) struct Document<'u, 'ue, 'd, 'ad> {
 impl<'u, 'ue, 'e, 'ad> Document<'u, 'ue, 'e, 'ad> {
     pub(crate) fn with_object_type_definition(
         &mut self,
-        callback: fn(&mut Unstructured, doc: &mut ObjectTypeDefinition) -> arbitrary::Result<()>,
+        callback: fn(&mut Unstructured, ty: &mut ObjectTypeDefinition) -> arbitrary::Result<()>,
+    ) -> arbitrary::Result<()> {
+        let mut definitions = self
+            .doc
+            .definitions
+            .iter_mut()
+            .filter_map(|def| match def {
+                apollo_compiler::ast::Definition::ObjectTypeDefinition(def) => Some(def.make_mut()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
+        let idx = self.u.choose_index(definitions.len())?;
+
+        Ok(callback(self.u, definitions[idx])?)
+    }
+
+    pub(crate) fn with_field_definition(
+        &mut self,
+        callback: fn(&mut Unstructured, doc: &mut FieldDefinition) -> arbitrary::Result<()>,
     ) -> arbitrary::Result<()> {
         let mut definitions = self
             .doc

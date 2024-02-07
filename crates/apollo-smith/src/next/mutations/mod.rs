@@ -1,3 +1,4 @@
+mod add_directive_to_object_type_definition;
 mod add_field;
 mod add_object_type_definition;
 mod add_self_field;
