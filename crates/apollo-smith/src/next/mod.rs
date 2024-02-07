@@ -1,8 +1,7 @@
 use arbitrary::Result;
 
-use crate::next::mutations::{all_mutations, Mutation};
+use crate::next::mutations::all_mutations;
 use crate::next::unstructured::Unstructured;
-use apollo_compiler::ast::Document;
 
 mod document;
 mod existing;
@@ -30,15 +29,13 @@ pub fn build_document(u: &mut arbitrary::Unstructured) -> Result<()> {
     for _ in 0..1000 {
         let u = &mut Unstructured::new(u, &schema);
         let mutation = u.choose(&mut mutations)?;
-        let was_applied1 = mutation.apply(u, &mut doc)?;
-        let (valid_mutation, was_applied) = (mutation.is_valid(), was_applied1);
-        if was_applied {
+        if mutation.apply(u, &mut doc).is_ok() {
             match apollo_compiler::Schema::builder().add_ast(&doc).build() {
-                Ok(new_schema) if valid_mutation => schema = new_schema,
+                Ok(new_schema) if mutation.is_valid() => schema = new_schema,
                 Ok(_new_schema) => {
                     panic!("valid schema returned from invalid mutation")
                 }
-                Err(_new_schema) if valid_mutation => {
+                Err(_new_schema) if mutation.is_valid() => {
                     panic!("invalid schema returned from valid mutation")
                 }
                 Err(_new_schema) => {

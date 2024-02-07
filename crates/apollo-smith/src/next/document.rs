@@ -1,5 +1,5 @@
 use crate::next::unstructured::Unstructured;
-use apollo_compiler::ast::{Name, ObjectTypeDefinition, Type};
+use apollo_compiler::ast::ObjectTypeDefinition;
 use std::ops::{Deref, DerefMut};
 
 pub(crate) struct Document<'u, 'ue, 'd, 'ad> {

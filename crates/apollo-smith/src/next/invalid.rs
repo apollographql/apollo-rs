@@ -1,5 +1,4 @@
 use crate::next::unstructured::Unstructured;
-use apollo_compiler::ast::{Name, Type};
 use std::ops::{Deref, DerefMut};
 
 pub(crate) struct Invalid<'u, 'ue, 'e>(pub(crate) &'e mut Unstructured<'u, 'ue>);
