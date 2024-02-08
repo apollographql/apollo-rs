@@ -573,11 +573,13 @@ impl RecursionStack {
 /// if the name was used somewhere up the call stack. When a guard is dropped, its name is removed
 /// from the list.
 struct RecursionGuard<'a>(&'a mut RecursionStack);
+
 impl RecursionGuard<'_> {
     /// Mark that we saw a name. If there are too many names, return an error.
     fn push(&mut self, name: &Name) -> Result<RecursionGuard<'_>, RecursionLimitError> {
+        let new = self.0.seen.insert(name.clone());
         debug_assert!(
-            self.0.seen.insert(name.clone()),
+            new,
             "cannot push the same name twice to RecursionGuard, check contains() first"
         );
         self.0.high = self.0.high.max(self.0.seen.len());
@@ -587,10 +589,12 @@ impl RecursionGuard<'_> {
             Ok(RecursionGuard(self.0))
         }
     }
+
     /// Check if we saw a name somewhere up the call stack.
     fn contains(&self, name: &Name) -> bool {
-        self.0.seen.iter().any(|seen| seen == name)
+        self.0.seen.contains(name)
     }
+
     /// Return the name where we started.
     fn first(&self) -> Option<&Name> {
         self.0.seen.first()
