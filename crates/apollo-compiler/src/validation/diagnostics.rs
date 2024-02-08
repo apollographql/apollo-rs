@@ -2,8 +2,6 @@ use crate::ast;
 use crate::ast::DirectiveLocation;
 use crate::ast::Name;
 use crate::ast::Type;
-use crate::ast::Value;
-use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
@@ -210,37 +208,6 @@ pub(crate) enum DiagnosticData {
     MissingSubselection {
         coordinate: TypeAttributeCoordinate,
         describe_type: &'static str,
-    },
-    #[error("operation must not select different types using the same name `{alias}`")]
-    ConflictingFieldType {
-        /// Name or alias of the non-unique field.
-        alias: Name,
-        original_location: Option<NodeLocation>,
-        original_coordinate: TypeAttributeCoordinate,
-        original_type: Type,
-        conflicting_location: Option<NodeLocation>,
-        conflicting_coordinate: TypeAttributeCoordinate,
-        conflicting_type: Type,
-    },
-    #[error("operation must not provide conflicting field arguments for the same name `{alias}`")]
-    ConflictingFieldArgument {
-        /// Name or alias of the non-unique field.
-        alias: Name,
-        original_location: Option<NodeLocation>,
-        original_coordinate: FieldArgumentCoordinate,
-        original_value: Option<Value>,
-        conflicting_location: Option<NodeLocation>,
-        conflicting_coordinate: FieldArgumentCoordinate,
-        conflicting_value: Option<Value>,
-    },
-    #[error("cannot select multiple fields into the same alias `{alias}`")]
-    ConflictingFieldName {
-        /// Name of the non-unique field.
-        alias: Name,
-        original_location: Option<NodeLocation>,
-        original_selection: TypeAttributeCoordinate,
-        conflicting_location: Option<NodeLocation>,
-        conflicting_selection: TypeAttributeCoordinate,
     },
     #[error(
         "{} must have a composite type in its type condition",
@@ -626,88 +593,6 @@ impl ValidationError {
                     self.location,
                     format_args!("{coordinate} is {describe_type} and must select fields"),
                 );
-            }
-            DiagnosticData::ConflictingFieldType {
-                alias,
-                original_location,
-                original_coordinate,
-                original_type,
-                conflicting_location,
-                conflicting_coordinate,
-                conflicting_type,
-            } => {
-                report.with_label_opt(
-                    *original_location,
-                    format_args!(
-                        "`{alias}` is selected from `{original_coordinate}: {original_type}` here"
-                    ),
-                );
-                report.with_label_opt(
-                    *conflicting_location,
-                    format_args!("`{alias}` is selected from `{conflicting_coordinate}: {conflicting_type}` here"),
-                );
-            }
-            DiagnosticData::ConflictingFieldArgument {
-                alias,
-                original_location,
-                original_coordinate,
-                original_value,
-                conflicting_location,
-                conflicting_coordinate: _,
-                conflicting_value,
-            } => {
-                let argument = &original_coordinate.argument;
-                match (original_value, conflicting_value) {
-                    (Some(_), Some(_)) => {
-                        report.with_label_opt(
-                            *original_location,
-                            format_args!(
-                                "`{original_coordinate}` is used with one argument value here"
-                            ),
-                        );
-                        report.with_label_opt(*conflicting_location, "but a different value here");
-                    }
-                    (Some(_), None) => {
-                        report.with_label_opt(
-                            *original_location,
-                            format!("`{alias}` is selected with argument `{argument}` here",),
-                        );
-                        report.with_label_opt(
-                            *conflicting_location,
-                            format!("but argument `{argument}` is not provided here"),
-                        );
-                    }
-                    (None, Some(_)) => {
-                        report.with_label_opt(
-                            *conflicting_location,
-                            format!("`{alias}` is selected with argument `{argument}` here",),
-                        );
-                        report.with_label_opt(
-                            *original_location,
-                            format!("but argument `{argument}` is not provided here"),
-                        );
-                    }
-                    (None, None) => unreachable!(),
-                }
-                report.with_help("The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate");
-            }
-            DiagnosticData::ConflictingFieldName {
-                alias: field,
-                original_selection,
-                original_location,
-                conflicting_selection,
-                conflicting_location,
-            } => {
-                report.with_label_opt(
-                    *original_location,
-                    format_args!("`{field}` is selected from `{original_selection}` here"),
-                );
-                report.with_label_opt(
-                    *conflicting_location,
-                    format_args!("`{field}` is selected from `{conflicting_selection}` here"),
-                );
-
-                report.with_help("Both fields may be present on the schema type, so it's not clear which one should be used to fill the response");
             }
             DiagnosticData::InvalidFragmentTarget { name: _, ty } => {
                 report.with_label_opt(

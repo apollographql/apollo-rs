@@ -35,16 +35,10 @@ fn validate_with_schema(
     schema: &Schema,
     document: &ExecutableDocument,
 ) {
-    let mut compiler_diagnostics = vec![];
-
     let mut fields_in_set_can_merge = FieldsInSetCanMerge::new(schema, document);
     for operation in document.all_operations() {
         crate::validation::operation::validate_subscription(document, operation, errors);
-        fields_in_set_can_merge.validate(&operation.selection_set, &mut compiler_diagnostics);
-    }
-
-    for diagnostic in compiler_diagnostics {
-        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
+        fields_in_set_can_merge.validate(&operation.selection_set, errors);
     }
 }
 

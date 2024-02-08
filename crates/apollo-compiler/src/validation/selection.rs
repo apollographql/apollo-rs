@@ -1,6 +1,8 @@
-use super::operation::OperationValidationConfig;
 use crate::coordinate::TypeAttributeCoordinate;
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::executable::BuildError;
+use crate::validation::diagnostics::ValidationError;
+use crate::validation::operation::OperationValidationConfig;
+use crate::validation::DiagnosticList;
 use crate::validation::{CycleError, FileId, RecursionGuard, RecursionStack, ValidationDatabase};
 use crate::{ast, executable, schema, Node};
 use indexmap::map::Entry;
@@ -117,19 +119,16 @@ fn contains_any_fragment_cycle(
 fn same_name_and_arguments(
     field_a: FieldSelection<'_>,
     field_b: FieldSelection<'_>,
-) -> Result<(), ValidationError> {
+) -> Result<(), BuildError> {
     // 2bi. fieldA and fieldB must have identical field names.
     if field_a.field.name != field_b.field.name {
-        return Err(ValidationError::new(
-            field_b.field.location(),
-            DiagnosticData::ConflictingFieldName {
-                alias: field_a.field.response_key().clone(),
-                original_location: field_a.field.location(),
-                original_selection: field_a.coordinate(),
-                conflicting_location: field_b.field.location(),
-                conflicting_selection: field_b.coordinate(),
-            },
-        ));
+        return Err(BuildError::ConflictingFieldName {
+            alias: field_a.field.response_key().clone(),
+            original_location: field_a.field.location(),
+            original_selection: field_a.coordinate(),
+            conflicting_location: field_b.field.location(),
+            conflicting_selection: field_b.coordinate(),
+        });
     }
 
     // 2bii. fieldA and fieldB must have identical sets of arguments.
@@ -144,7 +143,7 @@ fn same_name_and_arguments(
             // We can take the name from either one of the arguments as they are necessarily the same.
             let arg = original_arg.or(redefined_arg).unwrap();
 
-            let data = DiagnosticData::ConflictingFieldArgument {
+            BuildError::ConflictingFieldArgument {
                 // field_a and field_b have the same name so we can use either one.
                 alias: field_b.field.name.clone(),
                 original_location: field_a.field.location(),
@@ -153,8 +152,7 @@ fn same_name_and_arguments(
                 conflicting_location: field_b.field.location(),
                 conflicting_coordinate: field_b.coordinate().with_argument(arg.name.clone()),
                 conflicting_value: redefined_arg.map(|arg| (*arg.value).clone()),
-            };
-            ValidationError::new(field_b.field.location(), data)
+            }
         };
 
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
@@ -211,26 +209,21 @@ fn same_output_type_shape(
     schema: &schema::Schema,
     selection_a: FieldSelection<'_>,
     selection_b: FieldSelection<'_>,
-) -> Result<(), ValidationError> {
+) -> Result<(), BuildError> {
     let field_a = &selection_a.field.definition;
     let field_b = &selection_b.field.definition;
 
     let mut type_a = &field_a.ty;
     let mut type_b = &field_b.ty;
 
-    let mismatching_type_diagnostic = || {
-        ValidationError::new(
-            selection_b.field.location(),
-            DiagnosticData::ConflictingFieldType {
-                alias: selection_a.field.response_key().clone(),
-                original_location: selection_a.field.location(),
-                original_coordinate: selection_a.coordinate(),
-                original_type: field_a.ty.clone(),
-                conflicting_location: selection_b.field.location(),
-                conflicting_coordinate: selection_b.coordinate(),
-                conflicting_type: field_b.ty.clone(),
-            },
-        )
+    let mismatching_type_diagnostic = || BuildError::ConflictingFieldType {
+        alias: selection_a.field.response_key().clone(),
+        original_location: selection_a.field.location(),
+        original_coordinate: selection_a.coordinate(),
+        original_type: field_a.ty.clone(),
+        conflicting_location: selection_b.field.location(),
+        conflicting_coordinate: selection_b.coordinate(),
+        conflicting_type: field_b.ty.clone(),
     };
 
     // Steps 3 and 4 of the spec text unwrap both types simultaneously down to the named type.
@@ -328,7 +321,7 @@ impl<'doc> MergedFieldSet<'doc> {
     fn same_response_shape_by_name(
         &self,
         validator: &mut FieldsInSetCanMerge<'_, 'doc>,
-        diagnostics: &mut Vec<ValidationError>,
+        diagnostics: &mut DiagnosticList,
     ) {
         // No need to do this if this field set has been checked before.
         if self.same_response_shape_guard.check() {
@@ -342,7 +335,7 @@ impl<'doc> MergedFieldSet<'doc> {
             for (field_a, field_b) in std::iter::repeat(field_a).zip(rest.iter()) {
                 // Covers steps 3-5 of the spec algorithm.
                 if let Err(err) = same_output_type_shape(validator.schema, *field_a, *field_b) {
-                    diagnostics.push(err);
+                    diagnostics.push(field_b.field.location(), err);
                     continue;
                 }
             }
@@ -369,7 +362,7 @@ impl<'doc> MergedFieldSet<'doc> {
     fn same_for_common_parents_by_name(
         &self,
         validator: &mut FieldsInSetCanMerge<'_, 'doc>,
-        diagnostics: &mut Vec<ValidationError>,
+        diagnostics: &mut DiagnosticList,
     ) {
         // No need to do this if this field set has been checked before.
         if self.same_for_common_parents_guard.check() {
@@ -388,7 +381,7 @@ impl<'doc> MergedFieldSet<'doc> {
                 };
                 for (field_a, field_b) in std::iter::repeat(field_a).zip(rest.iter()) {
                     if let Err(diagnostic) = same_name_and_arguments(*field_a, *field_b) {
-                        diagnostics.push(diagnostic);
+                        diagnostics.push(field_b.field.location(), diagnostic);
                         continue;
                     }
                 }
@@ -512,7 +505,7 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
     pub(crate) fn validate(
         &mut self,
         root: &'doc executable::SelectionSet,
-        diagnostics: &mut Vec<ValidationError>,
+        diagnostics: &mut DiagnosticList,
     ) {
         // We cannot safely check cyclical fragments
         // TODO(@goto-bus-stop) - or maybe we can, given that a cycle will result in a cache hit?
@@ -537,7 +530,7 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
     fn same_for_common_parents_by_name(
         &mut self,
         selections: Vec<FieldSelection<'doc>>,
-        diagnostics: &mut Vec<ValidationError>,
+        diagnostics: &mut DiagnosticList,
     ) {
         let field_set = self.lookup(selections);
         field_set.same_for_common_parents_by_name(self, diagnostics);
@@ -546,7 +539,7 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
     fn same_response_shape_by_name(
         &mut self,
         selections: Vec<FieldSelection<'doc>>,
-        diagnostics: &mut Vec<ValidationError>,
+        diagnostics: &mut DiagnosticList,
     ) {
         let field_set = self.lookup(selections);
         field_set.same_response_shape_by_name(self, diagnostics);

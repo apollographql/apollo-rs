@@ -2,6 +2,8 @@
 //! which can contain operations and fragments.
 
 use crate::ast;
+use crate::coordinate::FieldArgumentCoordinate;
+use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema;
 use crate::Node;
 use crate::Parser;
@@ -106,7 +108,8 @@ pub struct InlineFragment {
     pub selection_set: SelectionSet,
 }
 
-/// AST node that has been skipped during conversion to `ExecutableDocument`
+/// Errors that can occur during conversion from AST to executable document or
+/// validation of an executable document.
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
     #[error("an executable document must not contain {describe}")]
@@ -162,6 +165,7 @@ pub(crate) enum BuildError {
         path: SelectionPath,
     },
 
+    // Validation errors
     #[error(
         "{} can only have one root field",
         subscription_name_or_anonymous(name)
@@ -180,6 +184,38 @@ pub(crate) enum BuildError {
         name: Option<Name>,
         /// Name of the introspection field
         field: Name,
+    },
+
+    #[error("operation must not select different types using the same name `{alias}`")]
+    ConflictingFieldType {
+        /// Name or alias of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_coordinate: TypeAttributeCoordinate,
+        original_type: Type,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_coordinate: TypeAttributeCoordinate,
+        conflicting_type: Type,
+    },
+    #[error("operation must not provide conflicting field arguments for the same name `{alias}`")]
+    ConflictingFieldArgument {
+        /// Name or alias of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_coordinate: FieldArgumentCoordinate,
+        original_value: Option<Value>,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_coordinate: FieldArgumentCoordinate,
+        conflicting_value: Option<Value>,
+    },
+    #[error("cannot select multiple fields into the same alias `{alias}`")]
+    ConflictingFieldName {
+        /// Name of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_selection: TypeAttributeCoordinate,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_selection: TypeAttributeCoordinate,
     },
 }
 
