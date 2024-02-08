@@ -3,7 +3,7 @@ use crate::executable::BuildError;
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
-use crate::validation::{CycleError, FileId, RecursionGuard, RecursionStack, ValidationDatabase};
+use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, executable, schema, Node};
 use indexmap::map::Entry;
 use indexmap::IndexMap;
@@ -68,51 +68,6 @@ pub(crate) fn expand_selections<'doc>(
 fn is_composite(ty: &schema::ExtendedType) -> bool {
     use schema::ExtendedType::*;
     matches!(ty, Object(_) | Interface(_) | Union(_))
-}
-
-/// Check if a selection set contains a fragment cycle, meaning we can't run recursive
-/// validations on it.
-fn contains_any_fragment_cycle(
-    fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
-    selection_set: &executable::SelectionSet,
-) -> bool {
-    let mut visited = RecursionStack::new().with_limit(100);
-
-    return detect_fragment_cycle_inner(fragments, selection_set, &mut visited.guard()).is_err();
-
-    fn detect_fragment_cycle_inner(
-        fragments: &IndexMap<ast::Name, Node<executable::Fragment>>,
-        selection_set: &executable::SelectionSet,
-        visited: &mut RecursionGuard<'_>,
-    ) -> Result<(), CycleError<()>> {
-        for selection in &selection_set.selections {
-            match selection {
-                executable::Selection::FragmentSpread(spread) => {
-                    if visited.contains(&spread.fragment_name) {
-                        if visited.first() == Some(&spread.fragment_name) {
-                            return Err(CycleError::Recursed(vec![]));
-                        }
-                        continue;
-                    }
-
-                    if let Some(fragment) = fragments.get(&spread.fragment_name) {
-                        detect_fragment_cycle_inner(
-                            fragments,
-                            &fragment.selection_set,
-                            &mut visited.push(&fragment.name)?,
-                        )?;
-                    }
-                }
-                executable::Selection::InlineFragment(inline) => {
-                    detect_fragment_cycle_inner(fragments, &inline.selection_set, visited)?;
-                }
-                executable::Selection::Field(field) => {
-                    detect_fragment_cycle_inner(fragments, &field.selection_set, visited)?;
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
 /// Check if two field selections from the overlapping types are the same, so the fields can be merged.
@@ -507,12 +462,6 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
         root: &'doc executable::SelectionSet,
         diagnostics: &mut DiagnosticList,
     ) {
-        // We cannot safely check cyclical fragments
-        // TODO(@goto-bus-stop) - or maybe we can, given that a cycle will result in a cache hit?
-        if contains_any_fragment_cycle(&self.document.fragments, root) {
-            return;
-        }
-
         let fields = expand_selections(&self.document.fragments, std::iter::once(root));
         let set = self.lookup(fields);
         set.same_response_shape_by_name(self, diagnostics);
