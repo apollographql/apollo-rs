@@ -52,7 +52,7 @@ pub(crate) fn operation_type(p: &mut Parser) {
             "query" => p.bump(SyntaxKind::query_KW),
             "subscription" => p.bump(SyntaxKind::subscription_KW),
             "mutation" => p.bump(SyntaxKind::mutation_KW),
-            _ => p.err("expected either a 'mutation', a 'query', or a 'subscription'"),
+            _ => p.err_and_pop("expected either a 'mutation', a 'query', or a 'subscription'"),
         }
     }
 }
