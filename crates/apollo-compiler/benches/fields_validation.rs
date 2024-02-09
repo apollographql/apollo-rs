@@ -36,6 +36,27 @@ fn bench_many_same_nested_field(c: &mut Criterion) {
     });
 }
 
+fn bench_many_arguments(c: &mut Criterion) {
+    let schema =
+        Schema::parse_and_validate(format!("type Query {{ hello: String! }}"), "schema.graphql")
+            .unwrap();
+    let field = format!(
+        "hello({})",
+        (0..2_000)
+            .map(|i| format!("arg{i}: {i}\n"))
+            .collect::<String>()
+    );
+    let query = format!("{{ {field} {field} }}");
+
+    c.bench_function("many_arguments", move |b| {
+        b.iter(|| {
+            // Will return errors but that's cool
+            let doc = ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql");
+            _ = black_box(doc);
+        });
+    });
+}
+
 fn bench_many_types(c: &mut Criterion) {
     let schema = Schema::parse_and_validate(
         "
@@ -98,6 +119,7 @@ criterion_group!(
     fields,
     bench_many_same_field,
     bench_many_same_nested_field,
+    bench_many_arguments,
     bench_many_types,
 );
 criterion_main!(fields);
