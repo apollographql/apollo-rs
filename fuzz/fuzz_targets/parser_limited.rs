@@ -16,6 +16,6 @@ fuzz_target!(|data: &str| {
         Ok(p) => p.token_limit(500),
     };
 
-    // This will have errors--we just need to make sure it does not run forever.
+    // We expect to have errors--we just want to make sure it does not crash.
     let _tree = parser.parse();
 });
