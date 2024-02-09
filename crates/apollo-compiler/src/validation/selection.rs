@@ -110,9 +110,32 @@ fn same_name_and_arguments(
             }
         };
 
+    enum ArgumentLookup<'a> {
+        Indexed(HashMap<&'a ast::Name, &'a Node<ast::Argument>>),
+        List(&'a [Node<ast::Argument>]),
+    }
+    impl<'a> ArgumentLookup<'a> {
+        fn new(list: &'a [Node<ast::Argument>]) -> Self {
+            if list.len() > 20 {
+                Self::Indexed(list.iter().map(|arg| (&arg.name, arg)).collect())
+            } else {
+                Self::List(list)
+            }
+        }
+
+        fn by_name(&self, name: &ast::Name) -> Option<&'a Node<ast::Argument>> {
+            match self {
+                Self::Indexed(map) => map.get(name).copied(),
+                Self::List(list) => list.iter().find(|arg| arg.name == *name),
+            }
+        }
+    }
+
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
+    let self_args = ArgumentLookup::new(&field_a.field.arguments);
+    let other_args = ArgumentLookup::new(&field_b.field.arguments);
     for arg in &field_a.field.arguments {
-        let Some(other_arg) = field_b.field.argument_by_name(&arg.name) else {
+        let Some(other_arg) = other_args.by_name(&arg.name) else {
             return Err(conflicting_field_argument(Some(arg), None));
         };
 
@@ -122,7 +145,7 @@ fn same_name_and_arguments(
     }
     // Check if fieldB provides any arguments that fieldA does not provide.
     for arg in &field_b.field.arguments {
-        if field_a.field.argument_by_name(&arg.name).is_none() {
+        if self_args.by_name(&arg.name).is_none() {
             return Err(conflicting_field_argument(None, Some(arg)));
         };
     }
