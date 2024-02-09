@@ -4184,4 +4184,4 @@
                         - IDENT@7486..7492 "String"
             - WHITESPACE@7492..7493 "\n"
             - R_CURLY@7493..7494 "}"
-recursion limit: 500, high: 2
+recursion limit: 500, high: 1
