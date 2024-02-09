@@ -277,4 +277,21 @@ enum join__Graph {
             }
         }
     }
+
+    #[test]
+    fn trailing_description_at_limit() {
+        let parser = crate::Parser::new(
+            r#"
+            "All our queries"
+            type Query {
+                a: Int
+            }
+
+            "Imagine another type below!"
+        "#,
+        )
+        .token_limit(18);
+        // Must not panic
+        let _cst = parser.parse();
+    }
 }
