@@ -84,13 +84,17 @@ pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
 ///     Name *but not* **true** *or* **false** *or* **null**
 pub(crate) fn enum_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUE);
-    let name = p.peek_data().unwrap();
+    match p.peek_token() {
+        Some(token) if token.kind == TokenKind::Name => {
+            let name = token.data;
+            if matches!(name, "true" | "false" | "null") {
+                p.err("invalid Enum Value");
+            }
 
-    if matches!(name, "true" | "false" | "null") {
-        p.err("unexpected Enum Value");
+            name::name(p);
+        }
+        _ => p.err("expected Enum Value"),
     }
-
-    name::name(p);
 }
 
 /// See: https://spec.graphql.org/October2021/#ListValue
