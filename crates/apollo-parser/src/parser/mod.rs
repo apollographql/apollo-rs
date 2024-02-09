@@ -273,7 +273,7 @@ impl<'input> Parser<'input> {
     }
 
     /// Create a parser error at a given location and push it into the error vector.
-    pub(crate) fn err_at_token(&mut self, current: &Token, message: &str) {
+    pub(crate) fn err_at_token(&mut self, current: &Token<'_>, message: &str) {
         let err = if current.kind == TokenKind::Eof {
             Error::eof(message, current.index())
         } else {
