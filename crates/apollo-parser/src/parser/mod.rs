@@ -932,4 +932,11 @@ mod tests {
             }
         });
     }
+
+    #[test]
+    fn no_infinite_loop() {
+        let source = r#"{ ..."#;
+        let parser = Parser::new(source).token_limit(3);
+        let _cst = parser.parse();
+    }
 }
