@@ -466,6 +466,26 @@ impl<'input> Parser<'input> {
         }
     }
 
+    /// Call the parse function, separated by a token given in `separator`. This parses at least
+    /// one item. The first item may optionally be prefixed by an initial separator.
+    pub(crate) fn parse_separated_list(
+        &mut self,
+        separator: TokenKind,
+        separator_syntax: SyntaxKind,
+        mut run: impl FnMut(&mut Parser),
+    ) {
+        if matches!(self.peek(), Some(kind) if kind == separator) {
+            self.bump(separator_syntax);
+        }
+
+        run(self);
+
+        self.peek_while_kind(separator, |p| {
+            p.bump(separator_syntax);
+            run(p);
+        });
+    }
+
     /// Peek the next Token and return it.
     pub(crate) fn peek_token(&mut self) -> Option<&Token<'input>> {
         if self.current_token.is_none() {

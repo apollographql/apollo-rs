@@ -74,18 +74,7 @@ pub(crate) fn union_member_types(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_MEMBER_TYPES);
     p.bump(S![=]);
 
-    if let Some(T![|]) = p.peek() {
-        p.bump(S![|]);
-    }
-
-    if let Some(TokenKind::Name) = p.peek() {
-        ty::named_type(p);
-    } else {
-        p.err("expected Union Member Types");
-    }
-
-    p.peek_while_kind(T![|], |p| {
-        p.bump(S![|]);
+    p.parse_separated_list(T![|], S![|], |p| {
         if let Some(TokenKind::Name) = p.peek() {
             ty::named_type(p);
         } else {
