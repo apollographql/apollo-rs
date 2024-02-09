@@ -433,8 +433,7 @@ impl DiagnosticList {
 
     pub fn iter(
         &self,
-    ) -> impl Iterator<Item = Diagnostic<'_, DiagnosticData>> + DoubleEndedIterator + ExactSizeIterator
-    {
+    ) -> impl DoubleEndedIterator<Item = Diagnostic<'_, DiagnosticData>> + ExactSizeIterator {
         self.diagnostics_data
             .iter()
             .map(|data| data.to_diagnostic(&self.sources))
