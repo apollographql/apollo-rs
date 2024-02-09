@@ -85,6 +85,7 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
 /// *NamedType*:
 ///     Name
 pub(crate) fn named_type(p: &mut Parser) {
+    // TODO(@goto-bus-stop) can we make this error instead if no name is found?
     if let Some(TokenKind::Name) = p.peek() {
         let _g = p.start_node(SyntaxKind::NAMED_TYPE);
         name::name(p);

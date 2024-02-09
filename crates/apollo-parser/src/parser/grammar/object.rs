@@ -3,7 +3,6 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{description, directive, field, name, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
-use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#ObjectTypeDefinition
 ///
@@ -101,17 +100,12 @@ pub(crate) fn implements_interfaces(p: &mut Parser) {
         p.err("expected an Interface name");
     }
 
-    p.peek_while(|p, kind| {
-        if kind == T![&] {
-            p.bump(S![&]);
-            if let Some(TokenKind::Name) = p.peek() {
-                ty::named_type(p);
-            } else {
-                p.err("expected an Interface name");
-            }
-            ControlFlow::Continue(())
+    p.peek_while_kind(T![&], |p| {
+        p.bump(S![&]);
+        if let Some(TokenKind::Name) = p.peek() {
+            ty::named_type(p);
         } else {
-            ControlFlow::Break(())
+            p.err("expected an Interface name");
         }
     });
 }

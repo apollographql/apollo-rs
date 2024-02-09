@@ -3,7 +3,6 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{description, directive, name, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
-use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#UnionTypeDefinition
 ///
@@ -85,17 +84,12 @@ pub(crate) fn union_member_types(p: &mut Parser) {
         p.err("expected Union Member Types");
     }
 
-    p.peek_while(|p, kind| {
-        if kind == T![|] {
-            p.bump(S![|]);
-            if let Some(TokenKind::Name) = p.peek() {
-                ty::named_type(p);
-            } else {
-                p.err("expected Union Member Type");
-            }
-            ControlFlow::Continue(())
+    p.peek_while_kind(T![|], |p| {
+        p.bump(S![|]);
+        if let Some(TokenKind::Name) = p.peek() {
+            ty::named_type(p);
         } else {
-            ControlFlow::Break(())
+            p.err("expected Union Member Type");
         }
     });
 }

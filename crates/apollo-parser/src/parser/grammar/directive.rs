@@ -193,13 +193,8 @@ pub(crate) fn directive(p: &mut Parser, constness: Constness) {
 ///     Directive[?Const]*
 pub(crate) fn directives(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
-    p.peek_while(|p, kind| {
-        if kind == T![@] {
-            directive(p, constness);
-            ControlFlow::Continue(())
-        } else {
-            ControlFlow::Break(())
-        }
+    p.peek_while_kind(T![@], |p| {
+        directive(p, constness);
     });
 }
 

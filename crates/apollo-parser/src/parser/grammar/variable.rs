@@ -1,7 +1,6 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{directive, name, ty, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
-use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#VariableDefinitions
 ///
@@ -16,14 +15,7 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     } else {
         p.err("expected a Variable Definition")
     }
-    p.peek_while(|p, kind| {
-        if kind == T![$] {
-            variable_definition(p);
-            ControlFlow::Continue(())
-        } else {
-            ControlFlow::Break(())
-        }
-    });
+    p.peek_while_kind(T![$], variable_definition);
 
     p.expect(T![')'], S![')']);
 }

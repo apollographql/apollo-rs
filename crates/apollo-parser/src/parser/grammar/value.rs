@@ -128,13 +128,8 @@ pub(crate) fn object_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
-    p.peek_while(|p, kind| {
-        if kind == TokenKind::Name {
-            object_field(p, constness);
-            ControlFlow::Continue(())
-        } else {
-            ControlFlow::Break(())
-        }
+    p.peek_while_kind(TokenKind::Name, |p| {
+        object_field(p, constness);
     });
 
     p.expect(T!['}'], S!['}']);

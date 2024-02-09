@@ -1,5 +1,3 @@
-use std::ops::ControlFlow;
-
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{description, directive, operation, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
@@ -45,14 +43,9 @@ pub(crate) fn schema_definition(p: &mut Parser) {
         p.bump(S!['{']);
 
         let mut has_root_operation_types = false;
-        p.peek_while(|p, kind| {
-            if kind == TokenKind::Name {
-                has_root_operation_types = true;
-                root_operation_type_definition(p);
-                ControlFlow::Continue(())
-            } else {
-                ControlFlow::Break(())
-            }
+        p.peek_while_kind(TokenKind::Name, |p| {
+            has_root_operation_types = true;
+            root_operation_type_definition(p);
         });
         if !has_root_operation_types {
             p.err("expected Root Operation Type Definition");
@@ -82,14 +75,9 @@ pub(crate) fn schema_extension(p: &mut Parser) {
     if let Some(T!['{']) = p.peek() {
         p.bump(S!['{']);
 
-        p.peek_while(|p, kind| {
-            if kind == TokenKind::Name {
-                meets_requirements = true;
-                root_operation_type_definition(p);
-                ControlFlow::Continue(())
-            } else {
-                ControlFlow::Break(())
-            }
+        p.peek_while_kind(TokenKind::Name, |p| {
+            meets_requirements = true;
+            root_operation_type_definition(p);
         });
 
         p.expect(T!['}'], S!['}']);

@@ -429,6 +429,8 @@ impl<'input> Parser<'input> {
         self.peek_token().map(|token| token.kind())
     }
 
+    /// Repeatedly peek at the next token and call the parse function. The parse function must
+    /// advance parsing or break out of the loop.
     pub(crate) fn peek_while(
         &mut self,
         mut run: impl FnMut(&mut Parser, TokenKind) -> ControlFlow<()>,
@@ -444,6 +446,23 @@ impl<'input> Parser<'input> {
                     );
                 }
             }
+        }
+    }
+
+    /// Call the parse function while the next token is of the expected kind. The parse function
+    /// must consume the peeked token.
+    pub(crate) fn peek_while_kind(&mut self, expect: TokenKind, mut run: impl FnMut(&mut Parser)) {
+        while let Some(kind) = self.peek() {
+            if kind != expect {
+                break;
+            }
+
+            let before = self.current_token.clone();
+            run(self);
+            debug_assert!(
+                before != self.current_token,
+                "peek_while_kind() iteration must advance parsing"
+            );
         }
     }
 
