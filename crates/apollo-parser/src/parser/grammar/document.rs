@@ -22,8 +22,11 @@ pub(crate) fn document(p: &mut Parser) {
 
         match kind {
             TokenKind::StringValue => {
-                let def = p.peek_data_n(2).unwrap();
-                select_definition(def, p);
+                if let Some(def) = p.peek_data_n(2) {
+                    select_definition(def, p);
+                } else {
+                    p.err_and_pop("expected a definition after this StringValue");
+                }
             }
             TokenKind::Name => {
                 let def = p.peek_data().unwrap();
