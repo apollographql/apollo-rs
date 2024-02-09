@@ -2,6 +2,7 @@ use crate::{
     parser::grammar::{name, variable},
     Parser, SyntaxKind, TokenKind, S, T,
 };
+use std::ops::ControlFlow;
 
 #[derive(Clone, Copy)]
 pub(crate) enum Constness {
@@ -101,21 +102,21 @@ pub(crate) fn list_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
 
-    while let Some(node) = p.peek() {
+    p.peek_while(|p, node| {
         if node == T![']'] {
             p.bump(S![']']);
-            break;
+            ControlFlow::Break(())
         } else if node == TokenKind::Eof {
-            break;
+            ControlFlow::Break(())
+        } else if p.recursion_limit.check_and_increment() {
+            p.limit_err("parser recursion limit reached");
+            ControlFlow::Break(())
         } else {
-            if p.recursion_limit.check_and_increment() {
-                p.limit_err("parser recursion limit reached");
-                return;
-            }
             value(p, constness, true);
-            p.recursion_limit.decrement()
+            p.recursion_limit.decrement();
+            ControlFlow::Continue(())
         }
-    }
+    });
 }
 
 /// See: https://spec.graphql.org/October2021/#ObjectValue
@@ -127,9 +128,14 @@ pub(crate) fn object_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
-    while let Some(TokenKind::Name) = p.peek() {
-        object_field(p, constness);
-    }
+    p.peek_while(|p, kind| {
+        if kind == TokenKind::Name {
+            object_field(p, constness);
+            ControlFlow::Continue(())
+        } else {
+            ControlFlow::Break(())
+        }
+    });
 
     p.expect(T!['}'], S!['}']);
 }

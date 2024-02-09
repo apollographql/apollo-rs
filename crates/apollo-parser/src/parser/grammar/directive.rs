@@ -1,6 +1,7 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{argument, description, input, name};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#DirectiveDefinition
 ///
@@ -31,9 +32,13 @@ pub(crate) fn directive_definition(p: &mut Parser) {
         } else {
             p.err("expected an Argument Definition");
         }
-        while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-            input::input_value_definition(p);
-        }
+        p.peek_while(|p, kind| match kind {
+            TokenKind::Name | TokenKind::StringValue => {
+                input::input_value_definition(p);
+                ControlFlow::Continue(())
+            }
+            _ => ControlFlow::Break(()),
+        });
         p.expect(T![')'], S![')']);
     }
 
@@ -188,9 +193,14 @@ pub(crate) fn directive(p: &mut Parser, constness: Constness) {
 ///     Directive[?Const]*
 pub(crate) fn directives(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
-    while let Some(T![@]) = p.peek() {
-        directive(p, constness);
-    }
+    p.peek_while(|p, kind| {
+        if kind == T![@] {
+            directive(p, constness);
+            ControlFlow::Continue(())
+        } else {
+            ControlFlow::Break(())
+        }
+    });
 }
 
 #[cfg(test)]

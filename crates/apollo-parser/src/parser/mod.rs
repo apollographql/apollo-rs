@@ -5,13 +5,14 @@ mod token_text;
 
 pub(crate) mod grammar;
 
-use std::{cell::RefCell, rc::Rc};
-
 use crate::{
     cst::{Document, SelectionSet, Type},
     lexer::Lexer,
     Error, LimitTracker, Token, TokenKind,
 };
+use std::cell::RefCell;
+use std::ops::ControlFlow;
+use std::rc::Rc;
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -426,6 +427,24 @@ impl<'input> Parser<'input> {
     /// Peek the next Token and return its TokenKind.
     pub(crate) fn peek(&mut self) -> Option<TokenKind> {
         self.peek_token().map(|token| token.kind())
+    }
+
+    pub(crate) fn peek_while(
+        &mut self,
+        mut run: impl FnMut(&mut Parser, TokenKind) -> ControlFlow<()>,
+    ) {
+        while let Some(kind) = self.peek() {
+            let before = self.current_token.clone();
+            match run(self, kind) {
+                ControlFlow::Break(()) => break,
+                ControlFlow::Continue(()) => {
+                    debug_assert!(
+                        before != self.current_token,
+                        "peek_while() iteration must advance parsing"
+                    );
+                }
+            }
+        }
     }
 
     /// Peek the next Token and return it.

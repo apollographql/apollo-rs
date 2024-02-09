@@ -5,6 +5,7 @@ use crate::{
     },
     Parser, SyntaxKind, TokenKind,
 };
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#Document
 ///
@@ -13,13 +14,13 @@ use crate::{
 pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 
-    while let Some(node) = p.peek() {
+    p.peek_while(|p, kind| {
         assert_eq!(
             p.recursion_limit.current, 0,
             "unbalanced limit increment / decrement"
         );
 
-        match node {
+        match kind {
             TokenKind::StringValue => {
                 let def = p.peek_data_n(2).unwrap();
                 select_definition(def, p);
@@ -32,10 +33,12 @@ pub(crate) fn document(p: &mut Parser) {
                 let def = p.peek_data().unwrap();
                 select_definition(def, p);
             }
-            TokenKind::Eof => break,
+            TokenKind::Eof => return ControlFlow::Break(()),
             _ => p.err_and_pop("expected a StringValue, Name or OperationDefinition"),
         }
-    }
+
+        ControlFlow::Continue(())
+    });
 
     p.push_ignored();
 

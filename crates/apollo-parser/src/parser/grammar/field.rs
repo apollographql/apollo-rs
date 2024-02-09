@@ -3,6 +3,7 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{argument, description, directive, name, selection, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#Field
 ///
@@ -40,10 +41,13 @@ pub(crate) fn field(p: &mut Parser) {
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
-    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        // Guaranteed to eat at least one token if the next token is a Name or StringValue
-        field_definition(p);
-    }
+    p.peek_while(|p, kind| match kind {
+        TokenKind::Name | TokenKind::StringValue => {
+            field_definition(p);
+            ControlFlow::Continue(())
+        }
+        _ => ControlFlow::Break(()),
+    });
     p.expect(T!['}'], S!['}']);
 }
 
