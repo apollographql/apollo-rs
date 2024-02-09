@@ -28,13 +28,8 @@ pub(crate) fn arguments(p: &mut Parser, constness: Constness) {
     } else {
         p.err("expected an Argument");
     }
-    p.peek_while(|p, kind| {
-        if let TokenKind::Name = kind {
-            argument(p, constness);
-            ControlFlow::Continue(())
-        } else {
-            ControlFlow::Break(())
-        }
+    p.peek_while_kind(TokenKind::Name, |p| {
+        argument(p, constness);
     });
     p.expect(T![')'], S![')']);
 }

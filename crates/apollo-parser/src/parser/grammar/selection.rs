@@ -73,7 +73,6 @@ pub(crate) fn selection(p: &mut Parser) {
                     has_selection = true;
                     ControlFlow::Continue(())
                 }
-                // If there is no token,
                 None => {
                     p.err_and_pop("expected an Inline Fragment or a Fragment Spread");
                     ControlFlow::Break(())
