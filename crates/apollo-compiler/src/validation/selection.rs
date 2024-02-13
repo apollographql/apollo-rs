@@ -5,7 +5,7 @@ use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
 use crate::validation::{FileId, ValidationDatabase};
 use crate::{ast, executable, schema, Node};
-use indexmap::map::Entry;
+use apollo_parser::LimitTracker;
 use indexmap::IndexMap;
 use std::cell::OnceCell;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -379,7 +379,7 @@ impl<'doc> MergedFieldSet<'doc> {
 
     fn group_by_output_name(&self) -> &IndexMap<schema::Name, Vec<FieldSelection<'doc>>> {
         self.grouped_by_output_names.get_or_init(|| {
-            let mut map = IndexMap::new();
+            let mut map = IndexMap::<_, Vec<_>>::new();
             for selection in &self.selections {
                 map.entry(selection.field.response_key().clone())
                     .or_default()
@@ -444,6 +444,10 @@ impl FieldSelectionsId {
     }
 }
 
+// The field depth in the field merging validation matches the nesting level in the resulting
+// data. It makes sense to use the same limit as serde_json.
+const FIELD_DEPTH_LIMIT: usize = 128;
+
 /// Implements the `FieldsInSetCanMerge()` validation.
 /// https://spec.graphql.org/draft/#sec-Field-Selection-Merging
 ///
@@ -460,6 +464,9 @@ pub(crate) struct FieldsInSetCanMerge<'s, 'doc> {
     /// The value is an Rc because it needs to have an independent lifetime from `self`,
     /// so the cache can be updated while a field set is borrowed.
     cache: HashMap<FieldSelectionsId, Rc<MergedFieldSet<'doc>>>,
+    // The recursion limit is used for two separate recursions, but they are not interleaved,
+    // so the effective limit does apply to field nesting levels in both cases.
+    recursion_limit: LimitTracker,
 }
 
 impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
@@ -471,6 +478,7 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
             schema,
             document,
             cache: Default::default(),
+            recursion_limit: LimitTracker::new(FIELD_DEPTH_LIMIT),
         }
     }
 
@@ -498,8 +506,12 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
         selections: Vec<FieldSelection<'doc>>,
         diagnostics: &mut DiagnosticList,
     ) {
+        if self.recursion_limit.check_and_increment() {
+            return;
+        }
         let field_set = self.lookup(selections);
         field_set.same_for_common_parents_by_name(self, diagnostics);
+        self.recursion_limit.decrement();
     }
 
     fn same_response_shape_by_name(
@@ -507,8 +519,12 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
         selections: Vec<FieldSelection<'doc>>,
         diagnostics: &mut DiagnosticList,
     ) {
+        if self.recursion_limit.check_and_increment() {
+            return;
+        }
         let field_set = self.lookup(selections);
         field_set.same_response_shape_by_name(self, diagnostics);
+        self.recursion_limit.decrement();
     }
 }
 
