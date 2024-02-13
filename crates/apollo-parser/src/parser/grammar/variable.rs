@@ -15,9 +15,7 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     } else {
         p.err("expected a Variable Definition")
     }
-    while let Some(T![$]) = p.peek() {
-        variable_definition(p);
-    }
+    p.peek_while_kind(T![$], variable_definition);
 
     p.expect(T![')'], S![')']);
 }

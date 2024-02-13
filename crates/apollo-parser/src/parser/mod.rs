@@ -5,13 +5,14 @@ mod token_text;
 
 pub(crate) mod grammar;
 
-use std::{cell::RefCell, rc::Rc};
-
 use crate::{
     cst::{Document, SelectionSet, Type},
     lexer::Lexer,
     Error, LimitTracker, Token, TokenKind,
 };
+use std::cell::RefCell;
+use std::ops::ControlFlow;
+use std::rc::Rc;
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -272,7 +273,7 @@ impl<'input> Parser<'input> {
     }
 
     /// Create a parser error at a given location and push it into the error vector.
-    pub(crate) fn err_at_token(&mut self, current: &Token, message: &str) {
+    pub(crate) fn err_at_token(&mut self, current: &Token<'_>, message: &str) {
         let err = if current.kind == TokenKind::Eof {
             Error::eof(message, current.index())
         } else {
@@ -426,6 +427,63 @@ impl<'input> Parser<'input> {
     /// Peek the next Token and return its TokenKind.
     pub(crate) fn peek(&mut self) -> Option<TokenKind> {
         self.peek_token().map(|token| token.kind())
+    }
+
+    /// Repeatedly peek at the next token and call the parse function. The parse function must
+    /// advance parsing or break out of the loop.
+    pub(crate) fn peek_while(
+        &mut self,
+        mut run: impl FnMut(&mut Parser, TokenKind) -> ControlFlow<()>,
+    ) {
+        while let Some(kind) = self.peek() {
+            let before = self.current_token.clone();
+            match run(self, kind) {
+                ControlFlow::Break(()) => break,
+                ControlFlow::Continue(()) => {
+                    debug_assert!(
+                        before != self.current_token,
+                        "peek_while() iteration must advance parsing"
+                    );
+                }
+            }
+        }
+    }
+
+    /// Call the parse function while the next token is of the expected kind. The parse function
+    /// must consume the peeked token.
+    pub(crate) fn peek_while_kind(&mut self, expect: TokenKind, mut run: impl FnMut(&mut Parser)) {
+        while let Some(kind) = self.peek() {
+            if kind != expect {
+                break;
+            }
+
+            let before = self.current_token.clone();
+            run(self);
+            debug_assert!(
+                before != self.current_token,
+                "peek_while_kind() iteration must advance parsing"
+            );
+        }
+    }
+
+    /// Call the parse function, separated by a token given in `separator`. This parses at least
+    /// one item. The first item may optionally be prefixed by an initial separator.
+    pub(crate) fn parse_separated_list(
+        &mut self,
+        separator: TokenKind,
+        separator_syntax: SyntaxKind,
+        mut run: impl FnMut(&mut Parser),
+    ) {
+        if matches!(self.peek(), Some(kind) if kind == separator) {
+            self.bump(separator_syntax);
+        }
+
+        run(self);
+
+        self.peek_while_kind(separator, |p| {
+            p.bump(separator_syntax);
+            run(p);
+        });
     }
 
     /// Peek the next Token and return it.
@@ -873,5 +931,12 @@ mod tests {
                 panic!("no field a in field set selection")
             }
         });
+    }
+
+    #[test]
+    fn no_infinite_loop() {
+        let source = r#"{ ..."#;
+        let parser = Parser::new(source).token_limit(3);
+        let _cst = parser.parse();
     }
 }

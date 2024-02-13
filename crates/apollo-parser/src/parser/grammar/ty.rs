@@ -21,7 +21,8 @@ use crate::{parser::grammar::name, Parser, SyntaxKind, Token, TokenKind, S, T};
 pub(crate) fn ty(p: &mut Parser) {
     match parse(p) {
         Ok(_) => (),
-        Err(token) => p.err_at_token(&token, "expected a type"),
+        Err(Some(token)) => p.err_at_token(&token, "expected a type"),
+        Err(None) => p.err("expected a type"),
     }
 }
 
@@ -30,7 +31,7 @@ pub(crate) fn ty(p: &mut Parser) {
 /// When errors occur deeper inside nested types like lists, this function
 /// pushes errors *inside* the list to the parser, and returns an Ok() with
 /// an incomplete type.
-fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
+fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Option<Token<'a>>> {
     let checkpoint = p.checkpoint_node();
     match p.peek() {
         Some(T!['[']) => {
@@ -44,7 +45,7 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
             let result = parse(p);
             p.recursion_limit.decrement();
 
-            if let Err(token) = result {
+            if let Err(Some(token)) = result {
                 // TODO(@goto-bus-stop) ideally the span here would point to the entire list
                 // type, so both opening and closing brackets `[]`.
                 p.err_at_token(&token, "expected item type");
@@ -59,7 +60,8 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
             name::validate_name(token.data(), p);
             p.push_token(SyntaxKind::IDENT, token);
         }
-        _ => return Err(p.pop()),
+        Some(_) => return Err(Some(p.pop())),
+        None => return Err(None),
     };
 
     // There may be whitespace inside a list node or between the type and the non-null `!`.
@@ -85,6 +87,7 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
 /// *NamedType*:
 ///     Name
 pub(crate) fn named_type(p: &mut Parser) {
+    // TODO(@goto-bus-stop) can we make this error instead if no name is found?
     if let Some(TokenKind::Name) = p.peek() {
         let _g = p.start_node(SyntaxKind::NAMED_TYPE);
         name::name(p);

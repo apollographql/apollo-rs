@@ -3,6 +3,7 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{description, directive, name, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#EnumTypeDefinition
 ///
@@ -78,9 +79,13 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
         _ => p.err("expected Enum Value Definition"),
     }
 
-    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        enum_value_definition(p);
-    }
+    p.peek_while(|p, kind| match kind {
+        TokenKind::Name | TokenKind::StringValue => {
+            enum_value_definition(p);
+            ControlFlow::Continue(())
+        }
+        _ => ControlFlow::Break(()),
+    });
 
     p.expect(T!['}'], S!['}']);
 }

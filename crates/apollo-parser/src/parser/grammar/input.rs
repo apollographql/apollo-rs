@@ -1,6 +1,7 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{description, directive, name, ty, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#InputObjectTypeDefinition
 ///
@@ -76,9 +77,14 @@ pub(crate) fn input_fields_definition(p: &mut Parser) {
     } else {
         p.err("expected an Input Value Definition");
     }
-    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        input_value_definition(p);
-    }
+    p.peek_while(|p, kind| {
+        if matches!(kind, TokenKind::Name | TokenKind::StringValue) {
+            input_value_definition(p);
+            ControlFlow::Continue(())
+        } else {
+            ControlFlow::Break(())
+        }
+    });
 
     p.expect(T!['}'], S!['}']);
 }

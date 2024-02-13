@@ -1,3 +1,5 @@
+use std::ops::ControlFlow;
+
 use crate::{
     parser::grammar::{field, fragment},
     Parser, SyntaxKind, TokenKind, S, T,
@@ -52,42 +54,42 @@ pub(crate) fn field_set(p: &mut Parser) {
 pub(crate) fn selection(p: &mut Parser) {
     let mut has_selection = false;
 
-    while let Some(node) = p.peek() {
-        match node {
-            T![...] => {
-                let next_token = p.peek_token_n(2);
-                match next_token {
-                    Some(next_token) => {
-                        if next_token.kind() == TokenKind::Name && next_token.data() != "on" {
-                            fragment::fragment_spread(p);
-                        } else if matches!(
-                            next_token.kind(),
-                            TokenKind::At | TokenKind::Name | TokenKind::LCurly
-                        ) {
-                            fragment::inline_fragment(p);
-                        } else {
-                            p.err("expected an Inline Fragment or a Fragment Spread");
-                            p.bump(S![...]);
-                        }
-                        has_selection = true;
+    p.peek_while(|p, kind| match kind {
+        T![...] => {
+            let next_token = p.peek_token_n(2);
+            match next_token {
+                Some(next_token) => {
+                    if next_token.kind() == TokenKind::Name && next_token.data() != "on" {
+                        fragment::fragment_spread(p);
+                    } else if matches!(
+                        next_token.kind(),
+                        TokenKind::At | TokenKind::Name | TokenKind::LCurly
+                    ) {
+                        fragment::inline_fragment(p);
+                    } else {
+                        p.err("expected an Inline Fragment or a Fragment Spread");
+                        p.bump(S![...]);
                     }
-                    None => p.err("expected an Inline Fragment or a Fragment Spread"),
+                    has_selection = true;
+                    ControlFlow::Continue(())
                 }
-            }
-            T!['{'] => {
-                break;
-            }
-            TokenKind::Name => {
-                field::field(p);
-                has_selection = true;
-            }
-            _ => {
-                if !has_selection {
-                    p.err("expected at least one Selection in Selection Set");
+                None => {
+                    p.err_and_pop("expected an Inline Fragment or a Fragment Spread");
+                    ControlFlow::Break(())
                 }
-                break;
             }
         }
+        T!['{'] => ControlFlow::Break(()),
+        TokenKind::Name => {
+            field::field(p);
+            has_selection = true;
+            ControlFlow::Continue(())
+        }
+        _ => ControlFlow::Break(()),
+    });
+
+    if !has_selection {
+        p.err("expected at least one Selection in Selection Set");
     }
 }
 
