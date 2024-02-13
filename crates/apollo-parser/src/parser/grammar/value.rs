@@ -3,21 +3,38 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
+#[derive(Clone, Copy)]
+pub(crate) enum Constness {
+    Const,
+    NotConst,
+}
+
 /// See: https://spec.graphql.org/October2021/#Value
 ///
-/// *Value*
-///     Variable
+/// *Value[Const]*
+///     [if not Const] Variable
 ///     IntValue
 ///     FloatValue
 ///     StringValue
 ///     BooleanValue
 ///     NullValue
 ///     EnumValue
-///     ListValue
-///     ObjectValue
-pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
+///     ListValue[?Const]
+///     ObjectValue[?Const]
+pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
     match p.peek() {
-        Some(T![$]) => variable::variable(p),
+        Some(T![$]) => {
+            if let Constness::Const = constness {
+                let error_message = "unexpected variable value in a Const context";
+                if pop_on_error {
+                    p.err_and_pop(error_message);
+                } else {
+                    p.err(error_message);
+                }
+            }
+            // Consume the variable name even if const, for better error recovery
+            variable::variable(p);
+        }
         Some(TokenKind::Int) => {
             let _g = p.start_node(SyntaxKind::INT_VALUE);
             p.bump(SyntaxKind::INT);
@@ -32,7 +49,7 @@ pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
         }
         Some(TokenKind::Name) => {
             let node = p.peek_data().unwrap();
-            match node.as_str() {
+            match node {
                 "true" => {
                     let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
                     p.bump(SyntaxKind::true_KW);
@@ -48,8 +65,8 @@ pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
                 _ => enum_value(p),
             }
         }
-        Some(T!['[']) => list_value(p),
-        Some(T!['{']) => object_value(p),
+        Some(T!['[']) => list_value(p, constness),
+        Some(T!['{']) => object_value(p, constness),
         _ => {
             let error_message = "expected a valid Value";
             if pop_on_error {
@@ -68,7 +85,7 @@ pub(crate) fn enum_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUE);
     let name = p.peek_data().unwrap();
 
-    if matches!(name.as_str(), "true" | "false" | "null") {
+    if matches!(name, "true" | "false" | "null") {
         p.err("unexpected Enum Value");
     }
 
@@ -77,10 +94,10 @@ pub(crate) fn enum_value(p: &mut Parser) {
 
 /// See: https://spec.graphql.org/October2021/#ListValue
 ///
-/// *ListValue*:
+/// *ListValue[Const]*:
 ///     **[** **]**
-///     **[** Value* **]**
-pub(crate) fn list_value(p: &mut Parser) {
+///     **[** Value[?Const]* **]**
+pub(crate) fn list_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
 
@@ -91,69 +108,64 @@ pub(crate) fn list_value(p: &mut Parser) {
         } else if node == TokenKind::Eof {
             break;
         } else {
-            value(p, true);
+            if p.recursion_limit.check_and_increment() {
+                p.limit_err("parser recursion limit reached");
+                return;
+            }
+            value(p, constness, true);
+            p.recursion_limit.decrement()
         }
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#ObjectValue
 ///
-/// *ObjectValue*:
+/// *ObjectValue[Const]*:
 ///     **{** **}**
-///     **{** ObjectField* **}**
-pub(crate) fn object_value(p: &mut Parser) {
+///     **{** ObjectField[?Const]* **}**
+pub(crate) fn object_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
-    match p.peek() {
-        Some(TokenKind::Name) => {
-            object_field(p);
-            if let Some(T!['}']) = p.peek() {
-                p.bump(S!['}']);
-            } else {
-                p.err("expected }");
-            }
-        }
-        Some(T!['}']) => {
-            p.bump(S!['}']);
-        }
-        _ => p.err("expected Object Value"),
+    while let Some(TokenKind::Name) = p.peek() {
+        object_field(p, constness);
     }
+
+    p.expect(T!['}'], S!['}']);
 }
 
 /// See: https://spec.graphql.org/October2021/#ObjectField
 ///
-/// *ObjectField*:
-///     Name **:** Value
-pub(crate) fn object_field(p: &mut Parser) {
-    if let Some(TokenKind::Name) = p.peek() {
-        let guard = p.start_node(SyntaxKind::OBJECT_FIELD);
-        name::name(p);
+/// *ObjectField[Const]*:
+///     Name **:** Value[?Const]
+pub(crate) fn object_field(p: &mut Parser, constness: Constness) {
+    let _guard = p.start_node(SyntaxKind::OBJECT_FIELD);
+    name::name(p);
 
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            value(p, true);
-            if p.peek().is_some() {
-                guard.finish_node();
-                object_field(p)
-            }
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        if p.recursion_limit.check_and_increment() {
+            p.limit_err("parser recursion limit reached");
+            return;
         }
+        value(p, constness, true);
+        p.recursion_limit.decrement()
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#DefaultValue
 ///
 /// *DefaultValue*:
-///     **=** Value
+///     **=** Value[Const]
 pub(crate) fn default_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DEFAULT_VALUE);
     p.bump(S![=]);
-    value(p, false);
+    value(p, Constness::Const, false);
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, ast::AstNode, Parser};
+    use crate::{cst, cst::CstNode, Parser};
 
     #[test]
     fn it_returns_string_for_string_value_into() {
@@ -162,16 +174,16 @@ enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::StringValue(val) =
+                        if let cst::Value::StringValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let source = val.source_string();
@@ -201,9 +213,9 @@ including \q nonexistent \W ones
 scalar BlockStringRaw
 "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
         let mut expected = vec![
             "String with\tescapes\r\n",
@@ -217,9 +229,9 @@ including \q nonexistent \W ones
         ]
         .into_iter();
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            let ast::Definition::ScalarTypeDefinition(scalar) = definition else {
+            let cst::Definition::ScalarTypeDefinition(scalar) = definition else {
                 continue;
             };
             let description = scalar.description().unwrap().string_value().unwrap();
@@ -235,16 +247,16 @@ enum Test @dir__one(int_value: -10) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::IntValue(val) =
+                        if let cst::Value::IntValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let i: i32 = val.try_into().unwrap();
@@ -266,16 +278,16 @@ enum Test @dir__one(float_value: -1.123E4) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::FloatValue(val) =
+                        if let cst::Value::FloatValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let f: f64 = val.try_into().unwrap();
@@ -294,16 +306,16 @@ enum Test @dir__one(bool_value: false) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::BooleanValue(val) =
+                        if let cst::Value::BooleanValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let b: bool = val.try_into().unwrap();
@@ -327,13 +339,13 @@ query GraphQuery($graph_id: ID!, $variant: String) {
 }
         ";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = def {
+            if let cst::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
                 let variable_defs = op_def.variable_definitions();
@@ -360,9 +372,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
     }
 
     #[test]
@@ -375,9 +387,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
     }
 
     #[test]
@@ -390,9 +402,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
     }
 
     #[test]
@@ -405,9 +417,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(!ast.errors.is_empty());
+        assert!(!cst.errors.is_empty());
     }
 
     #[test]
@@ -426,7 +438,7 @@ type Vehicle @key(fields: "id") {
 "#;
 
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
     }
 }

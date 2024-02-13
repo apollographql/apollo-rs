@@ -2,21 +2,21 @@
 /// query.
 use std::{fs, path::Path};
 
-use apollo_parser::{ast, Parser};
+use apollo_parser::{cst, Parser};
 
 fn are_variables_unused() {
     // Example mutation with variables.
     let file = Path::new("crates/apollo-parser/examples/graph_check_mutation.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
     let parser = Parser::new(&src);
-    let ast = parser.parse();
+    let cst = parser.parse();
 
-    assert_eq!(0, ast.errors().len());
+    assert_eq!(0, cst.errors().len());
 
-    let doc = ast.document();
+    let doc = cst.document();
 
     for def in doc.definitions() {
-        if let ast::Definition::OperationDefinition(op_def) = def {
+        if let cst::Definition::OperationDefinition(op_def) = def {
             assert_eq!(op_def.name().unwrap().text(), "GraphCheckMutation");
 
             let variable_defs = op_def.variable_definitions();
@@ -40,17 +40,17 @@ fn are_variables_unused() {
 
 fn get_variables_from_selection(
     used_vars: &mut Vec<String>,
-    selection_set: ast::SelectionSet,
+    selection_set: cst::SelectionSet,
 ) -> &Vec<String> {
     for selection in selection_set.selections() {
         match selection {
-            ast::Selection::Field(field) => {
+            cst::Selection::Field(field) => {
                 let arguments = field.arguments();
                 let mut vars: Vec<String> = arguments
                     .iter()
                     .flat_map(|a| a.arguments())
                     .filter_map(|v| {
-                        if let ast::Value::Variable(var) = v.value()? {
+                        if let cst::Value::Variable(var) = v.value()? {
                             return Some(var.text().to_string());
                         }
                         None

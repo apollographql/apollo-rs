@@ -1,224 +1,55 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 28,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 28,
-                    length: 13,
-                },
-                text: "field `url1` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 44,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 44,
-                    length: 13,
-                },
-                text: "field `url2` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 60,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 60,
-                    length: 13,
-                },
-                text: "field `url3` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 76,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 76,
-                    length: 13,
-                },
-                text: "field `url4` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 92,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 92,
-                    length: 13,
-                },
-                text: "field `url5` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 108,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 108,
-                    length: 13,
-                },
-                text: "field `url6` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-]
+Error: field selection of scalar type `URL` must not have subselections
+   ╭─[0066_subselection_of_scalar.graphql:2:3]
+   │
+ 2 │   url1 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfScalar → url1`
+───╯
+Error: field selection of scalar type `URL` must not have subselections
+   ╭─[0066_subselection_of_scalar.graphql:3:3]
+   │
+ 3 │   url2 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfScalar → url2`
+───╯
+Error: field selection of scalar type `URL` must not have subselections
+   ╭─[0066_subselection_of_scalar.graphql:4:3]
+   │
+ 4 │   url3 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfScalar → url3`
+───╯
+Error: field selection of scalar type `URL` must not have subselections
+   ╭─[0066_subselection_of_scalar.graphql:5:3]
+   │
+ 5 │   url4 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfScalar → url4`
+───╯
+Error: field selection of scalar type `URL` must not have subselections
+   ╭─[0066_subselection_of_scalar.graphql:6:3]
+   │
+ 6 │   url5 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfScalar → url5`
+───╯
+Error: field selection of scalar type `URL` must not have subselections
+   ╭─[0066_subselection_of_scalar.graphql:7:3]
+   │
+ 7 │   url6 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfScalar → url6`
+───╯
+

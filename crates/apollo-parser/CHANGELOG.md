@@ -17,7 +17,173 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) - 2023-18-28
+# [0.7.5](https://crates.io/crates/apollo-parser/0.7.5) - 2023-12-18
+
+## Fixes
+- **fix parsing `\\"""` in block string - [goto-bus-stop], [pull/774]**
+  Previously this was parsed as `\` followed by the end of the string,
+  now it's correctly parsed as `\` followed by an escaped `"""`.
+- **emit syntax errors for variables in constant values - [SimonSapin], [pull/777]**
+  default values and type system directive arguments are considered constants
+  and may not use `$foo` variable values.
+- **emit syntax errors for type condition without a type name [rishabh3112], [pull/781]**
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[rishabh3112]: https://github.com/rishabh3112
+[pull/774]: https://github.com/apollographql/apollo-rs/pull/774
+[pull/777]: https://github.com/apollographql/apollo-rs/pull/777
+[pull/781]: https://github.com/apollographql/apollo-rs/pull/781
+
+# [0.7.4](https://crates.io/crates/apollo-parser/0.7.4) - 2023-11-17
+
+## Features
+- **`parse_type` parses a selection set with optional outer brackets - [lrlna], [pull/718] fixing [issue/715]**
+  This returns a `SyntaxTree<Type>` which instead of `.document() -> cst::Document`
+  has `.type() -> cst::Type`.
+  This is intended to parse the string value of a [`@field(type:)` argument][fieldtype]
+  used in some Apollo Federation directives.
+  ```rust
+  let source = r#"[[NestedList!]]!"#;
+
+  let parser = Parser::new(source);
+  let cst: SyntaxTree<cst::Type> = parser.parse_type();
+  let errors = cst.errors().collect::<Vec<_>>();
+  assert_eq!(errors.len(), 0);
+  ```
+
+[lrlna]: https://github.com/lrlna
+[pull/718]: https://github.com/apollographql/apollo-rs/pull/718
+[issue/715]: https://github.com/apollographql/apollo-rs/issues/715
+[fieldtype]: https://specs.apollo.dev/join/v0.3/#@field
+
+## Fixes
+
+- **Input object values can be empty - [goto-bus-stop], [pull/745] fixing [issue/744]**
+  `apollo-parser` version 0.7.3 introduced a regression where empty input objects failed to parse.
+  This is now fixed.
+
+  ```graphql
+  { field(argument: {}) }
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/745]: https://github.com/apollographql/apollo-rs/pull/745
+[issue/744]: https://github.com/apollographql/apollo-rs/issues/744
+
+# [0.7.3](https://crates.io/crates/apollo-parser/0.7.3) - 2023-11-07
+
+## Fixes
+
+- **Less recursion in parser implementation - [goto-bus-stop], [pull/721] fixing [issue/666]**
+  The parser previously used recursive functions while parsing some repetitive nodes, like members of an enum:
+  ```graphql
+  enum Alphabet { A B C D E F G etc }
+  ```
+  Even though this is a flat list, each member would use a recursive call. Having many members, or fields in a type
+  definition, or arguments in a directive, would all contribute to the recursion limit.
+
+  Those cases are now using iteration instead and no longer contribute to the recursion limit. The default recursion limit
+  is unchanged at 500, but you could reduce it depending on your needs.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/666]: https://github.com/apollographql/apollo-rs/issues/666
+
+- **Fix overly permissive parsing of `implements` lists and `union` member types - [goto-bus-stop], [pull/721] fixing [issue/659]**
+  Previously these definitions were all accepted, despite missing or excessive `&` and `|` separators:
+  ```graphql
+  type Ty implements A B
+  type Ty implements A && B
+  type Ty implements A & B &
+
+  union Ty = A B
+  union Ty = A || B
+  union Ty = A | B |
+  ```
+  Now they report a syntax error.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/721]: https://github.com/apollographql/apollo-rs/pull/721
+[issue/659]: https://github.com/apollographql/apollo-rs/issues/659
+
+# [0.7.2](https://crates.io/crates/apollo-parser/0.7.2) - 2023-11-03
+
+## Fixes
+
+- **Fix `SyntaxTree` being accidentally `!Send` and `!Sync` - [SimonSapin], [pull/704] fixing [issue/702]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/704]: https://github.com/apollographql/apollo-rs/pull/704
+[issue/702]: https://github.com/apollographql/apollo-rs/issues/702
+
+# [0.7.1](https://crates.io/crates/apollo-parser/0.7.1) - 2023-10-10
+
+## Features
+- **`parse_field_set` parses a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
+  This returns a `SyntaxTree<SelectionSet>` which instead of `.document() -> cst::Document`
+  has `.field_set() -> cst::SelectionSet`.
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
+  used in some Apollo Federation directives.
+  ```rust
+  let source = r#"a { a }"#;
+
+  let parser = Parser::new(source);
+  let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+  let errors = cst.errors().collect::<Vec<_>>();
+  assert_eq!(errors.len(), 0);
+  ```
+
+[lrlna]: https://github.com/lrlna
+[pull/685]: https://github.com/apollographql/apollo-rs/pull/685
+[issue/681]: https://github.com/apollographql/apollo-rs/issues/681
+[fieldset]: https://www.apollographql.com/docs/federation/subgraph-spec/#scalar-fieldset
+
+
+# [0.7.0](https://crates.io/crates/apollo-parser/0.7.0) - 2023-10-05
+
+## BREAKING
+
+- **rename `ast` to `cst` - [SimonSapin], [pull/???]**
+  The Rowan-based typed syntax tree emitted by the parser used to be called
+  Abstract Syntax Tree (AST) but is in fact not very abstract: it preserves
+  text input losslessly, and all tree leaves are string-based tokens.
+  This renames it to Concrete Syntax Tree (CST) and renames various APIs accordingly.
+  This leaves the name available for a new AST in apollo-compiler 1.0.
+
+# [0.6.3](https://crates.io/crates/apollo-parser/0.6.3) - 2023-10-06
+
+## Fixes
+- **apply recursion limit where needed, reduce its default from 4096 to 500 - [SimonSapin], [pull/662]**
+  The limit was only tracked for nested selection sets, but the parser turns out
+  to use recursion in other cases too. [Issue 666] tracks reducing them.
+  Stack overflow was observed with little more than 2000
+  nesting levels or repetitions in the new test.
+  Defaulting to a quarter of that leaves a comfortable margin.
+- **fix various lexer bugs - [SimonSapin], [pull/646], [pull/652]**
+  The lexer was too permissive in emitting tokens instead of errors
+  in various cases around numbers, strings, and EOF.
+- **fix panic on surrogate code points in unicode escape sequences - [SimonSapin], [issue/608], [pull/658]**
+
+[issue/608]: https://github.com/apollographql/apollo-rs/issues/608
+[pull/646]: https://github.com/apollographql/apollo-rs/pull/646
+[pull/652]: https://github.com/apollographql/apollo-rs/pull/652
+[pull/658]: https://github.com/apollographql/apollo-rs/pull/658
+[pull/662]: https://github.com/apollographql/apollo-rs/pull/662
+[Issue 666]: https://github.com/apollographql/apollo-rs/issues/666
+
+# [0.6.2](https://crates.io/crates/apollo-parser/0.6.2) - 2023-09-08
+## Fixes
+- **fixes to conversions from AST string nodes to Rust Strings - [goto-bus-stop], [pull/633], [issue/609], [issue/611]**
+  This fix affects the `String::from(ast::StringValue)` conversion function, which returns the contents of a GraphQL string node.
+  `"\""` was previously interpreted as just a backslash, now it is correctly interpreted as a double quote. For block strings, indentation is stripped as required by the spec.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/633]: https://github.com/apollographql/apollo-rs/pull/633
+[issue/609]: https://github.com/apollographql/apollo-rs/issues/609
+[issue/611]: https://github.com/apollographql/apollo-rs/issues/611
+
+# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) - 2023-08-28
 ## Fixes
 - **fix lexing escape-sequence-like text in block strings - [goto-bus-stop], [pull/638], [issue/632]**
   Fixes a regression in 0.6.0 that could cause apollo-parser to reject valid input if a

@@ -1,60 +1,15 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            38: "0038_object_type_with_undefined_field_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 38,
-            },
-            offset: 33,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 38,
-                    },
-                    offset: 33,
-                    length: 3,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "img",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            38: "0038_object_type_with_undefined_field_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 38,
-            },
-            offset: 53,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 38,
-                    },
-                    offset: 53,
-                    length: 6,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "relationship",
-        },
-    },
-]
+Error: cannot find type `Url` in this document
+   ╭─[0038_object_type_with_undefined_field_type.graphql:3:8]
+   │
+ 3 │   img: Url
+   │        ─┬─  
+   │         ╰─── not found in this scope
+───╯
+Error: cannot find type `Person` in this document
+   ╭─[0038_object_type_with_undefined_field_type.graphql:4:17]
+   │
+ 4 │   relationship: Person
+   │                 ───┬──  
+   │                    ╰──── not found in this scope
+───╯
+

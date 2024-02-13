@@ -3,6 +3,7 @@ use crate::{
     input_object::InputObjectTypeDef, interface::InterfaceTypeDef, object::ObjectTypeDef,
     operation::OperationDef, scalar::ScalarTypeDef, schema::SchemaDef, union::UnionTypeDef,
 };
+use apollo_compiler::ast;
 
 /// The `__Document` type represents a GraphQL document.A GraphQL Document describes a complete file or request string operated on by a GraphQL service or client.
 /// A document contains multiple definitions, either executable or representative of a GraphQL type system.
@@ -35,49 +36,48 @@ pub struct Document {
     pub(crate) directive_definitions: Vec<DirectiveDef>,
 }
 
-impl From<Document> for apollo_encoder::Document {
+impl From<Document> for ast::Document {
     fn from(doc: Document) -> Self {
-        let mut new_doc = Self::new();
-        doc.fragment_definitions
-            .into_iter()
-            .for_each(|fragment_def| new_doc.fragment(fragment_def.into()));
-        doc.scalar_type_definitions
-            .into_iter()
-            .for_each(|scalar_type_def| new_doc.scalar(scalar_type_def.into()));
-        if let Some(schema_def) = doc.schema_definition {
-            new_doc.schema(schema_def.into());
+        fn extend(
+            new_doc: &mut ast::Document,
+            items: impl IntoIterator<Item = impl Into<ast::Definition>>,
+        ) {
+            new_doc
+                .definitions
+                .extend(items.into_iter().map(|x| x.into()));
         }
-        doc.object_type_definitions
-            .into_iter()
-            .for_each(|object_type_def| new_doc.object(object_type_def.into()));
-        doc.union_type_definitions
-            .into_iter()
-            .for_each(|union_type_def| new_doc.union(union_type_def.into()));
-        doc.input_object_type_definitions
-            .into_iter()
-            .for_each(|input_object_type_def| new_doc.input_object(input_object_type_def.into()));
-        doc.interface_type_definitions
-            .into_iter()
-            .for_each(|interface_type_def| new_doc.interface(interface_type_def.into()));
-        doc.enum_type_definitions
-            .into_iter()
-            .for_each(|enum_type_def| new_doc.enum_(enum_type_def.into()));
-        doc.directive_definitions
-            .into_iter()
-            .for_each(|directive_def| new_doc.directive(directive_def.into()));
-        doc.operation_definitions
-            .into_iter()
-            .for_each(|operation_def| new_doc.operation(operation_def.into()));
 
+        let Document {
+            operation_definitions,
+            fragment_definitions,
+            schema_definition,
+            scalar_type_definitions,
+            object_type_definitions,
+            interface_type_definitions,
+            union_type_definitions,
+            enum_type_definitions,
+            input_object_type_definitions,
+            directive_definitions,
+        } = doc;
+        let mut new_doc = Self::new();
+        extend(&mut new_doc, operation_definitions);
+        extend(&mut new_doc, fragment_definitions);
+        extend(&mut new_doc, schema_definition);
+        extend(&mut new_doc, scalar_type_definitions);
+        extend(&mut new_doc, object_type_definitions);
+        extend(&mut new_doc, interface_type_definitions);
+        extend(&mut new_doc, union_type_definitions);
+        extend(&mut new_doc, enum_type_definitions);
+        extend(&mut new_doc, input_object_type_definitions);
+        extend(&mut new_doc, directive_definitions);
         new_doc
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Document> for Document {
+impl TryFrom<apollo_parser::cst::Document> for Document {
     type Error = crate::FromError;
 
-    fn try_from(doc: apollo_parser::ast::Document) -> Result<Self, Self::Error> {
+    fn try_from(doc: apollo_parser::cst::Document) -> Result<Self, Self::Error> {
         let mut enum_defs = Vec::new();
         let mut object_defs = Vec::new();
         let mut schema_def = None;
@@ -91,55 +91,55 @@ impl TryFrom<apollo_parser::ast::Document> for Document {
 
         for definition in doc.definitions() {
             match definition {
-                apollo_parser::ast::Definition::EnumTypeDefinition(enum_def) => {
+                apollo_parser::cst::Definition::EnumTypeDefinition(enum_def) => {
                     enum_defs.push(EnumTypeDef::try_from(enum_def)?);
                 }
-                apollo_parser::ast::Definition::EnumTypeExtension(enum_def) => {
+                apollo_parser::cst::Definition::EnumTypeExtension(enum_def) => {
                     enum_defs.push(EnumTypeDef::try_from(enum_def)?);
                 }
-                apollo_parser::ast::Definition::ObjectTypeDefinition(obj_def) => {
+                apollo_parser::cst::Definition::ObjectTypeDefinition(obj_def) => {
                     object_defs.push(ObjectTypeDef::try_from(obj_def)?);
                 }
-                apollo_parser::ast::Definition::ObjectTypeExtension(obj_def) => {
+                apollo_parser::cst::Definition::ObjectTypeExtension(obj_def) => {
                     object_defs.push(ObjectTypeDef::try_from(obj_def)?);
                 }
-                apollo_parser::ast::Definition::SchemaDefinition(schema_definition) => {
+                apollo_parser::cst::Definition::SchemaDefinition(schema_definition) => {
                     schema_def = Some(SchemaDef::try_from(schema_definition)?);
                 }
-                apollo_parser::ast::Definition::SchemaExtension(schema_definition) => {
+                apollo_parser::cst::Definition::SchemaExtension(schema_definition) => {
                     schema_def = Some(SchemaDef::try_from(schema_definition)?);
                 }
-                apollo_parser::ast::Definition::DirectiveDefinition(dir_def) => {
+                apollo_parser::cst::Definition::DirectiveDefinition(dir_def) => {
                     directive_defs.push(DirectiveDef::try_from(dir_def)?);
                 }
-                apollo_parser::ast::Definition::ScalarTypeDefinition(scalar_def) => {
+                apollo_parser::cst::Definition::ScalarTypeDefinition(scalar_def) => {
                     scalar_defs.push(ScalarTypeDef::try_from(scalar_def)?)
                 }
-                apollo_parser::ast::Definition::ScalarTypeExtension(scalar_def) => {
+                apollo_parser::cst::Definition::ScalarTypeExtension(scalar_def) => {
                     scalar_defs.push(ScalarTypeDef::try_from(scalar_def)?)
                 }
-                apollo_parser::ast::Definition::OperationDefinition(operation_def) => {
+                apollo_parser::cst::Definition::OperationDefinition(operation_def) => {
                     operation_defs.push(OperationDef::try_from(operation_def)?)
                 }
-                apollo_parser::ast::Definition::InterfaceTypeDefinition(interface_def) => {
+                apollo_parser::cst::Definition::InterfaceTypeDefinition(interface_def) => {
                     interface_defs.push(InterfaceTypeDef::try_from(interface_def)?)
                 }
-                apollo_parser::ast::Definition::InterfaceTypeExtension(interface_def) => {
+                apollo_parser::cst::Definition::InterfaceTypeExtension(interface_def) => {
                     interface_defs.push(InterfaceTypeDef::try_from(interface_def)?)
                 }
-                apollo_parser::ast::Definition::UnionTypeDefinition(union_def) => {
+                apollo_parser::cst::Definition::UnionTypeDefinition(union_def) => {
                     union_defs.push(UnionTypeDef::try_from(union_def)?)
                 }
-                apollo_parser::ast::Definition::UnionTypeExtension(union_def) => {
+                apollo_parser::cst::Definition::UnionTypeExtension(union_def) => {
                     union_defs.push(UnionTypeDef::try_from(union_def)?)
                 }
-                apollo_parser::ast::Definition::InputObjectTypeDefinition(input_object_def) => {
+                apollo_parser::cst::Definition::InputObjectTypeDefinition(input_object_def) => {
                     input_object_defs.push(InputObjectTypeDef::try_from(input_object_def)?)
                 }
-                apollo_parser::ast::Definition::InputObjectTypeExtension(input_object_def) => {
+                apollo_parser::cst::Definition::InputObjectTypeExtension(input_object_def) => {
                     input_object_defs.push(InputObjectTypeDef::try_from(input_object_def)?)
                 }
-                apollo_parser::ast::Definition::FragmentDefinition(fragment_def) => {
+                apollo_parser::cst::Definition::FragmentDefinition(fragment_def) => {
                     fragment_defs.push(FragmentDef::try_from(fragment_def)?)
                 }
             }
@@ -162,6 +162,6 @@ impl TryFrom<apollo_parser::ast::Document> for Document {
 
 impl From<Document> for String {
     fn from(doc: Document) -> Self {
-        apollo_encoder::Document::from(doc).to_string()
+        ast::Document::from(doc).to_string()
     }
 }

@@ -1,20 +1,17 @@
-use apollo_compiler::{ApolloCompiler, HirDatabase};
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use criterion::*;
 
-fn compile(schema: &str, query: &str) -> ApolloCompiler {
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema, "schema.graphql");
-    let executable_id = compiler.add_executable(query, "query.graphql");
-
-    compiler.db.operations(executable_id);
-    compiler.db.object_types();
-
-    compiler
+fn compile(schema: &str, query: &str) {
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    let doc = ExecutableDocument::parse(&schema, query, "query.graphql").unwrap();
+    black_box((schema, doc));
 }
 
 fn compile_and_validate(schema: &str, query: &str) {
-    let compiler = compile(query, schema);
-    compiler.validate();
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+    black_box((schema, doc));
 }
 
 fn bench_simple_query_compiler(c: &mut Criterion) {

@@ -18,7 +18,7 @@
 </div>
 
 ## Features
-* Typed GraphQL AST as per [October 2021 specification]
+* Typed GraphQL Concrete Syntax Tree as per [October 2021 specification]
 * Error resilience
   * lexing and parsing does not fail or `panic` if a lexical or a syntax error is found
 * GraphQL lexer
@@ -35,7 +35,7 @@ Or add this to your `Cargo.toml` for a manual installation:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-parser = "0.6.0"
+apollo-parser = "0.7.5"
 ```
 
 ## Rust versions
@@ -54,24 +54,24 @@ use apollo_parser::Parser;
 
 let input = "union SearchResult = Photo | Person | Cat | Dog";
 let parser = Parser::new(input);
-let ast = parser.parse();
+let cst = parser.parse();
 ```
 
-`apollo-parser` is built to be error-resilient. This means we don't abort parsing (or lexing) if an error occurs. That means `parser.parse()` will always produce an AST, and it will be accompanied by any errors that are encountered:
+`apollo-parser` is built to be error-resilient. This means we don't abort parsing (or lexing) if an error occurs. That means `parser.parse()` will always produce a CST (Concrete Syntax Tree), and it will be accompanied by any errors that are encountered:
 
 ```rust
 use apollo_parser::Parser;
 
 let input = "union SearchResult = Photo | Person | Cat | Dog";
 let parser = Parser::new(input);
-let ast = parser.parse();
+let cst = parser.parse();
 
-// ast.errors() returns an iterator with the errors encountered during lexing and parsing
-assert_eq!(0, ast.errors().len());
+// cst.errors() returns an iterator with the errors encountered during lexing and parsing
+assert_eq!(0, cst.errors().len());
 
-// ast.document() gets the Document, or root node, of the tree that you can
+// cst.document() gets the Document, or root node, of the tree that you can
 // start iterating on.
-let doc = ast.document();
+let doc = cst.document();
 ```
 
 ### Examples
@@ -89,7 +89,7 @@ implementations such as:
 #### Get field names in an object
 
 ```rust
-use apollo_parser::{ast, Parser};
+use apollo_parser::{cst, Parser};
 
 let input = "
 type ProductDimension {
@@ -98,13 +98,13 @@ type ProductDimension {
 }
 ";
 let parser = Parser::new(input);
-let ast = parser.parse();
-assert_eq!(0, ast.errors().len());
+let cst = parser.parse();
+assert_eq!(0, cst.errors().len());
 
-let doc = ast.document();
+let doc = cst.document();
 
 for def in doc.definitions() {
-    if let ast::Definition::ObjectTypeDefinition(object_type) = def {
+    if let cst::Definition::ObjectTypeDefinition(object_type) = def {
         assert_eq!(object_type.name().unwrap().text(), "ProductDimension");
         for field_def in object_type.fields_definition().unwrap().field_definitions() {
             println!("{}", field_def.name().unwrap().text()); // size weight
@@ -116,7 +116,7 @@ for def in doc.definitions() {
 #### Get variables used in a query
 
 ```rust
-use apollo_parser::{ast, Parser};
+use apollo_parser::{cst, Parser};
 
 let input = "
   query GraphQuery($graph_id: ID!, $variant: String) {
@@ -129,13 +129,13 @@ let input = "
   ";
 
   let parser = Parser::new(input);
-  let ast = parser.parse();
-  assert_eq!(0, ast.errors().len());
+  let cst = parser.parse();
+  assert_eq!(0, cst.errors().len());
 
-  let doc = ast.document();
+  let doc = cst.document();
 
   for def in doc.definitions() {
-      if let ast::Definition::OperationDefinition(op_def) = def {
+      if let cst::Definition::OperationDefinition(op_def) = def {
           assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
           let variable_defs = op_def.variable_definitions();
@@ -156,8 +156,8 @@ let input = "
 ## License
 Licensed under either of
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/licenses/MIT>)
 
 at your option.
 

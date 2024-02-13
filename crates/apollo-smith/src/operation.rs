@@ -1,6 +1,7 @@
-use std::collections::HashMap;
-
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::{Arbitrary, Result as ArbitraryResult};
+use indexmap::IndexMap;
 
 use crate::{
     directive::{Directive, DirectiveLocation},
@@ -21,41 +22,38 @@ pub struct OperationDef {
     pub(crate) operation_type: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variable_definitions: Vec<VariableDef>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
-    pub(crate) shorthand: bool,
 }
 
-impl From<OperationDef> for apollo_encoder::OperationDefinition {
-    fn from(op_def: OperationDef) -> Self {
-        let mut new_op_def = Self::new(op_def.operation_type.into(), op_def.selection_set.into());
-        new_op_def.name(op_def.name.map(String::from));
-        op_def
-            .variable_definitions
-            .into_iter()
-            .for_each(|var_def| new_op_def.variable_definition(var_def.into()));
-        op_def.shorthand.then(|| new_op_def.shorthand());
-        op_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_op_def.directive(directive.into()));
-
-        new_op_def
+impl From<OperationDef> for ast::Definition {
+    fn from(x: OperationDef) -> Self {
+        ast::OperationDefinition {
+            operation_type: x.operation_type.into(),
+            name: x.name.map(Into::into),
+            directives: Directive::to_ast(x.directives),
+            variables: x
+                .variable_definitions
+                .into_iter()
+                .map(|x| Node::new(x.into()))
+                .collect(),
+            selection_set: x.selection_set.into(),
+        }
+        .into()
     }
 }
 
 impl From<OperationDef> for String {
     fn from(op_def: OperationDef) -> Self {
-        apollo_encoder::OperationDefinition::from(op_def).to_string()
+        ast::Definition::from(op_def).to_string()
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::OperationDefinition> for OperationDef {
+impl TryFrom<apollo_parser::cst::OperationDefinition> for OperationDef {
     type Error = crate::FromError;
 
     fn try_from(
-        operation_def: apollo_parser::ast::OperationDefinition,
+        operation_def: apollo_parser::cst::OperationDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: operation_def.name().map(Name::from),
@@ -70,7 +68,6 @@ impl TryFrom<apollo_parser::ast::OperationDefinition> for OperationDef {
                 .unwrap_or(OperationType::Query),
             variable_definitions: Vec::new(),
             selection_set: operation_def.selection_set().unwrap().try_into()?,
-            shorthand: operation_def.operation_type().is_none(),
         })
     }
 }
@@ -88,7 +85,7 @@ pub enum OperationType {
     Subscription,
 }
 
-impl From<OperationType> for apollo_encoder::OperationType {
+impl From<OperationType> for ast::OperationType {
     fn from(op_type: OperationType) -> Self {
         match op_type {
             OperationType::Query => Self::Query,
@@ -98,9 +95,8 @@ impl From<OperationType> for apollo_encoder::OperationType {
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::OperationType> for OperationType {
-    fn from(op_type: apollo_parser::ast::OperationType) -> Self {
+impl From<apollo_parser::cst::OperationType> for OperationType {
+    fn from(op_type: apollo_parser::cst::OperationType) -> Self {
         if op_type.query_token().is_some() {
             Self::Query
         } else if op_type.mutation_token().is_some() {
@@ -168,17 +164,12 @@ impl<'a> DocumentBuilder<'a> {
         // TODO
         let variable_definitions = vec![];
 
-        let shorthand = self.operation_defs.is_empty()
-            && operation_type == &OperationType::Query
-            && self.u.arbitrary().unwrap_or(false);
-
         Ok(Some(OperationDef {
             operation_type: *operation_type,
             name,
             variable_definitions,
             directives,
             selection_set,
-            shorthand,
         }))
     }
 }

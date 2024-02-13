@@ -1,299 +1,65 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 64,
-            },
-            offset: 138,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 138,
-                    length: 6,
-                },
-                text: "This is of `ScalarTypeDefinition` type",
-            },
-        ],
-        help: Some(
-            "Union members must be of base Object Type.",
-        ),
-        data: ObjectType {
-            name: "Scalar",
-            ty: "ScalarTypeDefinition",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 64,
-            },
-            offset: 208,
-            length: 28,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 208,
-                    length: 28,
-                },
-                text: "adding an UnionTypeExtension, but `Scalar` is a ScalarTypeDefinition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 0,
-                    length: 60,
-                },
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Scalar",
-            definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 0,
-                length: 60,
-            },
-            extension: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 208,
-                length: 28,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 64,
-            },
-            offset: 237,
-            length: 45,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 237,
-                    length: 45,
-                },
-                text: "adding an InterfaceTypeExtension, but `Object` is an ObjectTypeDefinition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 94,
-                    length: 29,
-                },
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Object",
-            definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 94,
-                length: 29,
-            },
-            extension: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 237,
-                length: 45,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 64,
-            },
-            offset: 283,
-            length: 31,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 283,
-                    length: 31,
-                },
-                text: "adding an EnumTypeExtension, but `Intf` is an InterfaceTypeDefinition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 61,
-                    length: 32,
-                },
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Intf",
-            definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 61,
-                length: 32,
-            },
-            extension: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 283,
-                length: 31,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 64,
-            },
-            offset: 315,
-            length: 39,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 315,
-                    length: 39,
-                },
-                text: "adding an ObjectTypeExtension, but `Input` is an InputObjectTypeDefinition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 154,
-                    length: 29,
-                },
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Input",
-            definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 154,
-                length: 29,
-            },
-            extension: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 315,
-                length: 39,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 64,
-            },
-            offset: 355,
-            length: 39,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 355,
-                    length: 39,
-                },
-                text: "adding an InputObjectTypeExtension, but `Enum` is an EnumTypeDefinition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 64,
-                    },
-                    offset: 184,
-                    length: 22,
-                },
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Enum",
-            definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 184,
-                length: 22,
-            },
-            extension: DiagnosticLocation {
-                file_id: FileId {
-                    id: 64,
-                },
-                offset: 355,
-                length: 39,
-            },
-        },
-    },
-]
+Error: union member `Scalar` must be an object type
+   ╭─[0064_extension_wrong_type.graphql:8:15]
+   │
+ 8 │ union Union = Scalar | Object
+   │               ───┬──  
+   │                  ╰──── this is a scalar type
+   │ 
+   │ Help: Union members must be object types.
+───╯
+Error: adding a union type extension, but `Scalar` is a scalar type
+    ╭─[0064_extension_wrong_type.graphql:16:14]
+    │
+  1 │ scalar Scalar @specifiedBy(url: "https://apollographql.com")
+    │        ───┬──  
+    │           ╰──── type definition
+    │ 
+ 16 │ extend union Scalar = String
+    │              ───┬──  
+    │                 ╰──── extension here
+────╯
+Error: adding an interface type extension, but `Object` is an object type
+    ╭─[0064_extension_wrong_type.graphql:17:18]
+    │
+  5 │ type Object {
+    │      ───┬──  
+    │         ╰──── type definition
+    │ 
+ 17 │ extend interface Object {
+    │                  ───┬──  
+    │                     ╰──── extension here
+────╯
+Error: adding an enum type extension, but `Intf` is an interface type
+    ╭─[0064_extension_wrong_type.graphql:20:13]
+    │
+  2 │ interface Intf {
+    │           ──┬─  
+    │             ╰─── type definition
+    │ 
+ 20 │ extend enum Intf {
+    │             ──┬─  
+    │               ╰─── extension here
+────╯
+Error: adding an object type extension, but `Input` is an input object type
+    ╭─[0064_extension_wrong_type.graphql:23:13]
+    │
+  9 │ input Input {
+    │       ──┬──  
+    │         ╰──── type definition
+    │ 
+ 23 │ extend type Input {
+    │             ──┬──  
+    │               ╰──── extension here
+────╯
+Error: adding an input object type extension, but `Enum` is an enum type
+    ╭─[0064_extension_wrong_type.graphql:26:14]
+    │
+ 12 │ enum Enum {
+    │      ──┬─  
+    │        ╰─── type definition
+    │ 
+ 26 │ extend input Enum {
+    │              ──┬─  
+    │                ╰─── extension here
+────╯
+

@@ -1,40 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            5: "0005_subscription_with_multiple_root_fields_in_fragment_spreads.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 5,
-            },
-            offset: 0,
-            length: 47,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 5,
-                    },
-                    offset: 0,
-                    length: 47,
-                },
-                text: "subscription with 2 root fields",
-            },
-        ],
-        help: Some(
-            "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
-        ),
-        data: SingleRootField {
-            fields: 2,
-            subscription: DiagnosticLocation {
-                file_id: FileId {
-                    id: 5,
-                },
-                offset: 0,
-                length: 47,
-            },
-        },
-    },
-]
+Error: subscription `sub` can only have one root field
+   ╭─[0005_subscription_with_multiple_root_fields_in_fragment_spreads.graphql:1:1]
+   │
+ 1 │ ╭─▶ subscription sub {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── subscription with 2 root fields
+   │     
+   │     Help: There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.
+───╯
+

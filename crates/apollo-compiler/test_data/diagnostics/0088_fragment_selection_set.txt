@@ -1,86 +1,27 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            85: "0088_fragment_selection_set.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 85,
-            },
-            offset: 138,
-            length: 45,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 138,
-                    length: 45,
-                },
-                text: "`topProduct` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 0,
-                    length: 52,
-                },
-                text: "`Query` declared here",
-            },
-        ],
-        help: Some(
-            "`topProduct` is not defined on `Query` type",
-        ),
-        data: UndefinedField {
-            field: "topProduct",
-            ty: "Query",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            85: "0088_fragment_selection_set.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 85,
-            },
-            offset: 278,
-            length: 16,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 278,
-                    length: 16,
-                },
-                text: "`notExistingField` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 54,
-                    length: 50,
-                },
-                text: "`Product` declared here",
-            },
-        ],
-        help: Some(
-            "`notExistingField` is not defined on `Product` type",
-        ),
-        data: UndefinedField {
-            field: "notExistingField",
-            ty: "Product",
-        },
-    },
-]
+Error: type `Query` does not have a field `topProduct`
+    ╭─[0088_fragment_selection_set.graphql:13:5]
+    │
+  1 │ type Query {
+    │      ──┬──  
+    │        ╰──── type `Query` defined here
+    │ 
+ 13 │     topProduct {
+    │     ─────┬────  
+    │          ╰────── field `topProduct` selected here
+    │ 
+    │ Note: path to the field: `query getProduct → topProduct`
+────╯
+Error: type `Product` does not have a field `notExistingField`
+    ╭─[0088_fragment_selection_set.graphql:22:3]
+    │
+  6 │ type Product {
+    │      ───┬───  
+    │         ╰───── type `Product` defined here
+    │ 
+ 22 │   notExistingField
+    │   ────────┬───────  
+    │           ╰───────── field `notExistingField` selected here
+    │ 
+    │ Note: path to the field: `fragment productFragment → notExistingField`
+────╯
+

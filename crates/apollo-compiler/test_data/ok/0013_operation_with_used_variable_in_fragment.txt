@@ -1,232 +1,376 @@
-- DOCUMENT@0..400
-    - OPERATION_DEFINITION@0..81
-        - OPERATION_TYPE@0..5
-            - query_KW@0..5 "query"
-        - WHITESPACE@5..6 " "
-        - NAME@6..18
-            - IDENT@6..18 "ExampleQuery"
-        - VARIABLE_DEFINITIONS@18..34
-            - L_PAREN@18..19 "("
-            - VARIABLE_DEFINITION@19..33
-                - VARIABLE@19..28
-                    - DOLLAR@19..20 "$"
-                    - NAME@20..28
-                        - IDENT@20..28 "variable"
-                - COLON@28..29 ":"
-                - WHITESPACE@29..30 " "
-                - NAMED_TYPE@30..33
-                    - NAME@30..33
-                        - IDENT@30..33 "Int"
-            - R_PAREN@33..34 ")"
-        - WHITESPACE@34..35 " "
-        - SELECTION_SET@35..81
-            - L_CURLY@35..36 "{"
-            - WHITESPACE@36..39 "\n  "
-            - FIELD@39..65
-                - NAME@39..50
-                    - IDENT@39..50 "topProducts"
-                - WHITESPACE@50..51 " "
-                - SELECTION_SET@51..65
-                    - L_CURLY@51..52 "{"
-                    - WHITESPACE@52..57 "\n    "
-                    - FIELD@57..61
-                        - NAME@57..61
-                            - IDENT@57..61 "name"
-                    - WHITESPACE@61..64 "\n  "
-                    - R_CURLY@64..65 "}"
-            - WHITESPACE@65..68 "\n  "
-            - FRAGMENT_SPREAD@68..79
-                - SPREAD@68..71 "..."
-                - WHITESPACE@71..72 " "
-                - FRAGMENT_NAME@72..79
-                    - NAME@72..79
-                        - IDENT@72..79 "subFrag"
-            - WHITESPACE@79..80 "\n"
-            - R_CURLY@80..81 "}"
-    - WHITESPACE@81..83 "\n\n"
-    - FRAGMENT_DEFINITION@83..163
-        - fragment_KW@83..91 "fragment"
-        - WHITESPACE@91..92 " "
-        - FRAGMENT_NAME@92..99
-            - NAME@92..99
-                - IDENT@92..99 "subFrag"
-        - WHITESPACE@99..100 " "
-        - TYPE_CONDITION@100..108
-            - on_KW@100..102 "on"
-            - WHITESPACE@102..103 " "
-            - NAMED_TYPE@103..108
-                - NAME@103..108
-                    - IDENT@103..108 "Query"
-        - WHITESPACE@108..109 " "
-        - SELECTION_SET@109..163
-            - L_CURLY@109..110 "{"
-            - WHITESPACE@110..113 "\n  "
-            - FIELD@113..161
-                - NAME@113..124
-                    - IDENT@113..124 "topProducts"
-                - WHITESPACE@124..125 " "
-                - SELECTION_SET@125..161
-                    - L_CURLY@125..126 "{"
-                    - WHITESPACE@126..131 "\n    "
-                    - FIELD@131..157
-                        - NAME@131..136
-                            - IDENT@131..136 "price"
-                        - ARGUMENTS@136..157
-                            - L_PAREN@136..137 "("
-                            - ARGUMENT@137..156
-                                - NAME@137..145
-                                    - IDENT@137..145 "setPrice"
-                                - COLON@145..146 ":"
-                                - WHITESPACE@146..147 " "
-                                - VARIABLE@147..156
-                                    - DOLLAR@147..148 "$"
-                                    - NAME@148..156
-                                        - IDENT@148..156 "variable"
-                            - R_PAREN@156..157 ")"
-                    - WHITESPACE@157..160 "\n  "
-                    - R_CURLY@160..161 "}"
-            - WHITESPACE@161..162 "\n"
-            - R_CURLY@162..163 "}"
-    - WHITESPACE@163..165 "\n\n"
-    - OBJECT_TYPE_DEFINITION@165..233
-        - type_KW@165..169 "type"
-        - WHITESPACE@169..170 " "
-        - NAME@170..175
-            - IDENT@170..175 "Query"
-        - WHITESPACE@175..176 " "
-        - FIELDS_DEFINITION@176..233
-            - L_CURLY@176..177 "{"
-            - WHITESPACE@177..180 "\n  "
-            - FIELD_DEFINITION@180..212
-                - NAME@180..191
-                    - IDENT@180..191 "topProducts"
-                - ARGUMENTS_DEFINITION@191..203
-                    - L_PAREN@191..192 "("
-                    - INPUT_VALUE_DEFINITION@192..202
-                        - NAME@192..197
-                            - IDENT@192..197 "first"
-                        - COLON@197..198 ":"
-                        - WHITESPACE@198..199 " "
-                        - NAMED_TYPE@199..202
-                            - NAME@199..202
-                                - IDENT@199..202 "Int"
-                    - R_PAREN@202..203 ")"
-                - COLON@203..204 ":"
-                - WHITESPACE@204..205 " "
-                - NAMED_TYPE@205..212
-                    - NAME@205..212
-                        - IDENT@205..212 "Product"
-            - COMMA@212..213 ","
-            - WHITESPACE@213..216 "\n  "
-            - FIELD_DEFINITION@216..231
-                - NAME@216..223
-                    - IDENT@216..223 "reviews"
-                - COLON@223..224 ":"
-                - WHITESPACE@224..225 " "
-                - NAMED_TYPE@225..231
-                    - NAME@225..231
-                        - IDENT@225..231 "Review"
-            - WHITESPACE@231..232 "\n"
-            - R_CURLY@232..233 "}"
-    - WHITESPACE@233..235 "\n\n"
-    - OBJECT_TYPE_DEFINITION@235..269
-        - type_KW@235..239 "type"
-        - WHITESPACE@239..240 " "
-        - NAME@240..246
-            - IDENT@240..246 "Review"
-        - WHITESPACE@246..247 " "
-        - FIELDS_DEFINITION@247..269
-            - L_CURLY@247..248 "{"
-            - WHITESPACE@248..251 "\n  "
-            - FIELD_DEFINITION@251..267
-                - NAME@251..258
-                    - IDENT@251..258 "message"
-                - COLON@258..259 ":"
-                - WHITESPACE@259..260 " "
-                - NAMED_TYPE@260..267
-                    - NAME@260..267
-                        - IDENT@260..267 "Message"
-            - WHITESPACE@267..268 "\n"
-            - R_CURLY@268..269 "}"
-    - WHITESPACE@269..271 "\n\n"
-    - OBJECT_TYPE_DEFINITION@271..338
-        - type_KW@271..275 "type"
-        - WHITESPACE@275..276 " "
-        - NAME@276..283
-            - IDENT@276..283 "Message"
-        - WHITESPACE@283..284 " "
-        - FIELDS_DEFINITION@284..338
-            - L_CURLY@284..285 "{"
-            - WHITESPACE@285..288 "\n  "
-            - FIELD_DEFINITION@288..300
-                - NAME@288..292
-                    - IDENT@288..292 "body"
-                - COLON@292..293 ":"
-                - WHITESPACE@293..294 " "
-                - NAMED_TYPE@294..300
-                    - NAME@294..300
-                        - IDENT@294..300 "String"
-            - WHITESPACE@300..303 "\n  "
-            - FIELD_DEFINITION@303..336
-                - NAME@303..309
-                    - IDENT@303..309 "sender"
-                - ARGUMENTS_DEFINITION@309..328
-                    - L_PAREN@309..310 "("
-                    - INPUT_VALUE_DEFINITION@310..327
-                        - NAME@310..319
-                            - IDENT@310..319 "attribute"
-                        - COLON@319..320 ":"
-                        - WHITESPACE@320..321 " "
-                        - NAMED_TYPE@321..327
-                            - NAME@321..327
-                                - IDENT@321..327 "String"
-                    - R_PAREN@327..328 ")"
-                - COLON@328..329 ":"
-                - WHITESPACE@329..330 " "
-                - NAMED_TYPE@330..336
-                    - NAME@330..336
-                        - IDENT@330..336 "String"
-            - WHITESPACE@336..337 "\n"
-            - R_CURLY@337..338 "}"
-    - WHITESPACE@338..340 "\n\n"
-    - OBJECT_TYPE_DEFINITION@340..399
-        - type_KW@340..344 "type"
-        - WHITESPACE@344..345 " "
-        - NAME@345..352
-            - IDENT@345..352 "Product"
-        - WHITESPACE@352..353 " "
-        - FIELDS_DEFINITION@353..399
-            - L_CURLY@353..354 "{"
-            - WHITESPACE@354..357 "\n  "
-            - FIELD_DEFINITION@357..369
-                - NAME@357..361
-                    - IDENT@357..361 "name"
-                - COLON@361..362 ":"
-                - WHITESPACE@362..363 " "
-                - NAMED_TYPE@363..369
-                    - NAME@363..369
-                        - IDENT@363..369 "String"
-            - WHITESPACE@369..372 "\n  "
-            - FIELD_DEFINITION@372..397
-                - NAME@372..377
-                    - IDENT@372..377 "price"
-                - ARGUMENTS_DEFINITION@377..392
-                    - L_PAREN@377..378 "("
-                    - INPUT_VALUE_DEFINITION@378..391
-                        - NAME@378..386
-                            - IDENT@378..386 "setPrice"
-                        - COLON@386..387 ":"
-                        - WHITESPACE@387..388 " "
-                        - NAMED_TYPE@388..391
-                            - NAME@388..391
-                                - IDENT@388..391 "Int"
-                    - R_PAREN@391..392 ")"
-                - COLON@392..393 ":"
-                - WHITESPACE@393..394 " "
-                - NAMED_TYPE@394..397
-                    - NAME@394..397
-                        - IDENT@394..397 "Int"
-            - WHITESPACE@397..398 "\n"
-            - R_CURLY@398..399 "}"
-    - WHITESPACE@399..400 "\n"
-recursion limit: 4096, high: 2
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        13: SourceFile {
+            path: "0013_operation_with_used_variable_in_fragment.graphql",
+            source_text: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... subFrag\n}\n\nfragment subFrag on Query {\n  topProducts {\n    price(setPrice: $variable)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n  reviews: Review\n}\n\ntype Review {\n  message: Message\n}\n\ntype Message {\n  body: String\n  sender(attribute: String): String\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            165..233 @13 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "topProducts": Component {
+                        origin: Definition,
+                        node: 180..212 @13 FieldDefinition {
+                            description: None,
+                            name: "topProducts",
+                            arguments: [
+                                192..202 @13 InputValueDefinition {
+                                    description: None,
+                                    name: "first",
+                                    ty: 199..202 @13 Named(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Product",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "reviews": Component {
+                        origin: Definition,
+                        node: 216..231 @13 FieldDefinition {
+                            description: None,
+                            name: "reviews",
+                            arguments: [],
+                            ty: Named(
+                                "Review",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Review": Object(
+            235..269 @13 ObjectType {
+                description: None,
+                name: "Review",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "message": Component {
+                        origin: Definition,
+                        node: 251..267 @13 FieldDefinition {
+                            description: None,
+                            name: "message",
+                            arguments: [],
+                            ty: Named(
+                                "Message",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Message": Object(
+            271..338 @13 ObjectType {
+                description: None,
+                name: "Message",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "body": Component {
+                        origin: Definition,
+                        node: 288..300 @13 FieldDefinition {
+                            description: None,
+                            name: "body",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "sender": Component {
+                        origin: Definition,
+                        node: 303..336 @13 FieldDefinition {
+                            description: None,
+                            name: "sender",
+                            arguments: [
+                                310..327 @13 InputValueDefinition {
+                                    description: None,
+                                    name: "attribute",
+                                    ty: 321..327 @13 Named(
+                                        "String",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Product": Object(
+            340..399 @13 ObjectType {
+                description: None,
+                name: "Product",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 357..369 @13 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "price": Component {
+                        origin: Definition,
+                        node: 372..397 @13 FieldDefinition {
+                            description: None,
+                            name: "price",
+                            arguments: [
+                                378..391 @13 InputValueDefinition {
+                                    description: None,
+                                    name: "setPrice",
+                                    ty: 388..391 @13 Named(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        13: SourceFile {
+            path: "0013_operation_with_used_variable_in_fragment.graphql",
+            source_text: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... subFrag\n}\n\nfragment subFrag on Query {\n  topProducts {\n    price(setPrice: $variable)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n  reviews: Review\n}\n\ntype Review {\n  message: Message\n}\n\ntype Message {\n  body: String\n  sender(attribute: String): String\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {
+        "ExampleQuery": 0..81 @13 Operation {
+            operation_type: Query,
+            name: Some(
+                "ExampleQuery",
+            ),
+            variables: [
+                19..33 @13 VariableDefinition {
+                    name: "variable",
+                    ty: 30..33 @13 Named(
+                        "Int",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        39..65 @13 Field {
+                            definition: 180..212 @13 FieldDefinition {
+                                description: None,
+                                name: "topProducts",
+                                arguments: [
+                                    192..202 @13 InputValueDefinition {
+                                        description: None,
+                                        name: "first",
+                                        ty: 199..202 @13 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Product",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "topProducts",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Product",
+                                selections: [
+                                    Field(
+                                        57..61 @13 Field {
+                                            definition: 357..369 @13 FieldDefinition {
+                                                description: None,
+                                                name: "name",
+                                                arguments: [],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "name",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    FragmentSpread(
+                        68..79 @13 FragmentSpread {
+                            fragment_name: "subFrag",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+    fragments: {
+        "subFrag": 83..163 @13 Fragment {
+            name: "subFrag",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        113..161 @13 Field {
+                            definition: 180..212 @13 FieldDefinition {
+                                description: None,
+                                name: "topProducts",
+                                arguments: [
+                                    192..202 @13 InputValueDefinition {
+                                        description: None,
+                                        name: "first",
+                                        ty: 199..202 @13 Named(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: Named(
+                                    "Product",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "topProducts",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Product",
+                                selections: [
+                                    Field(
+                                        131..157 @13 Field {
+                                            definition: 372..397 @13 FieldDefinition {
+                                                description: None,
+                                                name: "price",
+                                                arguments: [
+                                                    378..391 @13 InputValueDefinition {
+                                                        description: None,
+                                                        name: "setPrice",
+                                                        ty: 388..391 @13 Named(
+                                                            "Int",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: Named(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "price",
+                                            arguments: [
+                                                137..156 @13 Argument {
+                                                    name: "setPrice",
+                                                    value: 147..156 @13 Variable(
+                                                        "variable",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+}

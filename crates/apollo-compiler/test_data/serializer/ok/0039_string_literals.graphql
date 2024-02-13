@@ -1,0 +1,53 @@
+type Query {
+  """
+  LF: a
+  b
+  """
+  f1: Int
+  "CRLF: a\r\nb"
+  f2: Int
+  """
+  a
+
+  b
+  """
+  f3: Int
+  """a "b" c"""
+  f4: Int
+  """a \"""b\""" c"""
+  f5: Int
+  """regex: \d+"""
+  f6: Int
+  "\nLeading empty line to preserve"
+  f7: Int
+  " \nLeading whitespace-only line to preserve"
+  f8: Int
+  "Trailing empty line to preserve\n"
+  f9: Int
+  "Trailing whitespace-only line to preserve\n	"
+  f10: Int
+  f11(arg: String = "a\nb"): Int
+  f12(arg: String = "a \"b\" c"): Int
+  f13(arg: String = "regex: \\d+"): Int
+  """
+  Trailing backslash \
+  """
+  f14: Int
+  """
+  Trailing quote"
+  """
+  f15: Int
+  "   Leading whitespace on a single line to preserve"
+  f16: Int
+  """
+     Leading whitespace in multi-line string to preserve
+  No leading whitespace on second line
+  """
+  f17: Int
+  "\n   Leading empty line + indent to preserve"
+  f18: Int
+  """
+  When serialized as a block string, \\""" outputs \ in front of the escaped triple quote
+  """
+  f19: Int
+}

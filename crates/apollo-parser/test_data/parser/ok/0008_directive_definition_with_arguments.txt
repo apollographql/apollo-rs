@@ -37,4 +37,4 @@
             - WHITESPACE@66..67 " "
             - DIRECTIVE_LOCATION@67..75
                 - MUTATION_KW@67..75 "MUTATION"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

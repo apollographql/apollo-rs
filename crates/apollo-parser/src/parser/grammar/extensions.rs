@@ -6,7 +6,7 @@ use crate::{
 pub(crate) fn extensions(p: &mut Parser) {
     // we already know the next node is 'extend', check for the node after that
     // to figure out which type system extension to apply.
-    match p.peek_data_n(2).as_deref() {
+    match p.peek_data_n(2) {
         Some("schema") => schema::schema_extension(p),
         Some("scalar") => scalar::scalar_type_extension(p),
         Some("type") => object::object_type_extension(p),
@@ -21,7 +21,7 @@ pub(crate) fn extensions(p: &mut Parser) {
 #[cfg(test)]
 
 mod test {
-    use crate::{ast, Parser};
+    use crate::{cst, Parser};
 
     #[test]
     fn it_queries_graphql_extensions() {
@@ -43,15 +43,15 @@ extend input First @include(if: "first")
         "#;
 
         let parser = Parser::new(gql);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors().len() == 0);
+        assert!(cst.errors().len() == 0);
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for definition in doc.definitions() {
             match definition {
-                ast::Definition::SchemaExtension(schema_ext) => {
+                cst::Definition::SchemaExtension(schema_ext) => {
                     let root_operation_type: Vec<String> = schema_ext
                         .root_operation_type_definitions()
                         .filter_map(|def| Some(def.named_type()?.name()?.text().to_string()))
@@ -61,7 +61,7 @@ extend input First @include(if: "first")
                         ["MyMutationType".to_string()]
                     )
                 }
-                ast::Definition::ScalarTypeExtension(scalar_ext) => {
+                cst::Definition::ScalarTypeExtension(scalar_ext) => {
                     assert_eq!(
                         scalar_ext
                             .name()
@@ -71,7 +71,7 @@ extend input First @include(if: "first")
                         "UUID"
                     );
                 }
-                ast::Definition::ObjectTypeExtension(obj_ext) => {
+                cst::Definition::ObjectTypeExtension(obj_ext) => {
                     assert_eq!(
                         obj_ext
                             .name()
@@ -81,7 +81,7 @@ extend input First @include(if: "first")
                         "Business"
                     );
                 }
-                ast::Definition::InterfaceTypeExtension(interface_ext) => {
+                cst::Definition::InterfaceTypeExtension(interface_ext) => {
                     assert_eq!(
                         interface_ext
                             .name()
@@ -91,7 +91,7 @@ extend input First @include(if: "first")
                         "NamedEntity"
                     );
                 }
-                ast::Definition::UnionTypeExtension(union_ext) => {
+                cst::Definition::UnionTypeExtension(union_ext) => {
                     assert_eq!(
                         union_ext
                             .name()
@@ -101,7 +101,7 @@ extend input First @include(if: "first")
                         "SearchResult"
                     );
                 }
-                ast::Definition::EnumTypeExtension(enum_ext) => {
+                cst::Definition::EnumTypeExtension(enum_ext) => {
                     assert_eq!(
                         enum_ext
                             .name()
@@ -111,7 +111,7 @@ extend input First @include(if: "first")
                         "Pet"
                     );
                 }
-                ast::Definition::InputObjectTypeExtension(input_object_ext) => {
+                cst::Definition::InputObjectTypeExtension(input_object_ext) => {
                     assert_eq!(
                         input_object_ext
                             .name()
@@ -133,10 +133,10 @@ extend Cat
         "#;
 
         let parser = Parser::new(gql);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors().len() == 2);
-        assert_eq!(ast.document().definitions().count(), 0);
+        assert!(cst.errors().len() == 2);
+        assert_eq!(cst.document().definitions().count(), 0);
     }
 
     #[test]
@@ -150,9 +150,9 @@ extend interface NamedEntity {
         "#;
 
         let parser = Parser::new(gql);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors().len() == 2);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert!(cst.errors().len() == 2);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 }

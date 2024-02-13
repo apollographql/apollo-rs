@@ -1,0 +1,13 @@
+query ExampleQuery {
+  topProducts(first: $undefinedVariable) {
+    name
+  }
+}
+
+type Query {
+  topProducts(first: Int): Product
+}
+
+type Product {
+  name: String
+}

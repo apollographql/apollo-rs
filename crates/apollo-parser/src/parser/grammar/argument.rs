@@ -1,39 +1,35 @@
-use crate::{
-    parser::grammar::{input, name, value},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{input, name, value};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#Argument
 ///
-/// *Argument*:
-///    Name **:** Value
-pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
-    if let Some(TokenKind::Name) = p.peek() {
-        let guard = p.start_node(SyntaxKind::ARGUMENT);
-        name::name(p);
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            value::value(p, false);
-            is_argument = true;
-            if p.peek().is_some() {
-                guard.finish_node();
-                return argument(p, is_argument);
-            }
-        }
-    }
-    if !is_argument {
-        p.err("expected an Argument");
+/// *Argument[Const]*:
+///    Name **:** Value[?Const]
+pub(crate) fn argument(p: &mut Parser, constness: Constness) {
+    let _guard = p.start_node(SyntaxKind::ARGUMENT);
+    name::name(p);
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        value::value(p, constness, false);
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#Arguments
 ///
-/// *Arguments*:
-///    **(** Argument* **)**
-pub(crate) fn arguments(p: &mut Parser) {
+/// *Arguments[Const]*:
+///    **(** Argument[?Const]* **)**
+pub(crate) fn arguments(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
-    argument(p, false);
+    if let Some(TokenKind::Name) = p.peek() {
+        argument(p, constness);
+    } else {
+        p.err("expected an Argument");
+    }
+    while let Some(TokenKind::Name) = p.peek() {
+        argument(p, constness);
+    }
     p.expect(T![')'], S![')']);
 }
 
@@ -44,13 +40,20 @@ pub(crate) fn arguments(p: &mut Parser) {
 pub(crate) fn arguments_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
     p.bump(S!['(']);
-    input::input_value_definition(p, false);
+    if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+        input::input_value_definition(p);
+    } else {
+        p.err("expected an Argument Definition");
+    }
+    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+        input::input_value_definition(p);
+    }
     p.expect(T![')'], S![')']);
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::{self, AstNode};
+    use crate::cst::{self, CstNode};
 
     use super::*;
 
@@ -64,13 +67,13 @@ type Query {
 }
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
+            if let cst::Definition::ObjectTypeDefinition(obj_def) = definition {
                 for field in obj_def.fields_definition().unwrap().field_definitions() {
                     if field.name().unwrap().text() == "bestSellers" {
                         let argument = field

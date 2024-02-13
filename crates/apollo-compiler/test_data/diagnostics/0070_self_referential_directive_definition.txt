@@ -1,236 +1,76 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 100,
-            length: 77,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 100,
-                    length: 25,
-                },
-                text: "recursive directive definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 138,
-                    length: 15,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "invalidExample",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 290,
-            length: 88,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 290,
-                    length: 25,
-                },
-                text: "recursive directive definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 235,
-                    length: 54,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "deprecatedType",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 380,
-            length: 60,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 380,
-                    length: 16,
-                },
-                text: "recursive directive definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 532,
-                    length: 6,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "loopA",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 441,
-            length: 60,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 441,
-                    length: 16,
-                },
-                text: "recursive directive definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 410,
-                    length: 6,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "loopB",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 502,
-            length: 60,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 502,
-                    length: 16,
-                },
-                text: "recursive directive definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 471,
-                    length: 6,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "loopC",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 705,
-            length: 75,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 705,
-                    length: 16,
-                },
-                text: "recursive directive definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 621,
-                    length: 6,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "wrong",
-        },
-    },
-]
+Error: `invalidExample` directive definition cannot reference itself
+   ╭─[0070_self_referential_directive_definition.graphql:7:1]
+   │
+ 7 │ directive @invalidExample(arg: String @invalidExample) on ARGUMENT_DEFINITION
+   │ ────────────┬────────────             ───────┬───────  
+   │             ╰────────────────────────────────────────── recursive directive definition
+   │                                              │         
+   │                                              ╰───────── `invalidExample` circularly references `invalidExample` here
+───╯
+Error: `deprecatedType` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:11:1]
+    │
+ 10 │ extend scalar String @deprecatedType(reason: "use OurCustomString instead")
+    │                      ───────────────────────────┬──────────────────────────  
+    │                                                 ╰──────────────────────────── `deprecatedType` circularly references `deprecatedType` here
+ 11 │ directive @deprecatedType(reason: String!) on OBJECT | INTERFACE | ENUM | SCALAR | UNION
+    │ ────────────┬────────────  
+    │             ╰────────────── recursive directive definition
+────╯
+Error: `loopA` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:13:1]
+    │
+ 13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+    │ ────────┬───────              ───┬──  
+    │         ╰───────────────────────────── recursive directive definition
+    │                                  │    
+    │                                  ╰──── `loopA` references `loopB` here...
+ 14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopB` references `loopC` here...
+ 15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopC` circularly references `loopA` here
+────╯
+Error: `loopB` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:14:1]
+    │
+ 13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopA` circularly references `loopB` here
+ 14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+    │ ────────┬───────              ───┬──  
+    │         ╰───────────────────────────── recursive directive definition
+    │                                  │    
+    │                                  ╰──── `loopB` references `loopC` here...
+ 15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopC` references `loopA` here...
+────╯
+Error: `loopC` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:15:1]
+    │
+ 13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopA` references `loopB` here...
+ 14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── `loopB` circularly references `loopC` here
+ 15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+    │ ────────┬───────              ───┬──  
+    │         ╰───────────────────────────── recursive directive definition
+    │                                  │    
+    │                                  ╰──── `loopC` references `loopA` here...
+────╯
+Error: `wrong` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:21:1]
+    │
+ 18 │ extend enum Enum { RECURSIVE @wrong }
+    │                              ───┬──  
+    │                                 ╰──── `wrong` circularly references `wrong` here
+    │ 
+ 21 │ directive @wrong(input: InputObject) on INPUT_FIELD_DEFINITION | ENUM_VALUE
+    │ ────────┬───────  
+    │         ╰───────── recursive directive definition
+────╯
+

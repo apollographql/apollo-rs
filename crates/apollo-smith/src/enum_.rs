@@ -1,17 +1,14 @@
-use std::{
-    collections::{HashMap, HashSet},
-    hash::Hash,
-};
-
-use apollo_encoder::{EnumDefinition, EnumValue};
-use arbitrary::Result;
-
 use crate::{
     description::Description,
     directive::{Directive, DirectiveLocation},
     name::Name,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result;
+use indexmap::{IndexMap, IndexSet};
+use std::hash::Hash;
 
 /// Enums are special scalars that can only have a defined set of values.
 ///
@@ -23,39 +20,45 @@ use crate::{
 pub struct EnumTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) directives: HashMap<Name, Directive>,
-    pub(crate) enum_values_def: HashSet<EnumValueDefinition>,
+    pub(crate) directives: IndexMap<Name, Directive>,
+    pub(crate) enum_values_def: IndexSet<EnumValueDefinition>,
     pub(crate) extend: bool,
 }
 
-impl From<EnumTypeDef> for EnumDefinition {
-    fn from(enum_: EnumTypeDef) -> Self {
-        let mut new_enum = EnumDefinition::new(enum_.name.into());
-        if let Some(description) = enum_.description {
-            new_enum.description(description.into())
+impl From<EnumTypeDef> for ast::Definition {
+    fn from(x: EnumTypeDef) -> Self {
+        if x.extend {
+            ast::EnumTypeExtension {
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+                values: x
+                    .enum_values_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
+        } else {
+            ast::EnumTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+                values: x
+                    .enum_values_def
+                    .into_iter()
+                    .map(|x| Node::new(x.into()))
+                    .collect(),
+            }
+            .into()
         }
-        enum_
-            .enum_values_def
-            .into_iter()
-            .for_each(|val| new_enum.value(val.into()));
-        enum_
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_enum.directive(directive.into()));
-        if enum_.extend {
-            new_enum.extend();
-        }
-
-        new_enum
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
+impl TryFrom<apollo_parser::cst::EnumTypeDefinition> for EnumTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        enum_def: apollo_parser::ast::EnumTypeDefinition,
+        enum_def: apollo_parser::cst::EnumTypeDefinition,
     ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: enum_def
@@ -79,12 +82,11 @@ impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
+impl TryFrom<apollo_parser::cst::EnumTypeExtension> for EnumTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        enum_def: apollo_parser::ast::EnumTypeExtension,
+        enum_def: apollo_parser::cst::EnumTypeExtension,
     ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: None,
@@ -115,30 +117,24 @@ impl TryFrom<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
 pub struct EnumValueDefinition {
     pub(crate) description: Option<Description>,
     pub(crate) value: Name,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
-impl From<EnumValueDefinition> for EnumValue {
-    fn from(enum_val: EnumValueDefinition) -> Self {
-        let mut new_enum_val = Self::new(enum_val.value.into());
-        if let Some(description) = enum_val.description {
-            new_enum_val.description(description.into())
+impl From<EnumValueDefinition> for ast::EnumValueDefinition {
+    fn from(x: EnumValueDefinition) -> Self {
+        Self {
+            description: x.description.map(Into::into),
+            value: x.value.into(),
+            directives: Directive::to_ast(x.directives),
         }
-        enum_val
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_enum_val.directive(directive.into()));
-
-        new_enum_val
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
+impl TryFrom<apollo_parser::cst::EnumValueDefinition> for EnumValueDefinition {
     type Error = crate::FromError;
 
     fn try_from(
-        enum_value_def: apollo_parser::ast::EnumValueDefinition,
+        enum_value_def: apollo_parser::cst::EnumValueDefinition,
     ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: enum_value_def.description().map(Description::from),
@@ -220,8 +216,8 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `EnumValueDefinition`
-    pub fn enum_values_definition(&mut self) -> Result<HashSet<EnumValueDefinition>> {
-        let mut enum_values_def = HashSet::with_capacity(self.u.int_in_range(2..=10usize)?);
+    pub fn enum_values_definition(&mut self) -> Result<IndexSet<EnumValueDefinition>> {
+        let mut enum_values_def = IndexSet::with_capacity(self.u.int_in_range(2..=10usize)?);
         for i in 0..self.u.int_in_range(2..=10usize)? {
             let description = self
                 .u

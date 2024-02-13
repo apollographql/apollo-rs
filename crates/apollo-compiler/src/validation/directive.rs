@@ -1,40 +1,49 @@
-use std::{collections::HashSet, sync::Arc};
+use crate::coordinate::DirectiveArgumentCoordinate;
+use crate::coordinate::DirectiveCoordinate;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
+use crate::{ast, schema, Node, ValidationDatabase};
+use std::collections::{HashMap, HashSet};
 
-use crate::{
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
-    validation::{RecursionStack, ValidationSet},
-    ValidationDatabase,
-};
+use super::CycleError;
 
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.
-struct FindRecursiveDirective<'a> {
-    db: &'a dyn ValidationDatabase,
+struct FindRecursiveDirective<'s> {
+    schema: &'s schema::Schema,
 }
 
 impl FindRecursiveDirective<'_> {
     fn type_definition(
         &self,
-        seen: &mut RecursionStack<'_>,
-        def: &hir::TypeDefinition,
-    ) -> Result<(), hir::Directive> {
-        for directive in def.directives() {
-            self.directive(seen, directive)?;
-        }
-
+        seen: &mut RecursionGuard<'_>,
+        def: &schema::ExtendedType,
+    ) -> Result<(), CycleError<ast::Directive>> {
         match def {
-            hir::TypeDefinition::InputObjectTypeDefinition(input_type_definition) => {
-                for input_value in input_type_definition.fields() {
-                    self.input_value(seen, input_value)?;
-                }
+            schema::ExtendedType::Scalar(scalar_type_definition) => {
+                self.directives(seen, &scalar_type_definition.directives)?;
             }
-            hir::TypeDefinition::EnumTypeDefinition(enum_type_definition) => {
-                for enum_value in enum_type_definition.values() {
+            schema::ExtendedType::Object(object_type_definition) => {
+                self.directives(seen, &object_type_definition.directives)?;
+            }
+            schema::ExtendedType::Interface(interface_type_definition) => {
+                self.directives(seen, &interface_type_definition.directives)?;
+            }
+            schema::ExtendedType::Union(union_type_definition) => {
+                self.directives(seen, &union_type_definition.directives)?;
+            }
+            schema::ExtendedType::Enum(enum_type_definition) => {
+                self.directives(seen, &enum_type_definition.directives)?;
+                for enum_value in enum_type_definition.values.values() {
                     self.enum_value(seen, enum_value)?;
                 }
             }
-            _ => (),
+            schema::ExtendedType::InputObject(input_type_definition) => {
+                self.directives(seen, &input_type_definition.directives)?;
+                for input_value in input_type_definition.fields.values() {
+                    self.input_value(seen, input_value)?;
+                }
+            }
         }
 
         Ok(())
@@ -42,14 +51,16 @@ impl FindRecursiveDirective<'_> {
 
     fn input_value(
         &self,
-        seen: &mut RecursionStack<'_>,
-        input_value: &hir::InputValueDefinition,
-    ) -> Result<(), hir::Directive> {
-        for directive in input_value.directives() {
+        seen: &mut RecursionGuard<'_>,
+        input_value: &Node<ast::InputValueDefinition>,
+    ) -> Result<(), CycleError<ast::Directive>> {
+        for directive in &input_value.directives {
             self.directive(seen, directive)?;
         }
-        if let Some(type_def) = input_value.ty().type_def(self.db.upcast()) {
-            self.type_definition(seen, &type_def)?;
+
+        let type_name = input_value.ty.inner_named_type();
+        if let Some(type_def) = self.schema.types.get(type_name) {
+            self.type_definition(seen, type_def)?;
         }
 
         Ok(())
@@ -57,31 +68,43 @@ impl FindRecursiveDirective<'_> {
 
     fn enum_value(
         &self,
-        seen: &mut RecursionStack<'_>,
-        enum_value: &hir::EnumValueDefinition,
-    ) -> Result<(), hir::Directive> {
-        for directive in enum_value.directives() {
+        seen: &mut RecursionGuard<'_>,
+        enum_value: &Node<ast::EnumValueDefinition>,
+    ) -> Result<(), CycleError<ast::Directive>> {
+        for directive in &enum_value.directives {
             self.directive(seen, directive)?;
         }
 
         Ok(())
     }
 
+    fn directives(
+        &self,
+        seen: &mut RecursionGuard<'_>,
+        directives: &[schema::Component<ast::Directive>],
+    ) -> Result<(), CycleError<ast::Directive>> {
+        for directive in directives {
+            self.directive(seen, directive)?;
+        }
+        Ok(())
+    }
+
     fn directive(
         &self,
-        seen: &mut RecursionStack<'_>,
-        directive: &hir::Directive,
-    ) -> Result<(), hir::Directive> {
-        if !seen.contains(directive.name()) {
-            if let Some(def) = directive.directive(self.db.upcast()) {
-                self.directive_definition(seen.push(directive.name().to_string()), &def)?;
+        seen: &mut RecursionGuard<'_>,
+        directive: &Node<ast::Directive>,
+    ) -> Result<(), CycleError<ast::Directive>> {
+        if !seen.contains(&directive.name) {
+            if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
+                self.directive_definition(seen.push(&directive.name)?, def)
+                    .map_err(|error| error.trace(directive))?;
             }
-        } else if seen.first() == Some(directive.name()) {
+        } else if seen.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
             // This prevents raising confusing errors when a directive `@b` which is not
             // self-referential uses a directive `@a` that *is*. The error with `@a` should
             // only be reported on its definition, not on `@b`'s.
-            return Err(directive.clone());
+            return Err(CycleError::Recursed(vec![directive.clone()]));
         }
 
         Ok(())
@@ -89,216 +112,208 @@ impl FindRecursiveDirective<'_> {
 
     fn directive_definition(
         &self,
-        mut seen: RecursionStack<'_>,
-        def: &hir::DirectiveDefinition,
-    ) -> Result<(), hir::Directive> {
-        let mut guard = seen.push(def.name().to_string());
-        for input_value in def.arguments().input_values() {
-            self.input_value(&mut guard, input_value)?;
+        mut seen: RecursionGuard<'_>,
+        def: &Node<ast::DirectiveDefinition>,
+    ) -> Result<(), CycleError<ast::Directive>> {
+        for input_value in &def.arguments {
+            self.input_value(&mut seen, input_value)?;
         }
 
         Ok(())
     }
 
     fn check(
-        db: &dyn ValidationDatabase,
-        directive_def: &hir::DirectiveDefinition,
-    ) -> Result<(), hir::Directive> {
-        FindRecursiveDirective { db }
-            .directive_definition(RecursionStack(&mut vec![]), directive_def)
+        schema: &schema::Schema,
+        directive_def: &Node<ast::DirectiveDefinition>,
+    ) -> Result<(), CycleError<ast::Directive>> {
+        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone());
+        FindRecursiveDirective { schema }
+            .directive_definition(recursion_stack.guard(), directive_def)
     }
 }
 
-pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
+pub(crate) fn validate_directive_definition(
+    db: &dyn ValidationDatabase,
+    def: Node<ast::DirectiveDefinition>,
+) -> Vec<ValidationError> {
+    let mut diagnostics = vec![];
+
+    diagnostics.extend(super::input_object::validate_argument_definitions(
+        db,
+        &def.arguments,
+        ast::DirectiveLocation::ArgumentDefinition,
+    ));
+
+    let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
     // A directive definition must not contain the use of a directive which
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    for (name, directive_def) in db.directive_definitions().iter() {
-        if let Err(directive) = FindRecursiveDirective::check(db, directive_def) {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    directive_def.loc().into(),
-                    DiagnosticData::RecursiveDirectiveDefinition { name: name.clone() },
-                )
-                .label(Label::new(
-                    directive_def.head_loc(),
-                    "recursive directive definition",
-                ))
-                .label(Label::new(directive.loc(), "refers to itself here")),
-            );
+    match FindRecursiveDirective::check(&db.schema(), &def) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => {
+            diagnostics.push(ValidationError::new(
+                head_location,
+                DiagnosticData::RecursiveDirectiveDefinition {
+                    name: def.name.clone(),
+                    trace,
+                },
+            ));
         }
-
-        // Validate directive definitions' arguments
-        diagnostics.extend(db.validate_arguments_definition(
-            directive_def.arguments.clone(),
-            hir::DirectiveLocation::ArgumentDefinition,
-        ));
+        Err(CycleError::Limit(_)) => diagnostics.push(ValidationError::new(
+            head_location,
+            DiagnosticData::DeeplyNestedType {
+                name: def.name.clone(),
+                describe_type: "directive",
+            },
+        )),
     }
 
     diagnostics
 }
 
-pub fn validate_directives(
-    db: &dyn ValidationDatabase,
-    dirs: Vec<hir::Directive>,
-    dir_loc: hir::DirectiveLocation,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
-) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let mut seen_dirs = HashSet::<ValidationSet>::new();
+    for file_id in db.type_definition_files() {
+        for def in &db.ast(file_id).definitions {
+            if let ast::Definition::DirectiveDefinition(directive_definition) = def {
+                diagnostics.extend(db.validate_directive_definition(directive_definition.clone()));
+            }
+        }
+    }
 
+    diagnostics
+}
+
+// TODO(@goto-bus-stop) This is a big function: should probably not be generic over the iterator
+// type
+pub(crate) fn validate_directives<'dir>(
+    db: &dyn ValidationDatabase,
+    dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
+    dir_loc: ast::DirectiveLocation,
+    var_defs: &[Node<ast::VariableDefinition>],
+) -> Vec<ValidationError> {
+    let mut diagnostics = Vec::new();
+
+    let mut seen_directives = HashMap::<_, Option<NodeLocation>>::new();
+
+    let schema = db.schema();
     for dir in dirs {
-        diagnostics.extend(db.validate_arguments(dir.arguments().to_vec()));
+        diagnostics.extend(super::argument::validate_arguments(&dir.arguments));
 
-        let name = dir.name();
-        let loc = dir.loc();
-        let directive_definition = db.find_directive_definition_by_name(name.into());
+        let name = &dir.name;
+        let loc = dir.location();
+        let directive_definition = schema.directive_definitions.get(name);
 
-        let duplicate = ValidationSet {
-            name: name.to_string(),
-            loc: Some(loc),
-        };
-        if let Some(original) = seen_dirs.get(&duplicate) {
+        if let Some(&original_loc) = seen_directives.get(name) {
             let is_repeatable = directive_definition
-                .as_ref()
-                .map(|def| def.repeatable())
+                .map(|def| def.repeatable)
                 // Assume unknown directives are repeatable to avoid producing confusing diagnostics
                 .unwrap_or(true);
 
             if !is_repeatable {
-                // original loc must be Some
-                let original_loc = original.loc.expect("undefined original directive location");
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::UniqueDirective {
-                            name: name.to_string(),
-                            original_call: original_loc.into(),
-                            conflicting_call: loc.into(),
-                        },
-                    )
-                    .label(Label::new(
-                        original_loc,
-                        format!("directive {name} first called here"),
-                    ))
-                    .label(Label::new(
-                        loc,
-                        format!("directive {name} called again here"),
-                    )),
-                );
+                diagnostics.push(ValidationError::new(
+                    loc,
+                    DiagnosticData::UniqueDirective {
+                        name: name.clone(),
+                        original_application: original_loc,
+                    },
+                ));
             }
         } else {
-            seen_dirs.insert(duplicate);
+            let loc = NodeLocation::recompose(dir.location(), dir.name.location());
+            seen_directives.insert(&dir.name, loc);
         }
 
         if let Some(directive_definition) = directive_definition {
-            let allowed_loc: HashSet<hir::DirectiveLocation> =
-                HashSet::from_iter(directive_definition.directive_locations().iter().cloned());
+            let allowed_loc: HashSet<ast::DirectiveLocation> =
+                HashSet::from_iter(directive_definition.locations.iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
-                let mut diag = ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::UnsupportedLocation {
-                            name: name.into(),
-                            dir_loc,
-                            directive_def: directive_definition.loc.into(),
-                        },
-                )
-                    .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
-                    .help("the directive must be used in a location that the service has declared support for");
-                if !directive_definition.is_built_in() {
-                    diag = diag.label(Label::new(
-                        directive_definition.loc,
-                        format!("consider adding {dir_loc} directive location here"),
-                    ));
-                }
-                diagnostics.push(diag)
+                diagnostics.push(ValidationError::new(
+                    loc,
+                    DiagnosticData::UnsupportedLocation {
+                        name: name.clone(),
+                        location: dir_loc,
+                        valid_locations: directive_definition.locations.clone(),
+                        definition_location: directive_definition.location(),
+                    },
+                ));
             }
 
-            for arg in dir.arguments() {
-                let input_val = directive_definition
-                    .arguments()
-                    .input_values()
+            for argument in &dir.arguments {
+                let input_value = directive_definition
+                    .arguments
                     .iter()
-                    .find(|val| arg.name() == val.name())
+                    .find(|val| val.name == argument.name)
                     .cloned();
 
                 // @b(a: true)
-                if let Some(input_val) = input_val {
-                    if let Some(diag) = db
-                        .validate_variable_usage(input_val.clone(), var_defs.clone(), arg.clone())
-                        .err()
+                if let Some(input_value) = input_value {
+                    // TODO(@goto-bus-stop) do we really need value validation and variable
+                    // validation separately?
+                    if let Some(diag) = super::variable::validate_variable_usage(
+                        input_value.clone(),
+                        var_defs,
+                        argument,
+                    )
+                    .err()
                     {
                         diagnostics.push(diag)
                     } else {
-                        let value_of_correct_type =
-                            db.validate_values(input_val.ty(), arg, var_defs.clone());
+                        let type_diags =
+                            super::value::validate_values(db, &input_value.ty, argument, var_defs);
 
-                        if let Err(diag) = value_of_correct_type {
-                            diagnostics.extend(diag);
-                        }
+                        diagnostics.extend(type_diags);
                     }
                 } else {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            arg.loc.into(),
-                            DiagnosticData::UndefinedArgument {
-                                name: arg.name().into(),
-                            },
-                        )
-                        .label(Label::new(arg.loc, "argument by this name not found"))
-                        .label(Label::new(loc, "directive declared here")),
-                    );
+                    diagnostics.push(ValidationError::new(
+                        argument.location(),
+                        DiagnosticData::UndefinedArgument {
+                            name: argument.name.clone(),
+                            coordinate: DirectiveCoordinate {
+                                directive: dir.name.clone(),
+                            }
+                            .into(),
+                            definition_location: loc,
+                        },
+                    ));
                 }
             }
-            for arg_def in directive_definition.arguments().input_values() {
+            for arg_def in &directive_definition.arguments {
                 let arg_value = dir
-                    .arguments()
+                    .arguments
                     .iter()
-                    .find(|value| value.name() == arg_def.name());
+                    .find_map(|arg| (arg.name == arg_def.name).then_some(&arg.value));
                 let is_null = match arg_value {
                     None => true,
                     // Prevents explicitly providing `requiredArg: null`,
                     // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                     // and it won't raise a validation error at this stage.
-                    Some(value) => value.value().is_null(),
+                    Some(value) => value.is_null(),
                 };
 
                 if arg_def.is_required() && is_null {
-                    let mut diagnostic = ApolloDiagnostic::new(
-                        db,
-                        dir.loc.into(),
+                    diagnostics.push(ValidationError::new(
+                        dir.location(),
                         DiagnosticData::RequiredArgument {
-                            name: arg_def.name().into(),
+                            name: arg_def.name.clone(),
+                            coordinate: DirectiveArgumentCoordinate {
+                                directive: directive_definition.name.clone(),
+                                argument: arg_def.name.clone(),
+                            }
+                            .into(),
+                            definition_location: arg_def.location(),
                         },
-                    );
-                    diagnostic = diagnostic.label(Label::new(
-                        dir.loc,
-                        format!("missing value for argument `{}`", arg_def.name()),
                     ));
-                    if let Some(loc) = arg_def.loc {
-                        diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
-                    }
-
-                    diagnostics.push(diagnostic);
                 }
             }
         } else {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    loc.into(),
-                    DiagnosticData::UndefinedDirective { name: name.into() },
-                )
-                .label(Label::new(loc, "directive not defined")),
-            )
+            diagnostics.push(ValidationError::new(
+                loc,
+                DiagnosticData::UndefinedDirective { name: name.clone() },
+            ))
         }
     }
 

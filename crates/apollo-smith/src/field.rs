@@ -1,7 +1,3 @@
-use std::collections::{HashMap, HashSet};
-
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     argument::{Argument, ArgumentsDef},
     description::Description,
@@ -11,6 +7,10 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::{IndexMap, IndexSet};
 
 /// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
 ///
@@ -24,33 +24,25 @@ pub struct FieldDef {
     pub(crate) name: Name,
     pub(crate) arguments_definition: Option<ArgumentsDef>,
     pub(crate) ty: Ty,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
-impl From<FieldDef> for apollo_encoder::FieldDefinition {
-    fn from(val: FieldDef) -> Self {
-        let mut field = Self::new(val.name.into(), val.ty.into());
-        if let Some(arg) = val.arguments_definition {
-            arg.input_value_definitions
-                .into_iter()
-                .for_each(|input_val| field.arg(input_val.into()));
+impl From<FieldDef> for ast::FieldDefinition {
+    fn from(x: FieldDef) -> Self {
+        Self {
+            description: x.description.map(Into::into),
+            name: x.name.into(),
+            directives: Directive::to_ast(x.directives),
+            arguments: x.arguments_definition.map(Into::into).unwrap_or_default(),
+            ty: x.ty.into(),
         }
-        if let Some(description) = val.description {
-            field.description(description.into());
-        }
-        val.directives
-            .into_iter()
-            .for_each(|(_dir_name, directive)| field.directive(directive.into()));
-
-        field
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::FieldDefinition> for FieldDef {
+impl TryFrom<apollo_parser::cst::FieldDefinition> for FieldDef {
     type Error = crate::FromError;
 
-    fn try_from(field_def: apollo_parser::ast::FieldDefinition) -> Result<Self, Self::Error> {
+    fn try_from(field_def: apollo_parser::cst::FieldDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             description: field_def.description().map(Description::from),
             name: field_def
@@ -82,33 +74,26 @@ pub struct Field {
     pub(crate) alias: Option<Name>,
     pub(crate) name: Name,
     pub(crate) args: Vec<Argument>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: Option<SelectionSet>,
 }
 
-impl From<Field> for apollo_encoder::Field {
-    fn from(field: Field) -> Self {
-        let mut new_field = Self::new(field.name.into());
-        new_field.alias(field.alias.map(String::from));
-        field
-            .args
-            .into_iter()
-            .for_each(|arg| new_field.argument(arg.into()));
-        field
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_field.directive(directive.into()));
-        new_field.selection_set(field.selection_set.map(Into::into));
-
-        new_field
+impl From<Field> for ast::Field {
+    fn from(x: Field) -> Self {
+        Self {
+            alias: x.alias.map(Into::into),
+            name: x.name.into(),
+            directives: Directive::to_ast(x.directives),
+            arguments: x.args.into_iter().map(|x| Node::new(x.into())).collect(),
+            selection_set: x.selection_set.map(Into::into).unwrap_or_default(),
+        }
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Field> for Field {
+impl TryFrom<apollo_parser::cst::Field> for Field {
     type Error = crate::FromError;
 
-    fn try_from(field: apollo_parser::ast::Field) -> Result<Self, Self::Error> {
+    fn try_from(field: apollo_parser::cst::Field) -> Result<Self, Self::Error> {
         Ok(Self {
             alias: field.alias().map(|alias| alias.name().unwrap().into()),
             name: field.name().unwrap().into(),
@@ -139,7 +124,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary list of `FieldDef`
     pub fn fields_definition(&mut self, exclude: &[&Name]) -> ArbitraryResult<Vec<FieldDef>> {
         let num_fields = self.u.int_in_range(2..=50usize)?;
-        let mut fields_names = HashSet::with_capacity(num_fields);
+        let mut fields_names = IndexSet::with_capacity(num_fields);
 
         for i in 0..num_fields {
             let name = self.name_with_index(i)?;

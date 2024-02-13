@@ -1,58 +1,13 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            29: "0029_directive_definitions_with_duplicate_names.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 29,
-            },
-            offset: 116,
-            length: 3,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 29,
-                    },
-                    offset: 91,
-                    length: 3,
-                },
-                text: "previous definition of `foo` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 29,
-                    },
-                    offset: 116,
-                    length: 3,
-                },
-                text: "`foo` redefined here",
-            },
-        ],
-        help: Some(
-            "`foo` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "directive",
-            name: "foo",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 29,
-                },
-                offset: 91,
-                length: 3,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 29,
-                },
-                offset: 116,
-                length: 3,
-            },
-        },
-    },
-]
+Error: the directive `@foo` is defined multiple times in the schema
+    ╭─[0029_directive_definitions_with_duplicate_names.graphql:11:12]
+    │
+ 10 │ directive @foo on SCHEMA
+    │            ─┬─  
+    │             ╰─── previous definition of `@foo` here
+ 11 │ directive @foo on SCHEMA
+    │            ─┬─  
+    │             ╰─── `@foo` redefined here
+    │ 
+    │ Help: remove or rename one of the definitions
+────╯
+

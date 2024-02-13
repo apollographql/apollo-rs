@@ -1,224 +1,55 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 26,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 26,
-                    length: 13,
-                },
-                text: "field `pet1` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 42,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 42,
-                    length: 13,
-                },
-                text: "field `pet2` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 58,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 58,
-                    length: 13,
-                },
-                text: "field `pet3` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 74,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 74,
-                    length: 13,
-                },
-                text: "field `pet4` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 90,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 90,
-                    length: 13,
-                },
-                text: "field `pet5` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 106,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 106,
-                    length: 13,
-                },
-                text: "field `pet6` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-]
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:2:3]
+   │
+ 2 │   pet1 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet1`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:3:3]
+   │
+ 3 │   pet2 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet2`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:4:3]
+   │
+ 4 │   pet3 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet3`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:5:3]
+   │
+ 5 │   pet4 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet4`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:6:3]
+   │
+ 6 │   pet5 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet5`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:7:3]
+   │
+ 7 │   pet6 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet6`
+───╯
+

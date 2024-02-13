@@ -1,155 +1,226 @@
-- DOCUMENT@0..246
-    - OBJECT_TYPE_DEFINITION@0..60
-        - type_KW@0..4 "type"
-        - WHITESPACE@4..5 " "
-        - NAME@5..10
-            - IDENT@5..10 "Query"
-        - WHITESPACE@10..11 " "
-        - FIELDS_DEFINITION@11..60
-            - L_CURLY@11..12 "{"
-            - WHITESPACE@12..17 "\n    "
-            - FIELD_DEFINITION@17..29
-                - NAME@17..21
-                    - IDENT@17..21 "name"
-                - COLON@21..22 ":"
-                - WHITESPACE@22..23 " "
-                - NAMED_TYPE@23..29
-                    - NAME@23..29
-                        - IDENT@23..29 "String"
-            - WHITESPACE@29..34 "\n    "
-            - FIELD_DEFINITION@34..58
-                - NAME@34..41
-                    - IDENT@34..41 "example"
-                - ARGUMENTS_DEFINITION@41..53
-                    - L_PAREN@41..42 "("
-                    - INPUT_VALUE_DEFINITION@42..52
-                        - NAME@42..45
-                            - IDENT@42..45 "arg"
-                        - COLON@45..46 ":"
-                        - WHITESPACE@46..47 " "
-                        - NAMED_TYPE@47..52
-                            - NAME@47..52
-                                - IDENT@47..52 "First"
-                    - R_PAREN@52..53 ")"
-                - COLON@53..54 ":"
-                - WHITESPACE@54..55 " "
-                - NAMED_TYPE@55..58
-                    - NAME@55..58
-                        - IDENT@55..58 "Int"
-            - WHITESPACE@58..59 "\n"
-            - R_CURLY@59..60 "}"
-    - WHITESPACE@60..62 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@62..110
-        - input_KW@62..67 "input"
-        - WHITESPACE@67..68 " "
-        - NAME@68..73
-            - IDENT@68..73 "First"
-        - WHITESPACE@73..74 " "
-        - INPUT_FIELDS_DEFINITION@74..110
-            - L_CURLY@74..75 "{"
-            - WHITESPACE@75..78 "\n  "
-            - INPUT_VALUE_DEFINITION@78..92
-                - NAME@78..84
-                    - IDENT@78..84 "second"
-                - COLON@84..85 ":"
-                - WHITESPACE@85..86 " "
-                - NAMED_TYPE@86..92
-                    - NAME@86..92
-                        - IDENT@86..92 "Second"
-            - WHITESPACE@92..95 "\n  "
-            - INPUT_VALUE_DEFINITION@95..108
-                - NAME@95..100
-                    - IDENT@95..100 "value"
-                - COLON@100..101 ":"
-                - WHITESPACE@101..102 " "
-                - NAMED_TYPE@102..108
-                    - NAME@102..108
-                        - IDENT@102..108 "String"
-            - WHITESPACE@108..109 "\n"
-            - R_CURLY@109..110 "}"
-    - WHITESPACE@110..112 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@112..163
-        - input_KW@112..117 "input"
-        - WHITESPACE@117..118 " "
-        - NAME@118..124
-            - IDENT@118..124 "Second"
-        - WHITESPACE@124..125 " "
-        - INPUT_FIELDS_DEFINITION@125..163
-            - L_CURLY@125..126 "{"
-            - WHITESPACE@126..129 "\n  "
-            - INPUT_VALUE_DEFINITION@129..145
-                - NAME@129..134
-                    - IDENT@129..134 "third"
-                - COLON@134..135 ":"
-                - WHITESPACE@135..136 " "
-                - NON_NULL_TYPE@136..145
-                    - LIST_TYPE@136..144
-                        - L_BRACK@136..137 "["
-                        - NON_NULL_TYPE@137..143
-                            - NAMED_TYPE@137..142
-                                - NAME@137..142
-                                    - IDENT@137..142 "Third"
-                            - BANG@142..143 "!"
-                        - R_BRACK@143..144 "]"
-                    - BANG@144..145 "!"
-            - WHITESPACE@145..148 "\n  "
-            - INPUT_VALUE_DEFINITION@148..161
-                - NAME@148..153
-                    - IDENT@148..153 "value"
-                - COLON@153..154 ":"
-                - WHITESPACE@154..155 " "
-                - NAMED_TYPE@155..161
-                    - NAME@155..161
-                        - IDENT@155..161 "String"
-            - WHITESPACE@161..162 "\n"
-            - R_CURLY@162..163 "}"
-    - WHITESPACE@163..165 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@165..213
-        - input_KW@165..170 "input"
-        - WHITESPACE@170..171 " "
-        - NAME@171..176
-            - IDENT@171..176 "Third"
-        - WHITESPACE@176..177 " "
-        - INPUT_FIELDS_DEFINITION@177..213
-            - L_CURLY@177..178 "{"
-            - WHITESPACE@178..181 "\n  "
-            - INPUT_VALUE_DEFINITION@181..195
-                - NAME@181..187
-                    - IDENT@181..187 "fourth"
-                - COLON@187..188 ":"
-                - WHITESPACE@188..189 " "
-                - NAMED_TYPE@189..195
-                    - NAME@189..195
-                        - IDENT@189..195 "Fourth"
-            - WHITESPACE@195..198 "\n  "
-            - INPUT_VALUE_DEFINITION@198..211
-                - NAME@198..203
-                    - IDENT@198..203 "value"
-                - COLON@203..204 ":"
-                - WHITESPACE@204..205 " "
-                - NAMED_TYPE@205..211
-                    - NAME@205..211
-                        - IDENT@205..211 "String"
-            - WHITESPACE@211..212 "\n"
-            - R_CURLY@212..213 "}"
-    - WHITESPACE@213..215 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@215..246
-        - input_KW@215..220 "input"
-        - WHITESPACE@220..221 " "
-        - NAME@221..227
-            - IDENT@221..227 "Fourth"
-        - WHITESPACE@227..228 " "
-        - INPUT_FIELDS_DEFINITION@228..246
-            - L_CURLY@228..229 "{"
-            - WHITESPACE@229..232 "\n  "
-            - INPUT_VALUE_DEFINITION@232..244
-                - NAME@232..237
-                    - IDENT@232..237 "first"
-                - COLON@237..238 ":"
-                - WHITESPACE@238..239 " "
-                - NAMED_TYPE@239..244
-                    - NAME@239..244
-                        - IDENT@239..244 "First"
-            - WHITESPACE@244..245 "\n"
-            - R_CURLY@245..246 "}"
-recursion limit: 4096, high: 0
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        29: SourceFile {
+            path: "0030_cyclical_nullable_input_objects.graphql",
+            source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..60 @29 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 17..29 @29 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "example": Component {
+                        origin: Definition,
+                        node: 34..58 @29 FieldDefinition {
+                            description: None,
+                            name: "example",
+                            arguments: [
+                                42..52 @29 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 47..52 @29 Named(
+                                        "First",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "First": InputObject(
+            62..110 @29 InputObjectType {
+                description: None,
+                name: "First",
+                directives: [],
+                fields: {
+                    "second": Component {
+                        origin: Definition,
+                        node: 78..92 @29 InputValueDefinition {
+                            description: None,
+                            name: "second",
+                            ty: 86..92 @29 Named(
+                                "Second",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "value": Component {
+                        origin: Definition,
+                        node: 95..108 @29 InputValueDefinition {
+                            description: None,
+                            name: "value",
+                            ty: 102..108 @29 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Second": InputObject(
+            112..163 @29 InputObjectType {
+                description: None,
+                name: "Second",
+                directives: [],
+                fields: {
+                    "third": Component {
+                        origin: Definition,
+                        node: 129..145 @29 InputValueDefinition {
+                            description: None,
+                            name: "third",
+                            ty: 136..145 @29 NonNullList(
+                                NonNullNamed(
+                                    "Third",
+                                ),
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "value": Component {
+                        origin: Definition,
+                        node: 148..161 @29 InputValueDefinition {
+                            description: None,
+                            name: "value",
+                            ty: 155..161 @29 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Third": InputObject(
+            165..213 @29 InputObjectType {
+                description: None,
+                name: "Third",
+                directives: [],
+                fields: {
+                    "fourth": Component {
+                        origin: Definition,
+                        node: 181..195 @29 InputValueDefinition {
+                            description: None,
+                            name: "fourth",
+                            ty: 189..195 @29 Named(
+                                "Fourth",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "value": Component {
+                        origin: Definition,
+                        node: 198..211 @29 InputValueDefinition {
+                            description: None,
+                            name: "value",
+                            ty: 205..211 @29 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Fourth": InputObject(
+            215..246 @29 InputObjectType {
+                description: None,
+                name: "Fourth",
+                directives: [],
+                fields: {
+                    "first": Component {
+                        origin: Definition,
+                        node: 232..244 @29 InputValueDefinition {
+                            description: None,
+                            name: "first",
+                            ty: 239..244 @29 Named(
+                                "First",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        29: SourceFile {
+            path: "0030_cyclical_nullable_input_objects.graphql",
+            source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

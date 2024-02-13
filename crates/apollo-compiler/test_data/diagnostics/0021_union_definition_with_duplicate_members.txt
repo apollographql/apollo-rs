@@ -1,58 +1,10 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            21: "0021_union_definition_with_duplicate_members.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 21,
-            },
-            offset: 62,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 21,
-                    },
-                    offset: 54,
-                    length: 5,
-                },
-                text: "previous definition of `Photo` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 21,
-                    },
-                    offset: 62,
-                    length: 5,
-                },
-                text: "`Photo` redefined here",
-            },
-        ],
-        help: Some(
-            "`Photo` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "union member",
-            name: "Photo",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 21,
-                },
-                offset: 54,
-                length: 5,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 21,
-                },
-                offset: 62,
-                length: 5,
-            },
-        },
-    },
-]
+Error: duplicate definitions for the `Photo` member of union type `SearchResult`
+   ╭─[0021_union_definition_with_duplicate_members.graphql:5:30]
+   │
+ 5 │ union SearchResult = Photo | Photo
+   │                      ──┬──   ──┬──  
+   │                        ╰──────────── previous definition of `Photo` here
+   │                                │    
+   │                                ╰──── `Photo` redefined here
+───╯
+

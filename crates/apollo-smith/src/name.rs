@@ -1,8 +1,7 @@
-use std::fmt::Write as _;
-
-use arbitrary::Result as ArbitraryResult;
-
 use crate::DocumentBuilder;
+use apollo_compiler::ast;
+use arbitrary::Result as ArbitraryResult;
+use std::fmt::Write as _;
 
 const CHARSET_LETTERS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
 const CHARSET_NUMBERS: &[u8] = b"0123456789";
@@ -45,9 +44,23 @@ impl From<Name> for String {
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Name> for Name {
-    fn from(name: apollo_parser::ast::Name) -> Self {
+impl From<Name> for ast::Name {
+    fn from(value: Name) -> Self {
+        (&value).into()
+    }
+}
+
+impl From<&'_ Name> for ast::Name {
+    fn from(value: &'_ Name) -> Self {
+        // FIXME: falliable instead of unwrap?
+        // Names from `DocumentBuilder` do have valid syntax,
+        // but the `new` constructor accepts any string
+        ast::Name::new(&value.name).unwrap()
+    }
+}
+
+impl From<apollo_parser::cst::Name> for Name {
+    fn from(name: apollo_parser::cst::Name) -> Self {
         Self {
             name: name.ident_token().unwrap().to_string(),
         }

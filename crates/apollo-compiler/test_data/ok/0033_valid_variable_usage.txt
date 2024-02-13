@@ -1,227 +1,351 @@
-- DOCUMENT@0..512
-    - OPERATION_DEFINITION@0..296
-        - OPERATION_TYPE@0..5
-            - query_KW@0..5 "query"
-        - WHITESPACE@5..6 " "
-        - NAME@6..23
-            - IDENT@6..23 "nullableStringArg"
-        - VARIABLE_DEFINITIONS@23..112
-            - L_PAREN@23..24 "("
-            - VARIABLE_DEFINITION@24..48
-                - VARIABLE@24..39
-                    - DOLLAR@24..25 "$"
-                    - NAME@25..39
-                        - IDENT@25..39 "nonNullableVar"
-                - COLON@39..40 ":"
-                - WHITESPACE@40..41 " "
-                - NON_NULL_TYPE@41..48
-                    - NAMED_TYPE@41..47
-                        - NAME@41..47
-                            - IDENT@41..47 "String"
-                    - BANG@47..48 "!"
-            - COMMA@48..49 ","
-            - WHITESPACE@49..50 " "
-            - VARIABLE_DEFINITION@50..78
-                - VARIABLE@50..66
-                    - DOLLAR@50..51 "$"
-                    - NAME@51..66
-                        - IDENT@51..66 "nonNullableList"
-                - COLON@66..67 ":"
-                - WHITESPACE@67..68 " "
-                - NON_NULL_TYPE@68..78
-                    - LIST_TYPE@68..77
-                        - L_BRACK@68..69 "["
-                        - NON_NULL_TYPE@69..76
-                            - NAMED_TYPE@69..75
-                                - NAME@69..75
-                                    - IDENT@69..75 "String"
-                            - BANG@75..76 "!"
-                        - R_BRACK@76..77 "]"
-                    - BANG@77..78 "!"
-            - COMMA@78..79 ","
-            - WHITESPACE@79..80 " "
-            - VARIABLE_DEFINITION@80..111
-                - VARIABLE@80..100
-                    - DOLLAR@80..81 "$"
-                    - NAME@81..100
-                        - IDENT@81..100 "nonNullableListList"
-                - COLON@100..101 ":"
-                - WHITESPACE@101..102 " "
-                - LIST_TYPE@102..111
-                    - L_BRACK@102..103 "["
-                    - NON_NULL_TYPE@103..110
-                        - LIST_TYPE@103..109
-                            - L_BRACK@103..104 "["
-                            - NON_NULL_TYPE@104..108
-                                - NAMED_TYPE@104..107
-                                    - NAME@104..107
-                                        - IDENT@104..107 "Int"
-                                - BANG@107..108 "!"
-                            - R_BRACK@108..109 "]"
-                        - BANG@109..110 "!"
-                    - R_BRACK@110..111 "]"
-            - R_PAREN@111..112 ")"
-        - WHITESPACE@112..113 " "
-        - SELECTION_SET@113..296
-            - L_CURLY@113..114 "{"
-            - WHITESPACE@114..117 "\n  "
-            - FIELD@117..294
-                - NAME@117..126
-                    - IDENT@117..126 "arguments"
-                - WHITESPACE@126..127 " "
-                - SELECTION_SET@127..294
-                    - L_CURLY@127..128 "{"
-                    - WHITESPACE@128..133 "\n    "
-                    - FIELD@133..180
-                        - NAME@133..147
-                            - IDENT@133..147 "nullableString"
-                        - ARGUMENTS@147..180
-                            - L_PAREN@147..148 "("
-                            - ARGUMENT@148..179
-                                - NAME@148..162
-                                    - IDENT@148..162 "nullableString"
-                                - COLON@162..163 ":"
-                                - WHITESPACE@163..164 " "
-                                - VARIABLE@164..179
-                                    - DOLLAR@164..165 "$"
-                                    - NAME@165..179
-                                        - IDENT@165..179 "nonNullableVar"
-                            - R_PAREN@179..180 ")"
-                    - WHITESPACE@180..185 "\n    "
-                    - FIELD@185..229
-                        - NAME@185..197
-                            - IDENT@185..197 "nullableList"
-                        - ARGUMENTS@197..229
-                            - L_PAREN@197..198 "("
-                            - ARGUMENT@198..228
-                                - NAME@198..210
-                                    - IDENT@198..210 "nullableList"
-                                - COLON@210..211 ":"
-                                - WHITESPACE@211..212 " "
-                                - VARIABLE@212..228
-                                    - DOLLAR@212..213 "$"
-                                    - NAME@213..228
-                                        - IDENT@213..228 "nonNullableList"
-                            - R_PAREN@228..229 ")"
-                    - WHITESPACE@229..234 "\n    "
-                    - FIELD@234..290
-                        - NAME@234..250
-                            - IDENT@234..250 "nullableListList"
-                        - ARGUMENTS@250..290
-                            - L_PAREN@250..251 "("
-                            - ARGUMENT@251..289
-                                - NAME@251..267
-                                    - IDENT@251..267 "nullableListList"
-                                - COLON@267..268 ":"
-                                - WHITESPACE@268..269 " "
-                                - VARIABLE@269..289
-                                    - DOLLAR@269..270 "$"
-                                    - NAME@270..289
-                                        - IDENT@270..289 "nonNullableListList"
-                            - R_PAREN@289..290 ")"
-                    - WHITESPACE@290..293 "\n  "
-                    - R_CURLY@293..294 "}"
-            - WHITESPACE@294..295 "\n"
-            - R_CURLY@295..296 "}"
-    - WHITESPACE@296..298 "\n\n"
-    - OBJECT_TYPE_DEFINITION@298..337
-        - type_KW@298..302 "type"
-        - WHITESPACE@302..303 " "
-        - NAME@303..308
-            - IDENT@303..308 "Query"
-        - WHITESPACE@308..309 " "
-        - FIELDS_DEFINITION@309..337
-            - L_CURLY@309..310 "{"
-            - WHITESPACE@310..315 "\n    "
-            - FIELD_DEFINITION@315..335
-                - NAME@315..324
-                    - IDENT@315..324 "arguments"
-                - COLON@324..325 ":"
-                - WHITESPACE@325..326 " "
-                - NAMED_TYPE@326..335
-                    - NAME@326..335
-                        - IDENT@326..335 "Arguments"
-            - WHITESPACE@335..336 "\n"
-            - R_CURLY@336..337 "}"
-    - WHITESPACE@337..339 "\n\n"
-    - OBJECT_TYPE_DEFINITION@339..510
-        - type_KW@339..343 "type"
-        - WHITESPACE@343..344 " "
-        - NAME@344..353
-            - IDENT@344..353 "Arguments"
-        - WHITESPACE@353..354 " "
-        - FIELDS_DEFINITION@354..510
-            - L_CURLY@354..355 "{"
-            - WHITESPACE@355..360 "\n    "
-            - FIELD_DEFINITION@360..406
-                - NAME@360..374
-                    - IDENT@360..374 "nullableString"
-                - ARGUMENTS_DEFINITION@374..398
-                    - L_PAREN@374..375 "("
-                    - INPUT_VALUE_DEFINITION@375..397
-                        - NAME@375..389
-                            - IDENT@375..389 "nullableString"
-                        - COLON@389..390 ":"
-                        - WHITESPACE@390..391 " "
-                        - NAMED_TYPE@391..397
-                            - NAME@391..397
-                                - IDENT@391..397 "String"
-                    - R_PAREN@397..398 ")"
-                - COLON@398..399 ":"
-                - WHITESPACE@399..400 " "
-                - NAMED_TYPE@400..406
-                    - NAME@400..406
-                        - IDENT@400..406 "String"
-            - WHITESPACE@406..411 "\n    "
-            - FIELD_DEFINITION@411..455
-                - NAME@411..423
-                    - IDENT@411..423 "nullableList"
-                - ARGUMENTS_DEFINITION@423..447
-                    - L_PAREN@423..424 "("
-                    - INPUT_VALUE_DEFINITION@424..446
-                        - NAME@424..436
-                            - IDENT@424..436 "nullableList"
-                        - COLON@436..437 ":"
-                        - WHITESPACE@437..438 " "
-                        - LIST_TYPE@438..446
-                            - L_BRACK@438..439 "["
-                            - NAMED_TYPE@439..445
-                                - NAME@439..445
-                                    - IDENT@439..445 "String"
-                            - R_BRACK@445..446 "]"
-                    - R_PAREN@446..447 ")"
-                - COLON@447..448 ":"
-                - WHITESPACE@448..449 " "
-                - NAMED_TYPE@449..455
-                    - NAME@449..455
-                        - IDENT@449..455 "String"
-            - WHITESPACE@455..460 "\n    "
-            - FIELD_DEFINITION@460..508
-                - NAME@460..476
-                    - IDENT@460..476 "nullableListList"
-                - ARGUMENTS_DEFINITION@476..503
-                    - L_PAREN@476..477 "("
-                    - INPUT_VALUE_DEFINITION@477..502
-                        - NAME@477..493
-                            - IDENT@477..493 "nullableListList"
-                        - COLON@493..494 ":"
-                        - WHITESPACE@494..495 " "
-                        - LIST_TYPE@495..502
-                            - L_BRACK@495..496 "["
-                            - LIST_TYPE@496..501
-                                - L_BRACK@496..497 "["
-                                - NAMED_TYPE@497..500
-                                    - NAME@497..500
-                                        - IDENT@497..500 "Int"
-                                - R_BRACK@500..501 "]"
-                            - R_BRACK@501..502 "]"
-                    - R_PAREN@502..503 ")"
-                - COLON@503..504 ":"
-                - WHITESPACE@504..505 " "
-                - NAMED_TYPE@505..508
-                    - NAME@505..508
-                        - IDENT@505..508 "Int"
-            - WHITESPACE@508..509 "\n"
-            - R_CURLY@509..510 "}"
-    - WHITESPACE@510..512 "\n\n"
-recursion limit: 4096, high: 2
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        32: SourceFile {
+            path: "0033_valid_variable_usage.graphql",
+            source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            298..337 @32 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "arguments": Component {
+                        origin: Definition,
+                        node: 315..335 @32 FieldDefinition {
+                            description: None,
+                            name: "arguments",
+                            arguments: [],
+                            ty: Named(
+                                "Arguments",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Arguments": Object(
+            339..510 @32 ObjectType {
+                description: None,
+                name: "Arguments",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "nullableString": Component {
+                        origin: Definition,
+                        node: 360..406 @32 FieldDefinition {
+                            description: None,
+                            name: "nullableString",
+                            arguments: [
+                                375..397 @32 InputValueDefinition {
+                                    description: None,
+                                    name: "nullableString",
+                                    ty: 391..397 @32 Named(
+                                        "String",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "nullableList": Component {
+                        origin: Definition,
+                        node: 411..455 @32 FieldDefinition {
+                            description: None,
+                            name: "nullableList",
+                            arguments: [
+                                424..446 @32 InputValueDefinition {
+                                    description: None,
+                                    name: "nullableList",
+                                    ty: 438..446 @32 List(
+                                        Named(
+                                            "String",
+                                        ),
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "nullableListList": Component {
+                        origin: Definition,
+                        node: 460..508 @32 FieldDefinition {
+                            description: None,
+                            name: "nullableListList",
+                            arguments: [
+                                477..502 @32 InputValueDefinition {
+                                    description: None,
+                                    name: "nullableListList",
+                                    ty: 495..502 @32 List(
+                                        List(
+                                            Named(
+                                                "Int",
+                                            ),
+                                        ),
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        32: SourceFile {
+            path: "0033_valid_variable_usage.graphql",
+            source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {
+        "nullableStringArg": 0..296 @32 Operation {
+            operation_type: Query,
+            name: Some(
+                "nullableStringArg",
+            ),
+            variables: [
+                24..48 @32 VariableDefinition {
+                    name: "nonNullableVar",
+                    ty: 41..48 @32 NonNullNamed(
+                        "String",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+                50..78 @32 VariableDefinition {
+                    name: "nonNullableList",
+                    ty: 68..78 @32 NonNullList(
+                        NonNullNamed(
+                            "String",
+                        ),
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+                80..111 @32 VariableDefinition {
+                    name: "nonNullableListList",
+                    ty: 102..111 @32 List(
+                        NonNullList(
+                            NonNullNamed(
+                                "Int",
+                            ),
+                        ),
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        117..294 @32 Field {
+                            definition: 315..335 @32 FieldDefinition {
+                                description: None,
+                                name: "arguments",
+                                arguments: [],
+                                ty: Named(
+                                    "Arguments",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "arguments",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Arguments",
+                                selections: [
+                                    Field(
+                                        133..180 @32 Field {
+                                            definition: 360..406 @32 FieldDefinition {
+                                                description: None,
+                                                name: "nullableString",
+                                                arguments: [
+                                                    375..397 @32 InputValueDefinition {
+                                                        description: None,
+                                                        name: "nullableString",
+                                                        ty: 391..397 @32 Named(
+                                                            "String",
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "nullableString",
+                                            arguments: [
+                                                148..179 @32 Argument {
+                                                    name: "nullableString",
+                                                    value: 164..179 @32 Variable(
+                                                        "nonNullableVar",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        185..229 @32 Field {
+                                            definition: 411..455 @32 FieldDefinition {
+                                                description: None,
+                                                name: "nullableList",
+                                                arguments: [
+                                                    424..446 @32 InputValueDefinition {
+                                                        description: None,
+                                                        name: "nullableList",
+                                                        ty: 438..446 @32 List(
+                                                            Named(
+                                                                "String",
+                                                            ),
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: Named(
+                                                    "String",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "nullableList",
+                                            arguments: [
+                                                198..228 @32 Argument {
+                                                    name: "nullableList",
+                                                    value: 212..228 @32 Variable(
+                                                        "nonNullableList",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    Field(
+                                        234..290 @32 Field {
+                                            definition: 460..508 @32 FieldDefinition {
+                                                description: None,
+                                                name: "nullableListList",
+                                                arguments: [
+                                                    477..502 @32 InputValueDefinition {
+                                                        description: None,
+                                                        name: "nullableListList",
+                                                        ty: 495..502 @32 List(
+                                                            List(
+                                                                Named(
+                                                                    "Int",
+                                                                ),
+                                                            ),
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: Named(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "nullableListList",
+                                            arguments: [
+                                                251..289 @32 Argument {
+                                                    name: "nullableListList",
+                                                    value: 269..289 @32 Variable(
+                                                        "nonNullableListList",
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+    fragments: {},
+}

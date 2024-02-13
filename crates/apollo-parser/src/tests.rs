@@ -11,7 +11,7 @@ use std::{
 
 use expect_test::expect_file;
 
-use crate::{Error, Lexer, Parser, Token};
+use crate::{Error, Lexer, Parser};
 
 // To run these tests and update files:
 // ```bash
@@ -24,15 +24,15 @@ use crate::{Error, Lexer, Parser, Token};
 #[test]
 fn lexer_tests() {
     dir_tests(&test_data_dir(), &["lexer/ok"], "txt", |text, path| {
-        let (tokens, errors) = Lexer::new(text).lex();
+        let (dumped, errors) = dump_tokens_and_errors(text);
         assert_errors_are_absent(&errors, path);
-        dump_tokens_and_errors(&tokens, &errors)
+        dumped
     });
 
     dir_tests(&test_data_dir(), &["lexer/err"], "txt", |text, path| {
-        let (tokens, errors) = Lexer::new(text).lex();
+        let (dumped, errors) = dump_tokens_and_errors(text);
         assert_errors_are_present(&errors, path);
-        dump_tokens_and_errors(&tokens, &errors)
+        dumped
     });
 }
 
@@ -40,16 +40,16 @@ fn lexer_tests() {
 fn parser_tests() {
     dir_tests(&test_data_dir(), &["parser/ok"], "txt", |text, path| {
         let parser = Parser::new(text);
-        let ast = parser.parse();
-        assert_errors_are_absent(&ast.errors().cloned().collect::<Vec<_>>(), path);
-        format!("{ast:?}")
+        let cst = parser.parse();
+        assert_errors_are_absent(&cst.errors().cloned().collect::<Vec<_>>(), path);
+        format!("{cst:?}")
     });
 
     dir_tests(&test_data_dir(), &["parser/err"], "txt", |text, path| {
         let parser = Parser::new(text);
-        let ast = parser.parse();
-        assert_errors_are_present(&ast.errors().cloned().collect::<Vec<_>>(), path);
-        format!("{ast:?}")
+        let cst = parser.parse();
+        assert_errors_are_present(&cst.errors().cloned().collect::<Vec<_>>(), path);
+        format!("{cst:?}")
     });
 }
 
@@ -76,15 +76,19 @@ fn assert_errors_are_absent(errors: &[Error], path: &Path) {
 }
 
 /// Concatenate tokens and errors.
-fn dump_tokens_and_errors(tokens: &[Token], errors: &[Error]) -> String {
+fn dump_tokens_and_errors(text: &str) -> (String, Vec<Error>) {
     let mut acc = String::new();
-    for token in tokens {
-        writeln!(acc, "{token:?}").unwrap();
+    let mut errors = Vec::new();
+    for result in Lexer::new(text) {
+        match result {
+            Ok(token) => writeln!(acc, "{token:?}").unwrap(),
+            Err(err) => {
+                writeln!(acc, "{err:?}").unwrap();
+                errors.push(err);
+            }
+        }
     }
-    for err in errors {
-        writeln!(acc, "{err:?}").unwrap();
-    }
-    acc
+    (acc, errors)
 }
 
 /// Compares input code taken from a `.graphql` file in test_fixtures and its

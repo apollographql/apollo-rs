@@ -1,36 +1,36 @@
-use std::{collections::HashMap, sync::Arc};
+use crate::ast;
+use crate::schema;
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::diagnostics::ValidationError;
+use crate::Node;
+use crate::ValidationDatabase;
 
-use crate::{
-    diagnostics::{DiagnosticData, Label},
-    hir, ApolloDiagnostic, ValidationDatabase,
-};
-
-pub fn validate_schema_definition(
+pub(crate) fn validate_schema_definition(
     db: &dyn ValidationDatabase,
-    schema_def: Arc<hir::SchemaDefinition>,
-) -> Vec<ApolloDiagnostic> {
+    schema_definition: ast::TypeWithExtensions<ast::SchemaDefinition>,
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
+    let root_operations: Vec<_> = schema_definition.root_operations().cloned().collect();
     // A GraphQL schema must have a Query root operation.
-    if schema_def.query().is_none() {
-        if let Some(loc) = db.schema().loc() {
-            diagnostics.push(
-                ApolloDiagnostic::new(db, loc.into(), DiagnosticData::QueryRootOperationType)
-                    .label(Label::new(
-                        loc,
-                        "`query` root operation type must be defined here",
-                    )),
-            );
-        }
+    let has_query = root_operations
+        .iter()
+        .any(|op| op.0 == ast::OperationType::Query);
+    if !has_query {
+        let location = schema_definition.definition.location();
+        diagnostics.push(ValidationError::new(
+            location,
+            DiagnosticData::QueryRootOperationType,
+        ));
     }
-    diagnostics
-        .extend(db.validate_root_operation_definitions(schema_def.self_root_operations().to_vec()));
+    diagnostics.extend(validate_root_operation_definitions(db, &root_operations));
 
-    diagnostics.extend(db.validate_directives(
-        schema_def.directives().cloned().collect(),
-        hir::DirectiveLocation::Schema,
+    diagnostics.extend(super::directive::validate_directives(
+        db,
+        schema_definition.directives(),
+        ast::DirectiveLocation::Schema,
         // schemas don't use variables
-        Arc::new(Vec::new()),
+        Default::default(),
     ));
 
     diagnostics
@@ -39,84 +39,38 @@ pub fn validate_schema_definition(
 // All root operations in a schema definition must be unique.
 //
 // Return a Unique Operation Definition error in case of a duplicate name.
-pub fn validate_root_operation_definitions(
+pub(crate) fn validate_root_operation_definitions(
     db: &dyn ValidationDatabase,
-    root_op_defs: Vec<hir::RootOperationTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
+    root_op_defs: &[Node<(ast::OperationType, ast::NamedType)>],
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let mut seen: HashMap<String, &hir::RootOperationTypeDefinition> = HashMap::new();
+    let schema = db.schema();
 
-    for op_type in root_op_defs.iter() {
-        let name = op_type.named_type().name();
-
-        // All root operations in a schema definition must be unique.
-        //
-        // Return a Unique Operation Definition error in case of a duplicate name.
-        if let Some(prev_def) = seen.get(&name) {
-            if let (Some(original_definition), Some(redefined_definition)) =
-                (prev_def.loc(), op_type.loc())
-            {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        redefined_definition.into(),
-                        DiagnosticData::UniqueDefinition {
-                            ty: "root operation type definition",
-                            name: name.clone(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_definition, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` must only be defined once in this document."
-                    )),
-                );
-            }
-        } else {
-            seen.insert(name, op_type);
-        }
+    for op in root_op_defs {
+        let (_op_type, name) = &**op;
 
         // Root Operation Named Type must be of Object Type.
         //
         // Return a Object Type error if it's any other type definition.
-        let type_def = db.find_type_definition_by_name(op_type.named_type().name());
+        let type_def = schema.types.get(name);
         if let Some(type_def) = type_def {
-            if !type_def.is_object_type_definition() {
-                if let Some(op_loc) = op_type.loc() {
-                    let kind = type_def.kind();
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            op_loc.into(),
-                            DiagnosticData::ObjectType {
-                                name: op_type.named_type().name(),
-                                ty: kind,
-                            },
-                        )
-                        .label(Label::new(op_loc, format!("This is of `{kind}` type")))
-                        .help("root operation type must be of an Object Type"),
-                    );
-                }
-            }
-        } else if let Some(op_loc) = op_type.loc() {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    op_loc.into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: op_type.named_type().name(),
+            if !matches!(type_def, schema::ExtendedType::Object(_)) {
+                let op_loc = name.location();
+                diagnostics.push(ValidationError::new(
+                    op_loc,
+                    DiagnosticData::RootOperationObjectType {
+                        name: name.clone(),
+                        describe_type: type_def.describe(),
                     },
-                )
-                .label(Label::new(op_loc, "not found in this scope")),
-            );
+                ));
+            }
+        } else {
+            let op_loc = name.location();
+            diagnostics.push(ValidationError::new(
+                op_loc,
+                DiagnosticData::UndefinedDefinition { name: name.clone() },
+            ));
         }
     }
 

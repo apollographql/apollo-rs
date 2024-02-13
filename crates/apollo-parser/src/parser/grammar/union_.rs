@@ -1,14 +1,13 @@
 #![allow(clippy::needless_return)]
 
-use crate::{
-    parser::grammar::{description, directive, document::is_definition, name, ty},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, name, ty};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#UnionTypeDefinition
 ///
 /// *UnionTypeDefinition*:
-///     Description? **union** Name Directives? UnionDefMemberTypes?
+///     Description? **union** Name Directives[Const]? UnionDefMemberTypes?
 pub(crate) fn union_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_DEFINITION);
 
@@ -16,7 +15,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("union") = p.peek_data().as_deref() {
+    if let Some("union") = p.peek_data() {
         p.bump(SyntaxKind::union_KW);
     }
 
@@ -26,7 +25,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T![=]) = p.peek() {
@@ -37,8 +36,8 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#UnionTypeExtension
 ///
 /// *UnionTypeExtension*:
-///     **extend** **union** Name Directives? UnionDefMemberTypes
-///     **extend** **union** Name Directives
+///     **extend** **union** Name Directives[Const]? UnionDefMemberTypes
+///     **extend** **union** Name Directives[Const]
 pub(crate) fn union_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -53,7 +52,7 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
 
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T![=]) = p.peek() {
@@ -75,29 +74,22 @@ pub(crate) fn union_member_types(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_MEMBER_TYPES);
     p.bump(S![=]);
 
-    union_member_type(p, false);
-}
+    if let Some(T![|]) = p.peek() {
+        p.bump(S![|]);
+    }
 
-fn union_member_type(p: &mut Parser, is_union: bool) {
-    match p.peek() {
-        Some(T![|]) => {
-            p.bump(S![|]);
-            union_member_type(p, is_union);
-        }
-        Some(TokenKind::Name) => {
+    if let Some(TokenKind::Name) = p.peek() {
+        ty::named_type(p);
+    } else {
+        p.err("expected Union Member Types");
+    }
+
+    while let Some(T![|]) = p.peek() {
+        p.bump(S![|]);
+        if let Some(TokenKind::Name) = p.peek() {
             ty::named_type(p);
-            if let Some(node) = p.peek_data() {
-                if !is_definition(node) {
-                    union_member_type(p, true);
-                }
-
-                return;
-            }
-        }
-        _ => {
-            if !is_union {
-                p.err("expected Union Member Types");
-            }
+        } else {
+            p.err("expected Union Member Type");
         }
     }
 }
@@ -105,19 +97,19 @@ fn union_member_type(p: &mut Parser, is_union: bool) {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::ast;
+    use crate::cst;
 
     #[test]
     fn union_member_types() {
         let input = "union SearchResult = Photo | Person | Cat | Dog";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::UnionTypeDefinition(union_type) = def {
+            if let cst::Definition::UnionTypeDefinition(union_type) = def {
                 assert_eq!(union_type.name().unwrap().text(), "SearchResult");
                 for union_member in union_type.union_member_types().unwrap().named_types() {
                     println!("{}", union_member.name().unwrap().text()); // Photo Person Cat Dog

@@ -1,121 +1,31 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            37: "0037_interface_with_non_output_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 37,
-            },
-            offset: 230,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 37,
-                    },
-                    offset: 230,
-                    length: 4,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "permissions",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            37: "0037_interface_with_non_output_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 37,
-            },
-            offset: 237,
-            length: 20,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 37,
-                    },
-                    offset: 237,
-                    length: 20,
-                },
-                text: "this is of `InputObjectTypeDefinition` type",
-            },
-        ],
-        help: Some(
-            "Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.",
-        ),
-        data: OutputType {
-            name: "coordinates",
-            ty: "InputObjectTypeDefinition",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            37: "0037_interface_with_non_output_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 37,
-            },
-            offset: 266,
-            length: 8,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 37,
-                    },
-                    offset: 266,
-                    length: 8,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "main",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            37: "0037_interface_with_non_output_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 37,
-            },
-            offset: 415,
-            length: 5,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 37,
-                    },
-                    offset: 415,
-                    length: 5,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "Photo",
-        },
-    },
-]
+Error: cannot find type `Auth` in this document
+    ╭─[0037_interface_with_non_output_fields.graphql:18:16]
+    │
+ 18 │   permissions: Auth
+    │                ──┬─  
+    │                  ╰─── not found in this scope
+────╯
+Error: `coordinates` field must return an output type
+    ╭─[0037_interface_with_non_output_fields.graphql:19:3]
+    │
+ 19 │   coordinates: Point2D
+    │                ───┬───  
+    │                   ╰───── this is an input object type
+    │ 
+    │ Help: Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.
+────╯
+Error: cannot find type `mainPage` in this document
+    ╭─[0037_interface_with_non_output_fields.graphql:20:9]
+    │
+ 20 │   main: mainPage
+    │         ────┬───  
+    │             ╰───── not found in this scope
+────╯
+Error: cannot find type `Photo` in this document
+    ╭─[0037_interface_with_non_output_fields.graphql:37:22]
+    │
+ 37 │ union SearchResult = Photo | Person
+    │                      ──┬──  
+    │                        ╰──── not found in this scope
+────╯
+

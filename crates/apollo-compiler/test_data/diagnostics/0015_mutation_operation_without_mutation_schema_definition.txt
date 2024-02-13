@@ -1,33 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            15: "0015_mutation_operation_without_mutation_schema_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 15,
-            },
-            offset: 0,
-            length: 74,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 15,
-                    },
-                    offset: 0,
-                    length: 74,
-                },
-                text: "Mutation operation is not defined in the schema and is therefore not supported",
-            },
-        ],
-        help: Some(
-            "consider defining a `mutation` root operation type in your schema",
-        ),
-        data: UnsupportedOperation {
-            ty: "mutation",
-        },
-    },
-]
+Error: `mutation` root operation type is not defined
+   ╭─[0015_mutation_operation_without_mutation_schema_definition.graphql:1:1]
+   │
+ 1 │ ╭─▶ mutation adoptAPetMutation {
+   ┆ ┆   
+ 7 │ ├─▶ }
+   │ │       
+   │ ╰─────── `mutation` is not defined in the schema and is therefore not supported
+   │     
+   │     Help: consider defining a `mutation` root operation type in your schema
+───╯
+

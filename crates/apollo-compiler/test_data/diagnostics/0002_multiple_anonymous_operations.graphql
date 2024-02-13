@@ -16,6 +16,11 @@ type Mutation {
   addPet (name: String!, petType: PetType): Result!
 }
 
+enum PetType {
+  CAT
+  DOG
+}
+
 type Result {
   pageNumber: Int
   response: String

@@ -1,0 +1,11 @@
+query getName {
+  cat
+}
+
+query getName {
+  cat
+}
+
+type Query {
+  cat: String
+}

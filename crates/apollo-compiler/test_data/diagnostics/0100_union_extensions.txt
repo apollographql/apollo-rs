@@ -1,143 +1,30 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            97: "0100_union_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 97,
-            },
-            offset: 239,
-            length: 13,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 97,
-                    },
-                    offset: 239,
-                    length: 13,
-                },
-                text: "This is of `ScalarTypeDefinition` type",
-            },
-        ],
-        help: Some(
-            "Union members must be of base Object Type.",
-        ),
-        data: ObjectType {
-            name: "ThisIsAScalar",
-            ty: "ScalarTypeDefinition",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            97: "0100_union_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 97,
-            },
-            offset: 362,
-            length: 10,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 97,
-                    },
-                    offset: 319,
-                    length: 10,
-                },
-                text: "previous definition of `WithFieldA` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 97,
-                    },
-                    offset: 362,
-                    length: 10,
-                },
-                text: "`WithFieldA` redefined here",
-            },
-        ],
-        help: Some(
-            "`WithFieldA` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "union member",
-            name: "WithFieldA",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 97,
-                },
-                offset: 319,
-                length: 10,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 97,
-                },
-                offset: 362,
-                length: 10,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            97: "0100_union_extensions.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 97,
-            },
-            offset: 549,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 97,
-                    },
-                    offset: 489,
-                    length: 14,
-                },
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 97,
-                    },
-                    offset: 549,
-                    length: 14,
-                },
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 97,
-                },
-                offset: 489,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 97,
-                },
-                offset: 549,
-                length: 14,
-            },
-        },
-    },
-]
+Error: union member `ThisIsAScalar` must be an object type
+   ╭─[0100_union_extensions.graphql:8:30]
+   │
+ 8 │ extend union NonObjectType = ThisIsAScalar
+   │                              ──────┬──────  
+   │                                    ╰──────── this is a scalar type
+   │ 
+   │ Help: Union members must be object types.
+───╯
+Error: duplicate definitions for the `WithFieldA` member of union type `DuplicateMembers`
+    ╭─[0100_union_extensions.graphql:12:33]
+    │
+ 11 │ union DuplicateMembers = WithFieldA
+    │                          ─────┬────  
+    │                               ╰────── previous definition of `WithFieldA` here
+ 12 │ extend union DuplicateMembers = WithFieldA | WithFieldB
+    │                                 ─────┬────  
+    │                                      ╰────── `WithFieldA` redefined here
+────╯
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0100_union_extensions.graphql:17:33]
+    │
+ 16 │ union DuplicateDirective @nonRepeatable = WithFieldA
+    │                          ───────┬──────  
+    │                                 ╰──────── directive `@nonRepeatable` first called here
+ 17 │ extend union DuplicateDirective @nonRepeatable = WithFieldB
+    │                                 ───────┬──────  
+    │                                        ╰──────── directive `@nonRepeatable` called again here
+────╯
+

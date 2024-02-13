@@ -1,119 +1,34 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            53: "0053_argument_name_is_not_defined.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 53,
-            },
-            offset: 133,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 133,
-                    length: 7,
-                },
-                text: "argument name not found",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 69,
-                    length: 21,
-                },
-                text: "field declared here",
-            },
-        ],
-        help: None,
-        data: UndefinedArgument {
-            name: "arg2",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            53: "0053_argument_name_is_not_defined.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 53,
-            },
-            offset: 142,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 142,
-                    length: 7,
-                },
-                text: "argument name not found",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 69,
-                    length: 21,
-                },
-                text: "field declared here",
-            },
-        ],
-        help: None,
-        data: UndefinedArgument {
-            name: "arg3",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            53: "0053_argument_name_is_not_defined.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 53,
-            },
-            offset: 176,
-            length: 7,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 176,
-                    length: 7,
-                },
-                text: "argument name not found",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 15,
-                    length: 21,
-                },
-                text: "field declared here",
-            },
-        ],
-        help: None,
-        data: UndefinedArgument {
-            name: "arg2",
-        },
-    },
-]
+Error: the argument `arg2` is not supported by `Field.field`
+    ╭─[0053_argument_name_is_not_defined.graphql:11:18]
+    │
+  7 │   field(arg4: Int): Int
+    │   ──────────┬──────────  
+    │             ╰──────────── Field.field defined here
+    │ 
+ 11 │   field(arg4: 1, arg2: 2, arg3: 3)
+    │                  ───┬───  
+    │                     ╰───── argument by this name not found
+────╯
+Error: the argument `arg3` is not supported by `Field.field`
+    ╭─[0053_argument_name_is_not_defined.graphql:11:27]
+    │
+  7 │   field(arg4: Int): Int
+    │   ──────────┬──────────  
+    │             ╰──────────── Field.field defined here
+    │ 
+ 11 │   field(arg4: 1, arg2: 2, arg3: 3)
+    │                           ───┬───  
+    │                              ╰───── argument by this name not found
+────╯
+Error: the argument `arg2` is not supported by `Query.field`
+    ╭─[0053_argument_name_is_not_defined.graphql:15:9]
+    │
+  2 │   field(arg1: Int): Int
+    │   ──────────┬──────────  
+    │             ╰──────────── Query.field defined here
+    │ 
+ 15 │   field(arg2: 3)
+    │         ───┬───  
+    │            ╰───── argument by this name not found
+────╯
+

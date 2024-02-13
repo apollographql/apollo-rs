@@ -14,9 +14,10 @@ pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 
     while let Some(node) = p.peek() {
-        if p.recursion_limit.limited() {
-            break;
-        }
+        assert_eq!(
+            p.recursion_limit.current, 0,
+            "unbalanced limit increment / decrement"
+        );
 
         match node {
             TokenKind::StringValue => {
@@ -41,8 +42,8 @@ pub(crate) fn document(p: &mut Parser) {
     doc.finish_node();
 }
 
-fn select_definition(def: String, p: &mut Parser) {
-    match def.as_str() {
+fn select_definition(def: &str, p: &mut Parser) {
+    match def {
         "directive" => directive::directive_definition(p),
         "enum" => enum_::enum_type_definition(p),
         "extend" => extensions::extensions(p),
@@ -58,29 +59,9 @@ fn select_definition(def: String, p: &mut Parser) {
     }
 }
 
-pub(crate) fn is_definition(def: String) -> bool {
-    matches!(
-        def.as_str(),
-        "directive"
-            | "enum"
-            | "extend"
-            | "fragment"
-            | "input"
-            | "interface"
-            | "type"
-            | "query"
-            | "mutation"
-            | "subscription"
-            | "{"
-            | "scalar"
-            | "schema"
-            | "union"
-    )
-}
-
 #[cfg(test)]
 mod test {
-    use crate::{ast, ast::AstNode, Parser};
+    use crate::{cst, cst::CstNode, Parser};
 
     #[test]
     fn it_returns_the_original_source_string() {
@@ -109,10 +90,10 @@ type Species {
 "#;
 
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().source_string(), schema);
+        assert_eq!(cst.errors().len(), 0);
+        assert_eq!(cst.document().source_string(), schema);
     }
 
     #[test]
@@ -127,10 +108,10 @@ uasdf21230jkdw
         "#;
         let parser = Parser::new(schema);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 
     #[test]
@@ -138,10 +119,10 @@ uasdf21230jkdw
         let schema = r#"dtzt7777777777t7777777777z7"#;
         let parser = Parser::new(schema);
 
-        let ast = parser.parse();
-        assert_eq!(ast.errors().len(), 1);
+        let cst = parser.parse();
+        assert_eq!(cst.errors().len(), 1);
 
-        let doc = ast.document();
+        let doc = cst.document();
         assert!(doc.definitions().next().is_none());
     }
 
@@ -163,13 +144,13 @@ extend type Query {
 }
         "#;
         let parser = crate::Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
-        let document = ast.document();
+        assert!(cst.errors.is_empty());
+        let document = cst.document();
         for definition in document.definitions() {
             match definition {
-                ast::Definition::DirectiveDefinition(directive) => {
+                cst::Definition::DirectiveDefinition(directive) => {
                     assert_eq!(
                         directive
                             .name()
@@ -179,7 +160,7 @@ extend type Query {
                         "tag"
                     )
                 }
-                ast::Definition::ObjectTypeDefinition(object_type) => {
+                cst::Definition::ObjectTypeDefinition(object_type) => {
                     assert_eq!(
                         object_type
                             .name()
@@ -189,7 +170,7 @@ extend type Query {
                         "ProductVariation"
                     )
                 }
-                ast::Definition::UnionTypeDefinition(union_type) => {
+                cst::Definition::UnionTypeDefinition(union_type) => {
                     assert_eq!(
                         union_type
                             .name()
@@ -199,7 +180,7 @@ extend type Query {
                         "SearchResult"
                     )
                 }
-                ast::Definition::ScalarTypeDefinition(scalar_type) => {
+                cst::Definition::ScalarTypeDefinition(scalar_type) => {
                     assert_eq!(
                         scalar_type
                             .name()
@@ -209,7 +190,7 @@ extend type Query {
                         "UUID"
                     )
                 }
-                ast::Definition::ObjectTypeExtension(object_type) => {
+                cst::Definition::ObjectTypeExtension(object_type) => {
                     assert_eq!(
                         object_type
                             .name()
@@ -237,13 +218,13 @@ enum join__Graph {
 }
         "#;
         let parser = crate::Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_type) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_type) = definition {
                 let enum_name = enum_type
                     .name()
                     .expect("Could not get Enum Type Definition's Name");
@@ -270,7 +251,7 @@ enum join__Graph {
             }
         }
 
-        fn check_directive_arguments(enum_kind: ast::EnumValueDefinition) {
+        fn check_directive_arguments(enum_kind: cst::EnumValueDefinition) {
             if let Some(directives) = enum_kind.directives() {
                 for directive in directives.directives() {
                     if directive
@@ -281,7 +262,7 @@ enum join__Graph {
                         == Some("join__graph")
                     {
                         for argument in directive.arguments().unwrap().arguments() {
-                            if let ast::Value::StringValue(val) =
+                            if let cst::Value::StringValue(val) =
                                 argument.value().expect("Cannot get argument value.")
                             {
                                 let val: String = val.into();

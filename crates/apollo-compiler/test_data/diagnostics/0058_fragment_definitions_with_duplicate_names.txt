@@ -1,58 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            58: "0058_fragment_definitions_with_duplicate_names.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 58,
-            },
-            offset: 244,
-            length: 11,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 58,
-                    },
-                    offset: 196,
-                    length: 11,
-                },
-                text: "previous definition of `petFragment` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 58,
-                    },
-                    offset: 244,
-                    length: 11,
-                },
-                text: "`petFragment` redefined here",
-            },
-        ],
-        help: Some(
-            "`petFragment` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "fragment",
-            name: "petFragment",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 58,
-                },
-                offset: 196,
-                length: 11,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 58,
-                },
-                offset: 244,
-                length: 11,
-            },
-        },
-    },
-]
+Error: the fragment `petFragment` is defined multiple times in the document
+    ╭─[0058_fragment_definitions_with_duplicate_names.graphql:22:10]
+    │
+ 17 │ fragment petFragment on Pet {
+    │          ─────┬─────  
+    │               ╰─────── previous definition of `petFragment` here
+    │ 
+ 22 │ fragment petFragment on Pet {
+    │          ─────┬─────  
+    │               ╰─────── `petFragment` redefined here
+────╯
+

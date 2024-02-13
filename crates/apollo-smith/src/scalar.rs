@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     description::Description,
     directive::{Directive, DirectiveLocation},
     name::Name,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
 
 /// Represents scalar types such as Int, String, and Boolean.
 /// Scalars cannot have fields.
@@ -20,33 +19,33 @@ use crate::{
 pub struct ScalarTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 
-impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
-    fn from(scalar_def: ScalarTypeDef) -> Self {
-        let mut new_scalar_def = Self::new(scalar_def.name.into());
-        if let Some(description) = scalar_def.description {
-            new_scalar_def.description(description.into());
+impl From<ScalarTypeDef> for ast::Definition {
+    fn from(x: ScalarTypeDef) -> Self {
+        if x.extend {
+            ast::ScalarTypeExtension {
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+            }
+            .into()
+        } else {
+            ast::ScalarTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+            }
+            .into()
         }
-        scalar_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_scalar_def.directive(directive.into()));
-        if scalar_def.extend {
-            new_scalar_def.extend();
-        }
-
-        new_scalar_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
+impl TryFrom<apollo_parser::cst::ScalarTypeDefinition> for ScalarTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(scalar_def: apollo_parser::ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(scalar_def: apollo_parser::cst::ScalarTypeDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             description: scalar_def
                 .description()
@@ -63,11 +62,10 @@ impl TryFrom<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
+impl TryFrom<apollo_parser::cst::ScalarTypeExtension> for ScalarTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(scalar_def: apollo_parser::ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(scalar_def: apollo_parser::cst::ScalarTypeExtension) -> Result<Self, Self::Error> {
         Ok(Self {
             description: None,
             name: scalar_def.name().unwrap().into(),

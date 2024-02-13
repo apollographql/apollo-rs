@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{directive, name, selection, ty, variable},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{directive, name, selection, ty, variable};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
@@ -23,7 +22,15 @@ pub(crate) fn root_operation_type_definition(p: &mut Parser, is_operation_type: 
             ty::named_type(p);
             if p.peek().is_some() {
                 guard.finish_node();
-                return root_operation_type_definition(p, true);
+
+                // TODO use a loop instead of recursion
+                if p.recursion_limit.check_and_increment() {
+                    p.limit_err("parser recursion limit reached");
+                    return;
+                }
+                root_operation_type_definition(p, true);
+                p.recursion_limit.decrement();
+                return;
             }
         } else {
             p.err("expected a Name Type");
@@ -57,18 +64,18 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
 
             if let Some(T![@]) = p.peek() {
-                directive::directives(p);
+                directive::directives(p, Constness::NotConst);
             }
 
             match p.peek() {
-                Some(T!['{']) => selection::top_selection_set(p),
+                Some(T!['{']) => selection::selection_set(p),
                 _ => p.err_and_pop("expected a Selection Set"),
             }
         }
         Some(T!['{']) => {
             let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
 
-            selection::top_selection_set(p)
+            selection::selection_set(p)
         }
         _ => p.err_and_pop("expected an Operation Type or a Selection Set"),
     }
@@ -81,7 +88,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
 pub(crate) fn operation_type(p: &mut Parser) {
     if let Some(node) = p.peek_data() {
         let _g = p.start_node(SyntaxKind::OPERATION_TYPE);
-        match node.as_str() {
+        match node {
             "query" => p.bump(SyntaxKind::query_KW),
             "subscription" => p.bump(SyntaxKind::subscription_KW),
             "mutation" => p.bump(SyntaxKind::mutation_KW),
@@ -100,9 +107,9 @@ mod test {
     fn it_continues_parsing_when_operation_definition_starts_with_description() {
         let input = "\"description\"{}";
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.errors().len(), 2);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.errors().len(), 2);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 }

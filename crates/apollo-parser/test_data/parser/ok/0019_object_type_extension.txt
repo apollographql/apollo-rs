@@ -51,4 +51,4 @@
                         - IDENT@93..96 "Url"
             - WHITESPACE@96..97 "\n"
             - R_CURLY@97..98 "}"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

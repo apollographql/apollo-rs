@@ -16,15 +16,17 @@ pub(crate) mod operation;
 pub(crate) mod scalar;
 pub(crate) mod schema;
 pub(crate) mod selection_set;
+#[cfg(test)]
+pub(crate) mod snapshot_tests;
 pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
 
-use std::{collections::HashMap, fmt::Debug};
+use indexmap::IndexMap;
+use std::fmt::Debug;
 
 use arbitrary::Unstructured;
 
-#[cfg(feature = "parser-impl")]
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum FromError {
     #[error("parse tree is missing a node")]
@@ -88,9 +90,9 @@ pub struct DocumentBuilder<'a> {
     // A stack to set current ObjectTypeDef
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field
-    pub(crate) chosen_arguments: HashMap<Name, Vec<Argument>>,
+    pub(crate) chosen_arguments: IndexMap<Name, Vec<Argument>>,
     // Useful to keep the same aliases for a specific field name
-    pub(crate) chosen_aliases: HashMap<Name, Name>,
+    pub(crate) chosen_aliases: IndexMap<Name, Name>,
 }
 
 impl<'a> Debug for DocumentBuilder<'a> {
@@ -126,8 +128,8 @@ impl<'a> DocumentBuilder<'a> {
             union_type_defs: Vec::new(),
             input_object_type_defs: Vec::new(),
             stack: Vec::new(),
-            chosen_arguments: HashMap::new(),
-            chosen_aliases: HashMap::new(),
+            chosen_arguments: IndexMap::new(),
+            chosen_aliases: IndexMap::new(),
         };
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
@@ -200,8 +202,8 @@ impl<'a> DocumentBuilder<'a> {
             union_type_defs: document.union_type_definitions,
             input_object_type_defs: document.input_object_type_definitions,
             stack: Vec::new(),
-            chosen_arguments: HashMap::new(),
-            chosen_aliases: HashMap::new(),
+            chosen_arguments: IndexMap::new(),
+            chosen_aliases: IndexMap::new(),
         };
 
         Ok(builder)

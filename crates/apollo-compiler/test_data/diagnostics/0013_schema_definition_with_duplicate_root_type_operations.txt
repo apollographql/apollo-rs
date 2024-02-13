@@ -1,58 +1,11 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            13: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 13,
-            },
-            offset: 36,
-            length: 28,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 13,
-                    },
-                    offset: 11,
-                    length: 21,
-                },
-                text: "previous definition of `customPetQuery` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 13,
-                    },
-                    offset: 36,
-                    length: 28,
-                },
-                text: "`customPetQuery` redefined here",
-            },
-        ],
-        help: Some(
-            "`customPetQuery` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "root operation type definition",
-            name: "customPetQuery",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 13,
-                },
-                offset: 11,
-                length: 21,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 13,
-                },
-                offset: 36,
-                length: 28,
-            },
-        },
-    },
-]
+Error: duplicate definitions for the `query` root operation type
+   ╭─[0013_schema_definition_with_duplicate_root_type_operations.graphql:3:3]
+   │
+ 2 │   query: customPetQuery
+   │          ───────┬──────  
+   │                 ╰──────── previous definition of `query` here
+ 3 │   query: thatOtherQuery
+   │   ──────────┬──────────  
+   │             ╰──────────── `query` redefined here
+───╯
+

@@ -8,7 +8,7 @@
 //   A*          -- zero or more repetition
 //   A?          -- zero or one repetition
 //   (A)         -- same as A
-//   label:A     -- suggested name for field of AST node
+//   label:A     -- suggested name for field of CST node
 
 Name =
   'ident'

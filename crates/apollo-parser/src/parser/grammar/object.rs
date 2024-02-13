@@ -1,14 +1,13 @@
 #![allow(clippy::needless_return)]
 
-use crate::{
-    parser::grammar::{description, directive, document::is_definition, field, name, ty},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, field, name, ty};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#ObjectTypeDefinition
 ///
 /// *ObjectTypeDefinition*:
-///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
+///     Description? **type** Name ImplementsInterfaces? Directives[Const]? FieldsDefinition?
 pub(crate) fn object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
 
@@ -16,7 +15,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("type") = p.peek_data().as_deref() {
+    if let Some("type") = p.peek_data() {
         p.bump(SyntaxKind::type_KW);
     }
 
@@ -34,7 +33,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -45,8 +44,8 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#ObjectTypeExtension
 ///
 /// *ObjectTypeExtension*:
-///     **extend** **type** Name ImplementsInterfaces? Directives? FieldsDefinition
-///     **extend** **type** Name ImplementsInterfaces? Directives?
+///     **extend** **type** Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
+///     **extend** **type** Name ImplementsInterfaces? Directives[Const]?
 ///     **extend** **type** Name ImplementsInterfaces
 pub(crate) fn object_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
@@ -62,14 +61,14 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
-    if let Some("implements") = p.peek_data().as_deref() {
+    if let Some("implements") = p.peek_data() {
         meets_requirements = true;
         implements_interfaces(p);
     }
 
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(p)
+        directive::directives(p, Constness::Const)
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -91,29 +90,22 @@ pub(crate) fn implements_interfaces(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
     p.bump(SyntaxKind::implements_KW);
 
-    implements_interface(p, false);
-}
+    if let Some(T![&]) = p.peek() {
+        p.bump(S![&]);
+    }
 
-fn implements_interface(p: &mut Parser, is_interfaces: bool) {
-    match p.peek() {
-        Some(T![&]) => {
-            p.bump(S![&]);
-            implements_interface(p, is_interfaces)
-        }
-        Some(TokenKind::Name) => {
+    if let Some(TokenKind::Name) = p.peek() {
+        ty::named_type(p);
+    } else {
+        p.err("expected an Interface name");
+    }
+
+    while let Some(T![&]) = p.peek() {
+        p.bump(S![&]);
+        if let Some(TokenKind::Name) = p.peek() {
             ty::named_type(p);
-            if let Some(node) = p.peek_data() {
-                if !is_definition(node) {
-                    implements_interface(p, true);
-                }
-
-                return;
-            }
-        }
-        _ => {
-            if !is_interfaces {
-                p.err("expected an Object Type Definition");
-            }
+        } else {
+            p.err("expected an Interface name");
         }
     }
 }
@@ -121,7 +113,7 @@ fn implements_interface(p: &mut Parser, is_interfaces: bool) {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::ast;
+    use crate::cst;
 
     #[test]
     fn object_type_definition() {
@@ -130,13 +122,13 @@ type Business implements NamedEntity & ValuedEntity & CatEntity {
   name: String
 }";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::ObjectTypeDefinition(interface_type) = def {
+            if let cst::Definition::ObjectTypeDefinition(interface_type) = def {
                 assert_eq!(interface_type.name().unwrap().text(), "Business");
                 for implements_interfaces in interface_type
                     .implements_interfaces()

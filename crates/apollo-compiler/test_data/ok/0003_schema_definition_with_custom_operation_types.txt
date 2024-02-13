@@ -1,152 +1,214 @@
-- DOCUMENT@0..328
-    - SCHEMA_DEFINITION@0..103
-        - schema_KW@0..6 "schema"
-        - WHITESPACE@6..7 " "
-        - L_CURLY@7..8 "{"
-        - WHITESPACE@8..11 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@11..32
-            - OPERATION_TYPE@11..16
-                - query_KW@11..16 "query"
-            - COLON@16..17 ":"
-            - WHITESPACE@17..18 " "
-            - NAMED_TYPE@18..32
-                - NAME@18..32
-                    - IDENT@18..32 "customPetQuery"
-        - COMMA@32..33 ","
-        - WHITESPACE@33..36 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@36..71
-            - OPERATION_TYPE@36..48
-                - subscription_KW@36..48 "subscription"
-            - COLON@48..49 ":"
-            - WHITESPACE@49..50 " "
-            - NAMED_TYPE@50..71
-                - NAME@50..71
-                    - IDENT@50..71 "customPetSubscription"
-        - WHITESPACE@71..74 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@74..101
-            - OPERATION_TYPE@74..82
-                - mutation_KW@74..82 "mutation"
-            - COLON@82..83 ":"
-            - WHITESPACE@83..84 " "
-            - NAMED_TYPE@84..101
-                - NAME@84..101
-                    - IDENT@84..101 "customPetMutation"
-        - WHITESPACE@101..102 "\n"
-        - R_CURLY@102..103 "}"
-    - WHITESPACE@103..105 "\n\n"
-    - OBJECT_TYPE_DEFINITION@105..155
-        - type_KW@105..109 "type"
-        - WHITESPACE@109..110 " "
-        - NAME@110..124
-            - IDENT@110..124 "customPetQuery"
-        - WHITESPACE@124..125 " "
-        - FIELDS_DEFINITION@125..155
-            - L_CURLY@125..126 "{"
-            - WHITESPACE@126..129 "\n  "
-            - FIELD_DEFINITION@129..141
-                - NAME@129..133
-                    - IDENT@129..133 "name"
-                - COLON@133..134 ":"
-                - WHITESPACE@134..135 " "
-                - NAMED_TYPE@135..141
-                    - NAME@135..141
-                        - IDENT@135..141 "String"
-            - COMMA@141..142 ","
-            - WHITESPACE@142..145 "\n  "
-            - FIELD_DEFINITION@145..153
-                - NAME@145..148
-                    - IDENT@145..148 "age"
-                - COLON@148..149 ":"
-                - WHITESPACE@149..150 " "
-                - NAMED_TYPE@150..153
-                    - NAME@150..153
-                        - IDENT@150..153 "Int"
-            - WHITESPACE@153..154 "\n"
-            - R_CURLY@154..155 "}"
-    - WHITESPACE@155..157 "\n\n"
-    - OBJECT_TYPE_DEFINITION@157..218
-        - type_KW@157..161 "type"
-        - WHITESPACE@161..162 " "
-        - NAME@162..183
-            - IDENT@162..183 "customPetSubscription"
-        - WHITESPACE@183..184 " "
-        - FIELDS_DEFINITION@184..218
-            - L_CURLY@184..185 "{"
-            - WHITESPACE@185..188 "\n  "
-            - FIELD_DEFINITION@188..216
-                - NAME@188..208
-                    - IDENT@188..208 "changeInPetHousehold"
-                - COLON@208..209 ":"
-                - WHITESPACE@209..210 " "
-                - NAMED_TYPE@210..216
-                    - NAME@210..216
-                        - IDENT@210..216 "Result"
-            - WHITESPACE@216..217 "\n"
-            - R_CURLY@217..218 "}"
-    - WHITESPACE@218..220 "\n\n"
-    - OBJECT_TYPE_DEFINITION@220..298
-        - type_KW@220..224 "type"
-        - WHITESPACE@224..225 " "
-        - NAME@225..242
-            - IDENT@225..242 "customPetMutation"
-        - WHITESPACE@242..243 " "
-        - FIELDS_DEFINITION@243..298
-            - L_CURLY@243..244 "{"
-            - WHITESPACE@244..247 "\n  "
-            - FIELD_DEFINITION@247..296
-                - NAME@247..253
-                    - IDENT@247..253 "addPet"
-                - WHITESPACE@253..254 " "
-                - ARGUMENTS_DEFINITION@254..287
-                    - L_PAREN@254..255 "("
-                    - INPUT_VALUE_DEFINITION@255..268
-                        - NAME@255..259
-                            - IDENT@255..259 "name"
-                        - COLON@259..260 ":"
-                        - WHITESPACE@260..261 " "
-                        - NON_NULL_TYPE@261..268
-                            - NAMED_TYPE@261..267
-                                - NAME@261..267
-                                    - IDENT@261..267 "String"
-                            - BANG@267..268 "!"
-                    - COMMA@268..269 ","
-                    - WHITESPACE@269..270 " "
-                    - INPUT_VALUE_DEFINITION@270..286
-                        - NAME@270..277
-                            - IDENT@270..277 "petType"
-                        - COLON@277..278 ":"
-                        - WHITESPACE@278..279 " "
-                        - NAMED_TYPE@279..286
-                            - NAME@279..286
-                                - IDENT@279..286 "PetType"
-                    - R_PAREN@286..287 ")"
-                - COLON@287..288 ":"
-                - WHITESPACE@288..289 " "
-                - NON_NULL_TYPE@289..296
-                    - NAMED_TYPE@289..295
-                        - NAME@289..295
-                            - IDENT@289..295 "Result"
-                    - BANG@295..296 "!"
-            - WHITESPACE@296..297 "\n"
-            - R_CURLY@297..298 "}"
-    - WHITESPACE@298..300 "\n\n"
-    - OBJECT_TYPE_DEFINITION@300..328
-        - type_KW@300..304 "type"
-        - WHITESPACE@304..305 " "
-        - NAME@305..311
-            - IDENT@305..311 "Result"
-        - WHITESPACE@311..312 " "
-        - FIELDS_DEFINITION@312..328
-            - L_CURLY@312..313 "{"
-            - WHITESPACE@313..316 "\n  "
-            - FIELD_DEFINITION@316..326
-                - NAME@316..318
-                    - IDENT@316..318 "id"
-                - COLON@318..319 ":"
-                - WHITESPACE@319..320 " "
-                - NAMED_TYPE@320..326
-                    - NAME@320..326
-                        - IDENT@320..326 "String"
-            - WHITESPACE@326..327 "\n"
-            - R_CURLY@327..328 "}"
-recursion limit: 4096, high: 0
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        3: SourceFile {
+            path: "0003_schema_definition_with_custom_operation_types.graphql",
+            source_text: "schema {\n  query: customPetQuery,\n  subscription: customPetSubscription\n  mutation: customPetMutation\n}\n\nenum PetType {\n  CAT,\n  DOG,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}\n\ntype customPetSubscription {\n  changeInPetHousehold: Result\n}\n\ntype customPetMutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n",
+        },
+    },
+    schema_definition: 0..103 @3 SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "customPetQuery",
+            },
+        ),
+        mutation: Some(
+            ComponentName {
+                origin: Definition,
+                name: "customPetMutation",
+            },
+        ),
+        subscription: Some(
+            ComponentName {
+                origin: Definition,
+                name: "customPetSubscription",
+            },
+        ),
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "PetType": Enum(
+            105..135 @3 EnumType {
+                description: None,
+                name: "PetType",
+                directives: [],
+                values: {
+                    "CAT": Component {
+                        origin: Definition,
+                        node: 122..125 @3 EnumValueDefinition {
+                            description: None,
+                            value: "CAT",
+                            directives: [],
+                        },
+                    },
+                    "DOG": Component {
+                        origin: Definition,
+                        node: 129..132 @3 EnumValueDefinition {
+                            description: None,
+                            value: "DOG",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "customPetQuery": Object(
+            137..187 @3 ObjectType {
+                description: None,
+                name: "customPetQuery",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 161..173 @3 FieldDefinition {
+                            description: None,
+                            name: "name",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "age": Component {
+                        origin: Definition,
+                        node: 177..185 @3 FieldDefinition {
+                            description: None,
+                            name: "age",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "customPetSubscription": Object(
+            189..250 @3 ObjectType {
+                description: None,
+                name: "customPetSubscription",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "changeInPetHousehold": Component {
+                        origin: Definition,
+                        node: 220..248 @3 FieldDefinition {
+                            description: None,
+                            name: "changeInPetHousehold",
+                            arguments: [],
+                            ty: Named(
+                                "Result",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "customPetMutation": Object(
+            252..330 @3 ObjectType {
+                description: None,
+                name: "customPetMutation",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "addPet": Component {
+                        origin: Definition,
+                        node: 279..328 @3 FieldDefinition {
+                            description: None,
+                            name: "addPet",
+                            arguments: [
+                                287..300 @3 InputValueDefinition {
+                                    description: None,
+                                    name: "name",
+                                    ty: 293..300 @3 NonNullNamed(
+                                        "String",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                                302..318 @3 InputValueDefinition {
+                                    description: None,
+                                    name: "petType",
+                                    ty: 311..318 @3 Named(
+                                        "PetType",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: NonNullNamed(
+                                "Result",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Result": Object(
+            332..360 @3 ObjectType {
+                description: None,
+                name: "Result",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 348..358 @3 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        3: SourceFile {
+            path: "0003_schema_definition_with_custom_operation_types.graphql",
+            source_text: "schema {\n  query: customPetQuery,\n  subscription: customPetSubscription\n  mutation: customPetMutation\n}\n\nenum PetType {\n  CAT,\n  DOG,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}\n\ntype customPetSubscription {\n  changeInPetHousehold: Result\n}\n\ntype customPetMutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

@@ -1,82 +1,30 @@
-use std::{collections::HashMap, sync::Arc};
+use crate::validation::diagnostics::ValidationError;
+use crate::{ast, Node, ValidationDatabase};
 
-use crate::{
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, EnumValueDefinition},
-    ValidationDatabase,
-};
-
-pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let defs = &db.type_system_definitions().enums;
-    for def in defs.values() {
-        diagnostics.extend(db.validate_enum_definition(def.clone()));
+    for enum_ in db.ast_types().enums.values() {
+        diagnostics.extend(db.validate_enum_definition(enum_.clone()));
     }
 
     diagnostics
 }
 
-fn iter_with_extensions<'a, Item, Ext>(
-    base: &'a [Item],
-    extensions: &'a [Arc<Ext>],
-    method: impl Fn(&'a Ext) -> &'a [Item],
-) -> impl Iterator<Item = &'a Item> {
-    base.iter()
-        .chain(extensions.iter().flat_map(move |ext| method(ext).iter()))
-}
-
-pub fn validate_enum_definition(
+pub(crate) fn validate_enum_definition(
     db: &dyn ValidationDatabase,
-    enum_def: Arc<hir::EnumTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = db.validate_directives(
-        enum_def.directives().cloned().collect(),
-        hir::DirectiveLocation::Enum,
+    enum_def: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
+) -> Vec<ValidationError> {
+    let mut diagnostics = super::directive::validate_directives(
+        db,
+        enum_def.directives(),
+        ast::DirectiveLocation::Enum,
         // enums don't use variables
-        Arc::new(Vec::new()),
+        Default::default(),
     );
 
-    let enum_values = iter_with_extensions(
-        enum_def.self_values(),
-        enum_def.extensions(),
-        hir::EnumTypeExtension::values,
-    );
-
-    let mut seen: HashMap<&str, &EnumValueDefinition> = HashMap::new();
-    for enum_val in enum_values {
-        diagnostics.extend(db.validate_enum_value(enum_val.clone()));
-
-        // An Enum type must define one or more unique enum values.
-        //
-        // Return a Unique Definition error in case of a duplicate value.
-        let value = enum_val.enum_value();
-        if let Some(prev_def) = seen.get(&value) {
-            let original_definition = prev_def.loc();
-            let redefined_definition = enum_val.loc();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    redefined_definition.into(),
-                    DiagnosticData::UniqueDefinition {
-                        ty: "enum value",
-                        name: value.into(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: redefined_definition.into(),
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previous definition of `{value}` here"),
-                    ),
-                    Label::new(redefined_definition, format!("`{value}` redefined here")),
-                ])
-                .help(format!("{value} must only be defined once in this enum.")),
-            );
-        } else {
-            seen.insert(value, enum_val);
-        }
+    for enum_val in enum_def.values() {
+        diagnostics.extend(validate_enum_value(db, enum_val));
     }
 
     diagnostics
@@ -84,34 +32,13 @@ pub fn validate_enum_definition(
 
 pub(crate) fn validate_enum_value(
     db: &dyn ValidationDatabase,
-    enum_val: hir::EnumValueDefinition,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = db.validate_directives(
-        enum_val.directives().to_vec(),
-        hir::DirectiveLocation::EnumValue,
+    enum_val: &Node<ast::EnumValueDefinition>,
+) -> Vec<ValidationError> {
+    super::directive::validate_directives(
+        db,
+        enum_val.directives.iter(),
+        ast::DirectiveLocation::EnumValue,
         // enum values don't use variables
-        Arc::new(Vec::new()),
-    );
-
-    // (convention) Values in an Enum Definition should be capitalized.
-    //
-    // Return a Capitalized Value warning if enum value is not capitalized.
-    let value = enum_val.enum_value();
-    if value.to_uppercase() != value {
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                enum_val.loc().into(),
-                DiagnosticData::CapitalizedValue {
-                    value: value.into(),
-                },
-            )
-            .label(Label::new(
-                enum_val.loc(),
-                format!("consider capitalizing {value}"),
-            )),
-        );
-    }
-
-    diagnostics
+        Default::default(),
+    )
 }

@@ -4,7 +4,7 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2021-mm-dd
+<!-- # [x.x.x] (unreleased) - 2024-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -15,8 +15,657 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 
 ## Maintenance
-## Documentation -->
-# [x.x.x] (unreleased) - 2021-mm-dd
+## Documentation-->
+
+# [1.0.0-beta.12](https://crates.io/crates/apollo-compiler/1.0.0-beta.12) - 2024-01-15
+
+## BREAKING
+- **`InputValueDefinition::is_required()` returns false if it has a default value - [goto-bus-stop], [pull/798]**
+  - Now `argument.is_required() == true` only if the type is non-null and there is no
+    default value, meaning a value must be provided when it's used.
+
+## Features
+- **Implement `fmt::Display` for `ComponentName` - [goto-bus-stop], [pull/795]**
+- **Add `FieldDefinition::argument_by_name` and `DirectiveDefinition::argument_by_name` - [goto-bus-stop], [pull/801]**
+  - These methods return an argument definition by name, or `None`.
+- **Add `.lookup` methods to schema coordinates - [goto-bus-stop], [pull/803]**
+  - `coord!(Type).lookup(&schema)` returns the type definition for `Type`.
+  - `coord!(Type.field).lookup_field(&schema)` returns the field definition for `field`.
+  - `coord!(Enum.VALUE).lookup_enum_value(&schema)` returns the enum value definition for `VALUE`.
+  - `coord!(InputType.field).lookup_input_field(&schema)` returns the input field definition for `field`.
+  - `coord!(Type.field(argument:)).lookup(&schema)` returns the argument definition for `argument`.
+  - `coord!(@directive).lookup(&schema)` returns the directive definition for `@directive`.
+  - `coord!(@directive(argument:)).lookup(&schema)` returns the argument definition for `argument`.
+  - `string.parse::<SchemaCoordinate>()?.lookup(&schema)` returns an enum with all the elements
+    that can be looked up using schema coordinates.
+
+## Maintenance
+- **update ariadne to 0.4.0 - [pull/793]**
+  Ariadne is the diagnostic printing crate used for validation errors. v0.4.0 improves memory usage.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop]
+[pull/795]: https://github.com/apollographql/apollo-rs/pull/795
+[pull/798]: https://github.com/apollographql/apollo-rs/pull/798
+[pull/801]: https://github.com/apollographql/apollo-rs/pull/801
+[pull/803]: https://github.com/apollographql/apollo-rs/pull/803
+[pull/793]: https://github.com/apollographql/apollo-rs/pull/793
+
+# [1.0.0-beta.11](https://crates.io/crates/apollo-compiler/1.0.0-beta.11) - 2023-12-19
+
+This release includes support for GraphQL schema introspection [directly in the
+compiler]. If this is a feature you're interested in, we encourage you to try it
+out and leave us any feedback in [the introspection discussion]. More details on this feature in the changelog below.
+
+## Features
+- **Pretty CLI formatting for custom diagnostics - [goto-bus-stop], [pull/747]:**
+  - A `CliReport` builder API for printing with labeled source code
+    to a monospace text stream with optional ANSI color codes.
+  - A `ToCliReport` trait for converting error types to a `CliReport` when given a source map.
+  - A `Diagnostic` struct for bundling such an error together with a source map
+    and implement `Display`/`Debug` by printing a CLI report
+- **Add execution-related and introspection functionality - [SimonSapin], [pull/758]:**
+  - Add data structure in `apollo_compiler::execution` for a GraphQL response, its data, and errors.
+    All (de)serializable with `serde`.
+  - Add [`coerce_variable_values()`] in that same module.
+  - Add `apollo_compiler::execution::SchemaIntrospection`
+    providing full execution for the [schema introspection] parts of an operation
+    and separating the rest to be executed separately.
+    In order to support all kinds of introspection queries this includes
+    a full execution engine where users provide objects with resolvable fields.
+    At this time this engine is not exposed in the public API.
+    If you’re interested in it [let us know] about your use case!
+  - Add `ExecutableDocument::insert_operation` convenience method.
+- **Add `NodeStr::from(Name)` - [goto-bus-stop], [pull/773]**
+- **Convenience accessors for `ast::Selection` enum - [SimonSapin], [pull/777]**
+  `as_field`, `as_inline_fragment`, and `as_fragment_spread`; all returning `Option<&_>`.
+- **Add schema coordinates - [goto-bus-stop], [pull/757]:**
+  Schema coordinates are a compact, human-readable way to uniquely point to an item defined in a schema.
+  - `string.parse::<SchemaCoordinate>()` parses a coordinate from a string.
+  - Coordinates have a `Display` impl that writes them out with schema coordinate syntax.
+  - The `coord!()` macro creates a static coordinate at compile time from spec syntax.
+
+## Fixes
+- **Fix serializing single-line strings with leading whitespace - [goto-bus-stop], [pull/774]**
+  Previously, the leading whitespace would get lost.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop]
+[SimonSapin]: https://github.com/SimonSapin
+[pull/747]: https://github.com/apollographql/apollo-rs/pull/747
+[pull/757]: https://github.com/apollographql/apollo-rs/pull/757
+[pull/758]: https://github.com/apollographql/apollo-rs/pull/758
+[pull/773]: https://github.com/apollographql/apollo-rs/pull/773
+[pull/774]: https://github.com/apollographql/apollo-rs/pull/774
+[pull/777]: https://github.com/apollographql/apollo-rs/pull/777
+[`coerce_variable_values()`]: https://spec.graphql.org/October2021/#sec-Coercing-Variable-Values
+[schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+[let us know]: https://github.com/apollographql/apollo-rs/discussions/789
+[directly in the compiler]: https://docs.rs/apollo-compiler/1.0.0-beta.11/apollo_compiler/execution/struct.SchemaIntrospectionQuery.html
+[the introspection discussion]: https://github.com/apollographql/apollo-rs/discussions/788
+
+
+# [1.0.0-beta.10](https://crates.io/crates/apollo-compiler/1.0.0-beta.10) - 2023-12-04
+
+## Features
+
+- **Add `Valid::assume_valid_ref` - [SimonSapin], [pull/768]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/768]: https://github.com/apollographql/apollo-rs/pull/768
+
+
+# [1.0.0-beta.9](https://crates.io/crates/apollo-compiler/1.0.0-beta.9) - 2023-12-01
+
+## Features
+
+- **Add validation convenience APIs - [SimonSapin], [pull/764]:**
+ * `ast::Document::to_schema_validate`
+ * `ast::Document::to_executable_validate`
+ * `DiagnosticList::new`
+ * `DiagnosticList::merge`
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/764]: https://github.com/apollographql/apollo-rs/pull/764
+
+
+# [1.0.0-beta.8](https://crates.io/crates/apollo-compiler/1.0.0-beta.8) - 2023-11-30
+
+## BREAKING
+
+- **API refactor to make it harder to ignore errors - [SimonSapin],
+  [pull/752] fixing [issue/709]:**
+  - `ast::Document`, `Schema`, and `ExecutableDocument` not longer contain potential errors
+    that users need to check separately.
+  - Instead, various constructors and methods now return a `Result`,
+    with the `Err` case containing both both errors and a maybe-incomplete value.
+  - Change `validate` methods of `Schema` and `ExecutableDocument` to take ownership of `self`.
+    On success they return the schema or document (unmodified) wrapped in a `Valid<_>` marker type,
+    which is **immutable**.
+  - Change `ExecutableDocument` to require a `&Valid<Schema>` instead of `&Schema`,
+    forcing callers to either run validation or opt out explicitly with `Valid::assume_valid`.
+  - Make `parse_mixed` and `to_mixed` validate both the schema and document.
+    Rename them with a `_validate` suffix.
+  - Corresponding changes to all of the above in `Parser` method signatures
+  - Remove `ast::Document::check_parse_errors`:
+    parse errors are now encoded in the return value of `parse`.
+  - Remove `ast::Document::to_schema_builder`. Use `SchemaBuilder::add_ast` instead.
+  - Move items from the crate top-level to `apollo_compiler::validation`:
+    * `Diagnostic`
+    * `DiagnosticList`
+    * `FileId`
+    * `NodeLocation`
+  - Move items from the crate top-level to `apollo_compiler::execution`:
+    * `GraphQLError`
+    * `GraphQLLocation`
+  - Remove warning-level and advice-level diagnostics. See [issue/751].
+
+  Highlight of signature changes:
+
+  ```diff
+  +struct Valid<T>(T); // Implements `Deref` and `AsRef` but not `DerefMut` or `AsMut`
+  +
+  +struct WithErrors<T> {
+  +    partial: T, // Errors may cause components to be missing
+  +    errors: DiagnosticList,
+  +}
+
+  -pub fn parse_mixed(…) -> (Schema, ExecutableDocument)
+  +pub fn parse_mixed_validate(…)
+  +    -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList>
+
+   impl ast::Document {
+  -    pub fn parse(…) -> Self
+  +    pub fn parse(…) -> Result<Self, WithErrors<Self>>
+
+  -    pub fn to_schema(&self) -> Schema
+  +    pub fn to_schema(&self) -> Result<Schema, WithErrors<Schema>>
+
+  -    pub fn to_executable(&self) -> ExecutableDocument
+  +    pub fn to_executable(&self) -> Result<ExecutableDocument, WithErrors<ExecutableDocument>>
+
+  -    pub fn to_mixed(&self) -> (Schema, ExecutableDocument)
+  +    pub fn to_mixed_validate(
+  +        &self,
+  +    ) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList>
+   }
+
+   impl Schema {
+  -    pub fn parse(…) -> Self
+  -    pub fn validate(&self) -> Result<DiagnosticList, DiagnosticList>
+
+  +    pub fn parse_and_validate(…) -> Result<Valid<Self>, WithErrors<Self>>
+  +    pub fn parse(…) -> Result<Self, WithErrors<Self>>
+  +    pub fn validate(self) -> Result<Valid<Self>, WithErrors<Self>>
+   }
+
+   impl SchemaBuilder {
+  -    pub fn build(self) -> Schema
+  +    pub fn build(self) -> Result<Schema, WithErrors<Schema>>
+   }
+
+   impl ExecutableDocument {
+  -    pub fn parse(schema: &Schema, …) -> Self
+  -    pub fn validate(&self, schema: &Schema) -> Result<(), DiagnosticList>
+
+  +    pub fn parse_and_validate(schema: &Valid<Schema>, …) -> Result<Valid<Self>, WithErrors<Self>>
+  +    pub fn parse(schema: &Valid<Schema>, …) -> Result<Self, WithErrors<Self>>
+  +    pub fn validate(self, schema: &Valid<Schema>) -> Result<Valid<Self>, WithErrors<Self>>
+   }
+  ```
+
+## Features
+
+- **Add `parse_and_validate` constructors for `Schema` and `ExecutableDocument` - [SimonSapin],
+  [pull/752]:**
+  when mutating isn’t needed after parsing,
+  this returns an immutable `Valid<_>` value in one step.
+
+- **Implement serde `Serialize` and `Deserialize` for some AST types - [SimonSapin], [pull/760]:**
+  * `Node`
+  * `NodeStr`
+  * `Name`
+  * `IntValue`
+  * `FloatValue`
+  * `Value`
+  * `Type`
+  Source locations are not preserved through serialization.
+
+- **Add `ast::Definition::as_*() -> Option<&_>` methods for each variant - [SimonSapin], [pull/760]**
+
+- **Serialize (to GraphQL) multi-line strings as block strings - [SimonSapin], [pull/724]:**
+  Example before:
+  ```graphql
+  "Example\n\nDescription description description"
+  schema { query: MyQuery }
+  ```
+  After:
+  ```graphql
+  """
+  Example
+
+  Description description description
+  """
+  schema { query: MyQuery }
+  ```
+
+## Fixes
+
+- **Limit recursion in validation - [goto-bus-stop], [pull/748] fixing [issue/742]:**
+  Validation now bails out of very long chains of definitions that refer to each other,
+  even if they don't strictly form a cycle. These could previously cause extremely long validation
+  times or stack overflows.
+
+  The limit for input objects and directives is set at 32. For fragments, the limit is set at 100.
+  Based on our datasets, real-world documents don't come anywhere close to this.
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/709]: https://github.com/apollographql/apollo-rs/issues/709
+[issue/742]: https://github.com/apollographql/apollo-rs/issues/742
+[issue/751]: https://github.com/apollographql/apollo-rs/issues/751
+[pull/724]: https://github.com/apollographql/apollo-rs/pull/724
+[pull/748]: https://github.com/apollographql/apollo-rs/pull/748
+[pull/752]: https://github.com/apollographql/apollo-rs/pull/752
+[pull/760]: https://github.com/apollographql/apollo-rs/pull/760
+
+# [1.0.0-beta.7](https://crates.io/crates/apollo-compiler/1.0.0-beta.7) - 2023-11-17
+
+## Features
+
+- **Helper features for `Name` and `Type` - [SimonSapin], [pull/739]:**
+  * The `name!` macro also accepts an identifier:
+    `name!(Query)` and `name!("Query")` create equivalent `Name` values.
+  * `InvalidNameError` now contain a public `NodeStr` for the input string that is invalid,
+    and implements `Display`, `Debug`, and `Error` traits.
+  * Add `TryFrom` conversion to `Name` from `NodeStr`, `&NodeStr`, `&str`, `String`, and `&String`.
+  * Add a `ty!` macro to build a static `ast::Type` using GraphQL-like syntax.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/739]: https://github.com/apollographql/apollo-rs/pull/739
+
+- **Add parsing an `ast::Type` from a string - [lrlna] and [goto-bus-stop], [pull/718] fixing [issue/715]**
+
+  Parses GraphQL type syntax:
+  ```rust
+  use apollo_compiler::ast::Type;
+  let ty = Type::parse("[ListItem!]!")?;
+  ```
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/718]: https://github.com/apollographql/apollo-rs/pull/718
+[issue/715]: https://github.com/apollographql/apollo-rs/issues/715
+
+## Fixes
+
+- **Fix list and null type validation bugs - [goto-bus-stop], [pull/746] fixing [issue/738]**
+  Previous versions of apollo-compiler accepted `null` inside a list even if the list item type
+  was marked as required. Lists were also accepted as inputs to non-list fields. This is now
+  fixed.
+
+  ```graphql
+  input Args {
+    string: String
+    ints: [Int!]
+  }
+  type Query { example(args: Args): Int }
+  query {
+    example(args: {
+      # Used to be accepted, now raises an error
+      string: ["1"]
+      # Used to be accepted, now raises an error
+      ints: [1, 2, null, 4]
+    })
+  }
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/746]: https://github.com/apollographql/apollo-rs/pull/746
+[issue/738]: https://github.com/apollographql/apollo-rs/issues/738
+
+# [1.0.0-beta.6](https://crates.io/crates/apollo-compiler/1.0.0-beta.6) - 2023-11-10
+
+## BREAKING
+
+- **Make everything know their own name - [SimonSapin], [pull/727] fixing [issue/708].**
+
+  In a few places (but not consistently) a `name` field
+  was omitted from some structs used as map values
+  on the basis that it would have been redundant with the map key.
+  This reverts that decision,
+  making it the user’s responsibility when mutating documents to keep names consistent.
+
+  * Add a `pub name: Name` field to `executable::Fragment` as well as
+    `ScalarType`, `ObjectType`, `InterfaceType`, `EnumType`, `UnionType`, and `InputObjectType`
+    in `schema`.
+  * Add a `fn name(&self) -> &Name` method to the `schema::ExtendedType` enum
+  * Add a `pub name: Option<Name>` field to `executable::Operation`
+  * Remove `executable::OperationRef<'_>`
+    (which was equivalent to `(Option<&Name>, &Node<Operation>)`),
+    replacing its uses with `&Node<Operation>`
+- **Rename `Directives` and `Diagnostics` to `DirectiveList` and `DiagnosticList` -
+  [SimonSapin], [pull/732] fixing [issue/711].**
+  The previous names were too similar to `Directive` and `Diagnostic` (singular).
+- **Rename `ComponentStr` to `ComponentName` - [SimonSapin], [pull/713]**
+  and its `node: NodeStr` field to `name: Name`.
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  - **Check validity of `ast::Name`.**
+    `NodeStr` is a smart string type with infallible conversion from `&str`.
+    `ast::Name` used to be a type alias for `NodeStr`,
+    leaving the possibility of creating one invalid in GraphQL syntax.
+    Validation and serialization would not check this.
+    `Name` is now a wrapper type for `NodeStr`.
+    Its `new` constructor checks validity of the given string and returns a `Result`.
+    A new `name!` macro (see below) creates a `Name` with compile-time checking.
+  - **`OperationType::default_type_name` returns a `Name` instead of `&str`**
+  - **`Type::new_named("x")` is removed. Use `Type::Named(name!("x"))` instead.**
+  - **`ComponentStr` is renamed to `ComponentName`.**
+    It no longer has infallible conversions from `&str` or `String`.
+    Its `node` field is renamed to `name`;
+    the type of that field is changed from `NodeStr` to `Name`.
+  - **`NodeStr` no longer has a `to_component` method, only `Name` does**
+  - **Various function or method parameters changed from `impl Into<Name>` to `Name`,**
+    since there is no longer an infallible conversion from `&str`
+
+## Features
+
+- **Add serialization support for everything - [SimonSapin], [pull/728].**
+
+  `Schema`, `ExecutableDocument`, and all AST types
+  already supported serialization to GraphQL syntax
+  through the `Display` trait and the `.serialize()` method.
+  This is now also the case of all other Rust types
+  representing some element of a GraphQL document:
+  * `schema::Directives`
+  * `schema::ExtendedType`
+  * `schema::ScalarType`
+  * `schema::ObjectType`
+  * `schema::InterfaceType`
+  * `schema::EnumType`
+  * `schema::UnionType`
+  * `schema::InputObjectType`
+  * `executable::Operation`
+  * `executable::Fragment`
+  * `executable::SelectionSet`
+  * `executable::Selection`
+  * `executable::Field`
+  * `executable::InlineFragment`
+  * `executable::FragmentSpread`
+  * `executable::FieldSet`
+- **Assorted changed to GraphQL names - [SimonSapin], [pull/713] fixing [issue/710].**
+  See also the BREAKING section above.
+  - **Add a `name!("example")` macro**,
+    to be imported with `use apollo_compiler::name;`.
+    It creates an `ast::Name` from a string literal, with a compile-time validity checking.
+    A `Name` created this way does not own allocated heap memory or a reference counter,
+    so cloning it is extremely cheap.
+  - **Add allocation-free `NodeStr::from_static`.**
+    This mostly exists to support the `name!` macro, but can also be used on its own:
+    ```rust
+    let s = apollo_compiler::NodeStr::from_static(&"example");
+    assert_eq!(s, "example");
+    ```
+
+## Fixes
+- **Fix crash in validation of self-referential fragments - [goto-bus-stop], [pull/733] fixing [issue/716].**
+  Now fragments that cyclically reference themselves inside a nested field also produce a
+  validation error, instead of causing a stack overflow crash.
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/708]: https://github.com/apollographql/apollo-rs/issues/708
+[issue/710]: https://github.com/apollographql/apollo-rs/issues/710
+[issue/711]: https://github.com/apollographql/apollo-rs/issues/711
+[issue/716]: https://github.com/apollographql/apollo-rs/issues/716
+[pull/713]: https://github.com/apollographql/apollo-rs/pull/713
+[pull/727]: https://github.com/apollographql/apollo-rs/pull/727
+[pull/728]: https://github.com/apollographql/apollo-rs/pull/728
+[pull/732]: https://github.com/apollographql/apollo-rs/pull/732
+[pull/733]: https://github.com/apollographql/apollo-rs/pull/733
+
+
+# [1.0.0-beta.5](https://crates.io/crates/apollo-compiler/1.0.0-beta.5) - 2023-11-08
+
+## Features
+- Diangostic struct is now public by [SimonSapin] in [11fe454]
+- Improve lowercase enum value diagnostic by [goto-bus-stop] in [pull/725]
+
+## Maintenance
+- Simplify `SchemaBuilder` internals by [SimonSapin] in [pull/722]
+- Remove validation dead code by [SimonSapin] in [bd5d107]
+- Skip schema AST conversion in ExecutableDocument::validate by [SimonSapin] in [pull/726]
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[11fe454]: https://github.com/apollographql/apollo-rs/commit/11fe454f81b4cfbada4884a22575fa5c812a6ed4
+[bd5d107]: https://github.com/apollographql/apollo-rs/commit/bd5d107eca14a7fc06dd885b2952346326e648cb
+[pull/722]: https://github.com/apollographql/apollo-rs/pull/722
+[pull/725]: https://github.com/apollographql/apollo-rs/pull/725
+[pull/726]: https://github.com/apollographql/apollo-rs/pull/726
+
+
+# [1.0.0-beta.4](https://crates.io/crates/apollo-compiler/1.0.0-beta.4) - 2023-10-16
+
+## Features
+- **JSON Serialisable compiler diagnostics - [lrlna] and [goto-bus-stop], [pull/698]:**
+  This change brings back [JSON error format] for diagnostics introduced by
+  [goto-bus-stop] in [pull/668] for compiler@0.11.3. As a result, diagnostics'
+  line/column numbers are now also accessible as part of the public API.
+
+  ```rust
+  let json = expect_test::expect![[r#"
+    {
+      "message": "an executable document must not contain an object type definition",
+      "locations": [
+        {
+          "line": 2,
+          "column": 1
+        }
+      ]
+    }"#]];
+  let diagnostics = executable.validate(&schema).unwrap_err();
+  diagnostics.iter().for_each(|diag| {
+      assert_eq!(
+          diag.get_line_column(),
+          Some(GraphQLLocation { line: 2, column: 1 })
+      );
+      json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
+  });
+  ```
+## Fixes
+
+- **Don’t emit a validation error for relying on argument default - [SimonSapin], [pull/700]**
+  A field argument or directive argument was incorrectly considered required
+  as soon as it had a non-null type, even if it had a default value.
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[pull/698]: https://github.com/apollographql/apollo-rs/pull/698
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[pull/700]: https://github.com/apollographql/apollo-rs/pull/700
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
+# [1.0.0-beta.3](https://crates.io/crates/apollo-compiler/1.0.0-beta.3) - 2023-10-13
+
+## BREAKING
+
+- **Keep source files in `Arc<Map<…>>` everywhere - [SimonSapin], [pull/696]**
+  Change struct fields from `sources: IndexMap<FileId, Arc<SourceFile>>` (in `Schema`)
+  or `source: Option<(FileId, Arc<SourceFile>)>` (in `Document`, `ExecutablDocument`, `FieldSet`)
+  to `sources: SourceMap`, with:
+  ```rust
+  pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+  ```
+  Cases other than `Schema` still only have zero or one source when created by apollo-compiler,
+  but it is now possible to make more sources available to diagnostics,
+  for example when merging documents:
+  ```rust
+  Arc::make_mut(&mut doc1.sources).extend(doc2.sources.iter().map(|(k, v)| (*k, v.clone())));
+  ```
+
+## Features
+
+- **Add iteration over individual diagnostics - [SimonSapin], [pull/696]:**
+  ```rust
+  let schema = Schema::parse(input, "schema.graphql");
+  if let Err(errors) = schema.validate() {
+      for error in errors.iter() {
+          eprintln!("{error}")
+      }
+  }
+  ```
+
+## Fixes
+
+- **Don’t panic in validation or omit diagnostics when a source location is missing - [SimonSapin], [pull/697]**
+  In apollo-compiler 0.11 every element of the HIR always had a source location because
+  it always came from a parsed input file.
+  In 1.0 source location is always optional.
+  When a node relevant to some diagnostic does not have a source location,
+  the diagnostic should still be emitted but its labels (each printing a bit of source code)
+  may be missing.
+  Essential information should therefore be in the main message, not only in labels.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/696]: https://github.com/apollographql/apollo-rs/pull/696
+[pull/697]: https://github.com/apollographql/apollo-rs/pull/697
+
+# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.2) - 2023-10-10
+
+## BREAKING
+
+**Assorted `Schema` API changes - [SimonSapin], [pull/678]**
+- Type of the `schema_definition` field changed
+  from `Option<SchemaDefinition>` to `SchemaDefinition`.
+  Default root operations based on object type names
+  are now stored explicitly in `SchemaDefinition`.
+  Serialization relies on a heuristic to decide on implicit schema definition.
+- Removed `schema_definition_directives` method: no longer having an `Option` allows
+  field `schema.schema_definition.directives` to be accessed directly
+- Removed `query_root_operation`, `mutation_root_operation`, and `subscription_root_operation`
+  methods. Instead `schema.schema_definition.query` etc can be accessed directly.
+
+## Features
+
+- **Add `executable::FieldSet` for a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
+  used in some Apollo Federation directives in the context of a specific schema and type.
+  Its `validate` method calls a subset of validation rules relevant to selection sets.
+  which is not part of a document.
+  ```rust
+  let input = r#"
+    type Query {
+      id: ID
+      organization: Org
+    }
+    type Org {
+      id: ID
+    }
+  "#;
+  let schema = Schema::parse(input, "schema.graphql");
+  schema.validate().unwrap();
+  let input = "id organization { id }";
+  let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+  field_set.validate(&schema).unwrap();
+  ```
+
+- **Add opt-in configuration for “orphan” extensions to be “adopted” - [SimonSapin], [pull/678]**
+
+  Type extensions and schema extensions without a corresponding definition
+  are normally ignored except for recording a validation error.
+  In this new mode, an implicit empty definition to extend is generated instead.
+  This behavious is not the default, as it's non-standard.
+  Configure a schema builder to opt in:
+  ```rust
+  let input = "extend type Query { x: Int }";
+  let schema = apollo_compiler::Schema::builder()
+      .adopt_orphan_extensions()
+      .parse(input, "schema.graphql")
+      .build();
+  schema.validate()?;
+  ```
+
+## Fixes
+
+- **Allow built-in directives to be redefined - [SimonSapin], [pull/684] fixing [issue/656]**
+- **Allow schema extensions to extend a schema definition implied by object types named after default root operations - [SimonSapin], [pull/678] fixing [issues/682]**
+
+[lrlna]: https://github.com/lrlna
+[SimonSapin]: https://github.com/SimonSapin
+[issue/656]: https://github.com/apollographql/apollo-rs/issues/656
+[issue/682]: https://github.com/apollographql/apollo-rs/issues/682
+[issue/681]: https://github.com/apollographql/apollo-rs/issues/681
+[pull/678]: https://github.com/apollographql/apollo-rs/pull/678
+[pull/684]: https://github.com/apollographql/apollo-rs/pull/684
+[pull/685]: https://github.com/apollographql/apollo-rs/pull/685
+[fieldset]: https://www.apollographql.com/docs/federation/subgraph-spec/#scalar-fieldset
+
+# [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
+
+## BREAKING
+
+Compared to 0.11, version 1.0 is a near-complete rewrite of the library
+and revamp of the public API.
+While in beta, there may still be breaking changes (though not as dramatic)
+until 1.0.0 “final”.
+If using a beta version, we recommend specifying an exact dependency in `Cargo.toml`:
+
+```toml
+apollo-compiler = "=1.0.0-beta.1"
+```
+
+## Features
+
+The API is now centered on `Schema` and `ExecutableDocument` types.
+Users no longer need to create a compiler, add inputs to it, and track them by ID.
+Validation is now a method of these types, and returns a `Result` to indicate errors.
+
+These types are serializable
+(through `Display`, `.to_string()`, and a `.serialize()` config builder),
+integrating the functionality of the apollo-encoder crate.
+
+They are also mutable, and can be created programmatically out of thin air.
+`Node<T>` is a thread-safe reference-counted smart pointer
+that provides structural sharing and copy-on-write semantics.
+
+# [0.11.3](https://crates.io/crates/apollo-compiler/0.11.3) - 2023-10-06
+
+## Features
+- expose line/column location and JSON format from diagnostics, by [goto-bus-stop] in [pull/668]
+
+  You can now use `diagnostic.get_line_column()` to access the line/column number where a validation error occurred.
+
+  `diagnostic.to_json()` returns a GraphQL error structure that's serializable with serde, matching the [JSON error format].
+
+  ```rust
+  let diagnostics = compiler.db.validate();
+  let errors = diagnostics.into_iter().map(ApolloDiagnostic::to_json).collect::<Vec<_>>();
+
+  let error_response = serde_json::to_string(&serde_json::json!({
+      "errors": errors,
+  }))?;
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
+- improve validation error summaries, by [goto-bus-stop] in [pull/674]
+
+  Adds more context and a more consistent voice to the "main" message for validation errors. They are now concise,
+  matter-of-fact descriptions of the problem. Information about how to solve the problem is usually already provided
+  by labels and notes on the diagnostic.
+
+  > - operation `getName` is defined multiple times
+  > - interface `NamedEntity` implements itself
+
+  The primary use case for this is to make `diagnostic.data.to_string()` return a useful message for text-only error
+  reports, like in JSON responses. The JSON format for diagnostics uses these new messages.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/674]: https://github.com/apollographql/apollo-rs/pull/674
+
+# [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
 
 ## Features
 - Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
@@ -36,6 +685,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/631]: https://github.com/apollographql/apollo-rs/pull/631
 [issue/629]: https://github.com/apollographql/apollo-rs/issues/629
+
+## Fixes
+- validate input value types, by [goto-bus-stop] in [pull/642]
+
+  This fixes an oversight in the validation rules implemented by `compiler.db.validate()`. Previously, incorrect
+  types on input values and arguments were not reported:
+  ```graphql
+  type ObjectType {
+    id: ID!
+  }
+  input InputObject {
+    # accepted in <= 0.11.1, reports "TypeThatDoesNotExist is not in scope" in 0.11.2
+    property: TypeThatDoesNotExist
+    # accepted in <= 0.11.1, reports "ObjectType is not an input type" in 0.11.2
+    inputType: ObjectType
+  }
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/642]: https://github.com/apollographql/apollo-rs/pull/642
+
+# [0.12.0] (unreleased) - 2023-mm-dd
+
+## BREAKING
+
+- (TODO: write this)
 
 # [0.11.1](https://crates.io/crates/apollo-compiler/0.11.1) - 2023-08-24
 

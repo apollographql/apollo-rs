@@ -1,11 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
-
-use crate::{
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
-    validation::RecursionStack,
-    ValidationDatabase,
-};
+use crate::ast;
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::{CycleError, RecursionGuard, RecursionStack};
+use crate::Node;
+use crate::ValidationDatabase;
+use std::collections::HashMap;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.
@@ -16,42 +14,37 @@ struct FindRecursiveInputValue<'a> {
 impl FindRecursiveInputValue<'_> {
     fn input_value_definition(
         &self,
-        seen: &mut RecursionStack<'_>,
-        def: &hir::InputValueDefinition,
-    ) -> Result<(), hir::InputValueDefinition> {
-        let ty = def.ty();
-        return match ty {
-            hir::Type::NonNull { ty, loc: _ } => match ty.as_ref() {
-                // NonNull type followed by Named type is the one that's not allowed
-                // to be cyclical, so this is only case we care about.
-                //
-                // Everything else may be a cyclical input value.
-                hir::Type::Named { name, loc: _ } => {
-                    if !seen.contains(name) {
-                        if let Some(def) = self.db.find_input_object_by_name(name.into()) {
-                            self.input_object_definition(seen.push(name.into()), def.as_ref())?
-                        }
-                    } else if seen.first() == Some(name) {
-                        return Err(def.clone());
+        seen: &mut RecursionGuard<'_>,
+        def: &Node<ast::InputValueDefinition>,
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        return match &*def.ty {
+            // NonNull type followed by Named type is the one that's not allowed
+            // to be cyclical, so this is only case we care about.
+            //
+            // Everything else may be a cyclical input value.
+            ast::Type::NonNullNamed(name) => {
+                if !seen.contains(name) {
+                    if let Some(object_def) = self.db.ast_types().input_objects.get(name) {
+                        self.input_object_definition(seen.push(name)?, object_def)
+                            .map_err(|err| err.trace(def))?
                     }
-
-                    Ok(())
+                } else if seen.first() == Some(name) {
+                    return Err(CycleError::Recursed(vec![def.clone()]));
                 }
-                hir::Type::NonNull { .. } | hir::Type::List { .. } => Ok(()),
-            },
-            hir::Type::List { .. } => Ok(()),
-            hir::Type::Named { .. } => Ok(()),
+
+                Ok(())
+            }
+            _ => Ok(()),
         };
     }
 
     fn input_object_definition(
         &self,
-        mut seen: RecursionStack<'_>,
-        def: &hir::InputObjectTypeDefinition,
-    ) -> Result<(), hir::InputValueDefinition> {
-        let mut guard = seen.push(def.name().to_string());
-        for input_value in def.fields() {
-            self.input_value_definition(&mut guard, input_value)?;
+        mut seen: RecursionGuard<'_>,
+        input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        for input_value in input_object.fields() {
+            self.input_value_definition(&mut seen, input_value)?;
         }
 
         Ok(())
@@ -59,129 +52,139 @@ impl FindRecursiveInputValue<'_> {
 
     fn check(
         db: &dyn ValidationDatabase,
-        input_obj: &hir::InputObjectTypeDefinition,
-    ) -> Result<(), hir::InputValueDefinition> {
+        input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        let mut recursion_stack = RecursionStack::with_root(input_object.definition.name.clone());
         FindRecursiveInputValue { db }
-            .input_object_definition(RecursionStack(&mut vec![]), input_obj)
+            .input_object_definition(recursion_stack.guard(), input_object)
     }
 }
 
-pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_input_object_definitions(
+    db: &dyn ValidationDatabase,
+) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let defs = &db.type_system_definitions().input_objects;
-    for def in defs.values() {
-        diagnostics.extend(db.validate_input_object_definition(def.clone()));
+    for input_object in db.ast_types().input_objects.values() {
+        diagnostics.extend(db.validate_input_object_definition(input_object.clone()));
     }
 
     diagnostics
 }
 
-fn collect_nodes<'a, Item: Clone, Ext>(
-    base: &'a [Item],
-    extensions: &'a [Arc<Ext>],
-    method: impl Fn(&'a Ext) -> &'a [Item],
-) -> Vec<Item> {
-    let mut nodes = base.to_vec();
-    for ext in extensions {
-        nodes.extend(method(ext).iter().cloned());
-    }
-    nodes
-}
-
-pub fn validate_input_object_definition(
+pub(crate) fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
-    input_obj: Arc<hir::InputObjectTypeDefinition>,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = db.validate_directives(
-        input_obj.directives().cloned().collect(),
-        hir::DirectiveLocation::InputObject,
+    input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
+) -> Vec<ValidationError> {
+    let mut diagnostics = super::directive::validate_directives(
+        db,
+        input_object.directives(),
+        ast::DirectiveLocation::InputObject,
         // input objects don't use variables
-        Arc::new(Vec::new()),
+        Default::default(),
     );
 
-    if let Err(input_val) = FindRecursiveInputValue::check(db, input_obj.as_ref()) {
-        let mut labels = vec![Label::new(
-            input_obj.loc(),
-            "cyclical input object definition",
-        )];
-        if let Some(loc) = input_val.loc() {
-            labels.push(Label::new(loc, "refers to itself here"));
-        };
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                input_obj.loc().into(),
-                DiagnosticData::RecursiveInputObjectDefinition {
-                    name: input_obj.name().into(),
+    match FindRecursiveInputValue::check(db, &input_object) {
+        Ok(_) => {}
+        Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
+            input_object.definition.location(),
+            DiagnosticData::RecursiveInputObjectDefinition {
+                name: input_object.definition.name.clone(),
+                trace,
+            },
+        )),
+        Err(CycleError::Limit(_)) => {
+            diagnostics.push(ValidationError::new(
+                input_object.definition.location(),
+                DiagnosticData::DeeplyNestedType {
+                    name: input_object.definition.name.clone(),
+                    describe_type: "input object",
                 },
-            )
-            .labels(labels),
-        )
+            ));
+        }
     }
 
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Definition error.
-    let fields = collect_nodes(
-        input_obj.input_fields_definition.as_ref(),
-        input_obj.extensions(),
-        hir::InputObjectTypeExtension::fields,
-    );
-    diagnostics.extend(db.validate_input_values(
-        Arc::new(fields),
-        hir::DirectiveLocation::InputFieldDefinition,
+    let fields: Vec<_> = input_object.fields().cloned().collect();
+    diagnostics.extend(validate_input_value_definitions(
+        db,
+        &fields,
+        ast::DirectiveLocation::InputFieldDefinition,
     ));
 
     diagnostics
 }
 
-pub fn validate_input_values(
+pub(crate) fn validate_argument_definitions(
     db: &dyn ValidationDatabase,
-    input_values: Arc<Vec<hir::InputValueDefinition>>,
-    // directive location depends on parent node location, so we pass this down from parent
-    dir_loc: hir::DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
+    input_values: &[Node<ast::InputValueDefinition>],
+    directive_location: ast::DirectiveLocation,
+) -> Vec<ValidationError> {
+    let mut diagnostics = validate_input_value_definitions(db, input_values, directive_location);
 
-    for input_value in input_values.iter() {
-        diagnostics.extend(db.validate_directives(
-            input_value.directives().to_vec(),
-            dir_loc,
-            // input values don't use variables
-            Arc::new(Vec::new()),
-        ));
-
-        let name = input_value.name();
+    let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
+    for input_value in input_values {
+        let name = &input_value.name;
         if let Some(prev_value) = seen.get(name) {
-            if let (Some(original_value), Some(redefined_value)) =
-                (prev_value.loc(), input_value.loc())
-            {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        original_value.into(),
-                        DiagnosticData::UniqueInputValue {
-                            name: name.into(),
-                            original_value: original_value.into(),
-                            redefined_value: redefined_value.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_value,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_value, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` field must only be defined once in this input object definition."
-                    )),
-                );
+            let (original_definition, redefined_definition) =
+                (prev_value.location(), input_value.location());
+
+            diagnostics.push(ValidationError::new(
+                original_definition,
+                DiagnosticData::UniqueInputValue {
+                    name: name.clone(),
+                    original_definition,
+                    redefined_definition,
+                },
+            ));
+        } else {
+            seen.insert(name.clone(), input_value);
+        }
+    }
+
+    diagnostics
+}
+
+pub(crate) fn validate_input_value_definitions(
+    db: &dyn ValidationDatabase,
+    input_values: &[Node<ast::InputValueDefinition>],
+    directive_location: ast::DirectiveLocation,
+) -> Vec<ValidationError> {
+    let schema = db.schema();
+
+    let mut diagnostics = Vec::new();
+
+    for input_value in input_values {
+        diagnostics.extend(super::directive::validate_directives(
+            db,
+            input_value.directives.iter(),
+            directive_location,
+            Default::default(), // No variables in an input value definition
+        ));
+        // Input values must only contain input types.
+        let loc = input_value.location();
+        if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
+            if !field_ty.is_input_type() {
+                diagnostics.push(ValidationError::new(
+                    loc,
+                    DiagnosticData::InputType {
+                        name: input_value.name.clone(),
+                        describe_type: field_ty.describe(),
+                        type_location: input_value.ty.location(),
+                    },
+                ));
             }
         } else {
-            seen.insert(name, input_value);
+            let named_type = input_value.ty.inner_named_type();
+            let loc = named_type.location();
+            diagnostics.push(ValidationError::new(
+                loc,
+                DiagnosticData::UndefinedDefinition {
+                    name: named_type.clone(),
+                },
+            ));
         }
     }
 

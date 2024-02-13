@@ -13,6 +13,10 @@ type Query {
 interface Interface {
   a: String
 }
+# interfaces must have concrete implementations to be usable
+type JustImplements implements Interface {
+  a: String
+}
 
 fragment invalidInlineFragment on Interface {
   a

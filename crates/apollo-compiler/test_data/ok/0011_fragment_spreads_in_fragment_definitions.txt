@@ -1,146 +1,236 @@
-- DOCUMENT@0..207
-    - OPERATION_DEFINITION@0..51
-        - OPERATION_TYPE@0..5
-            - query_KW@0..5 "query"
-        - WHITESPACE@5..6 " "
-        - NAME@6..24
-            - IDENT@6..24 "IntrospectionQuery"
-        - WHITESPACE@24..25 " "
-        - SELECTION_SET@25..51
-            - L_CURLY@25..26 "{"
-            - WHITESPACE@26..29 "\n  "
-            - FIELD@29..49
-                - NAME@29..32
-                    - IDENT@29..32 "foo"
-                - WHITESPACE@32..33 " "
-                - SELECTION_SET@33..49
-                    - L_CURLY@33..34 "{"
-                    - WHITESPACE@34..39 "\n    "
-                    - FRAGMENT_SPREAD@39..45
-                        - SPREAD@39..42 "..."
-                        - FRAGMENT_NAME@42..45
-                            - NAME@42..45
-                                - IDENT@42..45 "Bar"
-                    - WHITESPACE@45..48 "\n  "
-                    - R_CURLY@48..49 "}"
-            - WHITESPACE@49..50 "\n"
-            - R_CURLY@50..51 "}"
-    - WHITESPACE@51..53 "\n\n"
-    - FRAGMENT_DEFINITION@53..100
-        - fragment_KW@53..61 "fragment"
-        - WHITESPACE@61..62 " "
-        - FRAGMENT_NAME@62..65
-            - NAME@62..65
-                - IDENT@62..65 "Bar"
-        - WHITESPACE@65..66 " "
-        - TYPE_CONDITION@66..72
-            - on_KW@66..68 "on"
-            - WHITESPACE@68..69 " "
-            - NAMED_TYPE@69..72
-                - NAME@69..72
-                    - IDENT@69..72 "Foo"
-        - WHITESPACE@72..73 " "
-        - SELECTION_SET@73..100
-            - L_CURLY@73..74 "{"
-            - WHITESPACE@74..77 "\n  "
-            - FIELD@77..98
-                - NAME@77..80
-                    - IDENT@77..80 "baz"
-                - WHITESPACE@80..81 " "
-                - SELECTION_SET@81..98
-                    - L_CURLY@81..82 "{"
-                    - WHITESPACE@82..87 "\n    "
-                    - FRAGMENT_SPREAD@87..94
-                        - SPREAD@87..90 "..."
-                        - FRAGMENT_NAME@90..94
-                            - NAME@90..94
-                                - IDENT@90..94 "Quux"
-                    - WHITESPACE@94..97 "\n  "
-                    - R_CURLY@97..98 "}"
-            - WHITESPACE@98..99 "\n"
-            - R_CURLY@99..100 "}"
-    - WHITESPACE@100..102 "\n\n"
-    - FRAGMENT_DEFINITION@102..131
-        - fragment_KW@102..110 "fragment"
-        - WHITESPACE@110..111 " "
-        - FRAGMENT_NAME@111..115
-            - NAME@111..115
-                - IDENT@111..115 "Quux"
-        - WHITESPACE@115..116 " "
-        - TYPE_CONDITION@116..122
-            - on_KW@116..118 "on"
-            - WHITESPACE@118..119 " "
-            - NAMED_TYPE@119..122
-                - NAME@119..122
-                    - IDENT@119..122 "Baz"
-        - WHITESPACE@122..123 " "
-        - SELECTION_SET@123..131
-            - L_CURLY@123..124 "{"
-            - WHITESPACE@124..127 "\n  "
-            - FIELD@127..129
-                - NAME@127..129
-                    - IDENT@127..129 "id"
-            - WHITESPACE@129..130 "\n"
-            - R_CURLY@130..131 "}"
-    - WHITESPACE@131..133 "\n\n"
-    - OBJECT_TYPE_DEFINITION@133..158
-        - type_KW@133..137 "type"
-        - WHITESPACE@137..138 " "
-        - NAME@138..143
-            - IDENT@138..143 "Query"
-        - WHITESPACE@143..144 " "
-        - FIELDS_DEFINITION@144..158
-            - L_CURLY@144..145 "{"
-            - WHITESPACE@145..148 "\n  "
-            - FIELD_DEFINITION@148..156
-                - NAME@148..151
-                    - IDENT@148..151 "foo"
-                - COLON@151..152 ":"
-                - WHITESPACE@152..153 " "
-                - NAMED_TYPE@153..156
-                    - NAME@153..156
-                        - IDENT@153..156 "Foo"
-            - WHITESPACE@156..157 "\n"
-            - R_CURLY@157..158 "}"
-    - WHITESPACE@158..160 "\n\n"
-    - OBJECT_TYPE_DEFINITION@160..183
-        - type_KW@160..164 "type"
-        - WHITESPACE@164..165 " "
-        - NAME@165..168
-            - IDENT@165..168 "Foo"
-        - WHITESPACE@168..169 " "
-        - FIELDS_DEFINITION@169..183
-            - L_CURLY@169..170 "{"
-            - WHITESPACE@170..173 "\n  "
-            - FIELD_DEFINITION@173..181
-                - NAME@173..176
-                    - IDENT@173..176 "baz"
-                - COLON@176..177 ":"
-                - WHITESPACE@177..178 " "
-                - NAMED_TYPE@178..181
-                    - NAME@178..181
-                        - IDENT@178..181 "Baz"
-            - WHITESPACE@181..182 "\n"
-            - R_CURLY@182..183 "}"
-    - WHITESPACE@183..185 "\n\n"
-    - OBJECT_TYPE_DEFINITION@185..206
-        - type_KW@185..189 "type"
-        - WHITESPACE@189..190 " "
-        - NAME@190..193
-            - IDENT@190..193 "Baz"
-        - WHITESPACE@193..194 " "
-        - FIELDS_DEFINITION@194..206
-            - L_CURLY@194..195 "{"
-            - WHITESPACE@195..198 "\n  "
-            - FIELD_DEFINITION@198..204
-                - NAME@198..200
-                    - IDENT@198..200 "id"
-                - COLON@200..201 ":"
-                - WHITESPACE@201..202 " "
-                - NAMED_TYPE@202..204
-                    - NAME@202..204
-                        - IDENT@202..204 "ID"
-            - WHITESPACE@204..205 "\n"
-            - R_CURLY@205..206 "}"
-    - WHITESPACE@206..207 "\n"
-recursion limit: 4096, high: 2
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        11: SourceFile {
+            path: "0011_fragment_spreads_in_fragment_definitions.graphql",
+            source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            133..158 @11 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "foo": Component {
+                        origin: Definition,
+                        node: 148..156 @11 FieldDefinition {
+                            description: None,
+                            name: "foo",
+                            arguments: [],
+                            ty: Named(
+                                "Foo",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Foo": Object(
+            160..183 @11 ObjectType {
+                description: None,
+                name: "Foo",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "baz": Component {
+                        origin: Definition,
+                        node: 173..181 @11 FieldDefinition {
+                            description: None,
+                            name: "baz",
+                            arguments: [],
+                            ty: Named(
+                                "Baz",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Baz": Object(
+            185..206 @11 ObjectType {
+                description: None,
+                name: "Baz",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 198..204 @11 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: Named(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        11: SourceFile {
+            path: "0011_fragment_spreads_in_fragment_definitions.graphql",
+            source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {
+        "IntrospectionQuery": 0..51 @11 Operation {
+            operation_type: Query,
+            name: Some(
+                "IntrospectionQuery",
+            ),
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        29..49 @11 Field {
+                            definition: 148..156 @11 FieldDefinition {
+                                description: None,
+                                name: "foo",
+                                arguments: [],
+                                ty: Named(
+                                    "Foo",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "foo",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Foo",
+                                selections: [
+                                    FragmentSpread(
+                                        39..45 @11 FragmentSpread {
+                                            fragment_name: "Bar",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+    fragments: {
+        "Bar": 53..100 @11 Fragment {
+            name: "Bar",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Foo",
+                selections: [
+                    Field(
+                        77..98 @11 Field {
+                            definition: 173..181 @11 FieldDefinition {
+                                description: None,
+                                name: "baz",
+                                arguments: [],
+                                ty: Named(
+                                    "Baz",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "baz",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Baz",
+                                selections: [
+                                    FragmentSpread(
+                                        87..94 @11 FragmentSpread {
+                                            fragment_name: "Quux",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "Quux": 102..131 @11 Fragment {
+            name: "Quux",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Baz",
+                selections: [
+                    Field(
+                        127..129 @11 Field {
+                            definition: 198..204 @11 FieldDefinition {
+                                description: None,
+                                name: "id",
+                                arguments: [],
+                                ty: Named(
+                                    "ID",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "id",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "ID",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+}

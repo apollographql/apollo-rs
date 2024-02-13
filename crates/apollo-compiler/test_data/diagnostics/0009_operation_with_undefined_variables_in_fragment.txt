@@ -1,31 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            9: "0009_operation_with_undefined_variables_in_fragment.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 9,
-            },
-            offset: 173,
-            length: 16,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 9,
-                    },
-                    offset: 183,
-                    length: 6,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedVariable {
-            name: "value",
-        },
-    },
-]
+Error: variable `$value` is not defined
+    ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:10:21]
+    │
+ 10 │     price(setPrice: $value)
+    │                     ───┬──  
+    │                        ╰──── not found in this scope
+────╯
+

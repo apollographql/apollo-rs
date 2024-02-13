@@ -8,7 +8,7 @@ pub(crate) fn name(p: &mut Parser) {
     match p.peek() {
         Some(TokenKind::Name) => {
             let _g = p.start_node(SyntaxKind::NAME);
-            validate_name(&p.peek_data().unwrap(), p);
+            validate_name(p.peek_data().unwrap(), p);
             p.bump(SyntaxKind::IDENT);
         }
         _ => p.err("expected a Name"),

@@ -1,12 +1,11 @@
-use crate::{
-    parser::grammar::{description, directive, operation},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, operation};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#SchemaDefinition
 ///
 /// *SchemaDefinition*:
-///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
+///     Description? **schema** Directives[Const]? **{** RootOperationTypeDefinition* **}**
 pub(crate) fn schema_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
 
@@ -14,12 +13,12 @@ pub(crate) fn schema_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("schema") = p.peek_data().as_deref() {
+    if let Some("schema") = p.peek_data() {
         p.bump(SyntaxKind::schema_KW);
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -33,8 +32,8 @@ pub(crate) fn schema_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#SchemaExtension
 ///
 /// *SchemaExtension*:
-///     **extend** **schema** Directives? **{** RootOperationTypeDefinition* **}**
-///     **extend** **schema** Directives
+///     **extend** **schema** Directives[Const]? **{** RootOperationTypeDefinition* **}**
+///     **extend** **schema** Directives[Const]
 pub(crate) fn schema_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -44,7 +43,7 @@ pub(crate) fn schema_extension(p: &mut Parser) {
 
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {

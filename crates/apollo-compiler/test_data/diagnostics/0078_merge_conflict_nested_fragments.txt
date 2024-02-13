@@ -1,112 +1,23 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            75: "0078_merge_conflict_nested_fragments.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 75,
-            },
-            offset: 206,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 179,
-                    length: 4,
-                },
-                text: "field `y` is selected from field `c` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 206,
-                    length: 4,
-                },
-                text: "but the same field `y` is also selected from field `d` here",
-            },
-        ],
-        help: Some(
-            "Alias is already used for a different field",
-        ),
-        data: ConflictingField {
-            field: "d",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 179,
-                length: 4,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 206,
-                length: 4,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            75: "0078_merge_conflict_nested_fragments.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 75,
-            },
-            offset: 240,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 145,
-                    length: 4,
-                },
-                text: "field `x` is selected from field `a` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 240,
-                    length: 4,
-                },
-                text: "but the same field `x` is also selected from field `b` here",
-            },
-        ],
-        help: Some(
-            "Alias is already used for a different field",
-        ),
-        data: ConflictingField {
-            field: "b",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 145,
-                length: 4,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 240,
-                length: 4,
-            },
-        },
-    },
-]
+Error: operation must not select different fields to the same alias `y`
+    ╭─[0078_merge_conflict_nested_fragments.graphql:28:3]
+    │
+ 25 │   y: c
+    │   ──┬─  
+    │     ╰─── field `y` is selected from field `c` here
+    │ 
+ 28 │   y: d
+    │   ──┬─  
+    │     ╰─── but the same field `y` is also selected from field `d` here
+────╯
+Error: operation must not select different fields to the same alias `x`
+    ╭─[0078_merge_conflict_nested_fragments.graphql:32:3]
+    │
+ 21 │   x: a
+    │   ──┬─  
+    │     ╰─── field `x` is selected from field `a` here
+    │ 
+ 32 │   x: b
+    │   ──┬─  
+    │     ╰─── but the same field `x` is also selected from field `b` here
+────╯
+

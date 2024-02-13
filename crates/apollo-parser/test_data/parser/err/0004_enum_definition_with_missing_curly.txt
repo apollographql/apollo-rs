@@ -18,4 +18,4 @@
                     - NAME@23..27
                         - IDENT@23..27 "WEST"
 - ERROR@27:27 "expected R_CURLY, got EOF" EOF
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

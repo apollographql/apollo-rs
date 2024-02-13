@@ -1,0 +1,372 @@
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        38: SourceFile {
+            path: "0039_string_literals.graphql",
+            source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n\n  \"   Leading whitespace on a single line to preserve\"\n  f16: Int\n\n  \"   Leading whitespace in multi-line string to preserve\\nNo leading whitespace on second line\"\n  f17: Int\n\n  \"\\n   Leading empty line + indent to preserve\"\n  f18: Int\n\n  \"When serialized as a block string, \\\\\\\"\\\"\\\" outputs \\\\ in front of the escaped triple quote\"\n  f19: Int\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..947 @38 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "f1": Component {
+                        origin: Definition,
+                        node: 15..35 @38 FieldDefinition {
+                            description: Some(
+                                "LF: a\nb",
+                            ),
+                            name: "f1",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f2": Component {
+                        origin: Definition,
+                        node: 39..63 @38 FieldDefinition {
+                            description: Some(
+                                "CRLF: a\r\nb",
+                            ),
+                            name: "f2",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f3": Component {
+                        origin: Definition,
+                        node: 67..103 @38 FieldDefinition {
+                            description: Some(
+                                "a\n\nb",
+                            ),
+                            name: "f3",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f4": Component {
+                        origin: Definition,
+                        node: 107..128 @38 FieldDefinition {
+                            description: Some(
+                                "a \"b\" c",
+                            ),
+                            name: "f4",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f5": Component {
+                        origin: Definition,
+                        node: 132..161 @38 FieldDefinition {
+                            description: Some(
+                                "a \"\"\"b\"\"\" c",
+                            ),
+                            name: "f5",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f6": Component {
+                        origin: Definition,
+                        node: 165..197 @38 FieldDefinition {
+                            description: Some(
+                                "regex: \\d+",
+                            ),
+                            name: "f6",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f7": Component {
+                        origin: Definition,
+                        node: 201..245 @38 FieldDefinition {
+                            description: Some(
+                                "\nLeading empty line to preserve",
+                            ),
+                            name: "f7",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f8": Component {
+                        origin: Definition,
+                        node: 249..304 @38 FieldDefinition {
+                            description: Some(
+                                " \nLeading whitespace-only line to preserve",
+                            ),
+                            name: "f8",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f9": Component {
+                        origin: Definition,
+                        node: 308..353 @38 FieldDefinition {
+                            description: Some(
+                                "Trailing empty line to preserve\n",
+                            ),
+                            name: "f9",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f10": Component {
+                        origin: Definition,
+                        node: 357..415 @38 FieldDefinition {
+                            description: Some(
+                                "Trailing whitespace-only line to preserve\n\t",
+                            ),
+                            name: "f10",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f11": Component {
+                        origin: Definition,
+                        node: 419..449 @38 FieldDefinition {
+                            description: None,
+                            name: "f11",
+                            arguments: [
+                                423..443 @38 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 428..434 @38 Named(
+                                        "String",
+                                    ),
+                                    default_value: Some(
+                                        437..443 @38 String(
+                                            "a\nb",
+                                        ),
+                                    ),
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f12": Component {
+                        origin: Definition,
+                        node: 453..488 @38 FieldDefinition {
+                            description: None,
+                            name: "f12",
+                            arguments: [
+                                457..482 @38 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 462..468 @38 Named(
+                                        "String",
+                                    ),
+                                    default_value: Some(
+                                        471..482 @38 String(
+                                            "a \"b\" c",
+                                        ),
+                                    ),
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f13": Component {
+                        origin: Definition,
+                        node: 492..529 @38 FieldDefinition {
+                            description: None,
+                            name: "f13",
+                            arguments: [
+                                496..523 @38 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 501..507 @38 Named(
+                                        "String",
+                                    ),
+                                    default_value: Some(
+                                        510..523 @38 String(
+                                            "regex: \\d+",
+                                        ),
+                                    ),
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f14": Component {
+                        origin: Definition,
+                        node: 533..567 @38 FieldDefinition {
+                            description: Some(
+                                "Trailing backslash \\",
+                            ),
+                            name: "f14",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f15": Component {
+                        origin: Definition,
+                        node: 571..600 @38 FieldDefinition {
+                            description: Some(
+                                "Trailing quote\"",
+                            ),
+                            name: "f15",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f16": Component {
+                        origin: Definition,
+                        node: 604..667 @38 FieldDefinition {
+                            description: Some(
+                                "   Leading whitespace on a single line to preserve",
+                            ),
+                            name: "f16",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f17": Component {
+                        origin: Definition,
+                        node: 671..776 @38 FieldDefinition {
+                            description: Some(
+                                "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
+                            ),
+                            name: "f17",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f18": Component {
+                        origin: Definition,
+                        node: 780..837 @38 FieldDefinition {
+                            description: Some(
+                                "\n   Leading empty line + indent to preserve",
+                            ),
+                            name: "f18",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "f19": Component {
+                        origin: Definition,
+                        node: 841..945 @38 FieldDefinition {
+                            description: Some(
+                                "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
+                            ),
+                            name: "f19",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        38: SourceFile {
+            path: "0039_string_literals.graphql",
+            source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n\n  \"   Leading whitespace on a single line to preserve\"\n  f16: Int\n\n  \"   Leading whitespace in multi-line string to preserve\\nNo leading whitespace on second line\"\n  f17: Int\n\n  \"\\n   Leading empty line + indent to preserve\"\n  f18: Int\n\n  \"When serialized as a block string, \\\\\\\"\\\"\\\" outputs \\\\ in front of the escaped triple quote\"\n  f19: Int\n}\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

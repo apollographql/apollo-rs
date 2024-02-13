@@ -1,0 +1,34 @@
+enum DogCommand {
+  SIT
+  HEEL
+}
+
+type Dog {
+  doesKnowCommand(dogCommand: DogCommand): Boolean
+}
+
+type Query {
+  pet: Dog
+}
+
+query queryPupper {
+  pet {
+    ...mergeIdenticalFieldsWithIdenticalArgs
+  }
+}
+
+query queryPupperAgain($dogCommand: DogCommand) {
+  pet {
+    ...mergeIdenticalFieldsWithIdenticalValues
+  }
+}
+
+fragment mergeIdenticalFieldsWithIdenticalArgs on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand(dogCommand: SIT)
+}
+
+fragment mergeIdenticalFieldsWithIdenticalValues on Dog {
+  doesKnowCommand(dogCommand: $dogCommand)
+  doesKnowCommand(dogCommand: $dogCommand)
+}

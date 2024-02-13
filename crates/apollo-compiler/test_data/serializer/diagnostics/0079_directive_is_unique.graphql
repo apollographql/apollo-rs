@@ -1,0 +1,13 @@
+directive @repeatable repeatable on FIELD
+
+directive @unique on FIELD
+
+type Query {
+  fieldA: Int
+  fieldB: Int
+}
+
+query {
+  fieldA @repeatable @repeatable
+  fieldB @unique @unique
+}

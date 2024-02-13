@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     description::Description,
     directive::{Directive, DirectiveLocation},
@@ -7,7 +5,10 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
 
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
@@ -18,45 +19,44 @@ use arbitrary::Result as ArbitraryResult;
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     pub(crate) description: Option<Description>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) query: Option<Ty>,
     pub(crate) mutation: Option<Ty>,
     pub(crate) subscription: Option<Ty>,
     pub(crate) extend: bool,
 }
 
-impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
-    fn from(schema_def: SchemaDef) -> Self {
-        let mut new_schema_def = Self::new();
-        if let Some(description) = schema_def.description {
-            new_schema_def.description(description.into())
+impl From<SchemaDef> for ast::Definition {
+    fn from(x: SchemaDef) -> Self {
+        let root_operations = [
+            (ast::OperationType::Query, x.query),
+            (ast::OperationType::Mutation, x.mutation),
+            (ast::OperationType::Subscription, x.subscription),
+        ]
+        .into_iter()
+        .flat_map(|(ty, name)| name.map(|n| Node::new((ty, n.name().into()))))
+        .collect();
+        if x.extend {
+            ast::SchemaExtension {
+                directives: Directive::to_ast(x.directives),
+                root_operations,
+            }
+            .into()
+        } else {
+            ast::SchemaDefinition {
+                description: x.description.map(Into::into),
+                directives: Directive::to_ast(x.directives),
+                root_operations,
+            }
+            .into()
         }
-        schema_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_schema_def.directive(directive.into()));
-        if let Some(query) = schema_def.query {
-            new_schema_def.query(apollo_encoder::Type_::from(query).to_string());
-        }
-        if let Some(mutation) = schema_def.mutation {
-            new_schema_def.mutation(apollo_encoder::Type_::from(mutation).to_string());
-        }
-        if let Some(subscription) = schema_def.subscription {
-            new_schema_def.subscription(apollo_encoder::Type_::from(subscription).to_string());
-        }
-        if schema_def.extend {
-            new_schema_def.extend();
-        }
-
-        new_schema_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::SchemaDefinition> for SchemaDef {
+impl TryFrom<apollo_parser::cst::SchemaDefinition> for SchemaDef {
     type Error = crate::FromError;
 
-    fn try_from(schema_def: apollo_parser::ast::SchemaDefinition) -> Result<Self, Self::Error> {
+    fn try_from(schema_def: apollo_parser::cst::SchemaDefinition) -> Result<Self, Self::Error> {
         let mut query = None;
         let mut mutation = None;
         let mut subcription = None;
@@ -88,11 +88,10 @@ impl TryFrom<apollo_parser::ast::SchemaDefinition> for SchemaDef {
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::SchemaExtension> for SchemaDef {
+impl TryFrom<apollo_parser::cst::SchemaExtension> for SchemaDef {
     type Error = crate::FromError;
 
-    fn try_from(schema_def: apollo_parser::ast::SchemaExtension) -> Result<Self, Self::Error> {
+    fn try_from(schema_def: apollo_parser::cst::SchemaExtension) -> Result<Self, Self::Error> {
         let mut query = None;
         let mut mutation = None;
         let mut subcription = None;

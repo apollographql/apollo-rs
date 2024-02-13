@@ -4,8 +4,9 @@ version: 2.1
 # Rust Orb: https://github.com/CircleCI-Public/rust-orb
 # Github Orb: https://github.com/CircleCI-Public/github-cli-orb
 orbs:
-  rust: circleci/rust@1.6.0
-  gh: circleci/github-cli@2.2.0
+  rust: circleci/rust@1.6.1
+  gh: circleci/github-cli@2.3.0
+  secops: apollo/circleci-secops-orb@2.0.7
 
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
@@ -16,7 +17,7 @@ executors:
     resource_class: medium+
   macos: &macos
     macos:
-      xcode: "13.4"
+      xcode: "15.0.0"
   windows: &windows
     machine:
       image: 'windows-server-2019-vs2019:2022.08.1'
@@ -56,8 +57,27 @@ workflows:
             parameters:
               platform: [linux, macos, windows]
               rust_channel: [stable, nightly]
-
-
+  miri:
+    jobs:
+      - miri:
+          name: Miri (rust nightly on linux, subset of tests)
+          matrix:
+            parameters:
+              platform: [linux]
+  security-scans:
+    jobs:
+      - secops/gitleaks:
+          context:
+            - platform-docker-ro
+            - github-orb
+            - secops-oidc
+          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
+          git-revision: << pipeline.git.revision >>
+      - secops/semgrep:
+          context:
+            - secops-oidc
+            - github-orb
+          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
 
 # Details of the three jobs: lint, test and wasm
 jobs:
@@ -77,7 +97,7 @@ jobs:
           platform: << parameters.platform >>
       - run:
           name: Run cargo clippy
-          command: cargo clippy --all-targets --all-features -- -D warnings && cargo clippy --benches
+          command: cargo clippy --all-targets --all-features -- -D warnings
       - run:
           name: Run cargo fmt check
           command: rustup component add rustfmt && cargo fmt --all -- --check
@@ -98,7 +118,7 @@ jobs:
           platform: << parameters.platform >>
       - run:
           name: Build to wasm target
-          command: rustup target add wasm32-unknown-unknown && cargo build --package apollo-encoder --package apollo-parser --package apollo-compiler --target wasm32-unknown-unknown
+          command: rustup target add wasm32-unknown-unknown && cargo build --package apollo-parser --package apollo-compiler --target wasm32-unknown-unknown
 
   test:
     parameters:
@@ -118,6 +138,23 @@ jobs:
           name: Run cargo test
           command: cargo test --all-features
 
+  miri:
+    parameters:
+      platform:
+        type: executor
+    executor: << parameters.platform >>
+    steps:
+      - checkout
+      - install_system_deps:
+          rust_channel: nightly
+          platform: << parameters.platform >>
+      - run:
+          name: Install Miri
+          command: rustup component add miri rust-src
+      - run:
+          name: Run a subset of tests under Miri
+          command: cargo miri test --test main -- node_str
+
 # The folowing are reusable command snippets can be referred to in any `steps`.
 # Commands we currently have: install_system_deps, install_rust_toolchain.
 commands:
@@ -131,7 +168,7 @@ commands:
     steps:
       - when:
           condition:
-            equal: [ *linux, << parameters.platform >> ]
+            equal: [*linux, << parameters.platform >>]
           steps:
             - run:
                 name: Update apt repositories
@@ -145,7 +182,7 @@ commands:
 
       - when:
           condition:
-            equal: [ *macos, << parameters.platform >> ]
+            equal: [*macos, << parameters.platform >>]
           steps:
             - run:
                 name: Skip homebrew update
@@ -168,14 +205,14 @@ commands:
     steps:
       - unless:
           condition:
-            equal: [ *windows, << parameters.platform >> ]
+            equal: [*windows, << parameters.platform >>]
           steps:
             - rust/install:
                 version: << parameters.rust_channel >>
 
       - when:
           condition:
-            equal: [ *windows, << parameters.platform >> ]
+            equal: [*windows, << parameters.platform >>]
           steps:
             - run:
                 name: Install rustup

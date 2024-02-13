@@ -1,0 +1,88 @@
+query takesCat($cat: Cat) {
+  dog {
+    isHouseTrained(atOtherHomes: $cat)
+  }
+}
+
+query takesDogBang($dog: Dog!) {
+  dog {
+    isHouseTrained(atOtherHomes: $dog)
+  }
+}
+
+query takesListOfPet($pets: [Pet]) {
+  booleanList(booleanListArg: $pets)
+}
+
+query takesCatOrDog($catOrDog: CatOrDog) {
+  dog {
+    isHouseTrained(atOtherHomes: $catOrDog)
+  }
+}
+
+query takesCatOrDog2($catOrDog: Dragon) {
+  dog {
+    isHouseTrained(atOtherHomes: $catOrDog)
+  }
+}
+
+type Query {
+  dog: Dog
+  findDog(complex: ComplexInput): Dog
+  booleanList(booleanListArg: [Boolean!]): Boolean
+}
+
+input ComplexInput {
+  name: String
+  owner: String
+}
+
+enum DogCommand {
+  SIT
+  DOWN
+  HEEL
+}
+
+type Dog implements Pet {
+  name: String!
+  nickname: String
+  barkVolume: Int
+  doesKnowCommand(dogCommand: DogCommand!): Boolean!
+  isHouseTrained(atOtherHomes: Boolean): Boolean!
+  owner: Human
+}
+
+interface Sentient {
+  name: String!
+}
+
+interface Pet {
+  name: String!
+}
+
+type Alien implements Sentient {
+  name: String!
+  homePlanet: String
+}
+
+type Human implements Sentient {
+  name: String!
+  pets: [Pet!]
+}
+
+enum CatCommand {
+  JUMP
+}
+
+type Cat implements Pet {
+  name: String!
+  nickname: String
+  doesKnowCommand(catCommand: CatCommand!): Boolean!
+  meowVolume: Int
+}
+
+union CatOrDog = Cat | Dog
+
+union DogOrHuman = Dog | Human
+
+union HumanOrAlien = Human | Alien

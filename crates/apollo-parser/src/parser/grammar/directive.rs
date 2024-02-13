@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{argument, description, input, name},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{argument, description, input, name};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#DirectiveDefinition
 ///
@@ -14,7 +13,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("directive") = p.peek_data().as_deref() {
+    if let Some("directive") = p.peek_data() {
         p.bump(SyntaxKind::directive_KW);
     }
 
@@ -27,18 +26,25 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     if let Some(T!['(']) = p.peek() {
         let _g = p.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
         p.bump(S!['(']);
-        input::input_value_definition(p, false);
+        if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+            input::input_value_definition(p);
+        } else {
+            p.err("expected an Argument Definition");
+        }
+        while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+            input::input_value_definition(p);
+        }
         p.expect(T![')'], S![')']);
     }
 
     if let Some(node) = p.peek_data() {
-        if node.as_str() == "repeatable" {
+        if node == "repeatable" {
             p.bump(SyntaxKind::repeatable_KW);
         }
     }
 
     if let Some(node) = p.peek_data() {
-        match node.as_str() {
+        match node {
             "on" => p.bump(SyntaxKind::on_KW),
             _ => p.err("expected Directive Locations"),
         }
@@ -68,7 +74,7 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
 
     if let Some(TokenKind::Name) = p.peek() {
         let loc = p.peek_data().unwrap();
-        match loc.as_str() {
+        match loc {
             "QUERY" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::QUERY_KW);
@@ -163,33 +169,33 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
 
 /// See: https://spec.graphql.org/October2021/#Directive
 ///
-/// *Directive*:
-///     **@** Name Arguments?
-pub(crate) fn directive(p: &mut Parser) {
+/// *Directive[Const]*:
+///     **@** Name Arguments[?Const]?
+pub(crate) fn directive(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE);
 
     p.expect(T![@], S![@]);
     name::name(p);
 
     if let Some(T!['(']) = p.peek() {
-        argument::arguments(p);
+        argument::arguments(p, constness);
     }
 }
 
 /// See: https://spec.graphql.org/October2021/#Directives
 ///
-/// *Directives*:
-///     Directive*
-pub(crate) fn directives(p: &mut Parser) {
+/// *Directives[Const]*:
+///     Directive[?Const]*
+pub(crate) fn directives(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
     while let Some(T![@]) = p.peek() {
-        directive(p);
+        directive(p, constness);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::ast;
+    use crate::cst;
 
     use super::*;
 
@@ -199,13 +205,13 @@ mod tests {
 directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MUTATION
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
                 assert_eq!(
                     dir_def.repeatable_token().unwrap().kind(),
                     SyntaxKind::repeatable_KW
@@ -213,7 +219,7 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
                 return;
             }
         }
-        panic!("Expected AST to have a Directive Definition");
+        panic!("Expected CST to have a Directive Definition");
     }
 
     #[test]
@@ -222,12 +228,12 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
 directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
                 let dir_locations: Vec<String> = dir_def
                     .directive_locations()
                     .unwrap()
@@ -241,7 +247,7 @@ directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
                 return;
             }
         }
-        panic!("Expected AST to have a Directive Definition");
+        panic!("Expected CST to have a Directive Definition");
     }
 
     #[test]
@@ -253,12 +259,12 @@ directive @example on
 | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
                 let dir_locations: Vec<String> = dir_def
                     .directive_locations()
                     .unwrap()
@@ -272,7 +278,7 @@ directive @example on
                 return;
             }
         }
-        panic!("Expected AST to have a Directive Definition");
+        panic!("Expected CST to have a Directive Definition");
     }
 
     #[test]
@@ -284,8 +290,8 @@ directive @example on
 | INLINE_FRAGMENT |
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
 
         let schema = r#"
 directive @example on
@@ -294,8 +300,8 @@ directive @example on
 | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
 
         let schema = r#"
 directive @example on
@@ -304,7 +310,7 @@ directive @example on
 | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
     }
 }

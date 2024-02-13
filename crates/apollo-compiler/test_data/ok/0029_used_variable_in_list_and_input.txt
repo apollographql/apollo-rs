@@ -1,217 +1,300 @@
-- DOCUMENT@0..303
-    - OBJECT_TYPE_DEFINITION@0..65
-        - type_KW@0..4 "type"
-        - WHITESPACE@4..5 " "
-        - NAME@5..12
-            - IDENT@5..12 "Product"
-        - WHITESPACE@12..13 " "
-        - FIELDS_DEFINITION@13..65
-            - L_CURLY@13..14 "{"
-            - WHITESPACE@14..17 "\n  "
-            - FIELD_DEFINITION@17..63
-                - NAME@17..27
-                    - IDENT@17..27 "attributes"
-                - ARGUMENTS_DEFINITION@27..52
-                    - L_PAREN@27..28 "("
-                    - INPUT_VALUE_DEFINITION@28..51
-                        - NAME@28..40
-                            - IDENT@28..40 "includeNames"
-                        - COLON@40..41 ":"
-                        - WHITESPACE@41..42 " "
-                        - LIST_TYPE@42..51
-                            - L_BRACK@42..43 "["
-                            - NON_NULL_TYPE@43..50
-                                - NAMED_TYPE@43..49
-                                    - NAME@43..49
-                                        - IDENT@43..49 "String"
-                                - BANG@49..50 "!"
-                            - R_BRACK@50..51 "]"
-                    - R_PAREN@51..52 ")"
-                - COLON@52..53 ":"
-                - WHITESPACE@53..54 " "
-                - LIST_TYPE@54..63
-                    - L_BRACK@54..55 "["
-                    - NON_NULL_TYPE@55..62
-                        - NAMED_TYPE@55..61
-                            - NAME@55..61
-                                - IDENT@55..61 "String"
-                        - BANG@61..62 "!"
-                    - R_BRACK@62..63 "]"
-            - WHITESPACE@63..64 "\n"
-            - R_CURLY@64..65 "}"
-    - WHITESPACE@65..67 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@67..99
-        - input_KW@67..72 "input"
-        - WHITESPACE@72..73 " "
-        - NAME@73..77
-            - IDENT@73..77 "Opts"
-        - WHITESPACE@77..78 " "
-        - INPUT_FIELDS_DEFINITION@78..99
-            - L_CURLY@78..79 "{"
-            - WHITESPACE@79..82 "\n  "
-            - INPUT_VALUE_DEFINITION@82..97
-                - NAME@82..86
-                    - IDENT@82..86 "prop"
-                - COLON@86..87 ":"
-                - WHITESPACE@87..88 " "
-                - NON_NULL_TYPE@88..97
-                    - LIST_TYPE@88..96
-                        - L_BRACK@88..89 "["
-                        - NON_NULL_TYPE@89..95
-                            - LIST_TYPE@89..94
-                                - L_BRACK@89..90 "["
-                                - NAMED_TYPE@90..93
-                                    - NAME@90..93
-                                        - IDENT@90..93 "Int"
-                                - R_BRACK@93..94 "]"
-                            - BANG@94..95 "!"
-                        - R_BRACK@95..96 "]"
-                    - BANG@96..97 "!"
-            - WHITESPACE@97..98 "\n"
-            - R_CURLY@98..99 "}"
-    - WHITESPACE@99..101 "\n\n"
-    - OBJECT_TYPE_DEFINITION@101..154
-        - type_KW@101..105 "type"
-        - WHITESPACE@105..106 " "
-        - NAME@106..111
-            - IDENT@106..111 "Query"
-        - WHITESPACE@111..112 " "
-        - FIELDS_DEFINITION@112..154
-            - L_CURLY@112..113 "{"
-            - WHITESPACE@113..116 "\n  "
-            - FIELD_DEFINITION@116..152
-                - NAME@116..121
-                    - IDENT@116..121 "field"
-                - ARGUMENTS_DEFINITION@121..141
-                    - L_PAREN@121..122 "("
-                    - WHITESPACE@122..127 "\n    "
-                    - INPUT_VALUE_DEFINITION@127..137
-                        - NAME@127..131
-                            - IDENT@127..131 "opts"
-                        - COLON@131..132 ":"
-                        - WHITESPACE@132..133 " "
-                        - NAMED_TYPE@133..137
-                            - NAME@133..137
-                                - IDENT@133..137 "Opts"
-                    - WHITESPACE@137..140 "\n  "
-                    - R_PAREN@140..141 ")"
-                - COLON@141..142 ":"
-                - WHITESPACE@142..143 " "
-                - LIST_TYPE@143..152
-                    - L_BRACK@143..144 "["
-                    - NAMED_TYPE@144..151
-                        - NAME@144..151
-                            - IDENT@144..151 "Product"
-                    - R_BRACK@151..152 "]"
-            - WHITESPACE@152..153 "\n"
-            - R_CURLY@153..154 "}"
-    - WHITESPACE@154..156 "\n\n"
-    - OPERATION_DEFINITION@156..302
-        - OPERATION_TYPE@156..161
-            - query_KW@156..161 "query"
-        - WHITESPACE@161..162 " "
-        - VARIABLE_DEFINITIONS@162..196
-            - L_PAREN@162..163 "("
-            - VARIABLE_DEFINITION@163..186
-                - VARIABLE@163..177
-                    - DOLLAR@163..164 "$"
-                    - NAME@164..177
-                        - IDENT@164..177 "attributeName"
-                - COLON@177..178 ":"
-                - WHITESPACE@178..179 " "
-                - NON_NULL_TYPE@179..186
-                    - NAMED_TYPE@179..185
-                        - NAME@179..185
-                            - IDENT@179..185 "String"
-                    - BANG@185..186 "!"
-            - COMMA@186..187 ","
-            - WHITESPACE@187..188 " "
-            - VARIABLE_DEFINITION@188..195
-                - VARIABLE@188..190
-                    - DOLLAR@188..189 "$"
-                    - NAME@189..190
-                        - IDENT@189..190 "v"
-                - COLON@190..191 ":"
-                - WHITESPACE@191..192 " "
-                - NAMED_TYPE@192..195
-                    - NAME@192..195
-                        - IDENT@192..195 "Int"
-            - R_PAREN@195..196 ")"
-        - WHITESPACE@196..197 " "
-        - SELECTION_SET@197..302
-            - L_CURLY@197..198 "{"
-            - WHITESPACE@198..201 "\n  "
-            - FIELD@201..300
-                - NAME@201..206
-                    - IDENT@201..206 "field"
-                - ARGUMENTS@206..247
-                    - L_PAREN@206..207 "("
-                    - ARGUMENT@207..246
-                        - NAME@207..211
-                            - IDENT@207..211 "opts"
-                        - COLON@211..212 ":"
-                        - WHITESPACE@212..213 " "
-                        - OBJECT_VALUE@213..246
-                            - L_CURLY@213..214 "{"
-                            - WHITESPACE@214..219 "\n    "
-                            - OBJECT_FIELD@219..241
-                                - NAME@219..223
-                                    - IDENT@219..223 "prop"
-                                - COLON@223..224 ":"
-                                - WHITESPACE@224..225 " "
-                                - LIST_VALUE@225..241
-                                    - L_BRACK@225..226 "["
-                                    - LIST_VALUE@226..229
-                                        - L_BRACK@226..227 "["
-                                        - INT_VALUE@227..228
-                                            - INT@227..228 "2"
-                                        - R_BRACK@228..229 "]"
-                                    - COMMA@229..230 ","
-                                    - WHITESPACE@230..231 " "
-                                    - LIST_VALUE@231..235
-                                        - L_BRACK@231..232 "["
-                                        - VARIABLE@232..234
-                                            - DOLLAR@232..233 "$"
-                                            - NAME@233..234
-                                                - IDENT@233..234 "v"
-                                        - R_BRACK@234..235 "]"
-                                    - COMMA@235..236 ","
-                                    - WHITESPACE@236..237 " "
-                                    - LIST_VALUE@237..240
-                                        - L_BRACK@237..238 "["
-                                        - INT_VALUE@238..239
-                                            - INT@238..239 "4"
-                                        - R_BRACK@239..240 "]"
-                                    - R_BRACK@240..241 "]"
-                            - COMMA@241..242 ","
-                            - WHITESPACE@242..245 "\n  "
-                            - R_CURLY@245..246 "}"
-                    - R_PAREN@246..247 ")"
-                - WHITESPACE@247..248 " "
-                - SELECTION_SET@248..300
-                    - L_CURLY@248..249 "{"
-                    - WHITESPACE@249..254 "\n    "
-                    - FIELD@254..296
-                        - NAME@254..264
-                            - IDENT@254..264 "attributes"
-                        - ARGUMENTS@264..296
-                            - L_PAREN@264..265 "("
-                            - ARGUMENT@265..295
-                                - NAME@265..277
-                                    - IDENT@265..277 "includeNames"
-                                - COLON@277..278 ":"
-                                - WHITESPACE@278..279 " "
-                                - LIST_VALUE@279..295
-                                    - L_BRACK@279..280 "["
-                                    - VARIABLE@280..294
-                                        - DOLLAR@280..281 "$"
-                                        - NAME@281..294
-                                            - IDENT@281..294 "attributeName"
-                                    - R_BRACK@294..295 "]"
-                            - R_PAREN@295..296 ")"
-                    - WHITESPACE@296..299 "\n  "
-                    - R_CURLY@299..300 "}"
-            - WHITESPACE@300..301 "\n"
-            - R_CURLY@301..302 "}"
-    - WHITESPACE@302..303 "\n"
-recursion limit: 4096, high: 2
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        28: SourceFile {
+            path: "0029_used_variable_in_list_and_input.graphql",
+            source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Product": Object(
+            0..65 @28 ObjectType {
+                description: None,
+                name: "Product",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "attributes": Component {
+                        origin: Definition,
+                        node: 17..63 @28 FieldDefinition {
+                            description: None,
+                            name: "attributes",
+                            arguments: [
+                                28..51 @28 InputValueDefinition {
+                                    description: None,
+                                    name: "includeNames",
+                                    ty: 42..51 @28 List(
+                                        NonNullNamed(
+                                            "String",
+                                        ),
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: List(
+                                NonNullNamed(
+                                    "String",
+                                ),
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Opts": InputObject(
+            67..99 @28 InputObjectType {
+                description: None,
+                name: "Opts",
+                directives: [],
+                fields: {
+                    "prop": Component {
+                        origin: Definition,
+                        node: 82..97 @28 InputValueDefinition {
+                            description: None,
+                            name: "prop",
+                            ty: 88..97 @28 NonNullList(
+                                NonNullList(
+                                    Named(
+                                        "Int",
+                                    ),
+                                ),
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            101..154 @28 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 116..152 @28 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [
+                                127..137 @28 InputValueDefinition {
+                                    description: None,
+                                    name: "opts",
+                                    ty: 133..137 @28 Named(
+                                        "Opts",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: List(
+                                Named(
+                                    "Product",
+                                ),
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        28: SourceFile {
+            path: "0029_used_variable_in_list_and_input.graphql",
+            source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
+        },
+    },
+    anonymous_operation: Some(
+        156..302 @28 Operation {
+            operation_type: Query,
+            name: None,
+            variables: [
+                163..186 @28 VariableDefinition {
+                    name: "attributeName",
+                    ty: 179..186 @28 NonNullNamed(
+                        "String",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+                188..195 @28 VariableDefinition {
+                    name: "v",
+                    ty: 192..195 @28 Named(
+                        "Int",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        201..300 @28 Field {
+                            definition: 116..152 @28 FieldDefinition {
+                                description: None,
+                                name: "field",
+                                arguments: [
+                                    127..137 @28 InputValueDefinition {
+                                        description: None,
+                                        name: "opts",
+                                        ty: 133..137 @28 Named(
+                                            "Opts",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: List(
+                                    Named(
+                                        "Product",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "field",
+                            arguments: [
+                                207..246 @28 Argument {
+                                    name: "opts",
+                                    value: 213..246 @28 Object(
+                                        [
+                                            (
+                                                "prop",
+                                                219..241 @28 List(
+                                                    [
+                                                        226..229 @28 List(
+                                                            [
+                                                                227..228 @28 Int(
+                                                                    2,
+                                                                ),
+                                                            ],
+                                                        ),
+                                                        231..235 @28 List(
+                                                            [
+                                                                232..234 @28 Variable(
+                                                                    "v",
+                                                                ),
+                                                            ],
+                                                        ),
+                                                        237..240 @28 List(
+                                                            [
+                                                                238..239 @28 Int(
+                                                                    4,
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Product",
+                                selections: [
+                                    Field(
+                                        254..296 @28 Field {
+                                            definition: 17..63 @28 FieldDefinition {
+                                                description: None,
+                                                name: "attributes",
+                                                arguments: [
+                                                    28..51 @28 InputValueDefinition {
+                                                        description: None,
+                                                        name: "includeNames",
+                                                        ty: 42..51 @28 List(
+                                                            NonNullNamed(
+                                                                "String",
+                                                            ),
+                                                        ),
+                                                        default_value: None,
+                                                        directives: [],
+                                                    },
+                                                ],
+                                                ty: List(
+                                                    NonNullNamed(
+                                                        "String",
+                                                    ),
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "attributes",
+                                            arguments: [
+                                                265..295 @28 Argument {
+                                                    name: "includeNames",
+                                                    value: 279..295 @28 List(
+                                                        [
+                                                            280..294 @28 Variable(
+                                                                "attributeName",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                },
+                                            ],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "String",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    ),
+    named_operations: {},
+    fragments: {},
+}

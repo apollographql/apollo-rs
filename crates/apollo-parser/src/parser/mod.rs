@@ -7,7 +7,11 @@ pub(crate) mod grammar;
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{lexer::Lexer, Error, LimitTracker, Token, TokenKind};
+use crate::{
+    cst::{Document, SelectionSet, Type},
+    lexer::Lexer,
+    Error, LimitTracker, Token, TokenKind,
+};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -17,7 +21,7 @@ pub use syntax_tree::SyntaxTree;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 
-/// Parse GraphQL schemas or queries into a typed AST.
+/// Parse GraphQL schemas or queries into a typed CST.
 ///
 /// ## Example
 ///
@@ -40,12 +44,12 @@ pub(crate) use token_text::TokenText;
 /// // Create a new instance of a parser given a query above.
 /// let parser = Parser::new(query);
 /// // Parse the query, and return a SyntaxTree.
-/// let ast = parser.parse();
-/// // Check that are no errors. These are not part of the AST.
-/// assert_eq!(0, ast.errors().len());
+/// let cst = parser.parse();
+/// // Check that are no errors. These are not part of the CST.
+/// assert_eq!(0, cst.errors().len());
 ///
 /// // Get the document root node
-/// let doc = ast.document();
+/// let doc = cst.document();
 /// // ... continue
 /// ```
 ///
@@ -63,21 +67,21 @@ pub(crate) use token_text::TokenText;
 /// }
 /// "#;
 /// let parser = Parser::new(core_schema);
-/// let ast = parser.parse();
+/// let cst = parser.parse();
 ///
-/// assert_eq!(0, ast.errors().len());
+/// assert_eq!(0, cst.errors().len());
 ///
-/// let document = ast.document();
+/// let document = cst.document();
 /// ```
 #[derive(Debug)]
-pub struct Parser<'a> {
-    lexer: Lexer<'a>,
+pub struct Parser<'input> {
+    lexer: Lexer<'input>,
     /// Store one lookahead token so we don't need to reparse things as much.
-    current_token: Option<Token<'a>>,
+    current_token: Option<Token<'input>>,
     /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// Ignored tokens that should be added to the tree.
-    ignored: Vec<Token<'a>>,
+    ignored: Vec<Token<'input>>,
     /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
     /// The limit to apply to parsing.
@@ -86,9 +90,22 @@ pub struct Parser<'a> {
     accept_errors: bool,
 }
 
-impl<'a> Parser<'a> {
+/// Chosen experimentally with:
+///
+/// * apollo-parser 0.6.2+ (e05abbf4f)
+/// * Rust 1.72.1
+/// * aarch64-apple-darwin
+/// * Unoptimized (default `cargo test` profile)
+///
+/// This couldn’t be set to much more than 2000 before the `recursion_limit` test below
+/// hit "fatal runtime error: stack overflow"
+///
+/// Defaulting to around a quarter of that, to keep a comfortable safety margin.
+const DEFAULT_RECURSION_LIMIT: usize = 500;
+
+impl<'input> Parser<'input> {
     /// Create a new instance of a parser given an input string.
-    pub fn new(input: &'a str) -> Self {
+    pub fn new(input: &'input str) -> Self {
         let lexer = Lexer::new(input);
 
         Self {
@@ -97,7 +114,7 @@ impl<'a> Parser<'a> {
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
             ignored: vec![],
             errors: Vec::new(),
-            recursion_limit: Default::default(),
+            recursion_limit: LimitTracker::new(DEFAULT_RECURSION_LIMIT),
             accept_errors: true,
         }
     }
@@ -118,13 +135,67 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse the current tokens.
-    pub fn parse(mut self) -> SyntaxTree {
+    pub fn parse(mut self) -> SyntaxTree<Document> {
         grammar::document::document(&mut self);
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
             .into_inner();
-        builder.finish(self.errors, self.recursion_limit, self.lexer.limit_tracker)
+        let builder =
+            builder.finish_document(self.errors, self.recursion_limit, self.lexer.limit_tracker);
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::Document(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::Type(_)
+            | syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
+                unreachable!("parse constructor can only construct a document")
+            }
+        }
+    }
+
+    /// Parse a selection set with optional outer braces.
+    /// This is the expected format of the string value of the `fields` argument of some directives
+    /// like [`@requires`](https://www.apollographql.com/docs/federation/federated-types/federated-directives/#requires).
+    pub fn parse_selection_set(mut self) -> SyntaxTree<SelectionSet> {
+        grammar::selection::field_set(&mut self);
+
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        let builder = builder.finish_selection_set(
+            self.errors,
+            self.recursion_limit,
+            self.lexer.limit_tracker,
+        );
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::FieldSet(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::Document(_)
+            | syntax_tree::SyntaxTreeWrapper::Type(_) => {
+                unreachable!("parse_selection_set constructor can only construct a selection set")
+            }
+        }
+    }
+
+    /// Parse a GraphQL type.
+    /// This is the expected format of the string value of the `type` argument
+    /// of some directives like [`@field`](https://specs.apollo.dev/join/v0.3/#@field).
+    pub fn parse_type(mut self) -> SyntaxTree<Type> {
+        grammar::ty::ty(&mut self);
+
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        let builder =
+            builder.finish_type(self.errors, self.recursion_limit, self.lexer.limit_tracker);
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::Type(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::FieldSet(_)
+            | syntax_tree::SyntaxTreeWrapper::Document(_) => {
+                unreachable!("parse_type constructor can only construct a type")
+            }
+        }
     }
 
     /// Check if the current token is `kind`.
@@ -139,7 +210,7 @@ impl<'a> Parser<'a> {
         false
     }
 
-    /// Consume a token and add it to the AST. Queue any ignored tokens that follow.
+    /// Consume a token and add it to the syntax tree. Queue any ignored tokens that follow.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         self.eat(kind);
         self.skip_ignored();
@@ -164,16 +235,16 @@ impl<'a> Parser<'a> {
                 TokenKind::Comma => SyntaxKind::COMMA,
                 _ => unreachable!(),
             };
-            self.push_ast(syntax_kind, token);
+            self.push_token(syntax_kind, token);
         }
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> Option<&Token> {
+    pub(crate) fn current(&mut self) -> Option<&Token<'input>> {
         self.peek_token()
     }
 
-    /// Consume a token from the lexer and add it to the AST.
+    /// Consume a token from the lexer and add it to the syntax tree.
     fn eat(&mut self, kind: SyntaxKind) {
         self.push_ignored();
         if self.current().is_none() {
@@ -181,7 +252,7 @@ impl<'a> Parser<'a> {
         }
 
         let token = self.pop();
-        self.push_ast(kind, token);
+        self.push_token(kind, token);
     }
 
     /// Create a parser limit error and push it into the error vector.
@@ -243,7 +314,7 @@ impl<'a> Parser<'a> {
         };
 
         // Keep the error in the parse tree for position information
-        self.push_ast(SyntaxKind::ERROR, current);
+        self.push_token(SyntaxKind::ERROR, current);
         self.push_err(err);
 
         // we usually skip ignored tokens after we pop each token, so make sure we also do
@@ -254,16 +325,11 @@ impl<'a> Parser<'a> {
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current = if let Some(current) = self.current() {
-            current
-        } else {
+        let Some(current) = self.current() else {
             return;
         };
         let is_eof = current.kind == TokenKind::Eof;
-        // TODO(@goto-bus-stop) this allocation is only required if we have an
-        // error, but has to be done eagerly here as the &str reference gets
-        // invalidated by `self.at()`. Can we avoid that?
-        let data = current.data().to_string();
+        let data = current.data();
         let index = current.index();
 
         if self.at(token) {
@@ -276,7 +342,7 @@ impl<'a> Parser<'a> {
             Error::eof(message, index)
         } else {
             let message = format!("expected {kind:?}, got {data}");
-            Error::with_loc(message, data, index)
+            Error::with_loc(message, data.to_string(), index)
         };
 
         self.push_err(err);
@@ -297,7 +363,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Gets the next token from the lexer.
-    fn next_token(&mut self) -> Option<Token<'a>> {
+    fn next_token(&mut self) -> Option<Token<'input>> {
         for res in &mut self.lexer {
             match res {
                 Err(err) => {
@@ -316,7 +382,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Consume a token from the lexer.
-    pub(crate) fn pop(&mut self) -> Token<'a> {
+    pub(crate) fn pop(&mut self) -> Token<'input> {
         if let Some(token) = self.current_token.take() {
             return token;
         }
@@ -325,8 +391,8 @@ impl<'a> Parser<'a> {
             .expect("Could not pop a token from the lexer")
     }
 
-    /// Insert a token into the AST.
-    pub(crate) fn push_ast(&mut self, kind: SyntaxKind, token: Token) {
+    /// Insert a token into the syntax tree.
+    pub(crate) fn push_token(&mut self, kind: SyntaxKind, token: Token) {
         self.builder.borrow_mut().token(kind, token.data())
     }
 
@@ -363,7 +429,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek the next Token and return it.
-    pub(crate) fn peek_token(&mut self) -> Option<&Token> {
+    pub(crate) fn peek_token(&mut self) -> Option<&Token<'input>> {
         if self.current_token.is_none() {
             self.current_token = self.next_token();
         }
@@ -371,7 +437,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek Token `n` and return it.
-    pub(crate) fn peek_token_n(&self, n: usize) -> Option<Token> {
+    pub(crate) fn peek_token_n(&self, n: usize) -> Option<Token<'input>> {
         self.peek_n_inner(n)
     }
 
@@ -380,7 +446,7 @@ impl<'a> Parser<'a> {
         self.peek_n_inner(n).map(|token| token.kind())
     }
 
-    fn peek_n_inner(&self, n: usize) -> Option<Token> {
+    fn peek_n_inner(&self, n: usize) -> Option<Token<'input>> {
         self.current_token
             .iter()
             .cloned()
@@ -392,13 +458,13 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek next Token's `data` property.
-    pub(crate) fn peek_data(&mut self) -> Option<String> {
-        self.peek_token().map(|token| token.data().to_string())
+    pub(crate) fn peek_data(&mut self) -> Option<&'input str> {
+        self.peek_token().map(|token| token.data())
     }
 
     /// Peek `n` Token's `data` property.
-    pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
-        self.peek_token_n(n).map(|token| token.data().to_string())
+    pub(crate) fn peek_data_n(&self, n: usize) -> Option<&'input str> {
+        self.peek_token_n(n).map(|token| token.data())
     }
 }
 
@@ -453,7 +519,8 @@ impl Checkpoint {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Error, Parser};
+    use super::DEFAULT_RECURSION_LIMIT;
+    use crate::{cst, Error, Parser, SyntaxTree};
     use expect_test::expect;
 
     #[test]
@@ -490,17 +557,20 @@ mod tests {
         "#;
 
         let parser = Parser::new(source).recursion_limit(10).token_limit(22);
-        let ast = parser.parse();
-        let errors = ast.errors().collect::<Vec<_>>();
+        let cst = parser.parse();
+        let errors = cst.errors().collect::<Vec<_>>();
         assert_eq!(
             errors,
             &[&Error::limit("token limit reached, aborting lexing", 170),]
         );
 
         let parser = Parser::new(source).recursion_limit(3).token_limit(200);
-        let ast = parser.parse();
-        let errors = ast.errors().collect::<Vec<_>>();
-        assert_eq!(errors, &[&Error::limit("parser limit(3) reached", 121),]);
+        let cst = parser.parse();
+        let errors = cst.errors().collect::<Vec<_>>();
+        assert_eq!(
+            errors,
+            &[&Error::limit("parser recursion limit reached", 121),]
+        );
     }
 
     #[test]
@@ -514,8 +584,8 @@ mod tests {
             } and then some garbage
         "#;
         let parser = Parser::new(source).token_limit(22);
-        let ast = parser.parse();
-        let mut errors = ast.errors();
+        let cst = parser.parse();
+        let mut errors = cst.errors();
         assert_eq!(
             errors.next(),
             Some(&Error::with_loc("expected a Name", ")".to_string(), 70))
@@ -566,12 +636,12 @@ mod tests {
               WHITESPACE@76..93 "\n                "
               COMMENT@93..113 "# limit reached here"
         "##]];
-        tree.assert_eq(&format!("{:#?}", ast.document().syntax));
+        tree.assert_eq(&format!("{:#?}", cst.document().syntax));
     }
 
     #[test]
     fn tree_with_syntax_errors() {
-        use crate::ast::Definition;
+        use crate::cst::Definition;
 
         // Some arbitrary token spam in incorrect places--this test uses
         // valid tokens only
@@ -580,9 +650,9 @@ mod tests {
                 field(arg: Int): Int
             } garbage :,, (|) interface X {}
         "#;
-        let ast = Parser::new(source).parse();
+        let cst = Parser::new(source).parse();
 
-        let mut definitions = ast.document().definitions();
+        let mut definitions = cst.document().definitions();
         let query_def = definitions.next().unwrap();
         let interface_def = definitions.next().unwrap();
         assert_eq!(definitions.next(), None);
@@ -595,10 +665,213 @@ mod tests {
 
     #[test]
     fn token_limit() {
-        let ast = Parser::new("type Query { a a a a a a a a a }")
+        let cst = Parser::new("type Query { a a a a a a a a a }")
             .token_limit(100)
             .parse();
         // token count includes EOF token.
-        assert_eq!(ast.token_limit().high, 26);
+        assert_eq!(cst.token_limit().high, 26);
+    }
+
+    #[test]
+    // single char v.s. multiple is less important than consistency between consecutive calls:
+    #[allow(clippy::single_char_add_str)]
+    fn recursion_limit() {
+        // A factor 50 makes this test to run in ~1 second on a laptop from 2021,
+        // in unoptimized mode
+        const SMASH_THE_STACK_FACTOR: usize = 50;
+
+        wide(2, |ast| assert_eq!(ast.errors, []));
+        wide(DEFAULT_RECURSION_LIMIT - 2, |ast| {
+            assert_eq!(ast.errors.len(), 0, "{:?}", ast.errors[0])
+        });
+        wide(DEFAULT_RECURSION_LIMIT * SMASH_THE_STACK_FACTOR, |_ast| {
+            // TODO: remove use of recursion to parse repetition and uncomment:
+            // assert_eq!(ast.errors.len(), 0)
+        });
+
+        deep(2, |ast| assert_eq!(ast.errors, []));
+        deep(DEFAULT_RECURSION_LIMIT - 2, |ast| {
+            assert_eq!(ast.errors.len(), 0, "{:?}", ast.errors[0])
+        });
+        deep(DEFAULT_RECURSION_LIMIT * SMASH_THE_STACK_FACTOR, |ast| {
+            // Parsing nested structures without recursion on the call stack
+            // is possible but not as easy as it would require an explicit stack.
+
+            // The recursion limit triggered and protected against stack overflow.
+            assert_eq!(ast.errors.len(), 1);
+            assert!(ast.errors[0].message.contains("recursion limit reached"));
+        });
+
+        fn deep(count: usize, each: impl Fn(SyntaxTree)) {
+            let check = |input: String| each(Parser::new(&input).parse());
+
+            // Nested list type
+            let mut doc = String::new();
+            doc.push_str("type O { field: ");
+            doc.push_str(&"[".repeat(count));
+            doc.push_str("Int");
+            doc.push_str(&"]".repeat(count));
+            doc.push_str(" }");
+            check(doc);
+
+            // Nested list value
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = ");
+            doc.push_str(&"[".repeat(count));
+            doc.push_str("0");
+            doc.push_str(&"]".repeat(count));
+            doc.push_str("): Int }");
+            check(doc);
+
+            // Nested object value
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = ");
+            doc.push_str(&"{f: ".repeat(count));
+            doc.push_str("0");
+            doc.push_str(&"}".repeat(count));
+            doc.push_str("): Int }");
+            check(doc);
+
+            // Nested selection set
+            let mut doc = String::new();
+            doc.push_str("query { ");
+            doc.push_str(&"f { ".repeat(count));
+            doc.push_str("f ");
+            doc.push_str(&"}".repeat(count));
+            doc.push_str("}");
+            check(doc);
+        }
+
+        fn wide(count: usize, each: impl Fn(SyntaxTree)) {
+            let check = |input: String| each(Parser::new(&input).parse());
+
+            // Repeated top-level definitions
+            let mut doc = String::new();
+            doc.push_str(&"directive @d on FIELD ".repeat(count));
+            check(doc);
+
+            // Repeated directive applications
+            let mut doc = String::new();
+            doc.push_str("scalar Url");
+            doc.push_str(&" @d".repeat(count));
+            check(doc);
+
+            // Repeated root operation
+            let mut doc = String::new();
+            doc.push_str("schema {");
+            doc.push_str(&" query: Q".repeat(count));
+            doc.push_str(" }");
+            check(doc);
+
+            // Repeated implements interface
+            let mut doc = String::new();
+            doc.push_str("type O implements");
+            doc.push_str(&" & I".repeat(count));
+            check(doc);
+
+            // Repeated object type field
+            let mut doc = String::new();
+            doc.push_str("type O {");
+            doc.push_str(&" f: T".repeat(count));
+            doc.push_str("}");
+            check(doc);
+
+            // Repeated enum value field
+            let mut doc = String::new();
+            doc.push_str("enum E {");
+            doc.push_str(&" V".repeat(count));
+            doc.push_str("}");
+            check(doc);
+
+            // Repeated union member
+            let mut doc = String::new();
+            doc.push_str("union U = ");
+            doc.push_str(&" | T".repeat(count));
+            check(doc);
+
+            // Repeated input object type field
+            let mut doc = String::new();
+            doc.push_str("input In {");
+            doc.push_str(&" f: T".repeat(count));
+            doc.push_str("}");
+            check(doc);
+
+            // Repeated input object value field
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = {");
+            doc.push_str(&" f: 0".repeat(count));
+            doc.push_str(" }): Int }");
+            check(doc);
+
+            // Repeated list value item
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = [");
+            doc.push_str(&" 0,".repeat(count));
+            doc.push_str(" ]): Int }");
+            check(doc);
+
+            // Repeated field argument definitions
+            let mut doc = String::new();
+            doc.push_str("type O { field(");
+            doc.push_str(&"a: T ".repeat(count));
+            doc.push_str("): Int }");
+            check(doc);
+
+            // Repeated field selection
+            let mut doc = String::new();
+            doc.push_str("query {");
+            doc.push_str(&" f".repeat(count));
+            doc.push_str(" }");
+            check(doc);
+
+            // Repeated field argument
+            let mut doc = String::new();
+            doc.push_str("query { f(");
+            doc.push_str(&" a: 0".repeat(count));
+            doc.push_str(") }");
+            check(doc);
+
+            // Repeated variable definition
+            let mut doc = String::new();
+            doc.push_str("query Q(");
+            doc.push_str(&" $v: Int".repeat(count));
+            doc.push_str(" ) { f }");
+            check(doc);
+        }
+    }
+
+    #[test]
+    fn parse_field_set() {
+        let source = r#"{ a }"#;
+
+        let parser = Parser::new(source);
+        let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+        let errors = cst.errors().collect::<Vec<_>>();
+        assert_eq!(errors.len(), 0);
+
+        let sel_set: cst::SelectionSet = cst.field_set();
+        let _ = sel_set.selections().map(|sel| {
+            if let cst::Selection::Field(f) = sel {
+                assert_eq!(f.name().unwrap().text().as_ref(), "a")
+            } else {
+                panic!("no field a in field set selection")
+            }
+        });
+
+        let source = r#"a { a }"#;
+
+        let parser = Parser::new(source);
+        let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+        let errors = cst.errors().collect::<Vec<_>>();
+        assert_eq!(errors.len(), 0);
+
+        let sel_set: cst::SelectionSet = cst.field_set();
+        let _ = sel_set.selections().map(|sel| {
+            if let cst::Selection::Field(f) = sel {
+                assert_eq!(f.name().unwrap().text().as_ref(), "a")
+            } else {
+                panic!("no field a in field set selection")
+            }
+        });
     }
 }

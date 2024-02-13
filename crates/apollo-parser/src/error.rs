@@ -2,11 +2,11 @@ use std::fmt;
 
 /// An `Error` type for operations performed in the lexer and the parser.
 ///
-/// Errors get returned alongside the resulting AST if either the lexer or the
+/// Errors get returned alongside the resulting CST if either the lexer or the
 /// parser encouter lexical or syntactical errors respectively.
 ///
-/// We encourage you to check for the AST's errors before proceeding to iterate
-/// over the AST's nodes:
+/// We encourage you to check for the CST's errors before proceeding to iterate
+/// over the CST's nodes:
 ///
 /// ## Example
 /// ```rust
@@ -14,11 +14,11 @@ use std::fmt;
 ///
 /// let input = "union SearchResult = Photo | Person | Cat | Dog";
 /// let parser = Parser::new(input);
-/// let ast = parser.parse();
+/// let cst = parser.parse();
 ///
-/// assert_eq!(0, ast.errors().len());
+/// assert_eq!(0, cst.errors().len());
 ///
-/// let doc = ast.document();
+/// let doc = cst.document();
 /// ```
 ///
 /// ### Diagnostics
@@ -34,7 +34,7 @@ use std::fmt;
 /// [annotate_snippets]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
 /// [miette crate]: https://docs.rs/miette/3.2.0/miette/index.html
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub(crate) enum ErrorData {
     Eof,
     LimitExceeded,
@@ -60,7 +60,7 @@ impl fmt::Display for ErrorData {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, thiserror::Error)]
+#[derive(PartialEq, Eq, Clone, Hash, thiserror::Error)]
 #[error("ERROR@{index}:{} {message:?} {data}", .index + .data.len())]
 pub struct Error {
     pub(crate) message: String,

@@ -1,161 +1,227 @@
-- DOCUMENT@0..254
-    - OBJECT_TYPE_DEFINITION@0..42
-        - type_KW@0..4 "type"
-        - WHITESPACE@4..5 " "
-        - NAME@5..10
-            - IDENT@5..10 "Query"
-        - WHITESPACE@10..11 " "
-        - IMPLEMENTS_INTERFACES@11..26
-            - implements_KW@11..21 "implements"
-            - WHITESPACE@21..22 " "
-            - NAMED_TYPE@22..26
-                - NAME@22..26
-                    - IDENT@22..26 "Node"
-        - WHITESPACE@26..27 " "
-        - FIELDS_DEFINITION@27..42
-            - L_CURLY@27..28 "{"
-            - WHITESPACE@28..33 "\n    "
-            - FIELD_DEFINITION@33..40
-                - NAME@33..35
-                    - IDENT@33..35 "id"
-                - COLON@35..36 ":"
-                - WHITESPACE@36..37 " "
-                - NON_NULL_TYPE@37..40
-                    - NAMED_TYPE@37..39
-                        - NAME@37..39
-                            - IDENT@37..39 "ID"
-                    - BANG@39..40 "!"
-            - WHITESPACE@40..41 "\n"
-            - R_CURLY@41..42 "}"
-    - WHITESPACE@42..44 "\n\n"
-    - INTERFACE_TYPE_DEFINITION@44..72
-        - interface_KW@44..53 "interface"
-        - WHITESPACE@53..54 " "
-        - NAME@54..58
-            - IDENT@54..58 "Node"
-        - WHITESPACE@58..59 " "
-        - FIELDS_DEFINITION@59..72
-            - L_CURLY@59..60 "{"
-            - WHITESPACE@60..63 "\n  "
-            - FIELD_DEFINITION@63..70
-                - NAME@63..65
-                    - IDENT@63..65 "id"
-                - COLON@65..66 ":"
-                - WHITESPACE@66..67 " "
-                - NON_NULL_TYPE@67..70
-                    - NAMED_TYPE@67..69
-                        - NAME@67..69
-                            - IDENT@67..69 "ID"
-                    - BANG@69..70 "!"
-            - WHITESPACE@70..71 "\n"
-            - R_CURLY@71..72 "}"
-    - WHITESPACE@72..74 "\n\n"
-    - INTERFACE_TYPE_DEFINITION@74..149
-        - interface_KW@74..83 "interface"
-        - WHITESPACE@83..84 " "
-        - NAME@84..92
-            - IDENT@84..92 "Resource"
-        - WHITESPACE@92..93 " "
-        - IMPLEMENTS_INTERFACES@93..108
-            - implements_KW@93..103 "implements"
-            - WHITESPACE@103..104 " "
-            - NAMED_TYPE@104..108
-                - NAME@104..108
-                    - IDENT@104..108 "Node"
-        - WHITESPACE@108..109 " "
-        - FIELDS_DEFINITION@109..149
-            - L_CURLY@109..110 "{"
-            - WHITESPACE@110..113 "\n  "
-            - FIELD_DEFINITION@113..120
-                - NAME@113..115
-                    - IDENT@113..115 "id"
-                - COLON@115..116 ":"
-                - WHITESPACE@116..117 " "
-                - NON_NULL_TYPE@117..120
-                    - NAMED_TYPE@117..119
-                        - NAME@117..119
-                            - IDENT@117..119 "ID"
-                    - BANG@119..120 "!"
-            - WHITESPACE@120..123 "\n  "
-            - FIELD_DEFINITION@123..133
-                - NAME@123..128
-                    - IDENT@123..128 "width"
-                - COLON@128..129 ":"
-                - WHITESPACE@129..130 " "
-                - NAMED_TYPE@130..133
-                    - NAME@130..133
-                        - IDENT@130..133 "Int"
-            - WHITESPACE@133..136 "\n  "
-            - FIELD_DEFINITION@136..147
-                - NAME@136..142
-                    - IDENT@136..142 "height"
-                - COLON@142..143 ":"
-                - WHITESPACE@143..144 " "
-                - NAMED_TYPE@144..147
-                    - NAME@144..147
-                        - IDENT@144..147 "Int"
-            - WHITESPACE@147..148 "\n"
-            - R_CURLY@148..149 "}"
-    - WHITESPACE@149..151 "\n\n"
-    - INTERFACE_TYPE_DEFINITION@151..254
-        - interface_KW@151..160 "interface"
-        - WHITESPACE@160..161 " "
-        - NAME@161..166
-            - IDENT@161..166 "Image"
-        - WHITESPACE@166..167 " "
-        - IMPLEMENTS_INTERFACES@167..193
-            - implements_KW@167..177 "implements"
-            - WHITESPACE@177..178 " "
-            - NAMED_TYPE@178..186
-                - NAME@178..186
-                    - IDENT@178..186 "Resource"
-            - WHITESPACE@186..187 " "
-            - AMP@187..188 "&"
-            - WHITESPACE@188..189 " "
-            - NAMED_TYPE@189..193
-                - NAME@189..193
-                    - IDENT@189..193 "Node"
-        - WHITESPACE@193..194 " "
-        - FIELDS_DEFINITION@194..254
-            - L_CURLY@194..195 "{"
-            - WHITESPACE@195..198 "\n  "
-            - FIELD_DEFINITION@198..205
-                - NAME@198..200
-                    - IDENT@198..200 "id"
-                - COLON@200..201 ":"
-                - WHITESPACE@201..202 " "
-                - NON_NULL_TYPE@202..205
-                    - NAMED_TYPE@202..204
-                        - NAME@202..204
-                            - IDENT@202..204 "ID"
-                    - BANG@204..205 "!"
-            - WHITESPACE@205..208 "\n  "
-            - FIELD_DEFINITION@208..218
-                - NAME@208..213
-                    - IDENT@208..213 "width"
-                - COLON@213..214 ":"
-                - WHITESPACE@214..215 " "
-                - NAMED_TYPE@215..218
-                    - NAME@215..218
-                        - IDENT@215..218 "Int"
-            - WHITESPACE@218..221 "\n  "
-            - FIELD_DEFINITION@221..232
-                - NAME@221..227
-                    - IDENT@221..227 "height"
-                - COLON@227..228 ":"
-                - WHITESPACE@228..229 " "
-                - NAMED_TYPE@229..232
-                    - NAME@229..232
-                        - IDENT@229..232 "Int"
-            - WHITESPACE@232..235 "\n  "
-            - FIELD_DEFINITION@235..252
-                - NAME@235..244
-                    - IDENT@235..244 "thumbnail"
-                - COLON@244..245 ":"
-                - WHITESPACE@245..246 " "
-                - NAMED_TYPE@246..252
-                    - NAME@246..252
-                        - IDENT@246..252 "String"
-            - WHITESPACE@252..253 "\n"
-            - R_CURLY@253..254 "}"
-recursion limit: 4096, high: 0
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        7: SourceFile {
+            path: "0007_schema_with_interface_definition.graphql",
+            source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..42 @7 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Node",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 33..40 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Node": Interface(
+            44..72 @7 InterfaceType {
+                description: None,
+                name: "Node",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 63..70 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Resource": Interface(
+            74..149 @7 InterfaceType {
+                description: None,
+                name: "Resource",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Node",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 113..120 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "width": Component {
+                        origin: Definition,
+                        node: 123..133 @7 FieldDefinition {
+                            description: None,
+                            name: "width",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "height": Component {
+                        origin: Definition,
+                        node: 136..147 @7 FieldDefinition {
+                            description: None,
+                            name: "height",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Image": Interface(
+            151..254 @7 InterfaceType {
+                description: None,
+                name: "Image",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Resource",
+                    },
+                    ComponentName {
+                        origin: Definition,
+                        name: "Node",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "id": Component {
+                        origin: Definition,
+                        node: 198..205 @7 FieldDefinition {
+                            description: None,
+                            name: "id",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "ID",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "width": Component {
+                        origin: Definition,
+                        node: 208..218 @7 FieldDefinition {
+                            description: None,
+                            name: "width",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "height": Component {
+                        origin: Definition,
+                        node: 221..232 @7 FieldDefinition {
+                            description: None,
+                            name: "height",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "thumbnail": Component {
+                        origin: Definition,
+                        node: 235..252 @7 FieldDefinition {
+                            description: None,
+                            name: "thumbnail",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        7: SourceFile {
+            path: "0007_schema_with_interface_definition.graphql",
+            source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

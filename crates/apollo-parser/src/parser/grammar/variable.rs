@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{directive, name, ty, value},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{directive, name, ty, value};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#VariableDefinitions
 ///
@@ -12,45 +11,40 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     p.bump(S!['(']);
 
     if let Some(T![$]) = p.peek() {
-        variable_definition(p, false);
+        variable_definition(p);
     } else {
         p.err("expected a Variable Definition")
     }
+    while let Some(T![$]) = p.peek() {
+        variable_definition(p);
+    }
+
     p.expect(T![')'], S![')']);
 }
 
 /// See: https://spec.graphql.org/October2021/#VariableDefinition
 ///
 /// *VariableDefinition*:
-///     Variable **:** Type DefaultValue? Directives?
-pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
-    if let Some(T![$]) = p.peek() {
-        let guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
-        variable(p);
+///     Variable **:** Type DefaultValue? Directives[Const]?
+pub(crate) fn variable_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
+    variable(p);
 
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            if let Some(TokenKind::Name | TokenKind::LBracket) = p.peek() {
-                ty::ty(p);
-                if let Some(T![=]) = p.peek() {
-                    value::default_value(p);
-                }
-                if let Some(T![@]) = p.peek() {
-                    directive::directives(p)
-                }
-                if p.peek().is_some() {
-                    guard.finish_node();
-                    return variable_definition(p, true);
-                }
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        if let Some(TokenKind::Name | TokenKind::LBracket) = p.peek() {
+            ty::ty(p);
+            if let Some(T![=]) = p.peek() {
+                value::default_value(p);
             }
-            p.err("expected a Type");
+            if let Some(T![@]) = p.peek() {
+                directive::directives(p, Constness::Const)
+            }
         } else {
-            p.err("expected a Name");
+            p.err("expected a Type");
         }
-    }
-
-    if !is_variable {
-        p.err("expected a Variable Definition");
+    } else {
+        p.err("expected a Name");
     }
 }
 
@@ -67,7 +61,7 @@ pub(crate) fn variable(p: &mut Parser) {
 #[cfg(test)]
 
 mod test {
-    use crate::{ast, Parser};
+    use crate::{cst, Parser};
 
     #[test]
     fn it_accesses_variable_name_and_type() {
@@ -78,14 +72,14 @@ query GroceryStoreTrip($budget: Int) {
         "#;
 
         let parser = Parser::new(gql);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors().len() == 0);
+        assert!(cst.errors().len() == 0);
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for definition in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = definition {
+            if let cst::Definition::OperationDefinition(op_def) = definition {
                 for var in op_def
                     .variable_definitions()
                     .unwrap()
@@ -95,7 +89,7 @@ query GroceryStoreTrip($budget: Int) {
                         var.variable().unwrap().name().unwrap().text().as_ref(),
                         "budget"
                     );
-                    if let ast::Type::NamedType(name) = var.ty().unwrap() {
+                    if let cst::Type::NamedType(name) = var.ty().unwrap() {
                         assert_eq!(name.name().unwrap().text().as_ref(), "Int")
                     }
                 }

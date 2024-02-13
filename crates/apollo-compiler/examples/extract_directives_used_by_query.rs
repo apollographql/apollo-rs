@@ -1,35 +1,23 @@
 //! This example collects all directives declared on the fields that are queried by an operation.
-use apollo_compiler::{
-    hir::{Directive, Field},
-    ApolloCompiler, FileId, HirDatabase,
-};
 
-fn get_directives_used_in_query(compiler: &ApolloCompiler, query_id: &FileId) -> Vec<Directive> {
+use apollo_compiler::executable::Directive;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Node;
+use apollo_compiler::Schema;
+
+fn get_directives_used_in_query(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
     // seed the stack with top-level fields
-    let mut stack: Vec<Field> =
-        compiler
-            .db
-            .operations(*query_id)
-            .iter()
-            .fold(vec![], |mut acc, operation_definition| {
-                acc.extend(
-                    operation_definition
-                        .selection_set()
-                        .fields()
-                        .iter()
-                        .cloned(),
-                );
-                acc
-            });
+    let mut stack: Vec<_> = doc
+        .all_operations()
+        .flat_map(|op| op.selection_set.fields())
+        .collect();
 
     let mut directives = vec![];
 
     // depth first search for nested fields with directives
     while let Some(field) = stack.pop() {
-        if let Some(field_definition) = &field.field_definition(&compiler.db) {
-            directives.extend(field_definition.directives().iter().cloned());
-        }
-        stack.extend(field.selection_set().fields().iter().cloned());
+        directives.extend(field.definition.directives.iter());
+        stack.extend(field.selection_set.fields());
     }
 
     directives
@@ -64,8 +52,7 @@ fn main() {
           }
         "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema_src, "not-used-here.graphql");
+    let schema = Schema::parse_and_validate(schema_src, "not-used-here.graphql").unwrap();
 
     let query_src0 = r#"query {
           directivesQuery {
@@ -77,9 +64,11 @@ fn main() {
           }
         }
         "#;
-    let query_id0 = compiler.add_executable(query_src0, "not-used-here.graphql");
+    let query0 =
+        ExecutableDocument::parse_and_validate(&schema, query_src0, "not-used-here.graphql")
+            .unwrap();
 
-    let directives = get_directives_used_in_query(&compiler, &query_id0);
+    let directives = get_directives_used_in_query(&query0);
     assert_eq!(directives.len(), 4);
 
     let query_src1 = r#"query {
@@ -88,9 +77,9 @@ fn main() {
           }
         }
         "#;
-    let query_id1 = compiler.add_executable(query_src1, "not-used-here.graphql");
+    let query1 = ExecutableDocument::parse(&schema, query_src1, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&compiler, &query_id1);
+    let directives = get_directives_used_in_query(&query1);
     assert_eq!(directives.len(), 2);
 
     let query_src2 = r#"query {
@@ -99,8 +88,8 @@ fn main() {
           }
         }
         "#;
-    let query_id2 = compiler.add_executable(query_src2, "not-used-here.graphql");
+    let query2 = ExecutableDocument::parse(&schema, query_src2, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&compiler, &query_id2);
+    let directives = get_directives_used_in_query(&query2);
     assert_eq!(directives.len(), 0);
 }

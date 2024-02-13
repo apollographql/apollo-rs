@@ -1,43 +1,18 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            25: "0025_interface_definition_with_missing_transitive_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 25,
-            },
-            offset: 135,
-            length: 76,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 25,
-                    },
-                    offset: 72,
-                    length: 61,
-                },
-                text: "`width` was originally defined here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 25,
-                    },
-                    offset: 135,
-                    length: 76,
-                },
-                text: "add `width` field to this interface",
-            },
-        ],
-        help: Some(
-            "An interface must be a super-set of all interfaces it implements",
-        ),
-        data: MissingField {
-            field: "width",
-        },
-    },
-]
+Error: type `Image` does not satisfy interface `Resource`: missing field `width`
+    ╭─[0025_interface_definition_with_missing_transitive_fields.graphql:14:1]
+    │
+ 11 │       width: Int
+    │       ─────┬────  
+    │            ╰────── `Resource.width` originally defined here
+    │ 
+ 14 │ ╭─▶ interface Image implements Resource & Node {
+    │ │                              ────┬───  
+    │ │                                  ╰───── implementation of interface Resource declared here
+    ┆ ┆   
+ 17 │ ├─▶ }
+    │ │      
+    │ ╰────── add `width` field to this type
+    │     
+    │     Help: An object or interface must declare all fields required by the interfaces it implements
+────╯
+

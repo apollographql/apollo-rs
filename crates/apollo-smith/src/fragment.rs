@@ -1,7 +1,3 @@
-use std::collections::HashMap;
-
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     directive::{Directive, DirectiveLocation},
     name::Name,
@@ -9,6 +5,9 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
 
 /// The __fragmentDef type represents a fragment definition
 ///
@@ -20,31 +19,26 @@ use crate::{
 pub struct FragmentDef {
     pub(crate) name: Name,
     pub(crate) type_condition: TypeCondition,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
 }
 
-impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
-    fn from(frag_def: FragmentDef) -> Self {
-        let mut new_frag_def = apollo_encoder::FragmentDefinition::new(
-            frag_def.name.into(),
-            frag_def.type_condition.into(),
-            frag_def.selection_set.into(),
-        );
-        frag_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_frag_def.directive(directive.into()));
-
-        new_frag_def
+impl From<FragmentDef> for ast::Definition {
+    fn from(x: FragmentDef) -> Self {
+        ast::FragmentDefinition {
+            name: x.name.into(),
+            type_condition: x.type_condition.name.into(),
+            directives: Directive::to_ast(x.directives),
+            selection_set: x.selection_set.into(),
+        }
+        .into()
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::FragmentDefinition> for FragmentDef {
+impl TryFrom<apollo_parser::cst::FragmentDefinition> for FragmentDef {
     type Error = crate::FromError;
 
-    fn try_from(fragment_def: apollo_parser::ast::FragmentDefinition) -> Result<Self, Self::Error> {
+    fn try_from(fragment_def: apollo_parser::cst::FragmentDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             name: fragment_def.fragment_name().unwrap().name().unwrap().into(),
             directives: fragment_def
@@ -67,26 +61,22 @@ impl TryFrom<apollo_parser::ast::FragmentDefinition> for FragmentDef {
 #[derive(Debug, Clone)]
 pub struct FragmentSpread {
     pub(crate) name: Name,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
-impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
-    fn from(fragment_spread: FragmentSpread) -> Self {
-        let mut new_fragment_spread = Self::new(fragment_spread.name.into());
-        fragment_spread
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_fragment_spread.directive(directive.into()));
-
-        new_fragment_spread
+impl From<FragmentSpread> for ast::FragmentSpread {
+    fn from(x: FragmentSpread) -> Self {
+        Self {
+            fragment_name: x.name.into(),
+            directives: Directive::to_ast(x.directives),
+        }
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::FragmentSpread> for FragmentSpread {
+impl TryFrom<apollo_parser::cst::FragmentSpread> for FragmentSpread {
     type Error = crate::FromError;
 
-    fn try_from(fragment_spread: apollo_parser::ast::FragmentSpread) -> Result<Self, Self::Error> {
+    fn try_from(fragment_spread: apollo_parser::cst::FragmentSpread) -> Result<Self, Self::Error> {
         Ok(Self {
             name: fragment_spread
                 .fragment_name()
@@ -112,28 +102,24 @@ impl TryFrom<apollo_parser::ast::FragmentSpread> for FragmentSpread {
 #[derive(Debug, Clone)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<TypeCondition>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
 }
 
-impl From<InlineFragment> for apollo_encoder::InlineFragment {
-    fn from(inline_fragment: InlineFragment) -> Self {
-        let mut new_inline_fragment = Self::new(inline_fragment.selection_set.into());
-        new_inline_fragment.type_condition(inline_fragment.type_condition.map(Into::into));
-        inline_fragment
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_inline_fragment.directive(directive.into()));
-
-        new_inline_fragment
+impl From<InlineFragment> for ast::InlineFragment {
+    fn from(x: InlineFragment) -> Self {
+        Self {
+            type_condition: x.type_condition.map(|t| t.name.into()),
+            directives: Directive::to_ast(x.directives),
+            selection_set: x.selection_set.into(),
+        }
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InlineFragment> for InlineFragment {
+impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
     type Error = crate::FromError;
 
-    fn try_from(inline_fragment: apollo_parser::ast::InlineFragment) -> Result<Self, Self::Error> {
+    fn try_from(inline_fragment: apollo_parser::cst::InlineFragment) -> Result<Self, Self::Error> {
         Ok(Self {
             directives: inline_fragment
                 .directives()
@@ -157,15 +143,8 @@ pub struct TypeCondition {
     name: Name,
 }
 
-impl From<TypeCondition> for apollo_encoder::TypeCondition {
-    fn from(ty_cond: TypeCondition) -> Self {
-        Self::new(ty_cond.name.into())
-    }
-}
-
-#[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::TypeCondition> for TypeCondition {
-    fn from(type_condition: apollo_parser::ast::TypeCondition) -> Self {
+impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
+    fn from(type_condition: apollo_parser::cst::TypeCondition) -> Self {
         Self {
             name: type_condition.named_type().unwrap().name().unwrap().into(),
         }

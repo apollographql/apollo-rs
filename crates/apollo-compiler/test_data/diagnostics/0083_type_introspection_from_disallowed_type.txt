@@ -1,44 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            80: "0083_type_introspection_from_disallowed_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 80,
-            },
-            offset: 46,
-            length: 123,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 80,
-                    },
-                    offset: 46,
-                    length: 123,
-                },
-                text: "`__type` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 80,
-                    },
-                    offset: 264,
-                    length: 177,
-                },
-                text: "`Product` declared here",
-            },
-        ],
-        help: Some(
-            "`__type` is not defined on `Product` type",
-        ),
-        data: UndefinedField {
-            field: "__type",
-            ty: "Product",
-        },
-    },
-]
+Error: type `Product` does not have a field `__type`
+    ╭─[0083_type_introspection_from_disallowed_type.graphql:4:5]
+    │
+  4 │     __type(name: "User") {
+    │     ───┬──  
+    │        ╰──── field `__type` selected here
+    │ 
+ 24 │ type Product {
+    │      ───┬───  
+    │         ╰───── type `Product` defined here
+    │ 
+    │ Note: path to the field: `query getProduct → topProducts → __type`
+────╯
+

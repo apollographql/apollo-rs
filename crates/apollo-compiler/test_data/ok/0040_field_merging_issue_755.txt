@@ -1,0 +1,331 @@
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        39: SourceFile {
+            path: "0040_field_merging_issue_755.graphql",
+            source_text: "# Different fragments selecting the same name from different types\n# into different subselections -- all valid, unless apollo-rs\n# propagates type conditions incorrectly :)\n\ntype Subselection {\n  createdAt: Int!\n}\n\ntype Issue {\n  createdAt: Int\n  subselection: [Subselection!]\n}\n\ntype Query {\n  issue755: Issue\n}\n\nfragment topLevelFragment on Issue {\n  subselection {\n    createdAt\n    ...subselectionFragment\n  }\n  ...collidingTopLevelFragment\n}\nfragment collidingTopLevelFragment on Issue {\n  subselection {\n    createdAt\n  }\n}\nfragment subselectionFragment on Subselection {\n  createdAt\n}\nquery  {\n  issue755 {\n    ...topLevelFragment\n  }\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Subselection": Object(
+            174..213 @39 ObjectType {
+                description: None,
+                name: "Subselection",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "createdAt": Component {
+                        origin: Definition,
+                        node: 196..211 @39 FieldDefinition {
+                            description: None,
+                            name: "createdAt",
+                            arguments: [],
+                            ty: NonNullNamed(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Issue": Object(
+            215..278 @39 ObjectType {
+                description: None,
+                name: "Issue",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "createdAt": Component {
+                        origin: Definition,
+                        node: 230..244 @39 FieldDefinition {
+                            description: None,
+                            name: "createdAt",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "subselection": Component {
+                        origin: Definition,
+                        node: 247..276 @39 FieldDefinition {
+                            description: None,
+                            name: "subselection",
+                            arguments: [],
+                            ty: List(
+                                NonNullNamed(
+                                    "Subselection",
+                                ),
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            280..312 @39 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "issue755": Component {
+                        origin: Definition,
+                        node: 295..310 @39 FieldDefinition {
+                            description: None,
+                            name: "issue755",
+                            arguments: [],
+                            ty: Named(
+                                "Issue",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        39: SourceFile {
+            path: "0040_field_merging_issue_755.graphql",
+            source_text: "# Different fragments selecting the same name from different types\n# into different subselections -- all valid, unless apollo-rs\n# propagates type conditions incorrectly :)\n\ntype Subselection {\n  createdAt: Int!\n}\n\ntype Issue {\n  createdAt: Int\n  subselection: [Subselection!]\n}\n\ntype Query {\n  issue755: Issue\n}\n\nfragment topLevelFragment on Issue {\n  subselection {\n    createdAt\n    ...subselectionFragment\n  }\n  ...collidingTopLevelFragment\n}\nfragment collidingTopLevelFragment on Issue {\n  subselection {\n    createdAt\n  }\n}\nfragment subselectionFragment on Subselection {\n  createdAt\n}\nquery  {\n  issue755 {\n    ...topLevelFragment\n  }\n}\n",
+        },
+    },
+    anonymous_operation: Some(
+        592..643 @39 Operation {
+            operation_type: Query,
+            name: None,
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        603..641 @39 Field {
+                            definition: 295..310 @39 FieldDefinition {
+                                description: None,
+                                name: "issue755",
+                                arguments: [],
+                                ty: Named(
+                                    "Issue",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "issue755",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Issue",
+                                selections: [
+                                    FragmentSpread(
+                                        618..637 @39 FragmentSpread {
+                                            fragment_name: "topLevelFragment",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    ),
+    named_operations: {},
+    fragments: {
+        "topLevelFragment": 314..446 @39 Fragment {
+            name: "topLevelFragment",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Issue",
+                selections: [
+                    Field(
+                        353..413 @39 Field {
+                            definition: 247..276 @39 FieldDefinition {
+                                description: None,
+                                name: "subselection",
+                                arguments: [],
+                                ty: List(
+                                    NonNullNamed(
+                                        "Subselection",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "subselection",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Subselection",
+                                selections: [
+                                    Field(
+                                        372..381 @39 Field {
+                                            definition: 196..211 @39 FieldDefinition {
+                                                description: None,
+                                                name: "createdAt",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "createdAt",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                    FragmentSpread(
+                                        386..409 @39 FragmentSpread {
+                                            fragment_name: "subselectionFragment",
+                                            directives: [],
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                    FragmentSpread(
+                        416..444 @39 FragmentSpread {
+                            fragment_name: "collidingTopLevelFragment",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        },
+        "collidingTopLevelFragment": 447..529 @39 Fragment {
+            name: "collidingTopLevelFragment",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Issue",
+                selections: [
+                    Field(
+                        495..527 @39 Field {
+                            definition: 247..276 @39 FieldDefinition {
+                                description: None,
+                                name: "subselection",
+                                arguments: [],
+                                ty: List(
+                                    NonNullNamed(
+                                        "Subselection",
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "subselection",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Subselection",
+                                selections: [
+                                    Field(
+                                        514..523 @39 Field {
+                                            definition: 196..211 @39 FieldDefinition {
+                                                description: None,
+                                                name: "createdAt",
+                                                arguments: [],
+                                                ty: NonNullNamed(
+                                                    "Int",
+                                                ),
+                                                directives: [],
+                                            },
+                                            alias: None,
+                                            name: "createdAt",
+                                            arguments: [],
+                                            directives: [],
+                                            selection_set: SelectionSet {
+                                                ty: "Int",
+                                                selections: [],
+                                            },
+                                        },
+                                    ),
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+        "subselectionFragment": 530..591 @39 Fragment {
+            name: "subselectionFragment",
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Subselection",
+                selections: [
+                    Field(
+                        580..589 @39 Field {
+                            definition: 196..211 @39 FieldDefinition {
+                                description: None,
+                                name: "createdAt",
+                                arguments: [],
+                                ty: NonNullNamed(
+                                    "Int",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "createdAt",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Int",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+}

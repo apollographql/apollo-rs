@@ -1,12 +1,11 @@
-use crate::{
-    parser::grammar::{description, directive, field, name, object},
-    Parser, SyntaxKind, TokenKind, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{description, directive, field, name, object};
+use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/October2021/#InterfaceTypeDefinition
 ///
 /// *InterfaceTypeDefinition*:
-///     Description? **interface** Name ImplementsInterface? Directives? FieldsDefinition?
+///     Description? **interface** Name ImplementsInterface? Directives[Const]? FieldsDefinition?
 pub(crate) fn interface_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_DEFINITION);
 
@@ -14,7 +13,7 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
         description::description(p);
     }
 
-    if let Some("interface") = p.peek_data().as_deref() {
+    if let Some("interface") = p.peek_data() {
         p.bump(SyntaxKind::interface_KW);
     }
 
@@ -23,12 +22,12 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
-    if let Some("implements") = p.peek_data().as_deref() {
+    if let Some("implements") = p.peek_data() {
         object::implements_interfaces(p);
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {
@@ -39,8 +38,8 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#InterfaceTypeExtension
 ///
 /// *InterfaceTypeExtension*:
-///     **extend** **interface** Name ImplementsInterface? Directives? FieldsDefinition
-///     **extend** **interface** Name ImplementsInterface? Directives
+///     **extend** **interface** Name ImplementsInterface? Directives[Const]? FieldsDefinition
+///     **extend** **interface** Name ImplementsInterface? Directives[Const]
 ///     **extend** **interface** Name ImplementsInterface
 pub(crate) fn interface_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_EXTENSION);
@@ -54,14 +53,14 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
-    if let Some("implements") = p.peek_data().as_deref() {
+    if let Some("implements") = p.peek_data() {
         meets_requirements = true;
         object::implements_interfaces(p);
     }
 
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(p);
+        directive::directives(p, Constness::Const);
     }
 
     if let Some(T!['{']) = p.peek() {

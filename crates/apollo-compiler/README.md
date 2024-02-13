@@ -18,9 +18,15 @@
 </div>
 
 ## Features
-* Ergonomic API on top the AST created by `apollo-parser`
-* GraphQL validation and diagnostics reporting
-    * Validation is a work in progress, stay tuned for further validation rules implementation.
+
+* A (comparatively) low-level AST for GraphQL grammar,
+  and high-level representation of `Schema` and `ExecutableDocument`.
+* All three can be parsed (using `apollo-parser` internally),
+  created or modified programatically,
+  and serialized.
+* Validation of schemas and executable documents, as defined [in the GraphQL specification][val].
+
+[val]: https://spec.graphql.org/October2021/#sec-Validation
 
 ## Getting started
 Add the dependency to start using `apollo-compiler`:
@@ -32,8 +38,9 @@ Or add this to your `Cargo.toml` for a manual installation:
 
 ```toml
 # Just an example, change to the necessary package version.
+# Using an exact dependency is recommended for beta versions
 [dependencies]
-apollo-compiler = "0.11.0"
+apollo-compiler = "=1.0.0-beta.12"
 ```
 
 ## Rust versions
@@ -42,13 +49,10 @@ apollo-compiler = "0.11.0"
 Older version may or may not be compatible.
 
 ## Usage
-`apollo-compiler` is built using [`salsa`] to provide a
-memoised query system on top of the AST produced by `apollo-parser`.
-The idea is that all relationships between GraphQL types are pre-established and pre-computed, so you are able to always find the reference to say a field Type, or a Directive.
 
 You can get started with `apollo-compiler`:
 ```rust
-use apollo_compiler::ApolloCompiler;
+use apollo_compiler::Schema;
 
 let input = r#"
   interface Pet {
@@ -79,25 +83,18 @@ let input = r#"
   }
 "#;
 
-let mut compiler = ApolloCompiler::new();
-compiler.add_document(input, "document.graphql");
-
-let diagnostics = compiler.validate();
-for diagnostic in &diagnostics {
-    // this will pretty-print diagnostics using the miette crate.
-    println!("{}", diagnostic);
-}
-assert!(diagnostics.is_empty());
+/// In case of validation errors, the panic message will be nicely formatted
+/// to point at relevant parts of the source file(s)
+let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 ```
 
 ### Examples
 #### Accessing fragment definition field types
 
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
-use miette::Result;
+use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
 
-fn main() -> Result<()> {
+fn main() {
     let schema_input = r#"
     type User {
       id: ID
@@ -122,41 +119,34 @@ fn main() -> Result<()> {
     }
     "#;
 
-    let mut compiler = ApolloCompiler::new();
-    let _schema_id = compiler.add_type_system(schema_input, "schema.graphql");
-    let query_id = compiler.add_executable(query_input, "query.graphql");
+    let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
+        .unwrap();
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{}", diagnostic);
-    }
-    assert!(diagnostics.is_empty());
-
-    let op = compiler.db.find_operation(query_id, Some("getUser".into()))
-        .expect("getUser query does not exist");
-    let fragment_in_op: Vec<hir::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
-        hir::Selection::FragmentSpread(frag) => {
-            Some(frag.fragment(&compiler.db)?.as_ref().clone())
+    let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
+    let fragment_in_op = op.selection_set.selections.iter().filter_map(|sel| match sel {
+        executable::Selection::FragmentSpread(spread) => {
+            Some(document.fragments.get(&spread.fragment_name)?.as_ref())
         }
         _ => None
-    }).collect();
+    }).collect::<Vec<&executable::Fragment>>();
 
-    let fragment_fields: Vec<hir::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
-    let field_ty: Vec<String> = fragment_fields
+    let fragment_fields = fragment_in_op.iter().flat_map(|frag| {
+        frag.selection_set.fields()
+    }).collect::<Vec<&Node<executable::Field>>>();
+    let field_ty = fragment_fields
         .iter()
-        .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
-        .collect();
+        .map(|f| f.ty().inner_named_type().as_str())
+        .collect::<Vec<&str>>();
     assert_eq!(field_ty, ["ID", "String", "URL"]);
-    Ok(())
 }
 ```
 
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
-use anyhow::{anyhow, Result};
+use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
 
-fn main() -> Result<()> {
+fn main() {
     let schema_input = r#"
     type Query {
       topProducts: Product
@@ -173,6 +163,11 @@ fn main() -> Result<()> {
       weight: Int
     }
 
+    enum join__Graph {
+      INVENTORY,
+      PRODUCTS,
+    }
+    scalar join__FieldSet
     directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
     "#;
     let query_input = r#"
@@ -185,47 +180,35 @@ fn main() -> Result<()> {
     }
     "#;
 
+    let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
+        .unwrap();
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema_input, "schema.graphql");
-    let query_id = compiler.add_executable(query_input, "query.graphql");
-
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{}", diagnostic);
-    }
-    assert!(diagnostics.is_empty());
-
-    let operations = compiler.db.operations(query_id);
-    let get_product_op = operations
-        .iter()
-        .find(|op| op.name() == Some("getProduct"))
+    let get_product_op = document
+        .get_operation(Some("getProduct"))
         .expect("getProduct query does not exist");
-    let op_fields = get_product_op.fields(&compiler.db);
 
-    let in_stock_field = op_fields
-        .iter()
-        .find(|f| f.name() == "topProducts")
+    let in_stock_field = &get_product_op
+        .selection_set
+        .fields()
+        .find(|f| f.name == "topProducts")
         .expect("topProducts field does not exist")
-        .selection_set()
-        .field("inStock")
+        .selection_set
+        .fields()
+        .find(|f| f.name == "inStock")
         .expect("inStock field does not exist")
-        .field_definition(&compiler.db)
-        .expect("field definition does not exist");
-    let in_stock_directive: Vec<&str> = in_stock_field
-        .directives()
+        .definition;
+    let in_stock_directive: Vec<_> = in_stock_field
+        .directives
         .iter()
-        .map(|dir| dir.name())
+        .map(|dir| &dir.name)
         .collect();
     assert_eq!(in_stock_directive, ["join__field"]);
-    Ok(())
 }
 ```
 
 #### Printing diagnostics for a faulty GraphQL document
 ```rust
-use apollo_compiler::ApolloCompiler;
-
 let input = r#"
 query {
   cat {
@@ -282,21 +265,16 @@ type Cat implements Pet {
 union CatOrDog = Cat | Dog
 "#;
 
-let mut compiler = ApolloCompiler::new();
-compiler.add_document(input, "document.graphql");
-
-let diagnostics = compiler.validate();
-for diagnostic in &diagnostics {
-    println!("{}", diagnostic)
+if let Err(diagnostics) = apollo_compiler::parse_mixed_validate(input, "document.graphql") {
+    println!("{diagnostics}")
 }
-assert_eq!(diagnostics.len(), 9)
 ```
 
 ## License
 Licensed under either of
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/licenses/MIT>)
 
 at your option.
 

@@ -1,228 +1,265 @@
-- DOCUMENT@0..410
-    - SCALAR_TYPE_DEFINITION@0..13
-        - scalar_KW@0..6 "scalar"
-        - WHITESPACE@6..7 " "
-        - NAME@7..13
-            - IDENT@7..13 "Scalar"
-    - WHITESPACE@13..15 "\n\n"
-    - OBJECT_TYPE_DEFINITION@15..60
-        - type_KW@15..19 "type"
-        - WHITESPACE@19..20 " "
-        - NAME@20..26
-            - IDENT@20..26 "Object"
-        - WHITESPACE@26..27 " "
-        - IMPLEMENTS_INTERFACES@27..42
-            - implements_KW@27..37 "implements"
-            - WHITESPACE@37..38 " "
-            - NAMED_TYPE@38..42
-                - NAME@38..42
-                    - IDENT@38..42 "Intf"
-        - WHITESPACE@42..43 " "
-        - FIELDS_DEFINITION@43..60
-            - L_CURLY@43..44 "{"
-            - WHITESPACE@44..47 "\n  "
-            - FIELD_DEFINITION@47..57
-                - NAME@47..52
-                    - IDENT@47..52 "field"
-                - COLON@52..53 ":"
-                - WHITESPACE@53..54 " "
-                - NAMED_TYPE@54..57
-                    - NAME@54..57
-                        - IDENT@54..57 "Int"
-            - COMMA@57..58 ","
-            - WHITESPACE@58..59 "\n"
-            - R_CURLY@59..60 "}"
-    - WHITESPACE@60..62 "\n\n"
-    - INTERFACE_TYPE_DEFINITION@62..94
-        - interface_KW@62..71 "interface"
-        - WHITESPACE@71..72 " "
-        - NAME@72..76
-            - IDENT@72..76 "Intf"
-        - WHITESPACE@76..77 " "
-        - FIELDS_DEFINITION@77..94
-            - L_CURLY@77..78 "{"
-            - WHITESPACE@78..81 "\n  "
-            - FIELD_DEFINITION@81..91
-                - NAME@81..86
-                    - IDENT@81..86 "field"
-                - COLON@86..87 ":"
-                - WHITESPACE@87..88 " "
-                - NAMED_TYPE@88..91
-                    - NAME@88..91
-                        - IDENT@88..91 "Int"
-            - COMMA@91..92 ","
-            - WHITESPACE@92..93 "\n"
-            - R_CURLY@93..94 "}"
-    - WHITESPACE@94..96 "\n\n"
-    - INPUT_OBJECT_TYPE_DEFINITION@96..126
-        - input_KW@96..101 "input"
-        - WHITESPACE@101..102 " "
-        - NAME@102..107
-            - IDENT@102..107 "Input"
-        - WHITESPACE@107..108 " "
-        - INPUT_FIELDS_DEFINITION@108..126
-            - L_CURLY@108..109 "{"
-            - WHITESPACE@109..112 "\n  "
-            - INPUT_VALUE_DEFINITION@112..123
-                - NAME@112..117
-                    - IDENT@112..117 "field"
-                - COLON@117..118 ":"
-                - WHITESPACE@118..119 " "
-                - NAMED_TYPE@119..123
-                    - NAME@119..123
-                        - IDENT@119..123 "Enum"
-            - COMMA@123..124 ","
-            - WHITESPACE@124..125 "\n"
-            - R_CURLY@125..126 "}"
-    - WHITESPACE@126..127 "\n"
-    - ENUM_TYPE_DEFINITION@127..150
-        - enum_KW@127..131 "enum"
-        - WHITESPACE@131..132 " "
-        - NAME@132..136
-            - IDENT@132..136 "Enum"
-        - WHITESPACE@136..137 " "
-        - ENUM_VALUES_DEFINITION@137..150
-            - L_CURLY@137..138 "{"
-            - WHITESPACE@138..141 "\n  "
-            - ENUM_VALUE_DEFINITION@141..147
-                - ENUM_VALUE@141..147
-                    - NAME@141..147
-                        - IDENT@141..147 "MEMBER"
-            - COMMA@147..148 ","
-            - WHITESPACE@148..149 "\n"
-            - R_CURLY@149..150 "}"
-    - WHITESPACE@150..152 "\n\n"
-    - SCALAR_TYPE_EXTENSION@152..219
-        - extend_KW@152..158 "extend"
-        - WHITESPACE@158..159 " "
-        - scalar_KW@159..165 "scalar"
-        - WHITESPACE@165..166 " "
-        - NAME@166..172
-            - IDENT@166..172 "Scalar"
-        - WHITESPACE@172..173 " "
-        - DIRECTIVES@173..219
-            - DIRECTIVE@173..219
-                - AT@173..174 "@"
-                - NAME@174..185
-                    - IDENT@174..185 "specifiedBy"
-                - ARGUMENTS@185..219
-                    - L_PAREN@185..186 "("
-                    - ARGUMENT@186..218
-                        - NAME@186..189
-                            - IDENT@186..189 "url"
-                        - COLON@189..190 ":"
-                        - WHITESPACE@190..191 " "
-                        - STRING_VALUE@191..218
-                            - STRING@191..218 "\"https://apollographql.com\""
-                    - R_PAREN@218..219 ")"
-    - WHITESPACE@219..220 "\n"
-    - INTERFACE_TYPE_EXTENSION@220..263
-        - extend_KW@220..226 "extend"
-        - WHITESPACE@226..227 " "
-        - interface_KW@227..236 "interface"
-        - WHITESPACE@236..237 " "
-        - NAME@237..241
-            - IDENT@237..241 "Intf"
-        - WHITESPACE@241..242 " "
-        - FIELDS_DEFINITION@242..263
-            - L_CURLY@242..243 "{"
-            - WHITESPACE@243..246 "\n  "
-            - FIELD_DEFINITION@246..260
-                - NAME@246..252
-                    - IDENT@246..252 "field2"
-                - COLON@252..253 ":"
-                - WHITESPACE@253..254 " "
-                - NAMED_TYPE@254..260
-                    - NAME@254..260
-                        - IDENT@254..260 "Scalar"
-            - COMMA@260..261 ","
-            - WHITESPACE@261..262 "\n"
-            - R_CURLY@262..263 "}"
-    - WHITESPACE@263..264 "\n"
-    - OBJECT_TYPE_EXTENSION@264..304
-        - extend_KW@264..270 "extend"
-        - WHITESPACE@270..271 " "
-        - type_KW@271..275 "type"
-        - WHITESPACE@275..276 " "
-        - NAME@276..282
-            - IDENT@276..282 "Object"
-        - WHITESPACE@282..283 " "
-        - FIELDS_DEFINITION@283..304
-            - L_CURLY@283..284 "{"
-            - WHITESPACE@284..287 "\n  "
-            - FIELD_DEFINITION@287..301
-                - NAME@287..293
-                    - IDENT@287..293 "field2"
-                - COLON@293..294 ":"
-                - WHITESPACE@294..295 " "
-                - NAMED_TYPE@295..301
-                    - NAME@295..301
-                        - IDENT@295..301 "Scalar"
-            - COMMA@301..302 ","
-            - WHITESPACE@302..303 "\n"
-            - R_CURLY@303..304 "}"
-    - WHITESPACE@304..305 "\n"
-    - ENUM_TYPE_EXTENSION@305..337
-        - extend_KW@305..311 "extend"
-        - WHITESPACE@311..312 " "
-        - enum_KW@312..316 "enum"
-        - WHITESPACE@316..317 " "
-        - NAME@317..321
-            - IDENT@317..321 "Enum"
-        - WHITESPACE@321..322 " "
-        - ENUM_VALUES_DEFINITION@322..337
-            - L_CURLY@322..323 "{"
-            - WHITESPACE@323..326 "\n  "
-            - ENUM_VALUE_DEFINITION@326..334
-                - ENUM_VALUE@326..334
-                    - NAME@326..334
-                        - IDENT@326..334 "MEMBER_2"
-            - COMMA@334..335 ","
-            - WHITESPACE@335..336 "\n"
-            - R_CURLY@336..337 "}"
-    - WHITESPACE@337..338 "\n"
-    - INPUT_OBJECT_TYPE_EXTENSION@338..375
-        - extend_KW@338..344 "extend"
-        - WHITESPACE@344..345 " "
-        - input_KW@345..350 "input"
-        - WHITESPACE@350..351 " "
-        - NAME@351..356
-            - IDENT@351..356 "Input"
-        - WHITESPACE@356..357 " "
-        - INPUT_FIELDS_DEFINITION@357..375
-            - L_CURLY@357..358 "{"
-            - WHITESPACE@358..361 "\n  "
-            - INPUT_VALUE_DEFINITION@361..372
-                - NAME@361..367
-                    - IDENT@361..367 "field2"
-                - COLON@367..368 ":"
-                - WHITESPACE@368..369 " "
-                - NAMED_TYPE@369..372
-                    - NAME@369..372
-                        - IDENT@369..372 "Int"
-            - COMMA@372..373 ","
-            - WHITESPACE@373..374 "\n"
-            - R_CURLY@374..375 "}"
-    - WHITESPACE@375..377 "\n\n"
-    - OBJECT_TYPE_DEFINITION@377..409
-        - type_KW@377..381 "type"
-        - WHITESPACE@381..382 " "
-        - NAME@382..387
-            - IDENT@382..387 "Query"
-        - WHITESPACE@387..388 " "
-        - FIELDS_DEFINITION@388..409
-            - L_CURLY@388..389 "{"
-            - WHITESPACE@389..392 "\n  "
-            - FIELD_DEFINITION@392..406
-                - NAME@392..398
-                    - IDENT@392..398 "object"
-                - COLON@398..399 ":"
-                - WHITESPACE@399..400 " "
-                - NAMED_TYPE@400..406
-                    - NAME@400..406
-                        - IDENT@400..406 "Object"
-            - COMMA@406..407 ","
-            - WHITESPACE@407..408 "\n"
-            - R_CURLY@408..409 "}"
-    - WHITESPACE@409..410 "\n"
-recursion limit: 4096, high: 0
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        19: SourceFile {
+            path: "0019_extensions.graphql",
+            source_text: "scalar Scalar\n\ntype Object implements Intf {\n  field: Int,\n}\n\ninterface Intf {\n  field: Int,\n}\n\ninput Input {\n  field: Enum,\n}\nenum Enum {\n  MEMBER,\n}\n\nextend scalar Scalar @specifiedBy(url: \"https://apollographql.com\")\nextend interface Intf {\n  field2: Scalar,\n}\nextend type Object {\n  field2: Scalar,\n}\nextend enum Enum {\n  MEMBER_2,\n}\nextend input Input {\n  field2: Int,\n}\n\ntype Query {\n  object: Object,\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Scalar": Scalar(
+            0..13 @19 ScalarType {
+                description: None,
+                name: "Scalar",
+                directives: [
+                    Component {
+                        origin: Extension(
+                            ExtensionId {
+                                arc: Some(
+                                    152..219 @19,
+                                ),
+                            },
+                        ),
+                        node: 173..219 @19 Directive {
+                            name: "specifiedBy",
+                            arguments: [
+                                186..218 @19 Argument {
+                                    name: "url",
+                                    value: 191..218 @19 String(
+                                        "https://apollographql.com",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        ),
+        "Object": Object(
+            15..60 @19 ObjectType {
+                description: None,
+                name: "Object",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "Intf",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 47..57 @19 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "field2": Component {
+                        origin: Extension(
+                            ExtensionId {
+                                arc: Some(
+                                    264..304 @19,
+                                ),
+                            },
+                        ),
+                        node: 287..301 @19 FieldDefinition {
+                            description: None,
+                            name: "field2",
+                            arguments: [],
+                            ty: Named(
+                                "Scalar",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Intf": Interface(
+            62..94 @19 InterfaceType {
+                description: None,
+                name: "Intf",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 81..91 @19 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "field2": Component {
+                        origin: Extension(
+                            ExtensionId {
+                                arc: Some(
+                                    220..263 @19,
+                                ),
+                            },
+                        ),
+                        node: 246..260 @19 FieldDefinition {
+                            description: None,
+                            name: "field2",
+                            arguments: [],
+                            ty: Named(
+                                "Scalar",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Input": InputObject(
+            96..126 @19 InputObjectType {
+                description: None,
+                name: "Input",
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 112..123 @19 InputValueDefinition {
+                            description: None,
+                            name: "field",
+                            ty: 119..123 @19 Named(
+                                "Enum",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "field2": Component {
+                        origin: Extension(
+                            ExtensionId {
+                                arc: Some(
+                                    338..375 @19,
+                                ),
+                            },
+                        ),
+                        node: 361..372 @19 InputValueDefinition {
+                            description: None,
+                            name: "field2",
+                            ty: 369..372 @19 Named(
+                                "Int",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Enum": Enum(
+            127..150 @19 EnumType {
+                description: None,
+                name: "Enum",
+                directives: [],
+                values: {
+                    "MEMBER": Component {
+                        origin: Definition,
+                        node: 141..147 @19 EnumValueDefinition {
+                            description: None,
+                            value: "MEMBER",
+                            directives: [],
+                        },
+                    },
+                    "MEMBER_2": Component {
+                        origin: Extension(
+                            ExtensionId {
+                                arc: Some(
+                                    305..337 @19,
+                                ),
+                            },
+                        ),
+                        node: 326..334 @19 EnumValueDefinition {
+                            description: None,
+                            value: "MEMBER_2",
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            377..409 @19 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "object": Component {
+                        origin: Definition,
+                        node: 392..406 @19 FieldDefinition {
+                            description: None,
+                            name: "object",
+                            arguments: [],
+                            ty: Named(
+                                "Object",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        19: SourceFile {
+            path: "0019_extensions.graphql",
+            source_text: "scalar Scalar\n\ntype Object implements Intf {\n  field: Int,\n}\n\ninterface Intf {\n  field: Int,\n}\n\ninput Input {\n  field: Enum,\n}\nenum Enum {\n  MEMBER,\n}\n\nextend scalar Scalar @specifiedBy(url: \"https://apollographql.com\")\nextend interface Intf {\n  field2: Scalar,\n}\nextend type Object {\n  field2: Scalar,\n}\nextend enum Enum {\n  MEMBER_2,\n}\nextend input Input {\n  field2: Int,\n}\n\ntype Query {\n  object: Object,\n}\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

@@ -1,14 +1,12 @@
 pub mod db;
-pub mod hir;
 
-mod ast;
-mod document;
-mod hir_db;
 mod inputs;
+mod repr;
 mod sources;
 
-pub use ast::{AstDatabase, AstStorage};
-pub use db::RootDatabase;
-pub use hir_db::{HirDatabase, HirStorage};
-pub use inputs::{InputDatabase, InputStorage, SourceCache};
-pub use sources::{FileId, Source};
+pub(crate) use db::RootDatabase;
+pub(crate) use inputs::{InputDatabase, InputStorage};
+pub(crate) use repr::{ReprDatabase, ReprStorage};
+pub use sources::FileId;
+pub(crate) use sources::Source;
+pub(crate) use sources::SourceType;

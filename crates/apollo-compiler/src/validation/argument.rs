@@ -1,57 +1,29 @@
 use std::collections::HashMap;
 
-use crate::{
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, DirectiveLocation},
-    validation::ValidationDatabase,
-};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::NodeLocation;
+use crate::{ast, Node};
 
-pub fn validate_arguments(
-    db: &dyn ValidationDatabase,
-    args: Vec<hir::Argument>,
-) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_arguments(arguments: &[Node<ast::Argument>]) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let mut seen: HashMap<&str, &hir::Argument> = HashMap::new();
+    let mut seen = HashMap::<_, Option<NodeLocation>>::new();
 
-    for arg in &args {
-        let name = arg.name();
-        if let Some(prev_arg) = seen.get(name) {
-            let original_definition = prev_arg.loc();
-            let redefined_definition = arg.loc();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    redefined_definition.into(),
-                    DiagnosticData::UniqueArgument {
-                        name: name.into(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: redefined_definition.into(),
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previously provided `{name}` here"),
-                    ),
-                    Label::new(
-                        redefined_definition,
-                        format!("`{name}` provided again here"),
-                    ),
-                ])
-                .help(format!("`{name}` argument must only be provided once.")),
-            );
+    for argument in arguments {
+        let name = &argument.name;
+        if let Some(&original_definition) = seen.get(name) {
+            let redefined_definition = argument.location();
+            diagnostics.push(ValidationError::new(
+                redefined_definition,
+                DiagnosticData::UniqueArgument {
+                    name: name.clone(),
+                    original_definition,
+                    redefined_definition,
+                },
+            ));
         } else {
-            seen.insert(name, arg);
+            seen.insert(name, argument.location());
         }
     }
 
     diagnostics
-}
-
-pub fn validate_arguments_definition(
-    db: &dyn ValidationDatabase,
-    args_def: hir::ArgumentsDefinition,
-    dir_loc: DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
-    db.validate_input_values(args_def.input_values, dir_loc)
 }

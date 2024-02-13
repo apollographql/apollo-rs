@@ -1,9 +1,11 @@
 schema {
-  query: customPetQuery,
-  subscription: customPetQuery
+  query: customPetQuery
+  query: thatOtherQuery
 }
 
 type customPetQuery {
-  name: String,
+  name: String
+}
+type thatOtherQuery {
   age: Int
 }

@@ -1,5 +1,4 @@
 /// Non-regression for https://github.com/apollographql/apollo-rs/issues/426
-#[cfg(feature = "parser-impl")]
 #[test]
 fn test_with_document() {
     let mut u = arbitrary::Unstructured::new(&[1]);

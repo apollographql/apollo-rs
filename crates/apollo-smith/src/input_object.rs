@@ -1,7 +1,3 @@
-use std::collections::HashMap;
-
-use arbitrary::Result as ArbitraryResult;
-
 use crate::{
     description::Description,
     directive::{Directive, DirectiveLocation},
@@ -9,6 +5,10 @@ use crate::{
     name::Name,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
 
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
@@ -27,39 +27,36 @@ pub struct InputObjectTypeDef {
     // A vector of fields
     pub(crate) fields: Vec<InputValueDef>,
     /// Contains all directives.
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 
-impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDefinition {
-    fn from(input_object_def: InputObjectTypeDef) -> Self {
-        let mut new_input_object_def = Self::new(input_object_def.name.into());
-        if let Some(description) = input_object_def.description {
-            new_input_object_def.description(description.into());
+impl From<InputObjectTypeDef> for ast::Definition {
+    fn from(x: InputObjectTypeDef) -> Self {
+        if x.extend {
+            ast::InputObjectTypeExtension {
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+                fields: x.fields.into_iter().map(|x| Node::new(x.into())).collect(),
+            }
+            .into()
+        } else {
+            ast::InputObjectTypeDefinition {
+                description: x.description.map(Into::into),
+                name: x.name.into(),
+                directives: Directive::to_ast(x.directives),
+                fields: x.fields.into_iter().map(|x| Node::new(x.into())).collect(),
+            }
+            .into()
         }
-        if input_object_def.extend {
-            new_input_object_def.extend();
-        }
-
-        input_object_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_input_object_def.directive(directive.into()));
-        input_object_def
-            .fields
-            .into_iter()
-            .for_each(|field| new_input_object_def.field(field.into()));
-
-        new_input_object_def
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef {
+impl TryFrom<apollo_parser::cst::InputObjectTypeDefinition> for InputObjectTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        input_object: apollo_parser::ast::InputObjectTypeDefinition,
+        input_object: apollo_parser::cst::InputObjectTypeDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: input_object
@@ -87,12 +84,11 @@ impl TryFrom<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeD
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
+impl TryFrom<apollo_parser::cst::InputObjectTypeExtension> for InputObjectTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        input_object: apollo_parser::ast::InputObjectTypeExtension,
+        input_object: apollo_parser::cst::InputObjectTypeExtension,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: input_object

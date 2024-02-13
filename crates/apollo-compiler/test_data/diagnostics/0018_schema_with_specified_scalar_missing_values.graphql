@@ -1,6 +1,1 @@
-type Query {
-  website: URL,
-  amount: Int
-}
-
-scalar URL
+# Placeholder for removed test, to avoid renumbering

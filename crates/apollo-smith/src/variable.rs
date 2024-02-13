@@ -1,7 +1,4 @@
-use std::collections::HashMap;
-
-use arbitrary::Result as ArbitraryResult;
-
+use crate::input_value::Constness;
 use crate::{
     directive::{Directive, DirectiveLocation},
     input_value::InputValue,
@@ -9,6 +6,10 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
 
 /// The __variableDef type represents a variable definition
 ///
@@ -21,21 +22,17 @@ pub struct VariableDef {
     name: Name,
     ty: Ty,
     default_value: Option<InputValue>,
-    directives: HashMap<Name, Directive>,
+    directives: IndexMap<Name, Directive>,
 }
 
-impl From<VariableDef> for apollo_encoder::VariableDefinition {
-    fn from(var_def: VariableDef) -> Self {
-        let mut new_var_def = Self::new(var_def.name.into(), var_def.ty.into());
-        if let Some(default) = var_def.default_value {
-            new_var_def.default_value(default.into())
+impl From<VariableDef> for ast::VariableDefinition {
+    fn from(x: VariableDef) -> Self {
+        Self {
+            name: x.name.into(),
+            ty: Node::new(x.ty.into()),
+            default_value: x.default_value.map(|x| Node::new(x.into())),
+            directives: Directive::to_ast(x.directives),
         }
-        var_def
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_var_def.directive(directive.into()));
-
-        new_var_def
     }
 }
 
@@ -55,7 +52,7 @@ impl<'a> DocumentBuilder<'a> {
             .u
             .arbitrary()
             .unwrap_or(false)
-            .then(|| self.input_value())
+            .then(|| self.input_value(Constness::Const))
             .transpose()?;
         let directives = self.directives(DirectiveLocation::VariableDefinition)?;
 

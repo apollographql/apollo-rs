@@ -45,4 +45,4 @@
                         - IDENT@85..89 "User"
             - WHITESPACE@89..90 "\n"
             - R_CURLY@90..91 "}"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

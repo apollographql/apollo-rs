@@ -1,0 +1,21 @@
+interface A implements B {
+  name: String
+}
+
+interface B implements A {
+  name: String
+}
+
+fragment recursive on A {
+  name
+}
+
+type Query {
+  get: A
+}
+
+query {
+  get {
+    ...recursive
+  }
+}

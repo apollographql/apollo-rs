@@ -1,29 +1,10 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            12: "0012_schema_definition_with_missing_query_operation_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 12,
-            },
-            offset: 0,
-            length: 45,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 12,
-                    },
-                    offset: 0,
-                    length: 45,
-                },
-                text: "`query` root operation type must be defined here",
-            },
-        ],
-        help: None,
-        data: QueryRootOperationType,
-    },
-]
+Error: missing query root operation type in schema definition
+   ╭─[0012_schema_definition_with_missing_query_operation_type.graphql:1:1]
+   │
+ 1 │ ╭─▶ schema {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── `query` root operation type must be defined here
+───╯
+

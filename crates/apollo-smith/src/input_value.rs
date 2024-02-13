@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     description::Description,
     directive::{Directive, DirectiveLocation},
@@ -7,7 +5,16 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
+use apollo_compiler::ast;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
+
+#[derive(Debug, Clone, Copy)]
+pub enum Constness {
+    Const,
+    NonConst,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum InputValue {
@@ -22,54 +29,54 @@ pub enum InputValue {
     Object(Vec<(Name, InputValue)>),
 }
 
-impl From<InputValue> for apollo_encoder::Value {
+impl From<InputValue> for ast::Value {
     fn from(input_value: InputValue) -> Self {
         match input_value {
             InputValue::Variable(v) => Self::Variable(v.into()),
-            InputValue::Int(i) => Self::Int(i),
-            InputValue::Float(f) => Self::Float(f),
-            InputValue::String(s) => Self::String(s),
+            InputValue::Int(i) => Self::Int(i.into()),
+            InputValue::Float(f) => Self::Float(f.into()),
+            InputValue::String(s) => Self::String(s.into()),
             InputValue::Boolean(b) => Self::Boolean(b),
             InputValue::Null => Self::Null,
             InputValue::Enum(enm) => Self::Enum(enm.into()),
-            InputValue::List(l) => Self::List(l.into_iter().map(Into::into).collect()),
-            InputValue::Object(o) => {
-                Self::Object(o.into_iter().map(|(n, i)| (n.into(), i.into())).collect())
-            }
+            InputValue::List(l) => Self::List(l.into_iter().map(|v| Node::new(v.into())).collect()),
+            InputValue::Object(o) => Self::Object(
+                o.into_iter()
+                    .map(|(n, i)| (n.into(), Node::new(i.into())))
+                    .collect(),
+            ),
         }
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::DefaultValue> for InputValue {
+impl TryFrom<apollo_parser::cst::DefaultValue> for InputValue {
     type Error = crate::FromError;
 
-    fn try_from(default_val: apollo_parser::ast::DefaultValue) -> Result<Self, Self::Error> {
+    fn try_from(default_val: apollo_parser::cst::DefaultValue) -> Result<Self, Self::Error> {
         default_val.value().unwrap().try_into()
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Value> for InputValue {
+impl TryFrom<apollo_parser::cst::Value> for InputValue {
     type Error = crate::FromError;
 
-    fn try_from(value: apollo_parser::ast::Value) -> Result<Self, Self::Error> {
+    fn try_from(value: apollo_parser::cst::Value) -> Result<Self, Self::Error> {
         let smith_value = match value {
-            apollo_parser::ast::Value::Variable(variable) => {
+            apollo_parser::cst::Value::Variable(variable) => {
                 Self::Variable(variable.name().unwrap().into())
             }
-            apollo_parser::ast::Value::StringValue(val) => Self::String(val.try_into().unwrap()),
-            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.try_into()?),
-            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.try_into()?),
-            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
-            apollo_parser::ast::Value::NullValue(_val) => Self::Null,
-            apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
-            apollo_parser::ast::Value::ListValue(val) => Self::List(
+            apollo_parser::cst::Value::StringValue(val) => Self::String(val.into()),
+            apollo_parser::cst::Value::FloatValue(val) => Self::Float(val.try_into()?),
+            apollo_parser::cst::Value::IntValue(val) => Self::Int(val.try_into()?),
+            apollo_parser::cst::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
+            apollo_parser::cst::Value::NullValue(_val) => Self::Null,
+            apollo_parser::cst::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
+            apollo_parser::cst::Value::ListValue(val) => Self::List(
                 val.values()
                     .map(Self::try_from)
                     .collect::<Result<Vec<_>, _>>()?,
             ),
-            apollo_parser::ast::Value::ObjectValue(val) => Self::Object(
+            apollo_parser::cst::Value::ObjectValue(val) => Self::Object(
                 val.object_fields()
                     .map(|of| Ok((of.name().unwrap().into(), of.value().unwrap().try_into()?)))
                     .collect::<Result<Vec<_>, crate::FromError>>()?,
@@ -119,33 +126,26 @@ pub struct InputValueDef {
     pub(crate) name: Name,
     pub(crate) ty: Ty,
     pub(crate) default_value: Option<InputValue>,
-    pub(crate) directives: HashMap<Name, Directive>,
+    pub(crate) directives: IndexMap<Name, Directive>,
 }
 
-impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
-    fn from(input_val: InputValueDef) -> Self {
-        let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
-        if let Some(description) = input_val.description {
-            new_input_val.description(description.into())
+impl From<InputValueDef> for ast::InputValueDefinition {
+    fn from(x: InputValueDef) -> Self {
+        Self {
+            description: x.description.map(Into::into),
+            name: x.name.into(),
+            ty: Node::new(x.ty.into()),
+            default_value: x.default_value.map(|x| Node::new(x.into())),
+            directives: Directive::to_ast(x.directives),
         }
-        if let Some(default) = input_val.default_value {
-            new_input_val.default_value(default.into())
-        }
-        input_val
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_input_val.directive(directive.into()));
-
-        new_input_val
     }
 }
 
-#[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InputValueDefinition> for InputValueDef {
+impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
     type Error = crate::FromError;
 
     fn try_from(
-        input_val_def: apollo_parser::ast::InputValueDefinition,
+        input_val_def: apollo_parser::cst::InputValueDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             description: input_val_def.description().map(Description::from),
@@ -164,32 +164,18 @@ impl TryFrom<apollo_parser::ast::InputValueDefinition> for InputValueDef {
     }
 }
 
-impl From<InputValueDef> for apollo_encoder::InputField {
-    fn from(input_val: InputValueDef) -> Self {
-        let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
-        if let Some(description) = input_val.description {
-            new_input_val.description(description.into())
-        }
-        if let Some(default) = input_val.default_value {
-            new_input_val.default_value(default.into())
-        }
-        input_val
-            .directives
-            .into_iter()
-            .for_each(|(_, directive)| new_input_val.directive(directive.into()));
-
-        new_input_val
-    }
-}
-
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InputValue`
-    pub fn input_value(&mut self) -> ArbitraryResult<InputValue> {
-        let val = match self.u.int_in_range(0..=8usize)? {
+    pub fn input_value(&mut self, constness: Constness) -> ArbitraryResult<InputValue> {
+        let index = match constness {
+            Constness::Const => self.u.int_in_range(0..=7usize)?,
+            Constness::NonConst => self.u.int_in_range(0..=8usize)?,
+        };
+        let val = match index {
             // Int
             0 => InputValue::Int(self.u.arbitrary()?),
             // Float
-            1 => InputValue::Float(self.u.arbitrary()?),
+            1 => InputValue::Float(self.finite_f64()?),
             // String
             2 => InputValue::String(self.limited_string(40)?),
             // Boolean
@@ -203,7 +189,7 @@ impl<'a> DocumentBuilder<'a> {
                     let enum_choosed = self.choose_enum()?.clone();
                     InputValue::Enum(self.arbitrary_variant(&enum_choosed)?.clone())
                 } else {
-                    self.input_value()?
+                    self.input_value(constness)?
                 }
             }
             // List
@@ -211,14 +197,14 @@ impl<'a> DocumentBuilder<'a> {
                 // FIXME: it's semantically wrong it should always be the same type inside
                 InputValue::List(
                     (0..self.u.int_in_range(2..=4usize)?)
-                        .map(|_| self.input_value())
+                        .map(|_| self.input_value(constness))
                         .collect::<ArbitraryResult<Vec<_>>>()?,
                 )
             }
             // Object
             7 => InputValue::Object(
                 (0..self.u.int_in_range(2..=4usize)?)
-                    .map(|_| Ok((self.name()?, self.input_value()?)))
+                    .map(|_| Ok((self.name()?, self.input_value(constness)?)))
                     .collect::<ArbitraryResult<Vec<_>>>()?,
             ),
             // Variable TODO: only generate valid variable name (existing variables)
@@ -235,7 +221,7 @@ impl<'a> DocumentBuilder<'a> {
                 match ty.name().name.as_str() {
                     "String" => Ok(InputValue::String(doc_builder.limited_string(1000)?)),
                     "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
-                    "Float" => Ok(InputValue::Float(doc_builder.u.arbitrary()?)),
+                    "Float" => Ok(InputValue::Float(doc_builder.finite_f64()?)),
                     "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
                     "ID" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
                     other => {
@@ -311,7 +297,7 @@ impl<'a> DocumentBuilder<'a> {
                 .u
                 .arbitrary()
                 .unwrap_or(false)
-                .then(|| self.input_value())
+                .then(|| self.input_value(Constness::Const))
                 .transpose()?;
 
             input_values.push(InputValueDef {
@@ -342,7 +328,7 @@ impl<'a> DocumentBuilder<'a> {
             .u
             .arbitrary()
             .unwrap_or(false)
-            .then(|| self.input_value())
+            .then(|| self.input_value(Constness::Const))
             .transpose()?;
 
         Ok(InputValueDef {
@@ -353,11 +339,20 @@ impl<'a> DocumentBuilder<'a> {
             directives,
         })
     }
+
+    fn finite_f64(&mut self) -> arbitrary::Result<f64> {
+        loop {
+            let val: f64 = self.u.arbitrary()?;
+            if val.is_finite() {
+                return Ok(val);
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::{HashMap, HashSet};
+    use indexmap::{IndexMap, IndexSet};
 
     use arbitrary::Unstructured;
 
@@ -382,16 +377,16 @@ mod tests {
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
             stack: Vec::new(),
-            chosen_arguments: HashMap::new(),
-            chosen_aliases: HashMap::new(),
+            chosen_arguments: IndexMap::new(),
+            chosen_aliases: IndexMap::new(),
         };
         let my_nested_type = ObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_nested_object"),
             },
-            implements_interfaces: HashSet::new(),
-            directives: HashMap::new(),
+            implements_interfaces: IndexSet::new(),
+            directives: IndexMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -401,7 +396,7 @@ mod tests {
                 ty: Ty::Named(Name {
                     name: String::from("String"),
                 }),
-                directives: HashMap::new(),
+                directives: IndexMap::new(),
             }],
             extend: false,
         };
@@ -411,8 +406,8 @@ mod tests {
             name: Name {
                 name: String::from("my_object"),
             },
-            implements_interfaces: HashSet::new(),
-            directives: HashMap::new(),
+            implements_interfaces: IndexSet::new(),
+            directives: IndexMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -422,7 +417,7 @@ mod tests {
                 ty: Ty::List(Box::new(Ty::Named(Name {
                     name: String::from("my_nested_object"),
                 }))),
-                directives: HashMap::new(),
+                directives: IndexMap::new(),
             }],
             extend: false,
         };
@@ -444,11 +439,14 @@ mod tests {
             }))))
             .unwrap();
 
-        let input_val_str = apollo_encoder::Value::from(input_val).to_string();
+        let input_val_str = apollo_compiler::ast::Value::from(input_val)
+            .serialize()
+            .no_indent()
+            .to_string();
 
         assert_eq!(
             input_val_str.as_str(),
-            "[{ first: [{ value: \"womkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkig\" }, { value: \"C6420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\" }] }]"
+            "[{first: [{value: \"womkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkig\"}, {value: \"C6420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}]}]"
         );
     }
 }

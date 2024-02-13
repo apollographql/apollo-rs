@@ -1,53 +1,116 @@
-- DOCUMENT@0..113
-    - OBJECT_TYPE_DEFINITION@0..44
-        - type_KW@0..4 "type"
-        - WHITESPACE@4..5 " "
-        - NAME@5..10
-            - IDENT@5..10 "Query"
-        - WHITESPACE@10..11 " "
-        - FIELDS_DEFINITION@11..44
-            - L_CURLY@11..12 "{"
-            - WHITESPACE@12..15 "\n  "
-            - FIELD_DEFINITION@15..27
-                - NAME@15..22
-                    - IDENT@15..22 "website"
-                - COLON@22..23 ":"
-                - WHITESPACE@23..24 " "
-                - NAMED_TYPE@24..27
-                    - NAME@24..27
-                        - IDENT@24..27 "URL"
-            - COMMA@27..28 ","
-            - WHITESPACE@28..31 "\n  "
-            - FIELD_DEFINITION@31..42
-                - NAME@31..37
-                    - IDENT@31..37 "amount"
-                - COLON@37..38 ":"
-                - WHITESPACE@38..39 " "
-                - NAMED_TYPE@39..42
-                    - NAME@39..42
-                        - IDENT@39..42 "Int"
-            - WHITESPACE@42..43 "\n"
-            - R_CURLY@43..44 "}"
-    - WHITESPACE@44..46 "\n\n"
-    - SCALAR_TYPE_DEFINITION@46..113
-        - scalar_KW@46..52 "scalar"
-        - WHITESPACE@52..53 " "
-        - NAME@53..56
-            - IDENT@53..56 "URL"
-        - WHITESPACE@56..57 " "
-        - DIRECTIVES@57..113
-            - DIRECTIVE@57..113
-                - AT@57..58 "@"
-                - NAME@58..69
-                    - IDENT@58..69 "specifiedBy"
-                - ARGUMENTS@69..113
-                    - L_PAREN@69..70 "("
-                    - ARGUMENT@70..112
-                        - NAME@70..73
-                            - IDENT@70..73 "url"
-                        - COLON@73..74 ":"
-                        - WHITESPACE@74..75 " "
-                        - STRING_VALUE@75..112
-                            - STRING@75..112 "\"https://tools.ietf.org/html/rfc3986\""
-                    - R_PAREN@112..113 ")"
-recursion limit: 4096, high: 0
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        4: SourceFile {
+            path: "0004_schema_with_custom_scalars.graphql",
+            source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..44 @4 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "website": Component {
+                        origin: Definition,
+                        node: 15..27 @4 FieldDefinition {
+                            description: None,
+                            name: "website",
+                            arguments: [],
+                            ty: Named(
+                                "URL",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "amount": Component {
+                        origin: Definition,
+                        node: 31..42 @4 FieldDefinition {
+                            description: None,
+                            name: "amount",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "URL": Scalar(
+            46..113 @4 ScalarType {
+                description: None,
+                name: "URL",
+                directives: [
+                    Component {
+                        origin: Definition,
+                        node: 57..113 @4 Directive {
+                            name: "specifiedBy",
+                            arguments: [
+                                70..112 @4 Argument {
+                                    name: "url",
+                                    value: 75..112 @4 String(
+                                        "https://tools.ietf.org/html/rfc3986",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        4: SourceFile {
+            path: "0004_schema_with_custom_scalars.graphql",
+            source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

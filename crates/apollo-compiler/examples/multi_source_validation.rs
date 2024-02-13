@@ -1,6 +1,9 @@
-use std::{fs, io, path::Path};
-
-use apollo_compiler::ApolloCompiler;
+use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
+use std::fs;
+use std::io;
+use std::path::Path;
 
 fn main() -> io::Result<()> {
     compile_from_dir()?;
@@ -11,51 +14,39 @@ fn main() -> io::Result<()> {
 
 // Read all files regardless of what they are and validate them.
 fn compile_from_dir() -> io::Result<()> {
-    let mut compiler = ApolloCompiler::new();
-
     let dir = Path::new("crates/apollo-compiler/examples/documents");
     if dir.is_dir() {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let src = fs::read_to_string(entry.path()).expect("Could not read document file.");
-            compiler.add_document(&src, entry.path());
+            let (_schema, _executable) = parse_mixed_validate(&src, entry.path()).unwrap();
         }
     }
-
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}");
-    }
-    assert_eq!(diagnostics.len(), 1);
-
     Ok(())
 }
+
 // Read and set schemas and queries explicitly.
 fn compile_schema_and_query_files() -> io::Result<()> {
-    let mut compiler = ApolloCompiler::new();
-
-    // add a schema file
+    // Build a schema from two files
     let schema = Path::new("crates/apollo-compiler/examples/documents/schema.graphql");
     let src = fs::read_to_string(schema).expect("Could not read schema file.");
-    compiler.add_type_system(&src, schema);
 
     // schema_extension is still a file containing a type system, and it also gets added under .add_type_system API
     let schema_ext =
         Path::new("crates/apollo-compiler/examples/documents/schema_extension.graphql");
-    let src = fs::read_to_string(schema_ext).expect("Could not read schema ext file.");
-    compiler.add_type_system(&src, schema_ext);
+    let src_ext = fs::read_to_string(schema_ext).expect("Could not read schema ext file.");
 
-    // get_dog_name is a query-only file and gets added with a .add_executable API
+    let schema = Schema::builder()
+        .parse(src, schema)
+        .parse(src_ext, schema_ext)
+        .build()
+        .unwrap();
+    let schema = schema.validate().unwrap();
+
+    // get_dog_name is a query-only file
     let query = Path::new("crates/apollo-compiler/examples/documents/get_dog_name.graphql");
     let src = fs::read_to_string(query).expect("Could not read query file.");
-    compiler.add_executable(&src, query);
-
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}");
-    }
-    assert_eq!(diagnostics.len(), 1);
-
+    let _doc = ExecutableDocument::parse_and_validate(&schema, src, query).unwrap();
     Ok(())
 }
 
@@ -131,15 +122,8 @@ query getDogName {
   }
 }
     "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema, "schema.graphl");
-    compiler.add_executable(query, "query.graphql");
-
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}");
-    }
-    assert_eq!(diagnostics.len(), 1);
+    let schema = Schema::parse_and_validate(schema, "schema.graphl").unwrap();
+    let _doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
 
     Ok(())
 }

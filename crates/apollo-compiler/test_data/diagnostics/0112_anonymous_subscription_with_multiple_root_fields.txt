@@ -1,0 +1,12 @@
+Error: anonymous subscription can only have one root field
+   ╭─[0112_anonymous_subscription_with_multiple_root_fields.graphql:1:1]
+   │
+ 1 │ ╭─▶ subscription {
+   ┆ ┆   
+ 7 │ ├─▶ }
+   │ │       
+   │ ╰─────── subscription with 2 root fields
+   │     
+   │     Help: There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.
+───╯
+

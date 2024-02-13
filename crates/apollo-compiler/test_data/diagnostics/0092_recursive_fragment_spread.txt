@@ -1,41 +1,29 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            89: "0092_recursive_fragment_spread.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 89,
-            },
-            offset: 104,
-            length: 42,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 89,
-                    },
-                    offset: 104,
-                    length: 14,
-                },
-                text: "recursive fragment definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 89,
-                    },
-                    offset: 222,
-                    length: 8,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveFragmentDefinition {
-            name: "fragA",
-        },
-    },
-]
+Error: `fragA` fragment cannot reference itself
+    ╭─[0092_recursive_fragment_spread.graphql:14:1]
+    │
+ 14 │ fragment fragA on Human { name, ...fragB }
+    │ ───────┬──────                  ────┬───  
+    │        ╰────────────────────────────────── recursive fragment definition
+    │                                     │     
+    │                                     ╰───── `fragA` references `fragB` here...
+ 15 │ fragment fragB on Human { name, ...fragC }
+    │                                 ────┬───  
+    │                                     ╰───── `fragB` references `fragC` here...
+ 16 │ fragment fragC on Human { name, ...fragA }
+    │                                 ────┬───  
+    │                                     ╰───── `fragC` circularly references `fragA` here
+────╯
+Error: `cycle1` fragment cannot reference itself
+    ╭─[0092_recursive_fragment_spread.graphql:19:1]
+    │
+ 19 │ fragment cycle1 on __Type { kind, ...cycle2 }
+    │ ───────┬───────                   ────┬────  
+    │        ╰───────────────────────────────────── recursive fragment definition
+    │                                       │      
+    │                                       ╰────── `cycle1` references `cycle2` here...
+    │ 
+ 23 │   ofType { ...cycle1 }
+    │            ────┬────  
+    │                ╰────── `cycle2` circularly references `cycle1` here
+────╯
+

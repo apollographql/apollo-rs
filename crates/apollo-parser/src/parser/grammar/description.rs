@@ -12,7 +12,7 @@ pub(crate) fn description(p: &mut Parser) {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast;
+    use crate::cst;
 
     use super::*;
     #[test]
@@ -26,13 +26,13 @@ type Query {
 }
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
+            if let cst::Definition::ObjectTypeDefinition(obj_def) = definition {
                 let desc: String = obj_def
                     .description()
                     .unwrap()

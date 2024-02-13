@@ -1,7 +1,6 @@
-use crate::{
-    parser::grammar::{directive, name, selection, ty},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
+use crate::parser::grammar::value::Constness;
+use crate::parser::grammar::{directive, name, selection, ty};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/October2021/#FragmentDefinition
 ///
@@ -15,11 +14,11 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
     type_condition(p);
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::NotConst);
     }
 
     match p.peek() {
-        Some(T!['{']) => selection::top_selection_set(p),
+        Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected a Selection Set"),
     }
 }
@@ -52,9 +51,14 @@ pub(crate) fn type_condition(p: &mut Parser) {
             if p.peek_data().unwrap() == "on" {
                 p.bump(SyntaxKind::on_KW);
             } else {
-                p.err("exptected 'on'");
+                p.err("expected 'on'");
             }
-            ty::named_type(p)
+
+            if let Some(TokenKind::Name) = p.peek() {
+                ty::named_type(p)
+            } else {
+                p.err("expected a Name in Type Condition")
+            }
         }
         _ => p.err("expected Type Condition"),
     }
@@ -73,11 +77,11 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::NotConst);
     }
 
     match p.peek() {
-        Some(T!['{']) => selection::top_selection_set(p),
+        Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected Selection Set"),
     }
 }
@@ -98,6 +102,6 @@ pub(crate) fn fragment_spread(p: &mut Parser) {
     }
 
     if let Some(T![@]) = p.peek() {
-        directive::directives(p);
+        directive::directives(p, Constness::NotConst);
     }
 }
