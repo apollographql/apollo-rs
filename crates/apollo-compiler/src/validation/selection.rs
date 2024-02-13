@@ -267,7 +267,7 @@ impl OnceBool {
     }
 
     /// Returns `false` the first time it is called, then returns `true` forever.
-    fn check(&self) -> bool {
+    fn already_done(&self) -> bool {
         self.0.replace(true)
     }
 }
@@ -302,7 +302,7 @@ impl<'doc> MergedFieldSet<'doc> {
         diagnostics: &mut DiagnosticList,
     ) {
         // No need to do this if this field set has been checked before.
-        if self.same_response_shape_guard.check() {
+        if self.same_response_shape_guard.already_done() {
             return;
         }
 
@@ -342,7 +342,7 @@ impl<'doc> MergedFieldSet<'doc> {
         diagnostics: &mut DiagnosticList,
     ) {
         // No need to do this if this field set has been checked before.
-        if self.same_for_common_parents_guard.check() {
+        if self.same_for_common_parents_guard.already_done() {
             return;
         }
 
