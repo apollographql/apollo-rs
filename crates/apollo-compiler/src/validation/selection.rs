@@ -323,7 +323,6 @@ impl<'doc> MergedFieldSet<'doc> {
                 .map(|selection| &selection.field.selection_set)
                 .filter(|set| !set.selections.is_empty())
                 .peekable();
-            // TODO cache
             if nested_selection_sets.peek().is_some() {
                 let merged_set =
                     expand_selections(&validator.document.fragments, nested_selection_sets);
