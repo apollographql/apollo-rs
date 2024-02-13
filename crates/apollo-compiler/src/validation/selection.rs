@@ -310,7 +310,7 @@ impl<'doc> MergedFieldSet<'doc> {
             let Some((field_a, rest)) = fields_for_name.split_first() else {
                 continue;
             };
-            for (field_a, field_b) in std::iter::repeat(field_a).zip(rest.iter()) {
+            for field_b in rest {
                 // Covers steps 3-5 of the spec algorithm.
                 if let Err(err) = same_output_type_shape(validator.schema, *field_a, *field_b) {
                     diagnostics.push(field_b.field.location(), err);
@@ -356,7 +356,7 @@ impl<'doc> MergedFieldSet<'doc> {
                 let Some((field_a, rest)) = fields_for_parents.split_first() else {
                     continue;
                 };
-                for (field_a, field_b) in std::iter::repeat(field_a).zip(rest.iter()) {
+                for field_b in rest {
                     if let Err(diagnostic) = same_name_and_arguments(*field_a, *field_b) {
                         diagnostics.push(field_b.field.location(), diagnostic);
                         continue;
