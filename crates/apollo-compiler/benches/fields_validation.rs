@@ -38,14 +38,13 @@ fn bench_many_same_nested_field(c: &mut Criterion) {
 
 fn bench_many_arguments(c: &mut Criterion) {
     let schema =
-        Schema::parse_and_validate(format!("type Query {{ hello: String! }}"), "schema.graphql")
-            .unwrap();
-    let field = format!(
-        "hello({})",
-        (0..2_000)
-            .map(|i| format!("arg{i}: {i}\n"))
-            .collect::<String>()
-    );
+        Schema::parse_and_validate("type Query { hello: String! }", "schema.graphql").unwrap();
+    let args = (0..2_000).fold(String::new(), |mut acc, i| {
+        use std::fmt::Write;
+        _ = writeln!(&mut acc, "arg{i}: {i}");
+        acc
+    });
+    let field = format!("hello({args})");
     let query = format!("{{ {field} {field} }}");
 
     c.bench_function("many_arguments", move |b| {
