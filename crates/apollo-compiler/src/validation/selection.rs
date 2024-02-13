@@ -381,14 +381,9 @@ impl<'doc> MergedFieldSet<'doc> {
         self.grouped_by_output_names.get_or_init(|| {
             let mut map = IndexMap::new();
             for selection in &self.selections {
-                match map.entry(selection.field.response_key().clone()) {
-                    Entry::Vacant(entry) => {
-                        entry.insert(vec![*selection]);
-                    }
-                    Entry::Occupied(mut entry) => {
-                        entry.get_mut().push(*selection);
-                    }
-                }
+                map.entry(selection.field.response_key().clone())
+                    .or_default()
+                    .push(*selection);
             }
             map
         })
