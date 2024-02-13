@@ -208,7 +208,7 @@ pub(crate) enum BuildError {
         conflicting_coordinate: FieldArgumentCoordinate,
         conflicting_value: Option<Value>,
     },
-    #[error("cannot select multiple fields into the same alias `{alias}`")]
+    #[error("cannot select different fields into the same alias `{alias}`")]
     ConflictingFieldName {
         /// Name of the non-unique field.
         alias: Name,

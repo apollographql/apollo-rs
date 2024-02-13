@@ -8,7 +8,7 @@ Error: operation must not select different types using the same name `name`
     │   ──┬─  
     │     ╰─── `name` is selected from `Dog.name: String!` here
 ────╯
-Error: cannot select multiple fields into the same alias `name`
+Error: cannot select different fields into the same alias `name`
     ╭─[0074_merge_identical_fields.graphql:19:3]
     │
  18 │   name: nickname
@@ -30,7 +30,7 @@ Error: operation must not select different types using the same name `fido`
     │   ───────┬──────  
     │          ╰──────── `fido` is selected from `Dog.nickname: String` here
 ────╯
-Error: cannot select multiple fields into the same alias `fido`
+Error: cannot select different fields into the same alias `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
     │
  23 │   fido: name

@@ -1,4 +1,4 @@
-Error: cannot select multiple fields into the same alias `x`
+Error: cannot select different fields into the same alias `x`
     ╭─[0077_merge_conflict_deep.graphql:14:5]
     │
  11 │     x: a

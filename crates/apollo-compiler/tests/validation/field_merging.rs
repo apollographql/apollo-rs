@@ -255,7 +255,7 @@ fn same_aliases_with_different_field_targets() {
       { dog { ...sameAliasesWithDifferentFieldTargets } }
     "#,
         expect![[r#"
-            Error: cannot select multiple fields into the same alias `fido`
+            Error: cannot select different fields into the same alias `fido`
                ╭─[query.graphql:3:3]
                │
              2 │   fido: name
@@ -301,7 +301,7 @@ fn alias_masking_direct_field_access() {
       { dog { ...aliasMaskingDirectFieldAccess } }
     "#,
         expect![[r#"
-            Error: cannot select multiple fields into the same alias `name`
+            Error: cannot select different fields into the same alias `name`
                ╭─[query.graphql:3:3]
                │
              2 │   name: nickname
@@ -546,7 +546,7 @@ mod field_conflicts {
       }
     "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                     ╭─[query.graphql:11:3]
                     │
                   8 │   x: a
@@ -590,7 +590,7 @@ mod field_conflicts {
       }
     "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                     ╭─[query.graphql:17:3]
                     │
                  17 │   x: a
@@ -603,7 +603,7 @@ mod field_conflicts {
                     │ 
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                     ╭─[query.graphql:17:3]
                     │
                  13 │     x: c
@@ -616,7 +616,7 @@ mod field_conflicts {
                     │ 
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                     ╭─[query.graphql:20:3]
                     │
                  17 │   x: a
@@ -629,7 +629,7 @@ mod field_conflicts {
                     │ 
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                     ╭─[query.graphql:20:3]
                     │
                  13 │     x: c
@@ -660,7 +660,7 @@ mod field_conflicts {
       }
     "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                    ╭─[query.graphql:6:5]
                    │
                  3 │     x: a
@@ -693,7 +693,7 @@ mod field_conflicts {
       }
     "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                    ╭─[query.graphql:7:5]
                    │
                  3 │     x: a
@@ -706,7 +706,7 @@ mod field_conflicts {
                    │ 
                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ───╯
-                Error: cannot select multiple fields into the same alias `y`
+                Error: cannot select different fields into the same alias `y`
                    ╭─[query.graphql:8:5]
                    │
                  4 │     y: c
@@ -741,7 +741,7 @@ mod field_conflicts {
       }
     "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                    ╭─[query.graphql:9:7]
                    │
                  4 │       x: a
@@ -786,7 +786,7 @@ mod field_conflicts {
       }
     "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `y`
+                Error: cannot select different fields into the same alias `y`
                     ╭─[query.graphql:14:3]
                     │
                  14 │   y: c
@@ -799,7 +799,7 @@ mod field_conflicts {
                     │ 
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
-                Error: cannot select multiple fields into the same alias `x`
+                Error: cannot select different fields into the same alias `x`
                     ╭─[query.graphql:21:3]
                     │
                  10 │   x: a
@@ -1193,7 +1193,7 @@ mod return_types {
           }
         "#,
             expect![[r#"
-                Error: cannot select multiple fields into the same alias `val`
+                Error: cannot select different fields into the same alias `val`
                    ╭─[query.graphql:6:9]
                    │
                  5 │         val: scalar
@@ -1315,7 +1315,7 @@ mod return_types {
                     │       ─┬  
                     │        ╰── `id` is selected from `Node.id: ID` here
                 ────╯
-                Error: cannot select multiple fields into the same alias `id`
+                Error: cannot select different fields into the same alias `id`
                     ╭─[query.graphql:15:7]
                     │
                   6 │         id: name
