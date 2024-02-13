@@ -1,6 +1,24 @@
 use crate::parser::grammar::value::Constness;
-use crate::parser::grammar::{description, directive, operation};
+use crate::parser::grammar::{description, directive, operation, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+
+/// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
+/// with OperationDefinition.
+///
+/// See: https://spec.graphql.org/October2021/#RootOperationTypeDefinition
+///
+/// *RootOperationTypeDefinition*:
+///    OperationType **:** NamedType
+fn root_operation_type_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ROOT_OPERATION_TYPE_DEFINITION);
+    operation::operation_type(p);
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        ty::named_type(p);
+    } else {
+        p.err("expected a Name Type");
+    }
+}
 
 /// See: https://spec.graphql.org/October2021/#SchemaDefinition
 ///
@@ -22,10 +40,18 @@ pub(crate) fn schema_definition(p: &mut Parser) {
     }
 
     if let Some(T!['{']) = p.peek() {
-        operation::root_operation_type_definition(p, false);
+        p.bump(S!['{']);
+
+        let mut has_root_operation_types = false;
+        p.peek_while_kind(TokenKind::Name, |p| {
+            has_root_operation_types = true;
+            root_operation_type_definition(p);
+        });
+        if !has_root_operation_types {
+            p.err("expected Root Operation Type Definition");
+        }
+
         p.expect(T!['}'], S!['}']);
-    } else {
-        p.err("expected Root Operation Type Definition");
     }
 }
 
@@ -47,8 +73,13 @@ pub(crate) fn schema_extension(p: &mut Parser) {
     }
 
     if let Some(T!['{']) = p.peek() {
-        meets_requirements = true;
-        operation::root_operation_type_definition(p, false);
+        p.bump(S!['{']);
+
+        p.peek_while_kind(TokenKind::Name, |p| {
+            meets_requirements = true;
+            root_operation_type_definition(p);
+        });
+
         p.expect(T!['}'], S!['}']);
     }
 

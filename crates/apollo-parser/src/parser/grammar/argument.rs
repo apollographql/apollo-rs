@@ -1,6 +1,7 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{input, name, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#Argument
 ///
@@ -27,9 +28,9 @@ pub(crate) fn arguments(p: &mut Parser, constness: Constness) {
     } else {
         p.err("expected an Argument");
     }
-    while let Some(TokenKind::Name) = p.peek() {
+    p.peek_while_kind(TokenKind::Name, |p| {
         argument(p, constness);
-    }
+    });
     p.expect(T![')'], S![')']);
 }
 
@@ -45,9 +46,13 @@ pub(crate) fn arguments_definition(p: &mut Parser) {
     } else {
         p.err("expected an Argument Definition");
     }
-    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        input::input_value_definition(p);
-    }
+    p.peek_while(|p, kind| match kind {
+        TokenKind::Name | TokenKind::StringValue => {
+            input::input_value_definition(p);
+            ControlFlow::Continue(())
+        }
+        _ => ControlFlow::Break(()),
+    });
     p.expect(T![')'], S![')']);
 }
 

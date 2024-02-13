@@ -867,6 +867,16 @@ impl std::ops::DerefMut for DirectiveList {
     }
 }
 
+impl IntoIterator for DirectiveList {
+    type Item = Component<Directive>;
+
+    type IntoIter = std::vec::IntoIter<Component<Directive>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 impl<'a> IntoIterator for &'a DirectiveList {
     type Item = &'a Component<Directive>;
 

@@ -1,6 +1,7 @@
 use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{argument, description, input, name};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#DirectiveDefinition
 ///
@@ -31,9 +32,13 @@ pub(crate) fn directive_definition(p: &mut Parser) {
         } else {
             p.err("expected an Argument Definition");
         }
-        while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-            input::input_value_definition(p);
-        }
+        p.peek_while(|p, kind| match kind {
+            TokenKind::Name | TokenKind::StringValue => {
+                input::input_value_definition(p);
+                ControlFlow::Continue(())
+            }
+            _ => ControlFlow::Break(()),
+        });
         p.expect(T![')'], S![')']);
     }
 
@@ -52,29 +57,27 @@ pub(crate) fn directive_definition(p: &mut Parser) {
 
     if let Some(TokenKind::Name | T![|]) = p.peek() {
         let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATIONS);
-        if let Some(T![|]) = p.peek() {
-            p.bump(S![|]);
-        }
-        directive_locations(p, false);
+        directive_locations(p);
     } else {
         p.err("expected valid Directive Location");
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#DirectiveLocations
+/// https://spec.graphql.org/October2021/#DirectiveLocation
 ///
-/// *DirectiveLocations*:
-///     DirectiveLocations **|** DirectiveLocation
-///     **|**? DirectiveLocation
-pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
-    if let Some(T![|]) = p.peek() {
-        p.bump(S![|]);
-        directive_locations(p, false);
-    }
+/// *DirectiveLocation*:
+///     *ExecutableDirectiveLocation*
+///     *TypeSystemDirectiveLocation*
+///
+/// (This function does not distinguish between the two groups of
+/// locations.)
+fn directive_location(p: &mut Parser) {
+    let Some(token) = p.peek_token() else {
+        return;
+    };
 
-    if let Some(TokenKind::Name) = p.peek() {
-        let loc = p.peek_data().unwrap();
-        match loc {
+    if token.kind == TokenKind::Name {
+        match token.data {
             "QUERY" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::QUERY_KW);
@@ -152,19 +155,21 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
                 p.bump(SyntaxKind::INPUT_FIELD_DEFINITION_KW);
             }
             _ => {
-                if !is_location {
-                    p.err("expected valid Directive Location");
-                }
-                return;
+                p.err("expected valid Directive Location");
             }
         }
-        if p.peek_data().is_some() {
-            return directive_locations(p, true);
-        }
+    } else {
+        p.err("expected Directive Location");
     }
-    if !is_location {
-        p.err("expected Directive Locations");
-    }
+}
+
+/// See: https://spec.graphql.org/October2021/#DirectiveLocations
+///
+/// *DirectiveLocations*:
+///     DirectiveLocations **|** DirectiveLocation
+///     **|**? DirectiveLocation
+pub(crate) fn directive_locations(p: &mut Parser) {
+    p.parse_separated_list(T![|], S![|], directive_location);
 }
 
 /// See: https://spec.graphql.org/October2021/#Directive
@@ -188,9 +193,9 @@ pub(crate) fn directive(p: &mut Parser, constness: Constness) {
 ///     Directive[?Const]*
 pub(crate) fn directives(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
-    while let Some(T![@]) = p.peek() {
+    p.peek_while_kind(T![@], |p| {
         directive(p, constness);
-    }
+    });
 }
 
 #[cfg(test)]

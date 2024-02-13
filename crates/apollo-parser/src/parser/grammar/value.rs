@@ -2,6 +2,7 @@ use crate::{
     parser::grammar::{name, variable},
     Parser, SyntaxKind, TokenKind, S, T,
 };
+use std::ops::ControlFlow;
 
 #[derive(Clone, Copy)]
 pub(crate) enum Constness {
@@ -83,13 +84,17 @@ pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
 ///     Name *but not* **true** *or* **false** *or* **null**
 pub(crate) fn enum_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUE);
-    let name = p.peek_data().unwrap();
+    match p.peek_token() {
+        Some(token) if token.kind == TokenKind::Name => {
+            let name = token.data;
+            if matches!(name, "true" | "false" | "null") {
+                p.err("invalid Enum Value");
+            }
 
-    if matches!(name, "true" | "false" | "null") {
-        p.err("unexpected Enum Value");
+            name::name(p);
+        }
+        _ => p.err("expected Enum Value"),
     }
-
-    name::name(p);
 }
 
 /// See: https://spec.graphql.org/October2021/#ListValue
@@ -101,21 +106,21 @@ pub(crate) fn list_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
 
-    while let Some(node) = p.peek() {
+    p.peek_while(|p, node| {
         if node == T![']'] {
             p.bump(S![']']);
-            break;
+            ControlFlow::Break(())
         } else if node == TokenKind::Eof {
-            break;
+            ControlFlow::Break(())
+        } else if p.recursion_limit.check_and_increment() {
+            p.limit_err("parser recursion limit reached");
+            ControlFlow::Break(())
         } else {
-            if p.recursion_limit.check_and_increment() {
-                p.limit_err("parser recursion limit reached");
-                return;
-            }
             value(p, constness, true);
-            p.recursion_limit.decrement()
+            p.recursion_limit.decrement();
+            ControlFlow::Continue(())
         }
-    }
+    });
 }
 
 /// See: https://spec.graphql.org/October2021/#ObjectValue
@@ -127,9 +132,9 @@ pub(crate) fn object_value(p: &mut Parser, constness: Constness) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
 
-    while let Some(TokenKind::Name) = p.peek() {
+    p.peek_while_kind(TokenKind::Name, |p| {
         object_field(p, constness);
-    }
+    });
 
     p.expect(T!['}'], S!['}']);
 }
