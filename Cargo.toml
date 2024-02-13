@@ -1,9 +1,4 @@
 [workspace]
 resolver = "2"
-members = [
-    "xtask/",
-    "crates/apollo-parser",
-    "crates/apollo-compiler",
-    "crates/apollo-smith",
-    "fuzz",
-]
+members = ["xtask", "crates/*", "fuzz"]
+default-members = ["xtask", "crates/*"]
