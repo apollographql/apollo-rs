@@ -484,15 +484,22 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
         }
     }
 
-    pub(crate) fn validate(
+    pub(crate) fn validate_operation(
         &mut self,
-        root: &'doc executable::SelectionSet,
+        operation: &'doc Node<executable::Operation>,
         diagnostics: &mut DiagnosticList,
     ) {
-        let fields = expand_selections(&self.document.fragments, std::iter::once(root));
+        let fields = expand_selections(
+            &self.document.fragments,
+            std::iter::once(&operation.selection_set),
+        );
         let set = self.lookup(fields);
         set.same_response_shape_by_name(self, diagnostics);
         set.same_for_common_parents_by_name(self, diagnostics);
+
+        if self.recursion_limit.high > self.recursion_limit.limit {
+            diagnostics.push(operation.location(), super::Details::RecursionLimitError);
+        }
     }
 
     fn lookup(&mut self, selections: Vec<FieldSelection<'doc>>) -> Rc<MergedFieldSet<'doc>> {

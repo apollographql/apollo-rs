@@ -206,6 +206,8 @@ pub(crate) enum Details {
     // TODO: Merge ValidationError into this enum
     #[error(transparent)]
     CompilerDiagnostic(diagnostics::ValidationError),
+    #[error("too much recursion")]
+    RecursionLimitError,
 }
 
 impl ToCliReport for DiagnosticData {
@@ -512,6 +514,7 @@ impl ToCliReport for DiagnosticData {
                     report.with_help("Both fields may be present on the schema type, so it's not clear which one should be used to fill the response");
                 }
             },
+            Details::RecursionLimitError => {}
         }
     }
 }

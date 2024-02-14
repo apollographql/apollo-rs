@@ -1,3 +1,5 @@
+use expect_test::expect;
+
 fn build_fragment_chain(size: usize) -> String {
     let mut query = r#"
       query Introspection{
@@ -89,6 +91,16 @@ fn build_input_object_chain(size: usize) -> String {
     schema
 }
 
+/// Returns a deeply nested selection set with a conflict in its leaf fields.
+fn build_nested_selection(depth: usize) -> String {
+    format!(
+        "query {}{}{}",
+        "{ recur\n".repeat(depth),
+        "{ leaf(arg: true) leaf(arg: false) }",
+        "\n}".repeat(depth),
+    )
+}
+
 #[test]
 fn long_fragment_chains_do_not_overflow_stack() {
     // Build a query that applies 1K fragments
@@ -106,6 +118,7 @@ fn long_fragment_chains_do_not_overflow_stack() {
 
     let expected = expect_test::expect![[r#"
         Error: too much recursion
+        Error: too much recursion
         Error: `typeFragment1` contains too much nesting
             ╭─[overflow.graphql:11:11]
             │
@@ -122,7 +135,7 @@ fn not_long_enough_fragment_chain_applies_correctly() {
     // Stay just under the recursion limit
     let query = build_fragment_chain(99);
 
-    let _ = apollo_compiler::parse_mixed_validate(
+    apollo_compiler::parse_mixed_validate(
         format!(
             "type Query {{ a: Int }}
             {query}"
@@ -175,4 +188,38 @@ fn not_long_enough_input_object_chain_applies_correctly() {
 
     let _schema = apollo_compiler::Schema::parse_and_validate(schema, "input_objects.graphql")
         .expect("must not have recursion errors");
+}
+
+#[test]
+fn deeply_nested_selection_bails_out() {
+    // This test relies on implementation details to ensure that the correct recursion limit is
+    // tested.
+    // The parser has a recursion limit that applies to parsing nested selection sets. So we build
+    // a nested selection set that is below this limit.
+    // Field merging validation has its own recursion limit that is much lower. We test this limit
+    // by writing a conflicting field selection at a nesting level that is too deep for the field
+    // merging validation, but not deep enough to cause a parser bailout.
+    // If this test fails, it may be due to a change in the hardcoded limits, and removing or
+    // replacing this test may be appropriate.
+
+    let schema = r#"
+type Recur {
+  recur: Recur
+  leaf(arg: Boolean): Int
+}
+type Query {
+  recur: Recur
+}
+    "#;
+
+    let query = build_nested_selection(400);
+
+    let errors =
+        apollo_compiler::parse_mixed_validate(format!("{schema}\n{query}"), "selection.graphql")
+            .expect_err("must have validation error");
+
+    expect![[r#"
+        Error: too much recursion
+    "#]]
+    .assert_eq(&errors.to_string());
 }

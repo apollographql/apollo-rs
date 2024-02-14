@@ -38,7 +38,7 @@ fn validate_with_schema(
     let mut fields_in_set_can_merge = FieldsInSetCanMerge::new(schema, document);
     for operation in document.all_operations() {
         crate::validation::operation::validate_subscription(document, operation, errors);
-        fields_in_set_can_merge.validate(&operation.selection_set, errors);
+        fields_in_set_can_merge.validate_operation(operation, errors);
     }
 }
 
