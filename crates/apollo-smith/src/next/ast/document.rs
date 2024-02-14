@@ -1,28 +1,15 @@
-use std::collections::HashSet;
-
-use arbitrary::Result;
-
 use paste::paste;
 
 use apollo_compiler::ast::{
-    Definition, DirectiveDefinition, DirectiveLocation, Document, EnumTypeDefinition,
-    EnumTypeExtension, EnumValueDefinition, FieldDefinition, FragmentDefinition,
-    InputObjectTypeDefinition, InputObjectTypeExtension, InputValueDefinition,
-    InterfaceTypeDefinition, InterfaceTypeExtension, Name, ObjectTypeDefinition,
-    ObjectTypeExtension, OperationDefinition, OperationType, ScalarTypeDefinition,
-    ScalarTypeExtension, SchemaDefinition, SchemaExtension, Type, UnionTypeDefinition,
-    UnionTypeExtension, Value,
+    Definition, DirectiveDefinition, Document, EnumTypeDefinition, EnumTypeExtension,
+    FragmentDefinition, InputObjectTypeDefinition, InputObjectTypeExtension,
+    InterfaceTypeDefinition, InterfaceTypeExtension, ObjectTypeDefinition, ObjectTypeExtension,
+    OperationDefinition, ScalarTypeDefinition, ScalarTypeExtension, SchemaDefinition,
+    SchemaExtension, UnionTypeDefinition, UnionTypeExtension,
 };
-use apollo_compiler::executable::DirectiveList;
-use apollo_compiler::schema::ExtendedType;
-use apollo_compiler::{Node, NodeStr, Schema};
+use apollo_compiler::Node;
 
-use crate::next::ast::definition::{DefinitionExt, DefinitionKind};
-use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
-use crate::next::unstructured::{Unstructured, UnstructuredExt, UnstructuredOption};
-
-use super::super::schema::schema::SchemaExt;
-use super::directive_definition::DirectiveDefinitionIterExt;
+use crate::next::unstructured::Unstructured;
 
 /// Macro to create accessors for definitions
 macro_rules! access {

@@ -13,6 +13,15 @@ pub fn generate_valid_document(input: &[u8]) -> Result<String> {
     Ok(document.into())
 }
 
+pub fn generate_schema_document(
+    input: &[u8],
+) -> std::result::Result<(), apollo_smith::next::Error> {
+    drop(env_logger::try_init());
+
+    apollo_smith::next::generate_schema_document(input)?;
+    Ok(())
+}
+
 /// Log the error and the document generated for these errors
 /// Save it into files
 pub fn log_gql_doc(gql_doc: &str, errors: &str) {

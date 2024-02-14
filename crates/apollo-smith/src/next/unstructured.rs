@@ -160,7 +160,7 @@ impl Unstructured<'_> {
                 .into_iter()
                 .with_location(DirectiveLocation::Object)
                 .try_collect(self, schema)?,
-            fields: self.arbitrary_vec(0, 5, |u| {
+            fields: self.arbitrary_vec(1, 5, |u| {
                 Ok(Node::new(u.arbitrary_field_definition(
                     schema,
                     DirectiveLocation::FieldDefinition,

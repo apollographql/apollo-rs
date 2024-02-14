@@ -73,14 +73,15 @@ pub enum Error {
 
 pub fn generate_schema_document(input: &[u8]) -> Result<Document, Error> {
     let mut u = Unstructured::new(input);
-    println!("starting");
     let mut doc = Document::parse(
         "type Query { me: String }".to_string(),
         PathBuf::from("synthetic"),
     )
     .map_err(Error::Parse)?; // Start with a minimal schema
-    println!("parsed initial");
     let mutations = mutations::all_mutations();
+    for mutation in &mutations {
+        println!("mutation {}", mutation.type_name());
+    }
     let mut schema = doc.to_schema().expect("initial schema must be valid");
     for n in 0..1000 {
         println!("iteration: {}", n);
@@ -92,8 +93,6 @@ pub fn generate_schema_document(input: &[u8]) -> Result<Document, Error> {
         // Let's reparse the document to check that it can be parsed
         Document::parse(doc.to_string(), PathBuf::from("synthetic")).map_err(Error::Parse)?;
         // Now let's validate that the schema says it's OK
-
-        println!("{}", doc.to_string());
 
         match (mutation.is_valid(), doc.to_schema_validate()) {
             (true, Ok(new_schema)) => {
@@ -107,7 +106,7 @@ pub fn generate_schema_document(input: &[u8]) -> Result<Document, Error> {
                 return Err(Error::ExpectedValidationFail(doc));
             }
             (false, Err(_)) => {
-                // Validation was expected to fail, we can't continue
+                // Validation was expected to fail, we can't continue as we mutated the doc
                 return Ok(doc);
             }
         }
@@ -130,7 +129,7 @@ mod test {
 
     #[test]
     fn test() {
-        let input = b"293ur928jff029jf0293f";
+        let input = b"293ur928jff029jf0293ff20983nr0v243ucm8unr4pv938uavtnpb98aun34vtr98aun23vr892auna98r3unv298ua43arp9vu32a3p538umq2v4098cutrnfavwynr9ha28pbz9vuwrA29P38AU[R09UMA2[0893U5NC9A8P3NRV";
         match generate_schema_document(input) {
             Ok(_) => {}
             Err(e) => {
