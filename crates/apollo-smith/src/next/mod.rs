@@ -1,8 +1,7 @@
 use std::any::type_name;
 use std::path::PathBuf;
 
-use arbitrary::Unstructured;
-
+use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::Document;
 use apollo_compiler::validation::WithErrors;
 use apollo_compiler::Schema;
@@ -53,7 +52,6 @@ macro_rules! field_access {
     };
 }
 mod ast;
-mod common;
 mod mutations;
 mod schema;
 mod unstructured;

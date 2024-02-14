@@ -1,10 +1,9 @@
-use arbitrary::Unstructured;
-
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
 use crate::next::ast::document::DocumentExt;
 use crate::next::mutations::Mutation;
+use crate::next::unstructured::Unstructured;
 
 pub(crate) struct AddInterfaceTypeDefinition;
 impl Mutation for AddInterfaceTypeDefinition {
@@ -16,7 +15,7 @@ impl Mutation for AddInterfaceTypeDefinition {
     ) -> arbitrary::Result<()> {
         doc.definitions
             .push(Definition::InterfaceTypeDefinition(Node::new(
-                doc.arbitrary_interface_type_definition(u, schema)?,
+                u.arbitrary_interface_type_definition(schema)?,
             )));
 
         Ok(())

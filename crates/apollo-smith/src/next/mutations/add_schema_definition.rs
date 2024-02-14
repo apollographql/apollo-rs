@@ -1,10 +1,9 @@
-use arbitrary::Unstructured;
-
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
 use crate::next::ast::document::DocumentExt;
 use crate::next::mutations::Mutation;
+use crate::next::unstructured::Unstructured;
 
 pub(crate) struct AddSchemaDefiniton;
 impl Mutation for AddSchemaDefiniton {
@@ -16,7 +15,7 @@ impl Mutation for AddSchemaDefiniton {
     ) -> arbitrary::Result<()> {
         // If the document already has a schema definition, we don't need to add another one
         doc.definitions.push(Definition::SchemaDefinition(Node::new(
-            doc.arbitrary_schema_definition(u, schema)?,
+            u.arbitrary_schema_definition(schema)?,
         )));
 
         Ok(())

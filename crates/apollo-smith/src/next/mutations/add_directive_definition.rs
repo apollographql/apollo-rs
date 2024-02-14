@@ -1,10 +1,9 @@
-use arbitrary::Unstructured;
-
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
 use crate::next::ast::document::DocumentExt;
 use crate::next::mutations::Mutation;
+use crate::next::unstructured::Unstructured;
 
 pub(crate) struct AddDirectiveDefinition;
 impl Mutation for AddDirectiveDefinition {
@@ -16,7 +15,7 @@ impl Mutation for AddDirectiveDefinition {
     ) -> arbitrary::Result<()> {
         doc.definitions
             .push(Definition::DirectiveDefinition(Node::new(
-                doc.arbitrary_directive_definition(u, schema)?,
+                u.arbitrary_directive_definition(schema)?,
             )));
 
         Ok(())

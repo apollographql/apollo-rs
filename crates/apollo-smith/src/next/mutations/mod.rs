@@ -1,4 +1,3 @@
-use arbitrary::Unstructured;
 use std::any::type_name;
 
 use crate::next::mutations::add_directive_definition::AddDirectiveDefinition;
@@ -10,6 +9,7 @@ use apollo_compiler::Schema;
 use crate::next::mutations::add_object_type_definition::AddObjectTypeDefinition;
 use crate::next::mutations::add_schema_definition::AddSchemaDefiniton;
 use crate::next::mutations::add_union_type_definition::AddUnionTypeDefinition;
+use crate::next::unstructured::Unstructured;
 
 mod add_directive_definition;
 mod add_enum_type_definition;

@@ -1,9 +1,9 @@
 use super::document::DocumentExt;
+use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::{
     Argument, Directive, DirectiveDefinition, DirectiveList, DirectiveLocation, Document,
 };
 use apollo_compiler::{Node, Schema};
-use arbitrary::Unstructured;
 use std::ops::Deref;
 
 pub(crate) struct LocationFilter<I>(I, DirectiveLocation);
@@ -27,7 +27,6 @@ pub(crate) trait DirectiveDefinitionIterExt {
     fn try_collect<'a>(
         self,
         u: &mut Unstructured,
-        doc: &Document,
         schema: &Schema,
     ) -> arbitrary::Result<DirectiveList>
     where
@@ -46,7 +45,6 @@ impl<I: ?Sized> DirectiveDefinitionIterExt for I {
     fn try_collect<'a>(
         mut self,
         u: &mut Unstructured,
-        doc: &Document,
         schema: &Schema,
     ) -> arbitrary::Result<DirectiveList>
     where
@@ -59,7 +57,7 @@ impl<I: ?Sized> DirectiveDefinitionIterExt for I {
                 if arg.is_required() || u.arbitrary()? {
                     arguments.push(Node::new(Argument {
                         name: arg.name.clone(),
-                        value: Node::new(doc.arbitrary_value(u, arg.ty.deref(), schema)?),
+                        value: Node::new(u.arbitrary_value(arg.ty.deref(), schema)?),
                     }))
                 }
             }

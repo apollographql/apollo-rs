@@ -1,7 +1,7 @@
 use crate::next::mutations::Mutation;
-use arbitrary::Unstructured;
 
 use crate::next::ast::document::DocumentExt;
+use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::Document;
 use apollo_compiler::Schema;
 

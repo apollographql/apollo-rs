@@ -3,9 +3,7 @@ use arbitrary::Unstructured;
 use apollo_compiler::ast::ObjectTypeDefinition;
 use apollo_compiler::Node;
 
-use crate::next::common::Common;
-
-pub(crate) trait ObjectTypeDefinitionExt: Common {
+pub(crate) trait ObjectTypeDefinitionExt {
     field_access!();
 
     fn target(&self) -> &ObjectTypeDefinition;
@@ -20,5 +18,3 @@ impl ObjectTypeDefinitionExt for ObjectTypeDefinition {
         self
     }
 }
-
-impl Common for ObjectTypeDefinition {}
