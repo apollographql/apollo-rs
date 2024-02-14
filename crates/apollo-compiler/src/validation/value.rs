@@ -159,6 +159,9 @@ pub(crate) fn value_of_correct_type(
             _ => diagnostics.push(unsupported_type(arg_value, ty)),
         },
         ast::Value::Enum(value) => match &type_definition {
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
+                // Accept enum values as input for custom scalars
+            }
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
                     diagnostics.push(ValidationError::new(
@@ -199,7 +202,7 @@ pub(crate) fn value_of_correct_type(
             }
         }
         ast::Value::Object(obj) => match &type_definition {
-            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => (),
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
             schema::ExtendedType::InputObject(input_obj) => {
                 let undefined_field = obj
                     .iter()

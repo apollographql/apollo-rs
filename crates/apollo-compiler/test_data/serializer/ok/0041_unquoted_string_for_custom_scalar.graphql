@@ -1,0 +1,9 @@
+scalar Currency
+
+type Query {
+  convertToUSD(amount: Int!, currency: Currency!): Int!
+}
+
+query {
+  convertToUSD(amount: 100, currency: EUR)
+}
