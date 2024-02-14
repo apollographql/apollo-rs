@@ -1,59 +1,143 @@
-use arbitrary::Result;
+use std::any::type_name;
+use std::path::PathBuf;
 
-use crate::next::mutations::all_mutations;
-use crate::next::unstructured::Unstructured;
+use arbitrary::Unstructured;
 
-mod document;
-mod existing;
-mod invalid;
+use apollo_compiler::ast::Document;
+use apollo_compiler::validation::WithErrors;
+use apollo_compiler::Schema;
+
+/// macro for accessing fields
+macro_rules! field_access {
+    () => {
+        fn random_field(
+            &self,
+            u: &mut Unstructured,
+        ) -> arbitrary::Result<&Node<apollo_compiler::ast::FieldDefinition>> {
+            Ok(u.choose(&self.target().fields).map_err(|e| {
+                if let arbitrary::Error::EmptyChoose = e {
+                    panic!("no existing fields")
+                } else {
+                    e
+                }
+            })?)
+        }
+
+        fn random_field_mut(
+            &mut self,
+            u: &mut Unstructured,
+        ) -> arbitrary::Result<&mut Node<apollo_compiler::ast::FieldDefinition>> {
+            let idx = u.choose_index(self.target().fields.len()).map_err(|e| {
+                if let arbitrary::Error::EmptyChoose = e {
+                    panic!("no existing fields")
+                } else {
+                    e
+                }
+            })?;
+            Ok(&mut self.target_mut().fields[idx])
+        }
+
+        fn sample_fields(
+            &self,
+            u: &mut Unstructured,
+        ) -> arbitrary::Result<Vec<&Node<apollo_compiler::ast::FieldDefinition>>> {
+            let existing = self
+                .target()
+                .fields
+                .iter()
+                .filter(|_| u.arbitrary().unwrap_or(false))
+                .collect::<Vec<_>>();
+
+            Ok(existing)
+        }
+    };
+}
+mod ast;
+mod common;
 mod mutations;
+mod schema;
 mod unstructured;
-mod valid;
 
-pub fn build_document(u: &mut arbitrary::Unstructured) -> Result<()> {
-    let mut doc = apollo_compiler::ast::Document::new();
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("arbitrary error")]
+    Arbitrary(#[from] arbitrary::Error),
 
-    let mut mutations = all_mutations();
-    mutations.retain(|_| {
-        u.arbitrary()
-            .expect("fuzzer must be able to generate a bool")
-    });
-    if mutations.is_empty() {
-        return Ok(());
-    }
+    #[error("schema validation")]
+    Validation(WithErrors<Schema>),
 
-    let mut schema = apollo_compiler::Schema::builder()
-        .add_ast(&doc)
-        .build()
-        .expect("initial document must be valid");
-    for _ in 0..1000 {
-        let u = &mut Unstructured::new(u, &schema);
-        let mutation = u.choose(&mut mutations)?;
-        if mutation.apply(u, &mut doc).is_ok() {
-            match apollo_compiler::Schema::builder().add_ast(&doc).build() {
-                Ok(new_schema) if mutation.is_valid() => schema = new_schema,
-                Ok(_new_schema) => {
-                    panic!("valid schema returned from invalid mutation")
-                }
-                Err(_new_schema) if mutation.is_valid() => {
-                    panic!("invalid schema returned from valid mutation")
-                }
-                Err(_new_schema) => {
-                    break;
-                }
+    #[error("schema validation passed, but should have failed")]
+    ExpectedValidationFail(Document),
+
+    #[error("parse error")]
+    Parse(WithErrors<Document>),
+}
+
+pub fn generate_schema_document(input: &[u8]) -> Result<Document, Error> {
+    let mut u = Unstructured::new(input);
+    println!("starting");
+    let mut doc = Document::parse(
+        "type Query { me: String }".to_string(),
+        PathBuf::from("synthetic"),
+    )
+    .map_err(Error::Parse)?; // Start with a minimal schema
+    println!("parsed initial");
+    let mutations = mutations::all_mutations();
+    let mut schema = doc.to_schema().expect("initial schema must be valid");
+    for n in 0..1000 {
+        println!("iteration: {}", n);
+        let mut mutation = u.choose(&mutations)?;
+        println!("applying mutation: {} ", mutation.type_name());
+        // First let's modify the document. We use the schema because it has all the built-in definitions in it.
+        mutation.apply(&mut u, &mut doc, &schema)?;
+
+        // Let's reparse the document to check that it can be parsed
+        Document::parse(doc.to_string(), PathBuf::from("synthetic")).map_err(Error::Parse)?;
+        // Now let's validate that the schema says it's OK
+
+        println!("{}", doc.to_string());
+
+        match (mutation.is_valid(), doc.to_schema_validate()) {
+            (true, Ok(new_schema)) => {
+                schema = new_schema.into_inner();
+                continue;
+            }
+            (true, Err(e)) => {
+                return Err(Error::Validation(e));
+            }
+            (false, Ok(_)) => {
+                return Err(Error::ExpectedValidationFail(doc));
+            }
+            (false, Err(_)) => {
+                // Validation was expected to fail, we can't continue
+                return Ok(doc);
             }
         }
     }
-    Ok(())
+
+    Ok(doc)
 }
 
 #[cfg(test)]
 mod test {
+    use crate::next::{generate_schema_document, Error};
+    use apollo_compiler::ast::Document;
+    use apollo_compiler::Schema;
+
+    #[test]
+    fn test_schema() {
+        let f = Schema::builder().add_ast(&Document::new()).build().unwrap();
+        println!("{:?}", f.types.len());
+    }
+
     #[test]
     fn test() {
-        let mut u = arbitrary::Unstructured::new(&[0; 32]);
-        if let Err(e) = super::build_document(&mut u) {
-            panic!("error: {:?}", e);
-        };
+        let input = b"293ur928jff029jf0293f";
+        match generate_schema_document(input) {
+            Ok(_) => {}
+            Err(e) => {
+                panic!("error: {:?}", e)
+            }
+        }
     }
 }

@@ -1,12 +1,22 @@
 use crate::next::mutations::Mutation;
-use crate::next::unstructured::Unstructured;
+use arbitrary::Unstructured;
+
+use crate::next::ast::document::DocumentExt;
 use apollo_compiler::ast::Document;
+use apollo_compiler::Schema;
 
 pub(crate) struct RemoveAllFields;
 impl Mutation for RemoveAllFields {
-    fn apply(&self, u: &mut Unstructured, doc: &mut Document) -> arbitrary::Result<()> {
-        u.document(doc)
-            .with_object_type_definition(|_u, o| Ok(o.fields.clear()))?;
+    fn apply(
+        &self,
+        u: &mut Unstructured,
+        doc: &mut Document,
+        schema: &Schema,
+    ) -> arbitrary::Result<()> {
+        doc.random_object_type_definition_mut(u)?
+            .make_mut()
+            .fields
+            .clear();
         Ok(())
     }
     fn is_valid(&self) -> bool {

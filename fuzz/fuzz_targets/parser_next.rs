@@ -1,19 +1,13 @@
 #![no_main]
 use apollo_parser::Parser;
-use apollo_rs_fuzz::{generate_valid_document, log_gql_doc};
+use apollo_rs_fuzz::{fuzz_document, generate_valid_document, log_gql_doc};
+use libfuzzer_sys::arbitrary::Unstructured;
 use libfuzzer_sys::fuzz_target;
 use log::debug;
 use std::panic;
 
 fuzz_target!(|data: &[u8]| {
     let _ = env_logger::try_init();
-
-    let doc_generated = match generate_valid_document(data) {
-        Ok(d) => d,
-        Err(_err) => {
-            return;
-        }
-    };
 
     let parser = panic::catch_unwind(|| Parser::new(&doc_generated));
 

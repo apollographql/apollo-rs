@@ -1,99 +1,43 @@
-use crate::next::document::Document;
-use crate::next::existing::Existing;
-use crate::next::invalid::Invalid;
-use crate::next::valid::Valid;
-use apollo_compiler::ast::{Name, Type};
-use apollo_compiler::NodeStr;
 use arbitrary::Result;
-use std::ops::{Deref, DerefMut};
 
-pub(crate) struct Unstructured<'u, 'ue> {
-    pub(crate) u: &'ue mut arbitrary::Unstructured<'u>,
-    pub(crate) schema: &'ue apollo_compiler::Schema,
-}
-
-impl Unstructured<'_, '_> {
-    pub(crate) fn new<'u, 'ue>(
-        u: &'ue mut arbitrary::Unstructured<'u>,
-        schema: &'ue apollo_compiler::Schema,
-    ) -> Unstructured<'u, 'ue> {
-        Unstructured { u, schema }
-    }
-}
-
-impl<'u, 'ue> Deref for Unstructured<'u, 'ue> {
-    type Target = arbitrary::Unstructured<'u>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.u
-    }
-}
-
-impl<'u, 'ue> DerefMut for Unstructured<'u, 'ue> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.u
-    }
-}
-
-impl<'u, 'ue> Unstructured<'u, 'ue> {
-    pub(crate) fn valid(&mut self) -> Valid<'u, 'ue, '_> {
-        Valid(self)
-    }
-
-    pub(crate) fn existing(&mut self) -> Existing<'u, 'ue, '_> {
-        Existing(self)
-    }
-    pub(crate) fn invalid(&mut self) -> Invalid<'u, 'ue, '_> {
-        Invalid(self)
-    }
-
-    pub(crate) fn document<'d, 'ad>(
+pub(crate) trait UnstructuredExt {
+    fn arbitrary_vec<T, C: Fn(&mut Unstructured) -> Result<T>>(
         &mut self,
-        doc: &'ad mut apollo_compiler::ast::Document,
-    ) -> Document<'u, 'ue, '_, 'ad> {
-        Document { u: self, doc }
-    }
-
-    pub(crate) fn schema(&self) -> &apollo_compiler::Schema {
-        &self.schema
-    }
-
-    pub(crate) fn arbitrary_node_str(&mut self) -> Result<NodeStr> {
-        Ok(NodeStr::new(self.arbitrary()?))
-    }
-
-    pub(crate) fn arbitrary_name(&mut self) -> Result<Name> {
-        loop {
-            if let Ok(name) = Name::new(self.arbitrary_node_str()?) {
-                return Ok(name);
-            }
+        min: usize,
+        max: usize,
+        callback: C,
+    ) -> Result<Vec<T>>;
+}
+impl<'a> UnstructuredExt for Unstructured<'a> {
+    fn arbitrary_vec<T, C: Fn(&mut Unstructured) -> Result<T>>(
+        &mut self,
+        min: usize,
+        max: usize,
+        callback: C,
+    ) -> Result<Vec<T>> {
+        let count = self.int_in_range(min..=max)?;
+        let mut results = Vec::with_capacity(count);
+        for _ in 0..count {
+            results.push(callback(self)?);
         }
+        Ok(results)
     }
+}
 
-    pub(crate) fn arbitrary_unique_name(&mut self, existing: &Vec<&Name>) -> Result<Name> {
-        loop {
-            if let Ok(name) = self.arbitrary_name() {
-                if !existing.contains(&&name) {
-                    return Ok(name);
-                }
-            }
-        }
-    }
+pub(crate) trait UnstructuredOption: Sized {
+    fn optional(self, u: &mut Unstructured) -> Result<Option<Self>>;
+}
 
-    pub(crate) fn wrap_ty(&mut self, name: Name) -> Result<Type> {
-        let depth = self.int_in_range(0..=10)?;
-        let mut ty = if self.arbitrary()? {
-            Type::Named(name.clone())
+impl<T> UnstructuredOption for T {
+    fn optional(self, u: &mut Unstructured) -> Result<Option<T>> {
+        if u.arbitrary()? {
+            Ok(Some(self))
         } else {
-            Type::NonNullNamed(name.clone())
-        };
-        for _ in 0..depth {
-            if self.arbitrary()? {
-                ty = Type::List(Box::new(ty))
-            } else {
-                ty = Type::NonNullList(Box::new(ty))
-            }
+            Ok(None)
         }
-        Ok(ty)
     }
+}
+
+struct Unstructured<'a> {
+    u: &'a mut Unstructured<'a>,
 }

@@ -6,8 +6,8 @@ use apollo_compiler::{Node, Schema};
 use crate::next::ast::document::DocumentExt;
 use crate::next::mutations::Mutation;
 
-pub(crate) struct AddObjectTypeDefinition;
-impl Mutation for AddObjectTypeDefinition {
+pub(crate) struct AddInputObjectTypeDefinition;
+impl Mutation for AddInputObjectTypeDefinition {
     fn apply(
         &self,
         u: &mut Unstructured,
@@ -15,8 +15,8 @@ impl Mutation for AddObjectTypeDefinition {
         schema: &Schema,
     ) -> arbitrary::Result<()> {
         doc.definitions
-            .push(Definition::ObjectTypeDefinition(Node::new(
-                doc.arbitrary_object_type_definition(u, schema)?,
+            .push(Definition::InputObjectTypeDefinition(Node::new(
+                doc.arbitrary_input_object_type_definition(u, schema)?,
             )));
         Ok(())
     }

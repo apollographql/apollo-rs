@@ -58,3 +58,9 @@ name = "coordinate"
 path = "fuzz_targets/coordinate.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "parser_next"
+path = "fuzz_targets/parser_next.rs"
+test = false
+doc = false
