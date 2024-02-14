@@ -1,3 +1,4 @@
+mod field_merging;
 mod interface;
 mod object;
 mod operation;

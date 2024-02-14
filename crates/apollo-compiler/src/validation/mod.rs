@@ -206,6 +206,8 @@ pub(crate) enum Details {
     // TODO: Merge ValidationError into this enum
     #[error(transparent)]
     CompilerDiagnostic(diagnostics::ValidationError),
+    #[error("too much recursion")]
+    RecursionLimitError,
 }
 
 impl ToCliReport for DiagnosticData {
@@ -409,7 +411,110 @@ impl ToCliReport for DiagnosticData {
                     );
                     report.with_note(format_args!("path to the field: `{path}`"))
                 }
+                ExecutableBuildError::SubscriptionUsesMultipleFields { fields, .. } => {
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("subscription with {} root fields", fields.len()),
+                    );
+                    report.with_help(format_args!(
+                        "There are {} root fields: {}. This is not allowed.",
+                        fields.len(),
+                        CommaSeparated(fields)
+                    ));
+                }
+                ExecutableBuildError::SubscriptionUsesIntrospection { field, .. } => {
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("{field} is an introspection field"),
+                    );
+                }
+                ExecutableBuildError::ConflictingFieldType {
+                    alias,
+                    original_location,
+                    original_coordinate,
+                    original_type,
+                    conflicting_location,
+                    conflicting_coordinate,
+                    conflicting_type,
+                } => {
+                    report.with_label_opt(
+                        *original_location,
+                        format_args!(
+                        "`{alias}` is selected from `{original_coordinate}: {original_type}` here"
+                    ),
+                    );
+                    report.with_label_opt(
+                    *conflicting_location,
+                    format_args!("`{alias}` is selected from `{conflicting_coordinate}: {conflicting_type}` here"),
+                );
+                }
+                ExecutableBuildError::ConflictingFieldArgument {
+                    alias,
+                    original_location,
+                    original_coordinate,
+                    original_value,
+                    conflicting_location,
+                    conflicting_coordinate: _,
+                    conflicting_value,
+                } => {
+                    let argument = &original_coordinate.argument;
+                    match (original_value, conflicting_value) {
+                        (Some(_), Some(_)) => {
+                            report.with_label_opt(
+                                *original_location,
+                                format_args!(
+                                    "`{original_coordinate}` is used with one argument value here"
+                                ),
+                            );
+                            report.with_label_opt(
+                                *conflicting_location,
+                                "but a different value here",
+                            );
+                        }
+                        (Some(_), None) => {
+                            report.with_label_opt(
+                                *original_location,
+                                format!("`{alias}` is selected with argument `{argument}` here",),
+                            );
+                            report.with_label_opt(
+                                *conflicting_location,
+                                format!("but argument `{argument}` is not provided here"),
+                            );
+                        }
+                        (None, Some(_)) => {
+                            report.with_label_opt(
+                                *conflicting_location,
+                                format!("`{alias}` is selected with argument `{argument}` here",),
+                            );
+                            report.with_label_opt(
+                                *original_location,
+                                format!("but argument `{argument}` is not provided here"),
+                            );
+                        }
+                        (None, None) => unreachable!(),
+                    }
+                    report.with_help("The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate");
+                }
+                ExecutableBuildError::ConflictingFieldName {
+                    alias: field,
+                    original_selection,
+                    original_location,
+                    conflicting_selection,
+                    conflicting_location,
+                } => {
+                    report.with_label_opt(
+                        *original_location,
+                        format_args!("`{field}` is selected from `{original_selection}` here"),
+                    );
+                    report.with_label_opt(
+                        *conflicting_location,
+                        format_args!("`{field}` is selected from `{conflicting_selection}` here"),
+                    );
+
+                    report.with_help("Both fields may be present on the schema type, so it's not clear which one should be used to fill the response");
+                }
             },
+            Details::RecursionLimitError => {}
         }
     }
 }
@@ -625,5 +730,24 @@ impl<T> CycleError<T> {
             trace.push(node.clone());
         }
         self
+    }
+}
+
+struct CommaSeparated<'a, It>(&'a It);
+impl<'a, T, It> fmt::Display for CommaSeparated<'a, It>
+where
+    T: fmt::Display,
+    &'a It: IntoIterator<Item = T>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut it = self.0.into_iter();
+        if let Some(element) = it.next() {
+            element.fmt(f)?;
+        }
+        for element in it {
+            f.write_str(", ")?;
+            element.fmt(f)?;
+        }
+        Ok(())
     }
 }

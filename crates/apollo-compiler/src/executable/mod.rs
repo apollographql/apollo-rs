@@ -2,6 +2,8 @@
 //! which can contain operations and fragments.
 
 use crate::ast;
+use crate::coordinate::FieldArgumentCoordinate;
+use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema;
 use crate::Node;
 use crate::Parser;
@@ -69,20 +71,20 @@ pub struct Fragment {
     pub selection_set: SelectionSet,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectionSet {
     pub ty: NamedType,
     pub selections: Vec<Selection>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
     Field(Node<Field>),
     FragmentSpread(Node<FragmentSpread>),
     InlineFragment(Node<InlineFragment>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Field {
     /// The definition of this field in an object type or interface type definition in the schema
     pub definition: Node<schema::FieldDefinition>,
@@ -93,20 +95,21 @@ pub struct Field {
     pub selection_set: SelectionSet,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
     pub directives: DirectiveList,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
     pub directives: DirectiveList,
     pub selection_set: SelectionSet,
 }
 
-/// AST node that has been skipped during conversion to `ExecutableDocument`
+/// Errors that can occur during conversion from AST to executable document or
+/// validation of an executable document.
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
     #[error("an executable document must not contain {describe}")]
@@ -161,6 +164,67 @@ pub(crate) enum BuildError {
         field_name: Name,
         path: SelectionPath,
     },
+
+    // Validation errors
+    #[error(
+        "{} can only have one root field",
+        subscription_name_or_anonymous(name)
+    )]
+    SubscriptionUsesMultipleFields {
+        name: Option<Name>,
+        fields: Vec<Name>,
+    },
+
+    #[error(
+        "{} can not have an introspection field as a root field",
+        subscription_name_or_anonymous(name)
+    )]
+    SubscriptionUsesIntrospection {
+        /// Name of the operation
+        name: Option<Name>,
+        /// Name of the introspection field
+        field: Name,
+    },
+
+    #[error("operation must not select different types using the same name `{alias}`")]
+    ConflictingFieldType {
+        /// Name or alias of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_coordinate: TypeAttributeCoordinate,
+        original_type: Type,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_coordinate: TypeAttributeCoordinate,
+        conflicting_type: Type,
+    },
+    #[error("operation must not provide conflicting field arguments for the same name `{alias}`")]
+    ConflictingFieldArgument {
+        /// Name or alias of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_coordinate: FieldArgumentCoordinate,
+        original_value: Option<Value>,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_coordinate: FieldArgumentCoordinate,
+        conflicting_value: Option<Value>,
+    },
+    #[error("cannot select different fields into the same alias `{alias}`")]
+    ConflictingFieldName {
+        /// Name of the non-unique field.
+        alias: Name,
+        original_location: Option<NodeLocation>,
+        original_selection: TypeAttributeCoordinate,
+        conflicting_location: Option<NodeLocation>,
+        conflicting_selection: TypeAttributeCoordinate,
+    },
+}
+
+fn subscription_name_or_anonymous(name: &Option<Name>) -> impl std::fmt::Display + '_ {
+    crate::validation::diagnostics::NameOrAnon {
+        name: name.as_ref(),
+        if_some_prefix: "subscription",
+        if_none: "anonymous subscription",
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -327,8 +391,24 @@ impl PartialEq for ExecutableDocument {
 }
 
 impl Operation {
+    /// Returns the name of the schema type this operation selects against.
     pub fn object_type(&self) -> &NamedType {
         &self.selection_set.ty
+    }
+
+    /// Returns true if this is a query operation.
+    pub fn is_query(&self) -> bool {
+        self.operation_type == OperationType::Query
+    }
+
+    /// Returns true if this is a mutation operation.
+    pub fn is_mutation(&self) -> bool {
+        self.operation_type == OperationType::Mutation
+    }
+
+    /// Returns true if this is a subscription operation.
+    pub fn is_subscription(&self) -> bool {
+        self.operation_type == OperationType::Subscription
     }
 
     /// Return whether this operation is a query that only selects introspection meta-fields:
@@ -589,6 +669,11 @@ impl Field {
     /// The inner type is [`ty()`][Self::ty] after unwrapping non-null and list markers.
     pub fn inner_type_def<'a>(&self, schema: &'a Schema) -> Option<&'a schema::ExtendedType> {
         schema.types.get(self.ty().inner_named_type())
+    }
+
+    /// Returns the argument by a given name.
+    pub fn argument_by_name(&self, name: &str) -> Option<&'_ Node<Argument>> {
+        self.arguments.iter().find(|argument| argument.name == name)
     }
 
     serialize_method!();

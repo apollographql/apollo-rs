@@ -1,5 +1,6 @@
 use super::FieldSet;
 use crate::ast;
+use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
@@ -30,11 +31,15 @@ pub(crate) fn validate_standalone_executable(
 }
 
 fn validate_with_schema(
-    _errors: &mut DiagnosticList,
-    _schema: &Schema,
-    _document: &ExecutableDocument,
+    errors: &mut DiagnosticList,
+    schema: &Schema,
+    document: &ExecutableDocument,
 ) {
-    // TODO
+    let mut fields_in_set_can_merge = FieldsInSetCanMerge::new(schema, document);
+    for operation in document.all_operations() {
+        crate::validation::operation::validate_subscription(document, operation, errors);
+        fields_in_set_can_merge.validate_operation(operation, errors);
+    }
 }
 
 pub(crate) fn validate_with_or_without_schema(

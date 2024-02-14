@@ -1,41 +1,45 @@
-Error: operation must not select different types using the same field name `name`
+Error: operation must not select different types using the same name `name`
     ╭─[0074_merge_identical_fields.graphql:19:3]
     │
  18 │   name: nickname
     │   ───────┬──────  
-    │          ╰──────── `name` has type `String` here
+    │          ╰──────── `name` is selected from `Dog.nickname: String` here
  19 │   name
     │   ──┬─  
-    │     ╰─── but the same field name has type `String!` here
+    │     ╰─── `name` is selected from `Dog.name: String!` here
 ────╯
-Error: operation must not select different types using the same field name `name`
+Error: cannot select different fields into the same alias `name`
     ╭─[0074_merge_identical_fields.graphql:19:3]
     │
  18 │   name: nickname
     │   ───────┬──────  
-    │          ╰──────── `name` has type `String` here
+    │          ╰──────── `name` is selected from `Dog.nickname` here
  19 │   name
     │   ──┬─  
-    │     ╰─── but the same field name has type `String!` here
+    │     ╰─── `name` is selected from `Dog.name` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
-Error: operation must not select different types using the same field name `fido`
+Error: operation must not select different types using the same name `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
     │
  23 │   fido: name
     │   ─────┬────  
-    │        ╰────── `fido` has type `String!` here
+    │        ╰────── `fido` is selected from `Dog.name: String!` here
  24 │   fido: nickname
     │   ───────┬──────  
-    │          ╰──────── but the same field name has type `String` here
+    │          ╰──────── `fido` is selected from `Dog.nickname: String` here
 ────╯
-Error: operation must not select different types using the same field name `fido`
+Error: cannot select different fields into the same alias `fido`
     ╭─[0074_merge_identical_fields.graphql:24:3]
     │
  23 │   fido: name
     │   ─────┬────  
-    │        ╰────── `fido` has type `String!` here
+    │        ╰────── `fido` is selected from `Dog.name` here
  24 │   fido: nickname
     │   ───────┬──────  
-    │          ╰──────── but the same field name has type `String` here
+    │          ╰──────── `fido` is selected from `Dog.nickname` here
+    │ 
+    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
 

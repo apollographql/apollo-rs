@@ -1,23 +1,12 @@
-Error: operation must not select different types using the same field name `someValue`
+Error: operation must not select different types using the same name `someValue`
     ╭─[0076_merge_differing_responses.graphql:42:5]
     │
  39 │     someValue: nickname
     │     ─────────┬─────────  
-    │              ╰─────────── `someValue` has type `String!` here
+    │              ╰─────────── `someValue` is selected from `Dog.nickname: String!` here
     │ 
  42 │     someValue: meowVolume
     │     ──────────┬──────────  
-    │               ╰──────────── but the same field name has type `Int!` here
-────╯
-Error: operation must not select different types using the same field name `someValue`
-    ╭─[0076_merge_differing_responses.graphql:42:5]
-    │
- 39 │     someValue: nickname
-    │     ─────────┬─────────  
-    │              ╰─────────── `someValue` has type `String!` here
-    │ 
- 42 │     someValue: meowVolume
-    │     ──────────┬──────────  
-    │               ╰──────────── but the same field name has type `Int!` here
+    │               ╰──────────── `someValue` is selected from `Cat.meowVolume: Int!` here
 ────╯
 

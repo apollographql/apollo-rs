@@ -1,6 +1,7 @@
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::diagnostics::ValidationError;
+use crate::validation::DiagnosticList;
 use crate::validation::FileId;
-use crate::{ast, name, Node, ValidationDatabase};
+use crate::{ast, executable, Node, ValidationDatabase};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub(crate) struct OperationValidationConfig<'vars> {
@@ -8,6 +9,51 @@ pub(crate) struct OperationValidationConfig<'vars> {
     pub has_schema: bool,
     /// The variables defined for this operation.
     pub variables: &'vars [Node<ast::VariableDefinition>],
+}
+
+pub(crate) fn validate_subscription(
+    document: &executable::ExecutableDocument,
+    operation: &Node<executable::Operation>,
+    diagnostics: &mut DiagnosticList,
+) {
+    if operation.is_subscription() {
+        let fields = super::selection::expand_selections(
+            &document.fragments,
+            std::iter::once(&operation.selection_set),
+        );
+
+        if fields.len() > 1 {
+            diagnostics.push(
+                operation.location(),
+                executable::BuildError::SubscriptionUsesMultipleFields {
+                    name: operation.name.clone(),
+                    fields: fields
+                        .iter()
+                        .map(|field| field.field.name.clone())
+                        .collect(),
+                },
+            );
+        }
+
+        let has_introspection_fields = fields
+            .iter()
+            .find(|field| {
+                matches!(
+                    field.field.name.as_str(),
+                    "__type" | "__schema" | "__typename"
+                )
+            })
+            .map(|field| &field.field);
+        if let Some(field) = has_introspection_fields {
+            diagnostics.push(
+                field.location(),
+                executable::BuildError::SubscriptionUsesIntrospection {
+                    name: operation.name.clone(),
+                    field: field.name.clone(),
+                },
+            );
+        }
+    }
 }
 
 pub(crate) fn validate_operation(
@@ -25,49 +71,6 @@ pub(crate) fn validate_operation(
 
     let schema = db.schema();
     let against_type = schema.root_operation(operation.operation_type);
-
-    let named_fragments = db.ast_named_fragments(file_id);
-    let q = name!("Query");
-
-    if operation.operation_type == ast::OperationType::Subscription {
-        let fields = super::selection::operation_fields(
-            &named_fragments,
-            against_type.unwrap_or(&q),
-            &operation.selection_set,
-        );
-
-        if fields.len() > 1 {
-            diagnostics.push(ValidationError::new(
-                operation.location(),
-                DiagnosticData::SingleRootField {
-                    name: operation.name.clone(),
-                    fields: fields
-                        .iter()
-                        .map(|field| field.field.name.clone())
-                        .collect(),
-                },
-            ));
-        }
-
-        let has_introspection_fields = fields
-            .iter()
-            .find(|field| {
-                matches!(
-                    field.field.name.as_str(),
-                    "__type" | "__schema" | "__typename"
-                )
-            })
-            .map(|field| field.field);
-        if let Some(field) = has_introspection_fields {
-            diagnostics.push(ValidationError::new(
-                field.location(),
-                DiagnosticData::IntrospectionField {
-                    name: operation.name.clone(),
-                    field: field.name.clone(),
-                },
-            ));
-        }
-    }
 
     diagnostics.extend(super::directive::validate_directives(
         db,

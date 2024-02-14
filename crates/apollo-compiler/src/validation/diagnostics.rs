@@ -2,7 +2,6 @@ use crate::ast;
 use crate::ast::DirectiveLocation;
 use crate::ast::Name;
 use crate::ast::Type;
-use crate::ast::Value;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
@@ -50,14 +49,6 @@ pub(crate) enum DiagnosticData {
         name: Name,
         original_definition: Option<NodeLocation>,
         redefined_definition: Option<NodeLocation>,
-    },
-    #[error(
-        "{} can only have one root field",
-        subscription_name_or_anonymous(name)
-    )]
-    SingleRootField {
-        name: Option<Name>,
-        fields: Vec<Name>,
     },
     #[error("the argument `{name}` is not supported by `{coordinate}`")]
     UndefinedArgument {
@@ -213,50 +204,10 @@ pub(crate) enum DiagnosticData {
         name: Name,
         original_application: Option<NodeLocation>,
     },
-    #[error(
-        "{} can not have an introspection field as a root field",
-        subscription_name_or_anonymous(name)
-    )]
-    IntrospectionField {
-        /// Name of the operation
-        name: Option<Name>,
-        /// Name of the field
-        field: Name,
-    },
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
         coordinate: TypeAttributeCoordinate,
         describe_type: &'static str,
-    },
-    #[error("operation must not select different types using the same field name `{field}`")]
-    ConflictingFieldType {
-        /// Name of the non-unique field.
-        field: Name,
-        original_selection: Option<NodeLocation>,
-        original_type: Type,
-        redefined_selection: Option<NodeLocation>,
-        redefined_type: Type,
-    },
-    #[error(
-        "operation must not provide conflicting field arguments for the same field name `{field}`"
-    )]
-    ConflictingFieldArgument {
-        /// Name of the non-unique field.
-        field: Name,
-        argument: Name,
-        original_selection: Option<NodeLocation>,
-        original_value: Option<Value>,
-        redefined_selection: Option<NodeLocation>,
-        redefined_value: Option<Value>,
-    },
-    #[error("operation must not select different fields to the same alias `{field}`")]
-    ConflictingFieldName {
-        /// Name of the non-unique field.
-        field: Name,
-        original_selection: Option<NodeLocation>,
-        original_name: Name,
-        redefined_selection: Option<NodeLocation>,
-        redefined_name: Name,
     },
     #[error(
         "{} must have a composite type in its type condition",
@@ -378,17 +329,6 @@ impl ValidationError {
                 );
                 report.with_help(format_args!(
                     "`{name}` must only be defined once in this argument list or input object definition."
-                ));
-            }
-            DiagnosticData::SingleRootField { fields, .. } => {
-                report.with_label_opt(
-                    self.location,
-                    format_args!("subscription with {} root fields", fields.len()),
-                );
-                report.with_help(format_args!(
-                    "There are {} root fields: {}. This is not allowed.",
-                    fields.len(),
-                    CommaSeparated(fields)
                 ));
             }
             DiagnosticData::UndefinedArgument {
@@ -645,12 +585,6 @@ impl ValidationError {
                     format_args!("directive `@{name}` called again here"),
                 );
             }
-            DiagnosticData::IntrospectionField { field, .. } => {
-                report.with_label_opt(
-                    self.location,
-                    format_args!("{field} is an introspection field"),
-                );
-            }
             DiagnosticData::MissingSubselection {
                 coordinate,
                 describe_type,
@@ -658,78 +592,6 @@ impl ValidationError {
                 report.with_label_opt(
                     self.location,
                     format_args!("{coordinate} is {describe_type} and must select fields"),
-                );
-            }
-            DiagnosticData::ConflictingFieldType {
-                field,
-                original_selection,
-                original_type,
-                redefined_selection,
-                redefined_type,
-            } => {
-                report.with_label_opt(
-                    *original_selection,
-                    format_args!("`{field}` has type `{original_type}` here"),
-                );
-                report.with_label_opt(
-                    *redefined_selection,
-                    format_args!("but the same field name has type `{redefined_type}` here"),
-                );
-            }
-            DiagnosticData::ConflictingFieldArgument {
-                field,
-                argument,
-                original_selection,
-                original_value,
-                redefined_selection,
-                redefined_value,
-            } => {
-                match (original_value, redefined_value) {
-                    (Some(_), Some(_)) => {
-                        report.with_label_opt(
-                            *original_selection,
-                            format_args!("field `{field}` provides one argument value here"),
-                        );
-                        report.with_label_opt(*redefined_selection, "but a different value here");
-                    }
-                    (Some(_), None) => {
-                        report.with_label_opt(
-                            *original_selection,
-                            format!("field `{field}` is selected with argument `{argument}` here",),
-                        );
-                        report.with_label_opt(
-                            *redefined_selection,
-                            format!("but argument `{argument}` is not provided here"),
-                        );
-                    }
-                    (None, Some(_)) => {
-                        report.with_label_opt(
-                            *redefined_selection,
-                            format!("field `{field}` is selected with argument `{argument}` here",),
-                        );
-                        report.with_label_opt(
-                            *original_selection,
-                            format!("but argument `{argument}` is not provided here"),
-                        );
-                    }
-                    (None, None) => unreachable!(),
-                }
-                report.with_help("Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.");
-            }
-            DiagnosticData::ConflictingFieldName {
-                field,
-                original_selection,
-                original_name,
-                redefined_selection,
-                redefined_name,
-            } => {
-                report.with_label_opt(
-                    *original_selection,
-                    format_args!("field `{field}` is selected from field `{original_name}` here"),
-                );
-                report.with_label_opt(
-                    *redefined_selection,
-                    format_args!("but the same field `{field}` is also selected from field `{redefined_name}` here"),
                 );
             }
             DiagnosticData::InvalidFragmentTarget { name: _, ty } => {
@@ -832,10 +694,11 @@ where
     }
 }
 
-struct NameOrAnon<'a, T> {
-    name: Option<&'a T>,
-    if_some_prefix: &'a str,
-    if_none: &'a str,
+/// Formatter that describes a name, or describes an anonymous element if there is no name.
+pub(crate) struct NameOrAnon<'a, T> {
+    pub name: Option<&'a T>,
+    pub if_some_prefix: &'a str,
+    pub if_none: &'a str,
 }
 impl<T> fmt::Display for NameOrAnon<'_, T>
 where
@@ -854,12 +717,5 @@ fn fragment_name_or_inline<T>(name: &'_ Option<T>) -> NameOrAnon<'_, T> {
         name: name.as_ref(),
         if_some_prefix: "fragment",
         if_none: "inline fragment",
-    }
-}
-fn subscription_name_or_anonymous<T>(name: &'_ Option<T>) -> NameOrAnon<'_, T> {
-    NameOrAnon {
-        name: name.as_ref(),
-        if_some_prefix: "subscription",
-        if_none: "anonymous subscription",
     }
 }
