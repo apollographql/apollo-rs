@@ -17,6 +17,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.7.6](https://crates.io/crates/apollo-parser/0.7.6) - 2024-02-14
+
+## Fixes
+- **optimize the most common lexer matches into lookup tables - [allancalix], [pull/814]**
+  Parsing large schema documents can be up to 18% faster, typical documents a few percent.
+- **fix infinite loops and crashes found through fuzzing - [goto-bus-stop], [pull/828]**
+  When using a token limit, it was possible to craft a document that would cause an infinite
+  loop, eventually leading to an out of memory crash. This is addressed along with several panics.
+
+## Maintenance
+- **reduce intermediate string allocations - [goto-bus-stop], [pull/820]**
+
+[allancalix]: https://github.com/allancalix
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/814]: https://github.com/apollographql/apollo-rs/pull/814
+[pull/820]: https://github.com/apollographql/apollo-rs/pull/820
+[pull/828]: https://github.com/apollographql/apollo-rs/pull/828
+
 # [0.7.5](https://crates.io/crates/apollo-parser/0.7.5) - 2023-12-18
 
 ## Fixes
@@ -26,7 +44,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **emit syntax errors for variables in constant values - [SimonSapin], [pull/777]**
   default values and type system directive arguments are considered constants
   and may not use `$foo` variable values.
-- **emit syntax errors for type condition without a type name [rishabh3112], [pull/781]**
+- **emit syntax errors for type condition without a type name - [rishabh3112], [pull/781]**
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [SimonSapin]: https://github.com/SimonSapin
