@@ -453,11 +453,12 @@ const FIELD_DEPTH_LIMIT: usize = 128;
 /// Implements the `FieldsInSetCanMerge()` validation.
 /// https://spec.graphql.org/draft/#sec-Field-Selection-Merging
 ///
-/// This uses the [validation algorithm described by Xing][0], which scales much better
-/// with larger selection sets that may have many overlapping fields, and with widespread
-/// use of fragments.
+/// This uses the [validation algorithm described by XING][0] ([archived][1]), which
+/// scales much better with larger selection sets that may have many overlapping fields,
+/// and with widespread use of fragments.
 ///
 /// [0]: https://tech.new-work.se/graphql-overlapping-fields-can-be-merged-fast-ea6e92e0a01
+/// [1]: https://web.archive.org/web/20240208084612/https://tech.new-work.se/graphql-overlapping-fields-can-be-merged-fast-ea6e92e0a01
 pub(crate) struct FieldsInSetCanMerge<'s, 'doc> {
     schema: &'s schema::Schema,
     document: &'doc executable::ExecutableDocument,
