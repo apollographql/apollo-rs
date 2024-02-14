@@ -1,0 +1,173 @@
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        40: SourceFile {
+            path: "0041_unquoted_string_for_custom_scalar.graphql",
+            source_text: "scalar Currency\n\ntype Query {\n  convertToUSD(amount: Int!, currency: Currency!): Int!\n}\n\nquery {\n  convertToUSD(amount: 100, currency: EUR)\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Currency": Scalar(
+            0..15 @40 ScalarType {
+                description: None,
+                name: "Currency",
+                directives: [],
+            },
+        ),
+        "Query": Object(
+            17..87 @40 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "convertToUSD": Component {
+                        origin: Definition,
+                        node: 32..85 @40 FieldDefinition {
+                            description: None,
+                            name: "convertToUSD",
+                            arguments: [
+                                45..57 @40 InputValueDefinition {
+                                    description: None,
+                                    name: "amount",
+                                    ty: 53..57 @40 NonNullNamed(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                                59..78 @40 InputValueDefinition {
+                                    description: None,
+                                    name: "currency",
+                                    ty: 69..78 @40 NonNullNamed(
+                                        "Currency",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: NonNullNamed(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        40: SourceFile {
+            path: "0041_unquoted_string_for_custom_scalar.graphql",
+            source_text: "scalar Currency\n\ntype Query {\n  convertToUSD(amount: Int!, currency: Currency!): Int!\n}\n\nquery {\n  convertToUSD(amount: 100, currency: EUR)\n}\n",
+        },
+    },
+    anonymous_operation: Some(
+        89..141 @40 Operation {
+            operation_type: Query,
+            name: None,
+            variables: [],
+            directives: [],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        99..139 @40 Field {
+                            definition: 32..85 @40 FieldDefinition {
+                                description: None,
+                                name: "convertToUSD",
+                                arguments: [
+                                    45..57 @40 InputValueDefinition {
+                                        description: None,
+                                        name: "amount",
+                                        ty: 53..57 @40 NonNullNamed(
+                                            "Int",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                    59..78 @40 InputValueDefinition {
+                                        description: None,
+                                        name: "currency",
+                                        ty: 69..78 @40 NonNullNamed(
+                                            "Currency",
+                                        ),
+                                        default_value: None,
+                                        directives: [],
+                                    },
+                                ],
+                                ty: NonNullNamed(
+                                    "Int",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "convertToUSD",
+                            arguments: [
+                                112..123 @40 Argument {
+                                    name: "amount",
+                                    value: 120..123 @40 Int(
+                                        100,
+                                    ),
+                                },
+                                125..138 @40 Argument {
+                                    name: "currency",
+                                    value: 135..138 @40 Enum(
+                                        "EUR",
+                                    ),
+                                },
+                            ],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Int",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    ),
+    named_operations: {},
+    fragments: {},
+}
