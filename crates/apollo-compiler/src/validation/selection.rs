@@ -70,6 +70,29 @@ fn is_composite(ty: &schema::ExtendedType) -> bool {
     matches!(ty, Object(_) | Interface(_) | Union(_))
 }
 
+/// A temporary index for frequent argument lookups by name, using a hash map if there are many
+/// arguments.
+enum ArgumentLookup<'a> {
+    Map(HashMap<&'a ast::Name, &'a Node<ast::Argument>>),
+    List(&'a [Node<ast::Argument>]),
+}
+impl<'a> ArgumentLookup<'a> {
+    fn new(list: &'a [Node<ast::Argument>]) -> Self {
+        if list.len() > 20 {
+            Self::Map(list.iter().map(|arg| (&arg.name, arg)).collect())
+        } else {
+            Self::List(list)
+        }
+    }
+
+    fn by_name(&self, name: &ast::Name) -> Option<&'a Node<ast::Argument>> {
+        match self {
+            Self::Map(map) => map.get(name).copied(),
+            Self::List(list) => list.iter().find(|arg| arg.name == *name),
+        }
+    }
+}
+
 /// Check if two field selections from the overlapping types are the same, so the fields can be merged.
 fn same_name_and_arguments(
     field_a: FieldSelection<'_>,
@@ -109,27 +132,6 @@ fn same_name_and_arguments(
                 conflicting_value: redefined_arg.map(|arg| (*arg.value).clone()),
             }
         };
-
-    enum ArgumentLookup<'a> {
-        Indexed(HashMap<&'a ast::Name, &'a Node<ast::Argument>>),
-        List(&'a [Node<ast::Argument>]),
-    }
-    impl<'a> ArgumentLookup<'a> {
-        fn new(list: &'a [Node<ast::Argument>]) -> Self {
-            if list.len() > 20 {
-                Self::Indexed(list.iter().map(|arg| (&arg.name, arg)).collect())
-            } else {
-                Self::List(list)
-            }
-        }
-
-        fn by_name(&self, name: &ast::Name) -> Option<&'a Node<ast::Argument>> {
-            match self {
-                Self::Indexed(map) => map.get(name).copied(),
-                Self::List(list) => list.iter().find(|arg| arg.name == *name),
-            }
-        }
-    }
 
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
     let self_args = ArgumentLookup::new(&field_a.field.arguments);
