@@ -223,11 +223,7 @@ fn validate_executable_inner(
         db, file_id, has_schema,
     ));
     for def in db.ast_named_fragments(file_id).values() {
-        diagnostics.extend(super::fragment::validate_fragment_used(
-            db,
-            def.clone(),
-            file_id,
-        ));
+        diagnostics.extend(super::fragment::validate_fragment_used(db, def, file_id));
     }
 
     diagnostics

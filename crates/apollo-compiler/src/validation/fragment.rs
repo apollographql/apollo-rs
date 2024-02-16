@@ -109,7 +109,7 @@ pub(crate) fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     against_type: Option<&ast::NamedType>,
-    inline: Node<ast::InlineFragment>,
+    inline: &Node<ast::InlineFragment>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -162,7 +162,7 @@ pub(crate) fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     against_type: Option<&ast::NamedType>,
-    spread: Node<ast::FragmentSpread>,
+    spread: &Node<ast::FragmentSpread>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -186,12 +186,7 @@ pub(crate) fn validate_fragment_spread(
                     &ast::Selection::FragmentSpread(spread.clone()),
                 ));
             }
-            diagnostics.extend(validate_fragment_definition(
-                db,
-                file_id,
-                def.clone(),
-                context,
-            ));
+            diagnostics.extend(validate_fragment_definition(db, file_id, def, context));
         }
         None => {
             diagnostics.push(ValidationError::new(
@@ -209,7 +204,7 @@ pub(crate) fn validate_fragment_spread(
 pub(crate) fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-    fragment: Node<ast::FragmentDefinition>,
+    fragment: &Node<ast::FragmentDefinition>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -236,7 +231,7 @@ pub(crate) fn validate_fragment_definition(
         false
     };
 
-    let fragment_cycles_diagnostics = validate_fragment_cycles(db, file_id, &fragment);
+    let fragment_cycles_diagnostics = validate_fragment_cycles(db, file_id, fragment);
     let has_cycles = !fragment_cycles_diagnostics.is_empty();
     diagnostics.extend(fragment_cycles_diagnostics);
 
@@ -379,7 +374,7 @@ pub(crate) fn validate_fragment_type_condition(
 
 pub(crate) fn validate_fragment_used(
     db: &dyn ValidationDatabase,
-    fragment: Node<ast::FragmentDefinition>,
+    fragment: &Node<ast::FragmentDefinition>,
     file_id: FileId,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();

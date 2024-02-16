@@ -174,7 +174,7 @@ fn variables_in_directives(
 pub(crate) fn validate_unused_variables(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-    operation: Node<ast::OperationDefinition>,
+    operation: &Node<ast::OperationDefinition>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
@@ -237,7 +237,7 @@ pub(crate) fn validate_unused_variables(
 }
 
 pub(crate) fn validate_variable_usage(
-    var_usage: Node<ast::InputValueDefinition>,
+    var_usage: &Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
     argument: &Node<ast::Argument>,
 ) -> Result<(), ValidationError> {
@@ -246,7 +246,7 @@ pub(crate) fn validate_variable_usage(
         // variable_name defined within operation.
         let var_def = var_defs.iter().find(|v| v.name == *var_name);
         if let Some(var_def) = var_def {
-            let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
+            let is_allowed = is_variable_usage_allowed(var_def, var_usage);
             if !is_allowed {
                 return Err(ValidationError::new(
                     argument.location(),

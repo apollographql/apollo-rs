@@ -573,7 +573,7 @@ pub(crate) fn validate_selections(
                 db,
                 file_id,
                 against_type,
-                field.clone(),
+                field,
                 context.clone(),
             )),
             ast::Selection::FragmentSpread(fragment) => {
@@ -581,7 +581,7 @@ pub(crate) fn validate_selections(
                     db,
                     file_id,
                     against_type,
-                    fragment.clone(),
+                    fragment,
                     context.clone(),
                 ))
             }
@@ -590,7 +590,7 @@ pub(crate) fn validate_selections(
                     db,
                     file_id,
                     against_type,
-                    inline.clone(),
+                    inline,
                     context.clone(),
                 ))
             }

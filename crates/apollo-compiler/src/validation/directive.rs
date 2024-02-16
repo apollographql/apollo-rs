@@ -134,7 +134,7 @@ impl FindRecursiveDirective<'_> {
 
 pub(crate) fn validate_directive_definition(
     db: &dyn ValidationDatabase,
-    def: Node<ast::DirectiveDefinition>,
+    def: &Node<ast::DirectiveDefinition>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
@@ -150,7 +150,7 @@ pub(crate) fn validate_directive_definition(
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    match FindRecursiveDirective::check(&db.schema(), &def) {
+    match FindRecursiveDirective::check(&db.schema(), def) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
             diagnostics.push(ValidationError::new(
@@ -179,10 +179,7 @@ pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec
     for file_id in db.type_definition_files() {
         for def in &db.ast(file_id).definitions {
             if let ast::Definition::DirectiveDefinition(directive_definition) = def {
-                diagnostics.extend(validate_directive_definition(
-                    db,
-                    directive_definition.clone(),
-                ));
+                diagnostics.extend(validate_directive_definition(db, directive_definition));
             }
         }
     }
@@ -249,19 +246,15 @@ pub(crate) fn validate_directives<'dir>(
                 let input_value = directive_definition
                     .arguments
                     .iter()
-                    .find(|val| val.name == argument.name)
-                    .cloned();
+                    .find(|val| val.name == argument.name);
 
                 // @b(a: true)
                 if let Some(input_value) = input_value {
                     // TODO(@goto-bus-stop) do we really need value validation and variable
                     // validation separately?
-                    if let Some(diag) = super::variable::validate_variable_usage(
-                        input_value.clone(),
-                        var_defs,
-                        argument,
-                    )
-                    .err()
+                    if let Some(diag) =
+                        super::variable::validate_variable_usage(input_value, var_defs, argument)
+                            .err()
                     {
                         diagnostics.push(diag)
                     } else {

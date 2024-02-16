@@ -10,7 +10,7 @@ pub(crate) fn validate_field(
     file_id: FileId,
     // May be None if a parent selection was invalid
     against_type: Option<&ast::NamedType>,
-    field: Node<ast::Field>,
+    field: &Node<ast::Field>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     // First do all the validation that we can without knowing the type of the field.
@@ -38,11 +38,10 @@ pub(crate) fn validate_field(
             let arg_definition = field_definition
                 .arguments
                 .iter()
-                .find(|val| val.name == argument.name)
-                .cloned();
+                .find(|val| val.name == argument.name);
             if let Some(arg_definition) = arg_definition {
                 if let Some(diag) = super::variable::validate_variable_usage(
-                    arg_definition.clone(),
+                    arg_definition,
                     context.variables,
                     argument,
                 )
@@ -104,7 +103,7 @@ pub(crate) fn validate_field(
             }
         }
 
-        match validate_leaf_field_selection(db, field.clone(), &field_definition.ty) {
+        match validate_leaf_field_selection(db, field, &field_definition.ty) {
             Err(diag) => diagnostics.push(diag),
             Ok(_) => diagnostics.extend(super::selection::validate_selection_set(
                 db,
@@ -181,7 +180,7 @@ pub(crate) fn validate_field_definitions(
 
 pub(crate) fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
-    field: Node<ast::Field>,
+    field: &Node<ast::Field>,
     field_type: &ast::Type,
 ) -> Result<(), ValidationError> {
     let schema = db.schema();

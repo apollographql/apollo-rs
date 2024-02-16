@@ -59,7 +59,7 @@ pub(crate) fn validate_subscription(
 pub(crate) fn validate_operation(
     db: &dyn ValidationDatabase,
     file_id: FileId,
-    operation: Node<ast::OperationDefinition>,
+    operation: &Node<ast::OperationDefinition>,
     has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
@@ -85,9 +85,7 @@ pub(crate) fn validate_operation(
     ));
 
     diagnostics.extend(super::variable::validate_unused_variables(
-        db,
-        file_id,
-        operation.clone(),
+        db, file_id, operation,
     ));
     diagnostics.extend(super::selection::validate_selection_set(
         db,
@@ -110,12 +108,7 @@ pub(crate) fn validate_operation_definitions(
 
     for definition in &document.definitions {
         if let ast::Definition::OperationDefinition(operation) = definition {
-            diagnostics.extend(validate_operation(
-                db,
-                file_id,
-                operation.clone(),
-                has_schema,
-            ));
+            diagnostics.extend(validate_operation(db, file_id, operation, has_schema));
         }
     }
 
