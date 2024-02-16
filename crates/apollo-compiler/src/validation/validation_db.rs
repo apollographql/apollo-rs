@@ -7,7 +7,6 @@ use crate::validation::object::validate_object_type_definitions;
 use crate::validation::scalar::validate_scalar_definitions;
 use crate::validation::schema::validate_schema_definition;
 use crate::validation::union_::validate_union_definitions;
-use crate::validation::FileId;
 use crate::{ast, name, Node, ReprDatabase};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -204,13 +203,12 @@ pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<Validatio
 
 fn validate_executable_inner(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(super::operation::validate_operation_definitions(
-        db, file_id, has_schema,
+        db, has_schema,
     ));
     for def in db.ast_named_fragments().values() {
         diagnostics.extend(super::fragment::validate_fragment_used(db, def));
@@ -219,16 +217,10 @@ fn validate_executable_inner(
     diagnostics
 }
 
-pub(crate) fn validate_standalone_executable(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ValidationError> {
-    validate_executable_inner(db, file_id, false)
+pub(crate) fn validate_standalone_executable(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+    validate_executable_inner(db, false)
 }
 
-pub(crate) fn validate_executable(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ValidationError> {
-    validate_executable_inner(db, file_id, true)
+pub(crate) fn validate_executable(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+    validate_executable_inner(db, true)
 }

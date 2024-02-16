@@ -3,7 +3,7 @@ use crate::executable::BuildError;
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
-use crate::validation::{FileId, ValidationDatabase};
+use crate::validation::ValidationDatabase;
 use crate::{ast, executable, schema, Node};
 use apollo_parser::LimitTracker;
 use indexmap::IndexMap;
@@ -540,7 +540,6 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
 
 pub(crate) fn validate_selection_set(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     selection_set: &[ast::Selection],
     context: OperationValidationConfig<'_>,
@@ -549,7 +548,6 @@ pub(crate) fn validate_selection_set(
 
     diagnostics.extend(validate_selections(
         db,
-        file_id,
         against_type,
         selection_set,
         context,
@@ -560,7 +558,6 @@ pub(crate) fn validate_selection_set(
 
 pub(crate) fn validate_selections(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     selection_set: &[ast::Selection],
     context: OperationValidationConfig<'_>,
@@ -571,7 +568,6 @@ pub(crate) fn validate_selections(
         match selection {
             ast::Selection::Field(field) => diagnostics.extend(super::field::validate_field(
                 db,
-                file_id,
                 against_type,
                 field,
                 context.clone(),
@@ -579,7 +575,6 @@ pub(crate) fn validate_selections(
             ast::Selection::FragmentSpread(fragment) => {
                 diagnostics.extend(super::fragment::validate_fragment_spread(
                     db,
-                    file_id,
                     against_type,
                     fragment,
                     context.clone(),
@@ -588,7 +583,6 @@ pub(crate) fn validate_selections(
             ast::Selection::InlineFragment(inline) => {
                 diagnostics.extend(super::fragment::validate_inline_fragment(
                     db,
-                    file_id,
                     against_type,
                     inline,
                     context.clone(),

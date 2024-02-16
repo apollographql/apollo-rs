@@ -2,7 +2,6 @@ use crate::database::ReprDatabase;
 use crate::database::RootDatabase;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
 use crate::Schema;
 use std::sync::Arc;
 
@@ -13,10 +12,7 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &Schema) {
 /// TODO: replace this with validation based on `Schema` without a database
 fn compiler_validation(errors: &mut DiagnosticList, schema: &Schema) {
     let mut db = RootDatabase::default();
-    let mut ids = Vec::new();
     db.set_schema(Arc::new(schema.clone()));
-    let ast_id = FileId::HACK_TMP;
-    ids.push(ast_id);
     let mut ast = crate::ast::Document::new();
     ast.definitions.extend(schema.to_ast());
     db.set_schema_ast(Arc::new(ast));

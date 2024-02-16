@@ -3,7 +3,7 @@ use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::operation::OperationValidationConfig;
-use crate::validation::{CycleError, FileId, NodeLocation, RecursionGuard, RecursionStack};
+use crate::validation::{CycleError, NodeLocation, RecursionGuard, RecursionStack};
 use crate::Node;
 use crate::ValidationDatabase;
 use std::borrow::Cow;
@@ -106,7 +106,6 @@ fn validate_fragment_spread_type(
 
 pub(crate) fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     inline: &Node<ast::InlineFragment>,
     context: OperationValidationConfig<'_>,
@@ -147,7 +146,6 @@ pub(crate) fn validate_inline_fragment(
         }
         diagnostics.extend(super::selection::validate_selection_set(
             db,
-            file_id,
             inline.type_condition.as_ref().or(against_type),
             &inline.selection_set,
             context,
@@ -159,7 +157,6 @@ pub(crate) fn validate_inline_fragment(
 
 pub(crate) fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     spread: &Node<ast::FragmentSpread>,
     context: OperationValidationConfig<'_>,
@@ -185,7 +182,7 @@ pub(crate) fn validate_fragment_spread(
                     &ast::Selection::FragmentSpread(spread.clone()),
                 ));
             }
-            diagnostics.extend(validate_fragment_definition(db, file_id, def, context));
+            diagnostics.extend(validate_fragment_definition(db, def, context));
         }
         None => {
             diagnostics.push(ValidationError::new(
@@ -202,7 +199,6 @@ pub(crate) fn validate_fragment_spread(
 
 pub(crate) fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     fragment: &Node<ast::FragmentDefinition>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
@@ -245,7 +241,6 @@ pub(crate) fn validate_fragment_definition(
 
         diagnostics.extend(super::selection::validate_selection_set(
             db,
-            file_id,
             type_condition,
             &fragment.selection_set,
             context,

@@ -1,13 +1,12 @@
 use crate::coordinate::{FieldArgumentCoordinate, TypeAttributeCoordinate};
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::{FileId, ValidationDatabase};
+use crate::validation::ValidationDatabase;
 use crate::{ast, schema, Node};
 
 use super::operation::OperationValidationConfig;
 
 pub(crate) fn validate_field(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     // May be None if a parent selection was invalid
     against_type: Option<&ast::NamedType>,
     field: &Node<ast::Field>,
@@ -108,7 +107,6 @@ pub(crate) fn validate_field(
             Err(diag) => diagnostics.push(diag),
             Ok(_) => diagnostics.extend(super::selection::validate_selection_set(
                 db,
-                file_id,
                 Some(field_definition.ty.inner_named_type()),
                 &field.selection_set,
                 context,

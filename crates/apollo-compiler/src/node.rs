@@ -331,8 +331,6 @@ impl FileId {
     /// Passed to Ariadne to create a report without a location
     pub(crate) const NONE: Self = Self::const_new(-2);
 
-    pub(crate) const HACK_TMP: Self = Self::const_new(-3);
-
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {

@@ -1,6 +1,5 @@
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
 use crate::{ast, executable, Node, ValidationDatabase};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -58,7 +57,6 @@ pub(crate) fn validate_subscription(
 
 pub(crate) fn validate_operation(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     operation: &Node<ast::OperationDefinition>,
     has_schema: bool,
 ) -> Vec<ValidationError> {
@@ -93,7 +91,6 @@ pub(crate) fn validate_operation(
     diagnostics.extend(super::variable::validate_unused_variables(db, operation));
     diagnostics.extend(super::selection::validate_selection_set(
         db,
-        file_id,
         against_type,
         &operation.selection_set,
         config,
@@ -104,7 +101,6 @@ pub(crate) fn validate_operation(
 
 pub(crate) fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -112,7 +108,7 @@ pub(crate) fn validate_operation_definitions(
 
     for definition in &document.definitions {
         if let ast::Definition::OperationDefinition(operation) = definition {
-            diagnostics.extend(validate_operation(db, file_id, operation, has_schema));
+            diagnostics.extend(validate_operation(db, operation, has_schema));
         }
     }
 

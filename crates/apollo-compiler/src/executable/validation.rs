@@ -5,7 +5,6 @@ use crate::database::RootDatabase;
 use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Schema;
@@ -56,20 +55,17 @@ fn compiler_validation(
     document: &ExecutableDocument,
 ) {
     let mut db = RootDatabase::default();
-    let mut ids = Vec::new();
 
     if let Some(schema) = schema {
         db.set_schema(Arc::new(schema.clone()));
     }
 
-    let ast_id = FileId::HACK_TMP;
-    ids.push(ast_id);
     let ast = document.to_ast();
     db.set_executable_ast(Arc::new(ast));
     let diagnostics = if schema.is_some() {
-        crate::validation::validate_executable(&db, ast_id)
+        crate::validation::validate_executable(&db)
     } else {
-        crate::validation::validate_standalone_executable(&db, ast_id)
+        crate::validation::validate_standalone_executable(&db)
     };
     for diagnostic in diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
@@ -82,17 +78,13 @@ pub(crate) fn validate_field_set(
     field_set: &FieldSet,
 ) {
     let mut db = RootDatabase::default();
-    let mut ids = Vec::new();
 
     db.set_schema(Arc::new(schema.as_ref().clone()));
 
-    let ast_id = FileId::HACK_TMP;
-    ids.push(ast_id);
     let ast = ast::Document::new();
     db.set_executable_ast(Arc::new(ast));
     let diagnostics = crate::validation::selection::validate_selection_set(
         &db,
-        ast_id,
         Some(&field_set.selection_set.ty),
         &field_set.selection_set.to_ast(),
         crate::validation::operation::OperationValidationConfig {

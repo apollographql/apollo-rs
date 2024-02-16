@@ -288,7 +288,7 @@ impl ariadne::Cache<FileId> for Cache<'_> {
         }
         if let Some(source_file) = self.0.get(file_id) {
             Ok(source_file.ariadne())
-        } else if *file_id == FileId::NONE || *file_id == FileId::HACK_TMP {
+        } else if *file_id == FileId::NONE {
             static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
             Ok(EMPTY.get_or_init(|| ariadne::Source::from(String::new())))
         } else {
