@@ -1,39 +1,33 @@
 use crate::ast;
 use crate::schema;
-
 use crate::validation::diagnostics::DiagnosticData;
-use crate::validation::diagnostics::ValidationError;
+use crate::validation::DiagnosticList;
 
-pub(crate) fn validate_schema_definition(schema: &crate::Schema) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+pub(crate) fn validate_schema_definition(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
     // A GraphQL schema must have a Query root operation.
     if schema.schema_definition.query.is_none() {
         let location = schema.schema_definition.location();
-        diagnostics.push(ValidationError::new(
-            location,
-            DiagnosticData::QueryRootOperationType,
-        ));
+        diagnostics.push(location, DiagnosticData::QueryRootOperationType);
     }
-    diagnostics.extend(validate_root_operation_definitions(schema));
+    validate_root_operation_definitions(diagnostics, schema);
 
-    diagnostics.extend(super::directive::validate_directives(
+    super::directive::validate_directives(
+        diagnostics,
         Some(schema),
         schema.schema_definition.directives.iter_ast(),
         ast::DirectiveLocation::Schema,
         // schemas don't use variables
         Default::default(),
-    ));
-
-    diagnostics
+    );
 }
 
 // All root operations in a schema definition must be unique.
 //
 // Return a Unique Operation Definition error in case of a duplicate name.
-pub(crate) fn validate_root_operation_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+pub(crate) fn validate_root_operation_definitions(
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+) {
     for op in [
         &schema.schema_definition.query,
         &schema.schema_definition.mutation,
@@ -47,25 +41,21 @@ pub(crate) fn validate_root_operation_definitions(schema: &crate::Schema) -> Vec
         let type_def = schema.types.get(name.as_ref());
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
-                let op_loc = name.location();
-                diagnostics.push(ValidationError::new(
-                    op_loc,
+                diagnostics.push(
+                    name.location(),
                     DiagnosticData::RootOperationObjectType {
                         name: name.name.clone(),
                         describe_type: type_def.describe(),
                     },
-                ));
+                );
             }
         } else {
-            let op_loc = name.location();
-            diagnostics.push(ValidationError::new(
-                op_loc,
+            diagnostics.push(
+                name.location(),
                 DiagnosticData::UndefinedDefinition {
                     name: name.name.clone(),
                 },
-            ));
+            );
         }
     }
-
-    diagnostics
 }

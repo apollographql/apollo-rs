@@ -1,24 +1,22 @@
 use crate::schema::{EnumType, ExtendedType};
-use crate::validation::diagnostics::ValidationError;
+use crate::validation::DiagnosticList;
 use crate::{ast, Node};
 
-pub(crate) fn validate_enum_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
     for ty in schema.types.values() {
         if let ExtendedType::Enum(enum_) = ty {
-            diagnostics.extend(validate_enum_definition(schema, enum_));
+            validate_enum_definition(diagnostics, schema, enum_);
         }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_enum_definition(
+    diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     enum_def: &EnumType,
-) -> Vec<ValidationError> {
-    let mut diagnostics = super::directive::validate_directives(
+) {
+    super::directive::validate_directives(
+        diagnostics,
         Some(schema),
         enum_def.directives.iter_ast(),
         ast::DirectiveLocation::Enum,
@@ -27,17 +25,17 @@ pub(crate) fn validate_enum_definition(
     );
 
     for enum_val in enum_def.values.values() {
-        diagnostics.extend(validate_enum_value(schema, enum_val));
+        validate_enum_value(diagnostics, schema, enum_val);
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_enum_value(
+    diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     enum_val: &Node<ast::EnumValueDefinition>,
-) -> Vec<ValidationError> {
+) {
     super::directive::validate_directives(
+        diagnostics,
         Some(schema),
         enum_val.directives.iter(),
         ast::DirectiveLocation::EnumValue,

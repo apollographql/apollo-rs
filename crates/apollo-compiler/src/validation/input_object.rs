@@ -1,7 +1,7 @@
 use crate::ast;
 use crate::schema::{ExtendedType, InputObjectType};
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::{CycleError, RecursionGuard, RecursionStack};
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::{CycleError, DiagnosticList, RecursionGuard, RecursionStack};
 use crate::Node;
 use std::collections::HashMap;
 
@@ -60,23 +60,24 @@ impl FindRecursiveInputValue<'_> {
     }
 }
 
-pub(crate) fn validate_input_object_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+pub(crate) fn validate_input_object_definitions(
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+) {
     for ty in schema.types.values() {
         if let ExtendedType::InputObject(input_object) = ty {
-            diagnostics.extend(validate_input_object_definition(schema, input_object));
+            validate_input_object_definition(diagnostics, schema, input_object);
         }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_input_object_definition(
+    diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     input_object: &Node<InputObjectType>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = super::directive::validate_directives(
+) {
+    super::directive::validate_directives(
+        diagnostics,
         Some(schema),
         input_object.directives.iter_ast(),
         ast::DirectiveLocation::InputObject,
@@ -86,21 +87,21 @@ pub(crate) fn validate_input_object_definition(
 
     match FindRecursiveInputValue::check(schema, input_object) {
         Ok(_) => {}
-        Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
+        Err(CycleError::Recursed(trace)) => diagnostics.push(
             input_object.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
                 name: input_object.name.clone(),
                 trace,
             },
-        )),
+        ),
         Err(CycleError::Limit(_)) => {
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 input_object.location(),
                 DiagnosticData::DeeplyNestedType {
                     name: input_object.name.clone(),
                     describe_type: "input object",
                 },
-            ));
+            );
         }
     }
 
@@ -112,22 +113,21 @@ pub(crate) fn validate_input_object_definition(
         .values()
         .map(|c| c.node.clone())
         .collect();
-    diagnostics.extend(validate_input_value_definitions(
+    validate_input_value_definitions(
+        diagnostics,
         schema,
         &fields,
         ast::DirectiveLocation::InputFieldDefinition,
-    ));
-
-    diagnostics
+    );
 }
 
 pub(crate) fn validate_argument_definitions(
+    diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
-) -> Vec<ValidationError> {
-    let mut diagnostics =
-        validate_input_value_definitions(schema, input_values, directive_location);
+) {
+    validate_input_value_definitions(diagnostics, schema, input_values, directive_location);
 
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
@@ -136,60 +136,56 @@ pub(crate) fn validate_argument_definitions(
             let (original_definition, redefined_definition) =
                 (prev_value.location(), input_value.location());
 
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 original_definition,
                 DiagnosticData::UniqueInputValue {
                     name: name.clone(),
                     original_definition,
                     redefined_definition,
                 },
-            ));
+            );
         } else {
             seen.insert(name.clone(), input_value);
         }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_input_value_definitions(
+    diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+) {
     for input_value in input_values {
-        diagnostics.extend(super::directive::validate_directives(
+        super::directive::validate_directives(
+            diagnostics,
             Some(schema),
             input_value.directives.iter(),
             directive_location,
             Default::default(), // No variables in an input value definition
-        ));
+        );
         // Input values must only contain input types.
         let loc = input_value.location();
         if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
             if !field_ty.is_input_type() {
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     loc,
                     DiagnosticData::InputType {
                         name: input_value.name.clone(),
                         describe_type: field_ty.describe(),
                         type_location: input_value.ty.location(),
                     },
-                ));
+                );
             }
         } else {
             let named_type = input_value.ty.inner_named_type();
             let loc = named_type.location();
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 loc,
                 DiagnosticData::UndefinedDefinition {
                     name: named_type.clone(),
                 },
-            ));
+            );
         }
     }
-
-    diagnostics
 }

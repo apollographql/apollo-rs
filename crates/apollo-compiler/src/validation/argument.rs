@@ -1,29 +1,28 @@
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::{DiagnosticList, NodeLocation};
+use crate::{ast, Node};
 use std::collections::HashMap;
 
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::NodeLocation;
-use crate::{ast, Node};
-
-pub(crate) fn validate_arguments(arguments: &[Node<ast::Argument>]) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
+pub(crate) fn validate_arguments(
+    diagnostics: &mut DiagnosticList,
+    arguments: &[Node<ast::Argument>],
+) {
     let mut seen = HashMap::<_, Option<NodeLocation>>::new();
 
     for argument in arguments {
         let name = &argument.name;
         if let Some(&original_definition) = seen.get(name) {
             let redefined_definition = argument.location();
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 redefined_definition,
                 DiagnosticData::UniqueArgument {
                     name: name.clone(),
                     original_definition,
                     redefined_definition,
                 },
-            ));
+            );
         } else {
             seen.insert(name, argument.location());
         }
     }
-
-    diagnostics
 }

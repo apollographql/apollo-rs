@@ -3,7 +3,6 @@ use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable::BuildError;
 use crate::executable::SelectionSet;
-use crate::validation::diagnostics::ValidationError;
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
 use crate::ExecutableDocument;
@@ -542,36 +541,39 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
 }
 
 pub(crate) fn validate_selection_set(
+    diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
     context: OperationValidationConfig<'_>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-
+) {
     for selection in &selection_set.selections {
         match selection {
-            executable::Selection::Field(field) => diagnostics.extend(
-                super::field::validate_field(document, against_type, field, context.clone()),
+            executable::Selection::Field(field) => super::field::validate_field(
+                diagnostics,
+                document,
+                against_type,
+                field,
+                context.clone(),
             ),
             executable::Selection::FragmentSpread(fragment) => {
-                diagnostics.extend(super::fragment::validate_fragment_spread(
+                super::fragment::validate_fragment_spread(
+                    diagnostics,
                     document,
                     against_type,
                     fragment,
                     context.clone(),
-                ))
+                )
             }
             executable::Selection::InlineFragment(inline) => {
-                diagnostics.extend(super::fragment::validate_inline_fragment(
+                super::fragment::validate_inline_fragment(
+                    diagnostics,
                     document,
                     against_type,
                     inline,
                     context.clone(),
-                ))
+                )
             }
         }
     }
-
-    diagnostics
 }

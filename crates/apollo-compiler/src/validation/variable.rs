@@ -1,25 +1,27 @@
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::{NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack};
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::{
+    DiagnosticList, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
+};
 use crate::{ast, executable, ExecutableDocument, Node};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
 pub(crate) fn validate_variable_definitions(
+    diagnostics: &mut DiagnosticList,
     schema: Option<&crate::Schema>,
     variables: &[Node<ast::VariableDefinition>],
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+) {
     let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
-        diagnostics.extend(super::directive::validate_directives(
+        super::directive::validate_directives(
+            diagnostics,
             schema,
             variable.directives.iter(),
             ast::DirectiveLocation::VariableDefinition,
             // let's assume that variable definitions cannot reference other
             // variables and provide them as arguments to directives
             Default::default(),
-        ));
+        );
 
         if let Some(schema) = &schema {
             let ty = &variable.ty;
@@ -30,21 +32,21 @@ pub(crate) fn validate_variable_definitions(
                     // OK!
                 }
                 Some(type_definition) => {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         variable.location(),
                         DiagnosticData::VariableInputType {
                             name: variable.name.clone(),
                             describe_type: type_definition.describe(),
                             type_location: ty.location(),
                         },
-                    ));
+                    );
                 }
-                None => diagnostics.push(ValidationError::new(
+                None => diagnostics.push(
                     variable.location(),
                     DiagnosticData::UndefinedDefinition {
                         name: ty.inner_named_type().clone(),
                     },
-                )),
+                ),
             }
         }
 
@@ -52,34 +54,32 @@ pub(crate) fn validate_variable_definitions(
             Entry::Occupied(original) => {
                 let original_definition = original.get().location();
                 let redefined_definition = variable.location();
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     redefined_definition,
                     DiagnosticData::UniqueVariable {
                         name: variable.name.clone(),
                         original_definition,
                         redefined_definition,
                     },
-                ));
+                );
             }
             Entry::Vacant(entry) => {
                 entry.insert(variable);
             }
         }
     }
-
-    diagnostics
 }
 
-fn walk_selections(
-    document: &ExecutableDocument,
-    selections: &executable::SelectionSet,
-    mut f: impl FnMut(&executable::Selection),
+fn walk_selections<'doc>(
+    document: &'doc ExecutableDocument,
+    selections: &'doc executable::SelectionSet,
+    mut f: impl FnMut(&'doc executable::Selection),
 ) -> Result<(), RecursionLimitError> {
-    fn walk_selections_inner<'ast, 'guard>(
-        document: &ExecutableDocument,
-        selection_set: &'ast executable::SelectionSet,
+    fn walk_selections_inner<'doc, 'guard>(
+        document: &'doc ExecutableDocument,
+        selection_set: &'doc executable::SelectionSet,
         guard: &mut RecursionGuard<'guard>,
-        f: &mut dyn FnMut(&executable::Selection),
+        f: &mut dyn FnMut(&'doc executable::Selection),
     ) -> Result<(), RecursionLimitError> {
         for selection in &selection_set.selections {
             f(selection);
@@ -120,12 +120,12 @@ fn walk_selections(
     result
 }
 
-fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '_ {
+fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &ast::Name> + '_ {
     let mut value_stack = vec![value];
     std::iter::from_fn(move || {
         while let Some(value) = value_stack.pop() {
             match value {
-                ast::Value::Variable(variable) => return Some(variable.clone()),
+                ast::Value::Variable(variable) => return Some(variable),
                 ast::Value::List(list) => value_stack.extend(list.iter().map(|value| &**value)),
                 ast::Value::Object(fields) => {
                     value_stack.extend(fields.iter().map(|(_, value)| &**value))
@@ -137,13 +137,13 @@ fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '
     })
 }
 
-fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = ast::Name> + '_ {
+fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = &ast::Name> + '_ {
     args.iter().flat_map(|arg| variables_in_value(&arg.value))
 }
 
 fn variables_in_directives(
     directives: &[Node<ast::Directive>],
-) -> impl Iterator<Item = ast::Name> + '_ {
+) -> impl Iterator<Item = &ast::Name> + '_ {
     directives
         .iter()
         .flat_map(|directive| variables_in_arguments(&directive.arguments))
@@ -156,16 +156,11 @@ fn variables_in_directives(
 //   a: field (arg: $var2)
 // }
 pub(crate) fn validate_unused_variables(
+    diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     operation: &executable::Operation,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
-    let defined_vars: HashSet<_> = operation
-        .variables
-        .iter()
-        .map(|var| var.name.clone())
-        .collect();
+) {
+    let defined_vars: HashSet<_> = operation.variables.iter().map(|var| &var.name).collect();
     let locations: HashMap<_, _> = operation
         .variables
         .iter()
@@ -176,7 +171,7 @@ pub(crate) fn validate_unused_variables(
             )
         })
         .collect();
-    let mut used_vars = HashSet::<ast::Name>::new();
+    let mut used_vars = HashSet::new();
     let walked = walk_selections(
         document,
         &operation.selection_set,
@@ -197,33 +192,26 @@ pub(crate) fn validate_unused_variables(
         },
     );
     if walked.is_err() {
-        diagnostics.push(ValidationError::new(
-            None,
-            DiagnosticData::RecursionError {},
-        ));
-        return diagnostics;
+        diagnostics.push(None, DiagnosticData::RecursionError {});
+        return;
     }
 
-    let unused_vars = defined_vars.difference(&used_vars);
-
-    diagnostics.extend(unused_vars.map(|unused_var| {
-        let loc = locations[unused_var];
-        ValidationError::new(
-            loc,
+    for &unused_var in defined_vars.difference(&used_vars) {
+        diagnostics.push(
+            locations[unused_var],
             DiagnosticData::UnusedVariable {
                 name: unused_var.clone(),
             },
         )
-    }));
-
-    diagnostics
+    }
 }
 
 pub(crate) fn validate_variable_usage(
+    diagnostics: &mut DiagnosticList,
     var_usage: &Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
     argument: &Node<ast::Argument>,
-) -> Result<(), ValidationError> {
+) -> Result<(), ()> {
     if let ast::Value::Variable(var_name) = &*argument.value {
         // Let var_def be the VariableDefinition named
         // variable_name defined within operation.
@@ -231,7 +219,7 @@ pub(crate) fn validate_variable_usage(
         if let Some(var_def) = var_def {
             let is_allowed = is_variable_usage_allowed(var_def, var_usage);
             if !is_allowed {
-                return Err(ValidationError::new(
+                diagnostics.push(
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
                         variable: var_def.name.clone(),
@@ -241,15 +229,17 @@ pub(crate) fn validate_variable_usage(
                         argument_type: (*var_usage.ty).clone(),
                         argument_location: argument.location(),
                     },
-                ));
+                );
+                return Err(());
             }
         } else {
-            return Err(ValidationError::new(
+            diagnostics.push(
                 argument.value.location(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.clone(),
                 },
-            ));
+            );
+            return Err(());
         }
     }
     // It's super confusing to produce a diagnostic here if either the

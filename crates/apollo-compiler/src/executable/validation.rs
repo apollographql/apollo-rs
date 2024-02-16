@@ -1,6 +1,7 @@
 use super::FieldSet;
+use crate::validation::fragment::validate_fragment_used;
+use crate::validation::operation::validate_operation_definitions;
 use crate::validation::selection::FieldsInSetCanMerge;
-use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
@@ -11,18 +12,15 @@ pub(crate) fn validate_executable_document(
     schema: &Schema,
     document: &ExecutableDocument,
 ) {
-    validate_with_or_without_schema(errors, document);
+    validate_with_or_without_schema(errors, Some(schema), document);
     validate_with_schema(errors, schema, document);
-    compiler_validation(errors, Some(schema), document);
-    // TODO
 }
 
 pub(crate) fn validate_standalone_executable(
     errors: &mut DiagnosticList,
     document: &ExecutableDocument,
 ) {
-    validate_with_or_without_schema(errors, document);
-    compiler_validation(errors, None, document);
+    validate_with_or_without_schema(errors, None, document);
 }
 
 fn validate_with_schema(
@@ -38,31 +36,24 @@ fn validate_with_schema(
 }
 
 pub(crate) fn validate_with_or_without_schema(
-    _errors: &mut DiagnosticList,
-    _document: &ExecutableDocument,
-) {
-    // TODO
-}
-
-/// TODO: replace this with validation based on `ExecutableDocument` without a database
-fn compiler_validation(
     errors: &mut DiagnosticList,
     schema: Option<&Schema>,
     document: &ExecutableDocument,
 ) {
-    let diagnostics = crate::validation::validate_executable(document, schema);
-    for diagnostic in diagnostics {
-        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
+    validate_operation_definitions(errors, schema, document);
+    for def in document.fragments.values() {
+        validate_fragment_used(errors, document, def);
     }
 }
 
 pub(crate) fn validate_field_set(
-    errors: &mut DiagnosticList,
+    diagnostics: &mut DiagnosticList,
     schema: &Valid<Schema>,
     field_set: &FieldSet,
 ) {
     let document = &ExecutableDocument::new(); // No fragment definitions
-    let diagnostics = crate::validation::selection::validate_selection_set(
+    crate::validation::selection::validate_selection_set(
+        diagnostics,
         document,
         Some((schema, &field_set.selection_set.ty)),
         &field_set.selection_set,
@@ -70,8 +61,5 @@ pub(crate) fn validate_field_set(
             schema: Some(schema),
             variables: &[],
         },
-    );
-    for diagnostic in diagnostics {
-        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
-    }
+    )
 }

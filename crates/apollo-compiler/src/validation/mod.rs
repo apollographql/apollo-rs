@@ -4,24 +4,22 @@
 #[cfg(doc)]
 use crate::{ExecutableDocument, Schema};
 
-mod argument;
-mod directive;
-mod enum_;
-mod field;
-mod fragment;
-mod input_object;
-mod interface;
-mod object;
-pub(crate) mod operation;
-mod scalar;
-mod schema;
-pub(crate) mod selection;
-mod union_;
-mod validation_db;
-mod value;
-mod variable;
-
+pub(crate) mod argument;
 pub(crate) mod diagnostics;
+pub(crate) mod directive;
+pub(crate) mod enum_;
+pub(crate) mod field;
+pub(crate) mod fragment;
+pub(crate) mod input_object;
+pub(crate) mod interface;
+pub(crate) mod object;
+pub(crate) mod operation;
+pub(crate) mod scalar;
+pub(crate) mod schema;
+pub(crate) mod selection;
+pub(crate) mod union_;
+pub(crate) mod value;
+pub(crate) mod variable;
 
 use crate::ast::Name;
 use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
@@ -33,7 +31,6 @@ use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
 use std::fmt;
 use std::sync::Arc;
-pub(crate) use validation_db::{validate_executable, validate_type_system};
 
 pub(crate) use crate::node::FileId;
 
@@ -204,7 +201,7 @@ pub(crate) enum Details {
     ExecutableBuildError(ExecutableBuildError),
     // TODO: Merge ValidationError into this enum
     #[error(transparent)]
-    CompilerDiagnostic(diagnostics::ValidationError),
+    CompilerDiagnostic(diagnostics::DiagnosticData),
     #[error("too much recursion")]
     RecursionLimitError,
 }
@@ -216,7 +213,7 @@ impl ToCliReport for DiagnosticData {
 
     fn report(&self, report: &mut CliReport) {
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
-            diagnostic.report(report);
+            diagnostic.report(self.location, report);
             return;
         }
 
@@ -626,6 +623,12 @@ impl From<SchemaBuildError> for Details {
 impl From<ExecutableBuildError> for Details {
     fn from(value: ExecutableBuildError) -> Self {
         Details::ExecutableBuildError(value)
+    }
+}
+
+impl From<diagnostics::DiagnosticData> for Details {
+    fn from(value: diagnostics::DiagnosticData) -> Self {
+        Details::CompilerDiagnostic(value)
     }
 }
 

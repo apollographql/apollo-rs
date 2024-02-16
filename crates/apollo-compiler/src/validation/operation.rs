@@ -1,4 +1,3 @@
-use crate::validation::diagnostics::ValidationError;
 use crate::validation::DiagnosticList;
 use crate::{ast, executable, ExecutableDocument, Node, Schema};
 
@@ -56,12 +55,11 @@ pub(crate) fn validate_subscription(
 }
 
 pub(crate) fn validate_operation(
+    diagnostics: &mut DiagnosticList,
     schema: Option<&Schema>,
     document: &ExecutableDocument,
     operation: &executable::Operation,
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-
+) {
     let config = OperationValidationConfig {
         schema,
         variables: &operation.variables,
@@ -75,39 +73,35 @@ pub(crate) fn validate_operation(
         None
     };
 
-    diagnostics.extend(super::directive::validate_directives(
+    super::directive::validate_directives(
+        diagnostics,
         schema,
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
-    ));
-    diagnostics.extend(super::variable::validate_variable_definitions(
+    );
+    super::variable::validate_variable_definitions(
+        diagnostics,
         config.schema,
         &operation.variables,
-    ));
+    );
 
-    diagnostics.extend(super::variable::validate_unused_variables(
-        document, operation,
-    ));
-    diagnostics.extend(super::selection::validate_selection_set(
+    super::variable::validate_unused_variables(diagnostics, document, operation);
+    super::selection::validate_selection_set(
+        diagnostics,
         document,
         against_type,
         &operation.selection_set,
         config,
-    ));
-
-    diagnostics
+    );
 }
 
 pub(crate) fn validate_operation_definitions(
+    diagnostics: &mut DiagnosticList,
     schema: Option<&Schema>,
     document: &ExecutableDocument,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+) {
     for operation in document.all_operations() {
-        diagnostics.extend(validate_operation(schema, document, operation));
+        validate_operation(diagnostics, schema, document, operation);
     }
-
-    diagnostics
 }

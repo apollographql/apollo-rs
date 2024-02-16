@@ -1,7 +1,8 @@
 use super::CycleError;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::DiagnosticList;
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node};
 use std::collections::{HashMap, HashSet};
@@ -132,16 +133,16 @@ impl FindRecursiveDirective<'_> {
 }
 
 pub(crate) fn validate_directive_definition(
+    diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     def: &Node<ast::DirectiveDefinition>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-
-    diagnostics.extend(super::input_object::validate_argument_definitions(
+) {
+    super::input_object::validate_argument_definitions(
+        diagnostics,
         schema,
         &def.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
-    ));
+    );
 
     let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
@@ -152,50 +153,46 @@ pub(crate) fn validate_directive_definition(
     match FindRecursiveDirective::check(schema, def) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 head_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
                     name: def.name.clone(),
                     trace,
                 },
-            ));
+            );
         }
-        Err(CycleError::Limit(_)) => diagnostics.push(ValidationError::new(
+        Err(CycleError::Limit(_)) => diagnostics.push(
             head_location,
             DiagnosticData::DeeplyNestedType {
                 name: def.name.clone(),
                 describe_type: "directive",
             },
-        )),
+        ),
     }
-
-    diagnostics
 }
 
-pub(crate) fn validate_directive_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+pub(crate) fn validate_directive_definitions(
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+) {
     for directive_definition in schema.directive_definitions.values() {
-        diagnostics.extend(validate_directive_definition(schema, directive_definition));
+        validate_directive_definition(diagnostics, schema, directive_definition);
     }
-
-    diagnostics
 }
 
 // TODO(@goto-bus-stop) This is a big function: should probably not be generic over the iterator
 // type
 pub(crate) fn validate_directives<'dir>(
+    diagnostics: &mut DiagnosticList,
     schema: Option<&crate::Schema>,
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
+) {
     let mut seen_directives = HashMap::<_, Option<NodeLocation>>::new();
 
     for dir in dirs {
-        diagnostics.extend(super::argument::validate_arguments(&dir.arguments));
+        super::argument::validate_arguments(diagnostics, &dir.arguments);
 
         let name = &dir.name;
         let loc = dir.location();
@@ -209,13 +206,13 @@ pub(crate) fn validate_directives<'dir>(
                 .unwrap_or(true);
 
             if !is_repeatable {
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     loc,
                     DiagnosticData::UniqueDirective {
                         name: name.clone(),
                         original_application: original_loc,
                     },
-                ));
+                );
             }
         } else {
             let loc = NodeLocation::recompose(dir.location(), dir.name.location());
@@ -226,7 +223,7 @@ pub(crate) fn validate_directives<'dir>(
             let allowed_loc: HashSet<ast::DirectiveLocation> =
                 HashSet::from_iter(directive_definition.locations.iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     loc,
                     DiagnosticData::UnsupportedLocation {
                         name: name.clone(),
@@ -234,7 +231,7 @@ pub(crate) fn validate_directives<'dir>(
                         valid_locations: directive_definition.locations.clone(),
                         definition_location: directive_definition.location(),
                     },
-                ));
+                );
             }
 
             for argument in &dir.arguments {
@@ -247,23 +244,24 @@ pub(crate) fn validate_directives<'dir>(
                 if let Some(input_value) = input_value {
                     // TODO(@goto-bus-stop) do we really need value validation and variable
                     // validation separately?
-                    if let Some(diag) =
-                        super::variable::validate_variable_usage(input_value, var_defs, argument)
-                            .err()
+                    if super::variable::validate_variable_usage(
+                        diagnostics,
+                        input_value,
+                        var_defs,
+                        argument,
+                    )
+                    .is_ok()
                     {
-                        diagnostics.push(diag)
-                    } else {
-                        let type_diags = super::value::validate_values(
+                        super::value::validate_values(
+                            diagnostics,
                             schema,
                             &input_value.ty,
                             argument,
                             var_defs,
                         );
-
-                        diagnostics.extend(type_diags);
                     }
                 } else {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         argument.location(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.clone(),
@@ -273,7 +271,7 @@ pub(crate) fn validate_directives<'dir>(
                             .into(),
                             definition_location: loc,
                         },
-                    ));
+                    );
                 }
             }
             for arg_def in &directive_definition.arguments {
@@ -290,7 +288,7 @@ pub(crate) fn validate_directives<'dir>(
                 };
 
                 if arg_def.is_required() && is_null {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         dir.location(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.clone(),
@@ -301,16 +299,14 @@ pub(crate) fn validate_directives<'dir>(
                             .into(),
                             definition_location: arg_def.location(),
                         },
-                    ));
+                    );
                 }
             }
         } else {
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 loc,
                 DiagnosticData::UndefinedDirective { name: name.clone() },
-            ))
+            )
         }
     }
-
-    diagnostics
 }
