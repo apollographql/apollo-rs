@@ -1,10 +1,11 @@
-use super::document::DocumentExt;
-use crate::next::unstructured::Unstructured;
+use std::ops::Deref;
+
 use apollo_compiler::ast::{
-    Argument, Directive, DirectiveDefinition, DirectiveList, DirectiveLocation, Document,
+    Argument, Directive, DirectiveDefinition, DirectiveList, DirectiveLocation,
 };
 use apollo_compiler::{Node, Schema};
-use std::ops::Deref;
+
+use crate::next::unstructured::Unstructured;
 
 pub(crate) struct LocationFilter<I>(I, DirectiveLocation);
 
@@ -57,7 +58,7 @@ impl<I: ?Sized> DirectiveDefinitionIterExt for I {
                 if arg.is_required() || u.arbitrary()? {
                     arguments.push(Node::new(Argument {
                         name: arg.name.clone(),
-                        value: Node::new(u.arbitrary_value(arg.ty.deref(), schema)?),
+                        value: Node::new(u.arbitrary_value(schema, arg.ty.deref())?),
                     }))
                 }
             }

@@ -1,6 +1,7 @@
-use apollo_compiler::ast::{Definition, Name, Type};
-use apollo_compiler::schema::ExtendedType;
 use arbitrary::Unstructured;
+
+use apollo_compiler::ast::{Name, Type};
+use apollo_compiler::schema::ExtendedType;
 
 pub(crate) trait ExtendedTypeExt {
     fn ty(&self, u: &mut Unstructured) -> arbitrary::Result<Type>;

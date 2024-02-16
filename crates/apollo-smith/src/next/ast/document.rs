@@ -1,5 +1,6 @@
 use paste::paste;
 
+use crate::next::ast::definition::DefinitionKind;
 use apollo_compiler::ast::{
     Definition, DirectiveDefinition, Document, EnumTypeDefinition, EnumTypeExtension,
     FragmentDefinition, InputObjectTypeDefinition, InputObjectTypeExtension,
@@ -18,7 +19,7 @@ macro_rules! access {
             fn [<random_ $ty:snake>](
                 &self,
                 u: &mut Unstructured,
-            ) -> arbitrary::Result<&Node<$ty>> {
+            ) -> arbitrary::Result<Option<&Node<$ty>>> {
                 let mut existing = self
                     .target()
                     .definitions
@@ -31,20 +32,18 @@ macro_rules! access {
                         }
                     })
                     .collect::<Vec<_>>();
-                let idx = u.choose_index(existing.len()).map_err(|e|{
-                    if let arbitrary::Error::EmptyChoose = e {
-                        panic!("no existing definitions of type {}", stringify!($ty))
-                    } else {
-                        e
-                    }
-                })?;
-                Ok(existing.remove(idx))
+                match u.choose_index(existing.len()) {
+                    Ok(idx)=> Ok(Some(existing.remove(idx))),
+                    Err(arbitrary::Error::EmptyChoose)=> Ok(None),
+                    Err(e)=> Err(e)
+                }
+
             }
 
             fn [<random_ $ty:snake _mut>](
                 &mut self,
                 u: &mut Unstructured,
-            ) -> arbitrary::Result<&mut Node<$ty>> {
+            ) -> arbitrary::Result<Option<&mut Node<$ty>>> {
                 let mut existing = self
                     .target_mut()
                     .definitions
@@ -57,14 +56,12 @@ macro_rules! access {
                         }
                     })
                     .collect::<Vec<_>>();
-                let idx = u.choose_index(existing.len()).map_err(|e|{
-                    if let arbitrary::Error::EmptyChoose = e {
-                        panic!("no existing definitions of type {}", stringify!($ty))
-                    } else {
-                        e
-                    }
-                })?;
-                Ok(existing.remove(idx))
+
+                match u.choose_index(existing.len()) {
+                    Ok(idx)=> Ok(Some(existing.remove(idx))),
+                    Err(arbitrary::Error::EmptyChoose)=> Ok(None),
+                    Err(e)=> Err(e)
+                }
             }
 
             fn [<sample_ $ty:snake s>](
@@ -109,6 +106,42 @@ pub(crate) trait DocumentExt {
     access!(UnionTypeExtension);
     access!(EnumTypeExtension);
     access!(InputObjectTypeExtension);
+
+    fn random_definition(
+        &self,
+        u: &mut Unstructured,
+        definitions: Vec<DefinitionKind>,
+    ) -> arbitrary::Result<Option<&Definition>> {
+        let mut existing = self
+            .target()
+            .definitions
+            .iter()
+            .filter(|d| definitions.iter().any(|t| t.matches(*d)))
+            .collect::<Vec<_>>();
+        match u.choose_index(existing.len()) {
+            Ok(idx) => Ok(Some(existing.remove(idx))),
+            Err(arbitrary::Error::EmptyChoose) => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
+
+    fn random_definition_mut(
+        &mut self,
+        u: &mut Unstructured,
+        definitions: Vec<DefinitionKind>,
+    ) -> arbitrary::Result<Option<&mut Definition>> {
+        let mut existing = self
+            .target_mut()
+            .definitions
+            .iter_mut()
+            .filter(|d| definitions.iter().any(|t| t.matches(*d)))
+            .collect::<Vec<_>>();
+        match u.choose_index(existing.len()) {
+            Ok(idx) => Ok(Some(existing.remove(idx))),
+            Err(arbitrary::Error::EmptyChoose) => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
 
     fn target(&self) -> &Document;
     fn target_mut(&mut self) -> &mut Document;

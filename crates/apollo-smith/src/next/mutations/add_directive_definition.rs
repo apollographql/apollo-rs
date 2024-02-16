@@ -1,7 +1,6 @@
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
-use crate::next::ast::document::DocumentExt;
 use crate::next::mutations::Mutation;
 use crate::next::unstructured::Unstructured;
 
@@ -12,13 +11,13 @@ impl Mutation for AddDirectiveDefinition {
         u: &mut Unstructured,
         doc: &mut Document,
         schema: &Schema,
-    ) -> arbitrary::Result<()> {
+    ) -> arbitrary::Result<bool> {
         doc.definitions
             .push(Definition::DirectiveDefinition(Node::new(
                 u.arbitrary_directive_definition(schema)?,
             )));
 
-        Ok(())
+        Ok(true)
     }
     fn is_valid(&self) -> bool {
         true

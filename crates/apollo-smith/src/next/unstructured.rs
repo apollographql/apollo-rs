@@ -1,27 +1,36 @@
-use crate::next::ast::directive_definition::DirectiveDefinitionIterExt;
-use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
-use crate::next::schema::schema::SchemaExt;
-use apollo_compiler::ast::{
-    DirectiveDefinition, DirectiveLocation, EnumTypeDefinition, EnumValueDefinition,
-    FieldDefinition, InputObjectTypeDefinition, InputValueDefinition, InterfaceTypeDefinition,
-    Name, ObjectTypeDefinition, OperationType, SchemaDefinition, Type, UnionTypeDefinition, Value,
-};
-use apollo_compiler::schema::ExtendedType;
-use apollo_compiler::{Node, NodeStr, Schema};
-use arbitrary::Result;
 use std::ops::{Deref, DerefMut};
-use std::sync::atomic::Ordering;
 
-pub(crate) trait UnstructuredExt {
-    fn arbitrary_vec<T, C: Fn(&mut Unstructured) -> Result<T>>(
-        &mut self,
-        min: usize,
-        max: usize,
-        callback: C,
-    ) -> Result<Vec<T>>;
+use arbitrary::Result;
+
+use apollo_compiler::ast::{
+    Argument, DirectiveDefinition, DirectiveLocation, EnumTypeDefinition, EnumValueDefinition,
+    Field, FieldDefinition, FragmentSpread, InlineFragment, InputObjectTypeDefinition,
+    InputValueDefinition, InterfaceTypeDefinition, Name, ObjectTypeDefinition, OperationDefinition,
+    OperationType, SchemaDefinition, Selection, Type, UnionTypeDefinition, Value,
+    VariableDefinition,
+};
+use apollo_compiler::schema::{ExtendedType, InterfaceType, ObjectType};
+use apollo_compiler::{Node, NodeStr, Schema};
+
+use crate::next::ast::directive_definition::DirectiveDefinitionIterExt;
+use crate::next::ast::HasFields;
+use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
+use crate::next::schema::object_type::ObjectTypeExt;
+use crate::next::schema::schema::SchemaExt;
+pub struct Unstructured<'a> {
+    u: arbitrary::Unstructured<'a>,
+    counter: usize,
 }
-impl<'a> UnstructuredExt for Unstructured<'a> {
-    fn arbitrary_vec<T, C: Fn(&mut Unstructured) -> Result<T>>(
+
+impl Unstructured<'_> {
+    pub fn new<'a>(data: &'a [u8]) -> Unstructured<'a> {
+        Unstructured {
+            u: arbitrary::Unstructured::new(data),
+            counter: 0,
+        }
+    }
+
+    pub(crate) fn arbitrary_vec<T, C: Fn(&mut Self) -> Result<T>>(
         &mut self,
         min: usize,
         max: usize,
@@ -34,32 +43,14 @@ impl<'a> UnstructuredExt for Unstructured<'a> {
         }
         Ok(results)
     }
-}
-
-pub(crate) trait UnstructuredOption: Sized {
-    fn optional(self, u: &mut Unstructured) -> Result<Option<Self>>;
-}
-
-impl<T> UnstructuredOption for T {
-    fn optional(self, u: &mut Unstructured) -> Result<Option<T>> {
-        if u.arbitrary()? {
-            Ok(Some(self))
+    pub(crate) fn arbitrary_optional<T, C: Fn(&mut Self) -> Result<T>>(
+        &mut self,
+        callback: C,
+    ) -> Result<Option<T>> {
+        if self.arbitrary()? {
+            Ok(Some(callback(self)?))
         } else {
             Ok(None)
-        }
-    }
-}
-
-pub(crate) struct Unstructured<'a> {
-    u: arbitrary::Unstructured<'a>,
-    counter: usize,
-}
-
-impl Unstructured<'_> {
-    pub(crate) fn new<'a>(data: &'a [u8]) -> Unstructured<'a> {
-        Unstructured {
-            u: arbitrary::Unstructured::new(data),
-            counter: 0,
         }
     }
 
@@ -115,7 +106,7 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<SchemaDefinition> {
         Ok(SchemaDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
@@ -126,16 +117,18 @@ impl Unstructured<'_> {
                     OperationType::Query,
                     schema.random_object_type(self)?.name.clone(),
                 ))),
-                Node::new((
-                    OperationType::Mutation,
-                    schema.random_object_type(self)?.name.clone(),
-                ))
-                .optional(self)?,
-                Node::new((
-                    OperationType::Subscription,
-                    schema.random_object_type(self)?.name.clone(),
-                ))
-                .optional(self)?,
+                self.arbitrary_optional(|u| {
+                    Ok(Node::new((
+                        OperationType::Mutation,
+                        schema.random_object_type(u)?.name.clone(),
+                    )))
+                })?,
+                self.arbitrary_optional(|u| {
+                    Ok(Node::new((
+                        OperationType::Subscription,
+                        schema.random_object_type(u)?.name.clone(),
+                    )))
+                })?,
             ]
             .into_iter()
             .filter_map(|op| op)
@@ -147,8 +140,16 @@ impl Unstructured<'_> {
         &mut self,
         schema: &Schema,
     ) -> Result<ObjectTypeDefinition> {
+        let implements = schema.sample_interface_types(self)?;
+        let implements_fields = Self::all_fields_from_interfaces(&implements);
+        let new_fields = self.arbitrary_vec(1, 5, |u| {
+            Ok(Node::new(u.arbitrary_field_definition(
+                schema,
+                DirectiveLocation::InputFieldDefinition,
+            )?))
+        })?;
         Ok(ObjectTypeDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             implements_interfaces: schema
                 .sample_interface_types(self)?
@@ -160,12 +161,10 @@ impl Unstructured<'_> {
                 .into_iter()
                 .with_location(DirectiveLocation::Object)
                 .try_collect(self, schema)?,
-            fields: self.arbitrary_vec(1, 5, |u| {
-                Ok(Node::new(u.arbitrary_field_definition(
-                    schema,
-                    DirectiveLocation::FieldDefinition,
-                )?))
-            })?,
+            fields: new_fields
+                .into_iter()
+                .chain(implements_fields.into_iter())
+                .collect(),
         })
     }
 
@@ -174,7 +173,7 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<DirectiveDefinition> {
         Ok(DirectiveDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             arguments: self.arbitrary_vec(0, 5, |u| {
                 Ok(Node::new(u.arbitrary_input_value_definition(schema)?))
@@ -189,7 +188,7 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<InputObjectTypeDefinition> {
         Ok(InputObjectTypeDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             directives: schema
                 .sample_directives(self)?
@@ -215,12 +214,11 @@ impl Unstructured<'_> {
                 ],
             )?
             .ty(self)?;
-        let default_value = self
-            .arbitrary_value(&ty, schema)?
-            .optional(self)?
-            .map(Node::new);
+        let default_value =
+            self.arbitrary_optional(|u| Ok(Node::new(u.arbitrary_value(schema, &ty)?)))?;
+
         Ok(InputValueDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             ty: Node::new(ty),
             default_value,
@@ -237,7 +235,7 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<EnumTypeDefinition> {
         Ok(EnumTypeDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             directives: schema
                 .sample_directives(self)?
@@ -246,7 +244,7 @@ impl Unstructured<'_> {
                 .try_collect(self, schema)?,
             values: self.arbitrary_vec(0, 5, |u| {
                 Ok(Node::new(EnumValueDefinition {
-                    description: u.arbitrary_node_str()?.optional(u)?,
+                    description: u.arbitrary_optional(|u| u.arbitrary_node_str())?,
                     value: u.unique_name(),
                     directives: schema
                         .sample_directives(u)?
@@ -263,7 +261,7 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<UnionTypeDefinition> {
         Ok(UnionTypeDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             directives: schema
                 .sample_directives(self)?
@@ -282,11 +280,20 @@ impl Unstructured<'_> {
         &mut self,
         schema: &Schema,
     ) -> Result<InterfaceTypeDefinition> {
+        // All interfaces need to have all the fields from the interfaces they implement.
+        let implements = schema.sample_interface_types(self)?;
+        let implements_fields = Self::all_fields_from_interfaces(&implements);
+        let new_fields = self.arbitrary_vec(1, 5, |u| {
+            Ok(Node::new(u.arbitrary_field_definition(
+                schema,
+                DirectiveLocation::InputFieldDefinition,
+            )?))
+        })?;
+
         Ok(InterfaceTypeDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
-            implements_interfaces: schema
-                .sample_interface_types(self)?
+            implements_interfaces: implements
                 .iter()
                 .map(|interface| interface.name.clone())
                 .collect(),
@@ -295,13 +302,22 @@ impl Unstructured<'_> {
                 .into_iter()
                 .with_location(DirectiveLocation::Interface)
                 .try_collect(self, schema)?,
-            fields: self.arbitrary_vec(0, 5, |u| {
-                Ok(Node::new(u.arbitrary_field_definition(
-                    schema,
-                    DirectiveLocation::InputFieldDefinition,
-                )?))
-            })?,
+            fields: new_fields
+                .into_iter()
+                .chain(implements_fields.into_iter())
+                .collect(),
         })
+    }
+
+    fn all_fields_from_interfaces(
+        implements: &Vec<&Node<InterfaceType>>,
+    ) -> Vec<Node<FieldDefinition>> {
+        let implements_fields = implements
+            .iter()
+            .flat_map(|interface| interface.fields.values())
+            .map(|field| field.deref().clone())
+            .collect::<Vec<_>>();
+        implements_fields
     }
 
     pub(crate) fn arbitrary_field_definition(
@@ -310,7 +326,7 @@ impl Unstructured<'_> {
         directive_location: DirectiveLocation,
     ) -> Result<FieldDefinition> {
         Ok(FieldDefinition {
-            description: self.arbitrary_node_str()?.optional(self)?,
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             arguments: self.arbitrary_vec(0, 5, |u| {
                 Ok(Node::new(u.arbitrary_input_value_definition(schema)?))
@@ -335,11 +351,11 @@ impl Unstructured<'_> {
         })
     }
 
-    pub(crate) fn arbitrary_value(&mut self, ty: &Type, schema: &Schema) -> Result<Value> {
+    pub(crate) fn arbitrary_value(&mut self, schema: &Schema, ty: &Type) -> Result<Value> {
         match ty {
             Type::Named(ty) => {
                 if self.arbitrary()? {
-                    self.arbitrary_value(&Type::NonNullNamed(ty.clone()), schema)
+                    self.arbitrary_value(schema, &Type::NonNullNamed(ty.clone()))
                 } else {
                     Ok(Value::Null)
                 }
@@ -347,7 +363,7 @@ impl Unstructured<'_> {
             Type::List(ty) => {
                 if self.arbitrary()? {
                     Ok(Value::List(self.arbitrary_vec(0, 5, |u| {
-                        Ok(Node::new(u.arbitrary_value(ty, schema)?))
+                        Ok(Node::new(u.arbitrary_value(schema, ty)?))
                     })?))
                 } else {
                     Ok(Value::Null)
@@ -356,9 +372,15 @@ impl Unstructured<'_> {
             Type::NonNullNamed(ty) => match schema.types.get(ty).expect("type must exist") {
                 ExtendedType::Scalar(ty) => {
                     if ty.name == "Int" {
-                        Ok(Value::from(self.arbitrary::<f64>()?))
-                    } else if ty.name == "Float" {
                         Ok(Value::from(self.arbitrary::<i32>()?))
+                    } else if ty.name == "Float" {
+                        loop {
+                            // not ideal, but graphql requires finite values is not a valid value.
+                            let val = self.arbitrary::<f64>()?;
+                            if val.is_finite() {
+                                return Ok(Value::from(val));
+                            }
+                        }
                     } else if ty.name == "Boolean" {
                         Ok(Value::Boolean(self.arbitrary()?))
                     } else {
@@ -370,7 +392,7 @@ impl Unstructured<'_> {
                     for (name, definition) in &ty.fields {
                         values.push((
                             name.clone(),
-                            Node::new(self.arbitrary_value(&definition.ty, schema)?),
+                            Node::new(self.arbitrary_value(schema, &definition.ty)?),
                         ));
                     }
                     Ok(Value::Object(values))
@@ -379,7 +401,7 @@ impl Unstructured<'_> {
                     let values = ty
                         .values
                         .iter()
-                        .map(|(name, v)| &v.value)
+                        .map(|(_name, v)| &v.value)
                         .collect::<Vec<_>>();
                     if values.is_empty() {
                         panic!("enum must have at least one value")
@@ -392,7 +414,7 @@ impl Unstructured<'_> {
                     for (name, definition) in &ty.fields {
                         values.push((
                             name.clone(),
-                            Node::new(self.arbitrary_value(&definition.ty, schema)?),
+                            Node::new(self.arbitrary_value(schema, &definition.ty)?),
                         ));
                     }
                     Ok(Value::Object(values))
@@ -403,8 +425,96 @@ impl Unstructured<'_> {
             },
             Type::NonNullList(ty) => {
                 Ok(Value::List(self.arbitrary_vec(0, 5, |u| {
-                    Ok(Node::new(u.arbitrary_value(ty, schema)?))
+                    Ok(Node::new(u.arbitrary_value(schema, ty)?))
                 })?))
+            }
+        }
+    }
+
+    pub(crate) fn arbitrary_operation_definition(
+        &mut self,
+        schema: &Schema,
+    ) -> Result<OperationDefinition> {
+        let operation = schema.random_query_mutation_subscription(self)?;
+
+        Ok(OperationDefinition {
+            operation_type: operation
+                .deref()
+                .operation_type()
+                .expect("top level operation must have type"),
+            name: self.arbitrary_optional(|u| Ok(u.unique_name()))?,
+            variables: vec![],
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::Field)
+                .try_collect(self, schema)?,
+            selection_set: self.arbitrary_vec(0, 5, |u| {
+                Ok(u.arbitrary_selection(schema, operation.deref())?)
+            })?,
+        })
+    }
+
+    fn arbitrary_variable_definition(&mut self, schema: &Schema) -> Result<VariableDefinition> {
+        let ty = schema
+            .random_type(self, vec![ExtendedTypeKind::InputObjectTypeDefinition])?
+            .ty(self)?;
+        Ok(VariableDefinition {
+            name: self.unique_name(),
+            ty: Node::new(ty),
+            default_value: self
+                .arbitrary_optional(|u| Ok(Node::new(u.arbitrary_value(&ty, schema)?)))?,
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::ArgumentDefinition)
+                .try_collect(self, schema)?,
+        })
+    }
+
+    fn arbitrary_inline_fragment(&mut self, schema: &Schema) -> Result<InlineFragment> {
+        let ty = schema.random_type(
+            self,
+            vec![ExtendedTypeKind::Object, ExtendedTypeKind::Interface],
+        )?;
+
+        Ok(InlineFragment {
+            type_condition: self.arbitrary_optional(|u| Ok(ty.name().clone()))?,
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::InlineFragment)
+                .try_collect(self, schema)?,
+            selection_set: self.arbitrary_vec(0, 5, |u| Ok(u.arbitrary_selection(schema, ty)?))?,
+        })
+    }
+
+    fn arbitrary_fragment_spread(&mut self, schema: &Schema) -> Result<FragmentSpread> {
+        Ok(FragmentSpread {
+            fragment_name: self.unique_name(),
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::FragmentSpread)
+                .try_collect(self, schema)?,
+        })
+    }
+
+    fn arbitrary_selection(
+        &mut self,
+        schema: &Schema,
+        object_type: &dyn HasFields,
+    ) -> Result<Selection> {
+        if let Some(field) = object_type.random_field(self)? {
+            match self.choose_index(3) {
+                Ok(0) => Ok(Selection::Field(Node::new(self.arbitrary_field(schema)?))),
+                Ok(1) => Ok(Selection::FragmentSpread(Node::new(
+                    self.arbitrary_fragment_spread(schema)?,
+                ))),
+                Ok(2) => Ok(Selection::InlineFragment(Node::new(
+                    self.arbitrary_inline_fragment(schema)?,
+                ))),
+                _ => unreachable!(),
             }
         }
     }

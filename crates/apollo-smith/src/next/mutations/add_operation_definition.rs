@@ -1,11 +1,12 @@
+use crate::next::mutations::Mutation;
+
+use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
-use crate::next::mutations::Mutation;
-use crate::next::unstructured::Unstructured;
+pub(crate) struct AddOperationDefinition;
 
-pub(crate) struct AddUnionTypeDefinition;
-impl Mutation for AddUnionTypeDefinition {
+impl Mutation for AddOperationDefinition {
     fn apply(
         &self,
         u: &mut Unstructured,
@@ -13,13 +14,12 @@ impl Mutation for AddUnionTypeDefinition {
         schema: &Schema,
     ) -> arbitrary::Result<bool> {
         doc.definitions
-            .push(Definition::UnionTypeDefinition(Node::new(
-                u.arbitrary_union_type_definition(schema)?,
+            .push(Definition::OperationDefinition(Node::new(
+                u.arbitrary_operation_definition(schema)?,
             )));
-
-        Ok(true)
+        Ok(false)
     }
     fn is_valid(&self) -> bool {
-        true
+        false
     }
 }

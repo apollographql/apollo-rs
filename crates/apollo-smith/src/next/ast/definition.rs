@@ -1,6 +1,6 @@
-use apollo_compiler::ast::{Definition, InputObjectTypeDefinition, Name, Type};
-use apollo_compiler::schema::ExtendedType;
 use arbitrary::Unstructured;
+
+use apollo_compiler::ast::{Definition, InputObjectTypeDefinition, Name, Type};
 
 pub(crate) trait DefinitionExt {
     fn ty(&self, u: &mut Unstructured) -> arbitrary::Result<Type>;

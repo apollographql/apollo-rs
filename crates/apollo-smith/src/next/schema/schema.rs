@@ -1,14 +1,16 @@
-use crate::next::ast::definition::DefinitionKind;
-use crate::next::schema::extended_type::ExtendedTypeKind;
-use apollo_compiler::ast::Definition;
+use apollo_compiler::ast::OperationType;
+use arbitrary::Unstructured;
+use paste::paste;
+
 use apollo_compiler::schema::{DirectiveDefinition, ExtendedType};
 use apollo_compiler::schema::{
     EnumType, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType,
 };
 use apollo_compiler::Node;
 use apollo_compiler::Schema;
-use arbitrary::Unstructured;
-use paste::paste;
+
+use crate::next::schema::extended_type::ExtendedTypeKind;
+
 macro_rules! access {
     ($variant: ident, $ty: ty) => {
         paste! {
@@ -119,6 +121,22 @@ pub(crate) trait SchemaExt {
             .collect::<Vec<_>>();
 
         Ok(existing)
+    }
+
+    fn random_query_mutation_subscription(
+        &self,
+        u: &mut Unstructured,
+    ) -> arbitrary::Result<&Node<ObjectType>> {
+        Ok(*u.choose(
+            &vec![
+                self.target().get_object("Query"),
+                self.target().get_object("Mutation"),
+                self.target().get_object("Subscription"),
+            ]
+            .into_iter()
+            .filter_map(|o| o)
+            .collect::<Vec<_>>(),
+        )?)
     }
 
     fn target(&self) -> &Schema;
