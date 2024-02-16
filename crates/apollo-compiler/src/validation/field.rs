@@ -1,7 +1,7 @@
 use crate::coordinate::{FieldArgumentCoordinate, TypeAttributeCoordinate};
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::ValidationDatabase;
-use crate::{ast, schema, Node};
+use crate::{ast, executable, schema, ExecutableDocument, Node};
 
 use super::operation::OperationValidationConfig;
 use crate::ast::Name;
@@ -10,9 +10,10 @@ use indexmap::IndexMap;
 
 pub(crate) fn validate_field(
     db: &dyn ValidationDatabase,
+    document: &ExecutableDocument,
     // May be None if a parent selection was invalid
     against_type: Option<&ast::NamedType>,
-    field: &Node<ast::Field>,
+    field: &Node<executable::Field>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     // First do all the validation that we can without knowing the type of the field.
@@ -110,6 +111,7 @@ pub(crate) fn validate_field(
             Err(diag) => diagnostics.push(diag),
             Ok(_) => diagnostics.extend(super::selection::validate_selection_set(
                 db,
+                document,
                 Some(field_definition.ty.inner_named_type()),
                 &field.selection_set,
                 context,
@@ -184,7 +186,7 @@ pub(crate) fn validate_field_definitions(
 
 pub(crate) fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
-    field: &Node<ast::Field>,
+    field: &Node<executable::Field>,
     field_type: &ast::Type,
 ) -> Result<(), ValidationError> {
     let schema = db.schema();

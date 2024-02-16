@@ -1,11 +1,11 @@
+use super::CycleError;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::validation_db::ValidationDatabase;
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
-use crate::{ast, schema, Node, ValidationDatabase};
+use crate::{ast, schema, Node};
 use std::collections::{HashMap, HashSet};
-
-use super::CycleError;
 
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.

@@ -1,4 +1,3 @@
-use crate::ast;
 use crate::schema::Implementers;
 use crate::schema::Name;
 use std::collections::HashMap;
@@ -9,9 +8,6 @@ use std::sync::Arc;
 pub(crate) trait ReprDatabase {
     #[salsa::input]
     fn schema(&self) -> Arc<crate::Schema>;
-
-    #[salsa::input]
-    fn executable_ast(&self) -> Arc<ast::Document>;
 
     /// Returns a map of interface names to names of types that implement that interface
     ///

@@ -474,6 +474,10 @@ impl SelectionSet {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.selections.is_empty()
+    }
+
     pub fn push(&mut self, selection: impl Into<Selection>) {
         self.selections.push(selection.into())
     }

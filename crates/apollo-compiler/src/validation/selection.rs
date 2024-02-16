@@ -1,9 +1,13 @@
+use crate::ast::Name;
+use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable::BuildError;
+use crate::executable::SelectionSet;
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
 use crate::validation::ValidationDatabase;
+use crate::ExecutableDocument;
 use crate::{ast, executable, schema, Node};
 use apollo_parser::LimitTracker;
 use indexmap::IndexMap;
@@ -15,7 +19,7 @@ use std::rc::Rc;
 #[derive(Debug, Clone, Copy, Hash)]
 pub(crate) struct FieldSelection<'a> {
     /// The type of the selection set this field selection is part of.
-    pub parent_type: &'a ast::NamedType,
+    pub parent_type: &'a NamedType,
     pub field: &'a Node<executable::Field>,
 }
 
@@ -30,7 +34,7 @@ impl FieldSelection<'_> {
 
 /// Expand one or more selection sets to a list of all fields selected.
 pub(crate) fn expand_selections<'doc>(
-    fragments: &'doc IndexMap<ast::Name, Node<executable::Fragment>>,
+    fragments: &'doc IndexMap<Name, Node<executable::Fragment>>,
     selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
@@ -73,7 +77,7 @@ fn is_composite(ty: &schema::ExtendedType) -> bool {
 /// A temporary index for frequent argument lookups by name, using a hash map if there are many
 /// arguments.
 enum ArgumentLookup<'a> {
-    Map(HashMap<&'a ast::Name, &'a Node<ast::Argument>>),
+    Map(HashMap<&'a Name, &'a Node<ast::Argument>>),
     List(&'a [Node<ast::Argument>]),
 }
 impl<'a> ArgumentLookup<'a> {
@@ -85,7 +89,7 @@ impl<'a> ArgumentLookup<'a> {
         }
     }
 
-    fn by_name(&self, name: &ast::Name) -> Option<&'a Node<ast::Argument>> {
+    fn by_name(&self, name: &Name) -> Option<&'a Node<ast::Argument>> {
         match self {
             Self::Map(map) => map.get(name).copied(),
             Self::List(list) => list.iter().find(|arg| arg.name == *name),
@@ -277,7 +281,7 @@ impl OnceBool {
 /// Represents a merged field set that may or may not be valid.
 struct MergedFieldSet<'doc> {
     selections: Vec<FieldSelection<'doc>>,
-    grouped_by_output_names: OnceCell<IndexMap<ast::Name, Vec<FieldSelection<'doc>>>>,
+    grouped_by_output_names: OnceCell<IndexMap<Name, Vec<FieldSelection<'doc>>>>,
     grouped_by_common_parents: OnceCell<Vec<Vec<FieldSelection<'doc>>>>,
     same_response_shape_guard: OnceBool,
     same_for_common_parents_guard: OnceBool,
@@ -540,14 +544,15 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
 
 pub(crate) fn validate_selection_set(
     db: &dyn ValidationDatabase,
-    against_type: Option<&ast::NamedType>,
-    selection_set: &[ast::Selection],
+    document: &ExecutableDocument,
+    against_type: Option<&NamedType>,
+    selection_set: &SelectionSet,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
-
     diagnostics.extend(validate_selections(
         db,
+        document,
         against_type,
         selection_set,
         context,
@@ -558,31 +563,31 @@ pub(crate) fn validate_selection_set(
 
 pub(crate) fn validate_selections(
     db: &dyn ValidationDatabase,
-    against_type: Option<&ast::NamedType>,
-    selection_set: &[ast::Selection],
+    document: &ExecutableDocument,
+    against_type: Option<&NamedType>,
+    selection_set: &SelectionSet,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
-    for selection in selection_set {
+    for selection in &selection_set.selections {
         match selection {
-            ast::Selection::Field(field) => diagnostics.extend(super::field::validate_field(
-                db,
-                against_type,
-                field,
-                context.clone(),
-            )),
-            ast::Selection::FragmentSpread(fragment) => {
+            executable::Selection::Field(field) => diagnostics.extend(
+                super::field::validate_field(db, document, against_type, field, context.clone()),
+            ),
+            executable::Selection::FragmentSpread(fragment) => {
                 diagnostics.extend(super::fragment::validate_fragment_spread(
                     db,
+                    document,
                     against_type,
                     fragment,
                     context.clone(),
                 ))
             }
-            ast::Selection::InlineFragment(inline) => {
+            executable::Selection::InlineFragment(inline) => {
                 diagnostics.extend(super::fragment::validate_inline_fragment(
                     db,
+                    document,
                     against_type,
                     inline,
                     context.clone(),

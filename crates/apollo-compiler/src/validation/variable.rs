@@ -1,6 +1,6 @@
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack};
-use crate::{ast, Node, ValidationDatabase};
+use crate::{ast, executable, ExecutableDocument, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
@@ -73,37 +73,24 @@ pub(crate) fn validate_variable_definitions(
     diagnostics
 }
 
-type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
-
 fn walk_selections(
-    document: &ast::Document,
-    selections: &[ast::Selection],
-    mut f: impl FnMut(&NamedFragments, &ast::Selection),
+    document: &ExecutableDocument,
+    selections: &executable::SelectionSet,
+    mut f: impl FnMut(&executable::Selection),
 ) -> Result<(), RecursionLimitError> {
-    let named_fragments: NamedFragments = document
-        .definitions
-        .iter()
-        .filter_map(|definition| match definition {
-            ast::Definition::FragmentDefinition(fragment) => {
-                Some((fragment.name.clone(), fragment.clone()))
-            }
-            _ => None,
-        })
-        .collect();
-
     fn walk_selections_inner<'ast, 'guard>(
-        named_fragments: &'ast NamedFragments,
-        selections: &'ast [ast::Selection],
+        document: &ExecutableDocument,
+        selection_set: &'ast executable::SelectionSet,
         guard: &mut RecursionGuard<'guard>,
-        f: &mut dyn FnMut(&NamedFragments, &ast::Selection),
+        f: &mut dyn FnMut(&executable::Selection),
     ) -> Result<(), RecursionLimitError> {
-        for selection in selections {
-            f(named_fragments, selection);
+        for selection in &selection_set.selections {
+            f(selection);
             match selection {
-                ast::Selection::Field(field) => {
-                    walk_selections_inner(named_fragments, &field.selection_set, guard, f)?;
+                executable::Selection::Field(field) => {
+                    walk_selections_inner(document, &field.selection_set, guard, f)?;
                 }
-                ast::Selection::FragmentSpread(fragment) => {
+                executable::Selection::FragmentSpread(fragment) => {
                     // Prevent chasing a cyclical reference.
                     // Note we do not report `CycleError::Recursed` here, as that is already caught
                     // by the cyclical fragment validation--we just need to ensure that we don't
@@ -112,18 +99,19 @@ fn walk_selections(
                         continue;
                     }
 
-                    if let Some(fragment_definition) = named_fragments.get(&fragment.fragment_name)
+                    if let Some(fragment_definition) =
+                        document.fragments.get(&fragment.fragment_name)
                     {
                         walk_selections_inner(
-                            named_fragments,
+                            document,
                             &fragment_definition.selection_set,
                             &mut guard.push(&fragment.fragment_name)?,
                             f,
                         )?;
                     }
                 }
-                ast::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(named_fragments, &fragment.selection_set, guard, f)?;
+                executable::Selection::InlineFragment(fragment) => {
+                    walk_selections_inner(document, &fragment.selection_set, guard, f)?;
                 }
             }
         }
@@ -131,7 +119,7 @@ fn walk_selections(
     }
 
     let mut stack = RecursionStack::new().with_limit(100);
-    let result = walk_selections_inner(&named_fragments, selections, &mut stack.guard(), &mut f);
+    let result = walk_selections_inner(document, selections, &mut stack.guard(), &mut f);
     result
 }
 
@@ -171,8 +159,8 @@ fn variables_in_directives(
 //   a: field (arg: $var2)
 // }
 pub(crate) fn validate_unused_variables(
-    db: &dyn ValidationDatabase,
-    operation: &Node<ast::OperationDefinition>,
+    document: &ExecutableDocument,
+    operation: &executable::Operation,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
@@ -193,20 +181,20 @@ pub(crate) fn validate_unused_variables(
         .collect();
     let mut used_vars = HashSet::<ast::Name>::new();
     let walked = walk_selections(
-        &db.executable_ast(),
+        document,
         &operation.selection_set,
-        |named_fragments, selection| match selection {
-            ast::Selection::Field(field) => {
+        |selection| match selection {
+            executable::Selection::Field(field) => {
                 used_vars.extend(variables_in_directives(&field.directives));
                 used_vars.extend(variables_in_arguments(&field.arguments));
             }
-            ast::Selection::FragmentSpread(fragment) => {
-                if let Some(fragment_def) = named_fragments.get(&fragment.fragment_name) {
+            executable::Selection::FragmentSpread(fragment) => {
+                if let Some(fragment_def) = document.fragments.get(&fragment.fragment_name) {
                     used_vars.extend(variables_in_directives(&fragment_def.directives));
                 }
                 used_vars.extend(variables_in_directives(&fragment.directives));
             }
-            ast::Selection::InlineFragment(fragment) => {
+            executable::Selection::InlineFragment(fragment) => {
                 used_vars.extend(variables_in_directives(&fragment.directives));
             }
         },

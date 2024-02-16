@@ -1,5 +1,4 @@
 use super::FieldSet;
-use crate::ast;
 use crate::database::ReprDatabase;
 use crate::database::RootDatabase;
 use crate::validation::selection::FieldsInSetCanMerge;
@@ -60,13 +59,7 @@ fn compiler_validation(
         db.set_schema(Arc::new(schema.clone()));
     }
 
-    let ast = document.to_ast();
-    db.set_executable_ast(Arc::new(ast));
-    let diagnostics = if schema.is_some() {
-        crate::validation::validate_executable(&db)
-    } else {
-        crate::validation::validate_standalone_executable(&db)
-    };
+    let diagnostics = crate::validation::validate_executable(&db, document, schema);
     for diagnostic in diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
@@ -81,22 +74,17 @@ pub(crate) fn validate_field_set(
 
     db.set_schema(Arc::new(schema.as_ref().clone()));
 
-    let ast = ast::Document::new();
-    db.set_executable_ast(Arc::new(ast));
+    let document = &ExecutableDocument::new(); // No fragment definitions
     let diagnostics = crate::validation::selection::validate_selection_set(
         &db,
+        document,
         Some(&field_set.selection_set.ty),
-        &field_set.selection_set.to_ast(),
+        &field_set.selection_set,
         crate::validation::operation::OperationValidationConfig {
             has_schema: true,
             variables: &[],
         },
     );
-    //  if schema.is_some() {
-    //     compiler.db.validate_executable(ast_id)
-    // } else {
-    //     compiler.db.validate_standalone_executable(ast_id)
-    // };
     for diagnostic in diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }

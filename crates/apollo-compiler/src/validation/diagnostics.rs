@@ -5,6 +5,7 @@ use crate::ast::Type;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
+use crate::executable;
 use crate::Node;
 use crate::NodeLocation;
 use std::fmt;
@@ -269,7 +270,7 @@ pub(crate) enum DiagnosticData {
         /// Source location of just the "fragment FragName" part.
         head_location: Option<NodeLocation>,
         name: Name,
-        trace: Vec<Node<ast::FragmentSpread>>,
+        trace: Vec<Node<executable::FragmentSpread>>,
     },
     #[error("`{name}` contains too much nesting")]
     DeeplyNestedType {

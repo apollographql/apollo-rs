@@ -1,9 +1,13 @@
 use crate::ast;
+use crate::ast::Name;
+use crate::ast::NamedType;
+use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::{CycleError, NodeLocation, RecursionGuard, RecursionStack};
+use crate::ExecutableDocument;
 use crate::Node;
 use crate::ValidationDatabase;
 use std::borrow::Cow;
@@ -15,8 +19,8 @@ use std::collections::HashSet;
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
 fn get_possible_types<'a>(
     type_definition: &schema::ExtendedType,
-    implementers_map: &'a HashMap<ast::Name, Implementers>,
-) -> Cow<'a, HashSet<ast::NamedType>> {
+    implementers_map: &'a HashMap<Name, Implementers>,
+) -> Cow<'a, HashSet<NamedType>> {
     match type_definition {
         // 1. If `type` is an object type, return a set containing `type`.
         schema::ExtendedType::Object(object) => {
@@ -43,9 +47,10 @@ fn get_possible_types<'a>(
 
 fn validate_fragment_spread_type(
     db: &dyn ValidationDatabase,
-    against_type: &ast::NamedType,
-    type_condition: &ast::NamedType,
-    selection: &ast::Selection,
+    document: &ExecutableDocument,
+    against_type: &NamedType,
+    type_condition: &NamedType,
+    selection: &executable::Selection,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
     let schema = db.schema();
@@ -69,11 +74,10 @@ fn validate_fragment_spread_type(
     if applicable_types.next().is_none() {
         // Report specific errors for the different kinds of fragments.
         let diagnostic = match selection {
-            ast::Selection::Field(_) => unreachable!(),
-            ast::Selection::FragmentSpread(spread) => {
-                let named_fragments = db.ast_named_fragments();
+            executable::Selection::Field(_) => unreachable!(),
+            executable::Selection::FragmentSpread(spread) => {
                 // TODO(@goto-bus-stop) Can we guarantee this unwrap()?
-                let fragment_definition = named_fragments.get(&spread.fragment_name).unwrap();
+                let fragment_definition = document.fragments.get(&spread.fragment_name).unwrap();
 
                 ValidationError::new(
                     spread.location(),
@@ -86,7 +90,7 @@ fn validate_fragment_spread_type(
                     },
                 )
             }
-            ast::Selection::InlineFragment(inline) => ValidationError::new(
+            executable::Selection::InlineFragment(inline) => ValidationError::new(
                 inline.location(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
@@ -106,8 +110,9 @@ fn validate_fragment_spread_type(
 
 pub(crate) fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
-    against_type: Option<&ast::NamedType>,
-    inline: &Node<ast::InlineFragment>,
+    document: &ExecutableDocument,
+    against_type: Option<&NamedType>,
+    inline: &Node<executable::InlineFragment>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -139,13 +144,15 @@ pub(crate) fn validate_inline_fragment(
         if let (Some(against_type), Some(type_condition)) = (against_type, &inline.type_condition) {
             diagnostics.extend(validate_fragment_spread_type(
                 db,
+                document,
                 against_type,
                 type_condition,
-                &ast::Selection::InlineFragment(inline.clone()),
+                &executable::Selection::InlineFragment(inline.clone()),
             ));
         }
         diagnostics.extend(super::selection::validate_selection_set(
             db,
+            document,
             inline.type_condition.as_ref().or(against_type),
             &inline.selection_set,
             context,
@@ -157,8 +164,9 @@ pub(crate) fn validate_inline_fragment(
 
 pub(crate) fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
-    against_type: Option<&ast::NamedType>,
-    spread: &Node<ast::FragmentSpread>,
+    document: &ExecutableDocument,
+    against_type: Option<&NamedType>,
+    spread: &Node<executable::FragmentSpread>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -171,18 +179,18 @@ pub(crate) fn validate_fragment_spread(
         context.has_schema,
     ));
 
-    let named_fragments = db.ast_named_fragments();
-    match named_fragments.get(&spread.fragment_name) {
+    match document.fragments.get(&spread.fragment_name) {
         Some(def) => {
             if let Some(against_type) = against_type {
                 diagnostics.extend(validate_fragment_spread_type(
                     db,
+                    document,
                     against_type,
-                    &def.type_condition,
-                    &ast::Selection::FragmentSpread(spread.clone()),
+                    def.type_condition(),
+                    &executable::Selection::FragmentSpread(spread.clone()),
                 ));
             }
-            diagnostics.extend(validate_fragment_definition(db, def, context));
+            diagnostics.extend(validate_fragment_definition(db, document, def, context));
         }
         None => {
             diagnostics.push(ValidationError::new(
@@ -199,7 +207,8 @@ pub(crate) fn validate_fragment_spread(
 
 pub(crate) fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
-    fragment: &Node<ast::FragmentDefinition>,
+    document: &ExecutableDocument,
+    fragment: &Node<executable::Fragment>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -217,7 +226,7 @@ pub(crate) fn validate_fragment_definition(
         let type_cond_diagnostics = validate_fragment_type_condition(
             db,
             Some(fragment.name.clone()),
-            &fragment.type_condition,
+            fragment.type_condition(),
             fragment.location(),
         );
         let has_type_error = !type_cond_diagnostics.is_empty();
@@ -227,7 +236,7 @@ pub(crate) fn validate_fragment_definition(
         false
     };
 
-    let fragment_cycles_diagnostics = validate_fragment_cycles(db, fragment);
+    let fragment_cycles_diagnostics = validate_fragment_cycles(document, fragment);
     let has_cycles = !fragment_cycles_diagnostics.is_empty();
     diagnostics.extend(fragment_cycles_diagnostics);
 
@@ -236,11 +245,12 @@ pub(crate) fn validate_fragment_definition(
         // it has either already raised an error, or we are validating an executable without
         // a schema.
         let type_condition = schema
-            .is_some_and(|s| s.types.contains_key(&fragment.type_condition))
-            .then_some(&fragment.type_condition);
+            .is_some_and(|s| s.types.contains_key(fragment.type_condition()))
+            .then_some(fragment.type_condition());
 
         diagnostics.extend(super::selection::validate_selection_set(
             db,
+            document,
             type_condition,
             &fragment.selection_set,
             context,
@@ -251,25 +261,21 @@ pub(crate) fn validate_fragment_definition(
 }
 
 pub(crate) fn validate_fragment_cycles(
-    db: &dyn ValidationDatabase,
-    def: &Node<ast::FragmentDefinition>,
+    document: &ExecutableDocument,
+    def: &Node<executable::Fragment>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-
-    // TODO pass in named fragments from outside this function, so it can be used on fully
-    // synthetic trees.
-    let named_fragments = db.ast_named_fragments();
 
     /// If a fragment spread is recursive, returns a vec containing the spread that refers back to
     /// the original fragment, and a trace of each fragment spread back to the original fragment.
     fn detect_fragment_cycles(
-        named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
-        selection_set: &[ast::Selection],
+        document: &ExecutableDocument,
+        selection_set: &executable::SelectionSet,
         visited: &mut RecursionGuard<'_>,
-    ) -> Result<(), CycleError<ast::FragmentSpread>> {
-        for selection in selection_set {
+    ) -> Result<(), CycleError<executable::FragmentSpread>> {
+        for selection in &selection_set.selections {
             match selection {
-                ast::Selection::FragmentSpread(spread) => {
+                executable::Selection::FragmentSpread(spread) => {
                     if visited.contains(&spread.fragment_name) {
                         if visited.first() == Some(&spread.fragment_name) {
                             return Err(CycleError::Recursed(vec![spread.clone()]));
@@ -277,20 +283,20 @@ pub(crate) fn validate_fragment_cycles(
                         continue;
                     }
 
-                    if let Some(fragment) = named_fragments.get(&spread.fragment_name) {
+                    if let Some(fragment) = document.fragments.get(&spread.fragment_name) {
                         detect_fragment_cycles(
-                            named_fragments,
+                            document,
                             &fragment.selection_set,
                             &mut visited.push(&fragment.name)?,
                         )
                         .map_err(|error| error.trace(spread))?;
                     }
                 }
-                ast::Selection::InlineFragment(inline) => {
-                    detect_fragment_cycles(named_fragments, &inline.selection_set, visited)?;
+                executable::Selection::InlineFragment(inline) => {
+                    detect_fragment_cycles(document, &inline.selection_set, visited)?;
                 }
-                ast::Selection::Field(field) => {
-                    detect_fragment_cycles(named_fragments, &field.selection_set, visited)?;
+                executable::Selection::Field(field) => {
+                    detect_fragment_cycles(document, &field.selection_set, visited)?;
                 }
             }
         }
@@ -300,7 +306,7 @@ pub(crate) fn validate_fragment_cycles(
 
     let mut visited = RecursionStack::with_root(def.name.clone()).with_limit(100);
 
-    match detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard()) {
+    match detect_fragment_cycles(document, &def.selection_set, &mut visited.guard()) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
             let head_location = NodeLocation::recompose(def.location(), def.name.location());
@@ -332,8 +338,8 @@ pub(crate) fn validate_fragment_cycles(
 
 pub(crate) fn validate_fragment_type_condition(
     db: &dyn ValidationDatabase,
-    fragment_name: Option<ast::Name>,
-    type_cond: &ast::NamedType,
+    fragment_name: Option<Name>,
+    type_cond: &NamedType,
     fragment_location: Option<NodeLocation>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -366,30 +372,23 @@ pub(crate) fn validate_fragment_type_condition(
 }
 
 pub(crate) fn validate_fragment_used(
-    db: &dyn ValidationDatabase,
-    fragment: &Node<ast::FragmentDefinition>,
+    document: &ExecutableDocument,
+    fragment: &Node<executable::Fragment>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let document = db.executable_ast();
     let fragment_name = &fragment.name;
 
-    let named_fragments = db.ast_named_fragments();
-    let operations = document
-        .definitions
-        .iter()
-        .filter_map(|definition| match definition {
-            ast::Definition::OperationDefinition(operation) => Some(operation),
-            _ => None,
-        });
-
-    let mut all_selections = operations
-        .flat_map(|operation| &operation.selection_set)
+    let mut all_selections = document
+        .all_operations()
+        .map(|operation| &operation.selection_set)
         .chain(
-            named_fragments
+            document
+                .fragments
                 .values()
-                .flat_map(|fragment| &fragment.selection_set),
-        );
+                .map(|fragment| &fragment.selection_set),
+        )
+        .flat_map(|set| &set.selections);
 
     let is_used = all_selections.any(|sel| selection_uses_fragment(sel, fragment_name));
 
@@ -407,14 +406,15 @@ pub(crate) fn validate_fragment_used(
     diagnostics
 }
 
-fn selection_uses_fragment(sel: &ast::Selection, name: &str) -> bool {
+fn selection_uses_fragment(sel: &executable::Selection, name: &str) -> bool {
     let sub_selections = match sel {
-        ast::Selection::FragmentSpread(fragment) => return fragment.fragment_name == name,
-        ast::Selection::Field(field) => &field.selection_set,
-        ast::Selection::InlineFragment(inline) => &inline.selection_set,
+        executable::Selection::FragmentSpread(fragment) => return fragment.fragment_name == name,
+        executable::Selection::Field(field) => &field.selection_set,
+        executable::Selection::InlineFragment(inline) => &inline.selection_set,
     };
 
     sub_selections
+        .selections
         .iter()
         .any(|sel| selection_uses_fragment(sel, name))
 }

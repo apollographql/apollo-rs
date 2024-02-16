@@ -1,6 +1,6 @@
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::DiagnosticList;
-use crate::{ast, executable, Node, ValidationDatabase};
+use crate::{ast, executable, ExecutableDocument, Node, Schema, ValidationDatabase};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub(crate) struct OperationValidationConfig<'vars> {
@@ -57,19 +57,18 @@ pub(crate) fn validate_subscription(
 
 pub(crate) fn validate_operation(
     db: &dyn ValidationDatabase,
-    operation: &Node<ast::OperationDefinition>,
-    has_schema: bool,
+    document: &ExecutableDocument,
+    schema: Option<&Schema>,
+    operation: &executable::Operation,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let config = OperationValidationConfig {
-        has_schema,
+        has_schema: schema.is_some(),
         variables: &operation.variables,
     };
 
-    let schema;
-    let against_type = if has_schema {
-        schema = db.schema();
+    let against_type = if let Some(schema) = schema {
         schema.root_operation(operation.operation_type)
     } else {
         None
@@ -80,7 +79,7 @@ pub(crate) fn validate_operation(
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
-        has_schema,
+        schema.is_some(),
     ));
     diagnostics.extend(super::variable::validate_variable_definitions(
         db,
@@ -88,9 +87,12 @@ pub(crate) fn validate_operation(
         config.has_schema,
     ));
 
-    diagnostics.extend(super::variable::validate_unused_variables(db, operation));
+    diagnostics.extend(super::variable::validate_unused_variables(
+        document, operation,
+    ));
     diagnostics.extend(super::selection::validate_selection_set(
         db,
+        document,
         against_type,
         &operation.selection_set,
         config,
@@ -101,15 +103,13 @@ pub(crate) fn validate_operation(
 
 pub(crate) fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
-    has_schema: bool,
+    document: &ExecutableDocument,
+    schema: Option<&Schema>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let document = db.executable_ast();
 
-    for definition in &document.definitions {
-        if let ast::Definition::OperationDefinition(operation) = definition {
-            diagnostics.extend(validate_operation(db, operation, has_schema));
-        }
+    for operation in document.all_operations() {
+        diagnostics.extend(validate_operation(db, document, schema, operation));
     }
 
     diagnostics

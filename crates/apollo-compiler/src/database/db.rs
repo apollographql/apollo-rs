@@ -2,9 +2,8 @@
 // non-optional and will have an error produced in the parser if they are missing.
 
 use crate::database::ReprStorage;
-use crate::validation::ValidationStorage;
 
-#[salsa::database(ReprStorage, ValidationStorage)]
+#[salsa::database(ReprStorage)]
 #[derive(Default)]
 pub struct RootDatabase {
     pub storage: salsa::Storage<RootDatabase>,
