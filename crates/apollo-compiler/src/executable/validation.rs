@@ -1,5 +1,6 @@
 use super::FieldSet;
 use crate::ast;
+use crate::database::ReprDatabase;
 use crate::database::RootDatabase;
 use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::Details;
@@ -7,7 +8,6 @@ use crate::validation::DiagnosticList;
 use crate::validation::FileId;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
-use crate::InputDatabase;
 use crate::Schema;
 use std::sync::Arc;
 
@@ -65,14 +65,7 @@ fn compiler_validation(
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let ast = document.to_ast();
-    db.set_input(
-        ast_id,
-        crate::Source {
-            ty: crate::database::SourceType::Executable,
-            ast: Some(Arc::new(ast)),
-        },
-    );
-    db.set_source_files(ids);
+    db.set_executable_ast(Arc::new(ast));
     let diagnostics = if schema.is_some() {
         crate::validation::validate_executable(&db, ast_id)
     } else {
@@ -96,14 +89,7 @@ pub(crate) fn validate_field_set(
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let ast = ast::Document::new();
-    db.set_input(
-        ast_id,
-        crate::Source {
-            ty: crate::database::SourceType::Executable,
-            ast: Some(Arc::new(ast)),
-        },
-    );
-    db.set_source_files(ids);
+    db.set_executable_ast(Arc::new(ast));
     let diagnostics = crate::validation::selection::validate_selection_set(
         &db,
         ast_id,

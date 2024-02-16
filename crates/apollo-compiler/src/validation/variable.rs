@@ -1,7 +1,5 @@
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::{
-    FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
-};
+use crate::validation::{NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack};
 use crate::{ast, Node, ValidationDatabase};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
@@ -174,7 +172,6 @@ fn variables_in_directives(
 // }
 pub(crate) fn validate_unused_variables(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     operation: &Node<ast::OperationDefinition>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
@@ -196,7 +193,7 @@ pub(crate) fn validate_unused_variables(
         .collect();
     let mut used_vars = HashSet::<ast::Name>::new();
     let walked = walk_selections(
-        &db.ast(file_id),
+        &db.executable_ast(),
         &operation.selection_set,
         |named_fragments, selection| match selection {
             ast::Selection::Field(field) => {

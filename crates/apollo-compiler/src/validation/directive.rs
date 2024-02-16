@@ -176,11 +176,9 @@ pub(crate) fn validate_directive_definition(
 pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    for file_id in db.type_definition_files() {
-        for def in &db.ast(file_id).definitions {
-            if let ast::Definition::DirectiveDefinition(directive_definition) = def {
-                diagnostics.extend(validate_directive_definition(db, directive_definition));
-            }
+    for def in &db.schema_ast().definitions {
+        if let ast::Definition::DirectiveDefinition(directive_definition) = def {
+            diagnostics.extend(validate_directive_definition(db, directive_definition));
         }
     }
 

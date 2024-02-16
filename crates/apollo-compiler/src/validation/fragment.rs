@@ -43,7 +43,6 @@ fn get_possible_types<'a>(
 
 fn validate_fragment_spread_type(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     against_type: &ast::NamedType,
     type_condition: &ast::NamedType,
     selection: &ast::Selection,
@@ -72,7 +71,7 @@ fn validate_fragment_spread_type(
         let diagnostic = match selection {
             ast::Selection::Field(_) => unreachable!(),
             ast::Selection::FragmentSpread(spread) => {
-                let named_fragments = db.ast_named_fragments(file_id);
+                let named_fragments = db.ast_named_fragments();
                 // TODO(@goto-bus-stop) Can we guarantee this unwrap()?
                 let fragment_definition = named_fragments.get(&spread.fragment_name).unwrap();
 
@@ -141,7 +140,6 @@ pub(crate) fn validate_inline_fragment(
         if let (Some(against_type), Some(type_condition)) = (against_type, &inline.type_condition) {
             diagnostics.extend(validate_fragment_spread_type(
                 db,
-                file_id,
                 against_type,
                 type_condition,
                 &ast::Selection::InlineFragment(inline.clone()),
@@ -176,13 +174,12 @@ pub(crate) fn validate_fragment_spread(
         context.has_schema,
     ));
 
-    let named_fragments = db.ast_named_fragments(file_id);
+    let named_fragments = db.ast_named_fragments();
     match named_fragments.get(&spread.fragment_name) {
         Some(def) => {
             if let Some(against_type) = against_type {
                 diagnostics.extend(validate_fragment_spread_type(
                     db,
-                    file_id,
                     against_type,
                     &def.type_condition,
                     &ast::Selection::FragmentSpread(spread.clone()),
@@ -234,7 +231,7 @@ pub(crate) fn validate_fragment_definition(
         false
     };
 
-    let fragment_cycles_diagnostics = validate_fragment_cycles(db, file_id, fragment);
+    let fragment_cycles_diagnostics = validate_fragment_cycles(db, fragment);
     let has_cycles = !fragment_cycles_diagnostics.is_empty();
     diagnostics.extend(fragment_cycles_diagnostics);
 
@@ -260,14 +257,13 @@ pub(crate) fn validate_fragment_definition(
 
 pub(crate) fn validate_fragment_cycles(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
     def: &Node<ast::FragmentDefinition>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     // TODO pass in named fragments from outside this function, so it can be used on fully
     // synthetic trees.
-    let named_fragments = db.ast_named_fragments(file_id);
+    let named_fragments = db.ast_named_fragments();
 
     /// If a fragment spread is recursive, returns a vec containing the spread that refers back to
     /// the original fragment, and a trace of each fragment spread back to the original fragment.
@@ -377,14 +373,13 @@ pub(crate) fn validate_fragment_type_condition(
 pub(crate) fn validate_fragment_used(
     db: &dyn ValidationDatabase,
     fragment: &Node<ast::FragmentDefinition>,
-    file_id: FileId,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let document = db.ast(file_id);
+    let document = db.executable_ast();
     let fragment_name = &fragment.name;
 
-    let named_fragments = db.ast_named_fragments(file_id);
+    let named_fragments = db.ast_named_fragments();
     let operations = document
         .definitions
         .iter()

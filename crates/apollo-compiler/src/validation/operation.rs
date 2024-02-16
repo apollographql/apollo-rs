@@ -90,9 +90,7 @@ pub(crate) fn validate_operation(
         config.has_schema,
     ));
 
-    diagnostics.extend(super::variable::validate_unused_variables(
-        db, file_id, operation,
-    ));
+    diagnostics.extend(super::variable::validate_unused_variables(db, operation));
     diagnostics.extend(super::selection::validate_selection_set(
         db,
         file_id,
@@ -110,7 +108,7 @@ pub(crate) fn validate_operation_definitions(
     has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let document = db.ast(file_id);
+    let document = db.executable_ast();
 
     for definition in &document.definitions {
         if let ast::Definition::OperationDefinition(operation) = definition {

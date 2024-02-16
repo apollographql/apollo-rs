@@ -1,8 +1,8 @@
+use crate::database::ReprDatabase;
 use crate::database::RootDatabase;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
-use crate::InputDatabase;
 use crate::Schema;
 use std::sync::Arc;
 
@@ -19,14 +19,7 @@ fn compiler_validation(errors: &mut DiagnosticList, schema: &Schema) {
     ids.push(ast_id);
     let mut ast = crate::ast::Document::new();
     ast.definitions.extend(schema.to_ast());
-    db.set_input(
-        ast_id,
-        crate::Source {
-            ty: crate::database::SourceType::Schema,
-            ast: Some(Arc::new(ast)),
-        },
-    );
-    db.set_source_files(ids);
+    db.set_schema_ast(Arc::new(ast));
     for diagnostic in crate::validation::validate_type_system(&db) {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }

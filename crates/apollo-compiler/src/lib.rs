@@ -14,7 +14,7 @@ mod parser;
 pub mod schema;
 pub mod validation;
 
-use crate::database::{InputDatabase, ReprDatabase, Source};
+use crate::database::ReprDatabase;
 use crate::validation::ValidationDatabase;
 
 pub use self::executable::ExecutableDocument;
