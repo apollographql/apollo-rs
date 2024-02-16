@@ -2,8 +2,8 @@
 
 use crate::ast;
 use crate::validation::FileId;
-use crate::validation::NodeLocation;
 use crate::Node;
+use crate::NodeLocation;
 use crate::NodeStr;
 use crate::Parser;
 use indexmap::IndexMap;

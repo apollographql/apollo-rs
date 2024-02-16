@@ -1,7 +1,6 @@
 use crate::execution::GraphQLLocation;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
-use crate::validation::FileId;
 use crate::SourceMap;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
@@ -10,6 +9,8 @@ use std::fmt;
 use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::num::NonZeroI64;
+use std::sync::atomic;
 use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering;
 use std::sync::OnceLock;
@@ -46,6 +47,15 @@ const HASH_NOT_COMPUTED_YET: u64 = 0;
 pub struct NodeLocation {
     pub(crate) file_id: FileId,
     pub(crate) text_range: TextRange,
+}
+
+/// Integer identifier for a parsed source file.
+///
+/// Used internally to support validating for example a schema built from multiple source files,
+/// and having diagnostics point to relevant sources.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub struct FileId {
+    id: NonZeroI64,
 }
 
 impl<T> Node<T> {
@@ -300,5 +310,52 @@ impl<T: serde::Serialize> serde::Serialize for Node<T> {
         S: serde::Serializer,
     {
         T::serialize(self, serializer)
+    }
+}
+
+impl fmt::Debug for FileId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.id.fmt(f)
+    }
+}
+
+/// The next file ID to use. This is global so file IDs do not conflict between different compiler
+/// instances.
+static NEXT: atomic::AtomicI64 = atomic::AtomicI64::new(INITIAL);
+static INITIAL: i64 = 1;
+
+impl FileId {
+    /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
+    pub const BUILT_IN: Self = Self::const_new(-1);
+
+    /// Passed to Ariadne to create a report without a location
+    pub(crate) const NONE: Self = Self::const_new(-2);
+
+    pub(crate) const HACK_TMP: Self = Self::const_new(-3);
+
+    // Returning a different value every time does not sound like good `impl Default`
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
+        Self {
+            id: NonZeroI64::new(id).unwrap(),
+        }
+    }
+
+    /// Reset file ID back to 1, used to get consistent results in tests.
+    ///
+    /// All tests in the process must use `#[serial_test::serial]`
+    #[doc(hidden)]
+    pub fn reset() {
+        NEXT.store(INITIAL, atomic::Ordering::Release)
+    }
+
+    const fn const_new(id: i64) -> Self {
+        // TODO: use unwrap() when const-stable https://github.com/rust-lang/rust/issues/67441
+        if let Some(id) = NonZeroI64::new(id) {
+            Self { id }
+        } else {
+            panic!()
+        }
     }
 }

@@ -1,4 +1,5 @@
-use super::sources::{FileId, Source, SourceType};
+use super::sources::{Source, SourceType};
+use crate::FileId;
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]

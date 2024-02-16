@@ -12,7 +12,7 @@ use apollo_compiler::name;
 use apollo_compiler::schema;
 use apollo_compiler::ty;
 use apollo_compiler::validation::DiagnosticList;
-use apollo_compiler::validation::FileId;
+use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
 use indexmap::IndexMap;

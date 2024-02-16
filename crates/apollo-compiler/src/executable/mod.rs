@@ -22,9 +22,9 @@ pub use crate::ast::{
     VariableDefinition,
 };
 use crate::validation::DiagnosticList;
-use crate::validation::NodeLocation;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
+use crate::NodeLocation;
 use std::fmt;
 use std::sync::Arc;
 

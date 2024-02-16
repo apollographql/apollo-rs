@@ -28,8 +28,8 @@ use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::execution::{GraphQLError, Response};
 use crate::schema::BuildError as SchemaBuildError;
-use crate::Node;
 use crate::SourceMap;
+use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
 use std::fmt;
 use std::sync::Arc;
@@ -38,8 +38,7 @@ pub(crate) use validation_db::{
 };
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
-pub use crate::database::FileId;
-pub use crate::node::NodeLocation;
+pub(crate) use crate::node::FileId;
 
 /// Wraps a [`Schema`] or [`ExecutableDocument`] to mark it
 /// as [valid](https://spec.graphql.org/October2021/#sec-Validation).

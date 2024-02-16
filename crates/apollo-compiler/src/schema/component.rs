@@ -1,6 +1,6 @@
 use crate::ast::Name;
-use crate::validation::NodeLocation;
 use crate::Node;
+use crate::NodeLocation;
 use std::fmt;
 use std::hash;
 use std::ops::Deref;

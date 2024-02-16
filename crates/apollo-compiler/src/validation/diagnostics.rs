@@ -5,8 +5,8 @@ use crate::ast::Type;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
-use crate::diagnostic::NodeLocation;
 use crate::Node;
+use crate::NodeLocation;
 use std::fmt;
 use thiserror::Error;
 

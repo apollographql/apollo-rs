@@ -4,11 +4,11 @@
 //! To use pretty-printing in custom errors, implement the [`ToCliReport`] trait.
 //!
 //! ```rust
+//! use apollo_compiler::NodeLocation;
 //! use apollo_compiler::Schema;
 //! use apollo_compiler::ast::Name;
 //! use apollo_compiler::diagnostic::CliReport;
 //! use apollo_compiler::diagnostic::Diagnostic;
-//! use apollo_compiler::diagnostic::NodeLocation;
 //! use apollo_compiler::diagnostic::ToCliReport;
 //!
 //! /// Error type for a small GraphQL schema linter.
@@ -52,7 +52,7 @@
 //! ready for formatting:
 //!
 //! ```rust
-//! # use apollo_compiler::{Schema, diagnostic::{ToCliReport, NodeLocation, CliReport}};
+//! # use apollo_compiler::{NodeLocation, Schema, diagnostic::{ToCliReport, CliReport}};
 //! # #[derive(Debug, thiserror::Error)]
 //! # #[error("")]
 //! # struct LintError {}
@@ -70,21 +70,19 @@
 use crate::execution::GraphQLError;
 use crate::execution::GraphQLLocation;
 use crate::validation::FileId;
+use crate::NodeLocation;
 use crate::SourceFile;
 use crate::SourceMap;
+#[cfg(doc)]
+use crate::{ExecutableDocument, Schema};
 use ariadne::ColorGenerator;
 use ariadne::ReportKind;
+use std::cell::Cell;
 use std::fmt;
 use std::io;
 use std::ops::Range;
 use std::sync::Arc;
 use std::sync::OnceLock;
-
-pub use crate::validation::NodeLocation;
-
-#[cfg(doc)]
-use crate::{ExecutableDocument, Schema};
-use std::cell::Cell;
 
 /// An error bundled together with a source map, for conversion either
 /// to a pretty-printable CLI report or to a JSON-serializable GraphQL error.

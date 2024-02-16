@@ -17,6 +17,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## BREAKING
+
+- Move `NodeLocation` and `FileId` from `apollo_compiler::validation` to the crate root.
+
 # [1.0.0-beta.13](https://crates.io/crates/apollo-compiler/1.0.0-beta.13) - 2024-02-14
 
 > This release includes a critical fix to overflow protection in validation.
