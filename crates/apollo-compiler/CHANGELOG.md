@@ -21,7 +21,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-- Move `NodeLocation` and `FileId` from `apollo_compiler::validation` to the crate root.
+- **Move `NodeLocation` and `FileId` from `apollo_compiler::validation` to the crate root - [SimonSapin], [pull/838]**
+
+## Maintenance
+
+- **Remove Salsa database for 1.2~2× validation speed - [SimonSapin], [pull/838]**
+  We were not taking advantage of caching it provides.
+  Additionally, validation uses `Schema` and `ExecutableDocument` directly
+  rather than converting them to AST.
+  ```
+  $ cargo bench --bench multi-source
+  supergraph parse_and_validate
+                        time:   [398.09 µs 399.32 µs 400.82 µs]
+                        change: [-19.966% -19.418% -18.864%] (p = 0.00 < 0.05)
+                        Performance has improved.
+  simple_query parse_and_validate
+                        time:   [12.097 µs 12.104 µs 12.113 µs]
+                        change: [-52.467% -52.282% -52.109%] (p = 0.00 < 0.05)
+                        Performance has improved.
+  ```
+
+[SimonSapin]: https://github.com/SimonSapin]
+[pull/838]: https://github.com/apollographql/apollo-rs/pull/838
+
 
 # [1.0.0-beta.13](https://crates.io/crates/apollo-compiler/1.0.0-beta.13) - 2024-02-14
 
