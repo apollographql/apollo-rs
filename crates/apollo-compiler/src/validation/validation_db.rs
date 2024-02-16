@@ -1,12 +1,16 @@
 use crate::validation::diagnostics::ValidationError;
-use crate::validation::{
-    self, directive, enum_, input_object, interface, object, operation, scalar, union_, FileId,
-};
-use crate::{ast, name, schema, InputDatabase, Node, ReprDatabase};
+use crate::validation::directive::validate_directive_definitions;
+use crate::validation::enum_::validate_enum_definitions;
+use crate::validation::input_object::validate_input_object_definitions;
+use crate::validation::interface::validate_interface_definitions;
+use crate::validation::object::validate_object_type_definitions;
+use crate::validation::scalar::validate_scalar_definitions;
+use crate::validation::schema::validate_schema_definition;
+use crate::validation::union_::validate_union_definitions;
+use crate::validation::FileId;
+use crate::{ast, name, InputDatabase, Node, ReprDatabase};
 use std::collections::HashMap;
 use std::sync::Arc;
-
-use super::field;
 
 #[salsa::query_group(ValidationStorage)]
 pub(crate) trait ValidationDatabase: InputDatabase + ReprDatabase {
@@ -15,103 +19,6 @@ pub(crate) trait ValidationDatabase: InputDatabase + ReprDatabase {
         &self,
         file_id: FileId,
     ) -> Arc<HashMap<ast::Name, Node<ast::FragmentDefinition>>>;
-
-    /// Validate all documents.
-    fn validate(&self) -> Vec<ValidationError>;
-
-    /// Validate the type system, combined of all type system documents known to
-    /// the compiler.
-    #[salsa::invoke(validate_type_system)]
-    fn validate_type_system(&self) -> Vec<ValidationError>;
-
-    /// Validate an executable document.
-    #[salsa::invoke(validate_executable)]
-    fn validate_executable(&self, file_id: FileId) -> Vec<ValidationError>;
-
-    /// Validate a standalone executable document, without knowledge of the type system it executes
-    /// against.
-    ///
-    /// This runs a subset of the validations from `validate_executable`.
-    #[salsa::invoke(validate_standalone_executable)]
-    fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ValidationError>;
-
-    #[salsa::invoke(validation::schema::validate_schema_definition)]
-    fn validate_schema_definition(
-        &self,
-        def: ast::TypeWithExtensions<ast::SchemaDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(scalar::validate_scalar_definitions)]
-    fn validate_scalar_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(scalar::validate_scalar_definition)]
-    fn validate_scalar_definition(
-        &self,
-        scalar_def: Node<schema::ScalarType>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(enum_::validate_enum_definitions)]
-    fn validate_enum_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(enum_::validate_enum_definition)]
-    fn validate_enum_definition(
-        &self,
-        enum_: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(union_::validate_union_definitions)]
-    fn validate_union_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(union_::validate_union_definition)]
-    fn validate_union_definition(
-        &self,
-        union_: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(interface::validate_interface_definitions)]
-    fn validate_interface_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(interface::validate_interface_definition)]
-    fn validate_interface_definition(
-        &self,
-        interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(directive::validate_directive_definition)]
-    fn validate_directive_definition(
-        &self,
-        directive_definition: Node<ast::DirectiveDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(directive::validate_directive_definitions)]
-    fn validate_directive_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(input_object::validate_input_object_definitions)]
-    fn validate_input_object_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(input_object::validate_input_object_definition)]
-    fn validate_input_object_definition(
-        &self,
-        input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(object::validate_object_type_definitions)]
-    fn validate_object_type_definitions(&self) -> Vec<ValidationError>;
-
-    #[salsa::invoke(object::validate_object_type_definition)]
-    fn validate_object_type_definition(
-        &self,
-        def: ast::TypeWithExtensions<ast::ObjectTypeDefinition>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(field::validate_field_definitions)]
-    fn validate_field_definitions(
-        &self,
-        fields: Vec<Node<ast::FieldDefinition>>,
-    ) -> Vec<ValidationError>;
-
-    #[salsa::invoke(operation::validate_operation_definitions)]
-    fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ValidationError>;
 }
 
 fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
@@ -287,32 +194,20 @@ pub(crate) fn ast_named_fragments(
     Arc::new(named_fragments)
 }
 
-pub(crate) fn validate(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(db.validate_type_system());
-
-    for file_id in db.executable_definition_files() {
-        diagnostics.extend(db.validate_executable(file_id));
-    }
-
-    diagnostics
-}
-
 pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.ast_types().schema.clone();
-    diagnostics.extend(db.validate_schema_definition(schema));
+    diagnostics.extend(validate_schema_definition(db, schema));
 
-    diagnostics.extend(db.validate_scalar_definitions());
-    diagnostics.extend(db.validate_enum_definitions());
-    diagnostics.extend(db.validate_union_definitions());
+    diagnostics.extend(validate_scalar_definitions(db));
+    diagnostics.extend(validate_enum_definitions(db));
+    diagnostics.extend(validate_union_definitions(db));
 
-    diagnostics.extend(db.validate_interface_definitions());
-    diagnostics.extend(db.validate_directive_definitions());
-    diagnostics.extend(db.validate_input_object_definitions());
-    diagnostics.extend(db.validate_object_type_definitions());
+    diagnostics.extend(validate_interface_definitions(db));
+    diagnostics.extend(validate_directive_definitions(db));
+    diagnostics.extend(validate_input_object_definitions(db));
+    diagnostics.extend(validate_object_type_definitions(db));
 
     diagnostics
 }
@@ -324,7 +219,7 @@ fn validate_executable_inner(
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(super::operation::validate_operation_definitions_inner(
+    diagnostics.extend(super::operation::validate_operation_definitions(
         db, file_id, has_schema,
     ));
     for def in db.ast_named_fragments(file_id).values() {

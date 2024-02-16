@@ -8,7 +8,7 @@ pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<Val
     let mut diagnostics = Vec::new();
 
     for def in db.ast_types().unions.values() {
-        diagnostics.extend(db.validate_union_definition(def.clone()));
+        diagnostics.extend(validate_union_definition(db, def.clone()));
     }
 
     diagnostics

@@ -8,7 +8,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::InputDatabase;
 use crate::Schema;
-use crate::ValidationDatabase;
 use std::sync::Arc;
 
 pub(crate) fn validate_executable_document(
@@ -86,9 +85,9 @@ fn compiler_validation(
     );
     compiler.db.set_source_files(ids);
     let diagnostics = if schema.is_some() {
-        compiler.db.validate_executable(ast_id)
+        crate::validation::validate_executable(&compiler.db, ast_id)
     } else {
-        compiler.db.validate_standalone_executable(ast_id)
+        crate::validation::validate_standalone_executable(&compiler.db, ast_id)
     };
     for diagnostic in diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))

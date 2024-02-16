@@ -66,7 +66,7 @@ pub(crate) fn validate_input_object_definitions(
     let mut diagnostics = Vec::new();
 
     for input_object in db.ast_types().input_objects.values() {
-        diagnostics.extend(db.validate_input_object_definition(input_object.clone()));
+        diagnostics.extend(validate_input_object_definition(db, input_object.clone()));
     }
 
     diagnostics

@@ -1,6 +1,9 @@
 use crate::{
     ast, schema,
-    validation::diagnostics::{DiagnosticData, ValidationError},
+    validation::{
+        diagnostics::{DiagnosticData, ValidationError},
+        field::validate_field_definitions,
+    },
     ValidationDatabase,
 };
 use std::collections::HashSet;
@@ -9,7 +12,7 @@ pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec
     let mut diagnostics = Vec::new();
 
     for interface in db.ast_types().interfaces.values() {
-        diagnostics.extend(db.validate_interface_definition(interface.clone()));
+        diagnostics.extend(validate_interface_definition(db, interface.clone()));
     }
 
     diagnostics
@@ -59,7 +62,7 @@ pub(crate) fn validate_interface_definition(
 
     // Interface Type field validation.
     let field_definitions = interface.fields().cloned().collect();
-    diagnostics.extend(db.validate_field_definitions(field_definitions));
+    diagnostics.extend(validate_field_definitions(db, field_definitions));
 
     // Implements Interfaceds validation.
     let implements_interfaces: Vec<_> = interface.implements_interfaces().cloned().collect();

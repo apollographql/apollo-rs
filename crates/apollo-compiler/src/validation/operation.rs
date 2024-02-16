@@ -100,7 +100,7 @@ pub(crate) fn validate_operation(
     diagnostics
 }
 
-pub(crate) fn validate_operation_definitions_inner(
+pub(crate) fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
     file_id: FileId,
     has_schema: bool,
@@ -120,11 +120,4 @@ pub(crate) fn validate_operation_definitions_inner(
     }
 
     diagnostics
-}
-
-pub(crate) fn validate_operation_definitions(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ValidationError> {
-    validate_operation_definitions_inner(db, file_id, false)
 }

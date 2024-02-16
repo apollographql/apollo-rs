@@ -179,7 +179,10 @@ pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec
     for file_id in db.type_definition_files() {
         for def in &db.ast(file_id).definitions {
             if let ast::Definition::DirectiveDefinition(directive_definition) = def {
-                diagnostics.extend(db.validate_directive_definition(directive_definition.clone()));
+                diagnostics.extend(validate_directive_definition(
+                    db,
+                    directive_definition.clone(),
+                ));
             }
         }
     }

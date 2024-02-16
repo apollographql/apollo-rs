@@ -1,6 +1,9 @@
 use crate::{
     ast,
-    validation::diagnostics::{DiagnosticData, ValidationError},
+    validation::{
+        diagnostics::{DiagnosticData, ValidationError},
+        field::validate_field_definitions,
+    },
     ValidationDatabase,
 };
 use std::collections::HashSet;
@@ -12,7 +15,7 @@ pub(crate) fn validate_object_type_definitions(
 
     let defs = &db.ast_types().objects;
     for def in defs.values() {
-        diagnostics.extend(db.validate_object_type_definition(def.clone()))
+        diagnostics.extend(validate_object_type_definition(db, def.clone()))
     }
 
     diagnostics
@@ -42,7 +45,7 @@ pub(crate) fn validate_object_type_definition(
         .collect();
 
     // Object Type field validations.
-    diagnostics.extend(db.validate_field_definitions(field_definitions));
+    diagnostics.extend(validate_field_definitions(db, field_definitions));
 
     // Implements Interfaces validation.
     let implements_interfaces: Vec<_> = object.implements_interfaces().cloned().collect();

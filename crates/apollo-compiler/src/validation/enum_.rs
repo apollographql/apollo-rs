@@ -5,7 +5,7 @@ pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<Vali
     let mut diagnostics = Vec::new();
 
     for enum_ in db.ast_types().enums.values() {
-        diagnostics.extend(db.validate_enum_definition(enum_.clone()));
+        diagnostics.extend(validate_enum_definition(db, enum_.clone()));
     }
 
     diagnostics

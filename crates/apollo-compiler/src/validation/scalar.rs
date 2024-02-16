@@ -6,7 +6,7 @@ pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<Va
     let schema = db.schema();
     for def in schema.types.values() {
         if let schema::ExtendedType::Scalar(scalar) = def {
-            diagnostics.extend(db.validate_scalar_definition(scalar.clone()));
+            diagnostics.extend(validate_scalar_definition(db, scalar.clone()));
         }
     }
 
