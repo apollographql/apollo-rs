@@ -1,14 +1,14 @@
 use crate::schema::{ComponentName, ExtendedType, InterfaceType, Name};
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::field::validate_field_definitions;
-use crate::{ast, Node, NodeLocation, ValidationDatabase};
+use crate::{ast, Node, NodeLocation};
 use indexmap::IndexSet;
 
-pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+pub(crate) fn validate_interface_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    for ty in db.schema().types.values() {
+    for ty in schema.types.values() {
         if let ExtendedType::Interface(interface) = ty {
-            diagnostics.extend(validate_interface_definition(db, interface));
+            diagnostics.extend(validate_interface_definition(schema, interface));
         }
     }
 
@@ -16,21 +16,17 @@ pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec
 }
 
 pub(crate) fn validate_interface_definition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     interface: &Node<InterfaceType>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let schema = db.schema();
-
-    let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
-        db,
+        Some(schema),
         interface.directives.iter_ast(),
         ast::DirectiveLocation::Interface,
         // interfaces don't use variables
         Default::default(),
-        has_schema,
     ));
 
     // Interface must not implement itself.
@@ -60,11 +56,11 @@ pub(crate) fn validate_interface_definition(
     }
 
     // Interface Type field validation.
-    diagnostics.extend(validate_field_definitions(db, &interface.fields));
+    diagnostics.extend(validate_field_definitions(schema, &interface.fields));
 
     // Implements Interfaceds validation.
     diagnostics.extend(validate_implements_interfaces(
-        db,
+        schema,
         &interface.name,
         interface.location(),
         &interface.implements_interfaces,
@@ -99,14 +95,12 @@ pub(crate) fn validate_interface_definition(
 }
 
 pub(crate) fn validate_implements_interfaces(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     implementor_name: &Name,
     implementor_location: Option<NodeLocation>,
     implements_interfaces: &IndexSet<ComponentName>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-
-    let schema = db.schema();
 
     let interface_definitions = implements_interfaces
         .iter()

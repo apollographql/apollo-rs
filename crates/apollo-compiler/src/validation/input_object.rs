@@ -3,13 +3,12 @@ use crate::schema::{ExtendedType, InputObjectType};
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{CycleError, RecursionGuard, RecursionStack};
 use crate::Node;
-use crate::ValidationDatabase;
 use std::collections::HashMap;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.
 struct FindRecursiveInputValue<'a> {
-    db: &'a dyn ValidationDatabase,
+    schema: &'a crate::Schema,
 }
 
 impl FindRecursiveInputValue<'_> {
@@ -25,7 +24,7 @@ impl FindRecursiveInputValue<'_> {
             // Everything else may be a cyclical input value.
             ast::Type::NonNullNamed(name) => {
                 if !seen.contains(name) {
-                    if let Some(object_def) = self.db.schema().get_input_object(name) {
+                    if let Some(object_def) = self.schema.get_input_object(name) {
                         self.input_object_definition(seen.push(name)?, object_def)
                             .map_err(|err| err.trace(def))?
                     }
@@ -52,23 +51,21 @@ impl FindRecursiveInputValue<'_> {
     }
 
     fn check(
-        db: &dyn ValidationDatabase,
+        schema: &crate::Schema,
         input_object: &InputObjectType,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         let mut recursion_stack = RecursionStack::with_root(input_object.name.clone());
-        FindRecursiveInputValue { db }
+        FindRecursiveInputValue { schema }
             .input_object_definition(recursion_stack.guard(), input_object)
     }
 }
 
-pub(crate) fn validate_input_object_definitions(
-    db: &dyn ValidationDatabase,
-) -> Vec<ValidationError> {
+pub(crate) fn validate_input_object_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    for ty in db.schema().types.values() {
+    for ty in schema.types.values() {
         if let ExtendedType::InputObject(input_object) = ty {
-            diagnostics.extend(validate_input_object_definition(db, input_object));
+            diagnostics.extend(validate_input_object_definition(schema, input_object));
         }
     }
 
@@ -76,20 +73,18 @@ pub(crate) fn validate_input_object_definitions(
 }
 
 pub(crate) fn validate_input_object_definition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     input_object: &Node<InputObjectType>,
 ) -> Vec<ValidationError> {
-    let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
-        db,
+        Some(schema),
         input_object.directives.iter_ast(),
         ast::DirectiveLocation::InputObject,
         // input objects don't use variables
         Default::default(),
-        has_schema,
     );
 
-    match FindRecursiveInputValue::check(db, input_object) {
+    match FindRecursiveInputValue::check(schema, input_object) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
             input_object.location(),
@@ -118,7 +113,7 @@ pub(crate) fn validate_input_object_definition(
         .map(|c| c.node.clone())
         .collect();
     diagnostics.extend(validate_input_value_definitions(
-        db,
+        schema,
         &fields,
         ast::DirectiveLocation::InputFieldDefinition,
     ));
@@ -127,11 +122,12 @@ pub(crate) fn validate_input_object_definition(
 }
 
 pub(crate) fn validate_argument_definitions(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) -> Vec<ValidationError> {
-    let mut diagnostics = validate_input_value_definitions(db, input_values, directive_location);
+    let mut diagnostics =
+        validate_input_value_definitions(schema, input_values, directive_location);
 
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
@@ -157,22 +153,18 @@ pub(crate) fn validate_argument_definitions(
 }
 
 pub(crate) fn validate_input_value_definitions(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) -> Vec<ValidationError> {
-    let schema = db.schema();
-
     let mut diagnostics = Vec::new();
 
     for input_value in input_values {
-        let has_schema = true;
         diagnostics.extend(super::directive::validate_directives(
-            db,
+            Some(schema),
             input_value.directives.iter(),
             directive_location,
             Default::default(), // No variables in an input value definition
-            has_schema,
         ));
         // Input values must only contain input types.
         let loc = input_value.location();

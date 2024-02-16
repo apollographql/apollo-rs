@@ -1,12 +1,11 @@
-use crate::{ast, schema, validation::diagnostics::ValidationError, Node, ValidationDatabase};
+use crate::{ast, schema, validation::diagnostics::ValidationError, Node};
 
-pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+pub(crate) fn validate_scalar_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let schema = db.schema();
     for def in schema.types.values() {
         if let schema::ExtendedType::Scalar(scalar) = def {
-            diagnostics.extend(validate_scalar_definition(db, scalar));
+            diagnostics.extend(validate_scalar_definition(schema, scalar));
         }
     }
 
@@ -14,16 +13,15 @@ pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<Va
 }
 
 pub(crate) fn validate_scalar_definition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     scalar_def: &Node<schema::ScalarType>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     // All built-in scalars must be omitted for brevity.
     if !scalar_def.is_built_in() {
-        let has_schema = true;
         diagnostics.extend(super::directive::validate_directives(
-            db,
+            Some(schema),
             scalar_def
                 .directives
                 .iter()
@@ -31,7 +29,6 @@ pub(crate) fn validate_scalar_definition(
             ast::DirectiveLocation::Scalar,
             // scalars don't use variables
             Default::default(),
-            has_schema,
         ));
     }
 

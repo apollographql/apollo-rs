@@ -2,7 +2,7 @@ use crate::ast;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::ValidationDatabase;
+
 use crate::Node;
 
 fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -> ValidationError {
@@ -17,24 +17,23 @@ fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -
 }
 
 pub(crate) fn validate_values(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
-    value_of_correct_type(db, ty, &argument.value, var_defs, &mut diagnostics);
+    value_of_correct_type(schema, ty, &argument.value, var_defs, &mut diagnostics);
     diagnostics
 }
 
 pub(crate) fn value_of_correct_type(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
     var_defs: &[Node<ast::VariableDefinition>],
     diagnostics: &mut Vec<ValidationError>,
 ) {
-    let schema = db.schema();
     let Some(type_definition) = schema.types.get(ty.inner_named_type()) else {
         return;
     };
@@ -146,7 +145,7 @@ pub(crate) fn value_of_correct_type(
                             diagnostics.push(unsupported_type(default_value, &var_def.ty))
                         } else {
                             value_of_correct_type(
-                                db,
+                                schema,
                                 &var_def.ty,
                                 default_value,
                                 var_defs,
@@ -194,7 +193,7 @@ pub(crate) fn value_of_correct_type(
                 let item_type = ty.same_location(ty.item_type().clone());
                 if type_definition.is_input_type() {
                     for v in li {
-                        value_of_correct_type(db, &item_type, v, var_defs, diagnostics);
+                        value_of_correct_type(schema, &item_type, v, var_defs, diagnostics);
                     }
                 } else {
                     diagnostics.push(unsupported_type(arg_value, &item_type));
@@ -249,7 +248,7 @@ pub(crate) fn value_of_correct_type(
                     let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);
 
                     if let Some((_, v)) = used_val {
-                        value_of_correct_type(db, ty, v, var_defs, diagnostics);
+                        value_of_correct_type(schema, ty, v, var_defs, diagnostics);
                     }
                 })
             }

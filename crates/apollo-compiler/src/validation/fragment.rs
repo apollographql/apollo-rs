@@ -9,7 +9,6 @@ use crate::validation::operation::OperationValidationConfig;
 use crate::validation::{CycleError, NodeLocation, RecursionGuard, RecursionStack};
 use crate::ExecutableDocument;
 use crate::Node;
-use crate::ValidationDatabase;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -46,14 +45,13 @@ fn get_possible_types<'a>(
 }
 
 fn validate_fragment_spread_type(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     document: &ExecutableDocument,
     against_type: &NamedType,
     type_condition: &NamedType,
     selection: &executable::Selection,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let schema = db.schema();
 
     // Another diagnostic will be raised if the type condition was wrong.
     // We reduce noise by silencing other issues with the fragment.
@@ -66,7 +64,7 @@ fn validate_fragment_spread_type(
         return diagnostics;
     };
 
-    let implementers_map = db.implementers_map();
+    let implementers_map = schema.implementers_map();
     let concrete_parent_types = get_possible_types(against_type_definition, &implementers_map);
     let concrete_condition_types = get_possible_types(type_condition_definition, &implementers_map);
 
@@ -109,25 +107,23 @@ fn validate_fragment_spread_type(
 }
 
 pub(crate) fn validate_inline_fragment(
-    db: &dyn ValidationDatabase,
     document: &ExecutableDocument,
-    against_type: Option<&NamedType>,
+    against_type: Option<(&crate::Schema, &ast::NamedType)>,
     inline: &Node<executable::InlineFragment>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(super::directive::validate_directives(
-        db,
+        context.schema,
         inline.directives.iter(),
         ast::DirectiveLocation::InlineFragment,
         context.variables,
-        context.has_schema,
     ));
 
-    let has_type_error = if context.has_schema {
+    let has_type_error = if let Some(schema) = context.schema {
         let type_cond_diagnostics = if let Some(t) = &inline.type_condition {
-            validate_fragment_type_condition(db, None, t, inline.location())
+            validate_fragment_type_condition(schema, None, t, inline.location())
         } else {
             Default::default()
         };
@@ -141,9 +137,11 @@ pub(crate) fn validate_inline_fragment(
     // If there was an error with the type condition, it makes no sense to validate the selection,
     // as every field would be an error.
     if !has_type_error {
-        if let (Some(against_type), Some(type_condition)) = (against_type, &inline.type_condition) {
+        if let (Some((schema, against_type)), Some(type_condition)) =
+            (against_type, &inline.type_condition)
+        {
             diagnostics.extend(validate_fragment_spread_type(
-                db,
+                schema,
                 document,
                 against_type,
                 type_condition,
@@ -151,9 +149,12 @@ pub(crate) fn validate_inline_fragment(
             ));
         }
         diagnostics.extend(super::selection::validate_selection_set(
-            db,
             document,
-            inline.type_condition.as_ref().or(against_type),
+            if let (Some(schema), Some(ty)) = (&context.schema, &inline.type_condition) {
+                Some((schema, ty))
+            } else {
+                against_type
+            },
             &inline.selection_set,
             context,
         ));
@@ -163,34 +164,32 @@ pub(crate) fn validate_inline_fragment(
 }
 
 pub(crate) fn validate_fragment_spread(
-    db: &dyn ValidationDatabase,
     document: &ExecutableDocument,
-    against_type: Option<&NamedType>,
+    against_type: Option<(&crate::Schema, &NamedType)>,
     spread: &Node<executable::FragmentSpread>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(super::directive::validate_directives(
-        db,
+        context.schema,
         spread.directives.iter(),
         ast::DirectiveLocation::FragmentSpread,
         context.variables,
-        context.has_schema,
     ));
 
     match document.fragments.get(&spread.fragment_name) {
         Some(def) => {
-            if let Some(against_type) = against_type {
+            if let Some((schema, against_type)) = against_type {
                 diagnostics.extend(validate_fragment_spread_type(
-                    db,
+                    schema,
                     document,
                     against_type,
                     def.type_condition(),
                     &executable::Selection::FragmentSpread(spread.clone()),
                 ));
             }
-            diagnostics.extend(validate_fragment_definition(db, document, def, context));
+            diagnostics.extend(validate_fragment_definition(document, def, context));
         }
         None => {
             diagnostics.push(ValidationError::new(
@@ -206,25 +205,22 @@ pub(crate) fn validate_fragment_spread(
 }
 
 pub(crate) fn validate_fragment_definition(
-    db: &dyn ValidationDatabase,
     document: &ExecutableDocument,
     fragment: &Node<executable::Fragment>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let schema = context.has_schema.then(|| db.schema());
 
     diagnostics.extend(super::directive::validate_directives(
-        db,
+        context.schema,
         fragment.directives.iter(),
         ast::DirectiveLocation::FragmentDefinition,
         context.variables,
-        context.has_schema,
     ));
 
-    let has_type_error = if context.has_schema {
+    let has_type_error = if let Some(schema) = context.schema {
         let type_cond_diagnostics = validate_fragment_type_condition(
-            db,
+            schema,
             Some(fragment.name.clone()),
             fragment.type_condition(),
             fragment.location(),
@@ -244,12 +240,14 @@ pub(crate) fn validate_fragment_definition(
         // If the type does not exist, do not attempt to validate the selections against it;
         // it has either already raised an error, or we are validating an executable without
         // a schema.
-        let type_condition = schema
-            .is_some_and(|s| s.types.contains_key(fragment.type_condition()))
-            .then_some(fragment.type_condition());
+        let type_condition = context.schema.and_then(|schema| {
+            schema
+                .types
+                .contains_key(fragment.type_condition())
+                .then_some((schema, fragment.type_condition()))
+        });
 
         diagnostics.extend(super::selection::validate_selection_set(
-            db,
             document,
             type_condition,
             &fragment.selection_set,
@@ -337,13 +335,12 @@ pub(crate) fn validate_fragment_cycles(
 }
 
 pub(crate) fn validate_fragment_type_condition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     fragment_name: Option<Name>,
     type_cond: &NamedType,
     fragment_location: Option<NodeLocation>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let schema = db.schema();
 
     let type_def = schema.types.get(type_cond);
     let is_composite = type_def

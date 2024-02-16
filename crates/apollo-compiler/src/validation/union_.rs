@@ -2,15 +2,15 @@ use crate::{
     ast,
     schema::{self, ExtendedType, UnionType},
     validation::diagnostics::{DiagnosticData, ValidationError},
-    Node, ValidationDatabase,
+    Node,
 };
 
-pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+pub(crate) fn validate_union_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    for ty in db.schema().types.values() {
+    for ty in schema.types.values() {
         if let ExtendedType::Union(def) = ty {
-            diagnostics.extend(validate_union_definition(db, def));
+            diagnostics.extend(validate_union_definition(schema, def));
         }
     }
 
@@ -18,20 +18,16 @@ pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<Val
 }
 
 pub(crate) fn validate_union_definition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     union_def: &Node<UnionType>,
 ) -> Vec<ValidationError> {
-    let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
-        db,
+        Some(schema),
         union_def.directives.iter_ast(),
         ast::DirectiveLocation::Union,
         // unions don't use variables
         Default::default(),
-        has_schema,
     );
-
-    let schema = db.schema();
 
     for union_member in &union_def.members {
         let member_location = union_member.location();

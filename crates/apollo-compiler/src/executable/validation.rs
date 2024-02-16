@@ -1,13 +1,10 @@
 use super::FieldSet;
-use crate::database::ReprDatabase;
-use crate::database::RootDatabase;
 use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Schema;
-use std::sync::Arc;
 
 pub(crate) fn validate_executable_document(
     errors: &mut DiagnosticList,
@@ -53,13 +50,7 @@ fn compiler_validation(
     schema: Option<&Schema>,
     document: &ExecutableDocument,
 ) {
-    let mut db = RootDatabase::default();
-
-    if let Some(schema) = schema {
-        db.set_schema(Arc::new(schema.clone()));
-    }
-
-    let diagnostics = crate::validation::validate_executable(&db, document, schema);
+    let diagnostics = crate::validation::validate_executable(document, schema);
     for diagnostic in diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
@@ -70,18 +61,13 @@ pub(crate) fn validate_field_set(
     schema: &Valid<Schema>,
     field_set: &FieldSet,
 ) {
-    let mut db = RootDatabase::default();
-
-    db.set_schema(Arc::new(schema.as_ref().clone()));
-
     let document = &ExecutableDocument::new(); // No fragment definitions
     let diagnostics = crate::validation::selection::validate_selection_set(
-        &db,
         document,
-        Some(&field_set.selection_set.ty),
+        Some((schema, &field_set.selection_set.ty)),
         &field_set.selection_set,
         crate::validation::operation::OperationValidationConfig {
-            has_schema: true,
+            schema: Some(schema),
             variables: &[],
         },
     );

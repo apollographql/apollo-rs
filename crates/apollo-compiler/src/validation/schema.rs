@@ -1,33 +1,28 @@
 use crate::ast;
 use crate::schema;
-use crate::schema::SchemaDefinition;
+
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::diagnostics::ValidationError;
-use crate::ValidationDatabase;
 
-pub(crate) fn validate_schema_definition(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+pub(crate) fn validate_schema_definition(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let schema = db.schema();
-    let schema_definition = &schema.schema_definition;
     // A GraphQL schema must have a Query root operation.
-    if schema_definition.query.is_none() {
-        let location = schema_definition.location();
+    if schema.schema_definition.query.is_none() {
+        let location = schema.schema_definition.location();
         diagnostics.push(ValidationError::new(
             location,
             DiagnosticData::QueryRootOperationType,
         ));
     }
-    diagnostics.extend(validate_root_operation_definitions(db, schema_definition));
+    diagnostics.extend(validate_root_operation_definitions(schema));
 
-    let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
-        db,
-        schema_definition.directives.iter_ast(),
+        Some(schema),
+        schema.schema_definition.directives.iter_ast(),
         ast::DirectiveLocation::Schema,
         // schemas don't use variables
         Default::default(),
-        has_schema,
     ));
 
     diagnostics
@@ -36,18 +31,13 @@ pub(crate) fn validate_schema_definition(db: &dyn ValidationDatabase) -> Vec<Val
 // All root operations in a schema definition must be unique.
 //
 // Return a Unique Operation Definition error in case of a duplicate name.
-pub(crate) fn validate_root_operation_definitions(
-    db: &dyn ValidationDatabase,
-    schema_definition: &SchemaDefinition,
-) -> Vec<ValidationError> {
+pub(crate) fn validate_root_operation_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    let schema = db.schema();
-
     for op in [
-        &schema_definition.query,
-        &schema_definition.mutation,
-        &schema_definition.subscription,
+        &schema.schema_definition.query,
+        &schema.schema_definition.mutation,
+        &schema.schema_definition.subscription,
     ] {
         let Some(name) = op else { continue };
 

@@ -1,27 +1,24 @@
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack};
-use crate::{ast, executable, ExecutableDocument, Node, ValidationDatabase};
+use crate::{ast, executable, ExecutableDocument, Node};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
 pub(crate) fn validate_variable_definitions(
-    db: &dyn ValidationDatabase,
+    schema: Option<&crate::Schema>,
     variables: &[Node<ast::VariableDefinition>],
-    has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let schema = has_schema.then(|| db.schema());
 
     let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
         diagnostics.extend(super::directive::validate_directives(
-            db,
+            schema,
             variable.directives.iter(),
             ast::DirectiveLocation::VariableDefinition,
             // let's assume that variable definitions cannot reference other
             // variables and provide them as arguments to directives
             Default::default(),
-            has_schema,
         ));
 
         if let Some(schema) = &schema {

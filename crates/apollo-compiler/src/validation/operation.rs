@@ -1,13 +1,13 @@
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::DiagnosticList;
-use crate::{ast, executable, ExecutableDocument, Node, Schema, ValidationDatabase};
+use crate::{ast, executable, ExecutableDocument, Node, Schema};
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub(crate) struct OperationValidationConfig<'vars> {
-    /// When false, rules that require a schema to validate are disabled.
-    pub has_schema: bool,
+#[derive(Debug, Clone)]
+pub(crate) struct OperationValidationConfig<'a> {
+    /// When None, rules that require a schema to validate are disabled.
+    pub schema: Option<&'a crate::Schema>,
     /// The variables defined for this operation.
-    pub variables: &'vars [Node<ast::VariableDefinition>],
+    pub variables: &'a [Node<ast::VariableDefinition>],
 }
 
 pub(crate) fn validate_subscription(
@@ -56,42 +56,40 @@ pub(crate) fn validate_subscription(
 }
 
 pub(crate) fn validate_operation(
-    db: &dyn ValidationDatabase,
-    document: &ExecutableDocument,
     schema: Option<&Schema>,
+    document: &ExecutableDocument,
     operation: &executable::Operation,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     let config = OperationValidationConfig {
-        has_schema: schema.is_some(),
+        schema,
         variables: &operation.variables,
     };
 
     let against_type = if let Some(schema) = schema {
-        schema.root_operation(operation.operation_type)
+        schema
+            .root_operation(operation.operation_type)
+            .map(|ty| (schema, ty))
     } else {
         None
     };
 
     diagnostics.extend(super::directive::validate_directives(
-        db,
+        schema,
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
-        schema.is_some(),
     ));
     diagnostics.extend(super::variable::validate_variable_definitions(
-        db,
+        config.schema,
         &operation.variables,
-        config.has_schema,
     ));
 
     diagnostics.extend(super::variable::validate_unused_variables(
         document, operation,
     ));
     diagnostics.extend(super::selection::validate_selection_set(
-        db,
         document,
         against_type,
         &operation.selection_set,
@@ -102,14 +100,13 @@ pub(crate) fn validate_operation(
 }
 
 pub(crate) fn validate_operation_definitions(
-    db: &dyn ValidationDatabase,
-    document: &ExecutableDocument,
     schema: Option<&Schema>,
+    document: &ExecutableDocument,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     for operation in document.all_operations() {
-        diagnostics.extend(validate_operation(db, document, schema, operation));
+        diagnostics.extend(validate_operation(schema, document, operation));
     }
 
     diagnostics

@@ -2,7 +2,6 @@ use super::CycleError;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::validation_db::ValidationDatabase;
 use crate::validation::{NodeLocation, RecursionGuard, RecursionStack};
 use crate::{ast, schema, Node};
 use std::collections::{HashMap, HashSet};
@@ -133,13 +132,13 @@ impl FindRecursiveDirective<'_> {
 }
 
 pub(crate) fn validate_directive_definition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     def: &Node<ast::DirectiveDefinition>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
     diagnostics.extend(super::input_object::validate_argument_definitions(
-        db,
+        schema,
         &def.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
     ));
@@ -150,7 +149,7 @@ pub(crate) fn validate_directive_definition(
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    match FindRecursiveDirective::check(&db.schema(), def) {
+    match FindRecursiveDirective::check(schema, def) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
             diagnostics.push(ValidationError::new(
@@ -173,11 +172,11 @@ pub(crate) fn validate_directive_definition(
     diagnostics
 }
 
-pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
+pub(crate) fn validate_directive_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    for directive_definition in db.schema().directive_definitions.values() {
-        diagnostics.extend(validate_directive_definition(db, directive_definition));
+    for directive_definition in schema.directive_definitions.values() {
+        diagnostics.extend(validate_directive_definition(schema, directive_definition));
     }
 
     diagnostics
@@ -186,29 +185,26 @@ pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec
 // TODO(@goto-bus-stop) This is a big function: should probably not be generic over the iterator
 // type
 pub(crate) fn validate_directives<'dir>(
-    db: &dyn ValidationDatabase,
+    schema: Option<&crate::Schema>,
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
-    has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let mut seen_directives = HashMap::<_, Option<NodeLocation>>::new();
 
-    let schema = has_schema.then(|| db.schema());
     for dir in dirs {
         diagnostics.extend(super::argument::validate_arguments(&dir.arguments));
 
         let name = &dir.name;
         let loc = dir.location();
-        let directive_definition = schema
-            .as_ref()
-            .and_then(|s| s.directive_definitions.get(name));
+        let directive_definition =
+            schema.and_then(|schema| Some((schema, schema.directive_definitions.get(name)?)));
 
         if let Some(&original_loc) = seen_directives.get(name) {
             let is_repeatable = directive_definition
-                .map(|def| def.repeatable)
+                .map(|(_, def)| def.repeatable)
                 // Assume unknown directives are repeatable to avoid producing confusing diagnostics
                 .unwrap_or(true);
 
@@ -226,7 +222,7 @@ pub(crate) fn validate_directives<'dir>(
             seen_directives.insert(&dir.name, loc);
         }
 
-        if let Some(directive_definition) = directive_definition {
+        if let Some((schema, directive_definition)) = directive_definition {
             let allowed_loc: HashSet<ast::DirectiveLocation> =
                 HashSet::from_iter(directive_definition.locations.iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
@@ -257,8 +253,12 @@ pub(crate) fn validate_directives<'dir>(
                     {
                         diagnostics.push(diag)
                     } else {
-                        let type_diags =
-                            super::value::validate_values(db, &input_value.ty, argument, var_defs);
+                        let type_diags = super::value::validate_values(
+                            schema,
+                            &input_value.ty,
+                            argument,
+                            var_defs,
+                        );
 
                         diagnostics.extend(type_diags);
                     }

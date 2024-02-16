@@ -6,7 +6,6 @@ use crate::executable::SelectionSet;
 use crate::validation::diagnostics::ValidationError;
 use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
-use crate::validation::ValidationDatabase;
 use crate::ExecutableDocument;
 use crate::{ast, executable, schema, Node};
 use apollo_parser::LimitTracker;
@@ -543,28 +542,8 @@ impl<'s, 'doc> FieldsInSetCanMerge<'s, 'doc> {
 }
 
 pub(crate) fn validate_selection_set(
-    db: &dyn ValidationDatabase,
     document: &ExecutableDocument,
-    against_type: Option<&NamedType>,
-    selection_set: &SelectionSet,
-    context: OperationValidationConfig<'_>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-    diagnostics.extend(validate_selections(
-        db,
-        document,
-        against_type,
-        selection_set,
-        context,
-    ));
-
-    diagnostics
-}
-
-pub(crate) fn validate_selections(
-    db: &dyn ValidationDatabase,
-    document: &ExecutableDocument,
-    against_type: Option<&NamedType>,
+    against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
@@ -573,11 +552,10 @@ pub(crate) fn validate_selections(
     for selection in &selection_set.selections {
         match selection {
             executable::Selection::Field(field) => diagnostics.extend(
-                super::field::validate_field(db, document, against_type, field, context.clone()),
+                super::field::validate_field(document, against_type, field, context.clone()),
             ),
             executable::Selection::FragmentSpread(fragment) => {
                 diagnostics.extend(super::fragment::validate_fragment_spread(
-                    db,
                     document,
                     against_type,
                     fragment,
@@ -586,7 +564,6 @@ pub(crate) fn validate_selections(
             }
             executable::Selection::InlineFragment(inline) => {
                 diagnostics.extend(super::fragment::validate_inline_fragment(
-                    db,
                     document,
                     against_type,
                     inline,

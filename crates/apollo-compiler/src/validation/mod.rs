@@ -33,7 +33,6 @@ use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
 use std::fmt;
 use std::sync::Arc;
-pub(crate) use validation_db::ValidationDatabase;
 pub(crate) use validation_db::{validate_executable, validate_type_system};
 
 pub(crate) use crate::node::FileId;

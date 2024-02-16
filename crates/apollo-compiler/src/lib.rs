@@ -4,7 +4,6 @@
 mod macros;
 pub mod ast;
 pub mod coordinate;
-mod database;
 pub mod diagnostic;
 pub mod executable;
 pub mod execution;
@@ -13,9 +12,6 @@ mod node_str;
 mod parser;
 pub mod schema;
 pub mod validation;
-
-use crate::database::ReprDatabase;
-use crate::validation::ValidationDatabase;
 
 pub use self::executable::ExecutableDocument;
 pub use self::node::{FileId, Node, NodeLocation};

@@ -1,18 +1,16 @@
+use crate::ast;
 use crate::schema::ExtendedType;
 use crate::schema::ObjectType;
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::field::validate_field_definitions;
 use crate::Node;
-use crate::{ast, ValidationDatabase};
 
-pub(crate) fn validate_object_type_definitions(
-    db: &dyn ValidationDatabase,
-) -> Vec<ValidationError> {
+pub(crate) fn validate_object_type_definitions(schema: &crate::Schema) -> Vec<ValidationError> {
     let mut diagnostics = vec![];
 
-    for ty in db.schema().types.values() {
+    for ty in schema.types.values() {
         if let ExtendedType::Object(object) = ty {
-            diagnostics.extend(validate_object_type_definition(db, object))
+            diagnostics.extend(validate_object_type_definition(schema, object))
         }
     }
 
@@ -20,29 +18,24 @@ pub(crate) fn validate_object_type_definitions(
 }
 
 pub(crate) fn validate_object_type_definition(
-    db: &dyn ValidationDatabase,
+    schema: &crate::Schema,
     object: &Node<ObjectType>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-
-    let schema = db.schema();
-
-    let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
-        db,
+        Some(schema),
         object.directives.iter_ast(),
         ast::DirectiveLocation::Object,
         // objects don't use variables
         Default::default(),
-        has_schema,
     ));
 
     // Object Type field validations.
-    diagnostics.extend(validate_field_definitions(db, &object.fields));
+    diagnostics.extend(validate_field_definitions(schema, &object.fields));
 
     // Implements Interfaces validation.
     diagnostics.extend(super::interface::validate_implements_interfaces(
-        db,
+        schema,
         &object.name,
         object.location(),
         &object.implements_interfaces,
