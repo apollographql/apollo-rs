@@ -26,12 +26,14 @@ pub(crate) fn validate_interface_definition(
 
     let schema = db.schema();
 
+    let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
         db,
         interface.directives(),
         ast::DirectiveLocation::Interface,
         // interfaces don't use variables
         Default::default(),
+        has_schema,
     ));
 
     // Interface must not implement itself.

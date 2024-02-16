@@ -15,12 +15,14 @@ pub(crate) fn validate_enum_definition(
     db: &dyn ValidationDatabase,
     enum_def: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
 ) -> Vec<ValidationError> {
+    let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
         db,
         enum_def.directives(),
         ast::DirectiveLocation::Enum,
         // enums don't use variables
         Default::default(),
+        has_schema,
     );
 
     for enum_val in enum_def.values() {
@@ -34,11 +36,13 @@ pub(crate) fn validate_enum_value(
     db: &dyn ValidationDatabase,
     enum_val: &Node<ast::EnumValueDefinition>,
 ) -> Vec<ValidationError> {
+    let has_schema = true;
     super::directive::validate_directives(
         db,
         enum_val.directives.iter(),
         ast::DirectiveLocation::EnumValue,
         // enum values don't use variables
         Default::default(),
+        has_schema,
     )
 }

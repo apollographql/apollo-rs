@@ -69,14 +69,20 @@ pub(crate) fn validate_operation(
         variables: &operation.variables,
     };
 
-    let schema = db.schema();
-    let against_type = schema.root_operation(operation.operation_type);
+    let schema;
+    let against_type = if has_schema {
+        schema = db.schema();
+        schema.root_operation(operation.operation_type)
+    } else {
+        None
+    };
 
     diagnostics.extend(super::directive::validate_directives(
         db,
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
+        has_schema,
     ));
     diagnostics.extend(super::variable::validate_variable_definitions(
         db,

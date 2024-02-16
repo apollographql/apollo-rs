@@ -25,12 +25,14 @@ pub(crate) fn validate_schema_definition(
     }
     diagnostics.extend(validate_root_operation_definitions(db, &root_operations));
 
+    let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
         db,
         schema_definition.directives(),
         ast::DirectiveLocation::Schema,
         // schemas don't use variables
         Default::default(),
+        has_schema,
     ));
 
     diagnostics

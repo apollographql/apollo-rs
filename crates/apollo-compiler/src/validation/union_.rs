@@ -18,12 +18,14 @@ pub(crate) fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
 ) -> Vec<ValidationError> {
+    let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
         db,
         union_def.directives(),
         ast::DirectiveLocation::Union,
         // unions don't use variables
         Default::default(),
+        has_schema,
     );
 
     let schema = db.schema();

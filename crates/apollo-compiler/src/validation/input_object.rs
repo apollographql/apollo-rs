@@ -76,12 +76,14 @@ pub(crate) fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
     input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
 ) -> Vec<ValidationError> {
+    let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
         db,
         input_object.directives(),
         ast::DirectiveLocation::InputObject,
         // input objects don't use variables
         Default::default(),
+        has_schema,
     );
 
     match FindRecursiveInputValue::check(db, &input_object) {
@@ -157,11 +159,13 @@ pub(crate) fn validate_input_value_definitions(
     let mut diagnostics = Vec::new();
 
     for input_value in input_values {
+        let has_schema = true;
         diagnostics.extend(super::directive::validate_directives(
             db,
             input_value.directives.iter(),
             directive_location,
             Default::default(), // No variables in an input value definition
+            has_schema,
         ));
         // Input values must only contain input types.
         let loc = input_value.location();

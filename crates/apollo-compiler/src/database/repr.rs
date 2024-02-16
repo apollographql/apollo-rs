@@ -5,7 +5,6 @@ use crate::schema::Implementers;
 use crate::schema::Name;
 use crate::validation::DiagnosticList;
 use crate::validation::FileId;
-use crate::validation::WithErrors;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -15,9 +14,6 @@ pub(crate) trait ReprDatabase: InputDatabase {
     #[salsa::invoke(ast)]
     #[salsa::transparent]
     fn ast(&self, file_id: FileId) -> Arc<ast::Document>;
-
-    #[salsa::invoke(schema)]
-    fn schema(&self) -> Arc<crate::Schema>;
 
     #[salsa::invoke(executable_document)]
     fn executable_document(&self, file_id: FileId) -> Arc<crate::ExecutableDocument>;
@@ -38,24 +34,6 @@ pub(crate) trait ReprDatabase: InputDatabase {
 
 fn ast(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ast::Document> {
     db.input(file_id).ast.clone().unwrap()
-}
-
-fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
-    if let Some(schema) = db.schema_input() {
-        return schema;
-    }
-    let mut builder = crate::Schema::builder();
-    for file_id in db.type_definition_files() {
-        let executable_definitions_are_errors = db.source_type(file_id) != SourceType::Document;
-        let ast = db.ast(file_id);
-        builder.add_ast_document(&ast, executable_definitions_are_errors);
-    }
-    match builder.build() {
-        Ok(schema)
-        | Err(WithErrors {
-            partial: schema, ..
-        }) => Arc::new(schema),
-    }
 }
 
 fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {

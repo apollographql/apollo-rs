@@ -21,6 +21,7 @@ pub(crate) fn validate_scalar_definition(
 
     // All built-in scalars must be omitted for brevity.
     if !scalar_def.is_built_in() {
+        let has_schema = true;
         diagnostics.extend(super::directive::validate_directives(
             db,
             scalar_def
@@ -30,6 +31,7 @@ pub(crate) fn validate_scalar_definition(
             ast::DirectiveLocation::Scalar,
             // scalars don't use variables
             Default::default(),
+            has_schema,
         ));
     }
 

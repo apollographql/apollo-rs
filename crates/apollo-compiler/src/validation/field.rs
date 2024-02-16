@@ -20,6 +20,7 @@ pub(crate) fn validate_field(
         field.directives.iter(),
         ast::DirectiveLocation::Field,
         context.variables,
+        context.has_schema,
     );
 
     diagnostics.extend(super::argument::validate_arguments(&field.arguments));
@@ -122,12 +123,14 @@ pub(crate) fn validate_field_definition(
     db: &dyn ValidationDatabase,
     field: &Node<ast::FieldDefinition>,
 ) -> Vec<ValidationError> {
+    let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
         db,
         field.directives.iter(),
         ast::DirectiveLocation::FieldDefinition,
         // field definitions don't have variables
         Default::default(),
+        has_schema,
     );
 
     diagnostics.extend(super::input_object::validate_argument_definitions(

@@ -68,7 +68,7 @@ fn compiler_validation(
     }
 
     if let Some(schema) = schema {
-        compiler.db.set_schema_input(Some(Arc::new(schema.clone())));
+        compiler.db.set_schema(Arc::new(schema.clone()));
     }
 
     let ast_id = FileId::HACK_TMP;
@@ -110,9 +110,7 @@ pub(crate) fn validate_field_set(
         compiler.db.set_input(*id, source.into());
     }
 
-    compiler
-        .db
-        .set_schema_input(Some(Arc::new(schema.as_ref().clone())));
+    compiler.db.set_schema(Arc::new(schema.as_ref().clone()));
 
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);

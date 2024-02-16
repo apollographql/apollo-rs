@@ -119,6 +119,7 @@ pub(crate) fn validate_inline_fragment(
         inline.directives.iter(),
         ast::DirectiveLocation::InlineFragment,
         context.variables,
+        context.has_schema,
     ));
 
     let has_type_error = if context.has_schema {
@@ -172,6 +173,7 @@ pub(crate) fn validate_fragment_spread(
         spread.directives.iter(),
         ast::DirectiveLocation::FragmentSpread,
         context.variables,
+        context.has_schema,
     ));
 
     let named_fragments = db.ast_named_fragments(file_id);
@@ -208,13 +210,14 @@ pub(crate) fn validate_fragment_definition(
     context: OperationValidationConfig<'_>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let schema = db.schema();
+    let schema = context.has_schema.then(|| db.schema());
 
     diagnostics.extend(super::directive::validate_directives(
         db,
         fragment.directives.iter(),
         ast::DirectiveLocation::FragmentDefinition,
         context.variables,
+        context.has_schema,
     ));
 
     let has_type_error = if context.has_schema {
@@ -240,8 +243,7 @@ pub(crate) fn validate_fragment_definition(
         // it has either already raised an error, or we are validating an executable without
         // a schema.
         let type_condition = schema
-            .types
-            .contains_key(&fragment.type_condition)
+            .is_some_and(|s| s.types.contains_key(&fragment.type_condition))
             .then_some(&fragment.type_condition);
 
         diagnostics.extend(super::selection::validate_selection_set(

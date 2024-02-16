@@ -12,7 +12,7 @@ pub(crate) fn validate_variable_definitions(
     has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-    let schema = db.schema();
+    let schema = has_schema.then(|| db.schema());
 
     let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
@@ -23,9 +23,10 @@ pub(crate) fn validate_variable_definitions(
             // let's assume that variable definitions cannot reference other
             // variables and provide them as arguments to directives
             Default::default(),
+            has_schema,
         ));
 
-        if has_schema {
+        if let Some(schema) = &schema {
             let ty = &variable.ty;
             let type_definition = schema.types.get(ty.inner_named_type());
 

@@ -17,6 +17,7 @@ fn compiler_validation(errors: &mut DiagnosticList, schema: &Schema) {
         ids.push(*id);
         compiler.db.set_input(*id, source.into());
     }
+    compiler.db.set_schema(Arc::new(schema.clone()));
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let mut ast = crate::ast::Document::new();

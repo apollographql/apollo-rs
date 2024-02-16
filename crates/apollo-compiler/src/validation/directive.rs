@@ -194,18 +194,21 @@ pub(crate) fn validate_directives<'dir>(
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
+    has_schema: bool,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let mut seen_directives = HashMap::<_, Option<NodeLocation>>::new();
 
-    let schema = db.schema();
+    let schema = has_schema.then(|| db.schema());
     for dir in dirs {
         diagnostics.extend(super::argument::validate_arguments(&dir.arguments));
 
         let name = &dir.name;
         let loc = dir.location();
-        let directive_definition = schema.directive_definitions.get(name);
+        let directive_definition = schema
+            .as_ref()
+            .and_then(|s| s.directive_definitions.get(name));
 
         if let Some(&original_loc) = seen_directives.get(name) {
             let is_repeatable = directive_definition

@@ -29,12 +29,14 @@ pub(crate) fn validate_object_type_definition(
 
     let schema = db.schema();
 
+    let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
         db,
         object.directives(),
         ast::DirectiveLocation::Object,
         // objects don't use variables
         Default::default(),
+        has_schema,
     ));
 
     // Collect all fields, including duplicates
