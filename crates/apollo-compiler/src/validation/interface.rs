@@ -1,18 +1,15 @@
-use crate::{
-    ast, schema,
-    validation::{
-        diagnostics::{DiagnosticData, ValidationError},
-        field::validate_field_definitions,
-    },
-    ValidationDatabase,
-};
-use std::collections::HashSet;
+use crate::schema::{ComponentName, ExtendedType, InterfaceType, Name};
+use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::field::validate_field_definitions;
+use crate::{ast, Node, NodeLocation, ValidationDatabase};
+use indexmap::IndexSet;
 
 pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
-
-    for interface in db.ast_types().interfaces.values() {
-        diagnostics.extend(validate_interface_definition(db, interface.clone()));
+    for ty in db.schema().types.values() {
+        if let ExtendedType::Interface(interface) = ty {
+            diagnostics.extend(validate_interface_definition(db, interface));
+        }
     }
 
     diagnostics
@@ -20,7 +17,7 @@ pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec
 
 pub(crate) fn validate_interface_definition(
     db: &dyn ValidationDatabase,
-    interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
+    interface: &Node<InterfaceType>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
@@ -29,7 +26,7 @@ pub(crate) fn validate_interface_definition(
     let has_schema = true;
     diagnostics.extend(super::directive::validate_directives(
         db,
-        interface.directives(),
+        interface.directives.iter_ast(),
         ast::DirectiveLocation::Interface,
         // interfaces don't use variables
         Default::default(),
@@ -51,27 +48,26 @@ pub(crate) fn validate_interface_definition(
     //   id: ID!
     //   name: String
     // }
-    for implements_interface in interface.implements_interfaces() {
-        if *implements_interface == interface.definition.name {
+    for implements_interface in &interface.implements_interfaces {
+        if *implements_interface == interface.name {
             diagnostics.push(ValidationError::new(
                 implements_interface.location(),
                 DiagnosticData::RecursiveInterfaceDefinition {
-                    name: implements_interface.clone(),
+                    name: implements_interface.name.clone(),
                 },
             ));
         }
     }
 
     // Interface Type field validation.
-    let field_definitions = interface.fields().cloned().collect();
-    diagnostics.extend(validate_field_definitions(db, field_definitions));
+    diagnostics.extend(validate_field_definitions(db, &interface.fields));
 
     // Implements Interfaceds validation.
-    let implements_interfaces: Vec<_> = interface.implements_interfaces().cloned().collect();
     diagnostics.extend(validate_implements_interfaces(
         db,
-        &interface.definition.clone().into(),
-        &implements_interfaces,
+        &interface.name,
+        interface.location(),
+        &interface.implements_interfaces,
     ));
 
     // When defining an interface that implements another interface, the
@@ -79,22 +75,18 @@ pub(crate) fn validate_interface_definition(
     // the implemented interface.
     //
     // Returns a Missing Field error.
-    let field_names: HashSet<ast::Name> =
-        interface.fields().map(|field| field.name.clone()).collect();
-    for implements_interface in interface.implements_interfaces() {
-        if let Some(schema::ExtendedType::Interface(super_interface)) =
-            schema.types.get(implements_interface)
-        {
+    for implements_interface in &interface.implements_interfaces {
+        if let Some(super_interface) = schema.get_interface(implements_interface) {
             for super_field in super_interface.fields.values() {
-                if field_names.contains(&super_field.name) {
+                if interface.fields.contains_key(&super_field.name) {
                     continue;
                 }
                 diagnostics.push(ValidationError::new(
-                    interface.definition.location(),
+                    interface.location(),
                     DiagnosticData::MissingInterfaceField {
-                        name: interface.definition.name.clone(),
+                        name: interface.name.clone(),
                         implements_location: implements_interface.location(),
-                        interface: implements_interface.clone(),
+                        interface: implements_interface.name.clone(),
                         field: super_field.name.clone(),
                         field_location: super_field.location(),
                     },
@@ -108,8 +100,9 @@ pub(crate) fn validate_interface_definition(
 
 pub(crate) fn validate_implements_interfaces(
     db: &dyn ValidationDatabase,
-    implementor: &ast::Definition,
-    implements_interfaces: &[ast::Name],
+    implementor_name: &Name,
+    implementor_location: Option<NodeLocation>,
+    implements_interfaces: &IndexSet<ComponentName>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
@@ -137,7 +130,7 @@ pub(crate) fn validate_implements_interfaces(
         diagnostics.push(ValidationError::new(
             loc,
             DiagnosticData::UndefinedDefinition {
-                name: interface_name.clone(),
+                name: interface_name.name.clone(),
             },
         ));
     }
@@ -158,15 +151,12 @@ pub(crate) fn validate_implements_interfaces(
             continue;
         }
 
-        let definition_loc = implementor.location();
-        // let via_loc = via_interface
-        //     .location();
         let transitive_loc = transitive_interface.location();
         diagnostics.push(ValidationError::new(
-            definition_loc,
+            implementor_location,
             DiagnosticData::TransitiveImplementedInterfaces {
-                interface: implementor.name().unwrap().clone(),
-                via_interface: via_interface.clone(),
+                interface: implementor_name.clone(),
+                via_interface: via_interface.name.clone(),
                 missing_interface: transitive_interface.clone(),
                 transitive_interface_location: transitive_loc,
             },

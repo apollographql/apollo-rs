@@ -166,6 +166,11 @@ impl PartialEq<str> for ComponentName {
         self.as_str() == other
     }
 }
+impl PartialEq<Name> for ComponentName {
+    fn eq(&self, other: &Name) -> bool {
+        self.name == *other
+    }
+}
 
 impl Deref for ComponentName {
     type Target = Name;

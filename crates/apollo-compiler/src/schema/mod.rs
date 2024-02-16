@@ -844,6 +844,10 @@ impl DirectiveList {
         self.get(name).is_some()
     }
 
+    pub(crate) fn iter_ast(&self) -> impl Iterator<Item = &Node<ast::Directive>> {
+        self.0.iter().map(|component| &component.node)
+    }
+
     serialize_method!();
 }
 

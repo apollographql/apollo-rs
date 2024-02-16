@@ -4,6 +4,9 @@ use crate::validation::ValidationDatabase;
 use crate::{ast, schema, Node};
 
 use super::operation::OperationValidationConfig;
+use crate::ast::Name;
+use crate::schema::Component;
+use indexmap::IndexMap;
 
 pub(crate) fn validate_field(
     db: &dyn ValidationDatabase,
@@ -142,13 +145,13 @@ pub(crate) fn validate_field_definition(
 
 pub(crate) fn validate_field_definitions(
     db: &dyn ValidationDatabase,
-    fields: Vec<Node<ast::FieldDefinition>>,
+    fields: &IndexMap<Name, Component<ast::FieldDefinition>>,
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
 
-    for field in &fields {
+    for field in fields.values() {
         diagnostics.extend(validate_field_definition(db, field));
 
         // Field types in Object Types must be of output type

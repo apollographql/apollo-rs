@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::schema::{ExtendedType, InputObjectType};
 use crate::validation::diagnostics::{DiagnosticData, ValidationError};
 use crate::validation::{CycleError, RecursionGuard, RecursionStack};
 use crate::Node;
@@ -17,14 +18,14 @@ impl FindRecursiveInputValue<'_> {
         seen: &mut RecursionGuard<'_>,
         def: &Node<ast::InputValueDefinition>,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        return match &*def.ty {
+        match &*def.ty {
             // NonNull type followed by Named type is the one that's not allowed
             // to be cyclical, so this is only case we care about.
             //
             // Everything else may be a cyclical input value.
             ast::Type::NonNullNamed(name) => {
                 if !seen.contains(name) {
-                    if let Some(object_def) = self.db.ast_types().input_objects.get(name) {
+                    if let Some(object_def) = self.db.schema().get_input_object(name) {
                         self.input_object_definition(seen.push(name)?, object_def)
                             .map_err(|err| err.trace(def))?
                     }
@@ -35,15 +36,15 @@ impl FindRecursiveInputValue<'_> {
                 Ok(())
             }
             _ => Ok(()),
-        };
+        }
     }
 
     fn input_object_definition(
         &self,
         mut seen: RecursionGuard<'_>,
-        input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
+        input_object: &InputObjectType,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        for input_value in input_object.fields() {
+        for input_value in input_object.fields.values() {
             self.input_value_definition(&mut seen, input_value)?;
         }
 
@@ -52,9 +53,9 @@ impl FindRecursiveInputValue<'_> {
 
     fn check(
         db: &dyn ValidationDatabase,
-        input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
+        input_object: &InputObjectType,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        let mut recursion_stack = RecursionStack::with_root(input_object.definition.name.clone());
+        let mut recursion_stack = RecursionStack::with_root(input_object.name.clone());
         FindRecursiveInputValue { db }
             .input_object_definition(recursion_stack.guard(), input_object)
     }
@@ -65,8 +66,10 @@ pub(crate) fn validate_input_object_definitions(
 ) -> Vec<ValidationError> {
     let mut diagnostics = Vec::new();
 
-    for input_object in db.ast_types().input_objects.values() {
-        diagnostics.extend(validate_input_object_definition(db, input_object.clone()));
+    for ty in db.schema().types.values() {
+        if let ExtendedType::InputObject(input_object) = ty {
+            diagnostics.extend(validate_input_object_definition(db, input_object));
+        }
     }
 
     diagnostics
@@ -74,32 +77,32 @@ pub(crate) fn validate_input_object_definitions(
 
 pub(crate) fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
-    input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
+    input_object: &Node<InputObjectType>,
 ) -> Vec<ValidationError> {
     let has_schema = true;
     let mut diagnostics = super::directive::validate_directives(
         db,
-        input_object.directives(),
+        input_object.directives.iter_ast(),
         ast::DirectiveLocation::InputObject,
         // input objects don't use variables
         Default::default(),
         has_schema,
     );
 
-    match FindRecursiveInputValue::check(db, &input_object) {
+    match FindRecursiveInputValue::check(db, input_object) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => diagnostics.push(ValidationError::new(
-            input_object.definition.location(),
+            input_object.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
-                name: input_object.definition.name.clone(),
+                name: input_object.name.clone(),
                 trace,
             },
         )),
         Err(CycleError::Limit(_)) => {
             diagnostics.push(ValidationError::new(
-                input_object.definition.location(),
+                input_object.location(),
                 DiagnosticData::DeeplyNestedType {
-                    name: input_object.definition.name.clone(),
+                    name: input_object.name.clone(),
                     describe_type: "input object",
                 },
             ));
@@ -109,7 +112,11 @@ pub(crate) fn validate_input_object_definition(
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Definition error.
-    let fields: Vec<_> = input_object.fields().cloned().collect();
+    let fields: Vec<_> = input_object
+        .fields
+        .values()
+        .map(|c| c.node.clone())
+        .collect();
     diagnostics.extend(validate_input_value_definitions(
         db,
         &fields,

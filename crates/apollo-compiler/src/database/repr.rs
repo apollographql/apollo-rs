@@ -11,9 +11,6 @@ pub(crate) trait ReprDatabase {
     fn schema(&self) -> Arc<crate::Schema>;
 
     #[salsa::input]
-    fn schema_ast(&self) -> Arc<ast::Document>;
-
-    #[salsa::input]
     fn executable_ast(&self) -> Arc<ast::Document>;
 
     /// Returns a map of interface names to names of types that implement that interface

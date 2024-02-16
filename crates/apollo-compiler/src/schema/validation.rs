@@ -13,9 +13,6 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &Schema) {
 fn compiler_validation(errors: &mut DiagnosticList, schema: &Schema) {
     let mut db = RootDatabase::default();
     db.set_schema(Arc::new(schema.clone()));
-    let mut ast = crate::ast::Document::new();
-    ast.definitions.extend(schema.to_ast());
-    db.set_schema_ast(Arc::new(ast));
     for diagnostic in crate::validation::validate_type_system(&db) {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
     }
