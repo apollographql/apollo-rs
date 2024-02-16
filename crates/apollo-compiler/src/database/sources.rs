@@ -1,41 +1,22 @@
 use std::sync::Arc;
-use std::{fmt, num::NonZeroI64, path::PathBuf, sync::atomic};
+use std::{fmt, num::NonZeroI64, sync::atomic};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SourceType {
     Schema,
     Executable,
-    Document,
-    TextOnly,
 }
 
 /// Represents a GraphQL source file.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub(crate) struct Source {
     pub(crate) ty: SourceType,
-    pub(crate) filename: PathBuf,
-    pub(crate) text: Arc<String>,
     pub(crate) ast: Option<Arc<crate::ast::Document>>,
 }
 
 impl Source {
     pub fn source_type(&self) -> SourceType {
         self.ty
-    }
-
-    pub fn text(&self) -> &Arc<String> {
-        &self.text
-    }
-}
-
-impl From<&'_ Arc<crate::SourceFile>> for Source {
-    fn from(file: &'_ Arc<crate::SourceFile>) -> Self {
-        Self {
-            ty: crate::database::SourceType::TextOnly,
-            filename: file.path.clone(),
-            text: Arc::new(file.source_text.clone()),
-            ast: None,
-        }
     }
 }
 

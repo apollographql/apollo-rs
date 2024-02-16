@@ -10,10 +10,6 @@ pub(crate) trait InputDatabase {
     #[salsa::input]
     fn schema(&self) -> Arc<crate::Schema>;
 
-    /// Get the GraphQL source text for a file.
-    #[salsa::invoke(source_code)]
-    fn source_code(&self, file_id: FileId) -> Arc<String>;
-
     /// Get the source type (document/schema/executable) for a file.
     #[salsa::invoke(source_type)]
     fn source_type(&self, file_id: FileId) -> SourceType;
@@ -31,10 +27,6 @@ pub(crate) trait InputDatabase {
     fn executable_definition_files(&self) -> Vec<FileId>;
 }
 
-fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<String> {
-    db.input(file_id).text().clone()
-}
-
 fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {
     db.input(file_id).source_type()
 }
@@ -42,23 +34,13 @@ fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
     db.source_files()
         .into_iter()
-        .filter(|source| {
-            matches!(
-                db.source_type(*source),
-                SourceType::Schema | SourceType::Document
-            )
-        })
+        .filter(|source| matches!(db.source_type(*source), SourceType::Schema))
         .collect()
 }
 
 fn executable_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
     db.source_files()
         .into_iter()
-        .filter(|source| {
-            matches!(
-                db.source_type(*source),
-                SourceType::Executable | SourceType::Document
-            )
-        })
+        .filter(|source| matches!(db.source_type(*source), SourceType::Executable))
         .collect()
 }

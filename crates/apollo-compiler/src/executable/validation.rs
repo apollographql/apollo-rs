@@ -1,5 +1,6 @@
 use super::FieldSet;
 use crate::ast;
+use crate::database::RootDatabase;
 use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
@@ -54,40 +55,28 @@ fn compiler_validation(
     schema: Option<&Schema>,
     document: &ExecutableDocument,
 ) {
-    let mut compiler = crate::ApolloCompiler::new();
+    let mut db = RootDatabase::default();
     let mut ids = Vec::new();
-    if let Some(schema) = schema {
-        for (id, source) in schema.sources.iter() {
-            ids.push(*id);
-            compiler.db.set_input(*id, source.into());
-        }
-    }
-    for (id, source) in document.sources.iter() {
-        ids.push(*id);
-        compiler.db.set_input(*id, source.into());
-    }
 
     if let Some(schema) = schema {
-        compiler.db.set_schema(Arc::new(schema.clone()));
+        db.set_schema(Arc::new(schema.clone()));
     }
 
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let ast = document.to_ast();
-    compiler.db.set_input(
+    db.set_input(
         ast_id,
         crate::Source {
             ty: crate::database::SourceType::Executable,
-            filename: Default::default(),
-            text: Default::default(),
             ast: Some(Arc::new(ast)),
         },
     );
-    compiler.db.set_source_files(ids);
+    db.set_source_files(ids);
     let diagnostics = if schema.is_some() {
-        crate::validation::validate_executable(&compiler.db, ast_id)
+        crate::validation::validate_executable(&db, ast_id)
     } else {
-        crate::validation::validate_standalone_executable(&compiler.db, ast_id)
+        crate::validation::validate_standalone_executable(&db, ast_id)
     };
     for diagnostic in diagnostics {
         errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
@@ -99,34 +88,24 @@ pub(crate) fn validate_field_set(
     schema: &Valid<Schema>,
     field_set: &FieldSet,
 ) {
-    let mut compiler = crate::ApolloCompiler::new();
+    let mut db = RootDatabase::default();
     let mut ids = Vec::new();
-    for (id, source) in &*schema.sources {
-        ids.push(*id);
-        compiler.db.set_input(*id, source.into());
-    }
-    for (id, source) in &*field_set.sources {
-        ids.push(*id);
-        compiler.db.set_input(*id, source.into());
-    }
 
-    compiler.db.set_schema(Arc::new(schema.as_ref().clone()));
+    db.set_schema(Arc::new(schema.as_ref().clone()));
 
     let ast_id = FileId::HACK_TMP;
     ids.push(ast_id);
     let ast = ast::Document::new();
-    compiler.db.set_input(
+    db.set_input(
         ast_id,
         crate::Source {
             ty: crate::database::SourceType::Executable,
-            filename: Default::default(),
-            text: Default::default(),
             ast: Some(Arc::new(ast)),
         },
     );
-    compiler.db.set_source_files(ids);
+    db.set_source_files(ids);
     let diagnostics = crate::validation::selection::validate_selection_set(
-        &compiler.db,
+        &db,
         ast_id,
         Some(&field_set.selection_set.ty),
         &field_set.selection_set.to_ast(),
