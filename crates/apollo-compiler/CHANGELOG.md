@@ -25,7 +25,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 
-- **Remove Salsa database for 1.2~2× validation speed - [SimonSapin], [pull/838]**
+- **Remove Salsa database for 1.2× ~ 2× validation speed - [SimonSapin], [pull/838]**
   We were not taking advantage of caching it provides.
   Additionally, validation uses `Schema` and `ExecutableDocument` directly
   rather than converting them to AST.
