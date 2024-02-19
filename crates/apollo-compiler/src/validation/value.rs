@@ -1,12 +1,17 @@
 use crate::ast;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema;
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::ValidationDatabase;
+use crate::validation::diagnostics::DiagnosticData;
+
+use crate::validation::DiagnosticList;
 use crate::Node;
 
-fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -> ValidationError {
-    ValidationError::new(
+fn unsupported_type(
+    diagnostics: &mut DiagnosticList,
+    value: &Node<ast::Value>,
+    declared_type: &Node<ast::Type>,
+) {
+    diagnostics.push(
         value.location(),
         DiagnosticData::UnsupportedValueType {
             describe_value_type: value.describe(),
@@ -17,24 +22,22 @@ fn unsupported_type(value: &Node<ast::Value>, declared_type: &Node<ast::Type>) -
 }
 
 pub(crate) fn validate_values(
-    db: &dyn ValidationDatabase,
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
     ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-    value_of_correct_type(db, ty, &argument.value, var_defs, &mut diagnostics);
-    diagnostics
+) {
+    value_of_correct_type(diagnostics, schema, ty, &argument.value, var_defs);
 }
 
 pub(crate) fn value_of_correct_type(
-    db: &dyn ValidationDatabase,
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
     var_defs: &[Node<ast::VariableDefinition>],
-    diagnostics: &mut Vec<ValidationError>,
 ) {
-    let schema = db.schema();
     let Some(type_definition) = schema.types.get(ty.inner_named_type()) else {
         return;
     };
@@ -56,27 +59,27 @@ pub(crate) fn value_of_correct_type(
                 "ID" => {}
                 "Int" => {
                     if int.try_to_i32().is_err() {
-                        diagnostics.push(ValidationError::new(
+                        diagnostics.push(
                             arg_value.location(),
                             DiagnosticData::IntCoercionError {
                                 value: int.as_str().to_owned(),
                             },
-                        ))
+                        )
                     }
                 }
                 "Float" => {
                     if int.try_to_f64().is_err() {
-                        diagnostics.push(ValidationError::new(
+                        diagnostics.push(
                             arg_value.location(),
                             DiagnosticData::FloatCoercionError {
                                 value: int.as_str().to_owned(),
                             },
-                        ))
+                        )
                     }
                 }
-                _ => diagnostics.push(unsupported_type(arg_value, ty)),
+                _ => unsupported_type(diagnostics, arg_value, ty),
             },
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
         // When expected as an input type, both integer and float input
         // values are accepted. All other input values, including strings
@@ -87,15 +90,15 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
             schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         arg_value.location(),
                         DiagnosticData::FloatCoercionError {
                             value: float.as_str().to_owned(),
                         },
-                    ))
+                    )
                 }
             }
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
         // When expected as an input type, only valid Unicode string input
         // values are accepted. All other input values must raise a request
@@ -109,10 +112,10 @@ pub(crate) fn value_of_correct_type(
                 // string, ids and custom scalars are ok, and
                 // don't need a diagnostic.
                 if scalar.is_built_in() && !matches!(scalar.name.as_str(), "String" | "ID") {
-                    diagnostics.push(unsupported_type(arg_value, ty));
+                    unsupported_type(diagnostics, arg_value, ty);
                 }
             }
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
         // When expected as an input type, only boolean input values are
         // accepted. All other input values must raise a request error
@@ -120,14 +123,14 @@ pub(crate) fn value_of_correct_type(
         ast::Value::Boolean(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
                 if scalar.is_built_in() && scalar.name.as_str() != "Boolean" {
-                    diagnostics.push(unsupported_type(arg_value, ty));
+                    unsupported_type(diagnostics, arg_value, ty);
                 }
             }
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
         ast::Value::Null => {
             if ty.is_non_null() {
-                diagnostics.push(unsupported_type(arg_value, ty));
+                unsupported_type(diagnostics, arg_value, ty);
             }
         }
         ast::Value::Variable(var_name) => match &type_definition {
@@ -140,23 +143,23 @@ pub(crate) fn value_of_correct_type(
                     // compare if two Types are the same
                     // TODO(@goto-bus-stop) This should use the is_assignable_to check
                     if var_def.ty.inner_named_type() != ty.inner_named_type() {
-                        diagnostics.push(unsupported_type(arg_value, ty));
+                        unsupported_type(diagnostics, arg_value, ty);
                     } else if let Some(default_value) = &var_def.default_value {
                         if var_def.ty.is_non_null() && default_value.is_null() {
-                            diagnostics.push(unsupported_type(default_value, &var_def.ty))
+                            unsupported_type(diagnostics, default_value, &var_def.ty)
                         } else {
                             value_of_correct_type(
-                                db,
+                                diagnostics,
+                                schema,
                                 &var_def.ty,
                                 default_value,
                                 var_defs,
-                                diagnostics,
                             )
                         }
                     }
                 }
             }
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
@@ -164,17 +167,17 @@ pub(crate) fn value_of_correct_type(
             }
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         value.location(),
                         DiagnosticData::UndefinedEnumValue {
                             value: value.clone(),
                             definition: enum_.name.clone(),
                             definition_location: enum_.location(),
                         },
-                    ));
+                    );
                 }
             }
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
         // When expected as an input, list values are accepted only when
         // each item in the list can be accepted by the list’s item type.
@@ -189,15 +192,15 @@ pub(crate) fn value_of_correct_type(
                 // A named type can still accept a list if it is a custom scalar.
                 || matches!(type_definition, schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in());
             if !accepts_list {
-                diagnostics.push(unsupported_type(arg_value, ty))
+                unsupported_type(diagnostics, arg_value, ty)
             } else {
                 let item_type = ty.same_location(ty.item_type().clone());
                 if type_definition.is_input_type() {
                     for v in li {
-                        value_of_correct_type(db, &item_type, v, var_defs, diagnostics);
+                        value_of_correct_type(diagnostics, schema, &item_type, v, var_defs);
                     }
                 } else {
-                    diagnostics.push(unsupported_type(arg_value, &item_type));
+                    unsupported_type(diagnostics, arg_value, &item_type);
                 }
             }
         }
@@ -211,14 +214,14 @@ pub(crate) fn value_of_correct_type(
                 // Add a diagnostic if a value does not exist on the input
                 // object type
                 if let Some((name, value)) = undefined_field {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         value.location(),
                         DiagnosticData::UndefinedInputValue {
                             value: name.clone(),
                             definition: input_obj.name.clone(),
                             definition_location: input_obj.location(),
                         },
-                    ));
+                    );
                 }
 
                 input_obj.fields.iter().for_each(|(input_name, f)| {
@@ -233,7 +236,7 @@ pub(crate) fn value_of_correct_type(
                     // is null or missing entirely, an error should be
                     // raised.
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
-                        diagnostics.push(ValidationError::new(
+                        diagnostics.push(
                             arg_value.location(),
                             DiagnosticData::RequiredField {
                                 name: input_name.clone(),
@@ -243,17 +246,17 @@ pub(crate) fn value_of_correct_type(
                                 },
                                 definition_location: f.location(),
                             },
-                        ));
+                        );
                     }
 
                     let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);
 
                     if let Some((_, v)) = used_val {
-                        value_of_correct_type(db, ty, v, var_defs, diagnostics);
+                        value_of_correct_type(diagnostics, schema, ty, v, var_defs);
                     }
                 })
             }
-            _ => diagnostics.push(unsupported_type(arg_value, ty)),
+            _ => unsupported_type(diagnostics, arg_value, ty),
         },
     }
 }

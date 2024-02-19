@@ -1,60 +1,55 @@
-use crate::{
-    ast, schema,
-    validation::diagnostics::{DiagnosticData, ValidationError},
-    ValidationDatabase,
-};
+use crate::schema::{self, ExtendedType, UnionType};
+use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::DiagnosticList;
+use crate::{ast, Node};
 
-pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
-    for def in db.ast_types().unions.values() {
-        diagnostics.extend(db.validate_union_definition(def.clone()));
+pub(crate) fn validate_union_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
+    for ty in schema.types.values() {
+        if let ExtendedType::Union(def) = ty {
+            validate_union_definition(diagnostics, schema, def);
+        }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_union_definition(
-    db: &dyn ValidationDatabase,
-    union_def: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = super::directive::validate_directives(
-        db,
-        union_def.directives(),
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    union_def: &Node<UnionType>,
+) {
+    super::directive::validate_directives(
+        diagnostics,
+        Some(schema),
+        union_def.directives.iter_ast(),
         ast::DirectiveLocation::Union,
         // unions don't use variables
         Default::default(),
     );
 
-    let schema = db.schema();
-
-    for union_member in union_def.members() {
+    for union_member in &union_def.members {
         let member_location = union_member.location();
         // TODO: (?) A Union type must include one or more unique member types.
 
-        match schema.types.get(union_member) {
+        match schema.types.get(&union_member.name) {
             None => {
                 // Union member must be defined.
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     member_location,
                     DiagnosticData::UndefinedDefinition {
-                        name: union_member.clone(),
+                        name: union_member.name.clone(),
                     },
-                ));
+                );
             }
             Some(schema::ExtendedType::Object(_)) => {} // good
             Some(ty) => {
                 // Union member must be of object type.
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     member_location,
                     DiagnosticData::UnionMemberObjectType {
-                        name: union_member.clone(),
+                        name: union_member.name.clone(),
                         describe_type: ty.describe(),
                     },
-                ));
+                );
             }
         }
     }
-
-    diagnostics
 }

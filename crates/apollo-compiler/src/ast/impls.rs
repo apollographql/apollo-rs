@@ -470,50 +470,29 @@ impl DirectiveDefinition {
 impl SchemaDefinition {
     serialize_method!();
 }
-impl Extensible for SchemaDefinition {
-    type Extension = SchemaExtension;
-}
 
 impl ScalarTypeDefinition {
     serialize_method!();
-}
-impl Extensible for ScalarTypeDefinition {
-    type Extension = ScalarTypeExtension;
 }
 
 impl ObjectTypeDefinition {
     serialize_method!();
 }
-impl Extensible for ObjectTypeDefinition {
-    type Extension = ObjectTypeExtension;
-}
 
 impl InterfaceTypeDefinition {
     serialize_method!();
-}
-impl Extensible for InterfaceTypeDefinition {
-    type Extension = InterfaceTypeExtension;
 }
 
 impl UnionTypeDefinition {
     serialize_method!();
 }
-impl Extensible for UnionTypeDefinition {
-    type Extension = UnionTypeExtension;
-}
 
 impl EnumTypeDefinition {
     serialize_method!();
 }
-impl Extensible for EnumTypeDefinition {
-    type Extension = EnumTypeExtension;
-}
 
 impl InputObjectTypeDefinition {
     serialize_method!();
-}
-impl Extensible for InputObjectTypeDefinition {
-    type Extension = InputObjectTypeExtension;
 }
 
 impl SchemaExtension {
@@ -1839,63 +1818,4 @@ impl fmt::Debug for InvalidNameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
-}
-
-impl<T: Extensible> TypeWithExtensions<T> {
-    /// Iterate over elements of the base definition and its extensions.
-    pub fn iter_all<'a, Item, DefIter, ExtIter>(
-        &'a self,
-        mut map_definition: impl FnMut(&'a Node<T>) -> DefIter + 'a,
-        map_extension: impl FnMut(&'a Node<T::Extension>) -> ExtIter + 'a,
-    ) -> impl Iterator<Item = Item> + 'a
-    where
-        Item: 'a,
-        DefIter: Iterator<Item = Item> + 'a,
-        ExtIter: Iterator<Item = Item> + 'a,
-    {
-        map_definition(&self.definition).chain(self.extensions.iter().flat_map(map_extension))
-    }
-}
-
-macro_rules! iter_extensible_method {
-    ($property:ident, $ty:ty) => {
-        pub fn $property(&self) -> impl Iterator<Item = &'_ $ty> + '_ {
-            self.iter_all(
-                |definition| definition.$property.iter(),
-                |extension| extension.$property.iter(),
-            )
-        }
-    };
-}
-
-impl TypeWithExtensions<SchemaDefinition> {
-    iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(root_operations, Node<(OperationType, NamedType)>);
-}
-
-impl TypeWithExtensions<ObjectTypeDefinition> {
-    iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(fields, Node<FieldDefinition>);
-    iter_extensible_method!(implements_interfaces, NamedType);
-}
-
-impl TypeWithExtensions<InterfaceTypeDefinition> {
-    iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(fields, Node<FieldDefinition>);
-    iter_extensible_method!(implements_interfaces, NamedType);
-}
-
-impl TypeWithExtensions<UnionTypeDefinition> {
-    iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(members, NamedType);
-}
-
-impl TypeWithExtensions<EnumTypeDefinition> {
-    iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(values, Node<EnumValueDefinition>);
-}
-
-impl TypeWithExtensions<InputObjectTypeDefinition> {
-    iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(fields, Node<InputValueDefinition>);
 }

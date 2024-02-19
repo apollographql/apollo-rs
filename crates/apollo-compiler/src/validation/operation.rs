@@ -1,14 +1,12 @@
-use crate::validation::diagnostics::ValidationError;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
-use crate::{ast, executable, Node, ValidationDatabase};
+use crate::{ast, executable, ExecutableDocument, Node, Schema};
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub(crate) struct OperationValidationConfig<'vars> {
-    /// When false, rules that require a schema to validate are disabled.
-    pub has_schema: bool,
+#[derive(Debug, Clone)]
+pub(crate) struct OperationValidationConfig<'a> {
+    /// When None, rules that require a schema to validate are disabled.
+    pub schema: Option<&'a crate::Schema>,
     /// The variables defined for this operation.
-    pub variables: &'vars [Node<ast::VariableDefinition>],
+    pub variables: &'a [Node<ast::VariableDefinition>],
 }
 
 pub(crate) fn validate_subscription(
@@ -57,74 +55,53 @@ pub(crate) fn validate_subscription(
 }
 
 pub(crate) fn validate_operation(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-    operation: Node<ast::OperationDefinition>,
-    has_schema: bool,
-) -> Vec<ValidationError> {
-    let mut diagnostics = vec![];
-
+    diagnostics: &mut DiagnosticList,
+    schema: Option<&Schema>,
+    document: &ExecutableDocument,
+    operation: &executable::Operation,
+) {
     let config = OperationValidationConfig {
-        has_schema,
+        schema,
         variables: &operation.variables,
     };
 
-    let schema = db.schema();
-    let against_type = schema.root_operation(operation.operation_type);
+    let against_type = if let Some(schema) = schema {
+        schema
+            .root_operation(operation.operation_type)
+            .map(|ty| (schema, ty))
+    } else {
+        None
+    };
 
-    diagnostics.extend(super::directive::validate_directives(
-        db,
+    super::directive::validate_directives(
+        diagnostics,
+        schema,
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
-    ));
-    diagnostics.extend(super::variable::validate_variable_definitions(
-        db,
+    );
+    super::variable::validate_variable_definitions(
+        diagnostics,
+        config.schema,
         &operation.variables,
-        config.has_schema,
-    ));
+    );
 
-    diagnostics.extend(super::variable::validate_unused_variables(
-        db,
-        file_id,
-        operation.clone(),
-    ));
-    diagnostics.extend(super::selection::validate_selection_set(
-        db,
-        file_id,
+    super::variable::validate_unused_variables(diagnostics, document, operation);
+    super::selection::validate_selection_set(
+        diagnostics,
+        document,
         against_type,
         &operation.selection_set,
         config,
-    ));
-
-    diagnostics
-}
-
-pub(crate) fn validate_operation_definitions_inner(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-    has_schema: bool,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-    let document = db.ast(file_id);
-
-    for definition in &document.definitions {
-        if let ast::Definition::OperationDefinition(operation) = definition {
-            diagnostics.extend(validate_operation(
-                db,
-                file_id,
-                operation.clone(),
-                has_schema,
-            ));
-        }
-    }
-
-    diagnostics
+    );
 }
 
 pub(crate) fn validate_operation_definitions(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ValidationError> {
-    validate_operation_definitions_inner(db, file_id, false)
+    diagnostics: &mut DiagnosticList,
+    schema: Option<&Schema>,
+    document: &ExecutableDocument,
+) {
+    for operation in document.all_operations() {
+        validate_operation(diagnostics, schema, document, operation);
+    }
 }

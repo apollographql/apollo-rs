@@ -1,66 +1,67 @@
 use crate::coordinate::{FieldArgumentCoordinate, TypeAttributeCoordinate};
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
-use crate::validation::{FileId, ValidationDatabase};
-use crate::{ast, schema, Node};
+use crate::validation::diagnostics::DiagnosticData;
+use crate::{ast, executable, schema, ExecutableDocument, Node};
 
 use super::operation::OperationValidationConfig;
+use crate::ast::Name;
+use crate::schema::Component;
+use crate::validation::DiagnosticList;
+use indexmap::IndexMap;
 
 pub(crate) fn validate_field(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
+    diagnostics: &mut DiagnosticList,
+    document: &ExecutableDocument,
     // May be None if a parent selection was invalid
-    against_type: Option<&ast::NamedType>,
-    field: Node<ast::Field>,
+    against_type: Option<(&crate::Schema, &ast::NamedType)>,
+    field: &Node<executable::Field>,
     context: OperationValidationConfig<'_>,
-) -> Vec<ValidationError> {
+) {
     // First do all the validation that we can without knowing the type of the field.
 
-    let mut diagnostics = super::directive::validate_directives(
-        db,
+    super::directive::validate_directives(
+        diagnostics,
+        context.schema,
         field.directives.iter(),
         ast::DirectiveLocation::Field,
         context.variables,
     );
 
-    diagnostics.extend(super::argument::validate_arguments(&field.arguments));
+    super::argument::validate_arguments(diagnostics, &field.arguments);
 
     // Return early if we don't know the type--this can happen if we are nested deeply
     // inside a selection set that has a wrong field, or if we are validating a standalone
     // operation without a schema.
-    let Some(against_type) = against_type else {
-        return diagnostics;
+    let Some((schema, against_type)) = against_type else {
+        return;
     };
-
-    let schema = db.schema();
 
     if let Ok(field_definition) = schema.type_field(against_type, &field.name) {
         for argument in &field.arguments {
             let arg_definition = field_definition
                 .arguments
                 .iter()
-                .find(|val| val.name == argument.name)
-                .cloned();
+                .find(|val| val.name == argument.name);
             if let Some(arg_definition) = arg_definition {
-                if let Some(diag) = super::variable::validate_variable_usage(
-                    arg_definition.clone(),
+                if super::variable::validate_variable_usage(
+                    diagnostics,
+                    arg_definition,
                     context.variables,
                     argument,
                 )
-                .err()
+                .is_ok()
                 {
-                    diagnostics.push(diag)
-                } else {
-                    diagnostics.extend(super::value::validate_values(
-                        db,
+                    super::value::validate_values(
+                        diagnostics,
+                        schema,
                         &arg_definition.ty,
                         argument,
                         context.variables,
-                    ));
+                    );
                 }
             } else {
                 let loc = field_definition.location();
 
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     argument.location(),
                     DiagnosticData::UndefinedArgument {
                         name: argument.name.clone(),
@@ -71,7 +72,7 @@ pub(crate) fn validate_field(
                         .into(),
                         definition_location: loc,
                     },
-                ));
+                );
             }
         }
 
@@ -88,7 +89,7 @@ pub(crate) fn validate_field(
             };
 
             if arg_definition.is_required() && is_null {
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     field.location(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.clone(),
@@ -100,56 +101,51 @@ pub(crate) fn validate_field(
                         .into(),
                         definition_location: arg_definition.location(),
                     },
-                ));
+                );
             }
         }
 
-        match validate_leaf_field_selection(db, field.clone(), &field_definition.ty) {
-            Err(diag) => diagnostics.push(diag),
-            Ok(_) => diagnostics.extend(super::selection::validate_selection_set(
-                db,
-                file_id,
-                Some(field_definition.ty.inner_named_type()),
+        if validate_leaf_field_selection(diagnostics, schema, field, &field_definition.ty).is_ok() {
+            super::selection::validate_selection_set(
+                diagnostics,
+                document,
+                Some((schema, field_definition.ty.inner_named_type())),
                 &field.selection_set,
                 context,
-            )),
+            )
         }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_field_definition(
-    db: &dyn ValidationDatabase,
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
     field: &Node<ast::FieldDefinition>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = super::directive::validate_directives(
-        db,
+) {
+    super::directive::validate_directives(
+        diagnostics,
+        Some(schema),
         field.directives.iter(),
         ast::DirectiveLocation::FieldDefinition,
         // field definitions don't have variables
         Default::default(),
     );
 
-    diagnostics.extend(super::input_object::validate_argument_definitions(
-        db,
+    super::input_object::validate_argument_definitions(
+        diagnostics,
+        schema,
         &field.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
-    ));
-
-    diagnostics
+    );
 }
 
 pub(crate) fn validate_field_definitions(
-    db: &dyn ValidationDatabase,
-    fields: Vec<Node<ast::FieldDefinition>>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
-    let schema = db.schema();
-
-    for field in &fields {
-        diagnostics.extend(validate_field_definition(db, field));
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    fields: &IndexMap<Name, Component<ast::FieldDefinition>>,
+) {
+    for field in fields.values() {
+        validate_field_definition(diagnostics, schema, field);
 
         // Field types in Object Types must be of output type
         let loc = field.location();
@@ -157,35 +153,32 @@ pub(crate) fn validate_field_definitions(
         if let Some(field_ty) = schema.types.get(field.ty.inner_named_type()) {
             if !field_ty.is_output_type() {
                 // Output types are unreachable
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     loc,
                     DiagnosticData::OutputType {
                         name: field.name.clone(),
                         describe_type: field_ty.describe(),
                         type_location,
                     },
-                ));
+                );
             }
         } else {
-            diagnostics.push(ValidationError::new(
+            diagnostics.push(
                 type_location,
                 DiagnosticData::UndefinedDefinition {
                     name: field.ty.inner_named_type().clone(),
                 },
-            ));
+            );
         }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_leaf_field_selection(
-    db: &dyn ValidationDatabase,
-    field: Node<ast::Field>,
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    field: &Node<executable::Field>,
     field_type: &ast::Type,
-) -> Result<(), ValidationError> {
-    let schema = db.schema();
-
+) -> Result<(), ()> {
     let is_leaf = field.selection_set.is_empty();
     let tname = field_type.inner_named_type();
     let fname = &field.name;
@@ -204,7 +197,7 @@ pub(crate) fn validate_leaf_field_selection(
                 | schema::ExtendedType::Union(_)
         )
     {
-        Err(ValidationError::new(
+        diagnostics.push(
             field.location(),
             DiagnosticData::MissingSubselection {
                 coordinate: TypeAttributeCoordinate {
@@ -213,7 +206,8 @@ pub(crate) fn validate_leaf_field_selection(
                 },
                 describe_type: type_def.describe(),
             },
-        ))
+        );
+        Err(())
     } else {
         Ok(())
     }

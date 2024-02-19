@@ -22,9 +22,9 @@ pub use crate::ast::{
     VariableDefinition,
 };
 use crate::validation::DiagnosticList;
-use crate::validation::NodeLocation;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
+use crate::NodeLocation;
 use std::fmt;
 use std::sync::Arc;
 
@@ -472,6 +472,10 @@ impl SelectionSet {
             ty,
             selections: Vec::new(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.selections.is_empty()
     }
 
     pub fn push(&mut self, selection: impl Into<Selection>) {

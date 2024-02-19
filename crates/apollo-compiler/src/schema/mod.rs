@@ -2,8 +2,8 @@
 
 use crate::ast;
 use crate::validation::FileId;
-use crate::validation::NodeLocation;
 use crate::Node;
+use crate::NodeLocation;
 use crate::NodeStr;
 use crate::Parser;
 use indexmap::IndexMap;
@@ -842,6 +842,10 @@ impl DirectiveList {
     /// Returns whether there is a directive with the given name
     pub fn has(&self, name: &str) -> bool {
         self.get(name).is_some()
+    }
+
+    pub(crate) fn iter_ast(&self) -> impl Iterator<Item = &Node<ast::Directive>> {
+        self.0.iter().map(|component| &component.node)
     }
 
     serialize_method!();

@@ -5,28 +5,11 @@ use crate::ast::Type;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
-use crate::diagnostic::NodeLocation;
+use crate::executable;
 use crate::Node;
+use crate::NodeLocation;
 use std::fmt;
 use thiserror::Error;
-
-#[derive(Debug, Error, Clone, PartialEq, Eq)]
-pub(crate) struct ValidationError {
-    pub location: Option<NodeLocation>,
-    pub data: DiagnosticData,
-}
-
-impl ValidationError {
-    pub fn new(location: Option<NodeLocation>, data: DiagnosticData) -> Self {
-        Self { location, data }
-    }
-}
-
-impl fmt::Display for ValidationError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.data.fmt(f)
-    }
-}
 
 /// Structured data about a diagnostic.
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
@@ -269,7 +252,7 @@ pub(crate) enum DiagnosticData {
         /// Source location of just the "fragment FragName" part.
         head_location: Option<NodeLocation>,
         name: Name,
-        trace: Vec<Node<ast::FragmentSpread>>,
+        trace: Vec<Node<executable::FragmentSpread>>,
     },
     #[error("`{name}` contains too much nesting")]
     DeeplyNestedType {
@@ -280,9 +263,9 @@ pub(crate) enum DiagnosticData {
     RecursionError {},
 }
 
-impl ValidationError {
-    pub(crate) fn report(&self, report: &mut CliReport) {
-        match &self.data {
+impl DiagnosticData {
+    pub(crate) fn report(&self, main_location: Option<NodeLocation>, report: &mut CliReport) {
+        match self {
             DiagnosticData::UniqueVariable {
                 name,
                 original_definition,
@@ -336,7 +319,7 @@ impl ValidationError {
                 definition_location,
                 ..
             } => {
-                report.with_label_opt(self.location, "argument by this name not found");
+                report.with_label_opt(main_location, "argument by this name not found");
                 report.with_label_opt(
                     *definition_location,
                     format_args!("{coordinate} defined here"),
@@ -348,7 +331,7 @@ impl ValidationError {
                 definition_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("missing value for argument `{name}`"),
                 );
                 report.with_label_opt(*definition_location, "argument defined here");
@@ -359,23 +342,23 @@ impl ValidationError {
                 definition_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("missing value for field `{name}`"),
                 );
                 report.with_label_opt(*definition_location, "field defined here");
             }
             DiagnosticData::UndefinedDefinition { .. } => {
-                report.with_label_opt(self.location, "not found in this scope");
+                report.with_label_opt(main_location, "not found in this scope");
             }
             DiagnosticData::UndefinedDirective { .. } => {
-                report.with_label_opt(self.location, "directive not defined");
+                report.with_label_opt(main_location, "directive not defined");
             }
             DiagnosticData::UndefinedVariable { .. } => {
-                report.with_label_opt(self.location, "not found in this scope");
+                report.with_label_opt(main_location, "not found in this scope");
             }
             DiagnosticData::UndefinedFragment { name } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("fragment `{name}` is not defined"),
                 );
             }
@@ -385,7 +368,7 @@ impl ValidationError {
                 definition_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("value does not exist on `{definition}` enum"),
                 );
                 report.with_label_opt(*definition_location, "enum defined here");
@@ -396,23 +379,23 @@ impl ValidationError {
                 definition_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("value does not exist on `{definition}` input object"),
                 );
                 report.with_label_opt(*definition_location, "input object defined here");
             }
             DiagnosticData::RecursiveDirectiveDefinition { name, trace } => {
-                report.with_label_opt(self.location, "recursive directive definition");
+                report.with_label_opt(main_location, "recursive directive definition");
                 label_recursive_trace(report, trace, name, |directive| &directive.name);
             }
             DiagnosticData::RecursiveInterfaceDefinition { name } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("interface {name} cannot implement itself"),
                 );
             }
             DiagnosticData::RecursiveInputObjectDefinition { name, trace } => {
-                report.with_label_opt(self.location, "cyclical input object definition");
+                report.with_label_opt(main_location, "cyclical input object definition");
                 label_recursive_trace(report, trace, name, |reference| &reference.name);
             }
             DiagnosticData::RecursiveFragmentDefinition {
@@ -421,14 +404,14 @@ impl ValidationError {
                 trace,
             } => {
                 report.with_label_opt(
-                    head_location.or(self.location),
+                    head_location.or(main_location),
                     "recursive fragment definition",
                 );
                 label_recursive_trace(report, trace, name, |reference| &reference.fragment_name);
             }
             DiagnosticData::DeeplyNestedType { describe_type, .. } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!(
                         "references a very long chain of {describe_type}s in its definition"
                     ),
@@ -442,7 +425,7 @@ impl ValidationError {
                 field_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("add `{field}` field to this type"),
                 );
                 report.with_label_opt(
@@ -470,15 +453,15 @@ impl ValidationError {
                     ),
                 );
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("{missing_interface} must also be implemented here"),
                 );
             }
             DiagnosticData::UnusedVariable { .. } => {
-                report.with_label_opt(self.location, "variable is never used");
+                report.with_label_opt(main_location, "variable is never used");
             }
             DiagnosticData::UnusedFragment { name } => {
-                report.with_label_opt(self.location, format_args!("`{name}` is defined here"));
+                report.with_label_opt(main_location, format_args!("`{name}` is defined here"));
                 report.with_help(format_args!(
                     "fragment `{name}` must be used in an operation"
                 ));
@@ -487,14 +470,14 @@ impl ValidationError {
                 name: _,
                 describe_type,
             } => {
-                report.with_label_opt(self.location, format_args!("this is {describe_type}"));
+                report.with_label_opt(main_location, format_args!("this is {describe_type}"));
                 report.with_help("Root operation type must be an object type.");
             }
             DiagnosticData::UnionMemberObjectType {
                 name: _,
                 describe_type,
             } => {
-                report.with_label_opt(self.location, format_args!("this is {describe_type}"));
+                report.with_label_opt(main_location, format_args!("this is {describe_type}"));
                 report.with_help("Union members must be object types.");
             }
             DiagnosticData::OutputType {
@@ -503,7 +486,7 @@ impl ValidationError {
                 type_location,
             } => {
                 report.with_label_opt(
-                    type_location.or(self.location),
+                    type_location.or(main_location),
                     format_args!("this is {describe_type}"),
                 );
                 report.with_help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{name}` field to return one of these output types."));
@@ -514,7 +497,7 @@ impl ValidationError {
                 type_location,
             } => {
                 report.with_label_opt(
-                    type_location.or(self.location),
+                    type_location.or(main_location),
                     format_args!("this is {describe_type}"),
                 );
                 report.with_help(format!("Scalars, Enums, and Input Objects are input types. Change `{name}` field to take one of these input types."));
@@ -525,14 +508,14 @@ impl ValidationError {
                 type_location,
             } => {
                 report.with_label_opt(
-                    type_location.or(self.location),
+                    type_location.or(main_location),
                     format_args!("this is {describe_type}"),
                 );
                 report.with_help("objects, unions, and interfaces cannot be used because variables can only be of input type");
             }
             DiagnosticData::QueryRootOperationType => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     "`query` root operation type must be defined here",
                 );
             }
@@ -543,7 +526,7 @@ impl ValidationError {
                 definition_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("directive cannot be used on {location}"),
                 );
                 report.with_label_opt(*definition_location, "directive defined here");
@@ -558,7 +541,7 @@ impl ValidationError {
                 definition_location,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("provided value is {describe_value_type}"),
                 );
                 report.with_label_opt(
@@ -567,10 +550,10 @@ impl ValidationError {
                 );
             }
             DiagnosticData::IntCoercionError { .. } => {
-                report.with_label_opt(self.location, "cannot be coerced to a 32-bit integer");
+                report.with_label_opt(main_location, "cannot be coerced to a 32-bit integer");
             }
             DiagnosticData::FloatCoercionError { .. } => {
-                report.with_label_opt(self.location, "cannot be coerced to a finite 64-bit float");
+                report.with_label_opt(main_location, "cannot be coerced to a finite 64-bit float");
             }
             DiagnosticData::UniqueDirective {
                 name,
@@ -581,7 +564,7 @@ impl ValidationError {
                     format_args!("directive `@{name}` first called here"),
                 );
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("directive `@{name}` called again here"),
                 );
             }
@@ -590,13 +573,13 @@ impl ValidationError {
                 describe_type,
             } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("{coordinate} is {describe_type} and must select fields"),
                 );
             }
             DiagnosticData::InvalidFragmentTarget { name: _, ty } => {
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format!("fragment declares unsupported type condition `{ty}`"),
                 );
                 report.with_help("fragments cannot be defined on enums, scalars and input objects");
@@ -610,7 +593,7 @@ impl ValidationError {
             } => {
                 if let Some(name) = name {
                     report.with_label_opt(
-                        self.location,
+                        main_location,
                         format_args!("fragment `{name}` cannot be applied"),
                     );
                     // Only for named fragments: for inline fragments the type condition is right
@@ -622,7 +605,7 @@ impl ValidationError {
                         ),
                     );
                 } else {
-                    report.with_label_opt(self.location, "inline fragment cannot be applied");
+                    report.with_label_opt(main_location, "inline fragment cannot be applied");
                 }
                 report.with_label_opt(
                     *type_location,
@@ -642,7 +625,7 @@ impl ValidationError {
                     ),
                 );
                 report.with_label_opt(
-                    self.location,
+                    main_location,
                     format_args!("variable `${variable}` used here"),
                 );
             }

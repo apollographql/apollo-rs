@@ -1,7 +1,7 @@
 #![allow(unstable_name_collisions)] // for `sptr::Strict`
 
 use crate::execution::GraphQLLocation;
-use crate::validation::NodeLocation;
+use crate::NodeLocation;
 use crate::SourceMap;
 use sptr::Strict;
 use std::marker::PhantomData;

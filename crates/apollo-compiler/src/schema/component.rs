@@ -1,6 +1,6 @@
 use crate::ast::Name;
-use crate::validation::NodeLocation;
 use crate::Node;
+use crate::NodeLocation;
 use std::fmt;
 use std::hash;
 use std::ops::Deref;
@@ -164,6 +164,11 @@ impl PartialEq for ComponentName {
 impl PartialEq<str> for ComponentName {
     fn eq(&self, other: &str) -> bool {
         self.as_str() == other
+    }
+}
+impl PartialEq<Name> for ComponentName {
+    fn eq(&self, other: &Name) -> bool {
+        self.name == *other
     }
 }
 

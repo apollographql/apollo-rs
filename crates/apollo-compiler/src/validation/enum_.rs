@@ -1,41 +1,42 @@
-use crate::validation::diagnostics::ValidationError;
-use crate::{ast, Node, ValidationDatabase};
+use crate::schema::{EnumType, ExtendedType};
+use crate::validation::DiagnosticList;
+use crate::{ast, Node};
 
-pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
-    for enum_ in db.ast_types().enums.values() {
-        diagnostics.extend(db.validate_enum_definition(enum_.clone()));
+pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
+    for ty in schema.types.values() {
+        if let ExtendedType::Enum(enum_) = ty {
+            validate_enum_definition(diagnostics, schema, enum_);
+        }
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_enum_definition(
-    db: &dyn ValidationDatabase,
-    enum_def: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = super::directive::validate_directives(
-        db,
-        enum_def.directives(),
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    enum_def: &EnumType,
+) {
+    super::directive::validate_directives(
+        diagnostics,
+        Some(schema),
+        enum_def.directives.iter_ast(),
         ast::DirectiveLocation::Enum,
         // enums don't use variables
         Default::default(),
     );
 
-    for enum_val in enum_def.values() {
-        diagnostics.extend(validate_enum_value(db, enum_val));
+    for enum_val in enum_def.values.values() {
+        validate_enum_value(diagnostics, schema, enum_val);
     }
-
-    diagnostics
 }
 
 pub(crate) fn validate_enum_value(
-    db: &dyn ValidationDatabase,
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
     enum_val: &Node<ast::EnumValueDefinition>,
-) -> Vec<ValidationError> {
+) {
     super::directive::validate_directives(
-        db,
+        diagnostics,
+        Some(schema),
         enum_val.directives.iter(),
         ast::DirectiveLocation::EnumValue,
         // enum values don't use variables

@@ -1,38 +1,21 @@
-use crate::validation::Details;
+use crate::validation::directive::validate_directive_definitions;
+use crate::validation::enum_::validate_enum_definitions;
+use crate::validation::input_object::validate_input_object_definitions;
+use crate::validation::interface::validate_interface_definitions;
+use crate::validation::object::validate_object_type_definitions;
+use crate::validation::scalar::validate_scalar_definitions;
+use crate::validation::schema::validate_schema_definition;
+use crate::validation::union_::validate_union_definitions;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
-use crate::InputDatabase;
 use crate::Schema;
-use crate::ValidationDatabase;
-use std::sync::Arc;
 
 pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &Schema) {
-    compiler_validation(errors, schema)
-}
-
-/// TODO: replace this with validation based on `Schema` without a database
-fn compiler_validation(errors: &mut DiagnosticList, schema: &Schema) {
-    let mut compiler = crate::ApolloCompiler::new();
-    let mut ids = Vec::new();
-    for (id, source) in schema.sources.iter() {
-        ids.push(*id);
-        compiler.db.set_input(*id, source.into());
-    }
-    let ast_id = FileId::HACK_TMP;
-    ids.push(ast_id);
-    let mut ast = crate::ast::Document::new();
-    ast.definitions.extend(schema.to_ast());
-    compiler.db.set_input(
-        ast_id,
-        crate::Source {
-            ty: crate::database::SourceType::Schema,
-            filename: Default::default(),
-            text: Default::default(),
-            ast: Some(Arc::new(ast)),
-        },
-    );
-    compiler.db.set_source_files(ids);
-    for diagnostic in compiler.db.validate_type_system() {
-        errors.push(diagnostic.location, Details::CompilerDiagnostic(diagnostic))
-    }
+    validate_schema_definition(errors, schema);
+    validate_scalar_definitions(errors, schema);
+    validate_enum_definitions(errors, schema);
+    validate_union_definitions(errors, schema);
+    validate_interface_definitions(errors, schema);
+    validate_directive_definitions(errors, schema);
+    validate_input_object_definitions(errors, schema);
+    validate_object_type_definitions(errors, schema);
 }

@@ -1,31 +1,29 @@
-use crate::validation::diagnostics::{DiagnosticData, ValidationError};
+use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::{
-    FileId, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
+    DiagnosticList, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
 };
-use crate::{ast, Node, ValidationDatabase};
+use crate::{ast, executable, ExecutableDocument, Node};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
 pub(crate) fn validate_variable_definitions(
-    db: &dyn ValidationDatabase,
+    diagnostics: &mut DiagnosticList,
+    schema: Option<&crate::Schema>,
     variables: &[Node<ast::VariableDefinition>],
-    has_schema: bool,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-    let schema = db.schema();
-
+) {
     let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
-        diagnostics.extend(super::directive::validate_directives(
-            db,
+        super::directive::validate_directives(
+            diagnostics,
+            schema,
             variable.directives.iter(),
             ast::DirectiveLocation::VariableDefinition,
             // let's assume that variable definitions cannot reference other
             // variables and provide them as arguments to directives
             Default::default(),
-        ));
+        );
 
-        if has_schema {
+        if let Some(schema) = &schema {
             let ty = &variable.ty;
             let type_definition = schema.types.get(ty.inner_named_type());
 
@@ -34,21 +32,21 @@ pub(crate) fn validate_variable_definitions(
                     // OK!
                 }
                 Some(type_definition) => {
-                    diagnostics.push(ValidationError::new(
+                    diagnostics.push(
                         variable.location(),
                         DiagnosticData::VariableInputType {
                             name: variable.name.clone(),
                             describe_type: type_definition.describe(),
                             type_location: ty.location(),
                         },
-                    ));
+                    );
                 }
-                None => diagnostics.push(ValidationError::new(
+                None => diagnostics.push(
                     variable.location(),
                     DiagnosticData::UndefinedDefinition {
                         name: ty.inner_named_type().clone(),
                     },
-                )),
+                ),
             }
         }
 
@@ -56,55 +54,40 @@ pub(crate) fn validate_variable_definitions(
             Entry::Occupied(original) => {
                 let original_definition = original.get().location();
                 let redefined_definition = variable.location();
-                diagnostics.push(ValidationError::new(
+                diagnostics.push(
                     redefined_definition,
                     DiagnosticData::UniqueVariable {
                         name: variable.name.clone(),
                         original_definition,
                         redefined_definition,
                     },
-                ));
+                );
             }
             Entry::Vacant(entry) => {
                 entry.insert(variable);
             }
         }
     }
-
-    diagnostics
 }
 
-type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
-
-fn walk_selections(
-    document: &ast::Document,
-    selections: &[ast::Selection],
-    mut f: impl FnMut(&NamedFragments, &ast::Selection),
+fn walk_selections<'doc>(
+    document: &'doc ExecutableDocument,
+    selections: &'doc executable::SelectionSet,
+    mut f: impl FnMut(&'doc executable::Selection),
 ) -> Result<(), RecursionLimitError> {
-    let named_fragments: NamedFragments = document
-        .definitions
-        .iter()
-        .filter_map(|definition| match definition {
-            ast::Definition::FragmentDefinition(fragment) => {
-                Some((fragment.name.clone(), fragment.clone()))
-            }
-            _ => None,
-        })
-        .collect();
-
-    fn walk_selections_inner<'ast, 'guard>(
-        named_fragments: &'ast NamedFragments,
-        selections: &'ast [ast::Selection],
+    fn walk_selections_inner<'doc, 'guard>(
+        document: &'doc ExecutableDocument,
+        selection_set: &'doc executable::SelectionSet,
         guard: &mut RecursionGuard<'guard>,
-        f: &mut dyn FnMut(&NamedFragments, &ast::Selection),
+        f: &mut dyn FnMut(&'doc executable::Selection),
     ) -> Result<(), RecursionLimitError> {
-        for selection in selections {
-            f(named_fragments, selection);
+        for selection in &selection_set.selections {
+            f(selection);
             match selection {
-                ast::Selection::Field(field) => {
-                    walk_selections_inner(named_fragments, &field.selection_set, guard, f)?;
+                executable::Selection::Field(field) => {
+                    walk_selections_inner(document, &field.selection_set, guard, f)?;
                 }
-                ast::Selection::FragmentSpread(fragment) => {
+                executable::Selection::FragmentSpread(fragment) => {
                     // Prevent chasing a cyclical reference.
                     // Note we do not report `CycleError::Recursed` here, as that is already caught
                     // by the cyclical fragment validation--we just need to ensure that we don't
@@ -113,18 +96,19 @@ fn walk_selections(
                         continue;
                     }
 
-                    if let Some(fragment_definition) = named_fragments.get(&fragment.fragment_name)
+                    if let Some(fragment_definition) =
+                        document.fragments.get(&fragment.fragment_name)
                     {
                         walk_selections_inner(
-                            named_fragments,
+                            document,
                             &fragment_definition.selection_set,
                             &mut guard.push(&fragment.fragment_name)?,
                             f,
                         )?;
                     }
                 }
-                ast::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(named_fragments, &fragment.selection_set, guard, f)?;
+                executable::Selection::InlineFragment(fragment) => {
+                    walk_selections_inner(document, &fragment.selection_set, guard, f)?;
                 }
             }
         }
@@ -132,16 +116,16 @@ fn walk_selections(
     }
 
     let mut stack = RecursionStack::new().with_limit(100);
-    let result = walk_selections_inner(&named_fragments, selections, &mut stack.guard(), &mut f);
+    let result = walk_selections_inner(document, selections, &mut stack.guard(), &mut f);
     result
 }
 
-fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '_ {
+fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &ast::Name> + '_ {
     let mut value_stack = vec![value];
     std::iter::from_fn(move || {
         while let Some(value) = value_stack.pop() {
             match value {
-                ast::Value::Variable(variable) => return Some(variable.clone()),
+                ast::Value::Variable(variable) => return Some(variable),
                 ast::Value::List(list) => value_stack.extend(list.iter().map(|value| &**value)),
                 ast::Value::Object(fields) => {
                     value_stack.extend(fields.iter().map(|(_, value)| &**value))
@@ -153,13 +137,13 @@ fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '
     })
 }
 
-fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = ast::Name> + '_ {
+fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = &ast::Name> + '_ {
     args.iter().flat_map(|arg| variables_in_value(&arg.value))
 }
 
 fn variables_in_directives(
     directives: &[Node<ast::Directive>],
-) -> impl Iterator<Item = ast::Name> + '_ {
+) -> impl Iterator<Item = &ast::Name> + '_ {
     directives
         .iter()
         .flat_map(|directive| variables_in_arguments(&directive.arguments))
@@ -172,17 +156,11 @@ fn variables_in_directives(
 //   a: field (arg: $var2)
 // }
 pub(crate) fn validate_unused_variables(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-    operation: Node<ast::OperationDefinition>,
-) -> Vec<ValidationError> {
-    let mut diagnostics = Vec::new();
-
-    let defined_vars: HashSet<_> = operation
-        .variables
-        .iter()
-        .map(|var| var.name.clone())
-        .collect();
+    diagnostics: &mut DiagnosticList,
+    document: &ExecutableDocument,
+    operation: &executable::Operation,
+) {
+    let defined_vars: HashSet<_> = operation.variables.iter().map(|var| &var.name).collect();
     let locations: HashMap<_, _> = operation
         .variables
         .iter()
@@ -193,62 +171,55 @@ pub(crate) fn validate_unused_variables(
             )
         })
         .collect();
-    let mut used_vars = HashSet::<ast::Name>::new();
+    let mut used_vars = HashSet::new();
     let walked = walk_selections(
-        &db.ast(file_id),
+        document,
         &operation.selection_set,
-        |named_fragments, selection| match selection {
-            ast::Selection::Field(field) => {
+        |selection| match selection {
+            executable::Selection::Field(field) => {
                 used_vars.extend(variables_in_directives(&field.directives));
                 used_vars.extend(variables_in_arguments(&field.arguments));
             }
-            ast::Selection::FragmentSpread(fragment) => {
-                if let Some(fragment_def) = named_fragments.get(&fragment.fragment_name) {
+            executable::Selection::FragmentSpread(fragment) => {
+                if let Some(fragment_def) = document.fragments.get(&fragment.fragment_name) {
                     used_vars.extend(variables_in_directives(&fragment_def.directives));
                 }
                 used_vars.extend(variables_in_directives(&fragment.directives));
             }
-            ast::Selection::InlineFragment(fragment) => {
+            executable::Selection::InlineFragment(fragment) => {
                 used_vars.extend(variables_in_directives(&fragment.directives));
             }
         },
     );
     if walked.is_err() {
-        diagnostics.push(ValidationError::new(
-            None,
-            DiagnosticData::RecursionError {},
-        ));
-        return diagnostics;
+        diagnostics.push(None, DiagnosticData::RecursionError {});
+        return;
     }
 
-    let unused_vars = defined_vars.difference(&used_vars);
-
-    diagnostics.extend(unused_vars.map(|unused_var| {
-        let loc = locations[unused_var];
-        ValidationError::new(
-            loc,
+    for &unused_var in defined_vars.difference(&used_vars) {
+        diagnostics.push(
+            locations[unused_var],
             DiagnosticData::UnusedVariable {
                 name: unused_var.clone(),
             },
         )
-    }));
-
-    diagnostics
+    }
 }
 
 pub(crate) fn validate_variable_usage(
-    var_usage: Node<ast::InputValueDefinition>,
+    diagnostics: &mut DiagnosticList,
+    var_usage: &Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
     argument: &Node<ast::Argument>,
-) -> Result<(), ValidationError> {
+) -> Result<(), ()> {
     if let ast::Value::Variable(var_name) = &*argument.value {
         // Let var_def be the VariableDefinition named
         // variable_name defined within operation.
         let var_def = var_defs.iter().find(|v| v.name == *var_name);
         if let Some(var_def) = var_def {
-            let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
+            let is_allowed = is_variable_usage_allowed(var_def, var_usage);
             if !is_allowed {
-                return Err(ValidationError::new(
+                diagnostics.push(
                     argument.location(),
                     DiagnosticData::DisallowedVariableUsage {
                         variable: var_def.name.clone(),
@@ -258,15 +229,17 @@ pub(crate) fn validate_variable_usage(
                         argument_type: (*var_usage.ty).clone(),
                         argument_location: argument.location(),
                     },
-                ));
+                );
+                return Err(());
             }
         } else {
-            return Err(ValidationError::new(
+            diagnostics.push(
                 argument.value.location(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.clone(),
                 },
-            ));
+            );
+            return Err(());
         }
     }
     // It's super confusing to produce a diagnostic here if either the
