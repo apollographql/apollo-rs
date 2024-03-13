@@ -206,6 +206,86 @@ pub(crate) enum Details {
     RecursionLimitError,
 }
 
+impl DiagnosticData {
+    /// Returns the internal error name for an (operation) validation error.
+    /// This is meant for debugging apollo-rs, not for public consumption.
+    #[doc(hidden)]
+    pub fn unstable_error_name(&self) -> Option<&'static str> {
+        match &self.details {
+            Details::CompilerDiagnostic(diagnostic) => {
+                use diagnostics::DiagnosticData::*;
+                Some(match diagnostic {
+                    RecursionError { .. } => "RecursionError",
+                    UniqueVariable { .. } => "UniqueVariable",
+                    UniqueArgument { .. } => "UniqueArgument",
+                    UniqueInputValue { .. } => "UniqueInputValue",
+                    UndefinedArgument { .. } => "UndefinedArgument",
+                    UndefinedDefinition { .. } => "UndefinedDefinition",
+                    UndefinedDirective { .. } => "UndefinedDirective",
+                    UndefinedVariable { .. } => "UndefinedVariable",
+                    UndefinedFragment { .. } => "UndefinedFragment",
+                    UndefinedEnumValue { .. } => "UndefinedEnumValue",
+                    UndefinedInputValue { .. } => "UndefinedInputValue",
+                    MissingInterfaceField { .. } => "MissingInterfaceField",
+                    RequiredArgument { .. } => "RequiredArgument",
+                    RequiredField { .. } => "RequiredField",
+                    TransitiveImplementedInterfaces { .. } => "TransitiveImplementedInterfaces",
+                    OutputType { .. } => "OutputType",
+                    InputType { .. } => "InputType",
+                    VariableInputType { .. } => "VariableInputType",
+                    QueryRootOperationType { .. } => "QueryRootOperationType",
+                    UnusedVariable { .. } => "UnusedVariable",
+                    RootOperationObjectType { .. } => "RootOperationObjectType",
+                    UnionMemberObjectType { .. } => "UnionMemberObjectType",
+                    UnsupportedLocation { .. } => "UnsupportedLocation",
+                    UnsupportedValueType { .. } => "UnsupportedValueType",
+                    IntCoercionError { .. } => "IntCoercionError",
+                    FloatCoercionError { .. } => "FloatCoercionError",
+                    UniqueDirective { .. } => "UniqueDirective",
+                    MissingSubselection { .. } => "MissingSubselection",
+                    InvalidFragmentTarget { .. } => "InvalidFragmentTarget",
+                    InvalidFragmentSpread { .. } => "InvalidFragmentSpread",
+                    UnusedFragment { .. } => "UnusedFragment",
+                    DisallowedVariableUsage { .. } => "DisallowedVariableUsage",
+                    RecursiveDirectiveDefinition { .. } => "RecursiveDirectiveDefinition",
+                    RecursiveInterfaceDefinition { .. } => "RecursiveInterfaceDefinition",
+                    RecursiveInputObjectDefinition { .. } => "RecursiveInputObjectDefinition",
+                    RecursiveFragmentDefinition { .. } => "RecursiveFragmentDefinition",
+                    DeeplyNestedType { .. } => "DeeplyNestedType",
+                })
+            }
+            Details::ExecutableBuildError(error) => Some(match error {
+                ExecutableBuildError::UndefinedField { .. } => "UndefinedField",
+                ExecutableBuildError::TypeSystemDefinition { .. } => "TypeSystemDefinition",
+                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
+                    "AmbiguousAnonymousOperation"
+                }
+                ExecutableBuildError::OperationNameCollision { .. } => "OperationNameCollision",
+                ExecutableBuildError::FragmentNameCollision { .. } => "FragmentNameCollision",
+                ExecutableBuildError::UndefinedRootOperation { .. } => "UndefinedRootOperation",
+                ExecutableBuildError::UndefinedTypeInNamedFragmentTypeCondition { .. } => {
+                    "UndefinedTypeInNamedFragmentTypeCondition"
+                }
+                ExecutableBuildError::UndefinedTypeInInlineFragmentTypeCondition { .. } => {
+                    "UndefinedTypeInInlineFragmentTypeCondition"
+                }
+                ExecutableBuildError::SubselectionOnScalarType { .. } => "SubselectionOnScalarType",
+                ExecutableBuildError::SubselectionOnEnumType { .. } => "SubselectionOnEnumType",
+                ExecutableBuildError::SubscriptionUsesMultipleFields { .. } => {
+                    "SubscriptionUsesMultipleFields"
+                }
+                ExecutableBuildError::SubscriptionUsesIntrospection { .. } => {
+                    "SubscriptionUsesIntrospection"
+                }
+                ExecutableBuildError::ConflictingFieldType { .. } => "ConflictingFieldType",
+                ExecutableBuildError::ConflictingFieldName { .. } => "ConflictingFieldName",
+                ExecutableBuildError::ConflictingFieldArgument { .. } => "ConflictingFieldArgument",
+            }),
+            _ => None,
+        }
+    }
+}
+
 impl ToCliReport for DiagnosticData {
     fn location(&self) -> Option<NodeLocation> {
         self.location
