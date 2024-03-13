@@ -41,7 +41,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
                         Performance has improved.
   ```
 
-[SimonSapin]: https://github.com/SimonSapin]
+[SimonSapin]: https://github.com/SimonSapin
 [pull/838]: https://github.com/apollographql/apollo-rs/pull/838
 
 
