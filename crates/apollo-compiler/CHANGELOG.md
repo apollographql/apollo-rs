@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.14](https://crates.io/crates/apollo-compiler/1.0.0-beta.14) - 2024-03-13
 
 ## BREAKING
 
@@ -41,7 +41,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
                         Performance has improved.
   ```
 
-[SimonSapin]: https://github.com/SimonSapin]
+[SimonSapin]: https://github.com/SimonSapin
 [pull/838]: https://github.com/apollographql/apollo-rs/pull/838
 
 
