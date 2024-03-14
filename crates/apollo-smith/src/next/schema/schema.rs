@@ -1,4 +1,3 @@
-use apollo_compiler::ast::OperationType;
 use arbitrary::Unstructured;
 use paste::paste;
 

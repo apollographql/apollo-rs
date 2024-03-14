@@ -9,11 +9,10 @@ use apollo_compiler::ast::{
     OperationType, SchemaDefinition, Selection, Type, UnionTypeDefinition, Value,
     VariableDefinition,
 };
-use apollo_compiler::schema::{ExtendedType, InterfaceType, ObjectType};
+use apollo_compiler::schema::{ExtendedType, InterfaceType, };
 use apollo_compiler::{Node, NodeStr, Schema};
 
 use crate::next::ast::directive_definition::DirectiveDefinitionIterExt;
-use crate::next::ast::DefinitionHasFields;
 use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
 use crate::next::schema::object_type::ObjectTypeExt;
 use crate::next::schema::schema::SchemaExt;
@@ -461,9 +460,9 @@ impl Unstructured<'_> {
             .ty(self)?;
         Ok(VariableDefinition {
             name: self.unique_name(),
-            ty: Node::new(ty),
             default_value: self
                 .arbitrary_optional(|u| Ok(Node::new(u.arbitrary_value(schema, &ty)?)))?,
+            ty: Node::new(ty),
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
@@ -479,7 +478,7 @@ impl Unstructured<'_> {
         )?;
 
         Ok(InlineFragment {
-            type_condition: self.arbitrary_optional(|u| Ok(ty.name().clone()))?,
+            type_condition: self.arbitrary_optional(|_| Ok(ty.name().clone()))?,
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
@@ -503,20 +502,44 @@ impl Unstructured<'_> {
     fn arbitrary_selection(
         &mut self,
         schema: &Schema,
-        object_type: &dyn super::schema::TypeHasFields,
+        ty: &dyn super::schema::TypeHasFields,
     ) -> Result<Selection> {
-        if let Some(field) = object_type.random_field(self)? {
-            match self.choose_index(3) {
-                Ok(0) => Ok(Selection::Field(Node::new(self.arbitrary_field(schema)?))),
-                Ok(1) => Ok(Selection::FragmentSpread(Node::new(
-                    self.arbitrary_fragment_spread(schema)?,
-                ))),
-                Ok(2) => Ok(Selection::InlineFragment(Node::new(
-                    self.arbitrary_inline_fragment(schema)?,
-                ))),
-                _ => unreachable!(),
-            }
+        match self.choose_index(3) {
+            Ok(0) => {
+                let field = ty.random_field(self)?;
+                let field_ty = schema.types.get(field.ty.inner_named_type()).expect("type must exist");
+                let selection_set = if field_ty.is_object() || field_ty.is_interface() {
+                    self.arbitrary_vec(0, 5, |u| {
+                        Ok(u.arbitrary_selection(schema, field_ty)?)
+                    })?
+                } else {
+                    vec![]
+                };
+                Ok(Selection::Field(Node::new(Field {
+                    alias: self.arbitrary_optional(|u|Ok(u.unique_name()))?,
+                    name: self.unique_name(),
+                    arguments: self.arbitrary_vec(0, 5, |u| {
+                        Ok(Node::new(Argument {
+                            name: u.unique_name(),
+                            value: Node::new(u.arbitrary_value(schema, &field.ty)?),
+                        }))
+                    })?,
+                    directives: schema.sample_directives(self)?
+                        .into_iter()
+                        .with_location(DirectiveLocation::Field)
+                        .try_collect(self, schema)?,
+                    selection_set,
+                })))
+            },
+            Ok(1) => Ok(Selection::FragmentSpread(Node::new(
+                self.arbitrary_fragment_spread(schema)?,
+            ))),
+            Ok(2) => Ok(Selection::InlineFragment(Node::new(
+                self.arbitrary_inline_fragment(schema)?,
+            ))),
+            _ => unreachable!(),
         }
+
     }
 }
 

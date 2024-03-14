@@ -1,7 +1,8 @@
+use std::sync::OnceLock;
 use apollo_compiler::ast::{FieldDefinition, Name};
 use apollo_compiler::schema::{Component, ExtendedType, InterfaceType, ObjectType};
-use apollo_compiler::Node;
 use indexmap::IndexMap;
+use crate::next::Unstructured;
 
 pub(crate) mod extended_type;
 
@@ -72,9 +73,10 @@ field_access!(InterfaceType);
 
 pub(crate) trait TypeHasFields {
     fn fields(&self) -> &IndexMap<Name, Component<FieldDefinition>>;
-    fn random_field(&self, u:) -> Option<&Node<FieldDefinition>> {
-        let mut fields = self.fields().values().collect::<Vec<_>>();
-        fields.c()
+    fn random_field(&self, u: &mut Unstructured) -> arbitrary::Result<&Component<FieldDefinition>> {
+        // Types always have at least one field
+        let fields = self.fields().values().collect::<Vec<_>>();
+        Ok(fields[u.choose_index(fields.len())?])
     }
 
 }
@@ -93,11 +95,11 @@ impl TypeHasFields for InterfaceType {
 
 impl TypeHasFields for ExtendedType {
     fn fields(&self) -> &IndexMap<Name, Component<FieldDefinition>> {
-        static EMPTY: IndexMap<Name, Component<FieldDefinition>> = IndexMap::new();
+        static EMPTY: OnceLock<IndexMap<Name, Component<FieldDefinition>>> = OnceLock::new();
         match self {
             ExtendedType::Object(t) => t.fields(),
             ExtendedType::Interface(t) => t.fields(),
-            _ => &EMPTY,
+            _ => &EMPTY.get_or_init(||Default::default()),
         }
     }
 }

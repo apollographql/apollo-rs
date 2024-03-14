@@ -106,11 +106,13 @@ impl DefinitionHasFields for Definition {
         }
     }
 
-    fn fields_mut(&mut self) -> &mut Vec<Node<FieldDefinition>> {
+    fn fields_mut<'a>(&mut self) -> &mut Vec<Node<FieldDefinition>> {
         match self {
-            Definition::ObjectTypeDefinition(d) => &mut d.fields,
-            Definition::InterfaceTypeDefinition(d) => &mut d.fields,
+            Definition::ObjectTypeDefinition(d) => d.make_mut().fields_mut(),
+            Definition::InterfaceTypeDefinition(d) => d.make_mut().fields_mut(),
             _ => panic!("fields_mut cannot be called on a definition that has no fields"),
         }
     }
 }
+
+
