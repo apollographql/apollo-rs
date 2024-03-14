@@ -1,4 +1,4 @@
-use crate::next::mutations::Mutation;
+use crate::next::mutations::SchemaMutation;
 
 use crate::next::ast::definition::DefinitionKind;
 use crate::next::ast::document::DocumentExt;
@@ -9,7 +9,7 @@ use apollo_compiler::Schema;
 
 pub(crate) struct RemoveRequiredField;
 
-impl Mutation for RemoveRequiredField {
+impl SchemaMutation for RemoveRequiredField {
     fn apply(
         &self,
         u: &mut Unstructured,

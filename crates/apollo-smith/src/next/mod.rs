@@ -132,8 +132,9 @@ pub(crate) fn generate_executable_document(
     schema: &Valid<Schema>,
 ) -> Result<Document, Error> {
     let mut doc = Document::new();
+    let mut executable_document = doc.to_executable(schema).expect("initial document must be valid");
     let mutations = mutations::executable_document_mutations();
-    for count in 0..1000 {
+    for _ in 0..1000 {
         if u.len() == 0 {
             // We ran out of data abort. This is not an error
             return Err(Error::Arbitrary(arbitrary::Error::NotEnoughData))?;
@@ -141,14 +142,14 @@ pub(crate) fn generate_executable_document(
         let mutation = u.choose(&mutations)?;
         let mut new_doc = doc.clone();
         // First let's modify the document.
-        if !mutation.apply(u, &mut new_doc, &schema)? {
+        if !mutation.apply(u, &mut new_doc, &schema, &executable_document)? {
             // The mutation didn't apply, let's try another one
             continue;
         }
 
         // Now let's validate that the schema says it's OK
         match (mutation.is_valid(), new_doc.to_executable_validate(schema)) {
-            (true, Ok(_)) => {
+            (true, Ok(new_executable_document)) => {
                 // Let's reparse the document to check that it can be parsed
                 let reparsed = Document::parse(new_doc.to_string(), PathBuf::from("synthetic"))
                     .map_err(|e| Error::ExecutableReparse {
@@ -166,6 +167,7 @@ pub(crate) fn generate_executable_document(
                 }
 
                 doc = new_doc;
+                executable_document = new_executable_document.into_inner();
                 continue;
             }
             (true, Err(e)) => {

@@ -1,11 +1,11 @@
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
-use crate::next::mutations::Mutation;
+use crate::next::mutations::SchemaMutation;
 use crate::next::unstructured::Unstructured;
 
 pub(crate) struct AddDirectiveDefinition;
-impl Mutation for AddDirectiveDefinition {
+impl SchemaMutation for AddDirectiveDefinition {
     fn apply(
         &self,
         u: &mut Unstructured,

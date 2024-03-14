@@ -1,4 +1,4 @@
-use crate::next::mutations::Mutation;
+use crate::next::mutations::SchemaMutation;
 
 use crate::next::ast::definition::DefinitionKind;
 use crate::next::ast::document::DocumentExt;
@@ -7,7 +7,7 @@ use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::Schema;
 
 pub(crate) struct RemoveAllFields;
-impl Mutation for RemoveAllFields {
+impl SchemaMutation for RemoveAllFields {
     fn apply(
         &self,
         u: &mut Unstructured,

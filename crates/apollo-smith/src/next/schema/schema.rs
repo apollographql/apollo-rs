@@ -79,6 +79,7 @@ pub(crate) trait SchemaExt {
             .types
             .values()
             .filter(|d| types.iter().any(|t| t.matches(*d)))
+            .filter(|d| d.is_scalar() || !d.is_built_in())
             .collect::<Vec<_>>();
         Ok(u.choose(definitions.as_slice()).map_err(|e| {
             if let arbitrary::Error::EmptyChoose = e {

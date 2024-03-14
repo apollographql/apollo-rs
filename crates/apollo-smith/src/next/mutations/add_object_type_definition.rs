@@ -1,11 +1,11 @@
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{Node, Schema};
 
-use crate::next::mutations::Mutation;
+use crate::next::mutations::SchemaMutation;
 use crate::next::unstructured::Unstructured;
 
 pub(crate) struct AddObjectTypeDefinition;
-impl Mutation for AddObjectTypeDefinition {
+impl SchemaMutation for AddObjectTypeDefinition {
     fn apply(
         &self,
         u: &mut Unstructured,
