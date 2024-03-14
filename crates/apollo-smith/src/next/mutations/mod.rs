@@ -48,7 +48,7 @@ pub(crate) fn schema_mutations() -> Vec<Box<dyn Mutation>> {
         Box::new(AddInputObjectTypeDefinition),
         Box::new(AddUnionTypeDefinition),
         Box::new(AddInterfaceTypeDefinition),
-        Box::new(RemoveAllFields),
+        //Box::new(RemoveAllFields),
         Box::new(RemoveRequiredField),
     ]
 }

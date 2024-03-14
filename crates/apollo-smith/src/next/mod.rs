@@ -30,7 +30,7 @@ pub enum Error {
     },
 
     #[error("validation passed, but should have failed")]
-    ExpectedValidationFail { doc: Document, mutation: String },
+    SchemaExpectedValidationFail { doc: Document, mutation: String },
 
     #[error("the serialized AST did not round trip to an identical AST")]
     SerializationInconsistency { original: Document, new: Document },
@@ -38,8 +38,22 @@ pub enum Error {
     #[error("parse error")]
     Parse(WithErrors<Document>),
 
+    #[error("validation passed, but should have failed")]
+    ExecutableExpectedValidationFail {
+        schema: Valid<Schema>,
+        doc: Document,
+        mutation: String
+    },
+
     #[error("reparse error")]
-    Reparse {
+    SchemaReparse {
+        doc: Document,
+        errors: WithErrors<Document>,
+    },
+
+    #[error("reparse error")]
+    ExecutableReparse {
+        schema: Valid<Schema>,
         doc: Document,
         errors: WithErrors<Document>,
     },
@@ -67,12 +81,13 @@ pub fn generate_schema_document(u: &mut Unstructured) -> Result<Document, Error>
             continue;
         }
 
+
         // Now let's validate that the schema says it's OK
         match (mutation.is_valid(), new_doc.to_schema_validate()) {
             (true, Ok(new_schema)) => {
                 // Let's reparse the document to check that it can be parsed
                 let reparsed = Document::parse(new_doc.to_string(), PathBuf::from("synthetic"))
-                    .map_err(|e| Error::Reparse {
+                    .map_err(|e| Error::SchemaReparse {
                         doc: new_doc.clone(),
                         errors: e,
                     })?;
@@ -87,7 +102,6 @@ pub fn generate_schema_document(u: &mut Unstructured) -> Result<Document, Error>
 
                 // Let's try and create an executable document from the schema
                 generate_executable_document(u, &new_schema)?;
-
                 schema = new_schema.into_inner();
                 doc = new_doc;
                 continue;
@@ -99,7 +113,7 @@ pub fn generate_schema_document(u: &mut Unstructured) -> Result<Document, Error>
                 });
             }
             (false, Ok(_)) => {
-                return Err(Error::ExpectedValidationFail {
+                return Err(Error::SchemaExpectedValidationFail {
                     doc: new_doc,
                     mutation: mutation.type_name().to_string(),
                 });
@@ -119,7 +133,7 @@ pub(crate) fn generate_executable_document(
 ) -> Result<Document, Error> {
     let mut doc = Document::new();
     let mutations = mutations::executable_document_mutations();
-    for _ in 0..1000 {
+    for count in 0..1000 {
         if u.len() == 0 {
             // We ran out of data abort. This is not an error
             return Err(Error::Arbitrary(arbitrary::Error::NotEnoughData))?;
@@ -133,12 +147,12 @@ pub(crate) fn generate_executable_document(
         }
 
         // Now let's validate that the schema says it's OK
-
         match (mutation.is_valid(), new_doc.to_executable_validate(schema)) {
             (true, Ok(_)) => {
                 // Let's reparse the document to check that it can be parsed
                 let reparsed = Document::parse(new_doc.to_string(), PathBuf::from("synthetic"))
-                    .map_err(|e| Error::Reparse {
+                    .map_err(|e| Error::ExecutableReparse {
+                        schema: schema.clone(),
                         doc: new_doc.clone(),
                         errors: e,
                     })?;
@@ -162,7 +176,7 @@ pub(crate) fn generate_executable_document(
                 });
             }
             (false, Ok(_)) => {
-                return Err(Error::ExpectedValidationFail {
+                return Err(Error::SchemaExpectedValidationFail {
                     doc: new_doc,
                     mutation: mutation.type_name().to_string(),
                 });

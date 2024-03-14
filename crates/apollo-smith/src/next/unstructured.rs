@@ -16,6 +16,8 @@ use crate::next::ast::directive_definition::DirectiveDefinitionIterExt;
 use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
 use crate::next::schema::object_type::ObjectTypeExt;
 use crate::next::schema::schema::SchemaExt;
+use crate::next::schema::TypeHasFields;
+
 pub struct Unstructured<'a> {
     u: arbitrary::Unstructured<'a>,
     counter: usize,
@@ -447,8 +449,10 @@ impl Unstructured<'_> {
                 .sample_directives(self)?
                 .into_iter()
                 .with_location(DirectiveLocation::Field)
+                // skip and include are not allowed on operations
+                .filter(|d|d.name != "skip" && d.name != "include")
                 .try_collect(self, schema)?,
-            selection_set: self.arbitrary_vec(0, 5, |u| {
+            selection_set: self.arbitrary_vec(1, 5, |u| {
                 Ok(u.arbitrary_selection(schema, operation.deref())?)
             })?,
         })
@@ -484,7 +488,7 @@ impl Unstructured<'_> {
                 .into_iter()
                 .with_location(DirectiveLocation::InlineFragment)
                 .try_collect(self, schema)?,
-            selection_set: self.arbitrary_vec(0, 5, |u| Ok(u.arbitrary_selection(schema, ty)?))?,
+            selection_set: self.arbitrary_vec(1, 5, |u| Ok(u.arbitrary_selection(schema, ty)?))?,
         })
     }
 
@@ -502,22 +506,22 @@ impl Unstructured<'_> {
     fn arbitrary_selection(
         &mut self,
         schema: &Schema,
-        ty: &dyn super::schema::TypeHasFields,
+        ty: &dyn TypeHasFields,
     ) -> Result<Selection> {
         match self.choose_index(3) {
             Ok(0) => {
                 let field = ty.random_field(self)?;
                 let field_ty = schema.types.get(field.ty.inner_named_type()).expect("type must exist");
-                let selection_set = if field_ty.is_object() || field_ty.is_interface() {
-                    self.arbitrary_vec(0, 5, |u| {
+                let selection_set = if field_ty.is_scalar() {
+                    vec![]
+                } else {
+                    self.arbitrary_vec(1, 5, |u| {
                         Ok(u.arbitrary_selection(schema, field_ty)?)
                     })?
-                } else {
-                    vec![]
                 };
                 Ok(Selection::Field(Node::new(Field {
                     alias: self.arbitrary_optional(|u|Ok(u.unique_name()))?,
-                    name: self.unique_name(),
+                    name: field.name.clone(),
                     arguments: self.arbitrary_vec(0, 5, |u| {
                         Ok(Node::new(Argument {
                             name: u.unique_name(),

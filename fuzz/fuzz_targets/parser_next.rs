@@ -20,7 +20,7 @@ fuzz_target!(|data: &[u8]| {
             Error::Parse(doc) => {
                 println!("{}\ndoc:\n{}\nerrors:\n{}", e, doc.to_string(), doc.errors);
             }
-            Error::ExpectedValidationFail { doc, mutation } => {
+            Error::SchemaExpectedValidationFail { doc, mutation } => {
                 println!("{}\nmutation:\n{}\ndoc:\n{}", e, mutation, doc.to_string());
             }
             Error::SerializationInconsistency { original, new } => {
@@ -39,11 +39,25 @@ fuzz_target!(|data: &[u8]| {
                     errors.errors
                 );
             }
-            Error::Reparse { doc, errors } => {
+            Error::SchemaReparse { doc, errors } => {
                 println!(
                     "{}\ndoc:\n{}\nerrors:\n{}",
                     e,
                     doc.to_string(),
+                    errors.errors
+                );
+            }
+
+            Error::ExecutableReparse {
+                schema,
+                doc,
+                errors,
+            } => {
+                println!(
+                    "{}\ndoc:\n{}\nschema:\n{}\nerrors:\n{}",
+                    e,
+                    doc.to_string(),
+                    schema.to_string(),
                     errors.errors
                 );
             }
@@ -53,12 +67,15 @@ fuzz_target!(|data: &[u8]| {
                 errors,
             } => {
                 println!(
-                    "{}\nschena\n{}\ndoc:\n{}\nerrors:\n{}",
+                    "{}\ndoc\n{}\nschema:\n{}\nerrors:\n{}",
                     e,
-                    schema.to_string(),
                     doc.to_string(),
+                    schema.to_string(),
                     errors.errors
                 );
+            }
+            Error::ExecutableExpectedValidationFail { schema, doc, mutation } => {
+                println!("{}\nmutation:\n{}\ndoc:\n{}\nschema\n{}", e, mutation, doc.to_string(), schema.to_string());
             }
         }
         panic!("error detected: {}", e);

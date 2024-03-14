@@ -17,9 +17,9 @@ impl Mutation for AddOperationDefinition {
             .push(Definition::OperationDefinition(Node::new(
                 u.arbitrary_operation_definition(schema)?,
             )));
-        Ok(false)
+        Ok(true)
     }
     fn is_valid(&self) -> bool {
-        false
+        true
     }
 }
