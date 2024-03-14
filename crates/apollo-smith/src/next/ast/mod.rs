@@ -1,4 +1,6 @@
-use apollo_compiler::ast::{FieldDefinition, InterfaceTypeDefinition, ObjectTypeDefinition};
+use apollo_compiler::ast::{
+    Definition, FieldDefinition, InterfaceTypeDefinition, ObjectTypeDefinition,
+};
 use apollo_compiler::Node;
 
 pub(crate) mod definition;
@@ -69,12 +71,12 @@ macro_rules! field_access {
 field_access!(ObjectTypeDefinition);
 field_access!(InterfaceTypeDefinition);
 
-pub(crate) trait HasFields {
+pub(crate) trait DefinitionHasFields {
     fn fields(&self) -> &Vec<Node<FieldDefinition>>;
     fn fields_mut(&mut self) -> &mut Vec<Node<FieldDefinition>>;
 }
 
-impl HasFields for ObjectTypeDefinition {
+impl DefinitionHasFields for ObjectTypeDefinition {
     fn fields(&self) -> &Vec<Node<FieldDefinition>> {
         &self.fields
     }
@@ -84,12 +86,31 @@ impl HasFields for ObjectTypeDefinition {
     }
 }
 
-impl HasFields for InterfaceTypeDefinition {
+impl DefinitionHasFields for InterfaceTypeDefinition {
     fn fields(&self) -> &Vec<Node<FieldDefinition>> {
         &self.fields
     }
 
     fn fields_mut(&mut self) -> &mut Vec<Node<FieldDefinition>> {
         &mut self.fields
+    }
+}
+
+impl DefinitionHasFields for Definition {
+    fn fields(&self) -> &Vec<Node<FieldDefinition>> {
+        static EMPTY: Vec<Node<FieldDefinition>> = Vec::new();
+        match self {
+            Definition::ObjectTypeDefinition(d) => &d.fields,
+            Definition::InterfaceTypeDefinition(d) => &d.fields,
+            _ => &EMPTY,
+        }
+    }
+
+    fn fields_mut(&mut self) -> &mut Vec<Node<FieldDefinition>> {
+        match self {
+            Definition::ObjectTypeDefinition(d) => &mut d.fields,
+            Definition::InterfaceTypeDefinition(d) => &mut d.fields,
+            _ => panic!("fields_mut cannot be called on a definition that has no fields"),
+        }
     }
 }

@@ -13,7 +13,7 @@ use apollo_compiler::schema::{ExtendedType, InterfaceType, ObjectType};
 use apollo_compiler::{Node, NodeStr, Schema};
 
 use crate::next::ast::directive_definition::DirectiveDefinitionIterExt;
-use crate::next::ast::HasFields;
+use crate::next::ast::DefinitionHasFields;
 use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
 use crate::next::schema::object_type::ObjectTypeExt;
 use crate::next::schema::schema::SchemaExt;
@@ -463,7 +463,7 @@ impl Unstructured<'_> {
             name: self.unique_name(),
             ty: Node::new(ty),
             default_value: self
-                .arbitrary_optional(|u| Ok(Node::new(u.arbitrary_value(&ty, schema)?)))?,
+                .arbitrary_optional(|u| Ok(Node::new(u.arbitrary_value(schema, &ty)?)))?,
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
@@ -503,7 +503,7 @@ impl Unstructured<'_> {
     fn arbitrary_selection(
         &mut self,
         schema: &Schema,
-        object_type: &dyn HasFields,
+        object_type: &dyn super::schema::TypeHasFields,
     ) -> Result<Selection> {
         if let Some(field) = object_type.random_field(self)? {
             match self.choose_index(3) {

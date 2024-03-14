@@ -1,5 +1,7 @@
-use crate::next::ast::HasFields;
-use apollo_compiler::schema::{Component, InterfaceType, ObjectType};
+use apollo_compiler::ast::{FieldDefinition, Name};
+use apollo_compiler::schema::{Component, ExtendedType, InterfaceType, ObjectType};
+use apollo_compiler::Node;
+use indexmap::IndexMap;
 
 pub(crate) mod extended_type;
 
@@ -68,24 +70,34 @@ macro_rules! field_access {
 field_access!(ObjectType);
 field_access!(InterfaceType);
 
-impl HasFields for Component<ObjectType> {
-    fn fields(
-        &self,
-    ) -> &std::collections::HashMap<
-        String,
-        apollo_compiler::schema::Component<apollo_compiler::ast::FieldDefinition>,
-    > {
+pub(crate) trait TypeHasFields {
+    fn fields(&self) -> &IndexMap<Name, Component<FieldDefinition>>;
+    fn random_field(&self, u:) -> Option<&Node<FieldDefinition>> {
+        let mut fields = self.fields().values().collect::<Vec<_>>();
+        fields.c()
+    }
+
+}
+
+impl TypeHasFields for ObjectType {
+    fn fields(&self) -> &IndexMap<Name, Component<FieldDefinition>> {
         &self.fields
     }
 }
 
-impl HasFields for InterfaceType {
-    fn fields(
-        &self,
-    ) -> &std::collections::HashMap<
-        String,
-        apollo_compiler::schema::Component<apollo_compiler::ast::FieldDefinition>,
-    > {
+impl TypeHasFields for InterfaceType {
+    fn fields(&self) -> &IndexMap<Name, Component<FieldDefinition>> {
         &self.fields
+    }
+}
+
+impl TypeHasFields for ExtendedType {
+    fn fields(&self) -> &IndexMap<Name, Component<FieldDefinition>> {
+        static EMPTY: IndexMap<Name, Component<FieldDefinition>> = IndexMap::new();
+        match self {
+            ExtendedType::Object(t) => t.fields(),
+            ExtendedType::Interface(t) => t.fields(),
+            _ => &EMPTY,
+        }
     }
 }
