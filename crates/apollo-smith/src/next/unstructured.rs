@@ -476,7 +476,7 @@ impl Unstructured<'_> {
         })
     }
 
-    fn arbitrary_inline_fragment(&mut self, schema: &Schema, executable_document: &ExecutableDocument) -> Result<InlineFragment> {
+    fn arbitrary_inline_fragment(&mut self, schema: &Schema, ty: &dyn TypeHasFields, executable_document: &ExecutableDocument) -> Result<InlineFragment> {
         let ty = schema.random_type(
             self,
             vec![ExtendedTypeKind::Object, ExtendedTypeKind::Interface],
@@ -493,7 +493,7 @@ impl Unstructured<'_> {
         })
     }
 
-    fn arbitrary_fragment_spread(&mut self, schema: &Schema, executable_document: &ExecutableDocument) -> Result<FragmentSpread> {
+    fn arbitrary_fragment_spread(&mut self, schema: &Schema, ty: &dyn TypeHasFields,executable_document: &ExecutableDocument) -> Result<FragmentSpread> {
         let definitions = executable_document.fragments.values().collect::<Vec<_>>();
 
         Ok(FragmentSpread {
@@ -536,10 +536,10 @@ impl Unstructured<'_> {
                 })))
             },
             (_, Ok(1)) => Ok(Selection::FragmentSpread(Node::new(
-                self.arbitrary_fragment_spread(schema, executable_document)?,
+                self.arbitrary_fragment_spread(schema, ty, executable_document)?,
             ))),
             (_, Ok(2)) => Ok(Selection::InlineFragment(Node::new(
-                self.arbitrary_inline_fragment(schema, executable_document)?,
+                self.arbitrary_inline_fragment(schema, ty, executable_document)?,
             ))),
             _ => unreachable!(),
         }
