@@ -135,7 +135,7 @@ pub(crate) fn generate_executable_document(
     let mut doc = Document::new();
     let mut executable_document = doc.to_executable(schema).expect("initial document must be valid");
     let mutations = mutations::executable_document_mutations();
-    for _ in 0..1000 {
+    for _ in 0..10 {
         if u.len() == 0 {
             // We ran out of data abort. This is not an error
             return Err(Error::Arbitrary(arbitrary::Error::NotEnoughData))?;
@@ -190,6 +190,7 @@ pub(crate) fn generate_executable_document(
             }
         }
     }
+    println!("Generated executable document: {}\n for schema {}", doc, schema);
 
     Ok(doc)
 }

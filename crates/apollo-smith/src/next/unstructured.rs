@@ -312,14 +312,14 @@ impl Unstructured<'_> {
     }
 
     fn all_fields_from_interfaces(
-        implements: &Vec<&Node<InterfaceType>>,
+        interfaces: &Vec<&Node<InterfaceType>>,
     ) -> Vec<Node<FieldDefinition>> {
-        let implements_fields = implements
+        let all_fields = interfaces
             .iter()
             .flat_map(|interface| interface.fields.values())
             .map(|field| field.deref().clone())
             .collect::<Vec<_>>();
-        implements_fields
+        all_fields
     }
 
     pub(crate) fn arbitrary_field_definition(
@@ -439,9 +439,15 @@ impl Unstructured<'_> {
         executable_document: &ExecutableDocument,
         name: Option<Name>,
     ) -> Result<OperationDefinition> {
-        let operation = schema.random_query_mutation_subscription(self)?;
+        let object = schema.random_query_mutation_subscription(self)?;
+        let directive_location = match object.name.as_ref() {
+            "Query" => DirectiveLocation::Query,
+            "Mutation" => DirectiveLocation::Mutation,
+            "Subscription" => DirectiveLocation::Subscription,
+            _ => panic!("invalid object name"),
+        };
         Ok(OperationDefinition {
-            operation_type: operation
+            operation_type: object
                 .deref()
                 .operation_type()
                 .expect("top level operation must have type"),
@@ -450,12 +456,10 @@ impl Unstructured<'_> {
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
-                .with_location(DirectiveLocation::Field)
-                // skip and include are not allowed on operations
-                .filter(|d| d.name != "skip" && d.name != "include")
+                .with_location(directive_location)
                 .try_collect(self, schema)?,
             selection_set: self.arbitrary_vec(1, 5, |u| {
-                Ok(u.arbitrary_selection(schema, operation.deref(), executable_document)?)
+                Ok(u.arbitrary_selection(schema, object.deref(), executable_document)?)
             })?,
         })
     }
