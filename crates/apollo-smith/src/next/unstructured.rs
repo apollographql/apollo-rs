@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use std::ops::{Deref, DerefMut};
 
 use arbitrary::Result;
@@ -142,21 +143,18 @@ impl Unstructured<'_> {
         &mut self,
         schema: &Schema,
     ) -> Result<ObjectTypeDefinition> {
-        let implements = schema.sample_interface_types(self)?;
-        let implements_fields = Self::all_fields_from_interfaces(&implements);
-        println!("implements: {:?}", implements);
-        println!("implements_fields: {:?}", implements_fields);
+        let implements = Self::all_transitive_interfaces(schema.sample_interface_types(self)?);
+        let implements_fields = Self::all_unique_fields_from_interfaces(&implements);
         let new_fields = self.arbitrary_vec(1, 5, |u| {
             Ok(Node::new(u.arbitrary_field_definition(
                 schema,
-                DirectiveLocation::InputFieldDefinition,
+                DirectiveLocation::FieldDefinition,
             )?))
         })?;
         Ok(ObjectTypeDefinition {
             description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
-            implements_interfaces: schema
-                .sample_interface_types(self)?
+            implements_interfaces: implements
                 .iter()
                 .map(|i| i.name.clone())
                 .collect(),
@@ -229,7 +227,7 @@ impl Unstructured<'_> {
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
-                .with_location(DirectiveLocation::InputFieldDefinition)
+                .with_location(DirectiveLocation::ArgumentDefinition)
                 .try_collect(self, schema)?,
         })
     }
@@ -285,15 +283,15 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<InterfaceTypeDefinition> {
         // All interfaces need to have all the fields from the interfaces they implement.
-        let implements = schema.sample_interface_types(self)?;
-        let implements_fields = Self::all_fields_from_interfaces(&implements);
-        println!("implements: {:?}", implements);
-        println!("implements_fields: {:?}", implements_fields);
+        let implements = Self::all_transitive_interfaces(schema.sample_interface_types(self)?);
+
+        // Interfaces cannot have duplicate fields so stash them in a map
+        let mut implements_fields = Self::all_unique_fields_from_interfaces(&implements);
 
         let new_fields = self.arbitrary_vec(1, 5, |u| {
             Ok(Node::new(u.arbitrary_field_definition(
                 schema,
-                DirectiveLocation::InputFieldDefinition,
+                DirectiveLocation::FieldDefinition,
             )?))
         })?;
 
@@ -316,15 +314,15 @@ impl Unstructured<'_> {
         })
     }
 
-    fn all_fields_from_interfaces(
+    fn all_unique_fields_from_interfaces(
         interfaces: &Vec<&Node<InterfaceType>>,
     ) -> Vec<Node<FieldDefinition>> {
         let all_fields = interfaces
             .iter()
             .flat_map(|interface| interface.fields.values())
-            .map(|field| field.deref().clone())
-            .collect::<Vec<_>>();
-        all_fields
+            .map(|field| (field.name.clone(), field.deref().clone()))
+            .collect::<HashMap<_, _>>();
+        all_fields.values().cloned().collect()
     }
 
     pub(crate) fn arbitrary_field_definition(
@@ -604,6 +602,10 @@ impl Unstructured<'_> {
             }));
         }
         Ok(args)
+    }
+    fn all_transitive_interfaces<'a>(interfaces: Vec<&'a Node<InterfaceType>>, schema: &'a Schema) -> Vec<&'a Node<InterfaceType>> {
+        // In graphql interfaces can extend other interfaces, but when using them you need to specify every single one in the entire type hierarchy.
+
     }
 }
 
