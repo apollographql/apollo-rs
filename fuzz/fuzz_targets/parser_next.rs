@@ -31,44 +31,50 @@ fuzz_target!(|data: &[u8]| {
                     new.to_string()
                 );
             }
-            Error::SchemaDocumentValidation { doc, errors } => {
+            Error::SchemaDocumentValidation {mutation, doc, errors } => {
                 println!(
-                    "{}\ndoc:\n{}\nerrors:\n{}",
+                    "{}\nmutation:\n{}\ndoc:\n{}\nerrors:\n{}",
                     e,
+                    mutation,
                     doc.to_string(),
                     errors.errors
                 );
             }
-            Error::SchemaReparse { doc, errors } => {
+            Error::SchemaReparse { mutation, doc, errors } => {
                 println!(
-                    "{}\ndoc:\n{}\nerrors:\n{}",
+                    "{}\nmutation:\n{}\ndoc:\n{}\nerrors:\n{}",
                     e,
+                    mutation,
                     doc.to_string(),
                     errors.errors
                 );
             }
 
             Error::ExecutableReparse {
+                mutation,
                 schema,
                 doc,
                 errors,
             } => {
                 println!(
-                    "{}\ndoc:\n{}\nschema:\n{}\nerrors:\n{}",
+                    "{}\nmutation:\n{}\ndoc:\n{}\nschema:\n{}\nerrors:\n{}",
                     e,
+                    mutation,
                     doc.to_string(),
                     schema.to_string(),
                     errors.errors
                 );
             }
             Error::ExecutableDocumentValidation {
+                mutation,
                 doc,
                 schema,
                 errors,
             } => {
                 println!(
-                    "{}\ndoc\n{}\nschema:\n{}\nerrors:\n{}",
+                    "{}\nmutation:\n{}\ndoc\n{}\nschema:\n{}\nerrors:\n{}",
                     e,
+                    mutation,
                     doc.to_string(),
                     schema.to_string(),
                     errors.errors

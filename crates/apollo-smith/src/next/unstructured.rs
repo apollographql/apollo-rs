@@ -144,6 +144,8 @@ impl Unstructured<'_> {
     ) -> Result<ObjectTypeDefinition> {
         let implements = schema.sample_interface_types(self)?;
         let implements_fields = Self::all_fields_from_interfaces(&implements);
+        println!("implements: {:?}", implements);
+        println!("implements_fields: {:?}", implements_fields);
         let new_fields = self.arbitrary_vec(1, 5, |u| {
             Ok(Node::new(u.arbitrary_field_definition(
                 schema,
@@ -285,6 +287,9 @@ impl Unstructured<'_> {
         // All interfaces need to have all the fields from the interfaces they implement.
         let implements = schema.sample_interface_types(self)?;
         let implements_fields = Self::all_fields_from_interfaces(&implements);
+        println!("implements: {:?}", implements);
+        println!("implements_fields: {:?}", implements_fields);
+
         let new_fields = self.arbitrary_vec(1, 5, |u| {
             Ok(Node::new(u.arbitrary_field_definition(
                 schema,

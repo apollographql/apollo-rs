@@ -19,19 +19,21 @@ pub enum Error {
 
     #[error("schema document validation failed")]
     SchemaDocumentValidation {
+        mutation: String,
         doc: Document,
         errors: WithErrors<Schema>,
     },
 
     #[error("executable document validation failed")]
     ExecutableDocumentValidation {
+        mutation: String,
         doc: Document,
         schema: Valid<Schema>,
         errors: WithErrors<ExecutableDocument>,
     },
 
     #[error("validation passed, but should have failed")]
-    SchemaExpectedValidationFail { doc: Document, mutation: String },
+    SchemaExpectedValidationFail { mutation: String, doc: Document },
 
     #[error("the serialized AST did not round trip to an identical AST")]
     SerializationInconsistency { original: Document, new: Document },
@@ -48,12 +50,14 @@ pub enum Error {
 
     #[error("reparse error")]
     SchemaReparse {
+        mutation: String,
         doc: Document,
         errors: WithErrors<Document>,
     },
 
     #[error("reparse error")]
     ExecutableReparse {
+        mutation: String,
         schema: Valid<Schema>,
         doc: Document,
         errors: WithErrors<Document>,
@@ -89,6 +93,7 @@ pub fn generate_schema_document(u: &mut Unstructured) -> Result<Document, Error>
                 // Let's reparse the document to check that it can be parsed
                 let reparsed = Document::parse(new_doc.to_string(), PathBuf::from("synthetic"))
                     .map_err(|e| Error::SchemaReparse {
+                        mutation: mutation.type_name().to_string(),
                         doc: new_doc.clone(),
                         errors: e,
                     })?;
@@ -109,6 +114,7 @@ pub fn generate_schema_document(u: &mut Unstructured) -> Result<Document, Error>
             }
             (true, Err(e)) => {
                 return Err(Error::SchemaDocumentValidation {
+                    mutation: mutation.type_name().to_string(),
                     doc: new_doc,
                     errors: e,
                 });
@@ -154,6 +160,7 @@ pub(crate) fn generate_executable_document(
                 // Let's reparse the document to check that it can be parsed
                 let reparsed = Document::parse(new_doc.to_string(), PathBuf::from("synthetic"))
                     .map_err(|e| Error::ExecutableReparse {
+                        mutation: mutation.type_name().to_string(),
                         schema: schema.clone(),
                         doc: new_doc.clone(),
                         errors: e,
@@ -173,6 +180,7 @@ pub(crate) fn generate_executable_document(
             }
             (true, Err(e)) => {
                 return Err(Error::ExecutableDocumentValidation {
+                    mutation: mutation.type_name().to_string(),
                     doc: new_doc,
                     schema: schema.clone(),
                     errors: e,
@@ -180,8 +188,8 @@ pub(crate) fn generate_executable_document(
             }
             (false, Ok(_)) => {
                 return Err(Error::SchemaExpectedValidationFail {
-                    doc: new_doc,
                     mutation: mutation.type_name().to_string(),
+                    doc: new_doc,
                 });
             }
             (false, Err(_)) => {
