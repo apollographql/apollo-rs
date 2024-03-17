@@ -1,4 +1,4 @@
-use crate::next::mutations::{ExecutableDocumentMutation, SchemaMutation};
+use crate::next::mutations::{ExecutableDocumentMutation};
 
 use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::{Definition, Document};

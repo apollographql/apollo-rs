@@ -4,9 +4,9 @@ use crate::next::unstructured::Unstructured;
 use apollo_compiler::ast::{Definition, Document};
 use apollo_compiler::{ExecutableDocument, Node, Schema};
 
-pub(crate) struct AddNamedOperationDefinition;
+pub(crate) struct AddFragmentDefiniton;
 
-impl ExecutableDocumentMutation for AddNamedOperationDefinition {
+impl ExecutableDocumentMutation for AddFragmentDefiniton {
     fn apply(
         &self,
         u: &mut Unstructured,
@@ -14,14 +14,9 @@ impl ExecutableDocumentMutation for AddNamedOperationDefinition {
         schema: &Schema,
         executable_document: &ExecutableDocument,
     ) -> arbitrary::Result<bool> {
-        if executable_document.anonymous_operation.is_some() {
-            // We already have an anonymous operation, so we can't add a named one
-            return Ok(false);
-        }
-        let name = u.unique_name();
         doc.definitions
-            .push(Definition::OperationDefinition(Node::new(
-                u.arbitrary_operation_definition(schema, executable_document, Some(name))?,
+            .push(Definition::FragmentDefinition(Node::new(
+                u.arbitrary_fragment_definition(schema, executable_document)?,
             )));
         Ok(true)
     }

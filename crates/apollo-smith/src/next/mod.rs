@@ -10,6 +10,7 @@ mod ast;
 mod mutations;
 mod schema;
 mod unstructured;
+mod executable;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

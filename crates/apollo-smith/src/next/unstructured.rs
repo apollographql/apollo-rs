@@ -4,19 +4,20 @@ use arbitrary::Result;
 
 use apollo_compiler::ast::{
     Argument, DirectiveDefinition, DirectiveLocation, EnumTypeDefinition, EnumValueDefinition,
-    Field, FieldDefinition, FragmentSpread, InlineFragment, InputObjectTypeDefinition,
-    InputValueDefinition, InterfaceTypeDefinition, Name, ObjectTypeDefinition, OperationDefinition,
-    OperationType, SchemaDefinition, Selection, Type, UnionTypeDefinition, Value,
-    VariableDefinition,
+    Field, FieldDefinition, FragmentDefinition, FragmentSpread, InlineFragment,
+    InputObjectTypeDefinition, InputValueDefinition, InterfaceTypeDefinition, Name,
+    ObjectTypeDefinition, OperationDefinition, OperationType, SchemaDefinition, Selection, Type,
+    UnionTypeDefinition, Value, VariableDefinition,
 };
-use apollo_compiler::schema::{Component, ExtendedType, InterfaceType};
+use apollo_compiler::schema::{ExtendedType, InterfaceType};
 use apollo_compiler::{ExecutableDocument, Node, NodeStr, Schema};
 
 use crate::next::ast::directive_definition::DirectiveDefinitionIterExt;
+use crate::next::executable::executable_document::ExecutableDocumentExt;
 use crate::next::schema::extended_type::{ExtendedTypeExt, ExtendedTypeKind};
 use crate::next::schema::object_type::ObjectTypeExt;
 use crate::next::schema::schema::SchemaExt;
-use crate::next::schema::TypeHasFields;
+use crate::next::schema::Selectable;
 
 pub struct Unstructured<'a> {
     u: arbitrary::Unstructured<'a>,
@@ -451,7 +452,7 @@ impl Unstructured<'_> {
                 .into_iter()
                 .with_location(DirectiveLocation::Field)
                 // skip and include are not allowed on operations
-                .filter(|d|d.name != "skip" && d.name != "include")
+                .filter(|d| d.name != "skip" && d.name != "include")
                 .try_collect(self, schema)?,
             selection_set: self.arbitrary_vec(1, 5, |u| {
                 Ok(u.arbitrary_selection(schema, operation.deref(), executable_document)?)
@@ -476,76 +477,116 @@ impl Unstructured<'_> {
         })
     }
 
-    fn arbitrary_inline_fragment(&mut self, schema: &Schema, ty: &dyn TypeHasFields, executable_document: &ExecutableDocument) -> Result<InlineFragment> {
-        let ty = schema.random_type(
+    pub(crate) fn arbitrary_fragment_definition(
+        &mut self,
+        schema: &Schema,
+        executable_document: &ExecutableDocument,
+    ) -> Result<FragmentDefinition> {
+        let type_condition = schema.random_type(
             self,
-            vec![ExtendedTypeKind::Object, ExtendedTypeKind::Interface],
+            vec![
+                ExtendedTypeKind::Object,
+                ExtendedTypeKind::Interface,
+                ExtendedTypeKind::Union,
+            ],
         )?;
+        Ok(FragmentDefinition {
+            name: self.unique_name(),
+            type_condition: type_condition.name().clone(),
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::FragmentDefinition)
+                .try_collect(self, schema)?,
+            selection_set: self.arbitrary_vec(1, 5, |u| {
+                Ok(u.arbitrary_selection(schema, type_condition, executable_document)?)
+            })?,
+        })
+    }
 
+    pub(crate) fn arbitrary_inline_fragment<'a>(
+        &mut self,
+        schema: &Schema,
+        selectable: &impl Selectable,
+        executable_document: &ExecutableDocument,
+    ) -> Result<InlineFragment> {
         Ok(InlineFragment {
-            type_condition: self.arbitrary_optional(|_| Ok(ty.name().clone()))?,
+            type_condition: self.arbitrary_optional(|_| Ok(selectable.name().clone()))?,
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
                 .with_location(DirectiveLocation::InlineFragment)
                 .try_collect(self, schema)?,
-            selection_set: self.arbitrary_vec(1, 5, |u| Ok(u.arbitrary_selection(schema, ty, executable_document)?))?,
+            selection_set: self.arbitrary_vec(1, 5, |u| {
+                Ok(u.arbitrary_selection(schema, selectable, executable_document)?)
+            })?,
         })
     }
 
-    fn arbitrary_fragment_spread(&mut self, schema: &Schema, ty: &dyn TypeHasFields,executable_document: &ExecutableDocument) -> Result<FragmentSpread> {
-        let definitions = executable_document.fragments.values().collect::<Vec<_>>();
-
-        Ok(FragmentSpread {
-            fragment_name: self.choose(&definitions)?.name.clone(),
-            directives: schema
-                .sample_directives(self)?
-                .into_iter()
-                .with_location(DirectiveLocation::FragmentSpread)
-                .try_collect(self, schema)?,
-        })
-    }
-
-    fn arbitrary_selection(
+    fn arbitrary_selection<'a>(
         &mut self,
         schema: &Schema,
-        ty: &dyn TypeHasFields,
+        selectable: &impl Selectable,
         executable_document: &ExecutableDocument,
     ) -> Result<Selection> {
-        let has_fragments = executable_document.fragments.is_empty();
-        match (has_fragments, self.choose_index(3)) {
-            (_, Ok(0)) | (true, Ok(1)) => {
-                let field = ty.random_field(self)?;
-                let field_ty = schema.types.get(field.ty.inner_named_type()).expect("type must exist");
-                let selection_set = if field_ty.is_scalar() {
-                    vec![]
-                } else {
-                    self.arbitrary_vec(1, 5, |u| {
-                        Ok(u.arbitrary_selection(schema, field_ty, executable_document)?)
-                    })?
-                };
-                Ok(Selection::Field(Node::new(Field {
-                    alias: self.arbitrary_optional(|u|Ok(u.unique_name()))?,
-                    name: field.name.clone(),
-                    arguments: self.arbitrary_arguments(schema, field)?,
-                    directives: schema.sample_directives(self)?
+        // The selection must contain at least one field, fragment spread or inline fragment
+        // If the type is a union then it must contain at least one inline fragment
+
+        let selection_type = *self.choose(&vec![
+            SelectionType::Field,
+            SelectionType::InlineFragment,
+            SelectionType::FragmentSpread,
+        ])?;
+
+        if selection_type == SelectionType::FragmentSpread {
+            if let Some(fragment) = executable_document.random_fragment_of_type(self, selectable)? {
+                return Ok(Selection::FragmentSpread(Node::new(FragmentSpread {
+                    fragment_name: fragment.name.clone(),
+                    directives: schema
+                        .sample_directives(self)?
                         .into_iter()
                         .with_location(DirectiveLocation::Field)
                         .try_collect(self, schema)?,
-                    selection_set,
-                })))
-            },
-            (_, Ok(1)) => Ok(Selection::FragmentSpread(Node::new(
-                self.arbitrary_fragment_spread(schema, ty, executable_document)?,
-            ))),
-            (_, Ok(2)) => Ok(Selection::InlineFragment(Node::new(
-                self.arbitrary_inline_fragment(schema, ty, executable_document)?,
-            ))),
-            _ => unreachable!(),
+                })));
+            }
+        }
+        if selection_type == SelectionType::InlineFragment {
+            if let Some(specialization) = selectable.random_specialization(self, schema)? {
+                return Ok(Selection::InlineFragment(Node::new(
+                    self.arbitrary_inline_fragment(schema, specialization, executable_document)?,
+                )));
+            }
         }
 
+        let field = selectable.random_field(self)?;
+        let field_ty = schema
+            .types
+            .get(field.ty.inner_named_type())
+            .expect("type must exist");
+        let selection_set = if field_ty.is_scalar() {
+            vec![]
+        } else {
+            self.arbitrary_vec(1, 5, |u| {
+                Ok(u.arbitrary_selection(schema, field_ty, executable_document)?)
+            })?
+        };
+        Ok(Selection::Field(Node::new(Field {
+            alias: self.arbitrary_optional(|u| Ok(u.unique_name()))?,
+            name: field.name.clone(),
+            arguments: self.arbitrary_arguments(schema, field)?,
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::Field)
+                .try_collect(self, schema)?,
+            selection_set,
+        })))
     }
-    fn arbitrary_arguments(&mut self, schema: &Schema, field_definition: &FieldDefinition) -> Result<Vec<Node<Argument>>> {
+    fn arbitrary_arguments(
+        &mut self,
+        schema: &Schema,
+        field_definition: &FieldDefinition,
+    ) -> Result<Vec<Node<Argument>>> {
         let mut args = Vec::new();
         for arg in &field_definition.arguments {
             args.push(Node::new(Argument {
@@ -555,6 +596,13 @@ impl Unstructured<'_> {
         }
         Ok(args)
     }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+enum SelectionType {
+    Field,
+    FragmentSpread,
+    InlineFragment,
 }
 
 impl<'a> Deref for Unstructured<'a> {

@@ -25,6 +25,7 @@ mod add_union_type_definition;
 mod remove_all_fields;
 mod remove_required_field;
 mod add_anonymous_operation_definition;
+mod add_fragment_definiton;
 
 pub(crate) trait SchemaMutation {
     /// Apply the mutation to the document
