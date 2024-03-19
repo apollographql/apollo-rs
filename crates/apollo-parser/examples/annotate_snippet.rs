@@ -4,14 +4,11 @@
 //! This allows for a lot of control over how you would like your error output
 //! to look before your print them all out.
 //!
-//! [annotate-snippets]: https://docs.rs/annotate-snippets/0.10.0/annotate_snippets/
+//! [annotate-snippets]: https://docs.rs/annotate-snippets/0.11.0/annotate_snippets/
 
-use annotate_snippets::Annotation;
-use annotate_snippets::AnnotationType;
+use annotate_snippets::Level;
 use annotate_snippets::Renderer;
-use annotate_snippets::Slice;
 use annotate_snippets::Snippet;
-use annotate_snippets::SourceAnnotation;
 use apollo_parser::cst;
 use apollo_parser::Parser;
 use std::fs;
@@ -33,25 +30,17 @@ fn parse_schema() -> cst::Document {
     // - message (err.message())
     // - index (err.index())
     for err in cst.errors() {
-        let snippet = Snippet {
-            title: Some(Annotation {
-                label: Some(err.message()),
-                id: None,
-                annotation_type: AnnotationType::Error,
-            }),
-            footer: vec![],
-            slices: vec![Slice {
-                source: &src,
-                line_start: 0,
-                origin: Some(file_name),
-                fold: false,
-                annotations: vec![SourceAnnotation {
-                    label: err.message(),
-                    annotation_type: AnnotationType::Error,
-                    range: (err.index(), err.index() + err.data().len()), // (start, end) of error token
-                }],
-            }],
-        };
+        let snippet = Level::Error.title(err.message()).snippet(
+            Snippet::source(&src)
+                .line_start(0)
+                .origin(file_name)
+                .fold(true)
+                .annotation(
+                    Level::Error
+                        .span(err.index()..err.index() + err.data().len())
+                        .label(err.message()),
+                ),
+        );
 
         let renderer = Renderer::styled();
         println!("{}\n\n", renderer.render(snippet));
