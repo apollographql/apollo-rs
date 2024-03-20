@@ -238,3 +238,29 @@ impl<'a> DocumentBuilder<'a> {
         Ok(enum_values_def)
     }
 }
+
+pub(crate) fn link_purpose() -> EnumTypeDef {
+    let mut enum_values_def = IndexSet::new();
+    enum_values_def.insert(EnumValueDefinition {
+        description: Some(Description::from(String::from(
+            "`SECURITY` features provide metadata necessary to securely resolve fields.",
+        ))),
+        value: Name::new(String::from("SECURITY")),
+        directives: Default::default(),
+    });
+    enum_values_def.insert(EnumValueDefinition {
+        description: Some(Description::from(String::from(
+            "`EXECUTION` features provide metadata necessary for operation execution.",
+        ))),
+        value: Name::new(String::from("EXECUTION")),
+        directives: Default::default(),
+    });
+
+    EnumTypeDef {
+        description: None,
+        name: Name::new(String::from("link__Purpose")),
+        directives: Default::default(),
+        enum_values_def,
+        extend: false,
+    }
+}

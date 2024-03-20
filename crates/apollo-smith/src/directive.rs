@@ -1,6 +1,7 @@
 use crate::{
     argument::{Argument, ArgumentsDef},
     description::Description,
+    input_value::InputValueDef,
     name::Name,
     DocumentBuilder,
 };
@@ -319,5 +320,49 @@ impl From<String> for DirectiveLocation {
                 other
             ),
         }
+    }
+}
+
+pub(crate) fn at_link() -> DirectiveDef {
+    let mut directive_locations = IndexSet::new();
+    directive_locations.insert(DirectiveLocation::Schema);
+
+    DirectiveDef {
+        description: None,
+        name: Name::new("link".to_string()),
+        arguments_definition: Some(ArgumentsDef {
+            input_value_definitions: vec![
+                InputValueDef {
+                    description: None,
+                    name: Name::new("url".to_string()),
+                    ty: crate::ty::Ty::Named(Name::new("String".to_string())),
+                    default_value: None,
+                    directives: Default::default(),
+                },
+                InputValueDef {
+                    description: None,
+                    name: Name::new("as".to_string()),
+                    ty: crate::ty::Ty::Named(Name::new("String".to_string())),
+                    default_value: None,
+                    directives: Default::default(),
+                },
+                InputValueDef {
+                    description: None,
+                    name: Name::new("for".to_string()),
+                    ty: crate::ty::Ty::Named(Name::new("link__Purpose".to_string())),
+                    default_value: None,
+                    directives: Default::default(),
+                },
+                InputValueDef {
+                    description: None,
+                    name: Name::new("import".to_string()),
+                    ty: crate::ty::Ty::Named(Name::new("link__Import".to_string())),
+                    default_value: None,
+                    directives: Default::default(),
+                },
+            ],
+        }),
+        repeatable: true,
+        directive_locations,
     }
 }
