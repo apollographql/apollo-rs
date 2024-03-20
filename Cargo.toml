@@ -6,4 +6,5 @@ members = [
     "crates/apollo-compiler",
     "crates/apollo-smith",
     "fuzz",
+    "crates/apollo-wasm"
 ]
