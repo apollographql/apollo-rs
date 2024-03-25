@@ -143,7 +143,8 @@ impl Unstructured<'_> {
         &mut self,
         schema: &Schema,
     ) -> Result<ObjectTypeDefinition> {
-        let implements = Self::all_transitive_interfaces(schema.sample_interface_types(self)?);
+        let implements =
+            Self::all_transitive_interfaces(schema, schema.sample_interface_types(self)?);
         let implements_fields = Self::all_unique_fields_from_interfaces(&implements);
         let new_fields = self.arbitrary_vec(1, 5, |u| {
             Ok(Node::new(u.arbitrary_field_definition(
@@ -154,10 +155,7 @@ impl Unstructured<'_> {
         Ok(ObjectTypeDefinition {
             description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
-            implements_interfaces: implements
-                .iter()
-                .map(|i| i.name.clone())
-                .collect(),
+            implements_interfaces: implements.iter().map(|i| i.name.clone()).collect(),
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
@@ -283,7 +281,8 @@ impl Unstructured<'_> {
         schema: &Schema,
     ) -> Result<InterfaceTypeDefinition> {
         // All interfaces need to have all the fields from the interfaces they implement.
-        let implements = Self::all_transitive_interfaces(schema.sample_interface_types(self)?);
+        let implements =
+            Self::all_transitive_interfaces(schema, schema.sample_interface_types(self)?);
 
         // Interfaces cannot have duplicate fields so stash them in a map
         let mut implements_fields = Self::all_unique_fields_from_interfaces(&implements);
@@ -603,9 +602,26 @@ impl Unstructured<'_> {
         }
         Ok(args)
     }
-    fn all_transitive_interfaces<'a>(interfaces: Vec<&'a Node<InterfaceType>>, schema: &'a Schema) -> Vec<&'a Node<InterfaceType>> {
-        // In graphql interfaces can extend other interfaces, but when using them you need to specify every single one in the entire type hierarchy.
 
+    fn all_transitive_interfaces<'a>(
+        schema: &'a Schema,
+        interfaces: Vec<&'a Node<InterfaceType>>,
+    ) -> Vec<&'a Node<InterfaceType>> {
+        // In graphql interfaces can extend other interfaces, but when using them you need to specify every single one in the entire type hierarchy.
+        interfaces
+            .into_iter()
+            .flat_map(|interface| {
+                std::iter::once(&interface.name).chain(
+                    interface
+                        .implements_interfaces
+                        .iter()
+                        .map(|component| &component.name),
+                )
+            })
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .filter_map(|interface| schema.get_interface(interface))
+            .collect()
     }
 }
 
