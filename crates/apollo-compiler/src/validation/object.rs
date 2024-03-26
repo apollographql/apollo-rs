@@ -34,6 +34,23 @@ pub(crate) fn validate_object_type_definition(
     // Object Type field validations.
     validate_field_definitions(diagnostics, schema, &object.fields);
 
+    // validate there is at least one field on the type
+    // https://spec.graphql.org/draft/#sel-FAHZhCFDBAACDA4qe
+    if object.fields.is_empty() {
+        diagnostics.push(
+            object.location(),
+            DiagnosticData::EmptyFieldSet {
+                type_name: object.name.clone(),
+                type_location: object.location(),
+                extensions_locations: object
+                    .extensions()
+                    .iter()
+                    .map(|ext| ext.location())
+                    .collect(),
+            },
+        );
+    }
+
     // Implements Interfaces validation.
     super::interface::validate_implements_interfaces(
         diagnostics,

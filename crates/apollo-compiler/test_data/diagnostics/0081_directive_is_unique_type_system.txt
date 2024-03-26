@@ -16,6 +16,15 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
    │                                         │        
    │                                         ╰──────── directive `@nonRepeatable` called again here
 ───╯
+Error: `Dummy` has no fields
+   ╭─[0081_directive_is_unique_type_system.graphql:5:1]
+   │
+ 5 │ type Dummy @nonRepeatable @nonRepeatable
+   │ ────────────────────┬───────────────────  
+   │                     ╰───────────────────── Dummy type defined here
+   │ 
+   │ Help: Define one or more fields on `Dummy`.
+───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0081_directive_is_unique_type_system.graphql:5:27]
    │
@@ -24,6 +33,15 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
    │                   ╰─────────────────────── directive `@nonRepeatable` first called here
    │                                  │        
    │                                  ╰──────── directive `@nonRepeatable` called again here
+───╯
+Error: `TestInterface` has no fields
+   ╭─[0081_directive_is_unique_type_system.graphql:6:1]
+   │
+ 6 │ interface TestInterface @nonRepeatable @nonRepeatable
+   │ ──────────────────────────┬──────────────────────────  
+   │                           ╰──────────────────────────── TestInterface type defined here
+   │ 
+   │ Help: Define one or more fields on `TestInterface`.
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0081_directive_is_unique_type_system.graphql:6:40]
@@ -34,6 +52,15 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
    │                                               │        
    │                                               ╰──────── directive `@nonRepeatable` called again here
 ───╯
+Error: `TestUnion` has no member types
+   ╭─[0081_directive_is_unique_type_system.graphql:7:1]
+   │
+ 7 │ union TestUnion @nonRepeatable @nonRepeatable
+   │ ──────────────────────┬──────────────────────  
+   │                       ╰──────────────────────── TestUnion type defined here
+   │ 
+   │ Help: Define one or more union member types on `TestUnion`.
+───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0081_directive_is_unique_type_system.graphql:7:32]
    │
@@ -42,6 +69,15 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
    │                        ╰─────────────────────── directive `@nonRepeatable` first called here
    │                                       │        
    │                                       ╰──────── directive `@nonRepeatable` called again here
+───╯
+Error: `TestInput` has no input values
+   ╭─[0081_directive_is_unique_type_system.graphql:8:1]
+   │
+ 8 │ input TestInput @nonRepeatable @nonRepeatable
+   │ ──────────────────────┬──────────────────────  
+   │                       ╰──────────────────────── TestInput type defined here
+   │ 
+   │ Help: Define one or more input values on `TestInput`.
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0081_directive_is_unique_type_system.graphql:8:32]

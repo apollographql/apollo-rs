@@ -1,0 +1,9 @@
+directive @foo on UNION
+
+type Query {
+  foo: Search
+}
+
+union Search
+
+extend union Search @foo

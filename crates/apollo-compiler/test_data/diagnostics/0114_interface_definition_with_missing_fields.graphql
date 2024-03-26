@@ -1,0 +1,8 @@
+directive @foo on INTERFACE
+type Query {
+    foo: Node
+}
+
+interface Node
+
+extend interface Node @foo

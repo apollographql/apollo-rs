@@ -1,0 +1,14 @@
+Error: `Node` has no fields
+   ╭─[0114_interface_definition_with_missing_fields.graphql:6:1]
+   │
+ 6 │ interface Node
+   │ ───────┬──────  
+   │        ╰──────── Node type defined here
+   │ 
+ 8 │ extend interface Node @foo
+   │ ─────────────┬────────────  
+   │              ╰────────────── Node extension defined here
+   │ 
+   │ Help: Define one or more fields on `Node` or its type extensions.
+───╯
+

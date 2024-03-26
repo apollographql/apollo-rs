@@ -4,41 +4,40 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
  2 │ extend type TestObject @nonRepeatable
    │                        ───────┬──────  
    │                               ╰──────── directive `@nonRepeatable` called again here
- 3 │ type TestObject @nonRepeatable
+ 3 │ type TestObject @nonRepeatable {
    │                 ───────┬──────  
    │                        ╰──────── directive `@nonRepeatable` first called here
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
-   ╭─[0080_directive_is_unique_with_extensions.graphql:4:24]
+   ╭─[0080_directive_is_unique_with_extensions.graphql:6:24]
    │
- 3 │ type TestObject @nonRepeatable
+ 3 │ type TestObject @nonRepeatable {
    │                 ───────┬──────  
    │                        ╰──────── directive `@nonRepeatable` first called here
- 4 │ extend type TestObject @nonRepeatable
+   │ 
+ 6 │ extend type TestObject @nonRepeatable
    │                        ───────┬──────  
    │                               ╰──────── directive `@nonRepeatable` called again here
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
-   ╭─[0080_directive_is_unique_with_extensions.graphql:7:22]
+   ╭─[0080_directive_is_unique_with_extensions.graphql:9:22]
    │
- 6 │ scalar Scalar @nonRepeatable
+ 8 │ scalar Scalar @nonRepeatable
    │               ───────┬──────  
    │                      ╰──────── directive `@nonRepeatable` first called here
- 7 │ extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com")
+ 9 │ extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com")
    │                      ───────┬──────  
    │                             ╰──────── directive `@nonRepeatable` called again here
 ───╯
-Error: the type `Intf` is defined multiple times in the schema
-    ╭─[0080_directive_is_unique_with_extensions.graphql:12:11]
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0080_directive_is_unique_with_extensions.graphql:14:23]
     │
-  9 │ interface Intf @nonRepeatable {
-    │           ──┬─  
-    │             ╰─── previous definition of `Intf` here
+ 11 │ interface Intf @nonRepeatable {
+    │                ───────┬──────  
+    │                       ╰──────── directive `@nonRepeatable` first called here
     │ 
- 12 │ interface Intf @nonRepeatable
-    │           ──┬─  
-    │             ╰─── `Intf` redefined here
-    │ 
-    │ Help: remove or rename one of the definitions, or use `extend`
+ 14 │ extend interface Intf @nonRepeatable
+    │                       ───────┬──────  
+    │                              ╰──────── directive `@nonRepeatable` called again here
 ────╯
 

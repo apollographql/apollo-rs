@@ -261,6 +261,30 @@ pub(crate) enum DiagnosticData {
     },
     #[error("too much recursion")]
     RecursionError {},
+    #[error("`{type_name}` has no fields")]
+    EmptyFieldSet {
+        type_name: Name,
+        type_location: Option<NodeLocation>,
+        extensions_locations: Vec<Option<NodeLocation>>,
+    },
+    #[error("`{type_name}` has no enum values")]
+    EmptyValueSet {
+        type_name: Name,
+        type_location: Option<NodeLocation>,
+        extensions_locations: Vec<Option<NodeLocation>>,
+    },
+    #[error("`{type_name}` has no member types")]
+    EmptyMemberSet {
+        type_name: Name,
+        type_location: Option<NodeLocation>,
+        extensions_locations: Vec<Option<NodeLocation>>,
+    },
+    #[error("`{type_name}` has no input values")]
+    EmptyInputValueSet {
+        type_name: Name,
+        type_location: Option<NodeLocation>,
+        extensions_locations: Vec<Option<NodeLocation>>,
+    },
 }
 
 impl DiagnosticData {
@@ -630,7 +654,86 @@ impl DiagnosticData {
                 );
             }
             DiagnosticData::RecursionError {} => {}
+            DiagnosticData::EmptyFieldSet {
+                type_name,
+                type_location,
+                extensions_locations,
+            } => {
+                Self::report_empty_type(
+                    report,
+                    type_name,
+                    type_location,
+                    extensions_locations,
+                    "fields",
+                );
+            }
+            DiagnosticData::EmptyValueSet {
+                type_name,
+                type_location,
+                extensions_locations,
+            } => {
+                Self::report_empty_type(
+                    report,
+                    type_name,
+                    type_location,
+                    extensions_locations,
+                    "enum values",
+                );
+            }
+            DiagnosticData::EmptyMemberSet {
+                type_name,
+                type_location,
+                extensions_locations,
+            } => {
+                Self::report_empty_type(
+                    report,
+                    type_name,
+                    type_location,
+                    extensions_locations,
+                    "union member types",
+                );
+            }
+            DiagnosticData::EmptyInputValueSet {
+                type_name,
+                type_location,
+                extensions_locations,
+            } => {
+                Self::report_empty_type(
+                    report,
+                    type_name,
+                    type_location,
+                    extensions_locations,
+                    "input values",
+                );
+            }
         }
+    }
+
+    fn report_empty_type(
+        report: &mut CliReport,
+        type_name: &Name,
+        type_location: &Option<NodeLocation>,
+        extensions_locations: &[Option<NodeLocation>],
+        describe_missing_kind: &str,
+    ) {
+        report.with_label_opt(
+            *type_location,
+            format_args!("{type_name} type defined here"),
+        );
+        extensions_locations.iter().for_each(|location| {
+            report.with_label_opt(
+                *location,
+                format_args!("{type_name} extension defined here"),
+            );
+        });
+        let and_extensions_message = if !extensions_locations.is_empty() {
+            " or its type extensions"
+        } else {
+            ""
+        };
+        report.with_help(format!(
+            "Define one or more {describe_missing_kind} on `{type_name}`{and_extensions_message}."
+        ));
     }
 }
 

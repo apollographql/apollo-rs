@@ -1,0 +1,14 @@
+Error: `In` has no input values
+   ╭─[0118_input_object_definition_with_missing_values.graphql:6:1]
+   │
+ 6 │ input In
+   │ ────┬───  
+   │     ╰───── In type defined here
+   │ 
+ 8 │ extend input In @foo
+   │ ──────────┬─────────  
+   │           ╰─────────── In extension defined here
+   │ 
+   │ Help: Define one or more input values on `In` or its type extensions.
+───╯
+
