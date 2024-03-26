@@ -41,6 +41,12 @@ pub(crate) fn field(p: &mut Parser) {
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
+
+    match p.peek() {
+        Some(TokenKind::Name | TokenKind::StringValue) => field_definition(p),
+        _ => p.err("expected Field Definition"),
+    }
+
     p.peek_while(|p, kind| match kind {
         TokenKind::Name | TokenKind::StringValue => {
             field_definition(p);

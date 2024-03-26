@@ -1,40 +1,36 @@
-- DOCUMENT@0..115
+- DOCUMENT@0..112
     - ERROR@0..4 "cats"
     - WHITESPACE@4..5 "\n"
     - COMMENT@5..60 "# https://github.com/apollographql/apollo-rs/issues/325"
     - WHITESPACE@60..62 "\n\n"
-    - INTERFACE_TYPE_DEFINITION@62..76
+    - INTERFACE_TYPE_DEFINITION@62..73
         - interface_KW@62..71 "interface"
         - WHITESPACE@71..72 " "
         - NAME@72..73
             - IDENT@72..73 "X"
-        - WHITESPACE@73..74 " "
-        - FIELDS_DEFINITION@74..76
-            - L_CURLY@74..75 "{"
-            - R_CURLY@75..76 "}"
-    - WHITESPACE@76..78 "\n\n"
-    - ERROR@78..82 "cats"
-    - WHITESPACE@82..83 "\n"
-    - OBJECT_TYPE_DEFINITION@83..114
-        - type_KW@83..87 "type"
-        - WHITESPACE@87..88 " "
-        - NAME@88..93
-            - IDENT@88..93 "Query"
-        - WHITESPACE@93..94 " "
-        - FIELDS_DEFINITION@94..114
-            - L_CURLY@94..95 "{"
-            - WHITESPACE@95..100 "\n    "
-            - FIELD_DEFINITION@100..112
-                - NAME@100..104
-                    - IDENT@100..104 "name"
-                - COLON@104..105 ":"
-                - WHITESPACE@105..106 " "
-                - NAMED_TYPE@106..112
-                    - NAME@106..112
-                        - IDENT@106..112 "String"
-            - WHITESPACE@112..113 "\n"
-            - R_CURLY@113..114 "}"
-    - WHITESPACE@114..115 "\n"
+    - WHITESPACE@73..75 "\n\n"
+    - ERROR@75..79 "cats"
+    - WHITESPACE@79..80 "\n"
+    - OBJECT_TYPE_DEFINITION@80..111
+        - type_KW@80..84 "type"
+        - WHITESPACE@84..85 " "
+        - NAME@85..90
+            - IDENT@85..90 "Query"
+        - WHITESPACE@90..91 " "
+        - FIELDS_DEFINITION@91..111
+            - L_CURLY@91..92 "{"
+            - WHITESPACE@92..97 "\n    "
+            - FIELD_DEFINITION@97..109
+                - NAME@97..101
+                    - IDENT@97..101 "name"
+                - COLON@101..102 ":"
+                - WHITESPACE@102..103 " "
+                - NAMED_TYPE@103..109
+                    - NAME@103..109
+                        - IDENT@103..109 "String"
+            - WHITESPACE@109..110 "\n"
+            - R_CURLY@110..111 "}"
+    - WHITESPACE@111..112 "\n"
 - ERROR@0:4 "expected definition" cats
-- ERROR@78:82 "expected definition" cats
+- ERROR@75:79 "expected definition" cats
 recursion limit: 500, high: 0

@@ -35,7 +35,7 @@ fn get_operations() {
 #[test]
 fn is_introspection_operation() {
     let query_input = r#"
-        type Query {}
+        type Query { foo: String }
         query TypeIntrospect {
           __type(name: "User") {
             name
@@ -184,7 +184,7 @@ fn is_introspection_deep() {
 #[test]
 fn is_introspection_repeated_fragment() {
     let query_input_indirect = r#"
-      type Query {}
+      type Query { foo: String }
 
       query IntrospectRepeatedIndirectFragment {
         ...A
@@ -204,7 +204,7 @@ fn is_introspection_repeated_fragment() {
     "#;
 
     let query_input_direct = r#"
-      type Query {}
+      type Query { foo: String }
 
       query IntrospectRepeatedDirectFragment {
         ...C
