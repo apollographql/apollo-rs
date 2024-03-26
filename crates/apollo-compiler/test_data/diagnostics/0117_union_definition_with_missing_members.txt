@@ -1,0 +1,14 @@
+Error: `Search` has no member types
+   ╭─[0117_union_definition_with_missing_members.graphql:6:1]
+   │
+ 6 │ union Search
+   │ ──────┬─────  
+   │       ╰─────── Search type defined here
+   │ 
+ 8 │ extend union Search @foo
+   │ ────────────┬───────────  
+   │             ╰───────────── Search extension defined here
+   │ 
+   │ Help: Define one or more union member types on `Search` or its type extensions.
+───╯
+

@@ -1,0 +1,8 @@
+directive @foo on INPUT_OBJECT
+type Query {
+    foo(id: In): String
+}
+
+input In
+
+extend input In @foo

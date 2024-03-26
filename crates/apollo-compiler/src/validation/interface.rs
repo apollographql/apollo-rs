@@ -59,6 +59,19 @@ pub(crate) fn validate_interface_definition(
     // Interface Type field validation.
     validate_field_definitions(diagnostics, schema, &interface.fields);
 
+    // validate there is at least one field on the type
+    // https://spec.graphql.org/draft/#sel-HAHbnBFBABABxB4a
+    if interface.fields.is_empty() {
+        diagnostics.push(
+            interface.location(),
+            DiagnosticData::EmptyFieldSet {
+                type_name: interface.name.clone(),
+                type_location: interface.location(),
+                extensions_locations: interface.extensions().iter().map(|ext| ext.location()).collect(),
+            },
+        );
+    }
+
     // Implements Interfaceds validation.
     validate_implements_interfaces(
         diagnostics,

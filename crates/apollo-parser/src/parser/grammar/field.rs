@@ -4,7 +4,6 @@ use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{argument, description, directive, name, selection, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 use std::ops::ControlFlow;
-use crate::parser::grammar::enum_::enum_value_definition;
 
 /// See: https://spec.graphql.org/October2021/#Field
 ///

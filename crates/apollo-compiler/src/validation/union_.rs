@@ -52,4 +52,17 @@ pub(crate) fn validate_union_definition(
             }
         }
     }
+
+    // validate there is at least one union member on the union type
+    // https://spec.graphql.org/draft/#sel-HAHdfFBABAB6Bw3R
+    if union_def.members.is_empty() {
+        diagnostics.push(
+            union_def.location(),
+            DiagnosticData::EmptyMemberSet {
+                type_name: union_def.name.clone(),
+                type_location: union_def.location(),
+                extensions_locations: union_def.extensions().iter().map(|ext| ext.location()).collect(),
+            },
+        );
+    }
 }

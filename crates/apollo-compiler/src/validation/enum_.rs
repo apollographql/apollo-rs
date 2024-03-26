@@ -1,6 +1,7 @@
 use crate::schema::{EnumType, ExtendedType};
 use crate::validation::DiagnosticList;
 use crate::{ast, Node};
+use crate::validation::diagnostics::DiagnosticData;
 
 pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
     for ty in schema.types.values() {
@@ -13,7 +14,7 @@ pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema
 pub(crate) fn validate_enum_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
-    enum_def: &EnumType,
+    enum_def: &Node<EnumType>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -26,6 +27,19 @@ pub(crate) fn validate_enum_definition(
 
     for enum_val in enum_def.values.values() {
         validate_enum_value(diagnostics, schema, enum_val);
+    }
+
+    // validate there is at least one enum value on the enum type
+    // https://spec.graphql.org/draft/#sel-DAHfFVFBAAEXBAAh7S
+    if enum_def.values.is_empty() {
+        diagnostics.push(
+            enum_def.location(),
+            DiagnosticData::EmptyValueSet {
+                type_name: enum_def.name.clone(),
+                type_location: enum_def.location(),
+                extensions_locations: enum_def.extensions().iter().map(|ext| ext.location()).collect(),
+            },
+        );
     }
 }
 
