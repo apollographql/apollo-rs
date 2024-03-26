@@ -4,7 +4,7 @@ use crate::{ast, executable, schema, ExecutableDocument, Node};
 
 use super::operation::OperationValidationConfig;
 use crate::ast::Name;
-use crate::schema::Component;
+use crate::schema::{Component};
 use crate::validation::DiagnosticList;
 use indexmap::IndexMap;
 

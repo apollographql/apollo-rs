@@ -1,0 +1,14 @@
+Error: `WEEKDAY` has no enum values
+   ╭─[0116_enum_definition_with_missing_values.graphql:6:1]
+   │
+ 6 │ enum WEEKDAY
+   │ ──────┬─────  
+   │       ╰─────── WEEKDAY type defined here
+   │ 
+ 8 │ extend enum WEEKDAY @foo
+   │ ────────────┬───────────  
+   │             ╰───────────── WEEKDAY extension defined here
+   │ 
+   │ Help: Define one or more enum values on `WEEKDAY` or its type extensions.
+───╯
+

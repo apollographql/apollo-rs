@@ -4,7 +4,7 @@ use apollo_compiler::Schema;
 fn test_orphan_extensions() {
     let input = r#"
         extend schema @dir { query: Q }
-        extend type Obj @dir
+        extend type Obj @dir { foo: String }
         directive @dir on SCHEMA | OBJECT
         type Q { x: Int }
     "#;

@@ -119,6 +119,19 @@ pub(crate) fn validate_input_object_definition(
         &fields,
         ast::DirectiveLocation::InputFieldDefinition,
     );
+
+    // validate there is at least one input value on the input object type
+    // https://spec.graphql.org/draft/#sel-HAHhBXDBABAB5BvgD
+    if input_object.fields.is_empty() {
+        diagnostics.push(
+            input_object.location(),
+            DiagnosticData::EmptyInputValueSet {
+                type_name: input_object.name.clone(),
+                type_location: input_object.location(),
+                extensions_locations: input_object.extensions().iter().map(|ext| ext.location()).collect(),
+            },
+        );
+    }
 }
 
 pub(crate) fn validate_argument_definitions(
