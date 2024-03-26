@@ -128,7 +128,11 @@ pub(crate) fn validate_input_object_definition(
             DiagnosticData::EmptyInputValueSet {
                 type_name: input_object.name.clone(),
                 type_location: input_object.location(),
-                extensions_locations: input_object.extensions().iter().map(|ext| ext.location()).collect(),
+                extensions_locations: input_object
+                    .extensions()
+                    .iter()
+                    .map(|ext| ext.location())
+                    .collect(),
             },
         );
     }

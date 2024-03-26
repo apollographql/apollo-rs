@@ -26,7 +26,7 @@ use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::execution::{GraphQLError, Response};
 use crate::schema::BuildError as SchemaBuildError;
-use crate::{SourceMap};
+use crate::SourceMap;
 use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
 use std::fmt;

@@ -1,7 +1,7 @@
 use crate::schema::{EnumType, ExtendedType};
+use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
 use crate::{ast, Node};
-use crate::validation::diagnostics::DiagnosticData;
 
 pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
     for ty in schema.types.values() {
@@ -37,7 +37,11 @@ pub(crate) fn validate_enum_definition(
             DiagnosticData::EmptyValueSet {
                 type_name: enum_def.name.clone(),
                 type_location: enum_def.location(),
-                extensions_locations: enum_def.extensions().iter().map(|ext| ext.location()).collect(),
+                extensions_locations: enum_def
+                    .extensions()
+                    .iter()
+                    .map(|ext| ext.location())
+                    .collect(),
             },
         );
     }

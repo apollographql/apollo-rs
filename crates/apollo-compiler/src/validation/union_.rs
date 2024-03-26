@@ -61,7 +61,11 @@ pub(crate) fn validate_union_definition(
             DiagnosticData::EmptyMemberSet {
                 type_name: union_def.name.clone(),
                 type_location: union_def.location(),
-                extensions_locations: union_def.extensions().iter().map(|ext| ext.location()).collect(),
+                extensions_locations: union_def
+                    .extensions()
+                    .iter()
+                    .map(|ext| ext.location())
+                    .collect(),
             },
         );
     }

@@ -67,7 +67,11 @@ pub(crate) fn validate_interface_definition(
             DiagnosticData::EmptyFieldSet {
                 type_name: interface.name.clone(),
                 type_location: interface.location(),
-                extensions_locations: interface.extensions().iter().map(|ext| ext.location()).collect(),
+                extensions_locations: interface
+                    .extensions()
+                    .iter()
+                    .map(|ext| ext.location())
+                    .collect(),
             },
         );
     }

@@ -42,7 +42,11 @@ pub(crate) fn validate_object_type_definition(
             DiagnosticData::EmptyFieldSet {
                 type_name: object.name.clone(),
                 type_location: object.location(),
-                extensions_locations: object.extensions().iter().map(|ext| ext.location()).collect(),
+                extensions_locations: object
+                    .extensions()
+                    .iter()
+                    .map(|ext| ext.location())
+                    .collect(),
             },
         );
     }
