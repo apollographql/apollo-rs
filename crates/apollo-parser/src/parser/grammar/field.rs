@@ -4,6 +4,7 @@ use crate::parser::grammar::value::Constness;
 use crate::parser::grammar::{argument, description, directive, name, selection, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 use std::ops::ControlFlow;
+use crate::parser::grammar::enum_::enum_value_definition;
 
 /// See: https://spec.graphql.org/October2021/#Field
 ///
@@ -41,6 +42,12 @@ pub(crate) fn field(p: &mut Parser) {
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
+
+    match p.peek() {
+        Some(TokenKind::Name | TokenKind::StringValue) => field_definition(p),
+        _ => p.err("expected Field Definition"),
+    }
+
     p.peek_while(|p, kind| match kind {
         TokenKind::Name | TokenKind::StringValue => {
             field_definition(p);
