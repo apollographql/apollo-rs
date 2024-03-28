@@ -17,6 +17,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## Features
+
+- **Serialize with initial indentation - [SimonSapin], [pull/848]**
+  This helps use indentation in something that is partly but not entirely GraphQL syntax,
+  such as the debugging representation of an Apollo Router query plan.
+  Example: `document.serialize().initial_indent_level(2).to_string()`
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/838]: https://github.com/apollographql/apollo-rs/pull/848
+
+
 # [1.0.0-beta.14](https://crates.io/crates/apollo-compiler/1.0.0-beta.14) - 2024-03-13
 
 ## BREAKING

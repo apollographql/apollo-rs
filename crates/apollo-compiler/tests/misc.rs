@@ -1,3 +1,4 @@
+use apollo_compiler::ast::Document;
 use apollo_compiler::executable::Selection;
 use apollo_compiler::name;
 use apollo_compiler::parse_mixed_validate;
@@ -824,4 +825,26 @@ scalar URL
     for result in results {
         assert_eq!(result.unwrap().as_deref(), Some("URL"));
     }
+}
+
+#[test]
+fn initial_indent() {
+    let ast = Document::parse("query Op { field ... @defer { otherField }}", "").unwrap();
+    let formatted = format!(
+        "Request:\n  operationName: {}\n  query:\n{}",
+        "Op",
+        ast.serialize().initial_indent_level(2)
+    );
+    let expected = expect_test::expect![[r#"
+        Request:
+          operationName: Op
+          query:
+            query Op {
+              field
+              ... @defer {
+                otherField
+              }
+            }
+    "#]];
+    expected.assert_eq(&formatted);
 }

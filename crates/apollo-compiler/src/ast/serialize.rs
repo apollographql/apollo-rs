@@ -13,6 +13,7 @@ pub struct Serialize<'a, T> {
 #[derive(Debug, Clone)]
 pub(crate) struct Config<'a> {
     indent_prefix: Option<&'a str>,
+    initial_indent_level: usize,
 }
 
 pub(crate) struct State<'config, 'fmt, 'fmt2> {
@@ -38,12 +39,18 @@ impl<'a, T> Serialize<'a, T> {
         self.config.indent_prefix = None;
         self
     }
+
+    pub fn initial_indent_level(mut self, initial_indent_level: usize) -> Self {
+        self.config.initial_indent_level = initial_indent_level;
+        self
+    }
 }
 
 impl Default for Config<'_> {
     fn default() -> Self {
         Self {
             indent_prefix: Some("  "),
+            initial_indent_level: 0,
         }
     }
 }
@@ -979,12 +986,20 @@ macro_rules! impl_display {
             /// Serialize to GraphQL syntax
             impl Display for Serialize<'_, $ty> {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.node.serialize_impl(&mut State {
+                    let mut state = State {
                         config: self.config.clone(),
-                        indent_level: 0,
+                        indent_level: self.config.initial_indent_level,
                         output: f,
                         output_empty: true,
-                    })
+                    };
+                    // Indent the first line.
+                    // Subsequent lines will be indented when writing a line break.
+                    if let Some(prefix) = state.config.indent_prefix {
+                        for _ in 0..state.indent_level {
+                            state.write(prefix)?;
+                        }
+                    }
+                    self.node.serialize_impl(&mut state)
                 }
             }
         )+
