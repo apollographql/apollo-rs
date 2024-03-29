@@ -176,7 +176,10 @@ impl Unstructured<'_> {
             description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             arguments: self.arbitrary_vec(0, 5, |u| {
-                Ok(Node::new(u.arbitrary_input_value_definition(schema)?))
+                Ok(Node::new(u.arbitrary_input_value_definition(
+                    schema,
+                    DirectiveLocation::ArgumentDefinition,
+                )?))
             })?,
             repeatable: self.arbitrary()?,
             locations: self.arbitrary_directive_locations()?,
@@ -196,7 +199,10 @@ impl Unstructured<'_> {
                 .with_location(DirectiveLocation::InputObject)
                 .try_collect(self, schema)?,
             fields: self.arbitrary_vec(0, 5, |u| {
-                Ok(Node::new(u.arbitrary_input_value_definition(schema)?))
+                Ok(Node::new(u.arbitrary_input_value_definition(
+                    schema,
+                    DirectiveLocation::InputFieldDefinition,
+                )?))
             })?,
         })
     }
@@ -204,6 +210,7 @@ impl Unstructured<'_> {
     pub(crate) fn arbitrary_input_value_definition(
         &mut self,
         schema: &Schema,
+        location: DirectiveLocation,
     ) -> Result<InputValueDefinition> {
         let ty = schema
             .random_type(
@@ -225,7 +232,7 @@ impl Unstructured<'_> {
             directives: schema
                 .sample_directives(self)?
                 .into_iter()
-                .with_location(DirectiveLocation::ArgumentDefinition)
+                .with_location(location)
                 .try_collect(self, schema)?,
         })
     }
@@ -333,7 +340,10 @@ impl Unstructured<'_> {
             description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
             name: self.unique_name(),
             arguments: self.arbitrary_vec(0, 5, |u| {
-                Ok(Node::new(u.arbitrary_input_value_definition(schema)?))
+                Ok(Node::new(u.arbitrary_input_value_definition(
+                    schema,
+                    DirectiveLocation::ArgumentDefinition,
+                )?))
             })?,
             ty: schema
                 .random_type(
