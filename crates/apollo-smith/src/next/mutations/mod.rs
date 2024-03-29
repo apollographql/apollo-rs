@@ -2,30 +2,31 @@ use std::any::type_name;
 
 use apollo_compiler::ast::Document;
 use apollo_compiler::{ExecutableDocument, Schema};
-use crate::next::mutations::add_anonymous_operation_definition::AddAnonymousOperationDefinition;
 
+use crate::next::mutations::add_anonymous_operation_definition::AddAnonymousOperationDefinition;
 use crate::next::mutations::add_directive_definition::AddDirectiveDefinition;
+use crate::next::mutations::add_enum_type_definition::AddEnumTypeDefinition;
 use crate::next::mutations::add_input_object_type_definition::AddInputObjectTypeDefinition;
 use crate::next::mutations::add_interface_type_definition::AddInterfaceTypeDefinition;
-use crate::next::mutations::add_object_type_definition::AddObjectTypeDefinition;
 use crate::next::mutations::add_named_operation_definition::AddNamedOperationDefinition;
+use crate::next::mutations::add_object_type_definition::AddObjectTypeDefinition;
 use crate::next::mutations::add_union_type_definition::AddUnionTypeDefinition;
 use crate::next::mutations::remove_all_fields::RemoveAllFields;
 use crate::next::mutations::remove_required_field::RemoveRequiredField;
 use crate::next::unstructured::Unstructured;
 
+mod add_anonymous_operation_definition;
 mod add_directive_definition;
 mod add_enum_type_definition;
+mod add_fragment_definiton;
 mod add_input_object_type_definition;
 mod add_interface_type_definition;
-mod add_object_type_definition;
 mod add_named_operation_definition;
+mod add_object_type_definition;
 mod add_schema_definition;
 mod add_union_type_definition;
 mod remove_all_fields;
 mod remove_required_field;
-mod add_anonymous_operation_definition;
-mod add_fragment_definiton;
 
 pub(crate) trait SchemaMutation {
     /// Apply the mutation to the document
@@ -42,7 +43,6 @@ pub(crate) trait SchemaMutation {
         type_name::<Self>()
     }
 }
-
 
 pub(crate) trait ExecutableDocumentMutation {
     /// Apply the mutation to the document
@@ -68,12 +68,15 @@ pub(crate) fn schema_mutations() -> Vec<Box<dyn SchemaMutation>> {
         Box::new(AddDirectiveDefinition),
         Box::new(AddInputObjectTypeDefinition),
         Box::new(AddUnionTypeDefinition),
-        Box::new(AddInterfaceTypeDefinition),
+        Box::new(AddEnumTypeDefinition),
         //Box::new(RemoveAllFields),
         Box::new(RemoveRequiredField),
     ]
 }
 
 pub(crate) fn executable_document_mutations() -> Vec<Box<dyn ExecutableDocumentMutation>> {
-    vec![Box::new(AddNamedOperationDefinition), Box::new(AddAnonymousOperationDefinition)]
+    vec![
+        Box::new(AddNamedOperationDefinition),
+        Box::new(AddAnonymousOperationDefinition),
+    ]
 }
