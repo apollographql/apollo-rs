@@ -10,6 +10,7 @@ use crate::next::mutations::add_input_object_type_definition::AddInputObjectType
 use crate::next::mutations::add_interface_type_definition::AddInterfaceTypeDefinition;
 use crate::next::mutations::add_named_operation_definition::AddNamedOperationDefinition;
 use crate::next::mutations::add_object_type_definition::AddObjectTypeDefinition;
+use crate::next::mutations::add_scalar_type_definition::AddScalarTypeDefinition;
 use crate::next::mutations::add_union_type_definition::AddUnionTypeDefinition;
 use crate::next::mutations::remove_all_fields::RemoveAllFields;
 use crate::next::mutations::remove_required_field::RemoveRequiredField;
@@ -23,6 +24,7 @@ mod add_input_object_type_definition;
 mod add_interface_type_definition;
 mod add_named_operation_definition;
 mod add_object_type_definition;
+mod add_scalar_type_definition;
 mod add_schema_definition;
 mod add_union_type_definition;
 mod remove_all_fields;
@@ -69,6 +71,7 @@ pub(crate) fn schema_mutations() -> Vec<Box<dyn SchemaMutation>> {
         Box::new(AddInputObjectTypeDefinition),
         Box::new(AddUnionTypeDefinition),
         Box::new(AddEnumTypeDefinition),
+        Box::new(AddScalarTypeDefinition),
         //Box::new(RemoveAllFields),
         Box::new(RemoveRequiredField),
     ]

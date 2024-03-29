@@ -7,8 +7,8 @@ use apollo_compiler::ast::{
     Argument, DirectiveDefinition, DirectiveLocation, EnumTypeDefinition, EnumValueDefinition,
     Field, FieldDefinition, FragmentDefinition, FragmentSpread, InlineFragment,
     InputObjectTypeDefinition, InputValueDefinition, InterfaceTypeDefinition, Name,
-    ObjectTypeDefinition, OperationDefinition, OperationType, SchemaDefinition, Selection, Type,
-    UnionTypeDefinition, Value, VariableDefinition,
+    ObjectTypeDefinition, OperationDefinition, OperationType, ScalarTypeDefinition,
+    SchemaDefinition, Selection, Type, UnionTypeDefinition, Value, VariableDefinition,
 };
 use apollo_compiler::schema::{ExtendedType, InterfaceType};
 use apollo_compiler::{ExecutableDocument, Node, NodeStr, Schema};
@@ -233,6 +233,21 @@ impl Unstructured<'_> {
                 .sample_directives(self)?
                 .into_iter()
                 .with_location(location)
+                .try_collect(self, schema)?,
+        })
+    }
+
+    pub(crate) fn arbitrary_scalar_type_definition(
+        &mut self,
+        schema: &Schema,
+    ) -> Result<ScalarTypeDefinition> {
+        Ok(ScalarTypeDefinition {
+            description: self.arbitrary_optional(|u| u.arbitrary_node_str())?,
+            name: self.unique_name(),
+            directives: schema
+                .sample_directives(self)?
+                .into_iter()
+                .with_location(DirectiveLocation::Scalar)
                 .try_collect(self, schema)?,
         })
     }
