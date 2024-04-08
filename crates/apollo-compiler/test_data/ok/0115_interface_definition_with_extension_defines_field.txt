@@ -1,0 +1,110 @@
+Schema {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        41: SourceFile {
+            path: "0115_interface_definition_with_extension_defines_field.graphql",
+            source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..28 @41 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "foo": Component {
+                        origin: Definition,
+                        node: 17..26 @41 FieldDefinition {
+                            description: None,
+                            name: "foo",
+                            arguments: [],
+                            ty: Named(
+                                "Node",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Node": Interface(
+            30..44 @41 InterfaceType {
+                description: None,
+                name: "Node",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "bar": Component {
+                        origin: Extension(
+                            ExtensionId {
+                                arc: Some(
+                                    46..87 @41,
+                                ),
+                            },
+                        ),
+                        node: 74..85 @41 FieldDefinition {
+                            description: None,
+                            name: "bar",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        -1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        41: SourceFile {
+            path: "0115_interface_definition_with_extension_defines_field.graphql",
+            source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
+        },
+    },
+    anonymous_operation: None,
+    named_operations: {},
+    fragments: {},
+}

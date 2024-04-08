@@ -252,6 +252,10 @@ impl DiagnosticData {
                     RecursiveInputObjectDefinition { .. } => "RecursiveInputObjectDefinition",
                     RecursiveFragmentDefinition { .. } => "RecursiveFragmentDefinition",
                     DeeplyNestedType { .. } => "DeeplyNestedType",
+                    EmptyFieldSet { .. } => "EmptyFieldSet",
+                    EmptyValueSet { .. } => "EmptyValueSet",
+                    EmptyMemberSet { .. } => "EmptyMemberSet",
+                    EmptyInputValueSet { .. } => "EmptyInputValueSet",
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
