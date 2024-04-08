@@ -18,7 +18,7 @@ edition = "2021"
 autotests = false # Most tests/*.rs files are modules of tests/main.rs
 
 [dependencies]
-apollo-parser = { path = "../apollo-parser", version = "0.7.6" }
+apollo-parser = { path = "../apollo-parser", version = "0.7.7" }
 ariadne = { version = "0.4.0", features = ["auto-color"] }
 indexmap = "2.0.0"
 rowan = "0.15.5"

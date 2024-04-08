@@ -17,6 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.7.7](https://crates.io/crates/apollo-parser/0.7.7) - 2024-04-08
+
+## Fixes
+- **raise an error for empty field sets - [tinnou], [pull/845]**
+  It's not legal to write `type Object {}` *with* braces but *without* declaring
+  any fields. In the past this was accepted by apollo-parser, now it raises an
+  error as required by the spec.
+
+[tinnou]: https://github.com/tinnou
+[pull/845]: https://github.com/apollographql/apollo-rs/pull/845
+
 # [0.7.6](https://crates.io/crates/apollo-parser/0.7.6) - 2024-02-14
 
 ## Fixes
