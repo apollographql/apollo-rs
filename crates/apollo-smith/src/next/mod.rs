@@ -7,10 +7,10 @@ use apollo_compiler::{ExecutableDocument, Schema};
 pub use crate::next::unstructured::Unstructured;
 
 mod ast;
+mod executable;
 mod mutations;
 mod schema;
 mod unstructured;
-mod executable;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -45,7 +45,7 @@ pub enum Error {
     ExecutableExpectedValidationFail {
         schema: Valid<Schema>,
         doc: Document,
-        mutation: String
+        mutation: String,
     },
 
     #[error("reparse error")]
@@ -85,7 +85,6 @@ pub fn generate_schema_document(u: &mut Unstructured) -> Result<Document, Error>
             // The mutation didn't apply, let's try another one
             continue;
         }
-
 
         // Now let's validate that the schema says it's OK
         match (mutation.is_valid(), new_doc.to_schema_validate()) {
@@ -139,7 +138,9 @@ pub(crate) fn generate_executable_document(
     schema: &Valid<Schema>,
 ) -> Result<Document, Error> {
     let mut doc = Document::new();
-    let mut executable_document = doc.to_executable(schema).expect("initial document must be valid");
+    let mut executable_document = doc
+        .to_executable(schema)
+        .expect("initial document must be valid");
     let mutations = mutations::executable_document_mutations();
     for _ in 0..10 {
         if u.len() == 0 {
@@ -198,7 +199,10 @@ pub(crate) fn generate_executable_document(
             }
         }
     }
-    println!("Generated executable document: {}\n for schema {}", doc, schema);
+    println!(
+        "Generated executable document: {}\n for schema {}",
+        doc, schema
+    );
 
     Ok(doc)
 }

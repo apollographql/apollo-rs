@@ -380,6 +380,43 @@ impl Unstructured<'_> {
         })
     }
 
+    pub(crate) fn arbitrary_value_untyped(&mut self) -> Result<Value> {
+        enum ValueKind {
+            Int,
+            Float,
+            Boolean,
+            String,
+            Object,
+            List,
+        }
+        let kind = self.choose(&[
+            ValueKind::Int,
+            ValueKind::Float,
+            ValueKind::Boolean,
+            ValueKind::String,
+            ValueKind::Object,
+            ValueKind::List,
+        ])?;
+
+        Ok(match *kind {
+            ValueKind::Int => Value::from(self.arbitrary::<i32>()?),
+            ValueKind::Float => loop {
+                let val = self.arbitrary::<f64>()?;
+                if val.is_finite() {
+                    return Ok(Value::from(val));
+                }
+            },
+            ValueKind::Boolean => Value::Boolean(self.arbitrary()?),
+            ValueKind::String => Value::String(self.arbitrary_node_str()?),
+            ValueKind::Object => Value::Object(self.arbitrary_vec(0, 20, |u| {
+                Ok((u.unique_name(), Node::new(u.arbitrary_value_untyped()?)))
+            })?),
+            ValueKind::List => Value::List(
+                self.arbitrary_vec(0, 20, |u| Ok(Node::new(u.arbitrary_value_untyped()?)))?,
+            ),
+        })
+    }
+
     pub(crate) fn arbitrary_value(&mut self, schema: &Schema, ty: &Type) -> Result<Value> {
         match ty {
             Type::Named(ty) => {
@@ -412,8 +449,10 @@ impl Unstructured<'_> {
                         }
                     } else if ty.name == "Boolean" {
                         Ok(Value::Boolean(self.arbitrary()?))
-                    } else {
+                    } else if ty.name == "String" {
                         Ok(Value::String(self.arbitrary_node_str()?))
+                    } else {
+                        self.arbitrary_value_untyped()
                     }
                 }
                 ExtendedType::Object(ty) => {
@@ -485,7 +524,7 @@ impl Unstructured<'_> {
                 .into_iter()
                 .with_location(directive_location)
                 .try_collect(self, schema)?,
-            selection_set: self.arbitrary_vec(1, 5, |u| {
+            selection_set: self.arbitrary_vec(1, 20, |u| {
                 Ok(u.arbitrary_selection(schema, object.deref(), executable_document)?)
             })?,
         })
