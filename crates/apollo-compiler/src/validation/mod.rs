@@ -1,6 +1,7 @@
 //! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
 //! and other kinds of errors.
 
+use crate::coordinate::SchemaCoordinate;
 #[cfg(doc)]
 use crate::{ExecutableDocument, Schema};
 
@@ -285,6 +286,268 @@ impl DiagnosticData {
                 ExecutableBuildError::ConflictingFieldName { .. } => "ConflictingFieldName",
                 ExecutableBuildError::ConflictingFieldArgument { .. } => "ConflictingFieldArgument",
             }),
+            _ => None,
+        }
+    }
+
+    /// Returns an error message for this diagnostic, mimicking the graphql-js format.
+    ///
+    /// This is meant as a migration path for the Apollo Router, and use by other consumers
+    /// is not supported.
+    #[doc(hidden)]
+    pub fn unstable_compat_message(&self) -> Option<String> {
+        match &self.details {
+            Details::CompilerDiagnostic(diagnostic) => {
+                use diagnostics::DiagnosticData::*;
+                match diagnostic {
+                    RecursionError { .. } => None,
+                    UniqueVariable { name, .. } => Some(format!(
+                        r#"There can be only one variable named "${name}"."#
+                    )),
+                    UniqueArgument { name, .. } => {
+                        Some(format!(r#"There can be only one argument named "{name}"."#))
+                    }
+                    UniqueInputValue { .. } => None,
+                    UndefinedArgument {
+                        name, coordinate, ..
+                    } => Some(format!(
+                        r#"Unknown argument "{name}" on field "{coordinate}"."#
+                    )),
+                    UndefinedDefinition { name } => Some(format!(r#"Unknown type "{name}"."#)),
+                    UndefinedDirective { name } => Some(format!(r#"Unknown directive "@{name}"."#)),
+                    UndefinedVariable { name } => {
+                        Some(format!(r#"Variable "${name}" is not defined."#))
+                    }
+                    UndefinedFragment { name } => Some(format!(r#"Unknown fragment "{name}"."#)),
+                    UndefinedEnumValue {
+                        value, definition, ..
+                    } => Some(format!(
+                        r#"Value "{value} does not exist in "{definition}" enum."#
+                    )),
+                    UndefinedInputValue {
+                        value, definition, ..
+                    } => Some(format!(
+                        r#"Field "{value}" is not defined by type "{definition}"."#
+                    )),
+                    MissingInterfaceField { .. } => None,
+                    RequiredArgument {
+                        name,
+                        coordinate,
+                        expected_type,
+                        ..
+                    } => match coordinate {
+                        SchemaCoordinate::FieldArgument(coordinate) => Some(format!(
+                            r#"Field "{}" argument "{name}" of type "{expected_type}" is required, but it was not provided."#,
+                            coordinate.field,
+                        )),
+                        SchemaCoordinate::DirectiveArgument(coordinate) => Some(format!(
+                            r#"Directive "@{}" argument "{name}" of type "{expected_type}" is required, but it was not provided."#,
+                            coordinate.directive,
+                        )),
+                        // It's always an argument coordinate so we don't need to handle other cases.
+                        _ => None,
+                    },
+                    RequiredField {
+                        coordinate,
+                        expected_type,
+                        ..
+                    } => Some(format!(
+                        r#"Field "{coordinate}" of required type "{expected_type}" was not provided."#
+                    )),
+                    TransitiveImplementedInterfaces { .. } => None,
+                    OutputType { .. } => None,
+                    InputType { .. } => None,
+                    VariableInputType { name, ty, .. } => Some(format!(
+                        r#"Variable "${name}" cannot be non-input type "{ty}"."#
+                    )),
+                    QueryRootOperationType { .. } => None,
+                    UnusedVariable { name } => {
+                        Some(format!(r#"Variable "${name}" is never used."#))
+                    }
+                    RootOperationObjectType { .. } => None,
+                    UnionMemberObjectType { .. } => None,
+                    UnsupportedLocation { name, location, .. } => Some(format!(
+                        r#"Directive "@{name}" may not be used on {location}."#
+                    )),
+                    UnsupportedValueType { ty, value, .. } => Some(format!(
+                        r#"{} cannot represent value: {value}"#,
+                        ty.inner_named_type()
+                    )),
+                    IntCoercionError { value } => {
+                        let is_integer = value
+                            .chars()
+                            // The possible characters in "-1e+100"
+                            .all(|c| matches!(c, '-' | '+' | 'e' | '0'..='9'));
+                        if is_integer {
+                            Some(format!(
+                                r#"Int cannot represent non 32-bit signed integer value: {value}"#
+                            ))
+                        } else {
+                            Some(format!(
+                                r#"Int cannot represent non-integer value: {value}"#
+                            ))
+                        }
+                    }
+                    FloatCoercionError { value } => Some(format!(
+                        r#"Float cannot represent non numeric value: {value}"#
+                    )),
+                    UniqueDirective { name, .. } => Some(format!(
+                        r#"The directive "@{name}" can only be used once at this location."#
+                    )),
+                    MissingSubselection { coordinate, .. } => Some(format!(
+                        r#"Field "{field}" of type "{ty}" must have a selection of subfields. Did you mean "{field} {{ ... }}"?"#,
+                        ty = coordinate.ty,
+                        field = coordinate.attribute,
+                    )),
+                    InvalidFragmentTarget { name, ty } => {
+                        if let Some(name) = name {
+                            Some(format!(
+                                r#"Fragment "{name}" cannot condition on non composite type "{ty}"."#
+                            ))
+                        } else {
+                            Some(format!(
+                                r#"Fragment cannot condition on non composite type "{ty}"."#
+                            ))
+                        }
+                    }
+                    InvalidFragmentSpread {
+                        name,
+                        type_name,
+                        type_condition,
+                        ..
+                    } => {
+                        if let Some(name) = name {
+                            Some(format!(
+                                r#"Fragment "{name}" cannot be spread here as objects of type "{type_name}" can never be of type "{type_condition}"."#
+                            ))
+                        } else {
+                            Some(format!(
+                                r#"Fragment cannot be spread here as objects of type "{type_name}" can never be of type "{type_condition}"."#
+                            ))
+                        }
+                    }
+                    UnusedFragment { name } => Some(format!(r#"Fragment "{name}" is never used."#)),
+                    DisallowedVariableUsage {
+                        variable,
+                        variable_type,
+                        argument_type,
+                        ..
+                    } => Some(format!(
+                        r#"Variable "${variable}" of type "{variable_type}" used in position expecting type "{argument_type}"."#
+                    )),
+                    RecursiveDirectiveDefinition { .. } => None,
+                    RecursiveInterfaceDefinition { .. } => None,
+                    RecursiveInputObjectDefinition { .. } => None,
+                    RecursiveFragmentDefinition { name, trace, .. } => Some(format!(
+                        r#"Cannot spread fragment "{name}" within itself via {}"#,
+                        // Some inefficient allocation but :shrug:, not a big deal here
+                        trace
+                            .iter()
+                            .map(|spread| format!(r#""{}""#, spread.fragment_name))
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                    )),
+                    DeeplyNestedType { .. } => None,
+                    EmptyFieldSet { .. } => None,
+                    EmptyValueSet { .. } => None,
+                    EmptyMemberSet { .. } => None,
+                    EmptyInputValueSet { .. } => None,
+                }
+            }
+            Details::ExecutableBuildError(error) => match error {
+                ExecutableBuildError::UndefinedField {
+                    type_name,
+                    field_name,
+                    ..
+                } => Some(format!(
+                    r#"Cannot query field "{field_name}" on type "{type_name}"."#
+                )),
+                ExecutableBuildError::TypeSystemDefinition { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(r#"The "{name}" definition is not executable."#))
+                    } else {
+                        // Among type system definitions, only schema definitions do have a name
+                        Some("The schema definition is not executable.".to_string())
+                    }
+                }
+                ExecutableBuildError::AmbiguousAnonymousOperation => {
+                    Some("This anonymous operation must be the only defined operation.".to_string())
+                }
+                ExecutableBuildError::OperationNameCollision {
+                    name_at_previous_location,
+                } => Some(format!(
+                    r#"There can be only one operation named "{name_at_previous_location}"."#
+                )),
+                ExecutableBuildError::FragmentNameCollision {
+                    name_at_previous_location,
+                } => Some(format!(
+                    r#"There can be only one fragment named "{name_at_previous_location}"."#
+                )),
+                ExecutableBuildError::UndefinedRootOperation { operation_type } => Some(format!(
+                    // no period unlike other messages :zany_face:
+                    r#"The schema has no "{operation_type}" root type defined"#
+                )),
+                ExecutableBuildError::UndefinedTypeInNamedFragmentTypeCondition {
+                    type_name,
+                    ..
+                }
+                | ExecutableBuildError::UndefinedTypeInInlineFragmentTypeCondition {
+                    type_name,
+                    ..
+                } => Some(format!(r#"Unknown type "{type_name}"."#)),
+                ExecutableBuildError::SubselectionOnScalarType { type_name, path }
+                | ExecutableBuildError::SubselectionOnEnumType { type_name, path } => {
+                    if let Some(field) = path.nested_fields.last() {
+                        Some(format!(
+                            r#"Field "{field}" must not have a selection since type "{type_name}" has no subfields"#
+                        ))
+                    } else {
+                        None // Can this happen?
+                    }
+                }
+                ExecutableBuildError::SubscriptionUsesMultipleFields { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(
+                            r#"Subscription "{name}" must select only one top level field."#
+                        ))
+                    } else {
+                        Some(
+                            "Anonymous Subscription must select only one top level field."
+                                .to_string(),
+                        )
+                    }
+                }
+                ExecutableBuildError::SubscriptionUsesIntrospection { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(
+                            r#"Subscription "{name}" must not select an introspection top level field."#
+                        ))
+                    } else {
+                        Some("Anonymous Subscription must not select an introspection top level field."
+                            .to_string())
+                    }
+                }
+                ExecutableBuildError::ConflictingFieldType {
+                    alias,
+                    original_type,
+                    conflicting_type,
+                    ..
+                } => Some(format!(
+                    r#"Fields "{alias}" conflict because they return conflicting types "{original_type} and "{conflicting_type}". Use different aliases on the fields to fetch both if this was intentional."#
+                )),
+                ExecutableBuildError::ConflictingFieldName {
+                    alias,
+                    original_selection,
+                    conflicting_selection,
+                    ..
+                } => Some(format!(
+                    r#"Fields "{alias}" conflict because "{}" and "{}" are different fields. Use different aliases on the fields to fetch both if this was intentional."#,
+                    original_selection.attribute, conflicting_selection.attribute
+                )),
+                ExecutableBuildError::ConflictingFieldArgument { alias, .. } => Some(format!(
+                    r#"Fields "{alias}" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional."#
+                )),
+            },
             _ => None,
         }
     }
@@ -596,6 +859,23 @@ impl ToCliReport for DiagnosticData {
             },
             Details::RecursionLimitError => {}
         }
+    }
+}
+
+impl Diagnostic<'_, DiagnosticData> {
+    /// Get a [`serde`]-serializable version of the current diagnostic. This method mimicks the
+    /// shape and message of errors produced by graphql-js.
+    ///
+    /// This is only for use by the Apollo Router, any other consumer is not supported.
+    #[doc(hidden)]
+    pub fn unstable_to_json_compat(&self) -> GraphQLError {
+        GraphQLError::new(
+            self.error
+                .unstable_compat_message()
+                .unwrap_or_else(|| self.error.to_string()),
+            self.error.location(),
+            self.sources,
+        )
     }
 }
 

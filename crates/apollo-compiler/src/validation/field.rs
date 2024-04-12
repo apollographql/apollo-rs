@@ -93,6 +93,7 @@ pub(crate) fn validate_field(
                     field.location(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.clone(),
+                        expected_type: arg_definition.ty.clone(),
                         coordinate: FieldArgumentCoordinate {
                             ty: against_type.clone(),
                             field: field.name.clone(),

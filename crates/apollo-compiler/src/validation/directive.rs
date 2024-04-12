@@ -292,6 +292,7 @@ pub(crate) fn validate_directives<'dir>(
                         dir.location(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.clone(),
+                            expected_type: arg_def.ty.clone(),
                             coordinate: DirectiveArgumentCoordinate {
                                 directive: directive_definition.name.clone(),
                                 argument: arg_def.name.clone(),

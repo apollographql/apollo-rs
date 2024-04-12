@@ -36,8 +36,8 @@ pub(crate) fn validate_variable_definitions(
                         variable.location(),
                         DiagnosticData::VariableInputType {
                             name: variable.name.clone(),
+                            ty: ty.clone(),
                             describe_type: type_definition.describe(),
-                            type_location: ty.location(),
                         },
                     );
                 }

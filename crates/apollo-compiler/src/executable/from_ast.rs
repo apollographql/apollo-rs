@@ -111,6 +111,7 @@ pub(crate) fn document_from_ast(
                     errors.errors.push(
                         definition.location(),
                         BuildError::TypeSystemDefinition {
+                            name: definition.name().cloned(),
                             describe: definition.describe(),
                         },
                     )

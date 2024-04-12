@@ -113,7 +113,10 @@ pub struct InlineFragment {
 #[derive(thiserror::Error, Debug, Clone)]
 pub(crate) enum BuildError {
     #[error("an executable document must not contain {describe}")]
-    TypeSystemDefinition { describe: &'static str },
+    TypeSystemDefinition {
+        name: Option<Name>,
+        describe: &'static str,
+    },
 
     #[error("anonymous operation cannot be selected when the document contains other operations")]
     AmbiguousAnonymousOperation,

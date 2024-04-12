@@ -89,12 +89,14 @@ pub(crate) enum DiagnosticData {
     RequiredArgument {
         name: Name,
         coordinate: SchemaCoordinate,
+        expected_type: Node<Type>,
         definition_location: Option<NodeLocation>,
     },
     #[error("the required field `{coordinate}` is not provided")]
     RequiredField {
         name: Name,
         coordinate: TypeAttributeCoordinate,
+        expected_type: Node<Type>,
         definition_location: Option<NodeLocation>,
     },
     #[error(
@@ -130,9 +132,9 @@ pub(crate) enum DiagnosticData {
     VariableInputType {
         /// Variable name.
         name: Name,
+        ty: Node<Type>,
         /// The kind of type that the variable is declared with.
         describe_type: &'static str,
-        type_location: Option<NodeLocation>,
     },
     #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
@@ -163,12 +165,12 @@ pub(crate) enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         definition_location: Option<NodeLocation>,
     },
-    #[error("expected value of type {ty}, found {describe_value_type}")]
+    #[error("expected value of type {ty}, found {}", .value.describe())]
     UnsupportedValueType {
-        /// The kind of value provided.
-        describe_value_type: &'static str,
+        /// The actual value provided
+        value: Node<ast::Value>,
         /// Expected concrete type
-        ty: String,
+        ty: Node<Type>,
         definition_location: Option<NodeLocation>,
     },
     #[error("int cannot represent non 32-bit signed integer value")]
@@ -352,6 +354,7 @@ impl DiagnosticData {
             DiagnosticData::RequiredArgument {
                 name,
                 coordinate: _,
+                expected_type: _,
                 definition_location,
             } => {
                 report.with_label_opt(
@@ -363,6 +366,7 @@ impl DiagnosticData {
             DiagnosticData::RequiredField {
                 name,
                 coordinate: _,
+                expected_type: _,
                 definition_location,
             } => {
                 report.with_label_opt(
@@ -528,11 +532,11 @@ impl DiagnosticData {
             }
             DiagnosticData::VariableInputType {
                 name: _,
+                ty,
                 describe_type,
-                type_location,
             } => {
                 report.with_label_opt(
-                    type_location.or(main_location),
+                    ty.location().or(main_location),
                     format_args!("this is {describe_type}"),
                 );
                 report.with_help("objects, unions, and interfaces cannot be used because variables can only be of input type");
@@ -560,13 +564,13 @@ impl DiagnosticData {
                 ));
             }
             DiagnosticData::UnsupportedValueType {
-                describe_value_type,
+                value,
                 ty,
                 definition_location,
             } => {
                 report.with_label_opt(
                     main_location,
-                    format_args!("provided value is {describe_value_type}"),
+                    format_args!("provided value is {}", value.describe()),
                 );
                 report.with_label_opt(
                     *definition_location,

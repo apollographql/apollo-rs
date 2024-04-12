@@ -14,8 +14,8 @@ fn unsupported_type(
     diagnostics.push(
         value.location(),
         DiagnosticData::UnsupportedValueType {
-            describe_value_type: value.describe(),
-            ty: declared_type.to_string(),
+            ty: declared_type.clone(),
+            value: value.clone(),
             definition_location: declared_type.location(),
         },
     )
@@ -244,6 +244,7 @@ pub(crate) fn value_of_correct_type(
                                     ty: input_obj.name.clone(),
                                     attribute: input_name.clone(),
                                 },
+                                expected_type: ty.clone(),
                                 definition_location: f.location(),
                             },
                         );
