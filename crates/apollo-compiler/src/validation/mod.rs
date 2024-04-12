@@ -497,6 +497,7 @@ impl DiagnosticData {
                 } => Some(format!(r#"Unknown type "{type_name}"."#)),
                 ExecutableBuildError::SubselectionOnScalarType { type_name, path }
                 | ExecutableBuildError::SubselectionOnEnumType { type_name, path } => {
+                    #[allow(clippy::manual_map)]
                     if let Some(field) = path.nested_fields.last() {
                         Some(format!(
                             r#"Field "{field}" must not have a selection since type "{type_name}" has no subfields"#
