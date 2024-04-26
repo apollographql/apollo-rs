@@ -22,7 +22,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 - **Remove ariadne byte/char mapping - [goto-bus-stop] in [pull/855]**
-  Generating JSON or CLI reports for apollo-compiler diagnostic used a translation layer
+  Generating JSON or CLI reports for apollo-compiler diagnostics used a translation layer
   between byte offsets and character offsets, which cost some computation and memory
   proportional to the size of the source text. The latest version of [ariadne] allows us to
   remove this translation.
