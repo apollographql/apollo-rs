@@ -31,17 +31,10 @@ pub struct Parser {
 pub struct SourceFile {
     pub(crate) path: PathBuf,
     pub(crate) source_text: String,
-    pub(crate) source: OnceLock<MappedSource>,
+    pub(crate) source: OnceLock<ariadne::Source>,
 }
 
 pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
-
-/// Translate byte offsets to ariadne's char offsets.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct MappedSource {
-    ariadne: ariadne::Source,
-    map: Vec<u32>,
-}
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
@@ -350,30 +343,6 @@ impl Parser {
     }
 }
 
-impl MappedSource {
-    fn new(input: &str) -> Self {
-        // FIXME This string copy is not ideal, but changing to a reference counted string affects
-        // public API
-        let ariadne = ariadne::Source::from(input.to_string());
-
-        let mut map = vec![0; input.len() + 1];
-        let mut char_index = 0;
-        for (byte_index, _) in input.char_indices() {
-            map[byte_index] = char_index;
-            char_index += 1;
-        }
-
-        // Support 1 past the end of the string, for use in exclusive ranges.
-        map[input.len()] = char_index;
-
-        Self { ariadne, map }
-    }
-
-    pub(crate) fn map_index(&self, byte_index: usize) -> usize {
-        self.map[byte_index] as usize
-    }
-}
-
 impl SourceFile {
     /// The filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -386,17 +355,15 @@ impl SourceFile {
     }
 
     pub(crate) fn ariadne(&self) -> &ariadne::Source {
-        &self.mapped_source().ariadne
-    }
-
-    pub(crate) fn mapped_source(&self) -> &MappedSource {
-        self.source
-            .get_or_init(|| MappedSource::new(&self.source_text))
+        self.source.get_or_init(|| {
+            // FIXME This string copy is not ideal, but changing to a reference counted string affects
+            // public API
+            ariadne::Source::from(self.source_text.clone())
+        })
     }
 
     pub fn get_line_column(&self, index: usize) -> Option<(usize, usize)> {
-        let char_index = self.mapped_source().map_index(index);
-        let (_, line, column) = self.ariadne().get_offset_line(char_index)?;
+        let (_, line, column) = self.ariadne().get_byte_line(index)?;
         Some((line, column))
     }
 }

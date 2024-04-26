@@ -168,10 +168,9 @@ type MappedSpan = (FileId, Range<usize>);
 
 /// Translate a byte-offset location into a char-offset location for use with ariadne.
 fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
-    let source = sources.get(&location.file_id)?;
-    let mapped_source = source.mapped_source();
-    let start = mapped_source.map_index(location.offset());
-    let end = mapped_source.map_index(location.end_offset());
+    let _source = sources.get(&location.file_id)?;
+    let start = location.offset();
+    let end = location.end_offset();
     Some((location.file_id, start..end))
 }
 
@@ -212,7 +211,9 @@ impl<'s> CliReport<'s> {
             // only if stderr is a terminal.
             Color::StderrIsTerminal => true,
         };
-        let config = ariadne::Config::default().with_color(enable_color);
+        let config = ariadne::Config::default()
+            .with_index_type(ariadne::IndexType::Byte)
+            .with_color(enable_color);
         Self {
             sources,
             colors: ColorGenerator::new(),
