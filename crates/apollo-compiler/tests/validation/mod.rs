@@ -275,3 +275,54 @@ fn validate_variable_usage_without_type_system() {
     let doc = ast::Document::parse(input, "query.graphql").unwrap();
     doc.validate_standalone_executable().unwrap()
 }
+
+#[test]
+fn json_location_with_multibyte() {
+    let input_type_system = r#"
+type Query {
+    obj: TestObject
+}
+
+type TestObject {
+    name: String
+}
+"#;
+
+    let input_executable = r#"
+{
+    # กรุงเทพมหานคร อมรรัตนโกสินทร์ มหินทรายุธยา มหาดิลกภพ นพรัตนราชธานีบูรีรมย์ อุดมราชนิเวศน์มหาสถาน อมรพิมานอวตารสถิต สักกะทัตติยวิษณุกรรมประสิทธิ์
+    obj { ...q }
+    # City of angels, great city of immortals, magnificent city of the nine gems, seat of the king, city of royal palaces, home of gods incarnate, erected by Vishvakarman at Indra's behest.
+}
+"#;
+
+    let schema = Schema::parse_and_validate(input_type_system, "schema.graphql").unwrap();
+    let err = ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql")
+        .expect_err("should have a validation error");
+
+    let actual = err.to_string();
+    let expected = expect_test::expect![[r#"
+        Error: cannot find fragment `q` in this document
+           ╭─[query.graphql:4:11]
+           │
+         4 │     obj { ...q }
+           │           ──┬─  
+           │             ╰─── fragment `q` is not defined
+        ───╯
+    "#]];
+    expected.assert_eq(&actual);
+
+    let first_error = err.errors.iter().next().unwrap();
+    let actual = serde_json::to_string_pretty(&first_error.to_json()).unwrap();
+    let expected = expect_test::expect![[r#"
+        {
+          "message": "cannot find fragment `q` in this document",
+          "locations": [
+            {
+              "line": 4,
+              "column": 11
+            }
+          ]
+        }"#]];
+    expected.assert_eq(&actual);
+}

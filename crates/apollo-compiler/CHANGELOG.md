@@ -17,6 +17,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## Maintenance
+
+- **Remove ariadne byte/char mapping - [goto-bus-stop] in [pull/855]**
+  Generating JSON or CLI reports for apollo-compiler diagnostics used a translation layer
+  between byte offsets and character offsets, which cost some computation and memory
+  proportional to the size of the source text. The latest version of [ariadne] allows us to
+  remove this translation.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/855]: https://github.com/apollographql/apollo-rs/pull/855
+[ariadne]: https://github.com/zesterer/ariadne
+
 # [1.0.0-beta.16](https://crates.io/crates/apollo-compiler/1.0.0-beta.16) - 2024-04-12
 
 > This release has no user-facing changes.

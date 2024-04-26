@@ -110,7 +110,7 @@ where
 pub struct CliReport<'s> {
     sources: &'s SourceMap,
     colors: ColorGenerator,
-    report: ariadne::ReportBuilder<'static, MappedSpan>,
+    report: ariadne::ReportBuilder<'static, AriadneSpan>,
 }
 
 /// Indicate when to use ANSI colors for printing.
@@ -164,14 +164,14 @@ impl<T: ToCliReport> ToCliReport for &T {
     }
 }
 
-type MappedSpan = (FileId, Range<usize>);
+/// An ariadne span type. We avoid implementing `ariadne::Span` for `NodeLocation`
+/// so ariadne doesn't leak into the public API of apollo-compiler.
+type AriadneSpan = (FileId, Range<usize>);
 
-/// Translate a byte-offset location into a char-offset location for use with ariadne.
-fn map_span(sources: &SourceMap, location: NodeLocation) -> Option<MappedSpan> {
-    let source = sources.get(&location.file_id)?;
-    let mapped_source = source.mapped_source();
-    let start = mapped_source.map_index(location.offset());
-    let end = mapped_source.map_index(location.end_offset());
+/// Translate a NodeLocation into an ariadne span type.
+fn to_span(location: NodeLocation) -> Option<AriadneSpan> {
+    let start = location.offset();
+    let end = location.end_offset();
     Some((location.file_id, start..end))
 }
 
@@ -203,7 +203,7 @@ impl<'s> CliReport<'s> {
         color: Color,
     ) -> Self {
         let (file_id, range) = main_location
-            .and_then(|location| map_span(sources, location))
+            .and_then(to_span)
             .unwrap_or((FileId::NONE, 0..0));
         let report = ariadne::Report::build(ReportKind::Error, file_id, range.start);
         let enable_color = match color {
@@ -212,7 +212,9 @@ impl<'s> CliReport<'s> {
             // only if stderr is a terminal.
             Color::StderrIsTerminal => true,
         };
-        let config = ariadne::Config::default().with_color(enable_color);
+        let config = ariadne::Config::default()
+            .with_index_type(ariadne::IndexType::Byte)
+            .with_color(enable_color);
         Self {
             sources,
             colors: ColorGenerator::new(),
@@ -238,9 +240,9 @@ impl<'s> CliReport<'s> {
 
     /// Add a label at a given location. If the location is `None`, the message is discarded.
     pub fn with_label_opt(&mut self, location: Option<NodeLocation>, message: impl ToString) {
-        if let Some(mapped_span) = location.and_then(|location| map_span(self.sources, location)) {
+        if let Some(span) = location.and_then(to_span) {
             self.report.add_label(
-                ariadne::Label::new(mapped_span)
+                ariadne::Label::new(span)
                     .with_message(message)
                     .with_color(self.colors.next()),
             );
