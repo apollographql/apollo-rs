@@ -48,7 +48,7 @@ fn merge_options_or<T: Eq + Clone>(
 ) -> Result<(), MergeError> {
     match (&mut *merged, new) {
         (_, None) => {}
-        (None, Some(_)) => *merged = new.clone(),
+        (None, Some(_)) => merged.clone_from(new),
         (Some(a), Some(b)) => {
             if a != b {
                 merge_values(a, b)?
