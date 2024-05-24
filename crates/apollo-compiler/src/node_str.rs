@@ -157,9 +157,14 @@ impl NodeStr {
         self.with_heap(|maybe_heap| maybe_heap?.header.header)
     }
 
-    /// If this string contains a location, convert it to line and column numbers
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(sources, self.location())
+    /// If this string contains a location, convert it to starting line and column numbers
+    pub fn line_column_start(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node_start(sources, self.location())
+    }
+
+    /// If this string contains a location, convert it to ending line and column numbers
+    pub fn line_column_end(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node_end(sources, self.location())
     }
 
     #[inline]

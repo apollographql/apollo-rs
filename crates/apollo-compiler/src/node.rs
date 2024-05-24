@@ -89,9 +89,16 @@ impl<T> Node<T> {
         self.location().map(|l| l.file_id()) == Some(FileId::BUILT_IN)
     }
 
-    /// If this node contains a location, convert it to line and column numbers
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(sources, self.location())
+    /// If this node contains a location, convert it to the line and column numbers of the
+    /// start of the node.
+    pub fn line_column_start(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node_start(sources, self.location())
+    }
+
+    /// If this node contains a location, convert it to the line and column numbers of the
+    /// end of the node.
+    pub fn line_column_end(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        GraphQLLocation::from_node_end(sources, self.location())
     }
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).

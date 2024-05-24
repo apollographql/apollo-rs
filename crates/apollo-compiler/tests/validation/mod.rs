@@ -70,7 +70,7 @@ query {
 
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column(),
+            diag.get_line_column_start(),
             Some(GraphQLLocation { line: 2, column: 1 })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
@@ -151,7 +151,7 @@ fragment q on TestObject {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column(),
+            diag.get_line_column_start(),
             Some(GraphQLLocation { line: 8, column: 1 })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
@@ -190,7 +190,7 @@ fn validation_without_type_system() {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column(),
+            diag.get_line_column_start(),
             Some(GraphQLLocation {
                 line: 2,
                 column: 13
@@ -226,7 +226,7 @@ fn validation_without_type_system() {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column(),
+            diag.get_line_column_start(),
             Some(GraphQLLocation {
                 line: 3,
                 column: 22
@@ -254,7 +254,7 @@ fn validation_without_type_system() {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column(),
+            diag.get_line_column_start(),
             Some(GraphQLLocation { line: 1, column: 3 })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());

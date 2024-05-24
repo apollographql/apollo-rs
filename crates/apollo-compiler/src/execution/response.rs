@@ -141,7 +141,7 @@ impl GraphQLError {
     ) -> Self {
         Self {
             message: message.into(),
-            locations: GraphQLLocation::from_node(sources, location)
+            locations: GraphQLLocation::from_node_start(sources, location)
                 .into_iter()
                 .collect(),
             path: Default::default(),
@@ -151,12 +151,24 @@ impl GraphQLError {
 }
 
 impl GraphQLLocation {
-    /// Convert a `NodeLocation` to a line and column number
-    pub fn from_node(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
+    /// Convert a `NodeLocation` to a starting line and column number
+    pub fn from_node_start(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
         let loc = location?;
         let source = sources.get(&loc.file_id)?;
         source
             .get_line_column(loc.offset())
+            .map(|(line, column)| GraphQLLocation {
+                line: line + 1,
+                column: column + 1,
+            })
+    }
+
+    /// Convert a `NodeLocation` to an ending line and column number
+    pub fn from_node_end(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
+        let loc = location?;
+        let source = sources.get(&loc.file_id)?;
+        source
+            .get_line_column(loc.end_offset())
             .map(|(line, column)| GraphQLLocation {
                 line: line + 1,
                 column: column + 1,
