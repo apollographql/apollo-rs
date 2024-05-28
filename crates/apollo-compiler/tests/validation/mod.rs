@@ -6,10 +6,10 @@ mod recursion;
 mod types;
 mod variable;
 
-use apollo_compiler::ast;
-use apollo_compiler::execution::GraphQLLocation;
 use apollo_compiler::ExecutableDocument;
+use apollo_compiler::LineColumnRange;
 use apollo_compiler::Schema;
+use apollo_compiler::{ast, LineColumn};
 
 #[test]
 fn executable_and_type_system_definitions() {
@@ -70,8 +70,11 @@ query {
 
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column_start(),
-            Some(GraphQLLocation { line: 2, column: 1 })
+            diag.line_column_range(),
+            Some(LineColumnRange {
+                start: LineColumn { line: 2, column: 1 },
+                end: LineColumn { line: 4, column: 2 }
+            })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
@@ -151,8 +154,14 @@ fragment q on TestObject {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column_start(),
-            Some(GraphQLLocation { line: 8, column: 1 })
+            diag.line_column_range(),
+            Some(LineColumnRange {
+                start: LineColumn { line: 8, column: 1 },
+                end: LineColumn {
+                    line: 10,
+                    column: 2
+                }
+            })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });
@@ -190,10 +199,16 @@ fn validation_without_type_system() {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column_start(),
-            Some(GraphQLLocation {
-                line: 2,
-                column: 13
+            diag.line_column_range(),
+            Some(LineColumnRange {
+                start: LineColumn {
+                    line: 2,
+                    column: 13
+                },
+                end: LineColumn {
+                    line: 2,
+                    column: 37
+                }
             })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
@@ -226,10 +241,16 @@ fn validation_without_type_system() {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column_start(),
-            Some(GraphQLLocation {
-                line: 3,
-                column: 22
+            diag.line_column_range(),
+            Some(LineColumnRange {
+                start: LineColumn {
+                    line: 3,
+                    column: 22
+                },
+                end: LineColumn {
+                    line: 3,
+                    column: 23
+                }
             })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
@@ -254,8 +275,11 @@ fn validation_without_type_system() {
     );
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
-            diag.get_line_column_start(),
-            Some(GraphQLLocation { line: 1, column: 3 })
+            diag.line_column_range(),
+            Some(LineColumnRange {
+                start: LineColumn { line: 1, column: 3 },
+                end: LineColumn { line: 1, column: 7 }
+            })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
     });

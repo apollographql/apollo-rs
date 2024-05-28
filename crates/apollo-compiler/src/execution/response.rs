@@ -1,6 +1,7 @@
 use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
 use crate::node::NodeLocation;
+use crate::parser::LineColumn;
 use crate::SourceMap;
 use serde::Deserialize;
 use serde::Serialize;
@@ -141,8 +142,10 @@ impl GraphQLError {
     ) -> Self {
         Self {
             message: message.into(),
-            locations: GraphQLLocation::from_node_start(sources, location)
+            locations: location
                 .into_iter()
+                .filter_map(|location| location.line_column(sources))
+                .map(GraphQLLocation::from)
                 .collect(),
             path: Default::default(),
             extensions: Default::default(),
@@ -150,29 +153,12 @@ impl GraphQLError {
     }
 }
 
-impl GraphQLLocation {
-    /// Convert a `NodeLocation` to a starting line and column number
-    pub fn from_node_start(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
-        let loc = location?;
-        let source = sources.get(&loc.file_id)?;
-        source
-            .get_line_column(loc.offset())
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
-    }
-
-    /// Convert a `NodeLocation` to an ending line and column number
-    pub fn from_node_end(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
-        let loc = location?;
-        let source = sources.get(&loc.file_id)?;
-        source
-            .get_line_column(loc.end_offset())
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
+impl From<LineColumn> for GraphQLLocation {
+    fn from(value: LineColumn) -> Self {
+        Self {
+            line: value.line,
+            column: value.column,
+        }
     }
 }
 

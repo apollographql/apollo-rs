@@ -68,7 +68,7 @@
 //! }
 //! ```
 use crate::execution::GraphQLError;
-use crate::execution::GraphQLLocation;
+use crate::node::LineColumnRange;
 use crate::validation::FileId;
 use crate::NodeLocation;
 use crate::SourceFile;
@@ -323,14 +323,9 @@ impl ariadne::Cache<FileId> for Cache<'_> {
 impl<T: ToCliReport> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToCliReport> Diagnostic<'_, T> {
-    /// Get the line and column number where this diagnostic starts.
-    pub fn get_line_column_start(&self) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node_start(self.sources, self.error.location())
-    }
-
-    /// Get the line and column number where this diagnostic ends.
-    pub fn get_line_column_end(&self) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node_end(self.sources, self.error.location())
+    /// Get the line and column numbers where this diagnostic spans.
+    pub fn line_column_range(&self) -> Option<LineColumnRange> {
+        self.error.location()?.line_column_range(self.sources)
     }
 
     /// Get a [`serde`]-serializable version of the current diagnostic. The shape is compatible

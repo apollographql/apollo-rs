@@ -14,7 +14,7 @@ pub mod schema;
 pub mod validation;
 
 pub use self::executable::ExecutableDocument;
-pub use self::node::{FileId, Node, NodeLocation};
+pub use self::node::{FileId, LineColumnRange, Node, NodeLocation};
 pub use self::node_str::NodeStr;
-pub use self::parser::{parse_mixed_validate, Parser, SourceFile, SourceMap};
+pub use self::parser::{parse_mixed_validate, LineColumn, Parser, SourceFile, SourceMap};
 pub use self::schema::Schema;

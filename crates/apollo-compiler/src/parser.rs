@@ -362,10 +362,24 @@ impl SourceFile {
         })
     }
 
-    pub fn get_line_column(&self, index: usize) -> Option<(usize, usize)> {
+    pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
         let (_, line, column) = self.ariadne().get_byte_line(index)?;
-        Some((line, column))
+        Some(LineColumn {
+            line: line + 1,
+            column: column + 1,
+        })
     }
+}
+
+/// A specific location within the source of a file, like an offset.
+///
+/// See also [`crate::node::LineColumnRange`].
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub struct LineColumn {
+    /// The line number, starting at 1 for the first line (not 0).
+    pub line: usize,
+    /// The column number, starting at 1 for the first character (not 0).
+    pub column: usize,
 }
 
 impl std::fmt::Debug for SourceFile {

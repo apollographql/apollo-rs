@@ -1,6 +1,6 @@
 #![allow(unstable_name_collisions)] // for `sptr::Strict`
 
-use crate::execution::GraphQLLocation;
+use crate::node::LineColumnRange;
 use crate::NodeLocation;
 use crate::SourceMap;
 use sptr::Strict;
@@ -158,13 +158,8 @@ impl NodeStr {
     }
 
     /// If this string contains a location, convert it to starting line and column numbers
-    pub fn line_column_start(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node_start(sources, self.location())
-    }
-
-    /// If this string contains a location, convert it to ending line and column numbers
-    pub fn line_column_end(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node_end(sources, self.location())
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<LineColumnRange> {
+        self.location()?.line_column_range(sources)
     }
 
     #[inline]

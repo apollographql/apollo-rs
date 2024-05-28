@@ -1,4 +1,4 @@
-use crate::execution::GraphQLLocation;
+use crate::parser::LineColumn;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use crate::SourceMap;
@@ -49,6 +49,13 @@ pub struct NodeLocation {
     pub(crate) text_range: TextRange,
 }
 
+/// A [`TextRange`] converted to line/column format.
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub struct LineColumnRange {
+    pub start: LineColumn,
+    pub end: LineColumn,
+}
+
 /// Integer identifier for a parsed source file.
 ///
 /// Used internally to support validating for example a schema built from multiple source files,
@@ -91,14 +98,8 @@ impl<T> Node<T> {
 
     /// If this node contains a location, convert it to the line and column numbers of the
     /// start of the node.
-    pub fn line_column_start(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node_start(sources, self.location())
-    }
-
-    /// If this node contains a location, convert it to the line and column numbers of the
-    /// end of the node.
-    pub fn line_column_end(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node_end(sources, self.location())
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<LineColumnRange> {
+        self.location()?.line_column_range(sources)
     }
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
@@ -296,6 +297,21 @@ impl NodeLocation {
                 })
             }
         }
+    }
+
+    /// The line and column numbers of [`Self::offset`]
+    pub fn line_column(&self, sources: &SourceMap) -> Option<LineColumn> {
+        let source = sources.get(&self.file_id)?;
+        source.get_line_column(self.offset())
+    }
+
+    /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
+    /// inclusive.
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<LineColumnRange> {
+        let source = sources.get(&self.file_id)?;
+        let start = source.get_line_column(self.offset())?;
+        let end = source.get_line_column(self.end_offset())?;
+        Some(LineColumnRange { start, end })
     }
 }
 
