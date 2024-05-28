@@ -68,13 +68,12 @@
 //! }
 //! ```
 use crate::execution::GraphQLError;
-use crate::node::LineColumnRange;
 use crate::validation::FileId;
-use crate::NodeLocation;
 use crate::SourceFile;
 use crate::SourceMap;
 #[cfg(doc)]
 use crate::{ExecutableDocument, Schema};
+use crate::{LineColumn, NodeLocation};
 use ariadne::ColorGenerator;
 use ariadne::ReportKind;
 use std::cell::Cell;
@@ -324,7 +323,7 @@ impl<T: ToCliReport> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToCliReport> Diagnostic<'_, T> {
     /// Get the line and column numbers where this diagnostic spans.
-    pub fn line_column_range(&self) -> Option<LineColumnRange> {
+    pub fn line_column_range(&self) -> Option<Range<LineColumn>> {
         self.error.location()?.line_column_range(self.sources)
     }
 

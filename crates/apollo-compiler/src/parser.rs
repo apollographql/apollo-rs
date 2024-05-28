@@ -364,10 +364,7 @@ impl SourceFile {
 
     pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
         let (_, line, column) = self.ariadne().get_byte_line(index)?;
-        Some(LineColumn {
-            line: line + 1,
-            column: column + 1,
-        })
+        Some(LineColumn { line, column })
     }
 }
 
@@ -376,9 +373,9 @@ impl SourceFile {
 /// See also [`crate::node::LineColumnRange`].
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct LineColumn {
-    /// The line number, starting at 1 for the first line (not 0).
+    /// The line number, starting at 0 for the first line (not 1 like [`GraphQLError`]).
     pub line: usize,
-    /// The column number, starting at 1 for the first character (not 0).
+    /// The column number, starting at 0 for the first character of the line.
     pub column: usize,
 }
 

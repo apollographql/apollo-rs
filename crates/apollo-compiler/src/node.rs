@@ -10,6 +10,7 @@ use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::num::NonZeroI64;
+use std::ops::Range;
 use std::sync::atomic;
 use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering;
@@ -47,13 +48,6 @@ const HASH_NOT_COMPUTED_YET: u64 = 0;
 pub struct NodeLocation {
     pub(crate) file_id: FileId,
     pub(crate) text_range: TextRange,
-}
-
-/// A [`TextRange`] converted to line/column format.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct LineColumnRange {
-    pub start: LineColumn,
-    pub end: LineColumn,
 }
 
 /// Integer identifier for a parsed source file.
@@ -98,7 +92,7 @@ impl<T> Node<T> {
 
     /// If this node contains a location, convert it to the line and column numbers of the
     /// start of the node.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<LineColumnRange> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
 
@@ -272,6 +266,8 @@ impl NodeLocation {
     }
 
     /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
+    ///
+    /// The range is exclusive, so this offset is one past the end of the range.
     pub fn end_offset(&self) -> usize {
         self.text_range.end().into()
     }
@@ -307,11 +303,11 @@ impl NodeLocation {
 
     /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
     /// inclusive.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<LineColumnRange> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         let source = sources.get(&self.file_id)?;
         let start = source.get_line_column(self.offset())?;
         let end = source.get_line_column(self.end_offset())?;
-        Some(LineColumnRange { start, end })
+        Some(Range { start, end })
     }
 }
 

@@ -156,8 +156,8 @@ impl GraphQLError {
 impl From<LineColumn> for GraphQLLocation {
     fn from(value: LineColumn) -> Self {
         Self {
-            line: value.line,
-            column: value.column,
+            line: value.line + 1,
+            column: value.column + 1,
         }
     }
 }

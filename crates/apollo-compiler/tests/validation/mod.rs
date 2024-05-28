@@ -7,9 +7,9 @@ mod types;
 mod variable;
 
 use apollo_compiler::ExecutableDocument;
-use apollo_compiler::LineColumnRange;
 use apollo_compiler::Schema;
 use apollo_compiler::{ast, LineColumn};
+use std::ops::Range;
 
 #[test]
 fn executable_and_type_system_definitions() {
@@ -71,9 +71,9 @@ query {
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
             diag.line_column_range(),
-            Some(LineColumnRange {
-                start: LineColumn { line: 2, column: 1 },
-                end: LineColumn { line: 4, column: 2 }
+            Some(Range {
+                start: LineColumn { line: 1, column: 0 },
+                end: LineColumn { line: 3, column: 1 }
             })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
@@ -155,12 +155,9 @@ fragment q on TestObject {
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
             diag.line_column_range(),
-            Some(LineColumnRange {
-                start: LineColumn { line: 8, column: 1 },
-                end: LineColumn {
-                    line: 10,
-                    column: 2
-                }
+            Some(Range {
+                start: LineColumn { line: 7, column: 0 },
+                end: LineColumn { line: 9, column: 1 }
             })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());
@@ -200,14 +197,14 @@ fn validation_without_type_system() {
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
             diag.line_column_range(),
-            Some(LineColumnRange {
+            Some(Range {
                 start: LineColumn {
-                    line: 2,
-                    column: 13
+                    line: 1,
+                    column: 12,
                 },
                 end: LineColumn {
-                    line: 2,
-                    column: 37
+                    line: 1,
+                    column: 36,
                 }
             })
         );
@@ -242,14 +239,14 @@ fn validation_without_type_system() {
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
             diag.line_column_range(),
-            Some(LineColumnRange {
+            Some(Range {
                 start: LineColumn {
-                    line: 3,
-                    column: 22
+                    line: 2,
+                    column: 21,
                 },
                 end: LineColumn {
-                    line: 3,
-                    column: 23
+                    line: 2,
+                    column: 22,
                 }
             })
         );
@@ -276,9 +273,9 @@ fn validation_without_type_system() {
     diagnostics.iter().for_each(|diag| {
         assert_eq!(
             diag.line_column_range(),
-            Some(LineColumnRange {
-                start: LineColumn { line: 1, column: 3 },
-                end: LineColumn { line: 1, column: 7 }
+            Some(Range {
+                start: LineColumn { line: 0, column: 2 },
+                end: LineColumn { line: 0, column: 6 },
             })
         );
         json.assert_eq(&serde_json::to_string_pretty(&diag.to_json()).unwrap());

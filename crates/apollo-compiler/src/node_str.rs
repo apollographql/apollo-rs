@@ -1,12 +1,12 @@
 #![allow(unstable_name_collisions)] // for `sptr::Strict`
 
-use crate::node::LineColumnRange;
-use crate::NodeLocation;
 use crate::SourceMap;
+use crate::{LineColumn, NodeLocation};
 use sptr::Strict;
 use std::marker::PhantomData;
 use std::mem::size_of;
 use std::mem::ManuallyDrop;
+use std::ops::Range;
 use std::ptr::NonNull;
 use triomphe::ThinArc;
 
@@ -158,7 +158,7 @@ impl NodeStr {
     }
 
     /// If this string contains a location, convert it to starting line and column numbers
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<LineColumnRange> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
 
