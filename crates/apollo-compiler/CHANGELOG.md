@@ -17,7 +17,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.17](https://crates.io/crates/apollo-compiler/1.0.0-beta.17) - 2024-06-05
+
+## Fixes
+
+- **Fix validation performance bug - [goto-bus-stop] in [issue/862], [pull/863]**
+  Adds a cache in fragment spread validation, fixing a situation where validating a query
+  with many fragment spreads against a schema with many interfaces could take multiple
+  seconds to validate.
 
 ## Maintenance
 
@@ -28,7 +35,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   remove this translation.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/862]: https://github.com/apollographql/apollo-rs/issues/862
 [pull/855]: https://github.com/apollographql/apollo-rs/pull/855
+[pull/863]: https://github.com/apollographql/apollo-rs/pull/863
 [ariadne]: https://github.com/zesterer/ariadne
 
 # [1.0.0-beta.16](https://crates.io/crates/apollo-compiler/1.0.0-beta.16) - 2024-04-12
