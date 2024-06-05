@@ -3,8 +3,8 @@ use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable::BuildError;
 use crate::executable::SelectionSet;
-use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
+use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
 use crate::{ast, executable, schema, Node};
 use apollo_parser::LimitTracker;
@@ -545,24 +545,20 @@ pub(crate) fn validate_selection_set(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
-    context: OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     for selection in &selection_set.selections {
         match selection {
-            executable::Selection::Field(field) => super::field::validate_field(
-                diagnostics,
-                document,
-                against_type,
-                field,
-                context.clone(),
-            ),
+            executable::Selection::Field(field) => {
+                super::field::validate_field(diagnostics, document, against_type, field, context)
+            }
             executable::Selection::FragmentSpread(fragment) => {
                 super::fragment::validate_fragment_spread(
                     diagnostics,
                     document,
                     against_type,
                     fragment,
-                    context.clone(),
+                    context,
                 )
             }
             executable::Selection::InlineFragment(inline) => {
@@ -571,7 +567,7 @@ pub(crate) fn validate_selection_set(
                     document,
                     against_type,
                     inline,
-                    context.clone(),
+                    context,
                 )
             }
         }

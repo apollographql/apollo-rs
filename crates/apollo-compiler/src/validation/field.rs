@@ -2,10 +2,10 @@ use crate::coordinate::{FieldArgumentCoordinate, TypeAttributeCoordinate};
 use crate::validation::diagnostics::DiagnosticData;
 use crate::{ast, executable, schema, ExecutableDocument, Node};
 
-use super::operation::OperationValidationConfig;
 use crate::ast::Name;
 use crate::schema::Component;
 use crate::validation::DiagnosticList;
+use crate::validation::OperationValidationContext;
 use indexmap::IndexMap;
 
 pub(crate) fn validate_field(
@@ -14,13 +14,13 @@ pub(crate) fn validate_field(
     // May be None if a parent selection was invalid
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     field: &Node<executable::Field>,
-    context: OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     // First do all the validation that we can without knowing the type of the field.
 
     super::directive::validate_directives(
         diagnostics,
-        context.schema,
+        context.schema(),
         field.directives.iter(),
         ast::DirectiveLocation::Field,
         context.variables,

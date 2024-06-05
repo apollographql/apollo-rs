@@ -1,13 +1,8 @@
+use crate::executable;
 use crate::validation::DiagnosticList;
-use crate::{ast, executable, ExecutableDocument, Node, Schema};
-
-#[derive(Debug, Clone)]
-pub(crate) struct OperationValidationConfig<'a> {
-    /// When None, rules that require a schema to validate are disabled.
-    pub schema: Option<&'a crate::Schema>,
-    /// The variables defined for this operation.
-    pub variables: &'a [Node<ast::VariableDefinition>],
-}
+use crate::validation::ExecutableValidationContext;
+use crate::ExecutableDocument;
+use crate::Node;
 
 pub(crate) fn validate_subscription(
     document: &executable::ExecutableDocument,
@@ -56,16 +51,11 @@ pub(crate) fn validate_subscription(
 
 pub(crate) fn validate_operation(
     diagnostics: &mut DiagnosticList,
-    schema: Option<&Schema>,
     document: &ExecutableDocument,
     operation: &executable::Operation,
+    context: &ExecutableValidationContext<'_>,
 ) {
-    let config = OperationValidationConfig {
-        schema,
-        variables: &operation.variables,
-    };
-
-    let against_type = if let Some(schema) = schema {
+    let against_type = if let Some(schema) = context.schema() {
         schema
             .root_operation(operation.operation_type)
             .map(|ty| (schema, ty))
@@ -75,14 +65,14 @@ pub(crate) fn validate_operation(
 
     super::directive::validate_directives(
         diagnostics,
-        schema,
+        context.schema(),
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
     );
     super::variable::validate_variable_definitions(
         diagnostics,
-        config.schema,
+        context.schema(),
         &operation.variables,
     );
 
@@ -92,16 +82,16 @@ pub(crate) fn validate_operation(
         document,
         against_type,
         &operation.selection_set,
-        config,
+        context.operation_context(&operation.variables),
     );
 }
 
 pub(crate) fn validate_operation_definitions(
     diagnostics: &mut DiagnosticList,
-    schema: Option<&Schema>,
     document: &ExecutableDocument,
+    context: &ExecutableValidationContext<'_>,
 ) {
     for operation in document.all_operations() {
-        validate_operation(diagnostics, schema, document, operation);
+        validate_operation(diagnostics, document, operation, context);
     }
 }

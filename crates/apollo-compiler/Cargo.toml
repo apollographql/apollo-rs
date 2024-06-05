@@ -53,6 +53,11 @@ name = "fields-validation"
 path = "benches/fields_validation.rs"
 harness = false
 
+[[bench]]
+name = "fragments-validation"
+path = "benches/fragments_validation.rs"
+harness = false
+
 [[test]]
 name = "main"
 
