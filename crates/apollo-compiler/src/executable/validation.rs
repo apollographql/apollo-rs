@@ -57,9 +57,6 @@ pub(crate) fn validate_field_set(
         document,
         Some((schema, &field_set.selection_set.ty)),
         &field_set.selection_set,
-        crate::validation::operation::OperationValidationConfig {
-            schema: Some(schema),
-            variables: &[],
-        },
+        &crate::validation::operation::OperationValidationConfig::new(Some(schema), &[]),
     )
 }

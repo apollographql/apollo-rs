@@ -52,6 +52,7 @@ fn validate_fragment_spread_type(
     against_type: &NamedType,
     type_condition: &NamedType,
     selection: &executable::Selection,
+    context: &OperationValidationConfig<'_>,
 ) {
     // Another diagnostic will be raised if the type condition was wrong.
     // We reduce noise by silencing other issues with the fragment.
@@ -64,7 +65,7 @@ fn validate_fragment_spread_type(
         return;
     };
 
-    let implementers_map = schema.implementers_map();
+    let implementers_map = context.implementers_map();
     let concrete_parent_types = get_possible_types(against_type_definition, &implementers_map);
     let concrete_condition_types = get_possible_types(type_condition_definition, &implementers_map);
 
@@ -107,7 +108,7 @@ pub(crate) fn validate_inline_fragment(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     inline: &Node<executable::InlineFragment>,
-    context: OperationValidationConfig<'_>,
+    context: &OperationValidationConfig<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -138,6 +139,7 @@ pub(crate) fn validate_inline_fragment(
                 against_type,
                 type_condition,
                 &executable::Selection::InlineFragment(inline.clone()),
+                &context,
             );
         }
         super::selection::validate_selection_set(
@@ -159,7 +161,7 @@ pub(crate) fn validate_fragment_spread(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     spread: &Node<executable::FragmentSpread>,
-    context: OperationValidationConfig<'_>,
+    context: &OperationValidationConfig<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -179,6 +181,7 @@ pub(crate) fn validate_fragment_spread(
                     against_type,
                     def.type_condition(),
                     &executable::Selection::FragmentSpread(spread.clone()),
+                    context,
                 );
             }
             validate_fragment_definition(diagnostics, document, def, context);
@@ -198,7 +201,7 @@ pub(crate) fn validate_fragment_definition(
     diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     fragment: &Node<executable::Fragment>,
-    context: OperationValidationConfig<'_>,
+    context: &OperationValidationConfig<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,

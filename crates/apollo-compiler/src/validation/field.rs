@@ -14,7 +14,7 @@ pub(crate) fn validate_field(
     // May be None if a parent selection was invalid
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     field: &Node<executable::Field>,
-    context: OperationValidationConfig<'_>,
+    context: &OperationValidationConfig<'_>,
 ) {
     // First do all the validation that we can without knowing the type of the field.
 

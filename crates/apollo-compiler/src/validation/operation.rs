@@ -1,12 +1,41 @@
-use crate::validation::DiagnosticList;
-use crate::{ast, executable, ExecutableDocument, Node, Schema};
+use std::collections::HashMap;
+use std::sync::OnceLock;
 
-#[derive(Debug, Clone)]
+use crate::ast;
+use crate::ast::Name;
+use crate::executable;
+use crate::schema::Implementers;
+use crate::validation::DiagnosticList;
+use crate::ExecutableDocument;
+use crate::Node;
+use crate::Schema;
+
+#[derive(Debug)]
 pub(crate) struct OperationValidationConfig<'a> {
     /// When None, rules that require a schema to validate are disabled.
-    pub schema: Option<&'a crate::Schema>,
+    pub schema: Option<&'a Schema>,
     /// The variables defined for this operation.
     pub variables: &'a [Node<ast::VariableDefinition>],
+    implementers_map: OnceLock<HashMap<Name, Implementers>>,
+}
+
+impl<'a> OperationValidationConfig<'a> {
+    pub fn new(schema: Option<&'a Schema>, variables: &'a [Node<ast::VariableDefinition>]) -> Self {
+        Self {
+            schema,
+            variables,
+            implementers_map: Default::default(),
+        }
+    }
+
+    /// Returns a cached reference to the implementers map.
+    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+        self.implementers_map.get_or_init(|| {
+            self.schema
+                .map(|schema| schema.implementers_map())
+                .unwrap_or_default()
+        })
+    }
 }
 
 pub(crate) fn validate_subscription(
@@ -60,10 +89,7 @@ pub(crate) fn validate_operation(
     document: &ExecutableDocument,
     operation: &executable::Operation,
 ) {
-    let config = OperationValidationConfig {
-        schema,
-        variables: &operation.variables,
-    };
+    let config = OperationValidationConfig::new(schema, &operation.variables);
 
     let against_type = if let Some(schema) = schema {
         schema
@@ -92,7 +118,7 @@ pub(crate) fn validate_operation(
         document,
         against_type,
         &operation.selection_set,
-        config,
+        &config,
     );
 }
 

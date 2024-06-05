@@ -545,24 +545,20 @@ pub(crate) fn validate_selection_set(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
-    context: OperationValidationConfig<'_>,
+    context: &OperationValidationConfig<'_>,
 ) {
     for selection in &selection_set.selections {
         match selection {
-            executable::Selection::Field(field) => super::field::validate_field(
-                diagnostics,
-                document,
-                against_type,
-                field,
-                context.clone(),
-            ),
+            executable::Selection::Field(field) => {
+                super::field::validate_field(diagnostics, document, against_type, field, context)
+            }
             executable::Selection::FragmentSpread(fragment) => {
                 super::fragment::validate_fragment_spread(
                     diagnostics,
                     document,
                     against_type,
                     fragment,
-                    context.clone(),
+                    context,
                 )
             }
             executable::Selection::InlineFragment(inline) => {
@@ -571,7 +567,7 @@ pub(crate) fn validate_selection_set(
                     document,
                     against_type,
                     inline,
-                    context.clone(),
+                    context,
                 )
             }
         }
