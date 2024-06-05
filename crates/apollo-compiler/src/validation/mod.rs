@@ -3,7 +3,8 @@
 
 use crate::coordinate::SchemaCoordinate;
 #[cfg(doc)]
-use crate::{ExecutableDocument, Schema};
+use crate::ExecutableDocument;
+use crate::Schema;
 
 pub(crate) mod argument;
 pub(crate) mod diagnostics;
@@ -25,13 +26,16 @@ pub(crate) mod variable;
 use crate::ast::Name;
 use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
 use crate::executable::BuildError as ExecutableBuildError;
+use crate::executable::VariableDefinition;
 use crate::execution::{GraphQLError, Response};
 use crate::schema::BuildError as SchemaBuildError;
+use crate::schema::Implementers;
 use crate::SourceMap;
 use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
+use std::collections::HashMap;
 use std::fmt;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 pub(crate) use crate::node::FileId;
 
@@ -109,6 +113,70 @@ impl<T> AsRef<T> for Valid<T> {
 impl<T: fmt::Display> fmt::Display for Valid<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+/// Shared context with things that may be used throughout executable validation.
+#[derive(Debug)]
+pub(crate) struct ExecutableValidationContext<'a> {
+    /// When None, rules that require a schema to validate are disabled.
+    schema: Option<&'a Schema>,
+    /// `schema.implementers_map()` is expensive to compute. This caches it for reuse.
+    implementers_map: OnceLock<HashMap<Name, Implementers>>,
+}
+
+impl<'a> ExecutableValidationContext<'a> {
+    pub fn new(schema: Option<&'a Schema>) -> Self {
+        Self {
+            schema,
+            implementers_map: Default::default(),
+        }
+    }
+
+    /// Returns the schema to validate against, if any.
+    pub fn schema(&self) -> Option<&'a Schema> {
+        self.schema
+    }
+
+    /// Returns a cached reference to the implementers map.
+    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+        self.implementers_map.get_or_init(|| {
+            self.schema
+                .map(|schema| schema.implementers_map())
+                .unwrap_or_default()
+        })
+    }
+
+    /// Returns a context for operation validation.
+    pub fn operation_context<'o>(
+        &'o self,
+        variables: &'o [Node<VariableDefinition>],
+    ) -> OperationValidationContext<'o> {
+        OperationValidationContext {
+            executable: self,
+            variables,
+        }
+    }
+}
+
+/// Shared context when validating things inside an operation.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct OperationValidationContext<'a> {
+    /// Parent context. Using a reference so the `OnceLock` is shared between all operation
+    /// contexts.
+    executable: &'a ExecutableValidationContext<'a>,
+    /// The variables defined for this operation.
+    pub variables: &'a [Node<VariableDefinition>],
+}
+
+impl<'a> OperationValidationContext<'a> {
+    pub fn schema(&self) -> Option<&'a Schema> {
+        self.executable.schema
+    }
+
+    /// Returns a cached reference to the implementers map.
+    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+        self.executable.implementers_map()
     }
 }
 

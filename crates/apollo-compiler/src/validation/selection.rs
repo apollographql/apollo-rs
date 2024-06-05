@@ -3,8 +3,8 @@ use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable::BuildError;
 use crate::executable::SelectionSet;
-use crate::validation::operation::OperationValidationConfig;
 use crate::validation::DiagnosticList;
+use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
 use crate::{ast, executable, schema, Node};
 use apollo_parser::LimitTracker;
@@ -545,7 +545,7 @@ pub(crate) fn validate_selection_set(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
-    context: &OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     for selection in &selection_set.selections {
         match selection {

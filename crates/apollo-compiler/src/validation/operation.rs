@@ -1,42 +1,8 @@
-use std::collections::HashMap;
-use std::sync::OnceLock;
-
-use crate::ast;
-use crate::ast::Name;
 use crate::executable;
-use crate::schema::Implementers;
 use crate::validation::DiagnosticList;
+use crate::validation::ExecutableValidationContext;
 use crate::ExecutableDocument;
 use crate::Node;
-use crate::Schema;
-
-#[derive(Debug)]
-pub(crate) struct OperationValidationConfig<'a> {
-    /// When None, rules that require a schema to validate are disabled.
-    pub schema: Option<&'a Schema>,
-    /// The variables defined for this operation.
-    pub variables: &'a [Node<ast::VariableDefinition>],
-    implementers_map: OnceLock<HashMap<Name, Implementers>>,
-}
-
-impl<'a> OperationValidationConfig<'a> {
-    pub fn new(schema: Option<&'a Schema>, variables: &'a [Node<ast::VariableDefinition>]) -> Self {
-        Self {
-            schema,
-            variables,
-            implementers_map: Default::default(),
-        }
-    }
-
-    /// Returns a cached reference to the implementers map.
-    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
-        self.implementers_map.get_or_init(|| {
-            self.schema
-                .map(|schema| schema.implementers_map())
-                .unwrap_or_default()
-        })
-    }
-}
 
 pub(crate) fn validate_subscription(
     document: &executable::ExecutableDocument,
@@ -85,13 +51,11 @@ pub(crate) fn validate_subscription(
 
 pub(crate) fn validate_operation(
     diagnostics: &mut DiagnosticList,
-    schema: Option<&Schema>,
     document: &ExecutableDocument,
     operation: &executable::Operation,
+    context: &ExecutableValidationContext<'_>,
 ) {
-    let config = OperationValidationConfig::new(schema, &operation.variables);
-
-    let against_type = if let Some(schema) = schema {
+    let against_type = if let Some(schema) = context.schema() {
         schema
             .root_operation(operation.operation_type)
             .map(|ty| (schema, ty))
@@ -101,14 +65,14 @@ pub(crate) fn validate_operation(
 
     super::directive::validate_directives(
         diagnostics,
-        schema,
+        context.schema(),
         operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
     );
     super::variable::validate_variable_definitions(
         diagnostics,
-        config.schema,
+        context.schema(),
         &operation.variables,
     );
 
@@ -118,16 +82,16 @@ pub(crate) fn validate_operation(
         document,
         against_type,
         &operation.selection_set,
-        &config,
+        context.operation_context(&operation.variables),
     );
 }
 
 pub(crate) fn validate_operation_definitions(
     diagnostics: &mut DiagnosticList,
-    schema: Option<&Schema>,
     document: &ExecutableDocument,
+    context: &ExecutableValidationContext<'_>,
 ) {
     for operation in document.all_operations() {
-        validate_operation(diagnostics, schema, document, operation);
+        validate_operation(diagnostics, document, operation, context);
     }
 }
