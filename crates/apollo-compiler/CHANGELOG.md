@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## Fixes
+
+- **Fix validation error message for missing subselections - [goto-bus-stop] in [pull/865]**
+  It now reports the correct coordinate for the missing subselection.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/865]: https://github.com/apollographql/apollo-rs/pull/865
+
 # [1.0.0-beta.17](https://crates.io/crates/apollo-compiler/1.0.0-beta.17) - 2024-06-05
 
 ## Fixes
