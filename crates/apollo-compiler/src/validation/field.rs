@@ -106,7 +106,15 @@ pub(crate) fn validate_field(
             }
         }
 
-        if validate_leaf_field_selection(diagnostics, schema, field, &field_definition.ty).is_ok() {
+        if validate_leaf_field_selection(
+            diagnostics,
+            schema,
+            against_type,
+            field,
+            &field_definition.ty,
+        )
+        .is_ok()
+        {
             super::selection::validate_selection_set(
                 diagnostics,
                 document,
@@ -177,6 +185,7 @@ pub(crate) fn validate_field_definitions(
 pub(crate) fn validate_leaf_field_selection(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    parent_type: &ast::NamedType,
     field: &Node<executable::Field>,
     field_type: &ast::Type,
 ) -> Result<(), ()> {
@@ -202,9 +211,10 @@ pub(crate) fn validate_leaf_field_selection(
             field.location(),
             DiagnosticData::MissingSubselection {
                 coordinate: TypeAttributeCoordinate {
-                    ty: tname.clone(),
+                    ty: parent_type.clone(),
                     attribute: fname.clone(),
                 },
+                output_type: tname.clone(),
                 describe_type: type_def.describe(),
             },
         );
