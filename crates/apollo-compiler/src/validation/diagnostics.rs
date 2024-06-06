@@ -192,6 +192,7 @@ pub(crate) enum DiagnosticData {
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
         coordinate: TypeAttributeCoordinate,
+        output_type: Name,
         describe_type: &'static str,
     },
     #[error(
@@ -598,11 +599,14 @@ impl DiagnosticData {
             }
             DiagnosticData::MissingSubselection {
                 coordinate,
+                output_type,
                 describe_type,
             } => {
                 report.with_label_opt(
                     main_location,
-                    format_args!("{coordinate} is {describe_type} and must select fields"),
+                    format_args!(
+                        "`{coordinate}` is {describe_type} `{output_type}` and must select fields"
+                    ),
                 );
             }
             DiagnosticData::InvalidFragmentTarget { name: _, ty } => {
