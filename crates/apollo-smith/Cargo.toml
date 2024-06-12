@@ -31,3 +31,4 @@ thiserror = "1.0.37"
 
 [dev-dependencies]
 expect-test = "1.4"
+rand = "0.8.5"
