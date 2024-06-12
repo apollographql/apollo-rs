@@ -6,6 +6,8 @@ use apollo_smith::DocumentBuilder;
 use arbitrary::Result;
 use arbitrary::Unstructured;
 use rand::distributions::Alphanumeric;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 use rand::{thread_rng, Rng};
 
 /// This generate an arbitrary valid GraphQL operation
@@ -23,17 +25,21 @@ pub fn generate_valid_operation(schema_path: &str, seed_arg: Option<String>) -> 
         panic!("cannot parse the supergraph:\n{errors}");
     }
 
-    let seed: String = match seed_arg {
-        Some(s) => s,
-        None => thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(30)
-            .map(char::from)
-            .collect(),
+    let seed: u64 = match seed_arg {
+        Some(s) => s.parse().unwrap(),
+        None => thread_rng().gen(),
     };
 
     println!("generating from seed: {seed}");
-    let mut u = Unstructured::new(seed.as_bytes());
+
+    let rng: StdRng = SeedableRng::seed_from_u64(seed);
+    let data: String = rng
+        .sample_iter(&Alphanumeric)
+        .take(65536)
+        .map(char::from)
+        .collect();
+
+    let mut u = Unstructured::new(data.as_bytes());
     let mut gql_doc = DocumentBuilder::with_document(
         &mut u,
         Document::try_from(tree.document()).expect("tree should not have errors"),
