@@ -7,6 +7,7 @@ pub mod coordinate;
 pub mod diagnostic;
 pub mod executable;
 pub mod execution;
+pub mod leaking_interner;
 mod name;
 mod node;
 mod parser;

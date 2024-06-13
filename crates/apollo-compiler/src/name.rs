@@ -97,7 +97,7 @@ unsafe impl Sync for Name {}
 impl Name {
     /// Create a new `Name` parsed from the given source location
     pub fn new_parsed(value: &str, location: NodeLocation) -> Result<Self, InvalidNameError> {
-        Self::check_valid_syntax(value, Some(location))?;
+        Self::check_valid_syntax(value, Some(&location))?;
         let (ptr, len, tag) = Self::parts_from_arc(value);
         let start_offset = Self::with_location(value, &location);
         Ok(Self {
@@ -128,6 +128,15 @@ impl Name {
         Ok(Self::new_static_unchecked(value))
     }
 
+    /// Create a new static `Name` parsed from the given source location
+    pub fn new_static_parsed(
+        value: &'static str,
+        location: NodeLocation,
+    ) -> Result<Self, InvalidNameError> {
+        Self::check_valid_syntax(value, Some(&location))?;
+        Ok(Self::new_static_parsed_unchecked(value, location))
+    }
+
     /// Create a new static `Name` programatically, not parsed from a source file,
     /// without validity checking.
     ///
@@ -140,6 +149,23 @@ impl Name {
             len,
             start_offset: 0,
             tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
+            phantom: PhantomData,
+        }
+    }
+
+    /// Create a new static `Name` programatically, not parsed from a source file,
+    /// without validity checking.
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub fn new_static_parsed_unchecked(value: &'static str, location: NodeLocation) -> Self {
+        let (ptr, len, tag) = Self::parts_from_static(value);
+        let start_offset = Self::with_location(value, &location);
+        Self {
+            ptr,
+            len,
+            start_offset,
+            tagged_file_id: TaggedFileId::pack(tag, location.file_id),
             phantom: PhantomData,
         }
     }
@@ -277,14 +303,14 @@ impl Name {
 
     fn check_valid_syntax(
         value: &str,
-        location: Option<NodeLocation>,
+        location: Option<&NodeLocation>,
     ) -> Result<(), InvalidNameError> {
         if Self::valid_syntax(value) {
             Ok(())
         } else {
             Err(InvalidNameError {
                 name: value.to_owned(),
-                location,
+                location: location.copied(),
             })
         }
     }

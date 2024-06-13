@@ -57,8 +57,9 @@ impl SchemaBuilder {
                 let input = include_str!("../built_in_types.graphql").to_owned();
                 let path = "built_in.graphql";
                 let id = FileId::BUILT_IN;
-                let ast =
-                    ast::Document::parser().parse_ast_inner(input, path, id, &mut builder.errors);
+                let ast = ast::Document::parser()
+                    .intern_and_leak_names()
+                    .parse_ast_inner(input, path, id, &mut builder.errors);
                 let executable_definitions_are_errors = true;
                 builder.add_ast_document(&ast, executable_definitions_are_errors);
                 assert!(builder.errors.is_empty());
