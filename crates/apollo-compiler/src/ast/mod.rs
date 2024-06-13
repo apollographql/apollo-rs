@@ -109,7 +109,7 @@ pub struct FragmentDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct DirectiveDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub repeatable: bool,
@@ -118,21 +118,21 @@ pub struct DirectiveDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct SchemaDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub directives: DirectiveList,
     pub root_operations: Vec<Node<(OperationType, NamedType)>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ScalarTypeDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ObjectTypeDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
     pub directives: DirectiveList,
@@ -141,7 +141,7 @@ pub struct ObjectTypeDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InterfaceTypeDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
     pub directives: DirectiveList,
@@ -150,7 +150,7 @@ pub struct InterfaceTypeDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct UnionTypeDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub members: Vec<NamedType>,
@@ -158,7 +158,7 @@ pub struct UnionTypeDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumTypeDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub values: Vec<Node<EnumValueDefinition>>,
@@ -166,7 +166,7 @@ pub struct EnumTypeDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputObjectTypeDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub fields: Vec<Node<InputValueDefinition>>,
@@ -284,7 +284,7 @@ pub enum Type {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FieldDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub ty: Type,
@@ -293,7 +293,7 @@ pub struct FieldDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputValueDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub ty: Node<Type>,
     pub default_value: Option<Node<Value>>,
@@ -302,7 +302,7 @@ pub struct InputValueDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumValueDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub value: Name,
     pub directives: DirectiveList,
 }
@@ -343,7 +343,7 @@ pub enum Value {
     Variable(Name),
     String(
         /// The value after escape sequences are resolved
-        NodeStr,
+        String,
     ),
     Float(FloatValue),
     Int(IntValue),

@@ -4,7 +4,6 @@ use crate::ast;
 use crate::validation::FileId;
 use crate::Node;
 use crate::NodeLocation;
-use crate::NodeStr;
 use crate::Parser;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
@@ -52,7 +51,7 @@ pub struct Schema {
 /// The `schema` definition and its extensions, defining root operations
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub directives: DirectiveList,
 
     /// Name of the object type for the `query` root operation
@@ -83,14 +82,14 @@ pub enum ExtendedType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub implements_interfaces: IndexSet<ComponentName>,
     pub directives: DirectiveList,
@@ -104,7 +103,7 @@ pub struct ObjectType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterfaceType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub implements_interfaces: IndexSet<ComponentName>,
 
@@ -119,7 +118,7 @@ pub struct InterfaceType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
 
@@ -131,7 +130,7 @@ pub struct UnionType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
@@ -139,7 +138,7 @@ pub struct EnumType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<String>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
@@ -676,7 +675,7 @@ impl ExtendedType {
         }
     }
 
-    pub fn description(&self) -> Option<&NodeStr> {
+    pub fn description(&self) -> Option<&Node<String>> {
         match self {
             Self::Scalar(ty) => ty.description.as_ref(),
             Self::Object(ty) => ty.description.as_ref(),

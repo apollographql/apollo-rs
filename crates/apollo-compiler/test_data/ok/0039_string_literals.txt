@@ -52,7 +52,7 @@ Schema {
                         origin: Definition,
                         node: 15..35 @40 FieldDefinition {
                             description: Some(
-                                "LF: a\nb",
+                                15..25 @40 "LF: a\nb",
                             ),
                             name: "f1",
                             arguments: [],
@@ -66,7 +66,7 @@ Schema {
                         origin: Definition,
                         node: 39..63 @40 FieldDefinition {
                             description: Some(
-                                "CRLF: a\r\nb",
+                                39..53 @40 "CRLF: a\r\nb",
                             ),
                             name: "f2",
                             arguments: [],
@@ -80,7 +80,7 @@ Schema {
                         origin: Definition,
                         node: 67..103 @40 FieldDefinition {
                             description: Some(
-                                "a\n\nb",
+                                67..93 @40 "a\n\nb",
                             ),
                             name: "f3",
                             arguments: [],
@@ -94,7 +94,7 @@ Schema {
                         origin: Definition,
                         node: 107..128 @40 FieldDefinition {
                             description: Some(
-                                "a \"b\" c",
+                                107..118 @40 "a \"b\" c",
                             ),
                             name: "f4",
                             arguments: [],
@@ -108,7 +108,7 @@ Schema {
                         origin: Definition,
                         node: 132..161 @40 FieldDefinition {
                             description: Some(
-                                "a \"\"\"b\"\"\" c",
+                                132..151 @40 "a \"\"\"b\"\"\" c",
                             ),
                             name: "f5",
                             arguments: [],
@@ -122,7 +122,7 @@ Schema {
                         origin: Definition,
                         node: 165..197 @40 FieldDefinition {
                             description: Some(
-                                "regex: \\d+",
+                                165..187 @40 "regex: \\d+",
                             ),
                             name: "f6",
                             arguments: [],
@@ -136,7 +136,7 @@ Schema {
                         origin: Definition,
                         node: 201..245 @40 FieldDefinition {
                             description: Some(
-                                "\nLeading empty line to preserve",
+                                201..235 @40 "\nLeading empty line to preserve",
                             ),
                             name: "f7",
                             arguments: [],
@@ -150,7 +150,7 @@ Schema {
                         origin: Definition,
                         node: 249..304 @40 FieldDefinition {
                             description: Some(
-                                " \nLeading whitespace-only line to preserve",
+                                249..294 @40 " \nLeading whitespace-only line to preserve",
                             ),
                             name: "f8",
                             arguments: [],
@@ -164,7 +164,7 @@ Schema {
                         origin: Definition,
                         node: 308..353 @40 FieldDefinition {
                             description: Some(
-                                "Trailing empty line to preserve\n",
+                                308..343 @40 "Trailing empty line to preserve\n",
                             ),
                             name: "f9",
                             arguments: [],
@@ -178,7 +178,7 @@ Schema {
                         origin: Definition,
                         node: 357..415 @40 FieldDefinition {
                             description: Some(
-                                "Trailing whitespace-only line to preserve\n\t",
+                                357..404 @40 "Trailing whitespace-only line to preserve\n\t",
                             ),
                             name: "f10",
                             arguments: [],
@@ -270,7 +270,7 @@ Schema {
                         origin: Definition,
                         node: 533..567 @40 FieldDefinition {
                             description: Some(
-                                "Trailing backslash \\",
+                                533..556 @40 "Trailing backslash \\",
                             ),
                             name: "f14",
                             arguments: [],
@@ -284,7 +284,7 @@ Schema {
                         origin: Definition,
                         node: 571..600 @40 FieldDefinition {
                             description: Some(
-                                "Trailing quote\"",
+                                571..589 @40 "Trailing quote\"",
                             ),
                             name: "f15",
                             arguments: [],
@@ -298,7 +298,7 @@ Schema {
                         origin: Definition,
                         node: 604..667 @40 FieldDefinition {
                             description: Some(
-                                "   Leading whitespace on a single line to preserve",
+                                604..656 @40 "   Leading whitespace on a single line to preserve",
                             ),
                             name: "f16",
                             arguments: [],
@@ -312,7 +312,7 @@ Schema {
                         origin: Definition,
                         node: 671..776 @40 FieldDefinition {
                             description: Some(
-                                "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
+                                671..765 @40 "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
                             ),
                             name: "f17",
                             arguments: [],
@@ -326,7 +326,7 @@ Schema {
                         origin: Definition,
                         node: 780..837 @40 FieldDefinition {
                             description: Some(
-                                "\n   Leading empty line + indent to preserve",
+                                780..826 @40 "\n   Leading empty line + indent to preserve",
                             ),
                             name: "f18",
                             arguments: [],
@@ -340,7 +340,7 @@ Schema {
                         origin: Definition,
                         node: 841..945 @40 FieldDefinition {
                             description: Some(
-                                "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
+                                841..934 @40 "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
                             ),
                             name: "f19",
                             arguments: [],

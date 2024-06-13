@@ -23,7 +23,7 @@ impl From<Description> for String {
     }
 }
 
-impl From<Description> for apollo_compiler::NodeStr {
+impl From<Description> for apollo_compiler::Node<String> {
     fn from(desc: Description) -> Self {
         desc.0.into()
     }

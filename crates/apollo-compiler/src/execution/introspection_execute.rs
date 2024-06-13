@@ -240,7 +240,7 @@ impl_resolver! {
     __typename = "__Schema";
 
     fn description(&self_) {
-        Ok(ResolvedValue::leaf(self_.schema_definition.description.as_deref()))
+        Ok(ResolvedValue::leaf(self_.schema_definition.description.as_ref().map(|s| s.as_str())))
     }
 
     fn types(&self_) {
@@ -446,7 +446,7 @@ impl_resolver! {
     }
 
     fn description(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.description.as_deref()))
+        Ok(ResolvedValue::leaf(self_.def.description.as_ref().map(|s| s.as_str())))
     }
 
     fn args(&self_, args) {
@@ -485,7 +485,7 @@ impl_resolver! {
     }
 
     fn description(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.description.as_deref()))
+        Ok(ResolvedValue::leaf(self_.def.description.as_ref().map(|s| s.as_str())))
     }
 
     fn args(&self_, args) {
@@ -526,7 +526,7 @@ impl_resolver! {
     }
 
     fn description(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.description.as_deref()))
+        Ok(ResolvedValue::leaf(self_.def.description.as_ref().map(|s| s.as_str())))
     }
 
     fn isDeprecated(&self_) {
@@ -548,7 +548,7 @@ impl_resolver! {
     }
 
     fn description(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.description.as_deref()))
+        Ok(ResolvedValue::leaf(self_.def.description.as_ref().map(|s| s.as_str())))
     }
 
     fn type(&self_) {

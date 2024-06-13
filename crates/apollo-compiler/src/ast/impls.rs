@@ -948,14 +948,6 @@ impl Value {
         }
     }
 
-    pub fn as_node_str(&self) -> Option<&NodeStr> {
-        if let Value::String(value) = self {
-            Some(value)
-        } else {
-            None
-        }
-    }
-
     pub fn to_f64(&self) -> Option<f64> {
         match self {
             Value::Float(value) => value.try_to_f64().ok(),
@@ -1506,7 +1498,7 @@ impl From<&'_ String> for Value {
 
 impl From<String> for Value {
     fn from(value: String) -> Self {
-        Value::String(value.into())
+        Value::String(value)
     }
 }
 
