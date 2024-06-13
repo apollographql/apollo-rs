@@ -1,19 +1,19 @@
-#![allow(unstable_name_collisions)] // for `sptr::Strict`
-
 use crate::diagnostic::CliReport;
 use crate::diagnostic::ToCliReport;
 use crate::execution::GraphQLLocation;
+use crate::node::TaggedFileId;
 use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
+use crate::FileId;
 use crate::NodeLocation;
 use crate::SourceMap;
-use sptr::Strict;
+use rowan::TextRange;
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::size_of;
 use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
-use triomphe::ThinArc;
+use std::sync::Arc;
 
 /// Create a [`Name`] from a string literal or identifier, checked for validity at compile time.
 ///
@@ -48,27 +48,27 @@ macro_rules! name {
 
 /// A GraphQL identifier
 ///
-/// Smart string type for names and string values in a GraphQL document
-///
-/// Like [`Node`][crate::Node] it is thread-safe, reference-counted,
+/// Like [`Node`][crate::Node], this string type has cheap `Clone`
 /// and carries an optional source location.
-/// It is a thin pointer to a single allocation, with a header followed by string data.
+///
+/// Internally, the string value is either an atomically-reference counter `Arc<str>`
+/// or a `&'static str` borrow that lives until the end of the program.
+//
+// Fields: equivalent to `(UnpackedRepr, Option<NodeLocation>)` but more compact
 pub struct Name {
-    /// A type-erased pointer for either `HeapRepr` or `StaticRepr`,
-    /// with a tag in the lowest bit: 1 for heap, 0 for static.
-    ptr: NonNull<()>,
+    /// Data pointer of either `Arc<str>` (if `tagged_file_id.tag() == TAG_ARC`)
+    /// or `&'static str` (if `TAG_STATIC`)
+    ptr: NonNull<u8>,
+    len: u32,
+    start_offset: u32,            // zero if we don’t have a location
+    tagged_file_id: TaggedFileId, // `.file_id() == FileId::NONE` means we don’t have a location
     phantom: PhantomData<UnpackedRepr>,
 }
 
-type Header = Option<NodeLocation>;
-type HeapRepr = ThinArc<Header, u8>;
-type StaticRepr = &'static &'static str;
-
-#[allow(unused)] // only used in PhantomData
-/// What we would use if it didn’t spend an extra 64 bits to store the 1-bit discriminant
+#[allow(dead_code)] // only used in PhantomData and static asserts
 enum UnpackedRepr {
-    Heap(HeapRepr),
-    Static(StaticRepr),
+    Heap(Arc<str>),
+    Static(&'static str),
 }
 
 #[derive(Clone, Eq, PartialEq, thiserror::Error)]
@@ -78,142 +78,113 @@ pub struct InvalidNameError {
     location: Option<NodeLocation>,
 }
 
+const TAG_ARC: bool = true;
+const TAG_STATIC: bool = false;
+
 const _: () = {
-    // Both `HeapRepr` and `StaticRepr` are pointers to sufficiently-aligned values,
-    // so the lowest address bit is always available to use as a tag
-    assert!(std::mem::align_of::<&'static str>() >= 2);
-    assert!(std::mem::align_of::<Header>() >= 2);
+    assert!(size_of::<Name>() == 16 + size_of::<*const u8>());
+    assert!(size_of::<Name>() == size_of::<Option<Name>>());
 
-    // Both pointers are non-null, leaving a niche to represent `None` without extra size
-    assert!(size_of::<Option<HeapRepr>>() == size_of::<usize>());
-    assert!(size_of::<Option<StaticRepr>>() == size_of::<usize>());
-    assert!(size_of::<Option<Name>>() == size_of::<usize>());
-
-    // the `unsafe impl`s below are sound
-    const fn _assert_send<T: Send>() {}
-    const fn _assert_sync<T: Send>() {}
-    _assert_send::<HeapRepr>();
-    _assert_sync::<HeapRepr>();
-    _assert_send::<StaticRepr>();
-    _assert_sync::<StaticRepr>();
+    // The `unsafe impl`s below are sound since `(tag, ptr, len)` represents `UnpackedRepr`
+    const fn assert_send_and_sync<T: Send + Sync>() {}
+    assert_send_and_sync::<(UnpackedRepr, u32, TaggedFileId)>();
 };
 
 unsafe impl Send for Name {}
 
 unsafe impl Sync for Name {}
 
-const TAG_BITS: usize = 1_usize;
-
-fn address_has_tag(address: usize) -> bool {
-    (address & TAG_BITS) != 0
-}
-
-fn address_add_tag(address: usize) -> usize {
-    address | TAG_BITS
-}
-
-fn address_clear_tag(address: usize) -> usize {
-    address & !TAG_BITS
-}
-
 impl Name {
-    /// Create a new `NodeStr` parsed from the given source location
-    #[inline]
+    /// Create a new `Name` parsed from the given source location
     pub fn new_parsed(value: &str, location: NodeLocation) -> Result<Self, InvalidNameError> {
         Self::check_valid_syntax(value, Some(location))?;
-        Ok(Self::new_heap(ThinArc::from_header_and_slice(
-            Some(location),
-            value.as_bytes(),
-        )))
-    }
-
-    /// Create a new `NodeStr` programatically, not parsed from a source file
-    #[inline]
-    pub fn new(value: &str) -> Result<Self, InvalidNameError> {
-        Self::check_valid_syntax(value, None)?;
-        Ok(Self::new_heap(ThinArc::from_header_and_slice(
-            None,
-            value.as_bytes(),
-        )))
-    }
-
-    #[inline]
-    fn new_heap(arc: HeapRepr) -> Self {
-        let ptr = ThinArc::into_raw(arc).cast_mut().cast::<()>();
-        let tagged_ptr = ptr.map_addr(|address| {
-            debug_assert!(!address_has_tag(address)); // checked statically with `align_of` above
-            address_add_tag(address)
-        });
-        Self {
-            // Safety: `ThinArc` is always non-null
-            ptr: unsafe { NonNull::new_unchecked(tagged_ptr) },
-            phantom: PhantomData,
-        }
-    }
-
-    /// Create a new `NodeStr` from a static string.
-    ///
-    /// `&str` is a wide pointer (length as pointer metadata stored next to the data pointer),
-    /// but we only have space for a thin pointer. So add another `&_` indirection.
-    ///
-    /// Example:
-    ///
-    /// ```
-    /// let s = apollo_compiler::Name::from_static(&"example").unwrap();
-    /// assert_eq!(s, "example");
-    /// ```
-    pub fn from_static(str_ref: &'static &'static str) -> Result<Self, InvalidNameError> {
-        Self::check_valid_syntax(str_ref, None)?;
-        Ok(Self::new_static_unchecked(str_ref))
-    }
-
-    /// Creates a new `Name` without validity checking.
-    ///
-    /// Constructing an invalid name may cause invalid document serialization
-    /// but not memory-safety issues.
-    pub const fn new_static_unchecked(str_ref: &'static &'static str) -> Self {
-        let ptr: *const &'static str = str_ref;
-        let ptr = ptr.cast_mut().cast();
-        // Safety: converted from `&_` which is non-null
-        let ptr = unsafe { NonNull::new_unchecked(ptr) };
-        Self {
+        let (ptr, len, tag) = Self::parts_from_arc(value);
+        let start_offset = Self::with_location(value, &location);
+        Ok(Self {
             ptr,
+            len,
+            start_offset,
+            tagged_file_id: TaggedFileId::pack(tag, location.file_id),
             phantom: PhantomData,
-        }
-    }
-
-    #[inline]
-    fn as_heap(&self) -> Option<*const std::ffi::c_void> {
-        let ptr = self.ptr.as_ptr();
-        let address = ptr.addr();
-        let is_heap = address_has_tag(address);
-        is_heap.then(|| {
-            ptr.with_addr(address_clear_tag(address))
-                .cast_const()
-                .cast()
         })
     }
 
-    #[inline]
-    fn with_heap<R>(&self, f: impl FnOnce(Option<&HeapRepr>) -> R) -> R {
-        if let Some(heap_ptr) = self.as_heap() {
-            // Safety:
-            //
-            // * We’ve checked with the tag that this was created from `Self::new_heap`
-            // * This `from_raw` mirrors `into_raw` in `Self::new_heap`
-            //
-            // `from_raw` normally moves ownership away from the raw pointer,
-            // `ManuallyDrop` counteracts that.
-            let arc = ManuallyDrop::new(unsafe { ThinArc::from_raw(heap_ptr) });
-            f(Some(&arc))
-        } else {
-            f(None)
+    /// Create a new `Name` programatically, not parsed from a source file
+    pub fn new(value: &str) -> Result<Self, InvalidNameError> {
+        Self::check_valid_syntax(value, None)?;
+        let (ptr, len, tag) = Self::parts_from_arc(value);
+        Ok(Self {
+            ptr,
+            len,
+            start_offset: 0,
+            tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
+            phantom: PhantomData,
+        })
+    }
+
+    /// Create a new static `Name` programatically, not parsed from a source file
+    pub fn new_static(value: &'static str) -> Result<Self, InvalidNameError> {
+        Self::check_valid_syntax(value, None)?;
+        Ok(Self::new_static_unchecked(value))
+    }
+
+    /// Create a new static `Name` programatically, not parsed from a source file,
+    /// without validity checking.
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub const fn new_static_unchecked(value: &'static str) -> Self {
+        let (ptr, len, tag) = Self::parts_from_static(value);
+        Self {
+            ptr,
+            len,
+            start_offset: 0,
+            tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
+            phantom: PhantomData,
         }
     }
 
-    #[inline]
+    fn parts_from_arc(value: &str) -> (NonNull<u8>, u32, bool) {
+        let len = Self::new_len(value);
+        let arc = Arc::<str>::from(value);
+        let ptr = Arc::into_raw(arc).cast_mut().cast();
+        // SAFETY: Arc always is non-null
+        let ptr = unsafe { NonNull::new_unchecked(ptr) };
+        (ptr, len, TAG_ARC)
+    }
+
+    const fn parts_from_static(static_str: &'static str) -> (NonNull<u8>, u32, bool) {
+        let len = Self::new_len(static_str);
+        let ptr = static_str.as_ptr().cast_mut();
+        // SAFETY: `&'static str` is always non-null
+        let ptr = unsafe { NonNull::new_unchecked(ptr) };
+        (ptr, len, TAG_STATIC)
+    }
+
+    /// Returns start_offset
+    fn with_location(value: &str, location: &NodeLocation) -> u32 {
+        debug_assert_eq!(location.text_range.len(), rowan::TextSize::of(value));
+        location.text_range.start().into()
+    }
+
+    const fn new_len(value: &str) -> u32 {
+        let len = value.len();
+        if len >= (u32::MAX as usize) {
+            panic!("Name length overflows 4 GiB")
+        }
+        len as _
+    }
+
     pub fn location(&self) -> Option<NodeLocation> {
-        self.with_heap(|maybe_heap| maybe_heap?.header.header)
+        let file_id = self.tagged_file_id.file_id();
+        if file_id != FileId::NONE {
+            Some(NodeLocation {
+                file_id,
+                text_range: TextRange::at(self.start_offset.into(), self.len.into()),
+            })
+        } else {
+            None
+        }
     }
 
     /// If this string contains a location, convert it to line and column numbers
@@ -222,26 +193,63 @@ impl Name {
     }
 
     #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.len as _
+    }
+
+    #[inline]
     pub fn as_str(&self) -> &str {
-        self.with_heap(|maybe_heap| {
-            if let Some(heap) = maybe_heap {
-                // Safety: the bytes in `slice` were copied from an UTF-8 `&str`,
-                // and are immutable since.
-                let str = unsafe { std::str::from_utf8_unchecked(&heap.slice) };
-                // Safety: `heap` is a `&ThinArc` reference
-                // whose lifetime is limited to the stack frame of `with_heap`
-                // but that points to a `ThinArc` owned by `self`.
-                // Since `self` is immutable,
-                // the string slice owned by `ThinArc` lives as long as `self`
-                // and we can safely extend the lifetime of this borrow:
-                let raw: *const str = str;
-                unsafe { &*raw }
-            } else {
-                let ptr: *const &'static str = self.ptr.as_ptr().cast_const().cast();
-                // Safety: we just reversed the steps of `Self::_from_static`,
-                // which had started from a valid `&'static &'static str`
-                unsafe { *ptr }
-            }
+        let slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
+        // SAFETY: all constructors set `self.ptr` and `self.len` from valid UTF-8,
+        // and we return a lifetime tied to `self`.
+        unsafe { std::str::from_utf8_unchecked(slice.as_ref()) }
+    }
+
+    /// If this `Name` was created with [`new_static`][Self::new_static]
+    /// or the [`name!`][crate::name] macro, return the string with `'static` lifetime.
+    pub fn as_static_str(&self) -> Option<&'static str> {
+        if self.tagged_file_id.tag() == TAG_STATIC {
+            let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
+            // SAFETY: the tag indicates `self.ptr` came from `Self::ptr_and_tag_from_static`,
+            // so it has the static lifetime and points to valid UTF-8 of the correct length.
+            Some(unsafe { std::str::from_utf8_unchecked(raw_slice.as_ref()) })
+        } else {
+            None
+        }
+    }
+
+    fn as_arc(&self) -> Option<ManuallyDrop<Arc<str>>> {
+        if self.tagged_file_id.tag() == TAG_ARC {
+            let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len())
+                .as_ptr()
+                .cast_const();
+
+            // SAFETY:
+            //
+            // * The tag indicates `self.ptr` came from `Arc::into_raw` in `ptr_and_tag_with_arc`
+            // * `Arc::from_raw` normally moves ownership away from the raw pointer,
+            //   `ManuallyDrop` counteracts that
+            Some(ManuallyDrop::new(unsafe {
+                Arc::from_raw(raw_slice as *const str)
+            }))
+        } else {
+            None
+        }
+    }
+
+    /// If this `Name` was created with [`new_static`][Self::new_static]
+    /// or the [`name!`][crate::name] macro, return the string with `'static` lifetime.
+    ///
+    /// Otherwise, return a clone of the `Arc` used internally for this `Name`.
+    pub fn to_static_str_or_cloned_arc(&self) -> Result<&'static str, Arc<str>> {
+        self.as_static_str().ok_or_else(|| {
+            let manually_drop = self.as_arc().unwrap();
+            Arc::clone(&manually_drop)
         })
     }
 
@@ -301,28 +309,20 @@ impl Name {
 
 impl Clone for Name {
     fn clone(&self) -> Self {
-        self.with_heap(|maybe_heap| {
-            if let Some(heap) = maybe_heap {
-                Self::new_heap(ThinArc::clone(heap))
-            } else {
-                // `&'static &'static str` is `Copy`, just copy the pointer
-                Self { ..*self }
-            }
-        })
+        if let Some(arc) = self.as_arc() {
+            let _ptr = Arc::into_raw(Arc::clone(&arc));
+            // Conceptually move ownership of this "new" pointer into the new clone
+            // However it’s a `*const` and we already have a `NonNull` with the same address in `self`
+        }
+        Self { ..*self }
     }
 }
 
 impl Drop for Name {
     fn drop(&mut self) {
-        if let Some(heap_ptr) = self.as_heap() {
-            // Safety:
-            //
-            // * We’ve checked with the tag that this was created from `Self::new_heap`
-            // * This `from_raw` mirrors `into_raw` in `Self::new_heap`
-            //
-            // `from_raw` moves ownership away from the raw pointer, which we want for drop.
-            let arc: HeapRepr = unsafe { ThinArc::from_raw(heap_ptr) };
-            drop(arc)
+        if let Some(arc) = &mut self.as_arc() {
+            // SAFETY: neither the dropped `ManuallyDrop` nor `self.ptr` is not used again
+            unsafe { ManuallyDrop::drop(arc) }
         }
     }
 }

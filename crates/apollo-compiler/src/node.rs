@@ -9,7 +9,7 @@ use std::fmt;
 use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
-use std::num::NonZeroI64;
+use std::num::NonZeroU64;
 use std::sync::atomic;
 use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering;
@@ -55,7 +55,12 @@ pub struct NodeLocation {
 /// and having diagnostics point to relevant sources.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct FileId {
-    id: NonZeroI64,
+    id: NonZeroU64,
+}
+
+#[derive(Copy, Clone)]
+pub(crate) struct TaggedFileId {
+    tag_and_id: NonZeroU64,
 }
 
 impl<T> Node<T> {
@@ -321,8 +326,17 @@ impl fmt::Debug for FileId {
 
 /// The next file ID to use. This is global so file IDs do not conflict between different compiler
 /// instances.
-static NEXT: atomic::AtomicI64 = atomic::AtomicI64::new(INITIAL);
-static INITIAL: i64 = 3;
+static NEXT: AtomicU64 = AtomicU64::new(INITIAL);
+static INITIAL: u64 = 3;
+
+const TAG: u64 = 1 << 63;
+const ID_MASK: u64 = !TAG;
+
+#[allow(clippy::assertions_on_constants)]
+const _: () = {
+    assert!(TAG == 0x8000_0000_0000_0000);
+    assert!(ID_MASK == 0x7FFF_FFFF_FFFF_FFFF);
+};
 
 impl FileId {
     /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
@@ -334,13 +348,25 @@ impl FileId {
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
-        Self {
-            id: NonZeroI64::new(id).unwrap(),
+        loop {
+            let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
+            if id & TAG == 0 {
+                return Self {
+                    id: NonZeroU64::new(id).unwrap(),
+                };
+            } else {
+                // Overflowing 63 bits is unlikely, but if it somehow happens
+                // reset the counter and try again.
+                //
+                // `TaggedFileId` behaving incorrectly would be a memory safety issue,
+                // whereas a file ID collision “merely” causes
+                // diagnostics to print the wrong file name and source context.
+                Self::reset()
+            }
         }
     }
 
-    /// Reset file ID back to 1, used to get consistent results in tests.
+    /// Reset file ID counter back to its initial value, used to get consistent results in tests.
     ///
     /// All tests in the process must use `#[serial_test::serial]`
     #[doc(hidden)]
@@ -348,12 +374,38 @@ impl FileId {
         NEXT.store(INITIAL, atomic::Ordering::Release)
     }
 
-    const fn const_new(id: i64) -> Self {
+    const fn const_new(id: u64) -> Self {
+        assert!(id & ID_MASK == id);
         // TODO: use unwrap() when const-stable https://github.com/rust-lang/rust/issues/67441
-        if let Some(id) = NonZeroI64::new(id) {
+        if let Some(id) = NonZeroU64::new(id) {
             Self { id }
         } else {
             panic!()
         }
+    }
+}
+
+impl TaggedFileId {
+    pub(crate) const fn pack(tag: bool, id: FileId) -> Self {
+        let tag_and_id = if tag {
+            debug_assert!((id.id.get() & TAG) == 0);
+            let packed = id.id.get() | TAG;
+            // SAFETY: `id.id` was non-zero, so setting an additional bit is still non-zero
+            unsafe { NonZeroU64::new_unchecked(packed) }
+        } else {
+            id.id
+        };
+        Self { tag_and_id }
+    }
+
+    pub(crate) fn tag(self) -> bool {
+        (self.tag_and_id.get() & TAG) != 0
+    }
+
+    pub(crate) fn file_id(self) -> FileId {
+        let unpacked = self.tag_and_id.get() & ID_MASK;
+        // SAFETY: `unpacked` has the same value as `id: FileId` did in `pack()`, which is non-zero
+        let id = unsafe { NonZeroU64::new_unchecked(unpacked) };
+        FileId { id }
     }
 }
