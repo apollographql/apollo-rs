@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        37: SourceFile {
+        39: SourceFile {
             path: "0038_argument_default.graphql",
             source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
         },
@@ -26,27 +26,27 @@ Schema {
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
         "specifiedBy": built_in_directive!("specifiedBy"),
-        "defer": 0..94 @37 DirectiveDefinition {
+        "defer": 0..94 @39 DirectiveDefinition {
             description: None,
             name: "defer",
             arguments: [
-                20..33 @37 InputValueDefinition {
+                20..33 @39 InputValueDefinition {
                     description: None,
                     name: "label",
-                    ty: 27..33 @37 Named(
+                    ty: 27..33 @39 Named(
                         "String",
                     ),
                     default_value: None,
                     directives: [],
                 },
-                36..55 @37 InputValueDefinition {
+                36..55 @39 InputValueDefinition {
                     description: None,
                     name: "if",
-                    ty: 40..48 @37 NonNullNamed(
+                    ty: 40..48 @39 NonNullNamed(
                         "Boolean",
                     ),
                     default_value: Some(
-                        51..55 @37 Boolean(
+                        51..55 @39 Boolean(
                             true,
                         ),
                     ),
@@ -75,7 +75,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            96..147 @37 ObjectType {
+            96..147 @39 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -83,18 +83,18 @@ Schema {
                 fields: {
                     "guitarAmp": Component {
                         origin: Definition,
-                        node: 111..145 @37 FieldDefinition {
+                        node: 111..145 @39 FieldDefinition {
                             description: None,
                             name: "guitarAmp",
                             arguments: [
-                                121..136 @37 InputValueDefinition {
+                                121..136 @39 InputValueDefinition {
                                     description: None,
                                     name: "upTo",
-                                    ty: 127..131 @37 NonNullNamed(
+                                    ty: 127..131 @39 NonNullNamed(
                                         "Int",
                                     ),
                                     default_value: Some(
-                                        134..136 @37 Int(
+                                        134..136 @39 Int(
                                             11,
                                         ),
                                     ),
@@ -114,17 +114,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        37: SourceFile {
+        39: SourceFile {
             path: "0038_argument_default.graphql",
             source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
         },
     },
     anonymous_operation: Some(
-        149..185 @37 Operation {
+        149..185 @39 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -133,10 +133,10 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     InlineFragment(
-                        153..183 @37 InlineFragment {
+                        153..183 @39 InlineFragment {
                             type_condition: None,
                             directives: [
-                                157..163 @37 Directive {
+                                157..163 @39 Directive {
                                     name: "defer",
                                     arguments: [],
                                 },
@@ -145,19 +145,19 @@ ExecutableDocument {
                                 ty: "Query",
                                 selections: [
                                     Field(
-                                        170..179 @37 Field {
-                                            definition: 111..145 @37 FieldDefinition {
+                                        170..179 @39 Field {
+                                            definition: 111..145 @39 FieldDefinition {
                                                 description: None,
                                                 name: "guitarAmp",
                                                 arguments: [
-                                                    121..136 @37 InputValueDefinition {
+                                                    121..136 @39 InputValueDefinition {
                                                         description: None,
                                                         name: "upTo",
-                                                        ty: 127..131 @37 NonNullNamed(
+                                                        ty: 127..131 @39 NonNullNamed(
                                                             "Int",
                                                         ),
                                                         default_value: Some(
-                                                            134..136 @37 Int(
+                                                            134..136 @39 Int(
                                                                 11,
                                                             ),
                                                         ),

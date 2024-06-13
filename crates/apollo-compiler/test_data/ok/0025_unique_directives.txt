@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        24: SourceFile {
+        26: SourceFile {
             path: "0025_unique_directives.graphql",
             source_text: "directive @repeatable repeatable on FIELD\ndirective @unique on FIELD\n\ntype Query {\n  field: Int\n}\n\n{\n  field @repeatable @repeatable\n  field @unique\n  field @unique\n}\n",
         },
@@ -26,7 +26,7 @@ Schema {
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
         "specifiedBy": built_in_directive!("specifiedBy"),
-        "repeatable": 0..41 @24 DirectiveDefinition {
+        "repeatable": 0..41 @26 DirectiveDefinition {
             description: None,
             name: "repeatable",
             arguments: [],
@@ -35,7 +35,7 @@ Schema {
                 "FIELD",
             ],
         },
-        "unique": 42..68 @24 DirectiveDefinition {
+        "unique": 42..68 @26 DirectiveDefinition {
             description: None,
             name: "unique",
             arguments: [],
@@ -60,7 +60,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            70..97 @24 ObjectType {
+            70..97 @26 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -68,7 +68,7 @@ Schema {
                 fields: {
                     "field": Component {
                         origin: Definition,
-                        node: 85..95 @24 FieldDefinition {
+                        node: 85..95 @26 FieldDefinition {
                             description: None,
                             name: "field",
                             arguments: [],
@@ -85,17 +85,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        24: SourceFile {
+        26: SourceFile {
             path: "0025_unique_directives.graphql",
             source_text: "directive @repeatable repeatable on FIELD\ndirective @unique on FIELD\n\ntype Query {\n  field: Int\n}\n\n{\n  field @repeatable @repeatable\n  field @unique\n  field @unique\n}\n",
         },
     },
     anonymous_operation: Some(
-        99..166 @24 Operation {
+        99..166 @26 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -104,8 +104,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        103..132 @24 Field {
-                            definition: 85..95 @24 FieldDefinition {
+                        103..132 @26 Field {
+                            definition: 85..95 @26 FieldDefinition {
                                 description: None,
                                 name: "field",
                                 arguments: [],
@@ -118,11 +118,11 @@ ExecutableDocument {
                             name: "field",
                             arguments: [],
                             directives: [
-                                109..120 @24 Directive {
+                                109..120 @26 Directive {
                                     name: "repeatable",
                                     arguments: [],
                                 },
-                                121..132 @24 Directive {
+                                121..132 @26 Directive {
                                     name: "repeatable",
                                     arguments: [],
                                 },
@@ -134,8 +134,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        135..148 @24 Field {
-                            definition: 85..95 @24 FieldDefinition {
+                        135..148 @26 Field {
+                            definition: 85..95 @26 FieldDefinition {
                                 description: None,
                                 name: "field",
                                 arguments: [],
@@ -148,7 +148,7 @@ ExecutableDocument {
                             name: "field",
                             arguments: [],
                             directives: [
-                                141..148 @24 Directive {
+                                141..148 @26 Directive {
                                     name: "unique",
                                     arguments: [],
                                 },
@@ -160,8 +160,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        151..164 @24 Field {
-                            definition: 85..95 @24 FieldDefinition {
+                        151..164 @26 Field {
+                            definition: 85..95 @26 FieldDefinition {
                                 description: None,
                                 name: "field",
                                 arguments: [],
@@ -174,7 +174,7 @@ ExecutableDocument {
                             name: "field",
                             arguments: [],
                             directives: [
-                                157..164 @24 Directive {
+                                157..164 @26 Directive {
                                     name: "unique",
                                     arguments: [],
                                 },

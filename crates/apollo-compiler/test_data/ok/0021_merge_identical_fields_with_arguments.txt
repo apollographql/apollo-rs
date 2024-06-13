@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        21: SourceFile {
+        23: SourceFile {
             path: "0021_merge_identical_fields_with_arguments.graphql",
             source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
         },
@@ -42,14 +42,14 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "DogCommand": Enum(
-            0..32 @21 EnumType {
+            0..32 @23 EnumType {
                 description: None,
                 name: "DogCommand",
                 directives: [],
                 values: {
                     "SIT": Component {
                         origin: Definition,
-                        node: 20..23 @21 EnumValueDefinition {
+                        node: 20..23 @23 EnumValueDefinition {
                             description: None,
                             value: "SIT",
                             directives: [],
@@ -57,7 +57,7 @@ Schema {
                     },
                     "HEEL": Component {
                         origin: Definition,
-                        node: 26..30 @21 EnumValueDefinition {
+                        node: 26..30 @23 EnumValueDefinition {
                             description: None,
                             value: "HEEL",
                             directives: [],
@@ -67,7 +67,7 @@ Schema {
             },
         ),
         "Dog": Object(
-            34..97 @21 ObjectType {
+            34..97 @23 ObjectType {
                 description: None,
                 name: "Dog",
                 implements_interfaces: {},
@@ -75,14 +75,14 @@ Schema {
                 fields: {
                     "doesKnowCommand": Component {
                         origin: Definition,
-                        node: 47..95 @21 FieldDefinition {
+                        node: 47..95 @23 FieldDefinition {
                             description: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                63..85 @21 InputValueDefinition {
+                                63..85 @23 InputValueDefinition {
                                     description: None,
                                     name: "dogCommand",
-                                    ty: 75..85 @21 Named(
+                                    ty: 75..85 @23 Named(
                                         "DogCommand",
                                     ),
                                     default_value: None,
@@ -99,7 +99,7 @@ Schema {
             },
         ),
         "Query": Object(
-            99..124 @21 ObjectType {
+            99..124 @23 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -107,7 +107,7 @@ Schema {
                 fields: {
                     "pet": Component {
                         origin: Definition,
-                        node: 114..122 @21 FieldDefinition {
+                        node: 114..122 @23 FieldDefinition {
                             description: None,
                             name: "pet",
                             arguments: [],
@@ -124,18 +124,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        21: SourceFile {
+        23: SourceFile {
             path: "0021_merge_identical_fields_with_arguments.graphql",
             source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "queryPupper": 126..204 @21 Operation {
+        "queryPupper": 126..204 @23 Operation {
             operation_type: Query,
             name: Some(
                 "queryPupper",
@@ -146,8 +146,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        148..202 @21 Field {
-                            definition: 114..122 @21 FieldDefinition {
+                        148..202 @23 Field {
+                            definition: 114..122 @23 FieldDefinition {
                                 description: None,
                                 name: "pet",
                                 arguments: [],
@@ -164,7 +164,7 @@ ExecutableDocument {
                                 ty: "Dog",
                                 selections: [
                                     FragmentSpread(
-                                        158..198 @21 FragmentSpread {
+                                        158..198 @23 FragmentSpread {
                                             fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
                                             directives: [],
                                         },
@@ -176,15 +176,15 @@ ExecutableDocument {
                 ],
             },
         },
-        "queryPupperAgain": 206..316 @21 Operation {
+        "queryPupperAgain": 206..316 @23 Operation {
             operation_type: Query,
             name: Some(
                 "queryPupperAgain",
             ),
             variables: [
-                229..252 @21 VariableDefinition {
+                229..252 @23 VariableDefinition {
                     name: "dogCommand",
-                    ty: 242..252 @21 Named(
+                    ty: 242..252 @23 Named(
                         "DogCommand",
                     ),
                     default_value: None,
@@ -196,8 +196,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        258..314 @21 Field {
-                            definition: 114..122 @21 FieldDefinition {
+                        258..314 @23 Field {
+                            definition: 114..122 @23 FieldDefinition {
                                 description: None,
                                 name: "pet",
                                 arguments: [],
@@ -214,7 +214,7 @@ ExecutableDocument {
                                 ty: "Dog",
                                 selections: [
                                     FragmentSpread(
-                                        268..310 @21 FragmentSpread {
+                                        268..310 @23 FragmentSpread {
                                             fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
                                             directives: [],
                                         },
@@ -228,22 +228,22 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "mergeIdenticalFieldsWithIdenticalArgs": 318..445 @21 Fragment {
+        "mergeIdenticalFieldsWithIdenticalArgs": 318..445 @23 Fragment {
             name: "mergeIdenticalFieldsWithIdenticalArgs",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
                 selections: [
                     Field(
-                        376..408 @21 Field {
-                            definition: 47..95 @21 FieldDefinition {
+                        376..408 @23 Field {
+                            definition: 47..95 @23 FieldDefinition {
                                 description: None,
                                 name: "doesKnowCommand",
                                 arguments: [
-                                    63..85 @21 InputValueDefinition {
+                                    63..85 @23 InputValueDefinition {
                                         description: None,
                                         name: "dogCommand",
-                                        ty: 75..85 @21 Named(
+                                        ty: 75..85 @23 Named(
                                             "DogCommand",
                                         ),
                                         default_value: None,
@@ -258,9 +258,9 @@ ExecutableDocument {
                             alias: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                392..407 @21 Argument {
+                                392..407 @23 Argument {
                                     name: "dogCommand",
-                                    value: 404..407 @21 Enum(
+                                    value: 404..407 @23 Enum(
                                         "SIT",
                                     ),
                                 },
@@ -273,15 +273,15 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        411..443 @21 Field {
-                            definition: 47..95 @21 FieldDefinition {
+                        411..443 @23 Field {
+                            definition: 47..95 @23 FieldDefinition {
                                 description: None,
                                 name: "doesKnowCommand",
                                 arguments: [
-                                    63..85 @21 InputValueDefinition {
+                                    63..85 @23 InputValueDefinition {
                                         description: None,
                                         name: "dogCommand",
-                                        ty: 75..85 @21 Named(
+                                        ty: 75..85 @23 Named(
                                             "DogCommand",
                                         ),
                                         default_value: None,
@@ -296,9 +296,9 @@ ExecutableDocument {
                             alias: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                427..442 @21 Argument {
+                                427..442 @23 Argument {
                                     name: "dogCommand",
-                                    value: 439..442 @21 Enum(
+                                    value: 439..442 @23 Enum(
                                         "SIT",
                                     ),
                                 },
@@ -313,22 +313,22 @@ ExecutableDocument {
                 ],
             },
         },
-        "mergeIdenticalFieldsWithIdenticalValues": 447..592 @21 Fragment {
+        "mergeIdenticalFieldsWithIdenticalValues": 447..592 @23 Fragment {
             name: "mergeIdenticalFieldsWithIdenticalValues",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
                 selections: [
                     Field(
-                        507..547 @21 Field {
-                            definition: 47..95 @21 FieldDefinition {
+                        507..547 @23 Field {
+                            definition: 47..95 @23 FieldDefinition {
                                 description: None,
                                 name: "doesKnowCommand",
                                 arguments: [
-                                    63..85 @21 InputValueDefinition {
+                                    63..85 @23 InputValueDefinition {
                                         description: None,
                                         name: "dogCommand",
-                                        ty: 75..85 @21 Named(
+                                        ty: 75..85 @23 Named(
                                             "DogCommand",
                                         ),
                                         default_value: None,
@@ -343,9 +343,9 @@ ExecutableDocument {
                             alias: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                523..546 @21 Argument {
+                                523..546 @23 Argument {
                                     name: "dogCommand",
-                                    value: 535..546 @21 Variable(
+                                    value: 535..546 @23 Variable(
                                         "dogCommand",
                                     ),
                                 },
@@ -358,15 +358,15 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        550..590 @21 Field {
-                            definition: 47..95 @21 FieldDefinition {
+                        550..590 @23 Field {
+                            definition: 47..95 @23 FieldDefinition {
                                 description: None,
                                 name: "doesKnowCommand",
                                 arguments: [
-                                    63..85 @21 InputValueDefinition {
+                                    63..85 @23 InputValueDefinition {
                                         description: None,
                                         name: "dogCommand",
-                                        ty: 75..85 @21 Named(
+                                        ty: 75..85 @23 Named(
                                             "DogCommand",
                                         ),
                                         default_value: None,
@@ -381,9 +381,9 @@ ExecutableDocument {
                             alias: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                566..589 @21 Argument {
+                                566..589 @23 Argument {
                                     name: "dogCommand",
-                                    value: 578..589 @21 Variable(
+                                    value: 578..589 @23 Variable(
                                         "dogCommand",
                                     ),
                                 },

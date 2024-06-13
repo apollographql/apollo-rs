@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        19: SourceFile {
+        21: SourceFile {
             path: "0019_extensions.graphql",
             source_text: "scalar Scalar\n\ntype Object implements Intf {\n  field: Int,\n}\n\ninterface Intf {\n  field: Int,\n}\n\ninput Input {\n  field: Enum,\n}\nenum Enum {\n  MEMBER,\n}\n\nextend scalar Scalar @specifiedBy(url: \"https://apollographql.com\")\nextend interface Intf {\n  field2: Scalar,\n}\nextend type Object {\n  field2: Scalar,\n}\nextend enum Enum {\n  MEMBER_2,\n}\nextend input Input {\n  field2: Int,\n}\n\ntype Query {\n  object: Object,\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Scalar": Scalar(
-            0..13 @19 ScalarType {
+            0..13 @21 ScalarType {
                 description: None,
                 name: "Scalar",
                 directives: [
@@ -50,16 +50,16 @@ Schema {
                         origin: Extension(
                             ExtensionId {
                                 arc: Some(
-                                    152..219 @19,
+                                    152..219 @21,
                                 ),
                             },
                         ),
-                        node: 173..219 @19 Directive {
+                        node: 173..219 @21 Directive {
                             name: "specifiedBy",
                             arguments: [
-                                186..218 @19 Argument {
+                                186..218 @21 Argument {
                                     name: "url",
-                                    value: 191..218 @19 String(
+                                    value: 191..218 @21 String(
                                         "https://apollographql.com",
                                     ),
                                 },
@@ -70,7 +70,7 @@ Schema {
             },
         ),
         "Object": Object(
-            15..60 @19 ObjectType {
+            15..60 @21 ObjectType {
                 description: None,
                 name: "Object",
                 implements_interfaces: {
@@ -83,7 +83,7 @@ Schema {
                 fields: {
                     "field": Component {
                         origin: Definition,
-                        node: 47..57 @19 FieldDefinition {
+                        node: 47..57 @21 FieldDefinition {
                             description: None,
                             name: "field",
                             arguments: [],
@@ -97,11 +97,11 @@ Schema {
                         origin: Extension(
                             ExtensionId {
                                 arc: Some(
-                                    264..304 @19,
+                                    264..304 @21,
                                 ),
                             },
                         ),
-                        node: 287..301 @19 FieldDefinition {
+                        node: 287..301 @21 FieldDefinition {
                             description: None,
                             name: "field2",
                             arguments: [],
@@ -115,7 +115,7 @@ Schema {
             },
         ),
         "Intf": Interface(
-            62..94 @19 InterfaceType {
+            62..94 @21 InterfaceType {
                 description: None,
                 name: "Intf",
                 implements_interfaces: {},
@@ -123,7 +123,7 @@ Schema {
                 fields: {
                     "field": Component {
                         origin: Definition,
-                        node: 81..91 @19 FieldDefinition {
+                        node: 81..91 @21 FieldDefinition {
                             description: None,
                             name: "field",
                             arguments: [],
@@ -137,11 +137,11 @@ Schema {
                         origin: Extension(
                             ExtensionId {
                                 arc: Some(
-                                    220..263 @19,
+                                    220..263 @21,
                                 ),
                             },
                         ),
-                        node: 246..260 @19 FieldDefinition {
+                        node: 246..260 @21 FieldDefinition {
                             description: None,
                             name: "field2",
                             arguments: [],
@@ -155,17 +155,17 @@ Schema {
             },
         ),
         "Input": InputObject(
-            96..126 @19 InputObjectType {
+            96..126 @21 InputObjectType {
                 description: None,
                 name: "Input",
                 directives: [],
                 fields: {
                     "field": Component {
                         origin: Definition,
-                        node: 112..123 @19 InputValueDefinition {
+                        node: 112..123 @21 InputValueDefinition {
                             description: None,
                             name: "field",
-                            ty: 119..123 @19 Named(
+                            ty: 119..123 @21 Named(
                                 "Enum",
                             ),
                             default_value: None,
@@ -176,14 +176,14 @@ Schema {
                         origin: Extension(
                             ExtensionId {
                                 arc: Some(
-                                    338..375 @19,
+                                    338..375 @21,
                                 ),
                             },
                         ),
-                        node: 361..372 @19 InputValueDefinition {
+                        node: 361..372 @21 InputValueDefinition {
                             description: None,
                             name: "field2",
-                            ty: 369..372 @19 Named(
+                            ty: 369..372 @21 Named(
                                 "Int",
                             ),
                             default_value: None,
@@ -194,14 +194,14 @@ Schema {
             },
         ),
         "Enum": Enum(
-            127..150 @19 EnumType {
+            127..150 @21 EnumType {
                 description: None,
                 name: "Enum",
                 directives: [],
                 values: {
                     "MEMBER": Component {
                         origin: Definition,
-                        node: 141..147 @19 EnumValueDefinition {
+                        node: 141..147 @21 EnumValueDefinition {
                             description: None,
                             value: "MEMBER",
                             directives: [],
@@ -211,11 +211,11 @@ Schema {
                         origin: Extension(
                             ExtensionId {
                                 arc: Some(
-                                    305..337 @19,
+                                    305..337 @21,
                                 ),
                             },
                         ),
-                        node: 326..334 @19 EnumValueDefinition {
+                        node: 326..334 @21 EnumValueDefinition {
                             description: None,
                             value: "MEMBER_2",
                             directives: [],
@@ -225,7 +225,7 @@ Schema {
             },
         ),
         "Query": Object(
-            377..409 @19 ObjectType {
+            377..409 @21 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -233,7 +233,7 @@ Schema {
                 fields: {
                     "object": Component {
                         origin: Definition,
-                        node: 392..406 @19 FieldDefinition {
+                        node: 392..406 @21 FieldDefinition {
                             description: None,
                             name: "object",
                             arguments: [],
@@ -250,11 +250,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        19: SourceFile {
+        21: SourceFile {
             path: "0019_extensions.graphql",
             source_text: "scalar Scalar\n\ntype Object implements Intf {\n  field: Int,\n}\n\ninterface Intf {\n  field: Int,\n}\n\ninput Input {\n  field: Enum,\n}\nenum Enum {\n  MEMBER,\n}\n\nextend scalar Scalar @specifiedBy(url: \"https://apollographql.com\")\nextend interface Intf {\n  field2: Scalar,\n}\nextend type Object {\n  field2: Scalar,\n}\nextend enum Enum {\n  MEMBER_2,\n}\nextend input Input {\n  field2: Int,\n}\n\ntype Query {\n  object: Object,\n}\n",
         },

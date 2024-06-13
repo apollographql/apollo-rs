@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        11: SourceFile {
+        13: SourceFile {
             path: "0011_fragment_spreads_in_fragment_definitions.graphql",
             source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            133..158 @11 ObjectType {
+            133..158 @13 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "foo": Component {
                         origin: Definition,
-                        node: 148..156 @11 FieldDefinition {
+                        node: 148..156 @13 FieldDefinition {
                             description: None,
                             name: "foo",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Foo": Object(
-            160..183 @11 ObjectType {
+            160..183 @13 ObjectType {
                 description: None,
                 name: "Foo",
                 implements_interfaces: {},
@@ -72,7 +72,7 @@ Schema {
                 fields: {
                     "baz": Component {
                         origin: Definition,
-                        node: 173..181 @11 FieldDefinition {
+                        node: 173..181 @13 FieldDefinition {
                             description: None,
                             name: "baz",
                             arguments: [],
@@ -86,7 +86,7 @@ Schema {
             },
         ),
         "Baz": Object(
-            185..206 @11 ObjectType {
+            185..206 @13 ObjectType {
                 description: None,
                 name: "Baz",
                 implements_interfaces: {},
@@ -94,7 +94,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 198..204 @11 FieldDefinition {
+                        node: 198..204 @13 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -111,18 +111,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        11: SourceFile {
+        13: SourceFile {
             path: "0011_fragment_spreads_in_fragment_definitions.graphql",
             source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "IntrospectionQuery": 0..51 @11 Operation {
+        "IntrospectionQuery": 0..51 @13 Operation {
             operation_type: Query,
             name: Some(
                 "IntrospectionQuery",
@@ -133,8 +133,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        29..49 @11 Field {
-                            definition: 148..156 @11 FieldDefinition {
+                        29..49 @13 Field {
+                            definition: 148..156 @13 FieldDefinition {
                                 description: None,
                                 name: "foo",
                                 arguments: [],
@@ -151,7 +151,7 @@ ExecutableDocument {
                                 ty: "Foo",
                                 selections: [
                                     FragmentSpread(
-                                        39..45 @11 FragmentSpread {
+                                        39..45 @13 FragmentSpread {
                                             fragment_name: "Bar",
                                             directives: [],
                                         },
@@ -165,15 +165,15 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "Bar": 53..100 @11 Fragment {
+        "Bar": 53..100 @13 Fragment {
             name: "Bar",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Foo",
                 selections: [
                     Field(
-                        77..98 @11 Field {
-                            definition: 173..181 @11 FieldDefinition {
+                        77..98 @13 Field {
+                            definition: 173..181 @13 FieldDefinition {
                                 description: None,
                                 name: "baz",
                                 arguments: [],
@@ -190,7 +190,7 @@ ExecutableDocument {
                                 ty: "Baz",
                                 selections: [
                                     FragmentSpread(
-                                        87..94 @11 FragmentSpread {
+                                        87..94 @13 FragmentSpread {
                                             fragment_name: "Quux",
                                             directives: [],
                                         },
@@ -202,15 +202,15 @@ ExecutableDocument {
                 ],
             },
         },
-        "Quux": 102..131 @11 Fragment {
+        "Quux": 102..131 @13 Fragment {
             name: "Quux",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Baz",
                 selections: [
                     Field(
-                        127..129 @11 Field {
-                            definition: 198..204 @11 FieldDefinition {
+                        127..129 @13 Field {
+                            definition: 198..204 @13 FieldDefinition {
                                 description: None,
                                 name: "id",
                                 arguments: [],

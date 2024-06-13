@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        20: SourceFile {
+        22: SourceFile {
             path: "0020_merge_identical_fields.graphql",
             source_text: "type Query {\n  pet: Dog\n}\n\ntype Dog {\n  nickname: String\n  name: String!\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFields\n    ...mergeIdenticalAliasesAndFields\n  }\n}\n\nfragment mergeIdenticalFields on Dog {\n  name\n  name\n}\n\nfragment mergeIdenticalAliasesAndFields on Dog {\n  otherName: name\n  otherName: name\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..25 @20 ObjectType {
+            0..25 @22 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "pet": Component {
                         origin: Definition,
-                        node: 15..23 @20 FieldDefinition {
+                        node: 15..23 @22 FieldDefinition {
                             description: None,
                             name: "pet",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Dog": Object(
-            27..74 @20 ObjectType {
+            27..74 @22 ObjectType {
                 description: None,
                 name: "Dog",
                 implements_interfaces: {},
@@ -72,7 +72,7 @@ Schema {
                 fields: {
                     "nickname": Component {
                         origin: Definition,
-                        node: 40..56 @20 FieldDefinition {
+                        node: 40..56 @22 FieldDefinition {
                             description: None,
                             name: "nickname",
                             arguments: [],
@@ -84,7 +84,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 59..72 @20 FieldDefinition {
+                        node: 59..72 @22 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -101,18 +101,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        20: SourceFile {
+        22: SourceFile {
             path: "0020_merge_identical_fields.graphql",
             source_text: "type Query {\n  pet: Dog\n}\n\ntype Dog {\n  nickname: String\n  name: String!\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFields\n    ...mergeIdenticalAliasesAndFields\n  }\n}\n\nfragment mergeIdenticalFields on Dog {\n  name\n  name\n}\n\nfragment mergeIdenticalAliasesAndFields on Dog {\n  otherName: name\n  otherName: name\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "queryPupper": 76..175 @20 Operation {
+        "queryPupper": 76..175 @22 Operation {
             operation_type: Query,
             name: Some(
                 "queryPupper",
@@ -123,8 +123,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        98..173 @20 Field {
-                            definition: 15..23 @20 FieldDefinition {
+                        98..173 @22 Field {
+                            definition: 15..23 @22 FieldDefinition {
                                 description: None,
                                 name: "pet",
                                 arguments: [],
@@ -141,13 +141,13 @@ ExecutableDocument {
                                 ty: "Dog",
                                 selections: [
                                     FragmentSpread(
-                                        108..131 @20 FragmentSpread {
+                                        108..131 @22 FragmentSpread {
                                             fragment_name: "mergeIdenticalFields",
                                             directives: [],
                                         },
                                     ),
                                     FragmentSpread(
-                                        136..169 @20 FragmentSpread {
+                                        136..169 @22 FragmentSpread {
                                             fragment_name: "mergeIdenticalAliasesAndFields",
                                             directives: [],
                                         },
@@ -161,15 +161,15 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "mergeIdenticalFields": 177..231 @20 Fragment {
+        "mergeIdenticalFields": 177..231 @22 Fragment {
             name: "mergeIdenticalFields",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
                 selections: [
                     Field(
-                        218..222 @20 Field {
-                            definition: 59..72 @20 FieldDefinition {
+                        218..222 @22 Field {
+                            definition: 59..72 @22 FieldDefinition {
                                 description: None,
                                 name: "name",
                                 arguments: [],
@@ -189,8 +189,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        225..229 @20 Field {
-                            definition: 59..72 @20 FieldDefinition {
+                        225..229 @22 Field {
+                            definition: 59..72 @22 FieldDefinition {
                                 description: None,
                                 name: "name",
                                 arguments: [],
@@ -212,15 +212,15 @@ ExecutableDocument {
                 ],
             },
         },
-        "mergeIdenticalAliasesAndFields": 233..319 @20 Fragment {
+        "mergeIdenticalAliasesAndFields": 233..319 @22 Fragment {
             name: "mergeIdenticalAliasesAndFields",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
                 selections: [
                     Field(
-                        284..299 @20 Field {
-                            definition: 59..72 @20 FieldDefinition {
+                        284..299 @22 Field {
+                            definition: 59..72 @22 FieldDefinition {
                                 description: None,
                                 name: "name",
                                 arguments: [],
@@ -242,8 +242,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        302..317 @20 Field {
-                            definition: 59..72 @20 FieldDefinition {
+                        302..317 @22 Field {
+                            definition: 59..72 @22 FieldDefinition {
                                 description: None,
                                 name: "name",
                                 arguments: [],

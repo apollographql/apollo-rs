@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        40: SourceFile {
+        42: SourceFile {
             path: "0041_unquoted_string_for_custom_scalar.graphql",
             source_text: "scalar Currency\n\ntype Query {\n  convertToUSD(amount: Int!, currency: Currency!): Int!\n}\n\nquery {\n  convertToUSD(amount: 100, currency: EUR)\n}\n",
         },
@@ -42,14 +42,14 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Currency": Scalar(
-            0..15 @40 ScalarType {
+            0..15 @42 ScalarType {
                 description: None,
                 name: "Currency",
                 directives: [],
             },
         ),
         "Query": Object(
-            17..87 @40 ObjectType {
+            17..87 @42 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -57,23 +57,23 @@ Schema {
                 fields: {
                     "convertToUSD": Component {
                         origin: Definition,
-                        node: 32..85 @40 FieldDefinition {
+                        node: 32..85 @42 FieldDefinition {
                             description: None,
                             name: "convertToUSD",
                             arguments: [
-                                45..57 @40 InputValueDefinition {
+                                45..57 @42 InputValueDefinition {
                                     description: None,
                                     name: "amount",
-                                    ty: 53..57 @40 NonNullNamed(
+                                    ty: 53..57 @42 NonNullNamed(
                                         "Int",
                                     ),
                                     default_value: None,
                                     directives: [],
                                 },
-                                59..78 @40 InputValueDefinition {
+                                59..78 @42 InputValueDefinition {
                                     description: None,
                                     name: "currency",
-                                    ty: 69..78 @40 NonNullNamed(
+                                    ty: 69..78 @42 NonNullNamed(
                                         "Currency",
                                     ),
                                     default_value: None,
@@ -93,17 +93,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        40: SourceFile {
+        42: SourceFile {
             path: "0041_unquoted_string_for_custom_scalar.graphql",
             source_text: "scalar Currency\n\ntype Query {\n  convertToUSD(amount: Int!, currency: Currency!): Int!\n}\n\nquery {\n  convertToUSD(amount: 100, currency: EUR)\n}\n",
         },
     },
     anonymous_operation: Some(
-        89..141 @40 Operation {
+        89..141 @42 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -112,24 +112,24 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        99..139 @40 Field {
-                            definition: 32..85 @40 FieldDefinition {
+                        99..139 @42 Field {
+                            definition: 32..85 @42 FieldDefinition {
                                 description: None,
                                 name: "convertToUSD",
                                 arguments: [
-                                    45..57 @40 InputValueDefinition {
+                                    45..57 @42 InputValueDefinition {
                                         description: None,
                                         name: "amount",
-                                        ty: 53..57 @40 NonNullNamed(
+                                        ty: 53..57 @42 NonNullNamed(
                                             "Int",
                                         ),
                                         default_value: None,
                                         directives: [],
                                     },
-                                    59..78 @40 InputValueDefinition {
+                                    59..78 @42 InputValueDefinition {
                                         description: None,
                                         name: "currency",
-                                        ty: 69..78 @40 NonNullNamed(
+                                        ty: 69..78 @42 NonNullNamed(
                                             "Currency",
                                         ),
                                         default_value: None,
@@ -144,15 +144,15 @@ ExecutableDocument {
                             alias: None,
                             name: "convertToUSD",
                             arguments: [
-                                112..123 @40 Argument {
+                                112..123 @42 Argument {
                                     name: "amount",
-                                    value: 120..123 @40 Int(
+                                    value: 120..123 @42 Int(
                                         100,
                                     ),
                                 },
-                                125..138 @40 Argument {
+                                125..138 @42 Argument {
                                     name: "currency",
-                                    value: 135..138 @40 Enum(
+                                    value: 135..138 @42 Enum(
                                         "EUR",
                                     ),
                                 },

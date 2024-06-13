@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        34: SourceFile {
+        36: SourceFile {
             path: "0035_implicit_schema_definition_with_query_type.graphql",
             source_text: "type Query {\n    name: String\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..31 @34 ObjectType {
+            0..31 @36 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 17..29 @34 FieldDefinition {
+                        node: 17..29 @36 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -67,11 +67,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        34: SourceFile {
+        36: SourceFile {
             path: "0035_implicit_schema_definition_with_query_type.graphql",
             source_text: "type Query {\n    name: String\n}",
         },

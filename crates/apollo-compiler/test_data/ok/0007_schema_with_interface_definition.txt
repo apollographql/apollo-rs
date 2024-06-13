@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        7: SourceFile {
+        9: SourceFile {
             path: "0007_schema_with_interface_definition.graphql",
             source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..42 @7 ObjectType {
+            0..42 @9 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {
@@ -55,7 +55,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 33..40 @7 FieldDefinition {
+                        node: 33..40 @9 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -69,7 +69,7 @@ Schema {
             },
         ),
         "Node": Interface(
-            44..72 @7 InterfaceType {
+            44..72 @9 InterfaceType {
                 description: None,
                 name: "Node",
                 implements_interfaces: {},
@@ -77,7 +77,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 63..70 @7 FieldDefinition {
+                        node: 63..70 @9 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -91,7 +91,7 @@ Schema {
             },
         ),
         "Resource": Interface(
-            74..149 @7 InterfaceType {
+            74..149 @9 InterfaceType {
                 description: None,
                 name: "Resource",
                 implements_interfaces: {
@@ -104,7 +104,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 113..120 @7 FieldDefinition {
+                        node: 113..120 @9 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -116,7 +116,7 @@ Schema {
                     },
                     "width": Component {
                         origin: Definition,
-                        node: 123..133 @7 FieldDefinition {
+                        node: 123..133 @9 FieldDefinition {
                             description: None,
                             name: "width",
                             arguments: [],
@@ -128,7 +128,7 @@ Schema {
                     },
                     "height": Component {
                         origin: Definition,
-                        node: 136..147 @7 FieldDefinition {
+                        node: 136..147 @9 FieldDefinition {
                             description: None,
                             name: "height",
                             arguments: [],
@@ -142,7 +142,7 @@ Schema {
             },
         ),
         "Image": Interface(
-            151..254 @7 InterfaceType {
+            151..254 @9 InterfaceType {
                 description: None,
                 name: "Image",
                 implements_interfaces: {
@@ -159,7 +159,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 198..205 @7 FieldDefinition {
+                        node: 198..205 @9 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -171,7 +171,7 @@ Schema {
                     },
                     "width": Component {
                         origin: Definition,
-                        node: 208..218 @7 FieldDefinition {
+                        node: 208..218 @9 FieldDefinition {
                             description: None,
                             name: "width",
                             arguments: [],
@@ -183,7 +183,7 @@ Schema {
                     },
                     "height": Component {
                         origin: Definition,
-                        node: 221..232 @7 FieldDefinition {
+                        node: 221..232 @9 FieldDefinition {
                             description: None,
                             name: "height",
                             arguments: [],
@@ -195,7 +195,7 @@ Schema {
                     },
                     "thumbnail": Component {
                         origin: Definition,
-                        node: 235..252 @7 FieldDefinition {
+                        node: 235..252 @9 FieldDefinition {
                             description: None,
                             name: "thumbnail",
                             arguments: [],
@@ -212,11 +212,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        7: SourceFile {
+        9: SourceFile {
             path: "0007_schema_with_interface_definition.graphql",
             source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
         },

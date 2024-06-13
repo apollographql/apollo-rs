@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        5: SourceFile {
+        7: SourceFile {
             path: "0005_schema_with_valid_enum_definitions.graphql",
             source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..43 @5 ObjectType {
+            0..43 @7 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "pet": Component {
                         origin: Definition,
-                        node: 15..23 @5 FieldDefinition {
+                        node: 15..23 @7 FieldDefinition {
                             description: None,
                             name: "pet",
                             arguments: [],
@@ -62,7 +62,7 @@ Schema {
                     },
                     "snacks": Component {
                         origin: Definition,
-                        node: 27..40 @5 FieldDefinition {
+                        node: 27..40 @7 FieldDefinition {
                             description: None,
                             name: "snacks",
                             arguments: [],
@@ -76,14 +76,14 @@ Schema {
             },
         ),
         "Pet": Enum(
-            45..81 @5 EnumType {
+            45..81 @7 EnumType {
                 description: None,
                 name: "Pet",
                 directives: [],
                 values: {
                     "CAT": Component {
                         origin: Definition,
-                        node: 60..63 @5 EnumValueDefinition {
+                        node: 60..63 @7 EnumValueDefinition {
                             description: None,
                             value: "CAT",
                             directives: [],
@@ -91,7 +91,7 @@ Schema {
                     },
                     "DOG": Component {
                         origin: Definition,
-                        node: 68..71 @5 EnumValueDefinition {
+                        node: 68..71 @7 EnumValueDefinition {
                             description: None,
                             value: "DOG",
                             directives: [],
@@ -99,7 +99,7 @@ Schema {
                     },
                     "FOX": Component {
                         origin: Definition,
-                        node: 76..79 @5 EnumValueDefinition {
+                        node: 76..79 @7 EnumValueDefinition {
                             description: None,
                             value: "FOX",
                             directives: [],
@@ -109,14 +109,14 @@ Schema {
             },
         ),
         "Snack": Enum(
-            83..146 @5 EnumType {
+            83..146 @7 EnumType {
                 description: None,
                 name: "Snack",
                 directives: [],
                 values: {
                     "THRIVE_PET_FOODS": Component {
                         origin: Definition,
-                        node: 100..116 @5 EnumValueDefinition {
+                        node: 100..116 @7 EnumValueDefinition {
                             description: None,
                             value: "THRIVE_PET_FOODS",
                             directives: [],
@@ -124,7 +124,7 @@ Schema {
                     },
                     "LILYS_KITCHEN": Component {
                         origin: Definition,
-                        node: 121..134 @5 EnumValueDefinition {
+                        node: 121..134 @7 EnumValueDefinition {
                             description: None,
                             value: "LILYS_KITCHEN",
                             directives: [],
@@ -132,7 +132,7 @@ Schema {
                     },
                     "ACANA": Component {
                         origin: Definition,
-                        node: 139..144 @5 EnumValueDefinition {
+                        node: 139..144 @7 EnumValueDefinition {
                             description: None,
                             value: "ACANA",
                             directives: [],
@@ -145,11 +145,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        5: SourceFile {
+        7: SourceFile {
             path: "0005_schema_with_valid_enum_definitions.graphql",
             source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
         },

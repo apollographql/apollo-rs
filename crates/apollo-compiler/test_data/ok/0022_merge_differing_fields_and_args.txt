@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        22: SourceFile {
+        24: SourceFile {
             path: "0022_merge_differing_fields_and_args.graphql",
             source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Pet": Interface(
-            0..33 @22 InterfaceType {
+            0..33 @24 InterfaceType {
                 description: None,
                 name: "Pet",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 18..31 @22 FieldDefinition {
+                        node: 18..31 @24 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -64,14 +64,14 @@ Schema {
             },
         ),
         "DogCommand": Enum(
-            35..67 @22 EnumType {
+            35..67 @24 EnumType {
                 description: None,
                 name: "DogCommand",
                 directives: [],
                 values: {
                     "SIT": Component {
                         origin: Definition,
-                        node: 55..58 @22 EnumValueDefinition {
+                        node: 55..58 @24 EnumValueDefinition {
                             description: None,
                             value: "SIT",
                             directives: [],
@@ -79,7 +79,7 @@ Schema {
                     },
                     "HEEL": Component {
                         origin: Definition,
-                        node: 61..65 @22 EnumValueDefinition {
+                        node: 61..65 @24 EnumValueDefinition {
                             description: None,
                             value: "HEEL",
                             directives: [],
@@ -89,14 +89,14 @@ Schema {
             },
         ),
         "CatCommand": Enum(
-            69..95 @22 EnumType {
+            69..95 @24 EnumType {
                 description: None,
                 name: "CatCommand",
                 directives: [],
                 values: {
                     "JUMP": Component {
                         origin: Definition,
-                        node: 89..93 @22 EnumValueDefinition {
+                        node: 89..93 @24 EnumValueDefinition {
                             description: None,
                             value: "JUMP",
                             directives: [],
@@ -106,7 +106,7 @@ Schema {
             },
         ),
         "Query": Object(
-            97..122 @22 ObjectType {
+            97..122 @24 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -114,7 +114,7 @@ Schema {
                 fields: {
                     "pet": Component {
                         origin: Definition,
-                        node: 112..120 @22 FieldDefinition {
+                        node: 112..120 @24 FieldDefinition {
                             description: None,
                             name: "pet",
                             arguments: [],
@@ -128,7 +128,7 @@ Schema {
             },
         ),
         "Dog": Object(
-            124..300 @22 ObjectType {
+            124..300 @24 ObjectType {
                 description: None,
                 name: "Dog",
                 implements_interfaces: {
@@ -141,7 +141,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 152..165 @22 FieldDefinition {
+                        node: 152..165 @24 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -153,7 +153,7 @@ Schema {
                     },
                     "nickname": Component {
                         origin: Definition,
-                        node: 168..185 @22 FieldDefinition {
+                        node: 168..185 @24 FieldDefinition {
                             description: None,
                             name: "nickname",
                             arguments: [],
@@ -165,7 +165,7 @@ Schema {
                     },
                     "barkVolume": Component {
                         origin: Definition,
-                        node: 188..204 @22 FieldDefinition {
+                        node: 188..204 @24 FieldDefinition {
                             description: None,
                             name: "barkVolume",
                             arguments: [],
@@ -177,14 +177,14 @@ Schema {
                     },
                     "doesKnowCommand": Component {
                         origin: Definition,
-                        node: 207..257 @22 FieldDefinition {
+                        node: 207..257 @24 FieldDefinition {
                             description: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                223..246 @22 InputValueDefinition {
+                                223..246 @24 InputValueDefinition {
                                     description: None,
                                     name: "dogCommand",
-                                    ty: 235..246 @22 NonNullNamed(
+                                    ty: 235..246 @24 NonNullNamed(
                                         "DogCommand",
                                     ),
                                     default_value: None,
@@ -199,23 +199,23 @@ Schema {
                     },
                     "isAtLocation": Component {
                         origin: Definition,
-                        node: 260..298 @22 FieldDefinition {
+                        node: 260..298 @24 FieldDefinition {
                             description: None,
                             name: "isAtLocation",
                             arguments: [
-                                273..279 @22 InputValueDefinition {
+                                273..279 @24 InputValueDefinition {
                                     description: None,
                                     name: "x",
-                                    ty: 276..279 @22 Named(
+                                    ty: 276..279 @24 Named(
                                         "Int",
                                     ),
                                     default_value: None,
                                     directives: [],
                                 },
-                                281..287 @22 InputValueDefinition {
+                                281..287 @24 InputValueDefinition {
                                     description: None,
                                     name: "y",
-                                    ty: 284..287 @22 Named(
+                                    ty: 284..287 @24 Named(
                                         "Int",
                                     ),
                                     default_value: None,
@@ -232,7 +232,7 @@ Schema {
             },
         ),
         "Cat": Object(
-            302..417 @22 ObjectType {
+            302..417 @24 ObjectType {
                 description: None,
                 name: "Cat",
                 implements_interfaces: {
@@ -245,7 +245,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 330..343 @22 FieldDefinition {
+                        node: 330..343 @24 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -257,7 +257,7 @@ Schema {
                     },
                     "meowVolume": Component {
                         origin: Definition,
-                        node: 346..362 @22 FieldDefinition {
+                        node: 346..362 @24 FieldDefinition {
                             description: None,
                             name: "meowVolume",
                             arguments: [],
@@ -269,14 +269,14 @@ Schema {
                     },
                     "doesKnowCommand": Component {
                         origin: Definition,
-                        node: 365..415 @22 FieldDefinition {
+                        node: 365..415 @24 FieldDefinition {
                             description: None,
                             name: "doesKnowCommand",
                             arguments: [
-                                381..404 @22 InputValueDefinition {
+                                381..404 @24 InputValueDefinition {
                                     description: None,
                                     name: "catCommand",
-                                    ty: 393..404 @22 NonNullNamed(
+                                    ty: 393..404 @24 NonNullNamed(
                                         "CatCommand",
                                     ),
                                     default_value: None,
@@ -296,18 +296,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        22: SourceFile {
+        24: SourceFile {
             path: "0022_merge_differing_fields_and_args.graphql",
             source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "barkVolume": 419..478 @22 Operation {
+        "barkVolume": 419..478 @24 Operation {
             operation_type: Query,
             name: Some(
                 "barkVolume",
@@ -318,8 +318,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        440..476 @22 Field {
-                            definition: 112..120 @22 FieldDefinition {
+                        440..476 @24 Field {
+                            definition: 112..120 @24 FieldDefinition {
                                 description: None,
                                 name: "pet",
                                 arguments: [],
@@ -336,7 +336,7 @@ ExecutableDocument {
                                 ty: "Pet",
                                 selections: [
                                     FragmentSpread(
-                                        450..472 @22 FragmentSpread {
+                                        450..472 @24 FragmentSpread {
                                             fragment_name: "safeDifferingFields",
                                             directives: [],
                                         },
@@ -348,7 +348,7 @@ ExecutableDocument {
                 ],
             },
         },
-        "doesKnowCommand": 480..542 @22 Operation {
+        "doesKnowCommand": 480..542 @24 Operation {
             operation_type: Query,
             name: Some(
                 "doesKnowCommand",
@@ -359,8 +359,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        506..540 @22 Field {
-                            definition: 112..120 @22 FieldDefinition {
+                        506..540 @24 Field {
+                            definition: 112..120 @24 FieldDefinition {
                                 description: None,
                                 name: "pet",
                                 arguments: [],
@@ -377,7 +377,7 @@ ExecutableDocument {
                                 ty: "Pet",
                                 selections: [
                                     FragmentSpread(
-                                        516..536 @22 FragmentSpread {
+                                        516..536 @24 FragmentSpread {
                                             fragment_name: "safeDifferingArgs",
                                             directives: [],
                                         },
@@ -389,7 +389,7 @@ ExecutableDocument {
                 ],
             },
         },
-        "isAtLocation": 544..607 @22 Operation {
+        "isAtLocation": 544..607 @24 Operation {
             operation_type: Query,
             name: Some(
                 "isAtLocation",
@@ -400,8 +400,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        567..605 @22 Field {
-                            definition: 112..120 @22 FieldDefinition {
+                        567..605 @24 Field {
+                            definition: 112..120 @24 FieldDefinition {
                                 description: None,
                                 name: "pet",
                                 arguments: [],
@@ -418,7 +418,7 @@ ExecutableDocument {
                                 ty: "Pet",
                                 selections: [
                                     FragmentSpread(
-                                        577..601 @22 FragmentSpread {
+                                        577..601 @24 FragmentSpread {
                                             fragment_name: "safeDifferingArgOrder",
                                             directives: [],
                                         },
@@ -432,14 +432,14 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "safeDifferingFields": 609..732 @22 Fragment {
+        "safeDifferingFields": 609..732 @24 Fragment {
             name: "safeDifferingFields",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
                 selections: [
                     InlineFragment(
-                        649..688 @22 InlineFragment {
+                        649..688 @24 InlineFragment {
                             type_condition: Some(
                                 "Dog",
                             ),
@@ -448,8 +448,8 @@ ExecutableDocument {
                                 ty: "Dog",
                                 selections: [
                                     Field(
-                                        666..684 @22 Field {
-                                            definition: 188..204 @22 FieldDefinition {
+                                        666..684 @24 Field {
+                                            definition: 188..204 @24 FieldDefinition {
                                                 description: None,
                                                 name: "barkVolume",
                                                 arguments: [],
@@ -475,7 +475,7 @@ ExecutableDocument {
                         },
                     ),
                     InlineFragment(
-                        691..730 @22 InlineFragment {
+                        691..730 @24 InlineFragment {
                             type_condition: Some(
                                 "Cat",
                             ),
@@ -484,8 +484,8 @@ ExecutableDocument {
                                 ty: "Cat",
                                 selections: [
                                     Field(
-                                        708..726 @22 Field {
-                                            definition: 346..362 @22 FieldDefinition {
+                                        708..726 @24 Field {
+                                            definition: 346..362 @24 FieldDefinition {
                                                 description: None,
                                                 name: "meowVolume",
                                                 arguments: [],
@@ -513,14 +513,14 @@ ExecutableDocument {
                 ],
             },
         },
-        "safeDifferingArgs": 734..884 @22 Fragment {
+        "safeDifferingArgs": 734..884 @24 Fragment {
             name: "safeDifferingArgs",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Pet",
                 selections: [
                     InlineFragment(
-                        772..825 @22 InlineFragment {
+                        772..825 @24 InlineFragment {
                             type_condition: Some(
                                 "Dog",
                             ),
@@ -529,15 +529,15 @@ ExecutableDocument {
                                 ty: "Dog",
                                 selections: [
                                     Field(
-                                        789..821 @22 Field {
-                                            definition: 207..257 @22 FieldDefinition {
+                                        789..821 @24 Field {
+                                            definition: 207..257 @24 FieldDefinition {
                                                 description: None,
                                                 name: "doesKnowCommand",
                                                 arguments: [
-                                                    223..246 @22 InputValueDefinition {
+                                                    223..246 @24 InputValueDefinition {
                                                         description: None,
                                                         name: "dogCommand",
-                                                        ty: 235..246 @22 NonNullNamed(
+                                                        ty: 235..246 @24 NonNullNamed(
                                                             "DogCommand",
                                                         ),
                                                         default_value: None,
@@ -552,9 +552,9 @@ ExecutableDocument {
                                             alias: None,
                                             name: "doesKnowCommand",
                                             arguments: [
-                                                805..820 @22 Argument {
+                                                805..820 @24 Argument {
                                                     name: "dogCommand",
-                                                    value: 817..820 @22 Enum(
+                                                    value: 817..820 @24 Enum(
                                                         "SIT",
                                                     ),
                                                 },
@@ -571,7 +571,7 @@ ExecutableDocument {
                         },
                     ),
                     InlineFragment(
-                        828..882 @22 InlineFragment {
+                        828..882 @24 InlineFragment {
                             type_condition: Some(
                                 "Cat",
                             ),
@@ -580,15 +580,15 @@ ExecutableDocument {
                                 ty: "Cat",
                                 selections: [
                                     Field(
-                                        845..878 @22 Field {
-                                            definition: 365..415 @22 FieldDefinition {
+                                        845..878 @24 Field {
+                                            definition: 365..415 @24 FieldDefinition {
                                                 description: None,
                                                 name: "doesKnowCommand",
                                                 arguments: [
-                                                    381..404 @22 InputValueDefinition {
+                                                    381..404 @24 InputValueDefinition {
                                                         description: None,
                                                         name: "catCommand",
-                                                        ty: 393..404 @22 NonNullNamed(
+                                                        ty: 393..404 @24 NonNullNamed(
                                                             "CatCommand",
                                                         ),
                                                         default_value: None,
@@ -603,9 +603,9 @@ ExecutableDocument {
                                             alias: None,
                                             name: "doesKnowCommand",
                                             arguments: [
-                                                861..877 @22 Argument {
+                                                861..877 @24 Argument {
                                                     name: "catCommand",
-                                                    value: 873..877 @22 Enum(
+                                                    value: 873..877 @24 Enum(
                                                         "JUMP",
                                                     ),
                                                 },
@@ -624,31 +624,31 @@ ExecutableDocument {
                 ],
             },
         },
-        "safeDifferingArgOrder": 886..981 @22 Fragment {
+        "safeDifferingArgOrder": 886..981 @24 Fragment {
             name: "safeDifferingArgOrder",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Dog",
                 selections: [
                     Field(
-                        928..952 @22 Field {
-                            definition: 260..298 @22 FieldDefinition {
+                        928..952 @24 Field {
+                            definition: 260..298 @24 FieldDefinition {
                                 description: None,
                                 name: "isAtLocation",
                                 arguments: [
-                                    273..279 @22 InputValueDefinition {
+                                    273..279 @24 InputValueDefinition {
                                         description: None,
                                         name: "x",
-                                        ty: 276..279 @22 Named(
+                                        ty: 276..279 @24 Named(
                                             "Int",
                                         ),
                                         default_value: None,
                                         directives: [],
                                     },
-                                    281..287 @22 InputValueDefinition {
+                                    281..287 @24 InputValueDefinition {
                                         description: None,
                                         name: "y",
-                                        ty: 284..287 @22 Named(
+                                        ty: 284..287 @24 Named(
                                             "Int",
                                         ),
                                         default_value: None,
@@ -663,15 +663,15 @@ ExecutableDocument {
                             alias: None,
                             name: "isAtLocation",
                             arguments: [
-                                941..945 @22 Argument {
+                                941..945 @24 Argument {
                                     name: "x",
-                                    value: 944..945 @22 Int(
+                                    value: 944..945 @24 Int(
                                         0,
                                     ),
                                 },
-                                947..951 @22 Argument {
+                                947..951 @24 Argument {
                                     name: "y",
-                                    value: 950..951 @22 Int(
+                                    value: 950..951 @24 Int(
                                         0,
                                     ),
                                 },
@@ -684,24 +684,24 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        955..979 @22 Field {
-                            definition: 260..298 @22 FieldDefinition {
+                        955..979 @24 Field {
+                            definition: 260..298 @24 FieldDefinition {
                                 description: None,
                                 name: "isAtLocation",
                                 arguments: [
-                                    273..279 @22 InputValueDefinition {
+                                    273..279 @24 InputValueDefinition {
                                         description: None,
                                         name: "x",
-                                        ty: 276..279 @22 Named(
+                                        ty: 276..279 @24 Named(
                                             "Int",
                                         ),
                                         default_value: None,
                                         directives: [],
                                     },
-                                    281..287 @22 InputValueDefinition {
+                                    281..287 @24 InputValueDefinition {
                                         description: None,
                                         name: "y",
-                                        ty: 284..287 @22 Named(
+                                        ty: 284..287 @24 Named(
                                             "Int",
                                         ),
                                         default_value: None,
@@ -716,15 +716,15 @@ ExecutableDocument {
                             alias: None,
                             name: "isAtLocation",
                             arguments: [
-                                968..972 @22 Argument {
+                                968..972 @24 Argument {
                                     name: "y",
-                                    value: 971..972 @22 Int(
+                                    value: 971..972 @24 Int(
                                         0,
                                     ),
                                 },
-                                974..978 @22 Argument {
+                                974..978 @24 Argument {
                                     name: "x",
-                                    value: 977..978 @22 Int(
+                                    value: 977..978 @24 Int(
                                         0,
                                     ),
                                 },

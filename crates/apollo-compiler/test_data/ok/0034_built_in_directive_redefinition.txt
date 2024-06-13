@@ -1,25 +1,25 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        33: SourceFile {
+        35: SourceFile {
             path: "0034_built_in_directive_redefinition.graphql",
             source_text: "schema\n  @deprecated(\n    reason: \"\"\"\n    The person who got promoted by shipping this product has moved on to another team.\n    The service will shut down next month.\n    \"\"\"\n  ) {\n  query: Query\n}\n\ntype Query {\n  importantData: Int\n}\n\ndirective @deprecated(\n  reason: String = \"No longer supported\"\n) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA\n",
         },
     },
-    schema_definition: 0..198 @33 SchemaDefinition {
+    schema_definition: 0..198 @35 SchemaDefinition {
         description: None,
         directives: [
             Component {
                 origin: Definition,
-                node: 9..179 @33 Directive {
+                node: 9..179 @35 Directive {
                     name: "deprecated",
                     arguments: [
-                        26..175 @33 Argument {
+                        26..175 @35 Argument {
                             name: "reason",
-                            value: 34..175 @33 String(
+                            value: 34..175 @35 String(
                                 "The person who got promoted by shipping this product has moved on to another team.\nThe service will shut down next month.",
                             ),
                         },
@@ -39,18 +39,18 @@ Schema {
     directive_definitions: {
         "skip": built_in_directive!("skip"),
         "include": built_in_directive!("include"),
-        "deprecated": 237..391 @33 DirectiveDefinition {
+        "deprecated": 237..391 @35 DirectiveDefinition {
             description: None,
             name: "deprecated",
             arguments: [
-                262..300 @33 InputValueDefinition {
+                262..300 @35 InputValueDefinition {
                     description: None,
                     name: "reason",
-                    ty: 270..276 @33 Named(
+                    ty: 270..276 @35 Named(
                         "String",
                     ),
                     default_value: Some(
-                        279..300 @33 String(
+                        279..300 @35 String(
                             "No longer supported",
                         ),
                     ),
@@ -83,7 +83,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            200..235 @33 ObjectType {
+            200..235 @35 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -91,7 +91,7 @@ Schema {
                 fields: {
                     "importantData": Component {
                         origin: Definition,
-                        node: 215..233 @33 FieldDefinition {
+                        node: 215..233 @35 FieldDefinition {
                             description: None,
                             name: "importantData",
                             arguments: [],
@@ -108,11 +108,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        33: SourceFile {
+        35: SourceFile {
             path: "0034_built_in_directive_redefinition.graphql",
             source_text: "schema\n  @deprecated(\n    reason: \"\"\"\n    The person who got promoted by shipping this product has moved on to another team.\n    The service will shut down next month.\n    \"\"\"\n  ) {\n  query: Query\n}\n\ntype Query {\n  importantData: Int\n}\n\ndirective @deprecated(\n  reason: String = \"No longer supported\"\n) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA\n",
         },
