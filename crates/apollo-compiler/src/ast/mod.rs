@@ -31,8 +31,8 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 
+pub use crate::Name;
 use crate::Node;
-use crate::NodeStr;
 
 pub(crate) mod from_cst;
 pub(crate) mod impls;
@@ -58,16 +58,8 @@ const _: () = {
     assert_sync::<Document>();
 };
 
-/// A GraphQL identifier
-#[derive(Clone, Ord, Eq, PartialOrd, PartialEq, Hash)]
-pub struct Name(NodeStr);
-
 /// Refers to the name of a GraphQL type defined elsewhere
 pub type NamedType = Name;
-
-#[derive(Clone, Eq, PartialEq, thiserror::Error)]
-#[error("`{0}` is not a valid GraphQL name")]
-pub struct InvalidNameError(pub NodeStr);
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Definition {

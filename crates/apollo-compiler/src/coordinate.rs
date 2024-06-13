@@ -4,8 +4,6 @@
 //!
 //! [the RFC]: https://github.com/graphql/graphql-wg/blob/main/rfcs/SchemaCoordinates.md
 
-use crate::ast::InvalidNameError;
-use crate::ast::Name;
 use crate::schema::Component;
 use crate::schema::DirectiveDefinition;
 use crate::schema::EnumValueDefinition;
@@ -14,6 +12,8 @@ use crate::schema::FieldDefinition;
 use crate::schema::InputValueDefinition;
 use crate::schema::NamedType;
 use crate::schema::Schema;
+use crate::InvalidNameError;
+use crate::Name;
 use crate::Node;
 use std::fmt;
 use std::str::FromStr;

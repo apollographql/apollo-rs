@@ -751,7 +751,7 @@ impl Convert for cst::ObjectField {
 }
 
 impl Convert for cst::Alias {
-    type Target = ast::Name;
+    type Target = crate::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         self.name()?.convert(file_id)
@@ -759,13 +759,13 @@ impl Convert for cst::Alias {
 }
 
 impl Convert for cst::Name {
-    type Target = ast::Name;
+    type Target = crate::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         let loc = NodeLocation::new(file_id, self.syntax());
         let token = &self.syntax().first_token()?;
         let str = token.text();
         debug_assert!(ast::Name::valid_syntax(str));
-        Some(ast::Name(crate::NodeStr::new_parsed(str, loc)))
+        crate::Name::new_parsed(str, loc).ok()
     }
 }

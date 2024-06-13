@@ -153,7 +153,7 @@ jobs:
           command: rustup component add miri rust-src
       - run:
           name: Run a subset of tests under Miri
-          command: cargo miri test --test main -- node_str
+          command: cargo miri test --test main -- name::smoke_test
 
 # The folowing are reusable command snippets can be referred to in any `steps`.
 # Commands we currently have: install_system_deps, install_rust_toolchain.
