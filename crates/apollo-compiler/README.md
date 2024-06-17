@@ -94,117 +94,113 @@ let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 ```rust
 use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
 
-fn main() {
-    let schema_input = r#"
-    type User {
-      id: ID
-      name: String
-      profilePic(size: Int): URL
-    }
-
-    schema { query: User }
-
-    scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
-    "#;
-    let query_input = r#"
-    query getUser {
-      ... vipCustomer
-    }
-
-    #fragment definition where we want to know the field types.
-    fragment vipCustomer on User {
-      id
-      name
-      profilePic(size: 50)
-    }
-    "#;
-
-    let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
-    let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
-        .unwrap();
-
-    let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
-    let fragment_in_op = op.selection_set.selections.iter().filter_map(|sel| match sel {
-        executable::Selection::FragmentSpread(spread) => {
-            Some(document.fragments.get(&spread.fragment_name)?.as_ref())
-        }
-        _ => None
-    }).collect::<Vec<&executable::Fragment>>();
-
-    let fragment_fields = fragment_in_op.iter().flat_map(|frag| {
-        frag.selection_set.fields()
-    }).collect::<Vec<&Node<executable::Field>>>();
-    let field_ty = fragment_fields
-        .iter()
-        .map(|f| f.ty().inner_named_type().as_str())
-        .collect::<Vec<&str>>();
-    assert_eq!(field_ty, ["ID", "String", "URL"]);
+let schema_input = r#"
+type User {
+  id: ID
+  name: String
+  profilePic(size: Int): URL
 }
+
+schema { query: User }
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+let query_input = r#"
+query getUser {
+  ... vipCustomer
+}
+
+#fragment definition where we want to know the field types.
+fragment vipCustomer on User {
+  id
+  name
+  profilePic(size: 50)
+}
+"#;
+
+let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
+let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
+    .unwrap();
+
+let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
+let fragment_in_op = op.selection_set.selections.iter().filter_map(|sel| match sel {
+    executable::Selection::FragmentSpread(spread) => {
+        Some(document.fragments.get(&spread.fragment_name)?.as_ref())
+    }
+    _ => None
+}).collect::<Vec<&executable::Fragment>>();
+
+let fragment_fields = fragment_in_op.iter().flat_map(|frag| {
+    frag.selection_set.fields()
+}).collect::<Vec<&Node<executable::Field>>>();
+let field_ty = fragment_fields
+    .iter()
+    .map(|f| f.ty().inner_named_type().as_str())
+    .collect::<Vec<&str>>();
+assert_eq!(field_ty, ["ID", "String", "URL"]);
 ```
 
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
 use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
 
-fn main() {
-    let schema_input = r#"
-    type Query {
-      topProducts: Product
-      name: String
-      size: Int
-    }
-
-    type Product {
-      inStock: Boolean @join__field(graph: INVENTORY)
-      name: String @join__field(graph: PRODUCTS)
-      price: Int
-      shippingEstimate: Int
-      upc: String!
-      weight: Int
-    }
-
-    enum join__Graph {
-      INVENTORY,
-      PRODUCTS,
-    }
-    scalar join__FieldSet
-    directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
-    "#;
-    let query_input = r#"
-    query getProduct {
-      size
-      topProducts {
-        name
-        inStock
-      }
-    }
-    "#;
-
-    let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
-    let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
-        .unwrap();
-
-    let get_product_op = document
-        .get_operation(Some("getProduct"))
-        .expect("getProduct query does not exist");
-
-    let in_stock_field = &get_product_op
-        .selection_set
-        .fields()
-        .find(|f| f.name == "topProducts")
-        .expect("topProducts field does not exist")
-        .selection_set
-        .fields()
-        .find(|f| f.name == "inStock")
-        .expect("inStock field does not exist")
-        .definition;
-    let in_stock_directive: Vec<_> = in_stock_field
-        .directives
-        .iter()
-        .map(|dir| &dir.name)
-        .collect();
-    assert_eq!(in_stock_directive, ["join__field"]);
+let schema_input = r#"
+type Query {
+  topProducts: Product
+  name: String
+  size: Int
 }
+
+type Product {
+  inStock: Boolean @join__field(graph: INVENTORY)
+  name: String @join__field(graph: PRODUCTS)
+  price: Int
+  shippingEstimate: Int
+  upc: String!
+  weight: Int
+}
+
+enum join__Graph {
+  INVENTORY,
+  PRODUCTS,
+}
+scalar join__FieldSet
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+"#;
+let query_input = r#"
+query getProduct {
+  size
+  topProducts {
+    name
+    inStock
+  }
+}
+"#;
+
+let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap();
+let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
+    .unwrap();
+
+let get_product_op = document
+    .get_operation(Some("getProduct"))
+    .expect("getProduct query does not exist");
+
+let in_stock_field = &get_product_op
+    .selection_set
+    .fields()
+    .find(|f| f.name == "topProducts")
+    .expect("topProducts field does not exist")
+    .selection_set
+    .fields()
+    .find(|f| f.name == "inStock")
+    .expect("inStock field does not exist")
+    .definition;
+let in_stock_directive: Vec<_> = in_stock_field
+    .directives
+    .iter()
+    .map(|dir| &dir.name)
+    .collect();
+assert_eq!(in_stock_directive, ["join__field"]);
 ```
 
 #### Printing diagnostics for a faulty GraphQL document
