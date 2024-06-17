@@ -24,7 +24,6 @@ pub struct Parser {
     token_limit: Option<usize>,
     recursion_reached: usize,
     tokens_reached: usize,
-    pub(crate) intern_and_leak_names: bool,
 }
 
 /// Records for validation information about a file that was parsed
@@ -70,22 +69,6 @@ impl Parser {
         self
     }
 
-    /// Configure the parser to deduplicate GraphQL `Name`s in a global hash set
-    /// and leak their heap allocation so they live until the end of the program
-    /// and [`Name::as_static_str`][crate::Name::as_static_str] returns `Some`.
-    ///
-    /// This may be the right tradeoff for short-live programs,
-    /// or for the schema in a server where it changes rarely or not at all.
-    /// Be careful about exposing this to user/client input
-    /// in a long-lived program such as a server.
-    ///
-    /// The default configuration uses atomatically-reference-counted strings
-    /// with `Name::as_static_str` returning `None`.
-    pub fn intern_and_leak_names(mut self) -> Self {
-        self.intern_and_leak_names = true;
-        self
-    }
-
     /// Parse the given source text into an AST document.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
@@ -115,7 +98,7 @@ impl Parser {
             |parser| parser.parse(),
         );
         let sources = errors.sources.clone();
-        Document::from_cst(self, tree.document(), file_id, sources)
+        Document::from_cst(tree.document(), file_id, sources)
     }
 
     pub(crate) fn parse_common<T: apollo_parser::cst::CstNode>(
@@ -298,7 +281,7 @@ impl Parser {
             &mut errors,
             |parser| parser.parse_selection_set(),
         );
-        let ast = ast::from_cst::convert_selection_set(&tree.field_set(), self, file_id);
+        let ast = ast::from_cst::convert_selection_set(&tree.field_set(), file_id);
         let mut selection_set = executable::SelectionSet::new(type_name);
         let mut build_errors = executable::from_ast::BuildErrors {
             errors: &mut errors,
@@ -338,7 +321,7 @@ impl Parser {
         );
         errors.into_result().map(|()| {
             tree.ty()
-                .convert(self, file_id)
+                .convert(file_id)
                 .expect("conversion should be infallible if there were no syntax errors")
         })
     }
