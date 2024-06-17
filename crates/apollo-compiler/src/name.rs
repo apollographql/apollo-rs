@@ -82,7 +82,9 @@ const TAG_ARC: bool = true;
 const TAG_STATIC: bool = false;
 
 const _: () = {
-    assert!(size_of::<Name>() == 16 + size_of::<*const u8>());
+    // 20 "useful" bytes on 32-bit targets like wasm,
+    // but still padded to 24 for alignment of u64 file ID:
+    assert!(size_of::<Name>() == 24);
     assert!(size_of::<Name>() == size_of::<Option<Name>>());
 
     // The `unsafe impl`s below are sound since `(tag, ptr, len)` represents `UnpackedRepr`
