@@ -941,7 +941,7 @@ fn can_be_block_string(value: &str) -> bool {
     common_indent == 0
 }
 
-fn serialize_description(state: &mut State, description: &Option<Node<String>>) -> fmt::Result {
+fn serialize_description(state: &mut State, description: &Option<Node<str>>) -> fmt::Result {
     if let Some(description) = description {
         let is_description = true;
         serialize_string_value(state, is_description, description)?;

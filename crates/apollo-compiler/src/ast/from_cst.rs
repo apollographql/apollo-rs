@@ -424,11 +424,11 @@ impl Convert for cst::InputObjectTypeExtension {
 }
 
 impl Convert for cst::Description {
-    type Target = Node<String>;
+    type Target = Node<str>;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Node::new_parsed(
-            String::from(self.string_value()?),
+        Some(Node::new_str_parsed(
+            &String::from(self.string_value()?),
             NodeLocation::new(file_id, self.syntax()),
         ))
     }

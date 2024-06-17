@@ -14,6 +14,7 @@ use std::sync::atomic;
 use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering;
 use std::sync::OnceLock;
+use triomphe::HeaderSlice;
 
 /// A thread-safe reference-counted smart pointer for GraphQL nodes.
 ///
@@ -32,12 +33,11 @@ use std::sync::OnceLock;
 /// produces a result (the hash of the cached hash) different from `T as Hash`.
 #[derive(serde::Deserialize)]
 #[serde(from = "T")]
-pub struct Node<T>(triomphe::Arc<NodeInner<T>>);
+pub struct Node<T: ?Sized>(triomphe::Arc<HeaderSlice<Header, T>>);
 
-struct NodeInner<T> {
+struct Header {
     location: Option<NodeLocation>,
     hash_cache: AtomicU64,
-    node: T,
 }
 
 const HASH_NOT_COMPUTED_YET: u64 = 0;
@@ -71,21 +71,51 @@ impl<T> Node<T> {
     }
 
     /// Create a new `Node` for something created programatically, not parsed from a source file
-    #[inline]
     pub fn new(node: T) -> Self {
         Self::new_opt_location(node, None)
     }
 
     pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
-        Self(triomphe::Arc::new(NodeInner {
-            location,
-            node,
-            hash_cache: AtomicU64::new(HASH_NOT_COMPUTED_YET),
+        Self(triomphe::Arc::new(HeaderSlice {
+            header: Header {
+                location,
+                hash_cache: AtomicU64::new(HASH_NOT_COMPUTED_YET),
+            },
+            slice: node,
         }))
     }
+}
 
+impl Node<str> {
+    /// Create a new `Node<str>` for a string parsed from the given source location
+    #[inline]
+    pub fn new_str_parsed(node: &str, location: NodeLocation) -> Self {
+        Self::new_str_opt_location(node, Some(location))
+    }
+
+    /// Create a new `Node<str>` for a string created programatically, not parsed from a source file
+    pub fn new_str(node: &str) -> Self {
+        Self::new_str_opt_location(node, None)
+    }
+
+    pub(crate) fn new_str_opt_location(node: &str, location: Option<NodeLocation>) -> Self {
+        Self(triomphe::Arc::from_header_and_str(
+            Header {
+                location,
+                hash_cache: AtomicU64::new(HASH_NOT_COMPUTED_YET),
+            },
+            node,
+        ))
+    }
+
+    pub fn as_str(&self) -> &str {
+        self
+    }
+}
+
+impl<T: ?Sized> Node<T> {
     pub fn location(&self) -> Option<NodeLocation> {
-        self.0.location
+        self.0.header.location
     }
 
     /// Whether this node is located in `FileId::BUILT_IN`,
@@ -101,7 +131,7 @@ impl<T> Node<T> {
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
     pub fn same_location<U>(&self, node: U) -> Node<U> {
-        Node::new_opt_location(node, self.0.location)
+        Node::new_opt_location(node, self.0.header.location)
     }
 
     pub fn to_component(&self, origin: ComponentOrigin) -> Component<T> {
@@ -137,27 +167,27 @@ impl<T> Node<T> {
     {
         let inner = triomphe::Arc::make_mut(&mut self.0);
         // Clear the cache as mutation through the returned `&mut T` may invalidate it
-        *inner.hash_cache.get_mut() = HASH_NOT_COMPUTED_YET;
+        *inner.header.hash_cache.get_mut() = HASH_NOT_COMPUTED_YET;
         // TODO: should the `inner.location` be set to `None` here?
         // After a node is mutated it is kind of not from that source location anymore
-        &mut inner.node
+        &mut inner.slice
     }
 
     /// Returns a mutable reference to `T` if this `Node` is uniquely owned
     pub fn get_mut(&mut self) -> Option<&mut T> {
-        triomphe::Arc::get_mut(&mut self.0).map(|inner| &mut inner.node)
+        triomphe::Arc::get_mut(&mut self.0).map(|inner| &mut inner.slice)
     }
 }
 
-impl<T> std::ops::Deref for Node<T> {
+impl<T: ?Sized> std::ops::Deref for Node<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        &self.0.node
+        &self.0.slice
     }
 }
 
-impl<T> Clone for Node<T> {
+impl<T: ?Sized> Clone for Node<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
@@ -169,33 +199,33 @@ impl<T: Default> Default for Node<T> {
     }
 }
 
-impl<T: fmt::Debug> fmt::Debug for Node<T> {
+impl<T: ?Sized + fmt::Debug> fmt::Debug for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(location) = self.location() {
             write!(f, "{location:?} ")?
         }
-        self.0.node.fmt(f)
+        self.0.slice.fmt(f)
     }
 }
 
-impl<T: fmt::Display> fmt::Display for Node<T> {
+impl<T: ?Sized + fmt::Display> fmt::Display for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         T::fmt(self, f)
     }
 }
 
-impl<T: Eq> Eq for Node<T> {}
+impl<T: ?Sized + Eq> Eq for Node<T> {}
 
-impl<T: PartialEq> PartialEq for Node<T> {
+impl<T: ?Sized + PartialEq> PartialEq for Node<T> {
     fn eq(&self, other: &Self) -> bool {
         self.ptr_eq(other) // fast path
-        || self.0.node == other.0.node // location and hash_cache not included
+        || self.0.slice == other.0.slice // location and hash_cache not included
     }
 }
 
-impl<T: Hash> Hash for Node<T> {
+impl<T: ?Sized + Hash> Hash for Node<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let hash = self.0.hash_cache.load(Ordering::Relaxed);
+        let hash = self.0.header.hash_cache.load(Ordering::Relaxed);
         if hash != HASH_NOT_COMPUTED_YET {
             // cache hit
             hash
@@ -212,23 +242,23 @@ impl<T: Hash> Hash for Node<T> {
 // at the cost of extra computation in the unlikely case of this race.
 #[cold]
 #[inline(never)]
-fn hash_slow_path<T: Hash>(inner: &NodeInner<T>) -> u64 {
+fn hash_slow_path<T: ?Sized + Hash>(inner: &HeaderSlice<Header, T>) -> u64 {
     /// We share a single `BuildHasher` process-wide,
     /// not only for the race described above but also
     /// so that multiple `HarcInner`’s with the same contents have the same hash.
     static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
     let mut hash = SHARED_RANDOM
         .get_or_init(RandomState::new)
-        .hash_one(&inner.node);
+        .hash_one(&inner.slice);
     // Don’t use the marker value for an actual hash
     if hash == HASH_NOT_COMPUTED_YET {
         hash += 1
     }
-    inner.hash_cache.store(hash, Ordering::Relaxed);
+    inner.header.hash_cache.store(hash, Ordering::Relaxed);
     hash
 }
 
-impl<T> AsRef<T> for Node<T> {
+impl<T: ?Sized> AsRef<T> for Node<T> {
     fn as_ref(&self) -> &T {
         self
     }
@@ -240,12 +270,41 @@ impl<T> From<T> for Node<T> {
     }
 }
 
-impl<T: Clone> Clone for NodeInner<T> {
+impl From<&'_ str> for Node<str> {
+    fn from(node: &'_ str) -> Self {
+        Self::new_str(node)
+    }
+}
+
+impl From<&'_ String> for Node<str> {
+    fn from(node: &'_ String) -> Self {
+        Self::new_str(node)
+    }
+}
+
+impl From<String> for Node<str> {
+    fn from(node: String) -> Self {
+        Self::new_str(&node)
+    }
+}
+
+impl From<&'_ Node<str>> for String {
+    fn from(node: &'_ Node<str>) -> Self {
+        node.as_str().to_owned()
+    }
+}
+
+impl From<Node<str>> for String {
+    fn from(node: Node<str>) -> Self {
+        node.as_str().to_owned()
+    }
+}
+
+impl Clone for Header {
     fn clone(&self) -> Self {
         Self {
             location: self.location,
             hash_cache: AtomicU64::new(self.hash_cache.load(Ordering::Relaxed)),
-            node: self.node.clone(),
         }
     }
 }
