@@ -56,7 +56,7 @@ macro_rules! name {
 //
 // Fields: equivalent to `(UnpackedRepr, Option<NodeLocation>)` but more compact
 pub struct Name {
-    /// Data pointer of either `Arc<str>` (if `tagged_file_id.tag() == TAG_ARC`)
+    /// Data pointer of either `Arc<str>::into_raw` (if `tagged_file_id.tag() == TAG_ARC`)
     /// or `&'static str` (if `TAG_STATIC`)
     ptr: NonNull<u8>,
     len: u32,
@@ -71,6 +71,8 @@ enum UnpackedRepr {
     Static(&'static str),
 }
 
+/// Tried to create a [`Name`] from a string that is not in valid
+/// [GraphQL name](https://spec.graphql.org/draft/#sec-Names) syntax.
 #[derive(Clone, Eq, PartialEq, thiserror::Error)]
 #[error("`{name}` is not a valid GraphQL name")]
 pub struct InvalidNameError {
@@ -194,11 +196,7 @@ impl Name {
         GraphQLLocation::from_node(sources, self.location())
     }
 
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
+    #[allow(clippy::len_without_is_empty)] // GraphQL Name is never empty
     #[inline]
     pub fn len(&self) -> usize {
         self.len as _
@@ -213,7 +211,7 @@ impl Name {
     }
 
     /// If this `Name` was created with [`new_static`][Self::new_static]
-    /// or the [`name!`][crate::name] macro, return the string with `'static` lifetime.
+    /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
     pub fn as_static_str(&self) -> Option<&'static str> {
         if self.tagged_file_id.tag() == TAG_STATIC {
             let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
@@ -245,7 +243,7 @@ impl Name {
     }
 
     /// If this `Name` was created with [`new_static`][Self::new_static]
-    /// or the [`name!`][crate::name] macro, return the string with `'static` lifetime.
+    /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
     ///
     /// Otherwise, return a clone of the `Arc` used internally for this `Name`.
     pub fn to_static_str_or_cloned_arc(&self) -> Result<&'static str, Arc<str>> {
