@@ -99,41 +99,34 @@ unsafe impl Send for Name {}
 unsafe impl Sync for Name {}
 
 impl Name {
-    /// Create a new `Name` parsed from the given source location
-    pub fn new_parsed(value: &str, location: NodeLocation) -> Result<Self, InvalidNameError> {
-        Self::check_valid_syntax(value, Some(location))?;
-        let (ptr, len, tag) = Self::parts_from_arc(value);
-        let start_offset = Self::with_location(value, &location);
-        Ok(Self {
-            ptr,
-            len,
-            start_offset,
-            tagged_file_id: TaggedFileId::pack(tag, location.file_id),
-            phantom: PhantomData,
-        })
-    }
-
     /// Create a new `Name` programatically, not parsed from a source file
     pub fn new(value: &str) -> Result<Self, InvalidNameError> {
-        Self::check_valid_syntax(value, None)?;
+        Self::check_valid_syntax(value)?;
+        Ok(Self::new_unchecked(value))
+    }
+
+    /// Create a new `Name` from a string with static lifetime
+    pub fn new_static(value: &'static str) -> Result<Self, InvalidNameError> {
+        Self::check_valid_syntax(value)?;
+        Ok(Self::new_static_unchecked(value))
+    }
+
+    /// Create a new `Name` without validity checking.
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub fn new_unchecked(value: &str) -> Self {
         let (ptr, len, tag) = Self::parts_from_arc(value);
-        Ok(Self {
+        Self {
             ptr,
             len,
             start_offset: 0,
             tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
             phantom: PhantomData,
-        })
+        }
     }
 
-    /// Create a new static `Name` programatically, not parsed from a source file
-    pub fn new_static(value: &'static str) -> Result<Self, InvalidNameError> {
-        Self::check_valid_syntax(value, None)?;
-        Ok(Self::new_static_unchecked(value))
-    }
-
-    /// Create a new static `Name` programatically, not parsed from a source file,
-    /// without validity checking.
+    /// Create a new `Name` from a string with static lifetime, without validity checking.
     ///
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
@@ -165,10 +158,12 @@ impl Name {
         (ptr, len, TAG_STATIC)
     }
 
-    /// Returns start_offset
-    fn with_location(value: &str, location: &NodeLocation) -> u32 {
-        debug_assert_eq!(location.text_range.len(), rowan::TextSize::of(value));
-        location.text_range.start().into()
+    /// Modifies the given name to add its location in a parsed source file
+    pub fn with_location(mut self, location: NodeLocation) -> Self {
+        debug_assert_eq!(location.text_range.len(), self.len.into());
+        self.start_offset = location.text_range.start().into();
+        self.tagged_file_id = TaggedFileId::pack(self.tagged_file_id.tag(), location.file_id);
+        self
     }
 
     const fn new_len(value: &str) -> u32 {
@@ -275,16 +270,13 @@ impl Name {
         true
     }
 
-    fn check_valid_syntax(
-        value: &str,
-        location: Option<NodeLocation>,
-    ) -> Result<(), InvalidNameError> {
+    fn check_valid_syntax(value: &str) -> Result<(), InvalidNameError> {
         if Self::valid_syntax(value) {
             Ok(())
         } else {
             Err(InvalidNameError {
                 name: value.to_owned(),
-                location,
+                location: None,
             })
         }
     }

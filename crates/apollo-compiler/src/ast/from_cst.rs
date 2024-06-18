@@ -766,6 +766,6 @@ impl Convert for cst::Name {
         let token = &self.syntax().first_token()?;
         let str = token.text();
         debug_assert!(ast::Name::valid_syntax(str));
-        crate::Name::new_parsed(str, loc).ok()
+        Some(crate::Name::new(str).ok()?.with_location(loc))
     }
 }
