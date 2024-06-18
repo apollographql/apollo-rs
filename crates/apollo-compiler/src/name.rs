@@ -116,12 +116,19 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub fn new_unchecked(value: &str) -> Self {
-        let (ptr, len, tag) = Self::parts_from_arc(value);
+        Self::from_arc_unchecked(value.into())
+    }
+
+    pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
+        let len = Self::new_len(&arc);
+        let ptr = Arc::into_raw(arc).cast_mut().cast();
+        // SAFETY: Arc always is non-null
+        let ptr = unsafe { NonNull::new_unchecked(ptr) };
         Self {
             ptr,
             len,
             start_offset: 0,
-            tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
+            tagged_file_id: TaggedFileId::pack(TAG_ARC, FileId::NONE),
             phantom: PhantomData,
         }
     }
@@ -131,31 +138,16 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub const fn new_static_unchecked(value: &'static str) -> Self {
-        let (ptr, len, tag) = Self::parts_from_static(value);
-        Self {
-            ptr,
-            len,
-            start_offset: 0,
-            tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
-            phantom: PhantomData,
-        }
-    }
-
-    fn parts_from_arc(value: &str) -> (NonNull<u8>, u32, bool) {
-        let len = Self::new_len(value);
-        let arc = Arc::<str>::from(value);
-        let ptr = Arc::into_raw(arc).cast_mut().cast();
-        // SAFETY: Arc always is non-null
-        let ptr = unsafe { NonNull::new_unchecked(ptr) };
-        (ptr, len, TAG_ARC)
-    }
-
-    const fn parts_from_static(static_str: &'static str) -> (NonNull<u8>, u32, bool) {
-        let len = Self::new_len(static_str);
-        let ptr = static_str.as_ptr().cast_mut();
+        let ptr = value.as_ptr().cast_mut();
         // SAFETY: `&'static str` is always non-null
         let ptr = unsafe { NonNull::new_unchecked(ptr) };
-        (ptr, len, TAG_STATIC)
+        Self {
+            ptr,
+            len: Self::new_len(value),
+            start_offset: 0,
+            tagged_file_id: TaggedFileId::pack(TAG_STATIC, FileId::NONE),
+            phantom: PhantomData,
+        }
     }
 
     /// Modifies the given name to add its location in a parsed source file
@@ -417,6 +409,24 @@ impl From<&'_ Self> for Name {
     #[inline]
     fn from(value: &'_ Self) -> Self {
         value.clone()
+    }
+}
+
+impl From<Name> for Arc<str> {
+    fn from(value: Name) -> Self {
+        match value.to_static_str_or_cloned_arc() {
+            Ok(static_str) => static_str.into(),
+            Err(arc) => arc,
+        }
+    }
+}
+
+impl TryFrom<Arc<str>> for Name {
+    type Error = InvalidNameError;
+
+    fn try_from(value: Arc<str>) -> Result<Self, Self::Error> {
+        Self::check_valid_syntax(&value)?;
+        Ok(Self::from_arc_unchecked(value))
     }
 }
 
