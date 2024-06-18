@@ -76,8 +76,8 @@ enum UnpackedRepr {
 #[derive(Clone, Eq, PartialEq, thiserror::Error)]
 #[error("`{name}` is not a valid GraphQL name")]
 pub struct InvalidNameError {
-    name: String,
-    location: Option<NodeLocation>,
+    pub name: String,
+    pub location: Option<NodeLocation>,
 }
 
 const TAG_ARC: bool = true;
