@@ -19,13 +19,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2024-mm-dd
 
+## BREAKING
+
+- **`Name` representation change - [SimonSapin] in [pull/868].**
+  The memory representation of GraphQL names is changed to use `Arc<str>` or `&'static str`
+  internally, and provide corresponding cheap conversions.
+  This may also help enable [string interning] in a future compiler version.
+  * `Name` should now be imported from the crate root.
+    The previous paths (`apollo_compiler::ast::Name`, `apollo_compiler::executable::Name`,
+    and `apollo_compiler::schema::Name`) now emit a deprecation warning
+    and will be removed in a later version.
+  * `NodeStr` has been removed, with its functionality folded into `Name`
+  * `ast::Value::String` now contains a plain `String` instead of `NodeStr`.
+    `Value` itself is in a `Node<_>` that contains the same source span as `NodeStr` did.
+  * Descriptions are now represented as `Option<Node<str>>` instead of `Option<NodeStr>`.
+
+
 ## Fixes
 
 - **Fix validation error message for missing subselections - [goto-bus-stop] in [pull/865]**
   It now reports the correct coordinate for the missing subselection.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
 [pull/865]: https://github.com/apollographql/apollo-rs/pull/865
+[pull/868]: https://github.com/apollographql/apollo-rs/pull/868
+[string interning]: https://github.com/apollographql/apollo-rs/issues/385#issuecomment-2176436184
 
 # [1.0.0-beta.17](https://crates.io/crates/apollo-compiler/1.0.0-beta.17) - 2024-06-05
 
