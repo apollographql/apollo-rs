@@ -500,7 +500,7 @@ impl ToCliReport for InvalidNameError {
         self.location
     }
     fn report(&self, report: &mut CliReport) {
-        report.with_label_opt(self.location, "cannot be parsed as a GraphQL name");
+        report.with_label_opt(self.location, "cannot be parsed as a GraphQL Name");
     }
 }
 
