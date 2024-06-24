@@ -15,7 +15,7 @@ pub mod schema;
 pub mod validation;
 
 pub use self::executable::ExecutableDocument;
-pub use self::name::{InvalidNameError, Name};
+pub use self::name::{InvalidNameError, Name, StaticOrArc};
 pub use self::node::{FileId, Node, NodeLocation};
 pub use self::parser::{parse_mixed_validate, Parser, SourceFile, SourceMap};
 pub use self::schema::Schema;

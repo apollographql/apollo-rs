@@ -62,13 +62,12 @@ pub struct Name {
     len: u32,
     start_offset: u32,            // zero if we don’t have a location
     tagged_file_id: TaggedFileId, // `.file_id() == FileId::NONE` means we don’t have a location
-    phantom: PhantomData<UnpackedRepr>,
+    phantom: PhantomData<StaticOrArc>,
 }
 
-#[allow(dead_code)] // only used in PhantomData and static asserts
-enum UnpackedRepr {
-    Heap(Arc<str>),
+pub enum StaticOrArc {
     Static(&'static str),
+    Arc(Arc<str>),
 }
 
 /// Tried to create a [`Name`] from a string that is not in valid
@@ -91,7 +90,7 @@ const _: () = {
 
     // The `unsafe impl`s below are sound since `(tag, ptr, len)` represents `UnpackedRepr`
     const fn assert_send_and_sync<T: Send + Sync>() {}
-    assert_send_and_sync::<(UnpackedRepr, u32, TaggedFileId)>();
+    assert_send_and_sync::<(StaticOrArc, u32, TaggedFileId)>();
 };
 
 unsafe impl Send for Name {}
@@ -239,11 +238,14 @@ impl Name {
     /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
     ///
     /// Otherwise, return a clone of the `Arc` used internally for this `Name`.
-    pub fn to_static_str_or_cloned_arc(&self) -> Result<&'static str, Arc<str>> {
-        self.as_static_str().ok_or_else(|| {
-            let manually_drop = self.as_arc().unwrap();
-            Arc::clone(&manually_drop)
-        })
+    pub fn to_static_str_or_cloned_arc(&self) -> StaticOrArc {
+        match self.as_static_str() {
+            Some(s) => StaticOrArc::Static(s),
+            None => {
+                let manually_drop = self.as_arc().unwrap();
+                StaticOrArc::Arc(Arc::clone(&manually_drop))
+            }
+        }
     }
 
     /// Returns whether the given string is a valid GraphQL name.
@@ -421,8 +423,8 @@ impl From<&'_ Self> for Name {
 impl From<Name> for Arc<str> {
     fn from(value: Name) -> Self {
         match value.to_static_str_or_cloned_arc() {
-            Ok(static_str) => static_str.into(),
-            Err(arc) => arc,
+            StaticOrArc::Static(static_str) => static_str.into(),
+            StaticOrArc::Arc(arc) => arc,
         }
     }
 }
