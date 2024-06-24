@@ -42,7 +42,8 @@ struct Header {
 
 const HASH_NOT_COMPUTED_YET: u64 = 0;
 
-/// The source location of a parsed node: file ID and range within that file.
+/// The source location of a parsed node:
+/// file ID and source span (start and end byte offsets) within that file.
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct NodeLocation {
     pub(crate) file_id: FileId,
@@ -114,6 +115,8 @@ impl Node<str> {
 }
 
 impl<T: ?Sized> Node<T> {
+    /// If this node was parsed from a source file, returns the file ID and source span
+    /// (start and end byte offsets) within that file.
     pub fn location(&self) -> Option<NodeLocation> {
         self.0.header.location
     }

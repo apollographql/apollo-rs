@@ -41,7 +41,7 @@ macro_rules! name {
         $crate::name!(stringify!($value))
     };
     ($value: expr) => {{
-        const _: () = { assert!($crate::Name::valid_syntax($value)) };
+        const _: () = { assert!($crate::Name::is_valid_syntax($value)) };
         $crate::Name::new_static_unchecked(&$value)
     }};
 }
@@ -99,7 +99,7 @@ unsafe impl Send for Name {}
 unsafe impl Sync for Name {}
 
 impl Name {
-    /// Create a new `Name` programatically, not parsed from a source file
+    /// Create a new `Name`
     pub fn new(value: &str) -> Result<Self, InvalidNameError> {
         Self::check_valid_syntax(value)?;
         Ok(Self::new_unchecked(value))
@@ -119,6 +119,10 @@ impl Name {
         Self::from_arc_unchecked(value.into())
     }
 
+    /// Create a new `Name` from an `Arc`, without validity checking.
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
     pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
         let len = Self::new_len(&arc);
         let ptr = Arc::into_raw(arc).cast_mut().cast();
@@ -166,6 +170,8 @@ impl Name {
         len as _
     }
 
+    /// If this node was parsed from a source file, returns the file ID and source span
+    /// (start and end byte offsets) within that file.
     pub fn location(&self) -> Option<NodeLocation> {
         let file_id = self.tagged_file_id.file_id();
         if file_id != FileId::NONE {
@@ -243,18 +249,18 @@ impl Name {
     /// Returns whether the given string is a valid GraphQL name.
     ///
     /// <https://spec.graphql.org/October2021/#Name>
-    pub const fn valid_syntax(value: &str) -> bool {
+    pub const fn is_valid_syntax(value: &str) -> bool {
         let bytes = value.as_bytes();
         let Some(&first) = bytes.first() else {
             return false;
         };
-        if !Self::char_is_name_start(first) {
+        if !Self::is_name_start(first) {
             return false;
         }
         // TODO: iterator when available in const
         let mut i = 1;
         while i < bytes.len() {
-            if !Self::char_is_name_continue(bytes[i]) {
+            if !Self::is_name_continue(bytes[i]) {
                 return false;
             }
             i += 1
@@ -263,7 +269,7 @@ impl Name {
     }
 
     fn check_valid_syntax(value: &str) -> Result<(), InvalidNameError> {
-        if Self::valid_syntax(value) {
+        if Self::is_valid_syntax(value) {
             Ok(())
         } else {
             Err(InvalidNameError {
@@ -274,12 +280,12 @@ impl Name {
     }
 
     /// <https://spec.graphql.org/October2021/#NameStart>
-    const fn char_is_name_start(byte: u8) -> bool {
+    const fn is_name_start(byte: u8) -> bool {
         byte.is_ascii_alphabetic() || byte == b'_'
     }
 
     /// <https://spec.graphql.org/October2021/#NameContinue>
-    const fn char_is_name_continue(byte: u8) -> bool {
+    const fn is_name_continue(byte: u8) -> bool {
         byte.is_ascii_alphanumeric() || byte == b'_'
     }
 
