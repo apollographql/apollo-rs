@@ -56,8 +56,9 @@ cargo run --example validate /path/to/test/file
 
 To format your code:
 ```bash
-rustup component add rustfmt
-cargo fmt --all
+rustup install nightly
+rustup component add --toolchain nigthly rustfmt
+cargo +nightly fmt --all
 ```
 
 To lint your code:
