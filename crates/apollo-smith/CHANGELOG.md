@@ -18,6 +18,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.7.0](https://crates.io/crates/apollo-smith/0.7.0) - 2024-06-20
+
+## Features
+
+- **Improve field variability in Selection Set generation - [geal], [pull/866].**
+  This changes the field generation algorithm in apollo-smith to allow more
+  variety, because the previous implementation was the previous implementation
+  was too biased towards the first field specified in a type. This also adds an
+  example to generate a random query from a schema.
+
+[geal]: https://github.com/geal
+[pull/866]: https://github.com/apollographql/apollo-rs/pull/866
+
 
 # [0.6.0-beta.1](https://crates.io/crates/apollo-smith/0.6.0-beta.1) - 2023-11-30
 

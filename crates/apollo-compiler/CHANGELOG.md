@@ -34,6 +34,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     `Value` itself is in a `Node<_>` that contains the same source span as `NodeStr` did.
   * Descriptions are now represented as `Option<Node<str>>` instead of `Option<NodeStr>`.
 
+- **Feature REMOVED: `Hash` cache in `Node<T>` - [SimonSapin] in [pull/872].**
+  `Node<T>` is a reference-counted smart pointer that provides thread-safe shared ownership
+  for at `T` value together with an optional source location.
+  In previous beta version of apollo-compiler 1.0 it contained a cache in its `Hash` implementation:
+  the hash of the `T` value would be computed once and stored,
+  then `Hash for Node<T>` would hash that hash code.
+  That functionality is now removed, `Hash for Node<T>` simply forwards to `Hash for T`.
+  This reduces each `Node` heap allocation by 8 bytes, and reduces code complexity.
+
+  Now that apollo-compiler does not use [Salsa] anymore,
+  `Hash` is much less central than it used to be.
+  Many types stored in `Node<_>` don’t implement `Hash` at all
+  (because they contain an `IndexMap` which doesn’t either).
+
+  Programs that relied on this cache will still compile.
+  We still consider this change breaking
+  as they’ll need to build their own cache to maintain performance characteristics.
 
 ## Fixes
 
@@ -44,7 +61,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [SimonSapin]: https://github.com/SimonSapin
 [pull/865]: https://github.com/apollographql/apollo-rs/pull/865
 [pull/868]: https://github.com/apollographql/apollo-rs/pull/868
+[pull/872]: https://github.com/apollographql/apollo-rs/pull/872
 [string interning]: https://github.com/apollographql/apollo-rs/issues/385#issuecomment-2176436184
+[Salsa]: https://crates.io/crates/salsa
 
 # [1.0.0-beta.17](https://crates.io/crates/apollo-compiler/1.0.0-beta.17) - 2024-06-05
 
