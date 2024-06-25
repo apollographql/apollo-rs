@@ -173,6 +173,12 @@ impl<T: Hash> Hash for Node<T> {
     }
 }
 
+impl<T> std::borrow::Borrow<T> for Node<T> {
+    fn borrow(&self) -> &T {
+        self
+    }
+}
+
 impl<T> AsRef<T> for Node<T> {
     fn as_ref(&self) -> &T {
         self
