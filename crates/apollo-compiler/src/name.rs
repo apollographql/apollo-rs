@@ -205,6 +205,8 @@ impl Name {
 
     /// If this `Name` was created with [`new_static`][Self::new_static]
     /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
+    ///
+    /// Exactly one of this method or [`to_cloned_arc`][Self::to_cloned_arc] returns `Some`.
     pub fn as_static_str(&self) -> Option<&'static str> {
         if self.tagged_file_id.tag() == TAG_STATIC {
             let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
@@ -235,15 +237,12 @@ impl Name {
         }
     }
 
-    /// If this `Name` was created with [`new_static`][Self::new_static]
-    /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
+    /// If this `Name` contains an `Arc<str>`, return a clone of it (reference count increment)
     ///
-    /// Otherwise, return a clone of the `Arc` used internally for this `Name`.
-    pub fn to_static_str_or_cloned_arc(&self) -> Result<&'static str, Arc<str>> {
-        self.as_static_str().ok_or_else(|| {
-            let manually_drop = self.as_arc().unwrap();
-            Arc::clone(&manually_drop)
-        })
+    /// Exactly one of this method or [`as_static_str`][Self::as_static_str] returns `Some`.
+    pub fn to_cloned_arc(&self) -> Option<Arc<str>> {
+        self.as_arc()
+            .map(|manually_drop| Arc::clone(&manually_drop))
     }
 
     /// Returns whether the given string is a valid GraphQL name.
@@ -420,9 +419,9 @@ impl From<&'_ Self> for Name {
 
 impl From<Name> for Arc<str> {
     fn from(value: Name) -> Self {
-        match value.to_static_str_or_cloned_arc() {
-            Ok(static_str) => static_str.into(),
-            Err(arc) => arc,
+        match value.to_cloned_arc() {
+            Some(arc) => arc,
+            None => value.as_str().into(),
         }
     }
 }
