@@ -1,5 +1,6 @@
-/// This example describes how to use `apollo-parser` with
-/// [`ariadne`](https://docs.rs/ariadne/0.3.0/ariadne) diagnostic library.
+//! This example describes how to use `apollo-parser` with
+//! [`ariadne`](https://docs.rs/ariadne/0.3.0/ariadne) diagnostic library.
+
 use std::{fs, path::Path};
 
 use apollo_parser::{cst, Parser};

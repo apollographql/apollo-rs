@@ -1,5 +1,6 @@
-/// Example usage of `apollo-parser` to check for unused vars in a given GraphQL
-/// query.
+//! Example usage of `apollo-parser` to check for unused vars in a given GraphQL
+//! query.
+
 use std::{fs, path::Path};
 
 use apollo_parser::{cst, Parser};
