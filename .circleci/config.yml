@@ -100,8 +100,13 @@ jobs:
           name: Run cargo clippy
           command: cargo clippy --all-targets --all-features -- -D warnings
       - run:
-          name: Run cargo fmt check
-          command: rustup component add rustfmt && cargo fmt --all -- --check
+          name: Install rustfmt nightly
+          command: >
+            rustup install nightly --profile minimal &&
+            rustup component add --toolchain nightly rustfmt
+      - run:
+          name: Run cargo +nightly fmt check
+          command: cargo +nightly fmt --all -- --check
 
   wasm:
     parameters:

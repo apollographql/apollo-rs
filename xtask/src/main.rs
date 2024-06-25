@@ -39,7 +39,7 @@ pub enum Command {
 fn run_lint() -> Result<()> {
     let sh = Shell::new()?;
 
-    cmd!(sh, "cargo fmt --all -- --check").run()?;
+    cmd!(sh, "cargo +nightly fmt --all -- --check").run()?;
 
     cmd!(
         sh,
@@ -54,7 +54,7 @@ fn run_lint() -> Result<()> {
 fn run_fmt() -> Result<()> {
     let sh = Shell::new()?;
 
-    cmd!(sh, "cargo fmt --all").run()?;
+    cmd!(sh, "cargo +nightly fmt --all").run()?;
 
     Ok(())
 }
