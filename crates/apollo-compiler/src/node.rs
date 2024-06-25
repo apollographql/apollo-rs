@@ -4,16 +4,11 @@ use crate::schema::ComponentOrigin;
 use crate::SourceMap;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
-use std::collections::hash_map::RandomState;
 use std::fmt;
-use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::num::NonZeroI64;
 use std::sync::atomic;
-use std::sync::atomic::AtomicU64;
-use std::sync::atomic::Ordering;
-use std::sync::OnceLock;
 
 /// A thread-safe reference-counted smart pointer for GraphQL nodes.
 ///
@@ -21,26 +16,16 @@ use std::sync::OnceLock;
 ///
 /// * In addition to `T`, contains an optional [`NodeLocation`].
 ///   This location notably allows diagnostics to point to relevant parts of parsed input files.
-/// * [`std::hash::Hash`] is implemented by caching the result of hashing `T`.
 /// * Weak references are not supported.
-///
-/// For the cache to be correct, **`T` is expected to have a stable hash**
-/// a long as no `&mut T` exclusive reference to it is given out.
-/// Generally this excludes interior mutability.
-///
-/// `Node<T>` cannot implement [`Borrow<T>`][std::borrow::Borrow] because `Node<T> as Hash`
-/// produces a result (the hash of the cached hash) different from `T as Hash`.
 #[derive(serde::Deserialize)]
 #[serde(from = "T")]
 pub struct Node<T>(triomphe::Arc<NodeInner<T>>);
 
+#[derive(Clone)]
 struct NodeInner<T> {
     location: Option<NodeLocation>,
-    hash_cache: AtomicU64,
     node: T,
 }
-
-const HASH_NOT_COMPUTED_YET: u64 = 0;
 
 /// The source location of a parsed node: file ID and range within that file.
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
@@ -72,11 +57,7 @@ impl<T> Node<T> {
     }
 
     pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
-        Self(triomphe::Arc::new(NodeInner {
-            location,
-            node,
-            hash_cache: AtomicU64::new(HASH_NOT_COMPUTED_YET),
-        }))
+        Self(triomphe::Arc::new(NodeInner { location, node }))
     }
 
     pub fn location(&self) -> Option<NodeLocation> {
@@ -131,8 +112,6 @@ impl<T> Node<T> {
         T: Clone,
     {
         let inner = triomphe::Arc::make_mut(&mut self.0);
-        // Clear the cache as mutation through the returned `&mut T` may invalidate it
-        *inner.hash_cache.get_mut() = HASH_NOT_COMPUTED_YET;
         // TODO: should the `inner.location` be set to `None` here?
         // After a node is mutated it is kind of not from that source location anymore
         &mut inner.node
@@ -184,43 +163,14 @@ impl<T: Eq> Eq for Node<T> {}
 impl<T: PartialEq> PartialEq for Node<T> {
     fn eq(&self, other: &Self) -> bool {
         self.ptr_eq(other) // fast path
-        || self.0.node == other.0.node // location and hash_cache not included
+        || self.0.node == other.0.node // location not included
     }
 }
 
 impl<T: Hash> Hash for Node<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let hash = self.0.hash_cache.load(Ordering::Relaxed);
-        if hash != HASH_NOT_COMPUTED_YET {
-            // cache hit
-            hash
-        } else {
-            hash_slow_path(&self.0)
-        }
-        .hash(state)
+        self.0.node.hash(state)
     }
-}
-
-// It is possible for multiple threads to race and take this path for the same `NodeInner`.
-// This is ok as they should compute the same result.
-// We save on the extra space that `OnceLock<u64>` would occupy,
-// at the cost of extra computation in the unlikely case of this race.
-#[cold]
-#[inline(never)]
-fn hash_slow_path<T: Hash>(inner: &NodeInner<T>) -> u64 {
-    /// We share a single `BuildHasher` process-wide,
-    /// not only for the race described above but also
-    /// so that multiple `HarcInner`’s with the same contents have the same hash.
-    static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
-    let mut hash = SHARED_RANDOM
-        .get_or_init(RandomState::new)
-        .hash_one(&inner.node);
-    // Don’t use the marker value for an actual hash
-    if hash == HASH_NOT_COMPUTED_YET {
-        hash += 1
-    }
-    inner.hash_cache.store(hash, Ordering::Relaxed);
-    hash
 }
 
 impl<T> AsRef<T> for Node<T> {
@@ -232,16 +182,6 @@ impl<T> AsRef<T> for Node<T> {
 impl<T> From<T> for Node<T> {
     fn from(node: T) -> Self {
         Self::new(node)
-    }
-}
-
-impl<T: Clone> Clone for NodeInner<T> {
-    fn clone(&self) -> Self {
-        Self {
-            location: self.location,
-            hash_cache: AtomicU64::new(self.hash_cache.load(Ordering::Relaxed)),
-            node: self.node.clone(),
-        }
     }
 }
 
