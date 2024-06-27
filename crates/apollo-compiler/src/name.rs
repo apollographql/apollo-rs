@@ -51,7 +51,7 @@ macro_rules! name {
 /// Like [`Node`][crate::Node], this string type has cheap `Clone`
 /// and carries an optional source location.
 ///
-/// Internally, the string value is either an atomically-reference counter `Arc<str>`
+/// Internally, the string value is either an atomically-reference counted `Arc<str>`
 /// or a `&'static str` borrow that lives until the end of the program.
 //
 // Fields: equivalent to `(UnpackedRepr, Option<NodeLocation>)` but more compact
@@ -310,7 +310,7 @@ impl Clone for Name {
 impl Drop for Name {
     fn drop(&mut self) {
         if let Some(arc) = &mut self.as_arc() {
-            // SAFETY: neither the dropped `ManuallyDrop` nor `self.ptr` is not used again
+            // SAFETY: neither the dropped `ManuallyDrop` nor `self.ptr` is used again
             unsafe { ManuallyDrop::drop(arc) }
         }
     }
