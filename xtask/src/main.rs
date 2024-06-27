@@ -30,11 +30,13 @@ struct Xtask {
 pub enum Command {
     /// Perform code generation for the parser
     Codegen(codegen::Codegen),
-    /// Run clippy
+    /// Check Rust code formating and run clippy
     Lint,
+    /// Reformat Rust code
+    Fmt,
 }
 
-fn run_clippy() -> Result<()> {
+fn run_lint() -> Result<()> {
     let sh = Shell::new()?;
 
     cmd!(sh, "cargo fmt --all -- --check").run()?;
@@ -48,11 +50,21 @@ fn run_clippy() -> Result<()> {
     Ok(())
 }
 
+
+fn run_fmt() -> Result<()> {
+    let sh = Shell::new()?;
+
+    cmd!(sh, "cargo fmt --all").run()?;
+
+    Ok(())
+}
+
 impl Xtask {
     pub fn run(&self) -> Result<()> {
         match &self.command {
             Command::Codegen(command) => command.run(self.verbose),
-            Command::Lint => run_clippy(),
+            Command::Lint => run_lint(),
+            Command::Fmt => run_fmt(),
         }?;
 
         Ok(())
