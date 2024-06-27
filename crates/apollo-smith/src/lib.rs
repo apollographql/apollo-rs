@@ -22,10 +22,9 @@ pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
 
+use arbitrary::Unstructured;
 use indexmap::IndexMap;
 use std::fmt::Debug;
-
-use arbitrary::Unstructured;
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum FromError {

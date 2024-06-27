@@ -1,8 +1,13 @@
-use crate::{
-    directive::DirectiveDef, enum_::EnumTypeDef, fragment::FragmentDef,
-    input_object::InputObjectTypeDef, interface::InterfaceTypeDef, object::ObjectTypeDef,
-    operation::OperationDef, scalar::ScalarTypeDef, schema::SchemaDef, union::UnionTypeDef,
-};
+use crate::directive::DirectiveDef;
+use crate::enum_::EnumTypeDef;
+use crate::fragment::FragmentDef;
+use crate::input_object::InputObjectTypeDef;
+use crate::interface::InterfaceTypeDef;
+use crate::object::ObjectTypeDef;
+use crate::operation::OperationDef;
+use crate::scalar::ScalarTypeDef;
+use crate::schema::SchemaDef;
+use crate::union::UnionTypeDef;
 use apollo_compiler::ast;
 
 /// The `__Document` type represents a GraphQL document.A GraphQL Document describes a complete file or request string operated on by a GraphQL service or client.

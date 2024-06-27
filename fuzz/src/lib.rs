@@ -1,5 +1,6 @@
 use apollo_smith::DocumentBuilder;
-use libfuzzer_sys::arbitrary::{Result, Unstructured};
+use libfuzzer_sys::arbitrary::Result;
+use libfuzzer_sys::arbitrary::Unstructured;
 
 /// This generate an arbitrary valid GraphQL document
 pub fn generate_valid_document(input: &[u8]) -> Result<String> {

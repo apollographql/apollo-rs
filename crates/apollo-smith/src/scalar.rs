@@ -1,9 +1,8 @@
-use crate::{
-    description::Description,
-    directive::{Directive, DirectiveLocation},
-    name::Name,
-    DocumentBuilder,
-};
+use crate::description::Description;
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::name::Name;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;

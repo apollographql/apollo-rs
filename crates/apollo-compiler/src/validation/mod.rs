@@ -24,23 +24,27 @@ pub(crate) mod value;
 pub(crate) mod variable;
 
 use crate::ast::Name;
-use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
+use crate::diagnostic::CliReport;
+use crate::diagnostic::Diagnostic;
+use crate::diagnostic::ToCliReport;
+use crate::executable::BuildError as ExecutableBuildError;
+use crate::executable::ConflictingFieldArgument;
+use crate::executable::ConflictingFieldName;
+use crate::executable::ConflictingFieldType;
 use crate::executable::VariableDefinition;
-use crate::executable::{
-    BuildError as ExecutableBuildError, ConflictingFieldArgument, ConflictingFieldName,
-    ConflictingFieldType,
-};
-use crate::execution::{GraphQLError, Response};
+use crate::execution::GraphQLError;
+use crate::execution::Response;
+pub(crate) use crate::node::FileId;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
+use crate::Node;
+use crate::NodeLocation;
 use crate::SourceMap;
-use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::{Arc, OnceLock};
-
-pub(crate) use crate::node::FileId;
+use std::sync::Arc;
+use std::sync::OnceLock;
 
 /// Wraps a [`Schema`] or [`ExecutableDocument`] to mark it
 /// as [valid](https://spec.graphql.org/October2021/#sec-Validation).

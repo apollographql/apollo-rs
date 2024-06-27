@@ -3,8 +3,9 @@ mod lookup;
 mod token;
 mod token_kind;
 
-use crate::{lexer::cursor::Cursor, Error, LimitTracker};
-
+use crate::lexer::cursor::Cursor;
+use crate::Error;
+use crate::LimitTracker;
 pub use token::Token;
 pub use token_kind::TokenKind;
 

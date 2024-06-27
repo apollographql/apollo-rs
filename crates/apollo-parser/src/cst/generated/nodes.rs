@@ -1,11 +1,14 @@
 //! This is a generated file, please do not edit manually. Changes can be
 //! made in codegeneration that lives in `xtask` top-level dir.
 
-use crate::{
-    cst::{support, CstChildren, CstNode},
-    SyntaxKind::{self, *},
-    SyntaxNode, SyntaxToken, S,
-};
+use crate::cst::support;
+use crate::cst::CstChildren;
+use crate::cst::CstNode;
+use crate::SyntaxKind;
+use crate::SyntaxKind::*;
+use crate::SyntaxNode;
+use crate::SyntaxToken;
+use crate::S;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Name {
     pub(crate) syntax: SyntaxNode,

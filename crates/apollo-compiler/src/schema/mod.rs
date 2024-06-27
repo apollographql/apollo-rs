@@ -17,12 +17,21 @@ mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
-pub use self::component::{Component, ComponentName, ComponentOrigin, ExtensionId};
+pub use self::component::Component;
+pub use self::component::ComponentName;
+pub use self::component::ComponentOrigin;
+pub use self::component::ExtensionId;
 pub use self::from_ast::SchemaBuilder;
-pub use crate::ast::{
-    Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
-    InputValueDefinition, Name, NamedType, Type, Value,
-};
+pub use crate::ast::Directive;
+pub use crate::ast::DirectiveDefinition;
+pub use crate::ast::DirectiveLocation;
+pub use crate::ast::EnumValueDefinition;
+pub use crate::ast::FieldDefinition;
+pub use crate::ast::InputValueDefinition;
+pub use crate::ast::Name;
+pub use crate::ast::NamedType;
+pub use crate::ast::Type;
+pub use crate::ast::Value;
 use crate::name;
 use crate::ty;
 use crate::validation::DiagnosticList;

@@ -1,20 +1,24 @@
 mod gen_syntax_kinds;
 mod gen_syntax_nodes;
 
-use std::collections::BTreeSet;
-
+use crate::cst_src::Cardinality;
+use crate::cst_src::CstEnumSrc;
+use crate::cst_src::CstNodeSrc;
+use crate::cst_src::CstSrc;
+use crate::cst_src::Field;
+use crate::cst_src::KINDS_SRC;
+use crate::ensure_file_contents;
+use crate::root_path;
+use crate::utils::pluralize;
+use crate::utils::project_root;
+use crate::utils::to_lower_snake_case;
 use anyhow::Result;
 use clap::Parser;
-use ungrammar::{Grammar, Rule};
-
-use crate::{
-    cst_src::{Cardinality, CstEnumSrc, CstNodeSrc, CstSrc, Field, KINDS_SRC},
-    ensure_file_contents, root_path,
-    utils::{pluralize, project_root, to_lower_snake_case},
-};
-
 use gen_syntax_kinds::generate_kinds;
 use gen_syntax_nodes::generate_nodes;
+use std::collections::BTreeSet;
+use ungrammar::Grammar;
+use ungrammar::Rule;
 
 #[derive(Debug, Parser)]
 pub struct Codegen {}

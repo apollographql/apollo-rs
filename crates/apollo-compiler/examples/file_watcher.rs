@@ -1,16 +1,20 @@
-use std::{
-    collections::HashMap,
-    fs::{self, DirEntry},
-    path::{Path, PathBuf},
-    sync::mpsc::channel,
-    time::Duration,
-};
-
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
+use anyhow::Result;
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
-use notify::{Config, EventKind, PollWatcher, RecursiveMode, Watcher};
+use notify::Config;
+use notify::EventKind;
+use notify::PollWatcher;
+use notify::RecursiveMode;
+use notify::Watcher;
+use std::collections::HashMap;
+use std::fs;
+use std::fs::DirEntry;
+use std::path::Path;
+use std::path::PathBuf;
+use std::sync::mpsc::channel;
+use std::time::Duration;
 
 fn main() -> Result<()> {
     let dir = Path::new("crates/apollo-compiler/examples/documents");

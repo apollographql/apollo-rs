@@ -1,6 +1,11 @@
+use crate::parser::grammar::description;
+use crate::parser::grammar::directive;
+use crate::parser::grammar::name;
 use crate::parser::grammar::value::Constness;
-use crate::parser::grammar::{description, directive, name};
-use crate::{Parser, SyntaxKind, TokenKind, T};
+use crate::Parser;
+use crate::SyntaxKind;
+use crate::TokenKind;
+use crate::T;
 
 /// See: https://spec.graphql.org/October2021/#ScalarTypeDefinition
 ///

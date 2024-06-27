@@ -1,13 +1,14 @@
-use crate::{
-    argument::{Argument, ArgumentsDef},
-    description::Description,
-    name::Name,
-    DocumentBuilder,
-};
+use crate::argument::Argument;
+use crate::argument::ArgumentsDef;
+use crate::description::Description;
+use crate::name::Name;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
-use arbitrary::{Arbitrary, Result as ArbitraryResult};
-use indexmap::{IndexMap, IndexSet};
+use arbitrary::Arbitrary;
+use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// The `__DirectiveDef` type represents a Directive definition.
 ///

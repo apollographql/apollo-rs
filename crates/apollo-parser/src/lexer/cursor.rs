@@ -1,6 +1,5 @@
-use std::str::CharIndices;
-
 use crate::Error;
+use std::str::CharIndices;
 
 /// Peekable iterator over a char sequence.
 #[derive(Debug, Clone)]

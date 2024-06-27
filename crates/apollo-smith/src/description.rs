@@ -1,8 +1,8 @@
-use std::fmt::Write as _;
-
-use arbitrary::{Arbitrary, Result as ArbitraryResult, Unstructured};
-
 use crate::DocumentBuilder;
+use arbitrary::Arbitrary;
+use arbitrary::Result as ArbitraryResult;
+use arbitrary::Unstructured;
+use std::fmt::Write as _;
 
 const CHARSET: &[u8] =
     b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_\n\r\t/$#!.-+='";

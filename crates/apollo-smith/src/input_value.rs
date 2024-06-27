@@ -1,10 +1,9 @@
-use crate::{
-    description::Description,
-    directive::{Directive, DirectiveLocation},
-    name::Name,
-    ty::Ty,
-    DocumentBuilder,
-};
+use crate::description::Description;
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::name::Name;
+use crate::ty::Ty;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
@@ -352,13 +351,12 @@ impl<'a> DocumentBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use indexmap::{IndexMap, IndexSet};
-
-    use arbitrary::Unstructured;
-
-    use crate::{field::FieldDef, ObjectTypeDef};
-
     use super::*;
+    use crate::field::FieldDef;
+    use crate::ObjectTypeDef;
+    use arbitrary::Unstructured;
+    use indexmap::IndexMap;
+    use indexmap::IndexSet;
 
     #[test]
     fn test_input_value_for_type() {

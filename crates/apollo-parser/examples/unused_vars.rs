@@ -1,9 +1,10 @@
 //! Example usage of `apollo-parser` to check for unused vars in a given GraphQL
 //! query.
 
-use std::{fs, path::Path};
-
-use apollo_parser::{cst, Parser};
+use apollo_parser::cst;
+use apollo_parser::Parser;
+use std::fs;
+use std::path::Path;
 
 fn are_variables_unused() {
     // Example mutation with variables.

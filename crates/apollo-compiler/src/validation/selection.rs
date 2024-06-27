@@ -1,19 +1,24 @@
+use crate::ast;
 use crate::ast::Name;
 use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
+use crate::executable;
 use crate::executable::BuildError;
 use crate::executable::ConflictingFieldArgument;
 use crate::executable::ConflictingFieldName;
 use crate::executable::ConflictingFieldType;
 use crate::executable::SelectionSet;
+use crate::schema;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
-use crate::{ast, executable, schema, Node};
+use crate::Node;
 use apollo_parser::LimitTracker;
 use indexmap::IndexMap;
 use std::cell::OnceCell;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::collections::VecDeque;
 use std::rc::Rc;
 
 /// Represents a field selected against a parent type.

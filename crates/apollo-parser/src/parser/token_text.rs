@@ -1,7 +1,9 @@
 //! A version of owned string built on top of rowan's `GreenNode`. This is used
 //! when displaying text of a given node.
 
-use std::{cmp::Ordering, fmt, ops};
+use std::cmp::Ordering;
+use std::fmt;
+use std::ops;
 
 pub struct TokenText(pub(crate) rowan::GreenToken);
 

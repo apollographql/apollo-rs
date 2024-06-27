@@ -1,7 +1,11 @@
 use crate::ast;
-use crate::schema::{ExtendedType, InputObjectType};
+use crate::schema::ExtendedType;
+use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
-use crate::validation::{CycleError, DiagnosticList, RecursionGuard, RecursionStack};
+use crate::validation::CycleError;
+use crate::validation::DiagnosticList;
+use crate::validation::RecursionGuard;
+use crate::validation::RecursionStack;
 use crate::Node;
 use std::collections::HashMap;
 

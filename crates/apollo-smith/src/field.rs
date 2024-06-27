@@ -1,16 +1,17 @@
-use crate::{
-    argument::{Argument, ArgumentsDef},
-    description::Description,
-    directive::{Directive, DirectiveLocation},
-    name::Name,
-    selection_set::SelectionSet,
-    ty::Ty,
-    DocumentBuilder,
-};
+use crate::argument::Argument;
+use crate::argument::ArgumentsDef;
+use crate::description::Description;
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::name::Name;
+use crate::selection_set::SelectionSet;
+use crate::ty::Ty;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
 ///

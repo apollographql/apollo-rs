@@ -1,6 +1,13 @@
+use crate::parser::grammar::argument;
+use crate::parser::grammar::description;
+use crate::parser::grammar::input;
+use crate::parser::grammar::name;
 use crate::parser::grammar::value::Constness;
-use crate::parser::grammar::{argument, description, input, name};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::Parser;
+use crate::SyntaxKind;
+use crate::TokenKind;
+use crate::S;
+use crate::T;
 use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#DirectiveDefinition
@@ -200,9 +207,8 @@ pub(crate) fn directives(p: &mut Parser, constness: Constness) {
 
 #[cfg(test)]
 mod tests {
-    use crate::cst;
-
     use super::*;
+    use crate::cst;
 
     #[test]
     fn it_can_access_repeatable_kw_on_directive_definition() {

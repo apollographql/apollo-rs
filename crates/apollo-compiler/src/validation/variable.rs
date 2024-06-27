@@ -1,10 +1,16 @@
+use crate::ast;
+use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
-use crate::validation::{
-    DiagnosticList, NodeLocation, RecursionGuard, RecursionLimitError, RecursionStack,
-};
-use crate::{ast, executable, ExecutableDocument, Node};
+use crate::validation::DiagnosticList;
+use crate::validation::NodeLocation;
+use crate::validation::RecursionGuard;
+use crate::validation::RecursionLimitError;
+use crate::validation::RecursionStack;
+use crate::ExecutableDocument;
+use crate::Node;
 use std::collections::hash_map::Entry;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 pub(crate) fn validate_variable_definitions(
     diagnostics: &mut DiagnosticList,

@@ -1,5 +1,3 @@
-use std::fs;
-
 use apollo_parser::Parser;
 use apollo_smith::Document;
 use apollo_smith::DocumentBuilder;
@@ -7,8 +5,10 @@ use arbitrary::Result;
 use arbitrary::Unstructured;
 use rand::distributions::Alphanumeric;
 use rand::rngs::StdRng;
+use rand::thread_rng;
+use rand::Rng;
 use rand::SeedableRng;
-use rand::{thread_rng, Rng};
+use std::fs;
 
 /// This generate an arbitrary valid GraphQL operation
 pub fn generate_valid_operation(schema_path: &str, seed_arg: Option<String>) -> Result<String> {

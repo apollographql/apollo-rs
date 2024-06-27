@@ -1,15 +1,14 @@
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::name::Name;
+use crate::selection_set::SelectionSet;
+use crate::variable::VariableDef;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
-use arbitrary::{Arbitrary, Result as ArbitraryResult};
+use arbitrary::Arbitrary;
+use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
-
-use crate::{
-    directive::{Directive, DirectiveLocation},
-    name::Name,
-    selection_set::SelectionSet,
-    variable::VariableDef,
-    DocumentBuilder,
-};
 
 /// The __operationDef type represents an operation definition
 ///

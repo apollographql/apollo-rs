@@ -1,4 +1,7 @@
-use crate::{Parser, SyntaxKind, TokenKind, S};
+use crate::Parser;
+use crate::SyntaxKind;
+use crate::TokenKind;
+use crate::S;
 
 /// See: https://spec.graphql.org/October2021/#Name
 ///

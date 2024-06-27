@@ -1,12 +1,11 @@
 //! Ported from graphql-js, 2023-11-16
 //! https://github.com/graphql/graphql-js/blob/0b7590f0a2b65e6210da2e49be0d8e6c27781af2/src/validation/__tests__/ValuesOfCorrectTypeRule-test.ts
-use expect_test::Expect;
-use std::sync::OnceLock;
-use unindent::unindent;
-
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
+use expect_test::Expect;
+use std::sync::OnceLock;
+use unindent::unindent;
 
 const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
   interface Mammal {

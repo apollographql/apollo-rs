@@ -17,10 +17,15 @@ pub(crate) mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
-pub use crate::ast::{
-    Argument, Directive, DirectiveList, Name, NamedType, OperationType, Type, Value,
-    VariableDefinition,
-};
+pub use crate::ast::Argument;
+pub use crate::ast::Directive;
+pub use crate::ast::DirectiveList;
+pub use crate::ast::Name;
+pub use crate::ast::NamedType;
+pub use crate::ast::OperationType;
+pub use crate::ast::Type;
+pub use crate::ast::Value;
+pub use crate::ast::VariableDefinition;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;

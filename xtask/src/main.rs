@@ -2,14 +2,15 @@ mod codegen;
 mod cst_src;
 mod utils;
 
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
-
-use anyhow::{bail, Result};
-use clap::{Parser, Subcommand};
-use xshell::{cmd, Shell};
+use anyhow::bail;
+use anyhow::Result;
+use clap::Parser;
+use clap::Subcommand;
+use std::env;
+use std::path::Path;
+use std::path::PathBuf;
+use xshell::cmd;
+use xshell::Shell;
 
 fn main() -> Result<()> {
     let app = Xtask::parse();
@@ -49,7 +50,6 @@ fn run_lint() -> Result<()> {
 
     Ok(())
 }
-
 
 fn run_fmt() -> Result<()> {
     let sh = Shell::new()?;
