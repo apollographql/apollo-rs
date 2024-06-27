@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        39: SourceFile {
+        41: SourceFile {
             path: "0040_field_merging_issue_755.graphql",
             source_text: "# Different fragments selecting the same name from different types\n# into different subselections -- all valid, unless apollo-rs\n# propagates type conditions incorrectly :)\n\ntype Subselection {\n  createdAt: Int!\n}\n\ntype Issue {\n  createdAt: Int\n  subselection: [Subselection!]\n}\n\ntype Query {\n  issue755: Issue\n}\n\nfragment topLevelFragment on Issue {\n  subselection {\n    createdAt\n    ...subselectionFragment\n  }\n  ...collidingTopLevelFragment\n}\nfragment collidingTopLevelFragment on Issue {\n  subselection {\n    createdAt\n  }\n}\nfragment subselectionFragment on Subselection {\n  createdAt\n}\nquery  {\n  issue755 {\n    ...topLevelFragment\n  }\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Subselection": Object(
-            174..213 @39 ObjectType {
+            174..213 @41 ObjectType {
                 description: None,
                 name: "Subselection",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "createdAt": Component {
                         origin: Definition,
-                        node: 196..211 @39 FieldDefinition {
+                        node: 196..211 @41 FieldDefinition {
                             description: None,
                             name: "createdAt",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Issue": Object(
-            215..278 @39 ObjectType {
+            215..278 @41 ObjectType {
                 description: None,
                 name: "Issue",
                 implements_interfaces: {},
@@ -72,7 +72,7 @@ Schema {
                 fields: {
                     "createdAt": Component {
                         origin: Definition,
-                        node: 230..244 @39 FieldDefinition {
+                        node: 230..244 @41 FieldDefinition {
                             description: None,
                             name: "createdAt",
                             arguments: [],
@@ -84,7 +84,7 @@ Schema {
                     },
                     "subselection": Component {
                         origin: Definition,
-                        node: 247..276 @39 FieldDefinition {
+                        node: 247..276 @41 FieldDefinition {
                             description: None,
                             name: "subselection",
                             arguments: [],
@@ -100,7 +100,7 @@ Schema {
             },
         ),
         "Query": Object(
-            280..312 @39 ObjectType {
+            280..312 @41 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -108,7 +108,7 @@ Schema {
                 fields: {
                     "issue755": Component {
                         origin: Definition,
-                        node: 295..310 @39 FieldDefinition {
+                        node: 295..310 @41 FieldDefinition {
                             description: None,
                             name: "issue755",
                             arguments: [],
@@ -125,17 +125,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        39: SourceFile {
+        41: SourceFile {
             path: "0040_field_merging_issue_755.graphql",
             source_text: "# Different fragments selecting the same name from different types\n# into different subselections -- all valid, unless apollo-rs\n# propagates type conditions incorrectly :)\n\ntype Subselection {\n  createdAt: Int!\n}\n\ntype Issue {\n  createdAt: Int\n  subselection: [Subselection!]\n}\n\ntype Query {\n  issue755: Issue\n}\n\nfragment topLevelFragment on Issue {\n  subselection {\n    createdAt\n    ...subselectionFragment\n  }\n  ...collidingTopLevelFragment\n}\nfragment collidingTopLevelFragment on Issue {\n  subselection {\n    createdAt\n  }\n}\nfragment subselectionFragment on Subselection {\n  createdAt\n}\nquery  {\n  issue755 {\n    ...topLevelFragment\n  }\n}\n",
         },
     },
     anonymous_operation: Some(
-        592..643 @39 Operation {
+        592..643 @41 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -144,8 +144,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        603..641 @39 Field {
-                            definition: 295..310 @39 FieldDefinition {
+                        603..641 @41 Field {
+                            definition: 295..310 @41 FieldDefinition {
                                 description: None,
                                 name: "issue755",
                                 arguments: [],
@@ -162,7 +162,7 @@ ExecutableDocument {
                                 ty: "Issue",
                                 selections: [
                                     FragmentSpread(
-                                        618..637 @39 FragmentSpread {
+                                        618..637 @41 FragmentSpread {
                                             fragment_name: "topLevelFragment",
                                             directives: [],
                                         },
@@ -177,15 +177,15 @@ ExecutableDocument {
     ),
     named_operations: {},
     fragments: {
-        "topLevelFragment": 314..446 @39 Fragment {
+        "topLevelFragment": 314..446 @41 Fragment {
             name: "topLevelFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Issue",
                 selections: [
                     Field(
-                        353..413 @39 Field {
-                            definition: 247..276 @39 FieldDefinition {
+                        353..413 @41 Field {
+                            definition: 247..276 @41 FieldDefinition {
                                 description: None,
                                 name: "subselection",
                                 arguments: [],
@@ -204,8 +204,8 @@ ExecutableDocument {
                                 ty: "Subselection",
                                 selections: [
                                     Field(
-                                        372..381 @39 Field {
-                                            definition: 196..211 @39 FieldDefinition {
+                                        372..381 @41 Field {
+                                            definition: 196..211 @41 FieldDefinition {
                                                 description: None,
                                                 name: "createdAt",
                                                 arguments: [],
@@ -225,7 +225,7 @@ ExecutableDocument {
                                         },
                                     ),
                                     FragmentSpread(
-                                        386..409 @39 FragmentSpread {
+                                        386..409 @41 FragmentSpread {
                                             fragment_name: "subselectionFragment",
                                             directives: [],
                                         },
@@ -235,7 +235,7 @@ ExecutableDocument {
                         },
                     ),
                     FragmentSpread(
-                        416..444 @39 FragmentSpread {
+                        416..444 @41 FragmentSpread {
                             fragment_name: "collidingTopLevelFragment",
                             directives: [],
                         },
@@ -243,15 +243,15 @@ ExecutableDocument {
                 ],
             },
         },
-        "collidingTopLevelFragment": 447..529 @39 Fragment {
+        "collidingTopLevelFragment": 447..529 @41 Fragment {
             name: "collidingTopLevelFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Issue",
                 selections: [
                     Field(
-                        495..527 @39 Field {
-                            definition: 247..276 @39 FieldDefinition {
+                        495..527 @41 Field {
+                            definition: 247..276 @41 FieldDefinition {
                                 description: None,
                                 name: "subselection",
                                 arguments: [],
@@ -270,8 +270,8 @@ ExecutableDocument {
                                 ty: "Subselection",
                                 selections: [
                                     Field(
-                                        514..523 @39 Field {
-                                            definition: 196..211 @39 FieldDefinition {
+                                        514..523 @41 Field {
+                                            definition: 196..211 @41 FieldDefinition {
                                                 description: None,
                                                 name: "createdAt",
                                                 arguments: [],
@@ -297,15 +297,15 @@ ExecutableDocument {
                 ],
             },
         },
-        "subselectionFragment": 530..591 @39 Fragment {
+        "subselectionFragment": 530..591 @41 Fragment {
             name: "subselectionFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Subselection",
                 selections: [
                     Field(
-                        580..589 @39 Field {
-                            definition: 196..211 @39 FieldDefinition {
+                        580..589 @41 Field {
+                            definition: 196..211 @41 FieldDefinition {
                                 description: None,
                                 name: "createdAt",
                                 arguments: [],

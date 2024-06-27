@@ -35,7 +35,7 @@ impl From<InputValue> for ast::Value {
             InputValue::Variable(v) => Self::Variable(v.into()),
             InputValue::Int(i) => Self::Int(i.into()),
             InputValue::Float(f) => Self::Float(f.into()),
-            InputValue::String(s) => Self::String(s.into()),
+            InputValue::String(s) => Self::String(s),
             InputValue::Boolean(b) => Self::Boolean(b),
             InputValue::Null => Self::Null,
             InputValue::Enum(enm) => Self::Enum(enm.into()),

@@ -21,6 +21,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
+- **`Name` representation change - [SimonSapin] in [pull/868].**
+  The memory representation of GraphQL names is changed to use `Arc<str>` or `&'static str`
+  internally, and provide corresponding cheap conversions.
+  This may also help enable [string interning] in a future compiler version.
+  * `Name` should now be imported from the crate root.
+    The previous paths (`apollo_compiler::ast::Name`, `apollo_compiler::executable::Name`,
+    and `apollo_compiler::schema::Name`) now emit a deprecation warning
+    and will be removed in a later version.
+  * `NodeStr` has been removed, with its functionality folded into `Name`
+  * `ast::Value::String` now contains a plain `String` instead of `NodeStr`.
+    `Value` itself is in a `Node<_>` that contains the same source span as `NodeStr` did.
+  * Descriptions are now represented as `Option<Node<str>>` instead of `Option<NodeStr>`.
+
 - **Feature REMOVED: `Hash` cache in `Node<T>` - [SimonSapin] in [pull/872].**
   `Node<T>` is a reference-counted smart pointer that provides thread-safe shared ownership
   for at `T` value together with an optional source location.
@@ -47,7 +60,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [SimonSapin]: https://github.com/SimonSapin
 [pull/865]: https://github.com/apollographql/apollo-rs/pull/865
+[pull/868]: https://github.com/apollographql/apollo-rs/pull/868
 [pull/872]: https://github.com/apollographql/apollo-rs/pull/872
+[string interning]: https://github.com/apollographql/apollo-rs/issues/385#issuecomment-2176436184
 [Salsa]: https://crates.io/crates/salsa
 
 # [1.0.0-beta.17](https://crates.io/crates/apollo-compiler/1.0.0-beta.17) - 2024-06-05

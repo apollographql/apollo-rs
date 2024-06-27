@@ -2,6 +2,9 @@ use crate::ast::Name;
 use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable::BuildError;
+use crate::executable::ConflictingFieldArgument;
+use crate::executable::ConflictingFieldName;
+use crate::executable::ConflictingFieldType;
 use crate::executable::SelectionSet;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
@@ -102,13 +105,15 @@ fn same_name_and_arguments(
 ) -> Result<(), BuildError> {
     // 2bi. fieldA and fieldB must have identical field names.
     if field_a.field.name != field_b.field.name {
-        return Err(BuildError::ConflictingFieldName {
-            alias: field_a.field.response_key().clone(),
-            original_location: field_a.field.location(),
-            original_selection: field_a.coordinate(),
-            conflicting_location: field_b.field.location(),
-            conflicting_selection: field_b.coordinate(),
-        });
+        return Err(BuildError::ConflictingFieldName(Box::new(
+            ConflictingFieldName {
+                alias: field_a.field.response_key().clone(),
+                original_location: field_a.field.location(),
+                original_selection: field_a.coordinate(),
+                conflicting_location: field_b.field.location(),
+                conflicting_selection: field_b.coordinate(),
+            },
+        )));
     }
 
     // 2bii. fieldA and fieldB must have identical sets of arguments.
@@ -123,7 +128,7 @@ fn same_name_and_arguments(
             // We can take the name from either one of the arguments as they are necessarily the same.
             let arg = original_arg.or(redefined_arg).unwrap();
 
-            BuildError::ConflictingFieldArgument {
+            BuildError::ConflictingFieldArgument(Box::new(ConflictingFieldArgument {
                 // field_a and field_b have the same name so we can use either one.
                 alias: field_b.field.name.clone(),
                 original_location: field_a.field.location(),
@@ -132,7 +137,7 @@ fn same_name_and_arguments(
                 conflicting_location: field_b.field.location(),
                 conflicting_coordinate: field_b.coordinate().with_argument(arg.name.clone()),
                 conflicting_value: redefined_arg.map(|arg| (*arg.value).clone()),
-            }
+            }))
         };
 
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
@@ -198,14 +203,16 @@ fn same_output_type_shape(
     let mut type_a = &field_a.ty;
     let mut type_b = &field_b.ty;
 
-    let mismatching_type_diagnostic = || BuildError::ConflictingFieldType {
-        alias: selection_a.field.response_key().clone(),
-        original_location: selection_a.field.location(),
-        original_coordinate: selection_a.coordinate(),
-        original_type: field_a.ty.clone(),
-        conflicting_location: selection_b.field.location(),
-        conflicting_coordinate: selection_b.coordinate(),
-        conflicting_type: field_b.ty.clone(),
+    let mismatching_type_diagnostic = || {
+        BuildError::ConflictingFieldType(Box::new(ConflictingFieldType {
+            alias: selection_a.field.response_key().clone(),
+            original_location: selection_a.field.location(),
+            original_coordinate: selection_a.coordinate(),
+            original_type: field_a.ty.clone(),
+            conflicting_location: selection_b.field.location(),
+            conflicting_coordinate: selection_b.coordinate(),
+            conflicting_type: field_b.ty.clone(),
+        }))
     };
 
     // Steps 3 and 4 of the spec text unwrap both types simultaneously down to the named type.

@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        38: SourceFile {
+        40: SourceFile {
             path: "0039_string_literals.graphql",
             source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n\n  \"   Leading whitespace on a single line to preserve\"\n  f16: Int\n\n  \"   Leading whitespace in multi-line string to preserve\\nNo leading whitespace on second line\"\n  f17: Int\n\n  \"\\n   Leading empty line + indent to preserve\"\n  f18: Int\n\n  \"When serialized as a block string, \\\\\\\"\\\"\\\" outputs \\\\ in front of the escaped triple quote\"\n  f19: Int\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..947 @38 ObjectType {
+            0..947 @40 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,9 +50,9 @@ Schema {
                 fields: {
                     "f1": Component {
                         origin: Definition,
-                        node: 15..35 @38 FieldDefinition {
+                        node: 15..35 @40 FieldDefinition {
                             description: Some(
-                                "LF: a\nb",
+                                15..25 @40 "LF: a\nb",
                             ),
                             name: "f1",
                             arguments: [],
@@ -64,9 +64,9 @@ Schema {
                     },
                     "f2": Component {
                         origin: Definition,
-                        node: 39..63 @38 FieldDefinition {
+                        node: 39..63 @40 FieldDefinition {
                             description: Some(
-                                "CRLF: a\r\nb",
+                                39..53 @40 "CRLF: a\r\nb",
                             ),
                             name: "f2",
                             arguments: [],
@@ -78,9 +78,9 @@ Schema {
                     },
                     "f3": Component {
                         origin: Definition,
-                        node: 67..103 @38 FieldDefinition {
+                        node: 67..103 @40 FieldDefinition {
                             description: Some(
-                                "a\n\nb",
+                                67..93 @40 "a\n\nb",
                             ),
                             name: "f3",
                             arguments: [],
@@ -92,9 +92,9 @@ Schema {
                     },
                     "f4": Component {
                         origin: Definition,
-                        node: 107..128 @38 FieldDefinition {
+                        node: 107..128 @40 FieldDefinition {
                             description: Some(
-                                "a \"b\" c",
+                                107..118 @40 "a \"b\" c",
                             ),
                             name: "f4",
                             arguments: [],
@@ -106,9 +106,9 @@ Schema {
                     },
                     "f5": Component {
                         origin: Definition,
-                        node: 132..161 @38 FieldDefinition {
+                        node: 132..161 @40 FieldDefinition {
                             description: Some(
-                                "a \"\"\"b\"\"\" c",
+                                132..151 @40 "a \"\"\"b\"\"\" c",
                             ),
                             name: "f5",
                             arguments: [],
@@ -120,9 +120,9 @@ Schema {
                     },
                     "f6": Component {
                         origin: Definition,
-                        node: 165..197 @38 FieldDefinition {
+                        node: 165..197 @40 FieldDefinition {
                             description: Some(
-                                "regex: \\d+",
+                                165..187 @40 "regex: \\d+",
                             ),
                             name: "f6",
                             arguments: [],
@@ -134,9 +134,9 @@ Schema {
                     },
                     "f7": Component {
                         origin: Definition,
-                        node: 201..245 @38 FieldDefinition {
+                        node: 201..245 @40 FieldDefinition {
                             description: Some(
-                                "\nLeading empty line to preserve",
+                                201..235 @40 "\nLeading empty line to preserve",
                             ),
                             name: "f7",
                             arguments: [],
@@ -148,9 +148,9 @@ Schema {
                     },
                     "f8": Component {
                         origin: Definition,
-                        node: 249..304 @38 FieldDefinition {
+                        node: 249..304 @40 FieldDefinition {
                             description: Some(
-                                " \nLeading whitespace-only line to preserve",
+                                249..294 @40 " \nLeading whitespace-only line to preserve",
                             ),
                             name: "f8",
                             arguments: [],
@@ -162,9 +162,9 @@ Schema {
                     },
                     "f9": Component {
                         origin: Definition,
-                        node: 308..353 @38 FieldDefinition {
+                        node: 308..353 @40 FieldDefinition {
                             description: Some(
-                                "Trailing empty line to preserve\n",
+                                308..343 @40 "Trailing empty line to preserve\n",
                             ),
                             name: "f9",
                             arguments: [],
@@ -176,9 +176,9 @@ Schema {
                     },
                     "f10": Component {
                         origin: Definition,
-                        node: 357..415 @38 FieldDefinition {
+                        node: 357..415 @40 FieldDefinition {
                             description: Some(
-                                "Trailing whitespace-only line to preserve\n\t",
+                                357..404 @40 "Trailing whitespace-only line to preserve\n\t",
                             ),
                             name: "f10",
                             arguments: [],
@@ -190,18 +190,18 @@ Schema {
                     },
                     "f11": Component {
                         origin: Definition,
-                        node: 419..449 @38 FieldDefinition {
+                        node: 419..449 @40 FieldDefinition {
                             description: None,
                             name: "f11",
                             arguments: [
-                                423..443 @38 InputValueDefinition {
+                                423..443 @40 InputValueDefinition {
                                     description: None,
                                     name: "arg",
-                                    ty: 428..434 @38 Named(
+                                    ty: 428..434 @40 Named(
                                         "String",
                                     ),
                                     default_value: Some(
-                                        437..443 @38 String(
+                                        437..443 @40 String(
                                             "a\nb",
                                         ),
                                     ),
@@ -216,18 +216,18 @@ Schema {
                     },
                     "f12": Component {
                         origin: Definition,
-                        node: 453..488 @38 FieldDefinition {
+                        node: 453..488 @40 FieldDefinition {
                             description: None,
                             name: "f12",
                             arguments: [
-                                457..482 @38 InputValueDefinition {
+                                457..482 @40 InputValueDefinition {
                                     description: None,
                                     name: "arg",
-                                    ty: 462..468 @38 Named(
+                                    ty: 462..468 @40 Named(
                                         "String",
                                     ),
                                     default_value: Some(
-                                        471..482 @38 String(
+                                        471..482 @40 String(
                                             "a \"b\" c",
                                         ),
                                     ),
@@ -242,18 +242,18 @@ Schema {
                     },
                     "f13": Component {
                         origin: Definition,
-                        node: 492..529 @38 FieldDefinition {
+                        node: 492..529 @40 FieldDefinition {
                             description: None,
                             name: "f13",
                             arguments: [
-                                496..523 @38 InputValueDefinition {
+                                496..523 @40 InputValueDefinition {
                                     description: None,
                                     name: "arg",
-                                    ty: 501..507 @38 Named(
+                                    ty: 501..507 @40 Named(
                                         "String",
                                     ),
                                     default_value: Some(
-                                        510..523 @38 String(
+                                        510..523 @40 String(
                                             "regex: \\d+",
                                         ),
                                     ),
@@ -268,9 +268,9 @@ Schema {
                     },
                     "f14": Component {
                         origin: Definition,
-                        node: 533..567 @38 FieldDefinition {
+                        node: 533..567 @40 FieldDefinition {
                             description: Some(
-                                "Trailing backslash \\",
+                                533..556 @40 "Trailing backslash \\",
                             ),
                             name: "f14",
                             arguments: [],
@@ -282,9 +282,9 @@ Schema {
                     },
                     "f15": Component {
                         origin: Definition,
-                        node: 571..600 @38 FieldDefinition {
+                        node: 571..600 @40 FieldDefinition {
                             description: Some(
-                                "Trailing quote\"",
+                                571..589 @40 "Trailing quote\"",
                             ),
                             name: "f15",
                             arguments: [],
@@ -296,9 +296,9 @@ Schema {
                     },
                     "f16": Component {
                         origin: Definition,
-                        node: 604..667 @38 FieldDefinition {
+                        node: 604..667 @40 FieldDefinition {
                             description: Some(
-                                "   Leading whitespace on a single line to preserve",
+                                604..656 @40 "   Leading whitespace on a single line to preserve",
                             ),
                             name: "f16",
                             arguments: [],
@@ -310,9 +310,9 @@ Schema {
                     },
                     "f17": Component {
                         origin: Definition,
-                        node: 671..776 @38 FieldDefinition {
+                        node: 671..776 @40 FieldDefinition {
                             description: Some(
-                                "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
+                                671..765 @40 "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
                             ),
                             name: "f17",
                             arguments: [],
@@ -324,9 +324,9 @@ Schema {
                     },
                     "f18": Component {
                         origin: Definition,
-                        node: 780..837 @38 FieldDefinition {
+                        node: 780..837 @40 FieldDefinition {
                             description: Some(
-                                "\n   Leading empty line + indent to preserve",
+                                780..826 @40 "\n   Leading empty line + indent to preserve",
                             ),
                             name: "f18",
                             arguments: [],
@@ -338,9 +338,9 @@ Schema {
                     },
                     "f19": Component {
                         origin: Definition,
-                        node: 841..945 @38 FieldDefinition {
+                        node: 841..945 @40 FieldDefinition {
                             description: Some(
-                                "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
+                                841..934 @40 "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
                             ),
                             name: "f19",
                             arguments: [],
@@ -357,11 +357,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        38: SourceFile {
+        40: SourceFile {
             path: "0039_string_literals.graphql",
             source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n\n  \"   Leading whitespace on a single line to preserve\"\n  f16: Int\n\n  \"   Leading whitespace in multi-line string to preserve\\nNo leading whitespace on second line\"\n  f17: Int\n\n  \"\\n   Leading empty line + indent to preserve\"\n  f18: Int\n\n  \"When serialized as a block string, \\\\\\\"\\\"\\\" outputs \\\\ in front of the escaped triple quote\"\n  f19: Int\n}\n",
         },

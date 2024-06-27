@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        4: SourceFile {
+        6: SourceFile {
             path: "0004_schema_with_custom_scalars.graphql",
             source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..44 @4 ObjectType {
+            0..44 @6 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "website": Component {
                         origin: Definition,
-                        node: 15..27 @4 FieldDefinition {
+                        node: 15..27 @6 FieldDefinition {
                             description: None,
                             name: "website",
                             arguments: [],
@@ -62,7 +62,7 @@ Schema {
                     },
                     "amount": Component {
                         origin: Definition,
-                        node: 31..42 @4 FieldDefinition {
+                        node: 31..42 @6 FieldDefinition {
                             description: None,
                             name: "amount",
                             arguments: [],
@@ -76,18 +76,18 @@ Schema {
             },
         ),
         "URL": Scalar(
-            46..113 @4 ScalarType {
+            46..113 @6 ScalarType {
                 description: None,
                 name: "URL",
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 57..113 @4 Directive {
+                        node: 57..113 @6 Directive {
                             name: "specifiedBy",
                             arguments: [
-                                70..112 @4 Argument {
+                                70..112 @6 Argument {
                                     name: "url",
-                                    value: 75..112 @4 String(
+                                    value: 75..112 @6 String(
                                         "https://tools.ietf.org/html/rfc3986",
                                     ),
                                 },
@@ -101,11 +101,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        4: SourceFile {
+        6: SourceFile {
             path: "0004_schema_with_custom_scalars.graphql",
             source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
         },

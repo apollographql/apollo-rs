@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        16: SourceFile {
+        18: SourceFile {
             path: "0016_same_variables_in_multiple_operations.graphql",
             source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            230..255 @16 ObjectType {
+            230..255 @18 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "dog": Component {
                         origin: Definition,
-                        node: 245..253 @16 FieldDefinition {
+                        node: 245..253 @18 FieldDefinition {
                             description: None,
                             name: "dog",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Dog": Object(
-            257..372 @16 ObjectType {
+            257..372 @18 ObjectType {
                 description: None,
                 name: "Dog",
                 implements_interfaces: {},
@@ -72,7 +72,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 270..283 @16 FieldDefinition {
+                        node: 270..283 @18 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -84,7 +84,7 @@ Schema {
                     },
                     "nickname": Component {
                         origin: Definition,
-                        node: 286..302 @16 FieldDefinition {
+                        node: 286..302 @18 FieldDefinition {
                             description: None,
                             name: "nickname",
                             arguments: [],
@@ -96,7 +96,7 @@ Schema {
                     },
                     "barkVolume": Component {
                         origin: Definition,
-                        node: 305..320 @16 FieldDefinition {
+                        node: 305..320 @18 FieldDefinition {
                             description: None,
                             name: "barkVolume",
                             arguments: [],
@@ -108,14 +108,14 @@ Schema {
                     },
                     "isHouseTrained": Component {
                         origin: Definition,
-                        node: 323..370 @16 FieldDefinition {
+                        node: 323..370 @18 FieldDefinition {
                             description: None,
                             name: "isHouseTrained",
                             arguments: [
-                                338..359 @16 InputValueDefinition {
+                                338..359 @18 InputValueDefinition {
                                     description: None,
                                     name: "atOtherHomes",
-                                    ty: 352..359 @16 Named(
+                                    ty: 352..359 @18 Named(
                                         "Boolean",
                                     ),
                                     default_value: None,
@@ -135,26 +135,26 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        16: SourceFile {
+        18: SourceFile {
             path: "0016_same_variables_in_multiple_operations.graphql",
             source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "A": 0..61 @16 Operation {
+        "A": 0..61 @18 Operation {
             operation_type: Query,
             name: Some(
                 "A",
             ),
             variables: [
-                8..30 @16 VariableDefinition {
+                8..30 @18 VariableDefinition {
                     name: "atOtherHomes",
-                    ty: 23..30 @16 Named(
+                    ty: 23..30 @18 Named(
                         "Boolean",
                     ),
                     default_value: None,
@@ -166,7 +166,7 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     FragmentSpread(
-                        36..59 @16 FragmentSpread {
+                        36..59 @18 FragmentSpread {
                             fragment_name: "HouseTrainedFragment",
                             directives: [],
                         },
@@ -174,15 +174,15 @@ ExecutableDocument {
                 ],
             },
         },
-        "B": 63..124 @16 Operation {
+        "B": 63..124 @18 Operation {
             operation_type: Query,
             name: Some(
                 "B",
             ),
             variables: [
-                71..93 @16 VariableDefinition {
+                71..93 @18 VariableDefinition {
                     name: "atOtherHomes",
-                    ty: 86..93 @16 Named(
+                    ty: 86..93 @18 Named(
                         "Boolean",
                     ),
                     default_value: None,
@@ -194,7 +194,7 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     FragmentSpread(
-                        99..122 @16 FragmentSpread {
+                        99..122 @18 FragmentSpread {
                             fragment_name: "HouseTrainedFragment",
                             directives: [],
                         },
@@ -204,15 +204,15 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "HouseTrainedFragment": 126..228 @16 Fragment {
+        "HouseTrainedFragment": 126..228 @18 Fragment {
             name: "HouseTrainedFragment",
             directives: [],
             selection_set: SelectionSet {
                 ty: "Query",
                 selections: [
                     Field(
-                        169..226 @16 Field {
-                            definition: 245..253 @16 FieldDefinition {
+                        169..226 @18 Field {
+                            definition: 245..253 @18 FieldDefinition {
                                 description: None,
                                 name: "dog",
                                 arguments: [],
@@ -229,15 +229,15 @@ ExecutableDocument {
                                 ty: "Dog",
                                 selections: [
                                     Field(
-                                        179..222 @16 Field {
-                                            definition: 323..370 @16 FieldDefinition {
+                                        179..222 @18 Field {
+                                            definition: 323..370 @18 FieldDefinition {
                                                 description: None,
                                                 name: "isHouseTrained",
                                                 arguments: [
-                                                    338..359 @16 InputValueDefinition {
+                                                    338..359 @18 InputValueDefinition {
                                                         description: None,
                                                         name: "atOtherHomes",
-                                                        ty: 352..359 @16 Named(
+                                                        ty: 352..359 @18 Named(
                                                             "Boolean",
                                                         ),
                                                         default_value: None,
@@ -252,9 +252,9 @@ ExecutableDocument {
                                             alias: None,
                                             name: "isHouseTrained",
                                             arguments: [
-                                                194..221 @16 Argument {
+                                                194..221 @18 Argument {
                                                     name: "atOtherHomes",
-                                                    value: 208..221 @16 Variable(
+                                                    value: 208..221 @18 Variable(
                                                         "atOtherHomes",
                                                     ),
                                                 },

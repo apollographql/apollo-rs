@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        27: SourceFile {
+        29: SourceFile {
             path: "0028_typename_introspection_in_union.graphql",
             source_text: "union SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype Query {\n  firstSearchResult: SearchResult\n}\n\n{\n  firstSearchResult {\n    __typename\n    ... on Person {\n      name\n    }\n    ... on Photo {\n      height\n    }\n  }\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "SearchResult": Union(
-            0..35 @27 UnionType {
+            0..35 @29 UnionType {
                 description: None,
                 name: "SearchResult",
                 directives: [],
@@ -59,7 +59,7 @@ Schema {
             },
         ),
         "Person": Object(
-            37..78 @27 ObjectType {
+            37..78 @29 ObjectType {
                 description: None,
                 name: "Person",
                 implements_interfaces: {},
@@ -67,7 +67,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 53..65 @27 FieldDefinition {
+                        node: 53..65 @29 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -79,7 +79,7 @@ Schema {
                     },
                     "age": Component {
                         origin: Definition,
-                        node: 68..76 @27 FieldDefinition {
+                        node: 68..76 @29 FieldDefinition {
                             description: None,
                             name: "age",
                             arguments: [],
@@ -93,7 +93,7 @@ Schema {
             },
         ),
         "Photo": Object(
-            80..121 @27 ObjectType {
+            80..121 @29 ObjectType {
                 description: None,
                 name: "Photo",
                 implements_interfaces: {},
@@ -101,7 +101,7 @@ Schema {
                 fields: {
                     "height": Component {
                         origin: Definition,
-                        node: 95..106 @27 FieldDefinition {
+                        node: 95..106 @29 FieldDefinition {
                             description: None,
                             name: "height",
                             arguments: [],
@@ -113,7 +113,7 @@ Schema {
                     },
                     "width": Component {
                         origin: Definition,
-                        node: 109..119 @27 FieldDefinition {
+                        node: 109..119 @29 FieldDefinition {
                             description: None,
                             name: "width",
                             arguments: [],
@@ -127,7 +127,7 @@ Schema {
             },
         ),
         "Query": Object(
-            123..171 @27 ObjectType {
+            123..171 @29 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -135,7 +135,7 @@ Schema {
                 fields: {
                     "firstSearchResult": Component {
                         origin: Definition,
-                        node: 138..169 @27 FieldDefinition {
+                        node: 138..169 @29 FieldDefinition {
                             description: None,
                             name: "firstSearchResult",
                             arguments: [],
@@ -152,17 +152,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        27: SourceFile {
+        29: SourceFile {
             path: "0028_typename_introspection_in_union.graphql",
             source_text: "union SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype Query {\n  firstSearchResult: SearchResult\n}\n\n{\n  firstSearchResult {\n    __typename\n    ... on Person {\n      name\n    }\n    ... on Photo {\n      height\n    }\n  }\n}",
         },
     },
     anonymous_operation: Some(
-        173..292 @27 Operation {
+        173..292 @29 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -171,8 +171,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        177..290 @27 Field {
-                            definition: 138..169 @27 FieldDefinition {
+                        177..290 @29 Field {
+                            definition: 138..169 @29 FieldDefinition {
                                 description: None,
                                 name: "firstSearchResult",
                                 arguments: [],
@@ -189,7 +189,7 @@ ExecutableDocument {
                                 ty: "SearchResult",
                                 selections: [
                                     Field(
-                                        201..211 @27 Field {
+                                        201..211 @29 Field {
                                             definition: FieldDefinition {
                                                 description: None,
                                                 name: "__typename",
@@ -210,7 +210,7 @@ ExecutableDocument {
                                         },
                                     ),
                                     InlineFragment(
-                                        216..248 @27 InlineFragment {
+                                        216..248 @29 InlineFragment {
                                             type_condition: Some(
                                                 "Person",
                                             ),
@@ -219,8 +219,8 @@ ExecutableDocument {
                                                 ty: "Person",
                                                 selections: [
                                                     Field(
-                                                        238..242 @27 Field {
-                                                            definition: 53..65 @27 FieldDefinition {
+                                                        238..242 @29 Field {
+                                                            definition: 53..65 @29 FieldDefinition {
                                                                 description: None,
                                                                 name: "name",
                                                                 arguments: [],
@@ -244,7 +244,7 @@ ExecutableDocument {
                                         },
                                     ),
                                     InlineFragment(
-                                        253..286 @27 InlineFragment {
+                                        253..286 @29 InlineFragment {
                                             type_condition: Some(
                                                 "Photo",
                                             ),
@@ -253,8 +253,8 @@ ExecutableDocument {
                                                 ty: "Photo",
                                                 selections: [
                                                     Field(
-                                                        274..280 @27 Field {
-                                                            definition: 95..106 @27 FieldDefinition {
+                                                        274..280 @29 Field {
+                                                            definition: 95..106 @29 FieldDefinition {
                                                                 description: None,
                                                                 name: "height",
                                                                 arguments: [],

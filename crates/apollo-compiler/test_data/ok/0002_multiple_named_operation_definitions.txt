@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        2: SourceFile {
+        4: SourceFile {
             path: "0002_multiple_named_operation_definitions.graphql",
             source_text: "query getCatName {\n  cat {\n    name\n  }\n}\n\nquery getOwnerName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String,\n  owner: PetOwner\n}\n\ntype PetOwner {\n  name: String\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            109..134 @2 ObjectType {
+            109..134 @4 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "cat": Component {
                         origin: Definition,
-                        node: 124..132 @2 FieldDefinition {
+                        node: 124..132 @4 FieldDefinition {
                             description: None,
                             name: "cat",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Pet": Object(
-            136..182 @2 ObjectType {
+            136..182 @4 ObjectType {
                 description: None,
                 name: "Pet",
                 implements_interfaces: {},
@@ -72,7 +72,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 149..161 @2 FieldDefinition {
+                        node: 149..161 @4 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -84,7 +84,7 @@ Schema {
                     },
                     "owner": Component {
                         origin: Definition,
-                        node: 165..180 @2 FieldDefinition {
+                        node: 165..180 @4 FieldDefinition {
                             description: None,
                             name: "owner",
                             arguments: [],
@@ -98,7 +98,7 @@ Schema {
             },
         ),
         "PetOwner": Object(
-            184..216 @2 ObjectType {
+            184..216 @4 ObjectType {
                 description: None,
                 name: "PetOwner",
                 implements_interfaces: {},
@@ -106,7 +106,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 202..214 @2 FieldDefinition {
+                        node: 202..214 @4 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -123,18 +123,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        2: SourceFile {
+        4: SourceFile {
             path: "0002_multiple_named_operation_definitions.graphql",
             source_text: "query getCatName {\n  cat {\n    name\n  }\n}\n\nquery getOwnerName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String,\n  owner: PetOwner\n}\n\ntype PetOwner {\n  name: String\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "getCatName": 0..41 @2 Operation {
+        "getCatName": 0..41 @4 Operation {
             operation_type: Query,
             name: Some(
                 "getCatName",
@@ -145,8 +145,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        21..39 @2 Field {
-                            definition: 124..132 @2 FieldDefinition {
+                        21..39 @4 Field {
+                            definition: 124..132 @4 FieldDefinition {
                                 description: None,
                                 name: "cat",
                                 arguments: [],
@@ -163,8 +163,8 @@ ExecutableDocument {
                                 ty: "Pet",
                                 selections: [
                                     Field(
-                                        31..35 @2 Field {
-                                            definition: 149..161 @2 FieldDefinition {
+                                        31..35 @4 Field {
+                                            definition: 149..161 @4 FieldDefinition {
                                                 description: None,
                                                 name: "name",
                                                 arguments: [],
@@ -190,7 +190,7 @@ ExecutableDocument {
                 ],
             },
         },
-        "getOwnerName": 43..106 @2 Operation {
+        "getOwnerName": 43..106 @4 Operation {
             operation_type: Query,
             name: Some(
                 "getOwnerName",
@@ -201,8 +201,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        66..104 @2 Field {
-                            definition: 124..132 @2 FieldDefinition {
+                        66..104 @4 Field {
+                            definition: 124..132 @4 FieldDefinition {
                                 description: None,
                                 name: "cat",
                                 arguments: [],
@@ -219,8 +219,8 @@ ExecutableDocument {
                                 ty: "Pet",
                                 selections: [
                                     Field(
-                                        76..100 @2 Field {
-                                            definition: 165..180 @2 FieldDefinition {
+                                        76..100 @4 Field {
+                                            definition: 165..180 @4 FieldDefinition {
                                                 description: None,
                                                 name: "owner",
                                                 arguments: [],
@@ -237,8 +237,8 @@ ExecutableDocument {
                                                 ty: "PetOwner",
                                                 selections: [
                                                     Field(
-                                                        90..94 @2 Field {
-                                                            definition: 202..214 @2 FieldDefinition {
+                                                        90..94 @4 Field {
+                                                            definition: 202..214 @4 FieldDefinition {
                                                                 description: None,
                                                                 name: "name",
                                                                 arguments: [],

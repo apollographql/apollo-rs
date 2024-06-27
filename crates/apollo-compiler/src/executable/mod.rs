@@ -189,37 +189,49 @@ pub(crate) enum BuildError {
         field: Name,
     },
 
-    #[error("operation must not select different types using the same name `{alias}`")]
-    ConflictingFieldType {
-        /// Name or alias of the non-unique field.
-        alias: Name,
-        original_location: Option<NodeLocation>,
-        original_coordinate: TypeAttributeCoordinate,
-        original_type: Type,
-        conflicting_location: Option<NodeLocation>,
-        conflicting_coordinate: TypeAttributeCoordinate,
-        conflicting_type: Type,
-    },
-    #[error("operation must not provide conflicting field arguments for the same name `{alias}`")]
-    ConflictingFieldArgument {
-        /// Name or alias of the non-unique field.
-        alias: Name,
-        original_location: Option<NodeLocation>,
-        original_coordinate: FieldArgumentCoordinate,
-        original_value: Option<Value>,
-        conflicting_location: Option<NodeLocation>,
-        conflicting_coordinate: FieldArgumentCoordinate,
-        conflicting_value: Option<Value>,
-    },
-    #[error("cannot select different fields into the same alias `{alias}`")]
-    ConflictingFieldName {
-        /// Name of the non-unique field.
-        alias: Name,
-        original_location: Option<NodeLocation>,
-        original_selection: TypeAttributeCoordinate,
-        conflicting_location: Option<NodeLocation>,
-        conflicting_selection: TypeAttributeCoordinate,
-    },
+    #[error("{0}")]
+    ConflictingFieldType(Box<ConflictingFieldType>),
+    #[error("{0}")]
+    ConflictingFieldArgument(Box<ConflictingFieldArgument>),
+    #[error("{0}")]
+    ConflictingFieldName(Box<ConflictingFieldName>),
+}
+
+#[derive(thiserror::Error, Debug, Clone)]
+#[error("operation must not select different types using the same name `{alias}`")]
+pub(crate) struct ConflictingFieldType {
+    /// Name or alias of the non-unique field.
+    pub(crate) alias: Name,
+    pub(crate) original_location: Option<NodeLocation>,
+    pub(crate) original_coordinate: TypeAttributeCoordinate,
+    pub(crate) original_type: Type,
+    pub(crate) conflicting_location: Option<NodeLocation>,
+    pub(crate) conflicting_coordinate: TypeAttributeCoordinate,
+    pub(crate) conflicting_type: Type,
+}
+
+#[derive(thiserror::Error, Debug, Clone)]
+#[error("operation must not provide conflicting field arguments for the same name `{alias}`")]
+pub(crate) struct ConflictingFieldArgument {
+    /// Name or alias of the non-unique field.
+    pub(crate) alias: Name,
+    pub(crate) original_location: Option<NodeLocation>,
+    pub(crate) original_coordinate: FieldArgumentCoordinate,
+    pub(crate) original_value: Option<Value>,
+    pub(crate) conflicting_location: Option<NodeLocation>,
+    pub(crate) conflicting_coordinate: FieldArgumentCoordinate,
+    pub(crate) conflicting_value: Option<Value>,
+}
+
+#[derive(thiserror::Error, Debug, Clone)]
+#[error("cannot select different fields into the same alias `{alias}`")]
+pub(crate) struct ConflictingFieldName {
+    /// Name of the non-unique field.
+    pub(crate) alias: Name,
+    pub(crate) original_location: Option<NodeLocation>,
+    pub(crate) original_selection: TypeAttributeCoordinate,
+    pub(crate) conflicting_location: Option<NodeLocation>,
+    pub(crate) conflicting_selection: TypeAttributeCoordinate,
 }
 
 fn subscription_name_or_anonymous(name: &Option<Name>) -> impl std::fmt::Display + '_ {

@@ -1,5 +1,6 @@
 use apollo_compiler::ast;
 use apollo_compiler::ty;
+use apollo_compiler::Name;
 use expect_test::expect;
 
 #[test]
@@ -210,7 +211,7 @@ fn test_serde_deserialization_errors() {
     fn assert_err<T: serde::de::DeserializeOwned>(input: &str, expected: expect_test::Expect) {
         expected.assert_eq(&serde_json::from_str::<T>(input).err().unwrap().to_string());
     }
-    assert_err::<ast::Name>(
+    assert_err::<Name>(
         r#""1nvalid""#,
         expect![[
             r#"invalid value: string "1nvalid", expected a string in GraphQL Name syntax at line 1 column 9"#
