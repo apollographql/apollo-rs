@@ -1,7 +1,8 @@
 use apollo_smith::DocumentBuilder;
+
 use libfuzzer_sys::arbitrary::{Result, Unstructured};
 
-/// This generate an arbitrary valid GraphQL document
+/// This generates an arbitrary valid GraphQL document
 pub fn generate_valid_document(input: &[u8]) -> Result<String> {
     drop(env_logger::try_init());
 
@@ -10,6 +11,17 @@ pub fn generate_valid_document(input: &[u8]) -> Result<String> {
     let document = gql_doc.finish();
 
     Ok(document.into())
+}
+
+pub fn generate_schema_document(
+    input: &[u8],
+) -> std::result::Result<(), apollo_smith::next::Error> {
+    drop(env_logger::try_init());
+
+    apollo_smith::next::generate_schema_document(&mut apollo_smith::next::Unstructured::new(
+        input,
+    ))?;
+    Ok(())
 }
 
 /// Log the error and the document generated for these errors
