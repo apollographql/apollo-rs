@@ -1,9 +1,8 @@
 use crate::input_value::Constness;
-use crate::{
-    input_value::{InputValue, InputValueDef},
-    name::Name,
-    DocumentBuilder,
-};
+use crate::input_value::InputValue;
+use crate::input_value::InputValueDef;
+use crate::name::Name;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;

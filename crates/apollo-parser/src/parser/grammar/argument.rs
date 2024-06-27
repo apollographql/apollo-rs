@@ -1,6 +1,12 @@
+use crate::parser::grammar::input;
+use crate::parser::grammar::name;
+use crate::parser::grammar::value;
 use crate::parser::grammar::value::Constness;
-use crate::parser::grammar::{input, name, value};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::Parser;
+use crate::SyntaxKind;
+use crate::TokenKind;
+use crate::S;
+use crate::T;
 use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#Argument
@@ -58,9 +64,9 @@ pub(crate) fn arguments_definition(p: &mut Parser) {
 
 #[cfg(test)]
 mod tests {
-    use crate::cst::{self, CstNode};
-
     use super::*;
+    use crate::cst;
+    use crate::cst::CstNode;
 
     #[test]
     fn it_can_access_arguments_in_fields() {

@@ -1,4 +1,5 @@
-use crate::{Parser, SyntaxKind};
+use crate::Parser;
+use crate::SyntaxKind;
 
 /// See: https://spec.graphql.org/October2021/#Description
 ///
@@ -12,9 +13,8 @@ pub(crate) fn description(p: &mut Parser) {
 
 #[cfg(test)]
 mod tests {
-    use crate::cst;
-
     use super::*;
+    use crate::cst;
     #[test]
     fn it_can_access_definition_description() {
         let schema = r#"

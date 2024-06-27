@@ -1,10 +1,9 @@
-use crate::{
-    description::Description,
-    directive::{Directive, DirectiveLocation},
-    input_value::InputValueDef,
-    name::Name,
-    DocumentBuilder,
-};
+use crate::description::Description;
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::input_value::InputValueDef;
+use crate::name::Name;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;

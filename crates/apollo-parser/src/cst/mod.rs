@@ -105,13 +105,13 @@
 mod generated;
 mod node_ext;
 
-use std::marker::PhantomData;
-
-use crate::{SyntaxKind, SyntaxNodeChildren, SyntaxToken};
-
-pub use crate::{parser::SyntaxNodePtr, SyntaxNode};
-
+pub use crate::parser::SyntaxNodePtr;
+use crate::SyntaxKind;
+pub use crate::SyntaxNode;
+use crate::SyntaxNodeChildren;
+use crate::SyntaxToken;
 pub use generated::nodes::*;
+use std::marker::PhantomData;
 
 /// The main trait to go from untyped `SyntaxNode`  to a typed CST. The
 /// conversion itself has zero runtime cost: CST and syntax nodes have exactly
@@ -188,7 +188,11 @@ impl<N: CstNode> Iterator for CstChildren<N> {
 }
 
 mod support {
-    use super::{CstChildren, CstNode, SyntaxKind, SyntaxNode, SyntaxToken};
+    use super::CstChildren;
+    use super::CstNode;
+    use super::SyntaxKind;
+    use super::SyntaxNode;
+    use super::SyntaxToken;
 
     pub(super) fn child<N: CstNode>(parent: &SyntaxNode) -> Option<N> {
         parent.children().find_map(N::cast)

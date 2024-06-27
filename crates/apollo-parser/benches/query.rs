@@ -1,4 +1,5 @@
-use apollo_parser::{cst, Lexer};
+use apollo_parser::cst;
+use apollo_parser::Lexer;
 use criterion::*;
 
 fn parse_query(query: &str) {

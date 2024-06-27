@@ -1,7 +1,11 @@
-use rowan::{GreenToken, SyntaxKind};
-
-use crate::{cst, cst::CstNode, SyntaxNode, TokenText};
-use std::num::{ParseFloatError, ParseIntError};
+use crate::cst;
+use crate::cst::CstNode;
+use crate::SyntaxNode;
+use crate::TokenText;
+use rowan::GreenToken;
+use rowan::SyntaxKind;
+use std::num::ParseFloatError;
+use std::num::ParseIntError;
 
 impl cst::Name {
     pub fn text(&self) -> TokenText {
@@ -477,7 +481,8 @@ mod string_tests {
 
 #[cfg(test)]
 mod block_string_tests {
-    use super::{split_lines, unescape_block_string};
+    use super::split_lines;
+    use super::unescape_block_string;
 
     #[test]
     fn it_splits_lines_by_graphql_newline_definition() {

@@ -5,19 +5,24 @@ mod token_text;
 
 pub(crate) mod grammar;
 
-use crate::{
-    cst::{Document, SelectionSet, Type},
-    lexer::Lexer,
-    Error, LimitTracker, Token, TokenKind,
-};
+use crate::cst::Document;
+use crate::cst::SelectionSet;
+use crate::cst::Type;
+use crate::lexer::Lexer;
+use crate::Error;
+use crate::LimitTracker;
+use crate::Token;
+use crate::TokenKind;
+pub use generated::syntax_kind::SyntaxKind;
+pub use language::SyntaxElement;
+pub use language::SyntaxNode;
+pub use language::SyntaxNodeChildren;
+pub use language::SyntaxNodePtr;
+pub use language::SyntaxToken;
 use std::cell::RefCell;
 use std::ops::ControlFlow;
 use std::rc::Rc;
-
-pub use generated::syntax_kind::SyntaxKind;
-pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
 pub use syntax_tree::SyntaxTree;
-
 // pub(crate) use language::GraphQLLanguage;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
@@ -578,7 +583,10 @@ impl Checkpoint {
 #[cfg(test)]
 mod tests {
     use super::DEFAULT_RECURSION_LIMIT;
-    use crate::{cst, Error, Parser, SyntaxTree};
+    use crate::cst;
+    use crate::Error;
+    use crate::Parser;
+    use crate::SyntaxTree;
     use expect_test::expect;
 
     #[test]

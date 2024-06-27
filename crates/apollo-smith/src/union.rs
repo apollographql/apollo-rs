@@ -1,14 +1,13 @@
+use crate::description::Description;
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::name::Name;
+use crate::ty::Ty;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::{IndexMap, IndexSet};
-
-use crate::{
-    description::Description,
-    directive::{Directive, DirectiveLocation},
-    name::Name,
-    ty::Ty,
-    DocumentBuilder,
-};
+use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// UnionDefs are an abstract type where no common fields are declared.
 ///

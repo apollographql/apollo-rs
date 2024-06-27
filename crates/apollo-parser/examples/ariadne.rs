@@ -1,10 +1,14 @@
 //! This example describes how to use `apollo-parser` with
 //! [`ariadne`](https://docs.rs/ariadne/0.3.0/ariadne) diagnostic library.
 
-use std::{fs, path::Path};
-
-use apollo_parser::{cst, Parser};
-use ariadne::{Label, Report, ReportKind, Source};
+use apollo_parser::cst;
+use apollo_parser::Parser;
+use ariadne::Label;
+use ariadne::Report;
+use ariadne::ReportKind;
+use ariadne::Source;
+use std::fs;
+use std::path::Path;
 
 fn parse_schema() -> cst::Document {
     let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");

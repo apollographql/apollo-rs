@@ -1,9 +1,8 @@
-use crate::{
-    field::Field,
-    fragment::{FragmentSpread, InlineFragment},
-    name::Name,
-    DocumentBuilder,
-};
+use crate::field::Field;
+use crate::fragment::FragmentSpread;
+use crate::fragment::InlineFragment;
+use crate::name::Name;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;

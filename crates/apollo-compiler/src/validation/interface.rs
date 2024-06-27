@@ -1,8 +1,13 @@
-use crate::schema::{ComponentName, ExtendedType, InterfaceType, Name};
+use crate::ast;
+use crate::schema::ComponentName;
+use crate::schema::ExtendedType;
+use crate::schema::InterfaceType;
+use crate::schema::Name;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;
-use crate::{ast, Node, NodeLocation};
+use crate::Node;
+use crate::NodeLocation;
 use indexmap::IndexSet;
 
 pub(crate) fn validate_interface_definitions(

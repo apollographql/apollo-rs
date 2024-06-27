@@ -1,5 +1,7 @@
+use crate::ast;
+use crate::schema;
 use crate::validation::DiagnosticList;
-use crate::{ast, schema, Node};
+use crate::Node;
 
 pub(crate) fn validate_scalar_definitions(
     diagnostics: &mut DiagnosticList,

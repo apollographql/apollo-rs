@@ -2,7 +2,6 @@ use crate::ast;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema;
 use crate::validation::diagnostics::DiagnosticData;
-
 use crate::validation::DiagnosticList;
 use crate::Node;
 

@@ -1,5 +1,6 @@
 #![no_main]
-use apollo_compiler::{name, Schema};
+use apollo_compiler::name;
+use apollo_compiler::Schema;
 use libfuzzer_sys::fuzz_target;
 use log::debug;
 

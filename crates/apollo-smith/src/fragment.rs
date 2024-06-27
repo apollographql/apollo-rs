@@ -1,10 +1,9 @@
-use crate::{
-    directive::{Directive, DirectiveLocation},
-    name::Name,
-    selection_set::SelectionSet,
-    ty::Ty,
-    DocumentBuilder,
-};
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::name::Name;
+use crate::selection_set::SelectionSet;
+use crate::ty::Ty;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;

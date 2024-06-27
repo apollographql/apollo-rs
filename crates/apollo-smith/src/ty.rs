@@ -1,8 +1,9 @@
+use crate::input_value::InputValue;
+use crate::name::Name;
+use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use once_cell::sync::Lazy;
-
-use crate::{input_value::InputValue, name::Name, DocumentBuilder};
 
 static BUILTIN_SCALAR_NAMES: Lazy<[Ty; 5]> = Lazy::new(|| {
     [
