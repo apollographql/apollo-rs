@@ -395,8 +395,8 @@ impl FileId {
 
 impl TaggedFileId {
     pub(crate) const fn pack(tag: bool, id: FileId) -> Self {
+        debug_assert!((id.id.get() & TAG) == 0);
         let tag_and_id = if tag {
-            debug_assert!((id.id.get() & TAG) == 0);
             let packed = id.id.get() | TAG;
             // SAFETY: `id.id` was non-zero, so setting an additional bit is still non-zero
             unsafe { NonZeroU64::new_unchecked(packed) }
