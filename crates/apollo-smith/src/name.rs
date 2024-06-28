@@ -1,5 +1,4 @@
 use crate::DocumentBuilder;
-use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use std::fmt::Write as _;
 
@@ -44,18 +43,18 @@ impl From<Name> for String {
     }
 }
 
-impl From<Name> for ast::Name {
+impl From<Name> for apollo_compiler::Name {
     fn from(value: Name) -> Self {
         (&value).into()
     }
 }
 
-impl From<&'_ Name> for ast::Name {
+impl From<&'_ Name> for apollo_compiler::Name {
     fn from(value: &'_ Name) -> Self {
         // FIXME: falliable instead of unwrap?
         // Names from `DocumentBuilder` do have valid syntax,
         // but the `new` constructor accepts any string
-        ast::Name::new(&value.name).unwrap()
+        apollo_compiler::Name::new(&value.name).unwrap()
     }
 }
 

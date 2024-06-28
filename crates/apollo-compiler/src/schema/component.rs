@@ -15,7 +15,7 @@ use triomphe::Arc;
 /// Implements [`Deref`] and [`DerefMut`]
 /// so that methods and fields of `Node<T>` and `T` can be accessed directly.
 #[derive(Debug, Clone)]
-pub struct Component<T> {
+pub struct Component<T: ?Sized> {
     pub origin: ComponentOrigin,
     pub node: Node<T>,
 }
@@ -82,21 +82,21 @@ impl<T> Component<T> {
     }
 }
 
-impl<T: hash::Hash> hash::Hash for Component<T> {
+impl<T: ?Sized + hash::Hash> hash::Hash for Component<T> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         self.node.hash(state); // ignore `origin`
     }
 }
 
-impl<T: Eq> Eq for Component<T> {}
+impl<T: ?Sized + Eq> Eq for Component<T> {}
 
-impl<T: PartialEq> PartialEq for Component<T> {
+impl<T: ?Sized + PartialEq> PartialEq for Component<T> {
     fn eq(&self, other: &Self) -> bool {
         self.node == other.node // ignore `origin`
     }
 }
 
-impl<T> Deref for Component<T> {
+impl<T: ?Sized> Deref for Component<T> {
     type Target = Node<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -104,13 +104,13 @@ impl<T> Deref for Component<T> {
     }
 }
 
-impl<T> DerefMut for Component<T> {
+impl<T: ?Sized> DerefMut for Component<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.node
     }
 }
 
-impl<T> AsRef<T> for Component<T> {
+impl<T: ?Sized> AsRef<T> for Component<T> {
     fn as_ref(&self) -> &T {
         &self.node
     }

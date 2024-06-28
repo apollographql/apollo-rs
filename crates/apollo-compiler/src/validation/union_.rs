@@ -1,7 +1,10 @@
-use crate::schema::{self, ExtendedType, UnionType};
+use crate::ast;
+use crate::schema;
+use crate::schema::ExtendedType;
+use crate::schema::UnionType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
-use crate::{ast, Node};
+use crate::Node;
 
 pub(crate) fn validate_union_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
     for ty in schema.types.values() {

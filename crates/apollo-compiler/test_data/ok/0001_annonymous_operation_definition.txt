@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        1: SourceFile {
+        3: SourceFile {
             path: "0001_annonymous_operation_definition.graphql",
             source_text: "\nquery {\n  cat {\n    name\n  }\n}\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            33..58 @1 ObjectType {
+            33..58 @3 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "cat": Component {
                         origin: Definition,
-                        node: 48..56 @1 FieldDefinition {
+                        node: 48..56 @3 FieldDefinition {
                             description: None,
                             name: "cat",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Pet": Object(
-            60..87 @1 ObjectType {
+            60..87 @3 ObjectType {
                 description: None,
                 name: "Pet",
                 implements_interfaces: {},
@@ -72,7 +72,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 73..85 @1 FieldDefinition {
+                        node: 73..85 @3 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -89,17 +89,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        1: SourceFile {
+        3: SourceFile {
             path: "0001_annonymous_operation_definition.graphql",
             source_text: "\nquery {\n  cat {\n    name\n  }\n}\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String\n}",
         },
     },
     anonymous_operation: Some(
-        1..31 @1 Operation {
+        1..31 @3 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -108,8 +108,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        11..29 @1 Field {
-                            definition: 48..56 @1 FieldDefinition {
+                        11..29 @3 Field {
+                            definition: 48..56 @3 FieldDefinition {
                                 description: None,
                                 name: "cat",
                                 arguments: [],
@@ -126,8 +126,8 @@ ExecutableDocument {
                                 ty: "Pet",
                                 selections: [
                                     Field(
-                                        21..25 @1 Field {
-                                            definition: 73..85 @1 FieldDefinition {
+                                        21..25 @3 Field {
+                                            definition: 73..85 @3 FieldDefinition {
                                                 description: None,
                                                 name: "name",
                                                 arguments: [],

@@ -1,7 +1,9 @@
-use crate::schema::{EnumType, ExtendedType};
+use crate::ast;
+use crate::schema::EnumType;
+use crate::schema::ExtendedType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
-use crate::{ast, Node};
+use crate::Node;
 
 pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
     for ty in schema.types.values() {

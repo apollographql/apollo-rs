@@ -3,6 +3,7 @@ use crate::validation::fragment::validate_fragment_used;
 use crate::validation::operation::validate_operation_definitions;
 use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::DiagnosticList;
+use crate::validation::ExecutableValidationContext;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Schema;
@@ -40,7 +41,8 @@ pub(crate) fn validate_with_or_without_schema(
     schema: Option<&Schema>,
     document: &ExecutableDocument,
 ) {
-    validate_operation_definitions(errors, schema, document);
+    let context = ExecutableValidationContext::new(schema);
+    validate_operation_definitions(errors, document, &context);
     for def in document.fragments.values() {
         validate_fragment_used(errors, document, def);
     }
@@ -52,14 +54,12 @@ pub(crate) fn validate_field_set(
     field_set: &FieldSet,
 ) {
     let document = &ExecutableDocument::new(); // No fragment definitions
+    let context = ExecutableValidationContext::new(Some(schema));
     crate::validation::selection::validate_selection_set(
         diagnostics,
         document,
         Some((schema, &field_set.selection_set.ty)),
         &field_set.selection_set,
-        crate::validation::operation::OperationValidationConfig {
-            schema: Some(schema),
-            variables: &[],
-        },
+        context.operation_context(&[]),
     )
 }

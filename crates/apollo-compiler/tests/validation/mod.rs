@@ -6,9 +6,10 @@ mod recursion;
 mod types;
 mod variable;
 
+use apollo_compiler::ast;
 use apollo_compiler::ExecutableDocument;
+use apollo_compiler::LineColumn;
 use apollo_compiler::Schema;
-use apollo_compiler::{ast, LineColumn};
 use std::ops::Range;
 
 #[test]

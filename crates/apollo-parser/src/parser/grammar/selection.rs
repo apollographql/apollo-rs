@@ -1,9 +1,11 @@
+use crate::parser::grammar::field;
+use crate::parser::grammar::fragment;
+use crate::Parser;
+use crate::SyntaxKind;
+use crate::TokenKind;
+use crate::S;
+use crate::T;
 use std::ops::ControlFlow;
-
-use crate::{
-    parser::grammar::{field, fragment},
-    Parser, SyntaxKind, TokenKind, S, T,
-};
 
 /// See: https://spec.graphql.org/October2021/#SelectionSet
 ///
@@ -95,7 +97,9 @@ pub(crate) fn selection(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{cst, Parser, TokenText};
+    use crate::cst;
+    use crate::Parser;
+    use crate::TokenText;
 
     #[test]
     fn fragment_spread_in_selection() {

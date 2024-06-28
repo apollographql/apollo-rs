@@ -69,11 +69,14 @@
 //! ```
 use crate::execution::GraphQLError;
 use crate::validation::FileId;
+#[cfg(doc)]
+use crate::ExecutableDocument;
+use crate::LineColumn;
+use crate::NodeLocation;
+#[cfg(doc)]
+use crate::Schema;
 use crate::SourceFile;
 use crate::SourceMap;
-#[cfg(doc)]
-use crate::{ExecutableDocument, Schema};
-use crate::{LineColumn, NodeLocation};
 use ariadne::ColorGenerator;
 use ariadne::ReportKind;
 use std::cell::Cell;

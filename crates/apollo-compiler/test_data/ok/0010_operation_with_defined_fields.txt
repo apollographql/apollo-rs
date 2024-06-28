@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        10: SourceFile {
+        12: SourceFile {
             path: "0010_operation_with_defined_fields.graphql",
             source_text: "query getProduct {\n  size\n  topProducts {\n    name\n    inStock\n  }\n}\n\ntype Query {\n  topProducts: Product\n  name: String\n  size: Int\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n  price: Int\n  shippingEstimate: Int\n  upc: String!\n  weight: Int\n}\n\ndirective @join__field(graph: join__Graph) on FIELD_DEFINITION\nenum join__Graph {\n  INVENTORY,\n  PRODUCTS,\n}\n",
         },
@@ -26,14 +26,14 @@ Schema {
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
         "specifiedBy": built_in_directive!("specifiedBy"),
-        "join__field": 315..377 @10 DirectiveDefinition {
+        "join__field": 315..377 @12 DirectiveDefinition {
             description: None,
             name: "join__field",
             arguments: [
-                338..356 @10 InputValueDefinition {
+                338..356 @12 InputValueDefinition {
                     description: None,
                     name: "graph",
-                    ty: 345..356 @10 Named(
+                    ty: 345..356 @12 Named(
                         "join__Graph",
                     ),
                     default_value: None,
@@ -61,7 +61,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            70..134 @10 ObjectType {
+            70..134 @12 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -69,7 +69,7 @@ Schema {
                 fields: {
                     "topProducts": Component {
                         origin: Definition,
-                        node: 85..105 @10 FieldDefinition {
+                        node: 85..105 @12 FieldDefinition {
                             description: None,
                             name: "topProducts",
                             arguments: [],
@@ -81,7 +81,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 108..120 @10 FieldDefinition {
+                        node: 108..120 @12 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -93,7 +93,7 @@ Schema {
                     },
                     "size": Component {
                         origin: Definition,
-                        node: 123..132 @10 FieldDefinition {
+                        node: 123..132 @12 FieldDefinition {
                             description: None,
                             name: "size",
                             arguments: [],
@@ -107,7 +107,7 @@ Schema {
             },
         ),
         "Product": Object(
-            136..313 @10 ObjectType {
+            136..313 @12 ObjectType {
                 description: None,
                 name: "Product",
                 implements_interfaces: {},
@@ -115,7 +115,7 @@ Schema {
                 fields: {
                     "inStock": Component {
                         origin: Definition,
-                        node: 153..200 @10 FieldDefinition {
+                        node: 153..200 @12 FieldDefinition {
                             description: None,
                             name: "inStock",
                             arguments: [],
@@ -123,12 +123,12 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                170..200 @10 Directive {
+                                170..200 @12 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        183..199 @10 Argument {
+                                        183..199 @12 Argument {
                                             name: "graph",
-                                            value: 190..199 @10 Enum(
+                                            value: 190..199 @12 Enum(
                                                 "INVENTORY",
                                             ),
                                         },
@@ -139,7 +139,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 203..245 @10 FieldDefinition {
+                        node: 203..245 @12 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -147,12 +147,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                216..245 @10 Directive {
+                                216..245 @12 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        229..244 @10 Argument {
+                                        229..244 @12 Argument {
                                             name: "graph",
-                                            value: 236..244 @10 Enum(
+                                            value: 236..244 @12 Enum(
                                                 "PRODUCTS",
                                             ),
                                         },
@@ -163,7 +163,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 248..258 @10 FieldDefinition {
+                        node: 248..258 @12 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -175,7 +175,7 @@ Schema {
                     },
                     "shippingEstimate": Component {
                         origin: Definition,
-                        node: 261..282 @10 FieldDefinition {
+                        node: 261..282 @12 FieldDefinition {
                             description: None,
                             name: "shippingEstimate",
                             arguments: [],
@@ -187,7 +187,7 @@ Schema {
                     },
                     "upc": Component {
                         origin: Definition,
-                        node: 285..297 @10 FieldDefinition {
+                        node: 285..297 @12 FieldDefinition {
                             description: None,
                             name: "upc",
                             arguments: [],
@@ -199,7 +199,7 @@ Schema {
                     },
                     "weight": Component {
                         origin: Definition,
-                        node: 300..311 @10 FieldDefinition {
+                        node: 300..311 @12 FieldDefinition {
                             description: None,
                             name: "weight",
                             arguments: [],
@@ -213,14 +213,14 @@ Schema {
             },
         ),
         "join__Graph": Enum(
-            378..423 @10 EnumType {
+            378..423 @12 EnumType {
                 description: None,
                 name: "join__Graph",
                 directives: [],
                 values: {
                     "INVENTORY": Component {
                         origin: Definition,
-                        node: 399..408 @10 EnumValueDefinition {
+                        node: 399..408 @12 EnumValueDefinition {
                             description: None,
                             value: "INVENTORY",
                             directives: [],
@@ -228,7 +228,7 @@ Schema {
                     },
                     "PRODUCTS": Component {
                         origin: Definition,
-                        node: 412..420 @10 EnumValueDefinition {
+                        node: 412..420 @12 EnumValueDefinition {
                             description: None,
                             value: "PRODUCTS",
                             directives: [],
@@ -241,18 +241,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        10: SourceFile {
+        12: SourceFile {
             path: "0010_operation_with_defined_fields.graphql",
             source_text: "query getProduct {\n  size\n  topProducts {\n    name\n    inStock\n  }\n}\n\ntype Query {\n  topProducts: Product\n  name: String\n  size: Int\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n  price: Int\n  shippingEstimate: Int\n  upc: String!\n  weight: Int\n}\n\ndirective @join__field(graph: join__Graph) on FIELD_DEFINITION\nenum join__Graph {\n  INVENTORY,\n  PRODUCTS,\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "getProduct": 0..68 @10 Operation {
+        "getProduct": 0..68 @12 Operation {
             operation_type: Query,
             name: Some(
                 "getProduct",
@@ -263,8 +263,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        21..25 @10 Field {
-                            definition: 123..132 @10 FieldDefinition {
+                        21..25 @12 Field {
+                            definition: 123..132 @12 FieldDefinition {
                                 description: None,
                                 name: "size",
                                 arguments: [],
@@ -284,8 +284,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        28..66 @10 Field {
-                            definition: 85..105 @10 FieldDefinition {
+                        28..66 @12 Field {
+                            definition: 85..105 @12 FieldDefinition {
                                 description: None,
                                 name: "topProducts",
                                 arguments: [],
@@ -302,8 +302,8 @@ ExecutableDocument {
                                 ty: "Product",
                                 selections: [
                                     Field(
-                                        46..50 @10 Field {
-                                            definition: 203..245 @10 FieldDefinition {
+                                        46..50 @12 Field {
+                                            definition: 203..245 @12 FieldDefinition {
                                                 description: None,
                                                 name: "name",
                                                 arguments: [],
@@ -311,12 +311,12 @@ ExecutableDocument {
                                                     "String",
                                                 ),
                                                 directives: [
-                                                    216..245 @10 Directive {
+                                                    216..245 @12 Directive {
                                                         name: "join__field",
                                                         arguments: [
-                                                            229..244 @10 Argument {
+                                                            229..244 @12 Argument {
                                                                 name: "graph",
-                                                                value: 236..244 @10 Enum(
+                                                                value: 236..244 @12 Enum(
                                                                     "PRODUCTS",
                                                                 ),
                                                             },
@@ -335,8 +335,8 @@ ExecutableDocument {
                                         },
                                     ),
                                     Field(
-                                        55..62 @10 Field {
-                                            definition: 153..200 @10 FieldDefinition {
+                                        55..62 @12 Field {
+                                            definition: 153..200 @12 FieldDefinition {
                                                 description: None,
                                                 name: "inStock",
                                                 arguments: [],
@@ -344,12 +344,12 @@ ExecutableDocument {
                                                     "Boolean",
                                                 ),
                                                 directives: [
-                                                    170..200 @10 Directive {
+                                                    170..200 @12 Directive {
                                                         name: "join__field",
                                                         arguments: [
-                                                            183..199 @10 Argument {
+                                                            183..199 @12 Argument {
                                                                 name: "graph",
-                                                                value: 190..199 @10 Enum(
+                                                                value: 190..199 @12 Enum(
                                                                     "INVENTORY",
                                                                 ),
                                                             },

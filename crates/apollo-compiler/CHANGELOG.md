@@ -17,7 +17,62 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27
+
+## BREAKING
+
+- **`Name` representation change - [SimonSapin] in [pull/868].**
+  The memory representation of GraphQL names is changed to use `Arc<str>` or `&'static str`
+  internally, and provide corresponding cheap conversions.
+  This may also help enable [string interning] in a future compiler version.
+  * `Name` should now be imported from the crate root.
+    The previous paths (`apollo_compiler::ast::Name`, `apollo_compiler::executable::Name`,
+    and `apollo_compiler::schema::Name`) now emit a deprecation warning
+    and will be removed in a later version.
+  * `NodeStr` has been removed, with its functionality folded into `Name`
+  * `ast::Value::String` now contains a plain `String` instead of `NodeStr`.
+    `Value` itself is in a `Node<_>` that contains the same source span as `NodeStr` did.
+  * Descriptions are now represented as `Option<Node<str>>` instead of `Option<NodeStr>`.
+
+- **Feature REMOVED: `Hash` cache in `Node<T>` - [SimonSapin] in [pull/872].**
+  `Node<T>` is a reference-counted smart pointer that provides thread-safe shared ownership
+  for at `T` value together with an optional source location.
+  In previous beta version of apollo-compiler 1.0 it contained a cache in its `Hash` implementation:
+  the hash of the `T` value would be computed once and stored,
+  then `Hash for Node<T>` would hash that hash code.
+  That functionality is now removed, `Hash for Node<T>` simply forwards to `Hash for T`.
+  This reduces each `Node` heap allocation by 8 bytes, and reduces code complexity.
+
+  Now that apollo-compiler does not use [Salsa] anymore,
+  `Hash` is much less central than it used to be.
+  Many types stored in `Node<_>` don’t implement `Hash` at all
+  (because they contain an `IndexMap` which doesn’t either).
+
+  Programs that relied on this cache will still compile.
+  We still consider this change breaking
+  as they’ll need to build their own cache to maintain performance characteristics.
+
+## Fixes
+
+- **Fix validation error message for missing subselections - [goto-bus-stop] in [pull/865]**
+  It now reports the correct coordinate for the missing subselection.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[pull/865]: https://github.com/apollographql/apollo-rs/pull/865
+[pull/868]: https://github.com/apollographql/apollo-rs/pull/868
+[pull/872]: https://github.com/apollographql/apollo-rs/pull/872
+[string interning]: https://github.com/apollographql/apollo-rs/issues/385#issuecomment-2176436184
+[Salsa]: https://crates.io/crates/salsa
+
+# [1.0.0-beta.17](https://crates.io/crates/apollo-compiler/1.0.0-beta.17) - 2024-06-05
+
+## Fixes
+
+- **Fix validation performance bug - [goto-bus-stop] in [issue/862], [pull/863]**
+  Adds a cache in fragment spread validation, fixing a situation where validating a query
+  with many fragment spreads against a schema with many interfaces could take multiple
+  seconds to validate.
 
 ## Maintenance
 
@@ -28,7 +83,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   remove this translation.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/862]: https://github.com/apollographql/apollo-rs/issues/862
 [pull/855]: https://github.com/apollographql/apollo-rs/pull/855
+[pull/863]: https://github.com/apollographql/apollo-rs/pull/863
 [ariadne]: https://github.com/zesterer/ariadne
 
 # [1.0.0-beta.16](https://crates.io/crates/apollo-compiler/1.0.0-beta.16) - 2024-04-12

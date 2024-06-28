@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        26: SourceFile {
+        28: SourceFile {
             path: "0027_typename_introspection_in_object.graphql",
             source_text: "type Query {\n  id: String\n  name: String\n  birthday: Date\n}\n\nscalar Date @specifiedBy(url: \"datespec.com\")\n\n{\n    name\n    __typename\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..59 @26 ObjectType {
+            0..59 @28 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 15..25 @26 FieldDefinition {
+                        node: 15..25 @28 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -62,7 +62,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 28..40 @26 FieldDefinition {
+                        node: 28..40 @28 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -74,7 +74,7 @@ Schema {
                     },
                     "birthday": Component {
                         origin: Definition,
-                        node: 43..57 @26 FieldDefinition {
+                        node: 43..57 @28 FieldDefinition {
                             description: None,
                             name: "birthday",
                             arguments: [],
@@ -88,18 +88,18 @@ Schema {
             },
         ),
         "Date": Scalar(
-            61..106 @26 ScalarType {
+            61..106 @28 ScalarType {
                 description: None,
                 name: "Date",
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 73..106 @26 Directive {
+                        node: 73..106 @28 Directive {
                             name: "specifiedBy",
                             arguments: [
-                                86..105 @26 Argument {
+                                86..105 @28 Argument {
                                     name: "url",
-                                    value: 91..105 @26 String(
+                                    value: 91..105 @28 String(
                                         "datespec.com",
                                     ),
                                 },
@@ -113,17 +113,17 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        26: SourceFile {
+        28: SourceFile {
             path: "0027_typename_introspection_in_object.graphql",
             source_text: "type Query {\n  id: String\n  name: String\n  birthday: Date\n}\n\nscalar Date @specifiedBy(url: \"datespec.com\")\n\n{\n    name\n    __typename\n}",
         },
     },
     anonymous_operation: Some(
-        108..135 @26 Operation {
+        108..135 @28 Operation {
             operation_type: Query,
             name: None,
             variables: [],
@@ -132,8 +132,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        114..118 @26 Field {
-                            definition: 28..40 @26 FieldDefinition {
+                        114..118 @28 Field {
+                            definition: 28..40 @28 FieldDefinition {
                                 description: None,
                                 name: "name",
                                 arguments: [],
@@ -153,7 +153,7 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        123..133 @26 Field {
+                        123..133 @28 Field {
                             definition: FieldDefinition {
                                 description: None,
                                 name: "__typename",

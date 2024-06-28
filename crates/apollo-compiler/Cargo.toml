@@ -1,6 +1,6 @@
 [package]
 name = "apollo-compiler"
-version = "1.0.0-beta.16" # When bumping, also update README.md
+version = "1.0.0-beta.18" # When bumping, also update README.md
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
@@ -25,10 +25,7 @@ rowan = "0.15.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json_bytes = { version = "0.2.2", features = ["preserve_order"] }
 thiserror = "1.0.31"
-triomphe = "0.1.9"
-# TODO: replace `sptr` with standard library methods when available:
-# https://github.com/rust-lang/rust/issues/95228
-sptr = "0.3.2"
+triomphe = "0.1.13"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 uuid = { version = "1.6", features = ["serde", "v4", "js"] }
@@ -51,6 +48,11 @@ harness = false
 [[bench]]
 name = "fields-validation"
 path = "benches/fields_validation.rs"
+harness = false
+
+[[bench]]
+name = "fragments-validation"
+path = "benches/fragments_validation.rs"
 harness = false
 
 [[test]]

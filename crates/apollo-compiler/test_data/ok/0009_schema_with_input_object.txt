@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        9: SourceFile {
+        11: SourceFile {
             path: "0009_schema_with_input_object.graphql",
             source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..44 @9 ObjectType {
+            0..44 @11 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "website": Component {
                         origin: Definition,
-                        node: 15..27 @9 FieldDefinition {
+                        node: 15..27 @11 FieldDefinition {
                             description: None,
                             name: "website",
                             arguments: [],
@@ -62,7 +62,7 @@ Schema {
                     },
                     "amount": Component {
                         origin: Definition,
-                        node: 31..42 @9 FieldDefinition {
+                        node: 31..42 @11 FieldDefinition {
                             description: None,
                             name: "amount",
                             arguments: [],
@@ -76,18 +76,18 @@ Schema {
             },
         ),
         "URL": Scalar(
-            46..113 @9 ScalarType {
+            46..113 @11 ScalarType {
                 description: None,
                 name: "URL",
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 57..113 @9 Directive {
+                        node: 57..113 @11 Directive {
                             name: "specifiedBy",
                             arguments: [
-                                70..112 @9 Argument {
+                                70..112 @11 Argument {
                                     name: "url",
-                                    value: 75..112 @9 String(
+                                    value: 75..112 @11 String(
                                         "https://tools.ietf.org/html/rfc3986",
                                     ),
                                 },
@@ -98,17 +98,17 @@ Schema {
             },
         ),
         "Point2D": InputObject(
-            115..154 @9 InputObjectType {
+            115..154 @11 InputObjectType {
                 description: None,
                 name: "Point2D",
                 directives: [],
                 fields: {
                     "x": Component {
                         origin: Definition,
-                        node: 133..141 @9 InputValueDefinition {
+                        node: 133..141 @11 InputValueDefinition {
                             description: None,
                             name: "x",
-                            ty: 136..141 @9 Named(
+                            ty: 136..141 @11 Named(
                                 "Float",
                             ),
                             default_value: None,
@@ -117,10 +117,10 @@ Schema {
                     },
                     "y": Component {
                         origin: Definition,
-                        node: 144..152 @9 InputValueDefinition {
+                        node: 144..152 @11 InputValueDefinition {
                             description: None,
                             name: "y",
-                            ty: 147..152 @9 Named(
+                            ty: 147..152 @11 Named(
                                 "Float",
                             ),
                             default_value: None,
@@ -134,11 +134,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        9: SourceFile {
+        11: SourceFile {
             path: "0009_schema_with_input_object.graphql",
             source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
         },

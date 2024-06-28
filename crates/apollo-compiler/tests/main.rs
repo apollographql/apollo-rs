@@ -7,7 +7,7 @@ mod introspection_split;
 mod merge_schemas;
 /// Formerly in src/lib.rs
 mod misc;
-mod node_str;
+mod name;
 mod parser;
 mod schema;
 mod serde;

@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        29: SourceFile {
+        31: SourceFile {
             path: "0030_cyclical_nullable_input_objects.graphql",
             source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..60 @29 ObjectType {
+            0..60 @31 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 17..29 @29 FieldDefinition {
+                        node: 17..29 @31 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -62,14 +62,14 @@ Schema {
                     },
                     "example": Component {
                         origin: Definition,
-                        node: 34..58 @29 FieldDefinition {
+                        node: 34..58 @31 FieldDefinition {
                             description: None,
                             name: "example",
                             arguments: [
-                                42..52 @29 InputValueDefinition {
+                                42..52 @31 InputValueDefinition {
                                     description: None,
                                     name: "arg",
-                                    ty: 47..52 @29 Named(
+                                    ty: 47..52 @31 Named(
                                         "First",
                                     ),
                                     default_value: None,
@@ -86,17 +86,17 @@ Schema {
             },
         ),
         "First": InputObject(
-            62..110 @29 InputObjectType {
+            62..110 @31 InputObjectType {
                 description: None,
                 name: "First",
                 directives: [],
                 fields: {
                     "second": Component {
                         origin: Definition,
-                        node: 78..92 @29 InputValueDefinition {
+                        node: 78..92 @31 InputValueDefinition {
                             description: None,
                             name: "second",
-                            ty: 86..92 @29 Named(
+                            ty: 86..92 @31 Named(
                                 "Second",
                             ),
                             default_value: None,
@@ -105,10 +105,10 @@ Schema {
                     },
                     "value": Component {
                         origin: Definition,
-                        node: 95..108 @29 InputValueDefinition {
+                        node: 95..108 @31 InputValueDefinition {
                             description: None,
                             name: "value",
-                            ty: 102..108 @29 Named(
+                            ty: 102..108 @31 Named(
                                 "String",
                             ),
                             default_value: None,
@@ -119,17 +119,17 @@ Schema {
             },
         ),
         "Second": InputObject(
-            112..163 @29 InputObjectType {
+            112..163 @31 InputObjectType {
                 description: None,
                 name: "Second",
                 directives: [],
                 fields: {
                     "third": Component {
                         origin: Definition,
-                        node: 129..145 @29 InputValueDefinition {
+                        node: 129..145 @31 InputValueDefinition {
                             description: None,
                             name: "third",
-                            ty: 136..145 @29 NonNullList(
+                            ty: 136..145 @31 NonNullList(
                                 NonNullNamed(
                                     "Third",
                                 ),
@@ -140,10 +140,10 @@ Schema {
                     },
                     "value": Component {
                         origin: Definition,
-                        node: 148..161 @29 InputValueDefinition {
+                        node: 148..161 @31 InputValueDefinition {
                             description: None,
                             name: "value",
-                            ty: 155..161 @29 Named(
+                            ty: 155..161 @31 Named(
                                 "String",
                             ),
                             default_value: None,
@@ -154,17 +154,17 @@ Schema {
             },
         ),
         "Third": InputObject(
-            165..213 @29 InputObjectType {
+            165..213 @31 InputObjectType {
                 description: None,
                 name: "Third",
                 directives: [],
                 fields: {
                     "fourth": Component {
                         origin: Definition,
-                        node: 181..195 @29 InputValueDefinition {
+                        node: 181..195 @31 InputValueDefinition {
                             description: None,
                             name: "fourth",
-                            ty: 189..195 @29 Named(
+                            ty: 189..195 @31 Named(
                                 "Fourth",
                             ),
                             default_value: None,
@@ -173,10 +173,10 @@ Schema {
                     },
                     "value": Component {
                         origin: Definition,
-                        node: 198..211 @29 InputValueDefinition {
+                        node: 198..211 @31 InputValueDefinition {
                             description: None,
                             name: "value",
-                            ty: 205..211 @29 Named(
+                            ty: 205..211 @31 Named(
                                 "String",
                             ),
                             default_value: None,
@@ -187,17 +187,17 @@ Schema {
             },
         ),
         "Fourth": InputObject(
-            215..246 @29 InputObjectType {
+            215..246 @31 InputObjectType {
                 description: None,
                 name: "Fourth",
                 directives: [],
                 fields: {
                     "first": Component {
                         origin: Definition,
-                        node: 232..244 @29 InputValueDefinition {
+                        node: 232..244 @31 InputValueDefinition {
                             description: None,
                             name: "first",
-                            ty: 239..244 @29 Named(
+                            ty: 239..244 @31 Named(
                                 "First",
                             ),
                             default_value: None,
@@ -211,11 +211,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        29: SourceFile {
+        31: SourceFile {
             path: "0030_cyclical_nullable_input_objects.graphql",
             source_text: "type Query {\n    name: String\n    example(arg: First): Int\n}\n\ninput First {\n  second: Second\n  value: String\n}\n\ninput Second {\n  third: [Third!]!\n  value: String\n}\n\ninput Third {\n  fourth: Fourth\n  value: String\n}\n\ninput Fourth {\n  first: First\n}",
         },

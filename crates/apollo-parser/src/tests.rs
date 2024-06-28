@@ -1,17 +1,16 @@
 // The testing framework in this file is pretty much entirely copied from rust-analyzer's parser and lexer tests:
 // https://github.com/rust-analyzer/rust-analyzer/blob/master/crates/syntax/src/tests.rs
 
-use indexmap::IndexMap;
-use std::{
-    env,
-    fmt::Write,
-    fs,
-    path::{Path, PathBuf},
-};
-
+use crate::Error;
+use crate::Lexer;
+use crate::Parser;
 use expect_test::expect_file;
-
-use crate::{Error, Lexer, Parser};
+use indexmap::IndexMap;
+use std::env;
+use std::fmt::Write;
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
 
 // To run these tests and update files:
 // ```bash

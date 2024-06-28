@@ -1,15 +1,15 @@
+use crate::description::Description;
+use crate::directive::Directive;
+use crate::directive::DirectiveLocation;
+use crate::field::FieldDef;
+use crate::name::Name;
+use crate::DocumentBuilder;
+use crate::StackedEntity;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::{IndexMap, IndexSet};
-
-use crate::{
-    description::Description,
-    directive::{Directive, DirectiveLocation},
-    field::FieldDef,
-    name::Name,
-    DocumentBuilder, StackedEntity,
-};
+use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// InterfaceTypeDef is an abstract type where there are common fields declared.
 ///

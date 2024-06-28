@@ -1,6 +1,8 @@
+use crate::ast;
 use crate::validation::diagnostics::DiagnosticData;
-use crate::validation::{DiagnosticList, NodeLocation};
-use crate::{ast, Node};
+use crate::validation::DiagnosticList;
+use crate::validation::NodeLocation;
+use crate::Node;
 use std::collections::HashMap;
 
 pub(crate) fn validate_arguments(

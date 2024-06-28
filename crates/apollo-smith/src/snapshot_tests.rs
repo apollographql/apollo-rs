@@ -15,11 +15,9 @@ fn snapshot_tests() {
     expect![[r#"
         {
           A0
-          A0
         }
 
         fragment A2 on A1 {
-          A0
           A0
         }
 
@@ -59,11 +57,9 @@ fn snapshot_tests() {
     expect![[r#"
         {
           A0
-          A0
         }
 
         fragment A2 on A1 {
-          A0
           A0
         }
 
@@ -103,11 +99,9 @@ fn snapshot_tests() {
     expect![[r#"
         {
           A0
-          A0
         }
 
         fragment A21 on A20 {
-          A0
           A0
         }
 
@@ -242,11 +236,9 @@ fn snapshot_tests() {
     expect![[r#"
         {
           A0
-          A0
         }
 
         fragment A21 on A20 {
-          A0
           A0
         }
 

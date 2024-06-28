@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        32: SourceFile {
+        34: SourceFile {
             path: "0033_valid_variable_usage.graphql",
             source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            298..337 @32 ObjectType {
+            298..337 @34 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "arguments": Component {
                         origin: Definition,
-                        node: 315..335 @32 FieldDefinition {
+                        node: 315..335 @34 FieldDefinition {
                             description: None,
                             name: "arguments",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Arguments": Object(
-            339..510 @32 ObjectType {
+            339..510 @34 ObjectType {
                 description: None,
                 name: "Arguments",
                 implements_interfaces: {},
@@ -72,14 +72,14 @@ Schema {
                 fields: {
                     "nullableString": Component {
                         origin: Definition,
-                        node: 360..406 @32 FieldDefinition {
+                        node: 360..406 @34 FieldDefinition {
                             description: None,
                             name: "nullableString",
                             arguments: [
-                                375..397 @32 InputValueDefinition {
+                                375..397 @34 InputValueDefinition {
                                     description: None,
                                     name: "nullableString",
-                                    ty: 391..397 @32 Named(
+                                    ty: 391..397 @34 Named(
                                         "String",
                                     ),
                                     default_value: None,
@@ -94,14 +94,14 @@ Schema {
                     },
                     "nullableList": Component {
                         origin: Definition,
-                        node: 411..455 @32 FieldDefinition {
+                        node: 411..455 @34 FieldDefinition {
                             description: None,
                             name: "nullableList",
                             arguments: [
-                                424..446 @32 InputValueDefinition {
+                                424..446 @34 InputValueDefinition {
                                     description: None,
                                     name: "nullableList",
-                                    ty: 438..446 @32 List(
+                                    ty: 438..446 @34 List(
                                         Named(
                                             "String",
                                         ),
@@ -118,14 +118,14 @@ Schema {
                     },
                     "nullableListList": Component {
                         origin: Definition,
-                        node: 460..508 @32 FieldDefinition {
+                        node: 460..508 @34 FieldDefinition {
                             description: None,
                             name: "nullableListList",
                             arguments: [
-                                477..502 @32 InputValueDefinition {
+                                477..502 @34 InputValueDefinition {
                                     description: None,
                                     name: "nullableListList",
-                                    ty: 495..502 @32 List(
+                                    ty: 495..502 @34 List(
                                         List(
                                             Named(
                                                 "Int",
@@ -149,34 +149,34 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        32: SourceFile {
+        34: SourceFile {
             path: "0033_valid_variable_usage.graphql",
             source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "nullableStringArg": 0..296 @32 Operation {
+        "nullableStringArg": 0..296 @34 Operation {
             operation_type: Query,
             name: Some(
                 "nullableStringArg",
             ),
             variables: [
-                24..48 @32 VariableDefinition {
+                24..48 @34 VariableDefinition {
                     name: "nonNullableVar",
-                    ty: 41..48 @32 NonNullNamed(
+                    ty: 41..48 @34 NonNullNamed(
                         "String",
                     ),
                     default_value: None,
                     directives: [],
                 },
-                50..78 @32 VariableDefinition {
+                50..78 @34 VariableDefinition {
                     name: "nonNullableList",
-                    ty: 68..78 @32 NonNullList(
+                    ty: 68..78 @34 NonNullList(
                         NonNullNamed(
                             "String",
                         ),
@@ -184,9 +184,9 @@ ExecutableDocument {
                     default_value: None,
                     directives: [],
                 },
-                80..111 @32 VariableDefinition {
+                80..111 @34 VariableDefinition {
                     name: "nonNullableListList",
-                    ty: 102..111 @32 List(
+                    ty: 102..111 @34 List(
                         NonNullList(
                             NonNullNamed(
                                 "Int",
@@ -202,8 +202,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        117..294 @32 Field {
-                            definition: 315..335 @32 FieldDefinition {
+                        117..294 @34 Field {
+                            definition: 315..335 @34 FieldDefinition {
                                 description: None,
                                 name: "arguments",
                                 arguments: [],
@@ -220,15 +220,15 @@ ExecutableDocument {
                                 ty: "Arguments",
                                 selections: [
                                     Field(
-                                        133..180 @32 Field {
-                                            definition: 360..406 @32 FieldDefinition {
+                                        133..180 @34 Field {
+                                            definition: 360..406 @34 FieldDefinition {
                                                 description: None,
                                                 name: "nullableString",
                                                 arguments: [
-                                                    375..397 @32 InputValueDefinition {
+                                                    375..397 @34 InputValueDefinition {
                                                         description: None,
                                                         name: "nullableString",
-                                                        ty: 391..397 @32 Named(
+                                                        ty: 391..397 @34 Named(
                                                             "String",
                                                         ),
                                                         default_value: None,
@@ -243,9 +243,9 @@ ExecutableDocument {
                                             alias: None,
                                             name: "nullableString",
                                             arguments: [
-                                                148..179 @32 Argument {
+                                                148..179 @34 Argument {
                                                     name: "nullableString",
-                                                    value: 164..179 @32 Variable(
+                                                    value: 164..179 @34 Variable(
                                                         "nonNullableVar",
                                                     ),
                                                 },
@@ -258,15 +258,15 @@ ExecutableDocument {
                                         },
                                     ),
                                     Field(
-                                        185..229 @32 Field {
-                                            definition: 411..455 @32 FieldDefinition {
+                                        185..229 @34 Field {
+                                            definition: 411..455 @34 FieldDefinition {
                                                 description: None,
                                                 name: "nullableList",
                                                 arguments: [
-                                                    424..446 @32 InputValueDefinition {
+                                                    424..446 @34 InputValueDefinition {
                                                         description: None,
                                                         name: "nullableList",
-                                                        ty: 438..446 @32 List(
+                                                        ty: 438..446 @34 List(
                                                             Named(
                                                                 "String",
                                                             ),
@@ -283,9 +283,9 @@ ExecutableDocument {
                                             alias: None,
                                             name: "nullableList",
                                             arguments: [
-                                                198..228 @32 Argument {
+                                                198..228 @34 Argument {
                                                     name: "nullableList",
-                                                    value: 212..228 @32 Variable(
+                                                    value: 212..228 @34 Variable(
                                                         "nonNullableList",
                                                     ),
                                                 },
@@ -298,15 +298,15 @@ ExecutableDocument {
                                         },
                                     ),
                                     Field(
-                                        234..290 @32 Field {
-                                            definition: 460..508 @32 FieldDefinition {
+                                        234..290 @34 Field {
+                                            definition: 460..508 @34 FieldDefinition {
                                                 description: None,
                                                 name: "nullableListList",
                                                 arguments: [
-                                                    477..502 @32 InputValueDefinition {
+                                                    477..502 @34 InputValueDefinition {
                                                         description: None,
                                                         name: "nullableListList",
-                                                        ty: 495..502 @32 List(
+                                                        ty: 495..502 @34 List(
                                                             List(
                                                                 Named(
                                                                     "Int",
@@ -325,9 +325,9 @@ ExecutableDocument {
                                             alias: None,
                                             name: "nullableListList",
                                             arguments: [
-                                                251..289 @32 Argument {
+                                                251..289 @34 Argument {
                                                     name: "nullableListList",
-                                                    value: 269..289 @32 Variable(
+                                                    value: 269..289 @34 Variable(
                                                         "nonNullableListList",
                                                     ),
                                                 },

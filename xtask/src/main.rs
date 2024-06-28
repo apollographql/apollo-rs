@@ -2,14 +2,15 @@ mod codegen;
 mod cst_src;
 mod utils;
 
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
-
-use anyhow::{bail, Result};
-use clap::{Parser, Subcommand};
-use xshell::{cmd, Shell};
+use anyhow::bail;
+use anyhow::Result;
+use clap::Parser;
+use clap::Subcommand;
+use std::env;
+use std::path::Path;
+use std::path::PathBuf;
+use xshell::cmd;
+use xshell::Shell;
 
 fn main() -> Result<()> {
     let app = Xtask::parse();
@@ -30,14 +31,16 @@ struct Xtask {
 pub enum Command {
     /// Perform code generation for the parser
     Codegen(codegen::Codegen),
-    /// Run clippy
+    /// Check Rust code formating and run clippy
     Lint,
+    /// Reformat Rust code
+    Fmt,
 }
 
-fn run_clippy() -> Result<()> {
+fn run_lint() -> Result<()> {
     let sh = Shell::new()?;
 
-    cmd!(sh, "cargo fmt --all -- --check").run()?;
+    cmd!(sh, "cargo +nightly fmt --all -- --check").run()?;
 
     cmd!(
         sh,
@@ -48,11 +51,20 @@ fn run_clippy() -> Result<()> {
     Ok(())
 }
 
+fn run_fmt() -> Result<()> {
+    let sh = Shell::new()?;
+
+    cmd!(sh, "cargo +nightly fmt --all").run()?;
+
+    Ok(())
+}
+
 impl Xtask {
     pub fn run(&self) -> Result<()> {
         match &self.command {
             Command::Codegen(command) => command.run(self.verbose),
-            Command::Lint => run_clippy(),
+            Command::Lint => run_lint(),
+            Command::Fmt => run_fmt(),
         }?;
 
         Ok(())

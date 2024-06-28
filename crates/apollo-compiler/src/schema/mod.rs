@@ -4,7 +4,6 @@ use crate::ast;
 use crate::validation::FileId;
 use crate::Node;
 use crate::NodeLocation;
-use crate::NodeStr;
 use crate::Parser;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
@@ -18,12 +17,21 @@ mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
-pub use self::component::{Component, ComponentName, ComponentOrigin, ExtensionId};
+pub use self::component::Component;
+pub use self::component::ComponentName;
+pub use self::component::ComponentOrigin;
+pub use self::component::ExtensionId;
 pub use self::from_ast::SchemaBuilder;
-pub use crate::ast::{
-    Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
-    InputValueDefinition, Name, NamedType, Type, Value,
-};
+pub use crate::ast::Directive;
+pub use crate::ast::DirectiveDefinition;
+pub use crate::ast::DirectiveLocation;
+pub use crate::ast::EnumValueDefinition;
+pub use crate::ast::FieldDefinition;
+pub use crate::ast::InputValueDefinition;
+pub use crate::ast::Name;
+pub use crate::ast::NamedType;
+pub use crate::ast::Type;
+pub use crate::ast::Value;
 use crate::name;
 use crate::ty;
 use crate::validation::DiagnosticList;
@@ -52,7 +60,7 @@ pub struct Schema {
 /// The `schema` definition and its extensions, defining root operations
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub directives: DirectiveList,
 
     /// Name of the object type for the `query` root operation
@@ -83,14 +91,14 @@ pub enum ExtendedType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub implements_interfaces: IndexSet<ComponentName>,
     pub directives: DirectiveList,
@@ -104,7 +112,7 @@ pub struct ObjectType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterfaceType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub implements_interfaces: IndexSet<ComponentName>,
 
@@ -119,7 +127,7 @@ pub struct InterfaceType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
 
@@ -131,7 +139,7 @@ pub struct UnionType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
@@ -139,7 +147,7 @@ pub struct EnumType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
-    pub description: Option<NodeStr>,
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
@@ -676,7 +684,7 @@ impl ExtendedType {
         }
     }
 
-    pub fn description(&self) -> Option<&NodeStr> {
+    pub fn description(&self) -> Option<&Node<str>> {
         match self {
             Self::Scalar(ty) => ty.description.as_ref(),
             Self::Object(ty) => ty.description.as_ref(),

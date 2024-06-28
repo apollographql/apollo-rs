@@ -1,10 +1,10 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        18: SourceFile {
+        20: SourceFile {
             path: "0018_non_clashing_names.graphql",
             source_text: "# Types, directives, fragments, and operations each have their own namespace.\ntype A @A {\n  a: Int\n}\ntype Query {\n  a: A\n}\n\ndirective @A on OBJECT\n\nfragment A on A {\n  a\n}\n\nquery A {\n  a {\n    ...A\n  }\n}\n",
         },
@@ -26,7 +26,7 @@ Schema {
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
         "specifiedBy": built_in_directive!("specifiedBy"),
-        "A": 124..146 @18 DirectiveDefinition {
+        "A": 124..146 @20 DirectiveDefinition {
             description: None,
             name: "A",
             arguments: [],
@@ -51,14 +51,14 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "A": Object(
-            78..100 @18 ObjectType {
+            78..100 @20 ObjectType {
                 description: None,
                 name: "A",
                 implements_interfaces: {},
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 85..87 @18 Directive {
+                        node: 85..87 @20 Directive {
                             name: "A",
                             arguments: [],
                         },
@@ -67,7 +67,7 @@ Schema {
                 fields: {
                     "a": Component {
                         origin: Definition,
-                        node: 92..98 @18 FieldDefinition {
+                        node: 92..98 @20 FieldDefinition {
                             description: None,
                             name: "a",
                             arguments: [],
@@ -81,7 +81,7 @@ Schema {
             },
         ),
         "Query": Object(
-            101..122 @18 ObjectType {
+            101..122 @20 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -89,7 +89,7 @@ Schema {
                 fields: {
                     "a": Component {
                         origin: Definition,
-                        node: 116..120 @18 FieldDefinition {
+                        node: 116..120 @20 FieldDefinition {
                             description: None,
                             name: "a",
                             arguments: [],
@@ -106,18 +106,18 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        18: SourceFile {
+        20: SourceFile {
             path: "0018_non_clashing_names.graphql",
             source_text: "# Types, directives, fragments, and operations each have their own namespace.\ntype A @A {\n  a: Int\n}\ntype Query {\n  a: A\n}\n\ndirective @A on OBJECT\n\nfragment A on A {\n  a\n}\n\nquery A {\n  a {\n    ...A\n  }\n}\n",
         },
     },
     anonymous_operation: None,
     named_operations: {
-        "A": 173..203 @18 Operation {
+        "A": 173..203 @20 Operation {
             operation_type: Query,
             name: Some(
                 "A",
@@ -128,8 +128,8 @@ ExecutableDocument {
                 ty: "Query",
                 selections: [
                     Field(
-                        185..201 @18 Field {
-                            definition: 116..120 @18 FieldDefinition {
+                        185..201 @20 Field {
+                            definition: 116..120 @20 FieldDefinition {
                                 description: None,
                                 name: "a",
                                 arguments: [],
@@ -146,7 +146,7 @@ ExecutableDocument {
                                 ty: "A",
                                 selections: [
                                     FragmentSpread(
-                                        193..197 @18 FragmentSpread {
+                                        193..197 @20 FragmentSpread {
                                             fragment_name: "A",
                                             directives: [],
                                         },
@@ -160,15 +160,15 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "A": 148..171 @18 Fragment {
+        "A": 148..171 @20 Fragment {
             name: "A",
             directives: [],
             selection_set: SelectionSet {
                 ty: "A",
                 selections: [
                     Field(
-                        168..169 @18 Field {
-                            definition: 92..98 @18 FieldDefinition {
+                        168..169 @20 Field {
+                            definition: 92..98 @20 FieldDefinition {
                                 description: None,
                                 name: "a",
                                 arguments: [],

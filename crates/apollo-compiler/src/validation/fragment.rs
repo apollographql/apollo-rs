@@ -5,9 +5,12 @@ use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::DiagnosticData;
-use crate::validation::operation::OperationValidationConfig;
+use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
-use crate::validation::{CycleError, NodeLocation, RecursionGuard, RecursionStack};
+use crate::validation::NodeLocation;
+use crate::validation::OperationValidationContext;
+use crate::validation::RecursionGuard;
+use crate::validation::RecursionStack;
 use crate::ExecutableDocument;
 use crate::Node;
 use std::borrow::Cow;
@@ -52,6 +55,7 @@ fn validate_fragment_spread_type(
     against_type: &NamedType,
     type_condition: &NamedType,
     selection: &executable::Selection,
+    context: OperationValidationContext<'_>,
 ) {
     // Another diagnostic will be raised if the type condition was wrong.
     // We reduce noise by silencing other issues with the fragment.
@@ -64,9 +68,9 @@ fn validate_fragment_spread_type(
         return;
     };
 
-    let implementers_map = schema.implementers_map();
-    let concrete_parent_types = get_possible_types(against_type_definition, &implementers_map);
-    let concrete_condition_types = get_possible_types(type_condition_definition, &implementers_map);
+    let implementers_map = context.implementers_map();
+    let concrete_parent_types = get_possible_types(against_type_definition, implementers_map);
+    let concrete_condition_types = get_possible_types(type_condition_definition, implementers_map);
 
     let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
     if applicable_types.next().is_none() {
@@ -107,18 +111,18 @@ pub(crate) fn validate_inline_fragment(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     inline: &Node<executable::InlineFragment>,
-    context: OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
-        context.schema,
+        context.schema(),
         inline.directives.iter(),
         ast::DirectiveLocation::InlineFragment,
         context.variables,
     );
 
     let previous = diagnostics.len();
-    if let Some(schema) = context.schema {
+    if let Some(schema) = context.schema() {
         if let Some(t) = &inline.type_condition {
             validate_fragment_type_condition(diagnostics, schema, None, t, inline.location())
         }
@@ -138,12 +142,13 @@ pub(crate) fn validate_inline_fragment(
                 against_type,
                 type_condition,
                 &executable::Selection::InlineFragment(inline.clone()),
+                context,
             );
         }
         super::selection::validate_selection_set(
             diagnostics,
             document,
-            if let (Some(schema), Some(ty)) = (&context.schema, &inline.type_condition) {
+            if let (Some(schema), Some(ty)) = (&context.schema(), &inline.type_condition) {
                 Some((schema, ty))
             } else {
                 against_type
@@ -159,11 +164,11 @@ pub(crate) fn validate_fragment_spread(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     spread: &Node<executable::FragmentSpread>,
-    context: OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
-        context.schema,
+        context.schema(),
         spread.directives.iter(),
         ast::DirectiveLocation::FragmentSpread,
         context.variables,
@@ -179,6 +184,7 @@ pub(crate) fn validate_fragment_spread(
                     against_type,
                     def.type_condition(),
                     &executable::Selection::FragmentSpread(spread.clone()),
+                    context,
                 );
             }
             validate_fragment_definition(diagnostics, document, def, context);
@@ -198,18 +204,18 @@ pub(crate) fn validate_fragment_definition(
     diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     fragment: &Node<executable::Fragment>,
-    context: OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
-        context.schema,
+        context.schema(),
         fragment.directives.iter(),
         ast::DirectiveLocation::FragmentDefinition,
         context.variables,
     );
 
     let previous = diagnostics.len();
-    if let Some(schema) = context.schema {
+    if let Some(schema) = context.schema() {
         validate_fragment_type_condition(
             diagnostics,
             schema,
@@ -228,7 +234,7 @@ pub(crate) fn validate_fragment_definition(
         // If the type does not exist, do not attempt to validate the selections against it;
         // it has either already raised an error, or we are validating an executable without
         // a schema.
-        let type_condition = context.schema.and_then(|schema| {
+        let type_condition = context.schema().and_then(|schema| {
             schema
                 .types
                 .contains_key(fragment.type_condition())

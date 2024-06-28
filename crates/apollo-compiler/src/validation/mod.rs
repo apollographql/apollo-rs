@@ -3,7 +3,8 @@
 
 use crate::coordinate::SchemaCoordinate;
 #[cfg(doc)]
-use crate::{ExecutableDocument, Schema};
+use crate::ExecutableDocument;
+use crate::Schema;
 
 pub(crate) mod argument;
 pub(crate) mod diagnostics;
@@ -23,17 +24,27 @@ pub(crate) mod value;
 pub(crate) mod variable;
 
 use crate::ast::Name;
-use crate::diagnostic::{CliReport, Diagnostic, ToCliReport};
+use crate::diagnostic::CliReport;
+use crate::diagnostic::Diagnostic;
+use crate::diagnostic::ToCliReport;
 use crate::executable::BuildError as ExecutableBuildError;
-use crate::execution::{GraphQLError, Response};
+use crate::executable::ConflictingFieldArgument;
+use crate::executable::ConflictingFieldName;
+use crate::executable::ConflictingFieldType;
+use crate::executable::VariableDefinition;
+use crate::execution::GraphQLError;
+use crate::execution::Response;
+pub(crate) use crate::node::FileId;
 use crate::schema::BuildError as SchemaBuildError;
+use crate::schema::Implementers;
+use crate::Node;
+use crate::NodeLocation;
 use crate::SourceMap;
-use crate::{Node, NodeLocation};
 use indexmap::IndexSet;
+use std::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
-
-pub(crate) use crate::node::FileId;
+use std::sync::OnceLock;
 
 /// Wraps a [`Schema`] or [`ExecutableDocument`] to mark it
 /// as [valid](https://spec.graphql.org/October2021/#sec-Validation).
@@ -109,6 +120,70 @@ impl<T> AsRef<T> for Valid<T> {
 impl<T: fmt::Display> fmt::Display for Valid<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+/// Shared context with things that may be used throughout executable validation.
+#[derive(Debug)]
+pub(crate) struct ExecutableValidationContext<'a> {
+    /// When None, rules that require a schema to validate are disabled.
+    schema: Option<&'a Schema>,
+    /// `schema.implementers_map()` is expensive to compute. This caches it for reuse.
+    implementers_map: OnceLock<HashMap<Name, Implementers>>,
+}
+
+impl<'a> ExecutableValidationContext<'a> {
+    pub fn new(schema: Option<&'a Schema>) -> Self {
+        Self {
+            schema,
+            implementers_map: Default::default(),
+        }
+    }
+
+    /// Returns the schema to validate against, if any.
+    pub fn schema(&self) -> Option<&'a Schema> {
+        self.schema
+    }
+
+    /// Returns a cached reference to the implementers map.
+    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+        self.implementers_map.get_or_init(|| {
+            self.schema
+                .map(|schema| schema.implementers_map())
+                .unwrap_or_default()
+        })
+    }
+
+    /// Returns a context for operation validation.
+    pub fn operation_context<'o>(
+        &'o self,
+        variables: &'o [Node<VariableDefinition>],
+    ) -> OperationValidationContext<'o> {
+        OperationValidationContext {
+            executable: self,
+            variables,
+        }
+    }
+}
+
+/// Shared context when validating things inside an operation.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct OperationValidationContext<'a> {
+    /// Parent context. Using a reference so the `OnceLock` is shared between all operation
+    /// contexts.
+    executable: &'a ExecutableValidationContext<'a>,
+    /// The variables defined for this operation.
+    pub variables: &'a [Node<VariableDefinition>],
+}
+
+impl<'a> OperationValidationContext<'a> {
+    pub fn schema(&self) -> Option<&'a Schema> {
+        self.executable.schema
+    }
+
+    /// Returns a cached reference to the implementers map.
+    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+        self.executable.implementers_map()
     }
 }
 
@@ -282,9 +357,9 @@ impl DiagnosticData {
                 ExecutableBuildError::SubscriptionUsesIntrospection { .. } => {
                     "SubscriptionUsesIntrospection"
                 }
-                ExecutableBuildError::ConflictingFieldType { .. } => "ConflictingFieldType",
-                ExecutableBuildError::ConflictingFieldName { .. } => "ConflictingFieldName",
-                ExecutableBuildError::ConflictingFieldArgument { .. } => "ConflictingFieldArgument",
+                ExecutableBuildError::ConflictingFieldType(_) => "ConflictingFieldType",
+                ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
+                ExecutableBuildError::ConflictingFieldArgument(_) => "ConflictingFieldArgument",
             }),
             _ => None,
         }
@@ -528,26 +603,35 @@ impl DiagnosticData {
                             .to_string())
                     }
                 }
-                ExecutableBuildError::ConflictingFieldType {
-                    alias,
-                    original_type,
-                    conflicting_type,
-                    ..
-                } => Some(format!(
-                    r#"Fields "{alias}" conflict because they return conflicting types "{original_type} and "{conflicting_type}". Use different aliases on the fields to fetch both if this was intentional."#
-                )),
-                ExecutableBuildError::ConflictingFieldName {
-                    alias,
-                    original_selection,
-                    conflicting_selection,
-                    ..
-                } => Some(format!(
-                    r#"Fields "{alias}" conflict because "{}" and "{}" are different fields. Use different aliases on the fields to fetch both if this was intentional."#,
-                    original_selection.attribute, conflicting_selection.attribute
-                )),
-                ExecutableBuildError::ConflictingFieldArgument { alias, .. } => Some(format!(
-                    r#"Fields "{alias}" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional."#
-                )),
+                ExecutableBuildError::ConflictingFieldType(inner) => {
+                    let ConflictingFieldType {
+                        alias,
+                        original_type,
+                        conflicting_type,
+                        ..
+                    } = &**inner;
+                    Some(format!(
+                        r#"Fields "{alias}" conflict because they return conflicting types "{original_type} and "{conflicting_type}". Use different aliases on the fields to fetch both if this was intentional."#
+                    ))
+                }
+                ExecutableBuildError::ConflictingFieldName(inner) => {
+                    let ConflictingFieldName {
+                        alias,
+                        original_selection,
+                        conflicting_selection,
+                        ..
+                    } = &**inner;
+                    Some(format!(
+                        r#"Fields "{alias}" conflict because "{}" and "{}" are different fields. Use different aliases on the fields to fetch both if this was intentional."#,
+                        original_selection.attribute, conflicting_selection.attribute
+                    ))
+                }
+                ExecutableBuildError::ConflictingFieldArgument(inner) => {
+                    let ConflictingFieldArgument { alias, .. } = &**inner;
+                    Some(format!(
+                        r#"Fields "{alias}" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional."#
+                    ))
+                }
             },
             _ => None,
         }
@@ -772,15 +856,16 @@ impl ToCliReport for DiagnosticData {
                         format_args!("{field} is an introspection field"),
                     );
                 }
-                ExecutableBuildError::ConflictingFieldType {
-                    alias,
-                    original_location,
-                    original_coordinate,
-                    original_type,
-                    conflicting_location,
-                    conflicting_coordinate,
-                    conflicting_type,
-                } => {
+                ExecutableBuildError::ConflictingFieldType(inner) => {
+                    let ConflictingFieldType {
+                        alias,
+                        original_location,
+                        original_coordinate,
+                        original_type,
+                        conflicting_location,
+                        conflicting_coordinate,
+                        conflicting_type,
+                    } = &**inner;
                     report.with_label_opt(
                         *original_location,
                         format_args!(
@@ -792,15 +877,16 @@ impl ToCliReport for DiagnosticData {
                     format_args!("`{alias}` is selected from `{conflicting_coordinate}: {conflicting_type}` here"),
                 );
                 }
-                ExecutableBuildError::ConflictingFieldArgument {
-                    alias,
-                    original_location,
-                    original_coordinate,
-                    original_value,
-                    conflicting_location,
-                    conflicting_coordinate: _,
-                    conflicting_value,
-                } => {
+                ExecutableBuildError::ConflictingFieldArgument(inner) => {
+                    let ConflictingFieldArgument {
+                        alias,
+                        original_location,
+                        original_coordinate,
+                        original_value,
+                        conflicting_location,
+                        conflicting_coordinate: _,
+                        conflicting_value,
+                    } = &**inner;
                     let argument = &original_coordinate.argument;
                     match (original_value, conflicting_value) {
                         (Some(_), Some(_)) => {
@@ -839,13 +925,14 @@ impl ToCliReport for DiagnosticData {
                     }
                     report.with_help("The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate");
                 }
-                ExecutableBuildError::ConflictingFieldName {
-                    alias: field,
-                    original_selection,
-                    original_location,
-                    conflicting_selection,
-                    conflicting_location,
-                } => {
+                ExecutableBuildError::ConflictingFieldName(inner) => {
+                    let ConflictingFieldName {
+                        alias: field,
+                        original_selection,
+                        original_location,
+                        conflicting_selection,
+                        conflicting_location,
+                    } = &**inner;
                     report.with_label_opt(
                         *original_location,
                         format_args!("`{field}` is selected from `{original_selection}` here"),

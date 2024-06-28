@@ -1,7 +1,11 @@
-use crate::{
-    parser::grammar::{enum_, input, interface, object, scalar, schema, union_},
-    Parser,
-};
+use crate::parser::grammar::enum_;
+use crate::parser::grammar::input;
+use crate::parser::grammar::interface;
+use crate::parser::grammar::object;
+use crate::parser::grammar::scalar;
+use crate::parser::grammar::schema;
+use crate::parser::grammar::union_;
+use crate::Parser;
 
 pub(crate) fn extensions(p: &mut Parser) {
     // we already know the next node is 'extend', check for the node after that
@@ -21,7 +25,8 @@ pub(crate) fn extensions(p: &mut Parser) {
 #[cfg(test)]
 
 mod test {
-    use crate::{cst, Parser};
+    use crate::cst;
+    use crate::Parser;
 
     #[test]
     fn it_queries_graphql_extensions() {

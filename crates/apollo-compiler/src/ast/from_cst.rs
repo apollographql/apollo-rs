@@ -424,10 +424,10 @@ impl Convert for cst::InputObjectTypeExtension {
 }
 
 impl Convert for cst::Description {
-    type Target = ast::NodeStr;
+    type Target = Node<str>;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(ast::NodeStr::new_parsed(
+        Some(Node::new_str_parsed(
             &String::from(self.string_value()?),
             NodeLocation::new(file_id, self.syntax()),
         ))
@@ -722,10 +722,7 @@ impl Convert for cst::Value {
 
         Some(match self {
             C::Variable(v) => A::Variable(v.name()?.convert(file_id)?),
-            C::StringValue(v) => A::String(ast::NodeStr::new_parsed(
-                &String::from(v),
-                NodeLocation::new(file_id, self.syntax()),
-            )),
+            C::StringValue(v) => A::String(String::from(v)),
             C::FloatValue(v) => A::Float(ast::FloatValue::new_parsed(
                 v.syntax().first_token()?.text(),
             )),
@@ -754,7 +751,7 @@ impl Convert for cst::ObjectField {
 }
 
 impl Convert for cst::Alias {
-    type Target = ast::Name;
+    type Target = crate::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         self.name()?.convert(file_id)
@@ -762,13 +759,13 @@ impl Convert for cst::Alias {
 }
 
 impl Convert for cst::Name {
-    type Target = ast::Name;
+    type Target = crate::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         let loc = NodeLocation::new(file_id, self.syntax());
         let token = &self.syntax().first_token()?;
         let str = token.text();
-        debug_assert!(ast::Name::valid_syntax(str));
-        Some(ast::Name(crate::NodeStr::new_parsed(str, loc)))
+        debug_assert!(ast::Name::is_valid_syntax(str));
+        Some(crate::Name::new(str).ok()?.with_location(loc))
     }
 }

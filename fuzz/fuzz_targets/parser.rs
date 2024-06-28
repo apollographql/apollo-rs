@@ -1,6 +1,7 @@
 #![no_main]
 use apollo_parser::Parser;
-use apollo_rs_fuzz::{generate_valid_document, log_gql_doc};
+use apollo_rs_fuzz::generate_valid_document;
+use apollo_rs_fuzz::log_gql_doc;
 use libfuzzer_sys::fuzz_target;
 use log::debug;
 use std::panic;

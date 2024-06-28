@@ -1,8 +1,16 @@
 #![allow(clippy::needless_return)]
 
+use crate::parser::grammar::description;
+use crate::parser::grammar::directive;
+use crate::parser::grammar::field;
+use crate::parser::grammar::name;
+use crate::parser::grammar::ty;
 use crate::parser::grammar::value::Constness;
-use crate::parser::grammar::{description, directive, field, name, ty};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::Parser;
+use crate::SyntaxKind;
+use crate::TokenKind;
+use crate::S;
+use crate::T;
 
 /// See: https://spec.graphql.org/October2021/#ObjectTypeDefinition
 ///

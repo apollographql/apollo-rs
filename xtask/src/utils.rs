@@ -1,7 +1,6 @@
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
+use std::env;
+use std::path::Path;
+use std::path::PathBuf;
 
 pub(crate) fn pluralize(s: &str) -> String {
     format!("{s}s")

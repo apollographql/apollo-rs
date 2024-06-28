@@ -1,8 +1,10 @@
+use crate::cst_src::KindsSrc;
+use crate::reformat;
 use anyhow::Result;
-use proc_macro2::{Punct, Spacing};
-use quote::{format_ident, quote};
-
-use crate::{cst_src::KindsSrc, reformat};
+use proc_macro2::Punct;
+use proc_macro2::Spacing;
+use quote::format_ident;
+use quote::quote;
 
 pub(crate) fn generate_kinds(kinds: KindsSrc<'_>) -> Result<String> {
     let (single_byte_tokens_values, single_byte_tokens): (Vec<_>, Vec<_>) = kinds

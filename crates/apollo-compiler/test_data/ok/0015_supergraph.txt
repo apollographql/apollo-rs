@@ -1,25 +1,25 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        15: SourceFile {
+        17: SourceFile {
             path: "0015_supergraph.graphql",
             source_text: "schema\n@core(feature: \"https://specs.apollo.dev/core/v0.1\"),\n@core(feature: \"https://specs.apollo.dev/join/v0.1\")\n{\n  query: Query\n  mutation: Mutation\n}\n\ndirective @core(feature: String!) repeatable on SCHEMA\ndirective @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION\ndirective @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on OBJECT | INTERFACE\ndirective @join__owner(graph: join__Graph!) on OBJECT | INTERFACE\ndirective @join__graph(name: String!, url: String!) on ENUM_VALUE\ndirective @stream on FIELD\ndirective @transform(from: String!) on FIELD\n\nunion AccountType = PasswordAccount | SMSAccount\n\ntype Amazon {\n  referrer: String\n}\n\nunion Body = Image | Text\n\ntype Book implements Product\n@join__owner(graph: BOOKS)\n@join__type(graph: BOOKS, key: \"isbn\")\n@join__type(graph: INVENTORY, key: \"isbn\")\n@join__type(graph: PRODUCT, key: \"isbn\")\n@join__type(graph: REVIEWS, key: \"isbn\")\n{\n  isbn: String! @join__field(graph: BOOKS)\n  title: String @join__field(graph: BOOKS)\n  year: Int @join__field(graph: BOOKS)\n  similarBooks: [Book]! @join__field(graph: BOOKS)\n  metadata: [MetadataOrError] @join__field(graph: BOOKS)\n  inStock: Boolean @join__field(graph: INVENTORY)\n  isCheckedOut: Boolean @join__field(graph: INVENTORY)\n  upc: String! @join__field(graph: PRODUCT)\n  sku: String! @join__field(graph: PRODUCT)\n  name(delimeter: String = \" \"): String @join__field(graph: PRODUCT, requires: \"title year\")\n  price: String @join__field(graph: PRODUCT)\n  details: ProductDetailsBook @join__field(graph: PRODUCT)\n  reviews: [Review] @join__field(graph: REVIEWS)\n  relatedReviews: [Review!]! @join__field(graph: REVIEWS, requires: \"similarBooks{isbn}\")\n}\n\nunion Brand = Ikea | Amazon\n\ntype Car implements Vehicle\n@join__owner(graph: PRODUCT)\n@join__type(graph: PRODUCT, key: \"id\")\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: String! @join__field(graph: PRODUCT)\n  description: String @join__field(graph: PRODUCT)\n  price: String @join__field(graph: PRODUCT)\n  retailPrice: String @join__field(graph: REVIEWS, requires: \"price\")\n}\n\ntype Error {\n  code: Int\n  message: String\n}\n\ntype Furniture implements Product\n@join__owner(graph: PRODUCT)\n@join__type(graph: PRODUCT, key: \"upc\")\n@join__type(graph: PRODUCT, key: \"sku\")\n@join__type(graph: INVENTORY, key: \"sku\")\n@join__type(graph: REVIEWS, key: \"upc\")\n{\n  upc: String! @join__field(graph: PRODUCT)\n  sku: String! @join__field(graph: PRODUCT)\n  name: String @join__field(graph: PRODUCT)\n  price: String @join__field(graph: PRODUCT)\n  brand: Brand @join__field(graph: PRODUCT)\n  metadata: [MetadataOrError] @join__field(graph: PRODUCT)\n  details: ProductDetailsFurniture @join__field(graph: PRODUCT)\n  inStock: Boolean @join__field(graph: INVENTORY)\n  isHeavy: Boolean @join__field(graph: INVENTORY)\n  reviews: [Review] @join__field(graph: REVIEWS)\n}\n\ntype Ikea {\n  asile: Int\n}\n\ntype Image implements NamedObject {\n  name: String!\n  attributes: ImageAttributes!\n}\n\ntype ImageAttributes {\n  url: String!\n}\n\nscalar join__FieldSet @specifiedBy(url: \"https://spec.graphql.org/\")\n\nenum join__Graph {\nACCOUNTS @join__graph(name: \"accounts\" url: \"\")\nBOOKS @join__graph(name: \"books\" url: \"\")\nDOCUMENTS @join__graph(name: \"documents\" url: \"\")\nINVENTORY @join__graph(name: \"inventory\" url: \"\")\nPRODUCT @join__graph(name: \"product\" url: \"\")\nREVIEWS @join__graph(name: \"reviews\" url: \"\")\n}\n\ntype KeyValue {\n  key: String!\n  value: String!\n}\n\ntype Library\n@join__owner(graph: BOOKS)\n@join__type(graph: BOOKS, key: \"id\")\n@join__type(graph: ACCOUNTS, key: \"id\")\n{\n  id: ID! @join__field(graph: BOOKS)\n  name: String @join__field(graph: BOOKS)\n  userAccount(id: ID! = 1): User @join__field(graph: ACCOUNTS, requires: \"name\")\n}\n\nunion MetadataOrError = KeyValue | Error\n\ntype Mutation {\n  login(username: String!, password: String!): User @join__field(graph: ACCOUNTS)\n  reviewProduct(upc: String!, body: String!): Product @join__field(graph: REVIEWS)\n  updateReview(review: UpdateReviewInput!): Review @join__field(graph: REVIEWS)\n  deleteReview(id: ID!): Boolean @join__field(graph: REVIEWS)\n}\n\ntype Name {\n  first: String\n  last: String\n}\n\ninterface NamedObject {\n  name: String!\n}\n\ntype PasswordAccount\n@join__owner(graph: ACCOUNTS)\n@join__type(graph: ACCOUNTS, key: \"email\")\n{\n  email: String! @join__field(graph: ACCOUNTS)\n}\n\ninterface Product {\n  upc: String!\n  sku: String!\n  name: String\n  price: String\n  details: ProductDetails\n  inStock: Boolean\n  reviews: [Review]\n}\n\ninterface ProductDetails {\n  country: String\n}\n\ntype ProductDetailsBook implements ProductDetails {\n  country: String\n  pages: Int\n}\n\ntype ProductDetailsFurniture implements ProductDetails {\n  country: String\n  color: String\n}\n\ntype Query {\n  user(id: ID!): User @join__field(graph: ACCOUNTS)\n  me: User @join__field(graph: ACCOUNTS)\n  book(isbn: String!): Book @join__field(graph: BOOKS)\n  books: [Book] @join__field(graph: BOOKS)\n  library(id: ID!): Library @join__field(graph: BOOKS)\n  body: Body! @join__field(graph: DOCUMENTS)\n  product(upc: String!): Product @join__field(graph: PRODUCT)\n  vehicle(id: String!): Vehicle @join__field(graph: PRODUCT)\n  topProducts(first: Int = 5): [Product] @join__field(graph: PRODUCT)\n  topCars(first: Int = 5): [Car] @join__field(graph: PRODUCT)\n  topReviews(first: Int = 5): [Review] @join__field(graph: REVIEWS)\n}\n\ntype Review\n@join__owner(graph: REVIEWS)\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: ID! @join__field(graph: REVIEWS)\n  body(format: Boolean = false): String @join__field(graph: REVIEWS)\n  author: User @join__field(graph: REVIEWS, provides: \"username\")\n  product: Product @join__field(graph: REVIEWS)\n  metadata: [MetadataOrError] @join__field(graph: REVIEWS)\n}\n\ntype SMSAccount\n@join__owner(graph: ACCOUNTS)\n@join__type(graph: ACCOUNTS, key: \"number\")\n{\n  number: String @join__field(graph: ACCOUNTS)\n}\n\ntype Text implements NamedObject {\n  name: String!\n  attributes: TextAttributes!\n}\n\ntype TextAttributes {\n  bold: Boolean\n  text: String\n}\n\nunion Thing = Car | Ikea\n\ninput UpdateReviewInput {\n  id: ID!\n  body: String\n}\n\ntype User\n@join__owner(graph: ACCOUNTS)\n@join__type(graph: ACCOUNTS, key: \"id\")\n@join__type(graph: ACCOUNTS, key: \"username name{first last}\")\n@join__type(graph: INVENTORY, key: \"id\")\n@join__type(graph: PRODUCT, key: \"id\")\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: ID! @join__field(graph: ACCOUNTS)\n  name: Name @join__field(graph: ACCOUNTS)\n  username: String @join__field(graph: ACCOUNTS)\n  birthDate(locale: String): String @join__field(graph: ACCOUNTS)\n  account: AccountType @join__field(graph: ACCOUNTS)\n  metadata: [UserMetadata] @join__field(graph: ACCOUNTS)\n  goodDescription: Boolean @join__field(graph: INVENTORY, requires: \"metadata{description}\")\n  vehicle: Vehicle @join__field(graph: PRODUCT)\n  thing: Thing @join__field(graph: PRODUCT)\n  reviews: [Review] @join__field(graph: REVIEWS)\n  numberOfReviews: Int! @join__field(graph: REVIEWS)\n  goodAddress: Boolean @join__field(graph: REVIEWS, requires: \"metadata{address}\")\n}\n\ntype UserMetadata {\n  name: String\n  address: String\n  description: String\n}\n\ntype Van implements Vehicle\n@join__owner(graph: PRODUCT)\n@join__type(graph: PRODUCT, key: \"id\")\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: String! @join__field(graph: PRODUCT)\n  description: String @join__field(graph: PRODUCT)\n  price: String @join__field(graph: PRODUCT)\n  retailPrice: String @join__field(graph: REVIEWS, requires: \"price\")\n}\n\ninterface Vehicle {\n  id: String!\n  description: String\n  price: String\n  retailPrice: String\n}",
         },
     },
-    schema_definition: 0..153 @15 SchemaDefinition {
+    schema_definition: 0..153 @17 SchemaDefinition {
         description: None,
         directives: [
             Component {
                 origin: Definition,
-                node: 7..59 @15 Directive {
+                node: 7..59 @17 Directive {
                     name: "core",
                     arguments: [
-                        13..58 @15 Argument {
+                        13..58 @17 Argument {
                             name: "feature",
-                            value: 22..58 @15 String(
+                            value: 22..58 @17 String(
                                 "https://specs.apollo.dev/core/v0.1",
                             ),
                         },
@@ -28,12 +28,12 @@ Schema {
             },
             Component {
                 origin: Definition,
-                node: 61..113 @15 Directive {
+                node: 61..113 @17 Directive {
                     name: "core",
                     arguments: [
-                        67..112 @15 Argument {
+                        67..112 @17 Argument {
                             name: "feature",
-                            value: 76..112 @15 String(
+                            value: 76..112 @17 String(
                                 "https://specs.apollo.dev/join/v0.1",
                             ),
                         },
@@ -60,14 +60,14 @@ Schema {
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
         "specifiedBy": built_in_directive!("specifiedBy"),
-        "core": 155..209 @15 DirectiveDefinition {
+        "core": 155..209 @17 DirectiveDefinition {
             description: None,
             name: "core",
             arguments: [
-                171..187 @15 InputValueDefinition {
+                171..187 @17 InputValueDefinition {
                     description: None,
                     name: "feature",
-                    ty: 180..187 @15 NonNullNamed(
+                    ty: 180..187 @17 NonNullNamed(
                         "String",
                     ),
                     default_value: None,
@@ -79,32 +79,32 @@ Schema {
                 "SCHEMA",
             ],
         },
-        "join__field": 210..324 @15 DirectiveDefinition {
+        "join__field": 210..324 @17 DirectiveDefinition {
             description: None,
             name: "join__field",
             arguments: [
-                233..251 @15 InputValueDefinition {
+                233..251 @17 InputValueDefinition {
                     description: None,
                     name: "graph",
-                    ty: 240..251 @15 Named(
+                    ty: 240..251 @17 Named(
                         "join__Graph",
                     ),
                     default_value: None,
                     directives: [],
                 },
-                253..277 @15 InputValueDefinition {
+                253..277 @17 InputValueDefinition {
                     description: None,
                     name: "requires",
-                    ty: 263..277 @15 Named(
+                    ty: 263..277 @17 Named(
                         "join__FieldSet",
                     ),
                     default_value: None,
                     directives: [],
                 },
-                279..303 @15 InputValueDefinition {
+                279..303 @17 InputValueDefinition {
                     description: None,
                     name: "provides",
-                    ty: 289..303 @15 Named(
+                    ty: 289..303 @17 Named(
                         "join__FieldSet",
                     ),
                     default_value: None,
@@ -116,23 +116,23 @@ Schema {
                 "FIELD_DEFINITION",
             ],
         },
-        "join__type": 325..421 @15 DirectiveDefinition {
+        "join__type": 325..421 @17 DirectiveDefinition {
             description: None,
             name: "join__type",
             arguments: [
-                347..366 @15 InputValueDefinition {
+                347..366 @17 InputValueDefinition {
                     description: None,
                     name: "graph",
-                    ty: 354..366 @15 NonNullNamed(
+                    ty: 354..366 @17 NonNullNamed(
                         "join__Graph",
                     ),
                     default_value: None,
                     directives: [],
                 },
-                368..387 @15 InputValueDefinition {
+                368..387 @17 InputValueDefinition {
                     description: None,
                     name: "key",
-                    ty: 373..387 @15 Named(
+                    ty: 373..387 @17 Named(
                         "join__FieldSet",
                     ),
                     default_value: None,
@@ -145,14 +145,14 @@ Schema {
                 "INTERFACE",
             ],
         },
-        "join__owner": 422..487 @15 DirectiveDefinition {
+        "join__owner": 422..487 @17 DirectiveDefinition {
             description: None,
             name: "join__owner",
             arguments: [
-                445..464 @15 InputValueDefinition {
+                445..464 @17 InputValueDefinition {
                     description: None,
                     name: "graph",
-                    ty: 452..464 @15 NonNullNamed(
+                    ty: 452..464 @17 NonNullNamed(
                         "join__Graph",
                     ),
                     default_value: None,
@@ -165,23 +165,23 @@ Schema {
                 "INTERFACE",
             ],
         },
-        "join__graph": 488..553 @15 DirectiveDefinition {
+        "join__graph": 488..553 @17 DirectiveDefinition {
             description: None,
             name: "join__graph",
             arguments: [
-                511..524 @15 InputValueDefinition {
+                511..524 @17 InputValueDefinition {
                     description: None,
                     name: "name",
-                    ty: 517..524 @15 NonNullNamed(
+                    ty: 517..524 @17 NonNullNamed(
                         "String",
                     ),
                     default_value: None,
                     directives: [],
                 },
-                526..538 @15 InputValueDefinition {
+                526..538 @17 InputValueDefinition {
                     description: None,
                     name: "url",
-                    ty: 531..538 @15 NonNullNamed(
+                    ty: 531..538 @17 NonNullNamed(
                         "String",
                     ),
                     default_value: None,
@@ -193,7 +193,7 @@ Schema {
                 "ENUM_VALUE",
             ],
         },
-        "stream": 554..580 @15 DirectiveDefinition {
+        "stream": 554..580 @17 DirectiveDefinition {
             description: None,
             name: "stream",
             arguments: [],
@@ -202,14 +202,14 @@ Schema {
                 "FIELD",
             ],
         },
-        "transform": 581..625 @15 DirectiveDefinition {
+        "transform": 581..625 @17 DirectiveDefinition {
             description: None,
             name: "transform",
             arguments: [
-                602..615 @15 InputValueDefinition {
+                602..615 @17 InputValueDefinition {
                     description: None,
                     name: "from",
-                    ty: 608..615 @15 NonNullNamed(
+                    ty: 608..615 @17 NonNullNamed(
                         "String",
                     ),
                     default_value: None,
@@ -237,7 +237,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "AccountType": Union(
-            627..675 @15 UnionType {
+            627..675 @17 UnionType {
                 description: None,
                 name: "AccountType",
                 directives: [],
@@ -254,7 +254,7 @@ Schema {
             },
         ),
         "Amazon": Object(
-            677..711 @15 ObjectType {
+            677..711 @17 ObjectType {
                 description: None,
                 name: "Amazon",
                 implements_interfaces: {},
@@ -262,7 +262,7 @@ Schema {
                 fields: {
                     "referrer": Component {
                         origin: Definition,
-                        node: 693..709 @15 FieldDefinition {
+                        node: 693..709 @17 FieldDefinition {
                             description: None,
                             name: "referrer",
                             arguments: [],
@@ -276,7 +276,7 @@ Schema {
             },
         ),
         "Body": Union(
-            713..738 @15 UnionType {
+            713..738 @17 UnionType {
                 description: None,
                 name: "Body",
                 directives: [],
@@ -293,7 +293,7 @@ Schema {
             },
         ),
         "Book": Object(
-            740..1725 @15 ObjectType {
+            740..1725 @17 ObjectType {
                 description: None,
                 name: "Book",
                 implements_interfaces: {
@@ -305,12 +305,12 @@ Schema {
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 769..795 @15 Directive {
+                        node: 769..795 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                782..794 @15 Argument {
+                                782..794 @17 Argument {
                                     name: "graph",
-                                    value: 789..794 @15 Enum(
+                                    value: 789..794 @17 Enum(
                                         "BOOKS",
                                     ),
                                 },
@@ -319,18 +319,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 796..834 @15 Directive {
+                        node: 796..834 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                808..820 @15 Argument {
+                                808..820 @17 Argument {
                                     name: "graph",
-                                    value: 815..820 @15 Enum(
+                                    value: 815..820 @17 Enum(
                                         "BOOKS",
                                     ),
                                 },
-                                822..833 @15 Argument {
+                                822..833 @17 Argument {
                                     name: "key",
-                                    value: 827..833 @15 String(
+                                    value: 827..833 @17 String(
                                         "isbn",
                                     ),
                                 },
@@ -339,18 +339,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 835..877 @15 Directive {
+                        node: 835..877 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                847..863 @15 Argument {
+                                847..863 @17 Argument {
                                     name: "graph",
-                                    value: 854..863 @15 Enum(
+                                    value: 854..863 @17 Enum(
                                         "INVENTORY",
                                     ),
                                 },
-                                865..876 @15 Argument {
+                                865..876 @17 Argument {
                                     name: "key",
-                                    value: 870..876 @15 String(
+                                    value: 870..876 @17 String(
                                         "isbn",
                                     ),
                                 },
@@ -359,18 +359,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 878..918 @15 Directive {
+                        node: 878..918 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                890..904 @15 Argument {
+                                890..904 @17 Argument {
                                     name: "graph",
-                                    value: 897..904 @15 Enum(
+                                    value: 897..904 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
-                                906..917 @15 Argument {
+                                906..917 @17 Argument {
                                     name: "key",
-                                    value: 911..917 @15 String(
+                                    value: 911..917 @17 String(
                                         "isbn",
                                     ),
                                 },
@@ -379,18 +379,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 919..959 @15 Directive {
+                        node: 919..959 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                931..945 @15 Argument {
+                                931..945 @17 Argument {
                                     name: "graph",
-                                    value: 938..945 @15 Enum(
+                                    value: 938..945 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
-                                947..958 @15 Argument {
+                                947..958 @17 Argument {
                                     name: "key",
-                                    value: 952..958 @15 String(
+                                    value: 952..958 @17 String(
                                         "isbn",
                                     ),
                                 },
@@ -401,7 +401,7 @@ Schema {
                 fields: {
                     "isbn": Component {
                         origin: Definition,
-                        node: 964..1004 @15 FieldDefinition {
+                        node: 964..1004 @17 FieldDefinition {
                             description: None,
                             name: "isbn",
                             arguments: [],
@@ -409,12 +409,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                978..1004 @15 Directive {
+                                978..1004 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        991..1003 @15 Argument {
+                                        991..1003 @17 Argument {
                                             name: "graph",
-                                            value: 998..1003 @15 Enum(
+                                            value: 998..1003 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -425,7 +425,7 @@ Schema {
                     },
                     "title": Component {
                         origin: Definition,
-                        node: 1007..1047 @15 FieldDefinition {
+                        node: 1007..1047 @17 FieldDefinition {
                             description: None,
                             name: "title",
                             arguments: [],
@@ -433,12 +433,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1021..1047 @15 Directive {
+                                1021..1047 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1034..1046 @15 Argument {
+                                        1034..1046 @17 Argument {
                                             name: "graph",
-                                            value: 1041..1046 @15 Enum(
+                                            value: 1041..1046 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -449,7 +449,7 @@ Schema {
                     },
                     "year": Component {
                         origin: Definition,
-                        node: 1050..1086 @15 FieldDefinition {
+                        node: 1050..1086 @17 FieldDefinition {
                             description: None,
                             name: "year",
                             arguments: [],
@@ -457,12 +457,12 @@ Schema {
                                 "Int",
                             ),
                             directives: [
-                                1060..1086 @15 Directive {
+                                1060..1086 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1073..1085 @15 Argument {
+                                        1073..1085 @17 Argument {
                                             name: "graph",
-                                            value: 1080..1085 @15 Enum(
+                                            value: 1080..1085 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -473,7 +473,7 @@ Schema {
                     },
                     "similarBooks": Component {
                         origin: Definition,
-                        node: 1089..1137 @15 FieldDefinition {
+                        node: 1089..1137 @17 FieldDefinition {
                             description: None,
                             name: "similarBooks",
                             arguments: [],
@@ -483,12 +483,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                1111..1137 @15 Directive {
+                                1111..1137 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1124..1136 @15 Argument {
+                                        1124..1136 @17 Argument {
                                             name: "graph",
-                                            value: 1131..1136 @15 Enum(
+                                            value: 1131..1136 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -499,7 +499,7 @@ Schema {
                     },
                     "metadata": Component {
                         origin: Definition,
-                        node: 1140..1194 @15 FieldDefinition {
+                        node: 1140..1194 @17 FieldDefinition {
                             description: None,
                             name: "metadata",
                             arguments: [],
@@ -509,12 +509,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                1168..1194 @15 Directive {
+                                1168..1194 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1181..1193 @15 Argument {
+                                        1181..1193 @17 Argument {
                                             name: "graph",
-                                            value: 1188..1193 @15 Enum(
+                                            value: 1188..1193 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -525,7 +525,7 @@ Schema {
                     },
                     "inStock": Component {
                         origin: Definition,
-                        node: 1197..1244 @15 FieldDefinition {
+                        node: 1197..1244 @17 FieldDefinition {
                             description: None,
                             name: "inStock",
                             arguments: [],
@@ -533,12 +533,12 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                1214..1244 @15 Directive {
+                                1214..1244 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1227..1243 @15 Argument {
+                                        1227..1243 @17 Argument {
                                             name: "graph",
-                                            value: 1234..1243 @15 Enum(
+                                            value: 1234..1243 @17 Enum(
                                                 "INVENTORY",
                                             ),
                                         },
@@ -549,7 +549,7 @@ Schema {
                     },
                     "isCheckedOut": Component {
                         origin: Definition,
-                        node: 1247..1299 @15 FieldDefinition {
+                        node: 1247..1299 @17 FieldDefinition {
                             description: None,
                             name: "isCheckedOut",
                             arguments: [],
@@ -557,12 +557,12 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                1269..1299 @15 Directive {
+                                1269..1299 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1282..1298 @15 Argument {
+                                        1282..1298 @17 Argument {
                                             name: "graph",
-                                            value: 1289..1298 @15 Enum(
+                                            value: 1289..1298 @17 Enum(
                                                 "INVENTORY",
                                             ),
                                         },
@@ -573,7 +573,7 @@ Schema {
                     },
                     "upc": Component {
                         origin: Definition,
-                        node: 1302..1343 @15 FieldDefinition {
+                        node: 1302..1343 @17 FieldDefinition {
                             description: None,
                             name: "upc",
                             arguments: [],
@@ -581,12 +581,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1315..1343 @15 Directive {
+                                1315..1343 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1328..1342 @15 Argument {
+                                        1328..1342 @17 Argument {
                                             name: "graph",
-                                            value: 1335..1342 @15 Enum(
+                                            value: 1335..1342 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -597,7 +597,7 @@ Schema {
                     },
                     "sku": Component {
                         origin: Definition,
-                        node: 1346..1387 @15 FieldDefinition {
+                        node: 1346..1387 @17 FieldDefinition {
                             description: None,
                             name: "sku",
                             arguments: [],
@@ -605,12 +605,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1359..1387 @15 Directive {
+                                1359..1387 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1372..1386 @15 Argument {
+                                        1372..1386 @17 Argument {
                                             name: "graph",
-                                            value: 1379..1386 @15 Enum(
+                                            value: 1379..1386 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -621,18 +621,18 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 1390..1480 @15 FieldDefinition {
+                        node: 1390..1480 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [
-                                1395..1418 @15 InputValueDefinition {
+                                1395..1418 @17 InputValueDefinition {
                                     description: None,
                                     name: "delimeter",
-                                    ty: 1406..1412 @15 Named(
+                                    ty: 1406..1412 @17 Named(
                                         "String",
                                     ),
                                     default_value: Some(
-                                        1415..1418 @15 String(
+                                        1415..1418 @17 String(
                                             " ",
                                         ),
                                     ),
@@ -643,18 +643,18 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1428..1480 @15 Directive {
+                                1428..1480 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1441..1455 @15 Argument {
+                                        1441..1455 @17 Argument {
                                             name: "graph",
-                                            value: 1448..1455 @15 Enum(
+                                            value: 1448..1455 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
-                                        1457..1479 @15 Argument {
+                                        1457..1479 @17 Argument {
                                             name: "requires",
-                                            value: 1467..1479 @15 String(
+                                            value: 1467..1479 @17 String(
                                                 "title year",
                                             ),
                                         },
@@ -665,7 +665,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 1483..1525 @15 FieldDefinition {
+                        node: 1483..1525 @17 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -673,12 +673,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1497..1525 @15 Directive {
+                                1497..1525 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1510..1524 @15 Argument {
+                                        1510..1524 @17 Argument {
                                             name: "graph",
-                                            value: 1517..1524 @15 Enum(
+                                            value: 1517..1524 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -689,7 +689,7 @@ Schema {
                     },
                     "details": Component {
                         origin: Definition,
-                        node: 1528..1584 @15 FieldDefinition {
+                        node: 1528..1584 @17 FieldDefinition {
                             description: None,
                             name: "details",
                             arguments: [],
@@ -697,12 +697,12 @@ Schema {
                                 "ProductDetailsBook",
                             ),
                             directives: [
-                                1556..1584 @15 Directive {
+                                1556..1584 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1569..1583 @15 Argument {
+                                        1569..1583 @17 Argument {
                                             name: "graph",
-                                            value: 1576..1583 @15 Enum(
+                                            value: 1576..1583 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -713,7 +713,7 @@ Schema {
                     },
                     "reviews": Component {
                         origin: Definition,
-                        node: 1587..1633 @15 FieldDefinition {
+                        node: 1587..1633 @17 FieldDefinition {
                             description: None,
                             name: "reviews",
                             arguments: [],
@@ -723,12 +723,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                1605..1633 @15 Directive {
+                                1605..1633 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1618..1632 @15 Argument {
+                                        1618..1632 @17 Argument {
                                             name: "graph",
-                                            value: 1625..1632 @15 Enum(
+                                            value: 1625..1632 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -739,7 +739,7 @@ Schema {
                     },
                     "relatedReviews": Component {
                         origin: Definition,
-                        node: 1636..1723 @15 FieldDefinition {
+                        node: 1636..1723 @17 FieldDefinition {
                             description: None,
                             name: "relatedReviews",
                             arguments: [],
@@ -749,18 +749,18 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                1663..1723 @15 Directive {
+                                1663..1723 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1676..1690 @15 Argument {
+                                        1676..1690 @17 Argument {
                                             name: "graph",
-                                            value: 1683..1690 @15 Enum(
+                                            value: 1683..1690 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
-                                        1692..1722 @15 Argument {
+                                        1692..1722 @17 Argument {
                                             name: "requires",
-                                            value: 1702..1722 @15 String(
+                                            value: 1702..1722 @17 String(
                                                 "similarBooks{isbn}",
                                             ),
                                         },
@@ -773,7 +773,7 @@ Schema {
             },
         ),
         "Brand": Union(
-            1727..1754 @15 UnionType {
+            1727..1754 @17 UnionType {
                 description: None,
                 name: "Brand",
                 directives: [],
@@ -790,7 +790,7 @@ Schema {
             },
         ),
         "Car": Object(
-            1756..2103 @15 ObjectType {
+            1756..2103 @17 ObjectType {
                 description: None,
                 name: "Car",
                 implements_interfaces: {
@@ -802,12 +802,12 @@ Schema {
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 1784..1812 @15 Directive {
+                        node: 1784..1812 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                1797..1811 @15 Argument {
+                                1797..1811 @17 Argument {
                                     name: "graph",
-                                    value: 1804..1811 @15 Enum(
+                                    value: 1804..1811 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
@@ -816,18 +816,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 1813..1851 @15 Directive {
+                        node: 1813..1851 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                1825..1839 @15 Argument {
+                                1825..1839 @17 Argument {
                                     name: "graph",
-                                    value: 1832..1839 @15 Enum(
+                                    value: 1832..1839 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
-                                1841..1850 @15 Argument {
+                                1841..1850 @17 Argument {
                                     name: "key",
-                                    value: 1846..1850 @15 String(
+                                    value: 1846..1850 @17 String(
                                         "id",
                                     ),
                                 },
@@ -836,18 +836,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 1852..1890 @15 Directive {
+                        node: 1852..1890 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                1864..1878 @15 Argument {
+                                1864..1878 @17 Argument {
                                     name: "graph",
-                                    value: 1871..1878 @15 Enum(
+                                    value: 1871..1878 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
-                                1880..1889 @15 Argument {
+                                1880..1889 @17 Argument {
                                     name: "key",
-                                    value: 1885..1889 @15 String(
+                                    value: 1885..1889 @17 String(
                                         "id",
                                     ),
                                 },
@@ -858,7 +858,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 1895..1935 @15 FieldDefinition {
+                        node: 1895..1935 @17 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -866,12 +866,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1907..1935 @15 Directive {
+                                1907..1935 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1920..1934 @15 Argument {
+                                        1920..1934 @17 Argument {
                                             name: "graph",
-                                            value: 1927..1934 @15 Enum(
+                                            value: 1927..1934 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -882,7 +882,7 @@ Schema {
                     },
                     "description": Component {
                         origin: Definition,
-                        node: 1938..1986 @15 FieldDefinition {
+                        node: 1938..1986 @17 FieldDefinition {
                             description: None,
                             name: "description",
                             arguments: [],
@@ -890,12 +890,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                1958..1986 @15 Directive {
+                                1958..1986 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        1971..1985 @15 Argument {
+                                        1971..1985 @17 Argument {
                                             name: "graph",
-                                            value: 1978..1985 @15 Enum(
+                                            value: 1978..1985 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -906,7 +906,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 1989..2031 @15 FieldDefinition {
+                        node: 1989..2031 @17 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -914,12 +914,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                2003..2031 @15 Directive {
+                                2003..2031 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2016..2030 @15 Argument {
+                                        2016..2030 @17 Argument {
                                             name: "graph",
-                                            value: 2023..2030 @15 Enum(
+                                            value: 2023..2030 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -930,7 +930,7 @@ Schema {
                     },
                     "retailPrice": Component {
                         origin: Definition,
-                        node: 2034..2101 @15 FieldDefinition {
+                        node: 2034..2101 @17 FieldDefinition {
                             description: None,
                             name: "retailPrice",
                             arguments: [],
@@ -938,18 +938,18 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                2054..2101 @15 Directive {
+                                2054..2101 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2067..2081 @15 Argument {
+                                        2067..2081 @17 Argument {
                                             name: "graph",
-                                            value: 2074..2081 @15 Enum(
+                                            value: 2074..2081 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
-                                        2083..2100 @15 Argument {
+                                        2083..2100 @17 Argument {
                                             name: "requires",
-                                            value: 2093..2100 @15 String(
+                                            value: 2093..2100 @17 String(
                                                 "price",
                                             ),
                                         },
@@ -962,7 +962,7 @@ Schema {
             },
         ),
         "Error": Object(
-            2105..2149 @15 ObjectType {
+            2105..2149 @17 ObjectType {
                 description: None,
                 name: "Error",
                 implements_interfaces: {},
@@ -970,7 +970,7 @@ Schema {
                 fields: {
                     "code": Component {
                         origin: Definition,
-                        node: 2120..2129 @15 FieldDefinition {
+                        node: 2120..2129 @17 FieldDefinition {
                             description: None,
                             name: "code",
                             arguments: [],
@@ -982,7 +982,7 @@ Schema {
                     },
                     "message": Component {
                         origin: Definition,
-                        node: 2132..2147 @15 FieldDefinition {
+                        node: 2132..2147 @17 FieldDefinition {
                             description: None,
                             name: "message",
                             arguments: [],
@@ -996,7 +996,7 @@ Schema {
             },
         ),
         "Furniture": Object(
-            2151..2872 @15 ObjectType {
+            2151..2872 @17 ObjectType {
                 description: None,
                 name: "Furniture",
                 implements_interfaces: {
@@ -1008,12 +1008,12 @@ Schema {
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 2185..2213 @15 Directive {
+                        node: 2185..2213 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                2198..2212 @15 Argument {
+                                2198..2212 @17 Argument {
                                     name: "graph",
-                                    value: 2205..2212 @15 Enum(
+                                    value: 2205..2212 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
@@ -1022,18 +1022,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 2214..2253 @15 Directive {
+                        node: 2214..2253 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                2226..2240 @15 Argument {
+                                2226..2240 @17 Argument {
                                     name: "graph",
-                                    value: 2233..2240 @15 Enum(
+                                    value: 2233..2240 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
-                                2242..2252 @15 Argument {
+                                2242..2252 @17 Argument {
                                     name: "key",
-                                    value: 2247..2252 @15 String(
+                                    value: 2247..2252 @17 String(
                                         "upc",
                                     ),
                                 },
@@ -1042,18 +1042,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 2254..2293 @15 Directive {
+                        node: 2254..2293 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                2266..2280 @15 Argument {
+                                2266..2280 @17 Argument {
                                     name: "graph",
-                                    value: 2273..2280 @15 Enum(
+                                    value: 2273..2280 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
-                                2282..2292 @15 Argument {
+                                2282..2292 @17 Argument {
                                     name: "key",
-                                    value: 2287..2292 @15 String(
+                                    value: 2287..2292 @17 String(
                                         "sku",
                                     ),
                                 },
@@ -1062,18 +1062,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 2294..2335 @15 Directive {
+                        node: 2294..2335 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                2306..2322 @15 Argument {
+                                2306..2322 @17 Argument {
                                     name: "graph",
-                                    value: 2313..2322 @15 Enum(
+                                    value: 2313..2322 @17 Enum(
                                         "INVENTORY",
                                     ),
                                 },
-                                2324..2334 @15 Argument {
+                                2324..2334 @17 Argument {
                                     name: "key",
-                                    value: 2329..2334 @15 String(
+                                    value: 2329..2334 @17 String(
                                         "sku",
                                     ),
                                 },
@@ -1082,18 +1082,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 2336..2375 @15 Directive {
+                        node: 2336..2375 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                2348..2362 @15 Argument {
+                                2348..2362 @17 Argument {
                                     name: "graph",
-                                    value: 2355..2362 @15 Enum(
+                                    value: 2355..2362 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
-                                2364..2374 @15 Argument {
+                                2364..2374 @17 Argument {
                                     name: "key",
-                                    value: 2369..2374 @15 String(
+                                    value: 2369..2374 @17 String(
                                         "upc",
                                     ),
                                 },
@@ -1104,7 +1104,7 @@ Schema {
                 fields: {
                     "upc": Component {
                         origin: Definition,
-                        node: 2380..2421 @15 FieldDefinition {
+                        node: 2380..2421 @17 FieldDefinition {
                             description: None,
                             name: "upc",
                             arguments: [],
@@ -1112,12 +1112,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                2393..2421 @15 Directive {
+                                2393..2421 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2406..2420 @15 Argument {
+                                        2406..2420 @17 Argument {
                                             name: "graph",
-                                            value: 2413..2420 @15 Enum(
+                                            value: 2413..2420 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1128,7 +1128,7 @@ Schema {
                     },
                     "sku": Component {
                         origin: Definition,
-                        node: 2424..2465 @15 FieldDefinition {
+                        node: 2424..2465 @17 FieldDefinition {
                             description: None,
                             name: "sku",
                             arguments: [],
@@ -1136,12 +1136,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                2437..2465 @15 Directive {
+                                2437..2465 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2450..2464 @15 Argument {
+                                        2450..2464 @17 Argument {
                                             name: "graph",
-                                            value: 2457..2464 @15 Enum(
+                                            value: 2457..2464 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1152,7 +1152,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 2468..2509 @15 FieldDefinition {
+                        node: 2468..2509 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -1160,12 +1160,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                2481..2509 @15 Directive {
+                                2481..2509 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2494..2508 @15 Argument {
+                                        2494..2508 @17 Argument {
                                             name: "graph",
-                                            value: 2501..2508 @15 Enum(
+                                            value: 2501..2508 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1176,7 +1176,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 2512..2554 @15 FieldDefinition {
+                        node: 2512..2554 @17 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -1184,12 +1184,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                2526..2554 @15 Directive {
+                                2526..2554 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2539..2553 @15 Argument {
+                                        2539..2553 @17 Argument {
                                             name: "graph",
-                                            value: 2546..2553 @15 Enum(
+                                            value: 2546..2553 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1200,7 +1200,7 @@ Schema {
                     },
                     "brand": Component {
                         origin: Definition,
-                        node: 2557..2598 @15 FieldDefinition {
+                        node: 2557..2598 @17 FieldDefinition {
                             description: None,
                             name: "brand",
                             arguments: [],
@@ -1208,12 +1208,12 @@ Schema {
                                 "Brand",
                             ),
                             directives: [
-                                2570..2598 @15 Directive {
+                                2570..2598 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2583..2597 @15 Argument {
+                                        2583..2597 @17 Argument {
                                             name: "graph",
-                                            value: 2590..2597 @15 Enum(
+                                            value: 2590..2597 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1224,7 +1224,7 @@ Schema {
                     },
                     "metadata": Component {
                         origin: Definition,
-                        node: 2601..2657 @15 FieldDefinition {
+                        node: 2601..2657 @17 FieldDefinition {
                             description: None,
                             name: "metadata",
                             arguments: [],
@@ -1234,12 +1234,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                2629..2657 @15 Directive {
+                                2629..2657 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2642..2656 @15 Argument {
+                                        2642..2656 @17 Argument {
                                             name: "graph",
-                                            value: 2649..2656 @15 Enum(
+                                            value: 2649..2656 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1250,7 +1250,7 @@ Schema {
                     },
                     "details": Component {
                         origin: Definition,
-                        node: 2660..2721 @15 FieldDefinition {
+                        node: 2660..2721 @17 FieldDefinition {
                             description: None,
                             name: "details",
                             arguments: [],
@@ -1258,12 +1258,12 @@ Schema {
                                 "ProductDetailsFurniture",
                             ),
                             directives: [
-                                2693..2721 @15 Directive {
+                                2693..2721 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2706..2720 @15 Argument {
+                                        2706..2720 @17 Argument {
                                             name: "graph",
-                                            value: 2713..2720 @15 Enum(
+                                            value: 2713..2720 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -1274,7 +1274,7 @@ Schema {
                     },
                     "inStock": Component {
                         origin: Definition,
-                        node: 2724..2771 @15 FieldDefinition {
+                        node: 2724..2771 @17 FieldDefinition {
                             description: None,
                             name: "inStock",
                             arguments: [],
@@ -1282,12 +1282,12 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                2741..2771 @15 Directive {
+                                2741..2771 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2754..2770 @15 Argument {
+                                        2754..2770 @17 Argument {
                                             name: "graph",
-                                            value: 2761..2770 @15 Enum(
+                                            value: 2761..2770 @17 Enum(
                                                 "INVENTORY",
                                             ),
                                         },
@@ -1298,7 +1298,7 @@ Schema {
                     },
                     "isHeavy": Component {
                         origin: Definition,
-                        node: 2774..2821 @15 FieldDefinition {
+                        node: 2774..2821 @17 FieldDefinition {
                             description: None,
                             name: "isHeavy",
                             arguments: [],
@@ -1306,12 +1306,12 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                2791..2821 @15 Directive {
+                                2791..2821 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2804..2820 @15 Argument {
+                                        2804..2820 @17 Argument {
                                             name: "graph",
-                                            value: 2811..2820 @15 Enum(
+                                            value: 2811..2820 @17 Enum(
                                                 "INVENTORY",
                                             ),
                                         },
@@ -1322,7 +1322,7 @@ Schema {
                     },
                     "reviews": Component {
                         origin: Definition,
-                        node: 2824..2870 @15 FieldDefinition {
+                        node: 2824..2870 @17 FieldDefinition {
                             description: None,
                             name: "reviews",
                             arguments: [],
@@ -1332,12 +1332,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                2842..2870 @15 Directive {
+                                2842..2870 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        2855..2869 @15 Argument {
+                                        2855..2869 @17 Argument {
                                             name: "graph",
-                                            value: 2862..2869 @15 Enum(
+                                            value: 2862..2869 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -1350,7 +1350,7 @@ Schema {
             },
         ),
         "Ikea": Object(
-            2874..2900 @15 ObjectType {
+            2874..2900 @17 ObjectType {
                 description: None,
                 name: "Ikea",
                 implements_interfaces: {},
@@ -1358,7 +1358,7 @@ Schema {
                 fields: {
                     "asile": Component {
                         origin: Definition,
-                        node: 2888..2898 @15 FieldDefinition {
+                        node: 2888..2898 @17 FieldDefinition {
                             description: None,
                             name: "asile",
                             arguments: [],
@@ -1372,7 +1372,7 @@ Schema {
             },
         ),
         "Image": Object(
-            2902..2986 @15 ObjectType {
+            2902..2986 @17 ObjectType {
                 description: None,
                 name: "Image",
                 implements_interfaces: {
@@ -1385,7 +1385,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 2940..2953 @15 FieldDefinition {
+                        node: 2940..2953 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -1397,7 +1397,7 @@ Schema {
                     },
                     "attributes": Component {
                         origin: Definition,
-                        node: 2956..2984 @15 FieldDefinition {
+                        node: 2956..2984 @17 FieldDefinition {
                             description: None,
                             name: "attributes",
                             arguments: [],
@@ -1411,7 +1411,7 @@ Schema {
             },
         ),
         "ImageAttributes": Object(
-            2988..3027 @15 ObjectType {
+            2988..3027 @17 ObjectType {
                 description: None,
                 name: "ImageAttributes",
                 implements_interfaces: {},
@@ -1419,7 +1419,7 @@ Schema {
                 fields: {
                     "url": Component {
                         origin: Definition,
-                        node: 3013..3025 @15 FieldDefinition {
+                        node: 3013..3025 @17 FieldDefinition {
                             description: None,
                             name: "url",
                             arguments: [],
@@ -1433,18 +1433,18 @@ Schema {
             },
         ),
         "join__FieldSet": Scalar(
-            3029..3097 @15 ScalarType {
+            3029..3097 @17 ScalarType {
                 description: None,
                 name: "join__FieldSet",
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 3051..3097 @15 Directive {
+                        node: 3051..3097 @17 Directive {
                             name: "specifiedBy",
                             arguments: [
-                                3064..3096 @15 Argument {
+                                3064..3096 @17 Argument {
                                     name: "url",
-                                    value: 3069..3096 @15 String(
+                                    value: 3069..3096 @17 String(
                                         "https://spec.graphql.org/",
                                     ),
                                 },
@@ -1455,29 +1455,29 @@ Schema {
             },
         ),
         "join__Graph": Enum(
-            3099..3401 @15 EnumType {
+            3099..3401 @17 EnumType {
                 description: None,
                 name: "join__Graph",
                 directives: [],
                 values: {
                     "ACCOUNTS": Component {
                         origin: Definition,
-                        node: 3118..3165 @15 EnumValueDefinition {
+                        node: 3118..3165 @17 EnumValueDefinition {
                             description: None,
                             value: "ACCOUNTS",
                             directives: [
-                                3127..3165 @15 Directive {
+                                3127..3165 @17 Directive {
                                     name: "join__graph",
                                     arguments: [
-                                        3140..3156 @15 Argument {
+                                        3140..3156 @17 Argument {
                                             name: "name",
-                                            value: 3146..3156 @15 String(
+                                            value: 3146..3156 @17 String(
                                                 "accounts",
                                             ),
                                         },
-                                        3157..3164 @15 Argument {
+                                        3157..3164 @17 Argument {
                                             name: "url",
-                                            value: 3162..3164 @15 String(
+                                            value: 3162..3164 @17 String(
                                                 "",
                                             ),
                                         },
@@ -1488,22 +1488,22 @@ Schema {
                     },
                     "BOOKS": Component {
                         origin: Definition,
-                        node: 3166..3207 @15 EnumValueDefinition {
+                        node: 3166..3207 @17 EnumValueDefinition {
                             description: None,
                             value: "BOOKS",
                             directives: [
-                                3172..3207 @15 Directive {
+                                3172..3207 @17 Directive {
                                     name: "join__graph",
                                     arguments: [
-                                        3185..3198 @15 Argument {
+                                        3185..3198 @17 Argument {
                                             name: "name",
-                                            value: 3191..3198 @15 String(
+                                            value: 3191..3198 @17 String(
                                                 "books",
                                             ),
                                         },
-                                        3199..3206 @15 Argument {
+                                        3199..3206 @17 Argument {
                                             name: "url",
-                                            value: 3204..3206 @15 String(
+                                            value: 3204..3206 @17 String(
                                                 "",
                                             ),
                                         },
@@ -1514,22 +1514,22 @@ Schema {
                     },
                     "DOCUMENTS": Component {
                         origin: Definition,
-                        node: 3208..3257 @15 EnumValueDefinition {
+                        node: 3208..3257 @17 EnumValueDefinition {
                             description: None,
                             value: "DOCUMENTS",
                             directives: [
-                                3218..3257 @15 Directive {
+                                3218..3257 @17 Directive {
                                     name: "join__graph",
                                     arguments: [
-                                        3231..3248 @15 Argument {
+                                        3231..3248 @17 Argument {
                                             name: "name",
-                                            value: 3237..3248 @15 String(
+                                            value: 3237..3248 @17 String(
                                                 "documents",
                                             ),
                                         },
-                                        3249..3256 @15 Argument {
+                                        3249..3256 @17 Argument {
                                             name: "url",
-                                            value: 3254..3256 @15 String(
+                                            value: 3254..3256 @17 String(
                                                 "",
                                             ),
                                         },
@@ -1540,22 +1540,22 @@ Schema {
                     },
                     "INVENTORY": Component {
                         origin: Definition,
-                        node: 3258..3307 @15 EnumValueDefinition {
+                        node: 3258..3307 @17 EnumValueDefinition {
                             description: None,
                             value: "INVENTORY",
                             directives: [
-                                3268..3307 @15 Directive {
+                                3268..3307 @17 Directive {
                                     name: "join__graph",
                                     arguments: [
-                                        3281..3298 @15 Argument {
+                                        3281..3298 @17 Argument {
                                             name: "name",
-                                            value: 3287..3298 @15 String(
+                                            value: 3287..3298 @17 String(
                                                 "inventory",
                                             ),
                                         },
-                                        3299..3306 @15 Argument {
+                                        3299..3306 @17 Argument {
                                             name: "url",
-                                            value: 3304..3306 @15 String(
+                                            value: 3304..3306 @17 String(
                                                 "",
                                             ),
                                         },
@@ -1566,22 +1566,22 @@ Schema {
                     },
                     "PRODUCT": Component {
                         origin: Definition,
-                        node: 3308..3353 @15 EnumValueDefinition {
+                        node: 3308..3353 @17 EnumValueDefinition {
                             description: None,
                             value: "PRODUCT",
                             directives: [
-                                3316..3353 @15 Directive {
+                                3316..3353 @17 Directive {
                                     name: "join__graph",
                                     arguments: [
-                                        3329..3344 @15 Argument {
+                                        3329..3344 @17 Argument {
                                             name: "name",
-                                            value: 3335..3344 @15 String(
+                                            value: 3335..3344 @17 String(
                                                 "product",
                                             ),
                                         },
-                                        3345..3352 @15 Argument {
+                                        3345..3352 @17 Argument {
                                             name: "url",
-                                            value: 3350..3352 @15 String(
+                                            value: 3350..3352 @17 String(
                                                 "",
                                             ),
                                         },
@@ -1592,22 +1592,22 @@ Schema {
                     },
                     "REVIEWS": Component {
                         origin: Definition,
-                        node: 3354..3399 @15 EnumValueDefinition {
+                        node: 3354..3399 @17 EnumValueDefinition {
                             description: None,
                             value: "REVIEWS",
                             directives: [
-                                3362..3399 @15 Directive {
+                                3362..3399 @17 Directive {
                                     name: "join__graph",
                                     arguments: [
-                                        3375..3390 @15 Argument {
+                                        3375..3390 @17 Argument {
                                             name: "name",
-                                            value: 3381..3390 @15 String(
+                                            value: 3381..3390 @17 String(
                                                 "reviews",
                                             ),
                                         },
-                                        3391..3398 @15 Argument {
+                                        3391..3398 @17 Argument {
                                             name: "url",
-                                            value: 3396..3398 @15 String(
+                                            value: 3396..3398 @17 String(
                                                 "",
                                             ),
                                         },
@@ -1620,7 +1620,7 @@ Schema {
             },
         ),
         "KeyValue": Object(
-            3403..3452 @15 ObjectType {
+            3403..3452 @17 ObjectType {
                 description: None,
                 name: "KeyValue",
                 implements_interfaces: {},
@@ -1628,7 +1628,7 @@ Schema {
                 fields: {
                     "key": Component {
                         origin: Definition,
-                        node: 3421..3433 @15 FieldDefinition {
+                        node: 3421..3433 @17 FieldDefinition {
                             description: None,
                             name: "key",
                             arguments: [],
@@ -1640,7 +1640,7 @@ Schema {
                     },
                     "value": Component {
                         origin: Definition,
-                        node: 3436..3450 @15 FieldDefinition {
+                        node: 3436..3450 @17 FieldDefinition {
                             description: None,
                             name: "value",
                             arguments: [],
@@ -1654,19 +1654,19 @@ Schema {
             },
         ),
         "Library": Object(
-            3454..3734 @15 ObjectType {
+            3454..3734 @17 ObjectType {
                 description: None,
                 name: "Library",
                 implements_interfaces: {},
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 3467..3493 @15 Directive {
+                        node: 3467..3493 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                3480..3492 @15 Argument {
+                                3480..3492 @17 Argument {
                                     name: "graph",
-                                    value: 3487..3492 @15 Enum(
+                                    value: 3487..3492 @17 Enum(
                                         "BOOKS",
                                     ),
                                 },
@@ -1675,18 +1675,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 3494..3530 @15 Directive {
+                        node: 3494..3530 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                3506..3518 @15 Argument {
+                                3506..3518 @17 Argument {
                                     name: "graph",
-                                    value: 3513..3518 @15 Enum(
+                                    value: 3513..3518 @17 Enum(
                                         "BOOKS",
                                     ),
                                 },
-                                3520..3529 @15 Argument {
+                                3520..3529 @17 Argument {
                                     name: "key",
-                                    value: 3525..3529 @15 String(
+                                    value: 3525..3529 @17 String(
                                         "id",
                                     ),
                                 },
@@ -1695,18 +1695,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 3531..3570 @15 Directive {
+                        node: 3531..3570 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                3543..3558 @15 Argument {
+                                3543..3558 @17 Argument {
                                     name: "graph",
-                                    value: 3550..3558 @15 Enum(
+                                    value: 3550..3558 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
-                                3560..3569 @15 Argument {
+                                3560..3569 @17 Argument {
                                     name: "key",
-                                    value: 3565..3569 @15 String(
+                                    value: 3565..3569 @17 String(
                                         "id",
                                     ),
                                 },
@@ -1717,7 +1717,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 3575..3609 @15 FieldDefinition {
+                        node: 3575..3609 @17 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -1725,12 +1725,12 @@ Schema {
                                 "ID",
                             ),
                             directives: [
-                                3583..3609 @15 Directive {
+                                3583..3609 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        3596..3608 @15 Argument {
+                                        3596..3608 @17 Argument {
                                             name: "graph",
-                                            value: 3603..3608 @15 Enum(
+                                            value: 3603..3608 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -1741,7 +1741,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 3612..3651 @15 FieldDefinition {
+                        node: 3612..3651 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -1749,12 +1749,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                3625..3651 @15 Directive {
+                                3625..3651 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        3638..3650 @15 Argument {
+                                        3638..3650 @17 Argument {
                                             name: "graph",
-                                            value: 3645..3650 @15 Enum(
+                                            value: 3645..3650 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -1765,18 +1765,18 @@ Schema {
                     },
                     "userAccount": Component {
                         origin: Definition,
-                        node: 3654..3732 @15 FieldDefinition {
+                        node: 3654..3732 @17 FieldDefinition {
                             description: None,
                             name: "userAccount",
                             arguments: [
-                                3666..3677 @15 InputValueDefinition {
+                                3666..3677 @17 InputValueDefinition {
                                     description: None,
                                     name: "id",
-                                    ty: 3670..3673 @15 NonNullNamed(
+                                    ty: 3670..3673 @17 NonNullNamed(
                                         "ID",
                                     ),
                                     default_value: Some(
-                                        3676..3677 @15 Int(
+                                        3676..3677 @17 Int(
                                             1,
                                         ),
                                     ),
@@ -1787,18 +1787,18 @@ Schema {
                                 "User",
                             ),
                             directives: [
-                                3685..3732 @15 Directive {
+                                3685..3732 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        3698..3713 @15 Argument {
+                                        3698..3713 @17 Argument {
                                             name: "graph",
-                                            value: 3705..3713 @15 Enum(
+                                            value: 3705..3713 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
-                                        3715..3731 @15 Argument {
+                                        3715..3731 @17 Argument {
                                             name: "requires",
-                                            value: 3725..3731 @15 String(
+                                            value: 3725..3731 @17 String(
                                                 "name",
                                             ),
                                         },
@@ -1811,7 +1811,7 @@ Schema {
             },
         ),
         "MetadataOrError": Union(
-            3736..3776 @15 UnionType {
+            3736..3776 @17 UnionType {
                 description: None,
                 name: "MetadataOrError",
                 directives: [],
@@ -1828,7 +1828,7 @@ Schema {
             },
         ),
         "Mutation": Object(
-            3778..4102 @15 ObjectType {
+            3778..4102 @17 ObjectType {
                 description: None,
                 name: "Mutation",
                 implements_interfaces: {},
@@ -1836,23 +1836,23 @@ Schema {
                 fields: {
                     "login": Component {
                         origin: Definition,
-                        node: 3796..3875 @15 FieldDefinition {
+                        node: 3796..3875 @17 FieldDefinition {
                             description: None,
                             name: "login",
                             arguments: [
-                                3802..3819 @15 InputValueDefinition {
+                                3802..3819 @17 InputValueDefinition {
                                     description: None,
                                     name: "username",
-                                    ty: 3812..3819 @15 NonNullNamed(
+                                    ty: 3812..3819 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
                                     directives: [],
                                 },
-                                3821..3838 @15 InputValueDefinition {
+                                3821..3838 @17 InputValueDefinition {
                                     description: None,
                                     name: "password",
-                                    ty: 3831..3838 @15 NonNullNamed(
+                                    ty: 3831..3838 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
@@ -1863,12 +1863,12 @@ Schema {
                                 "User",
                             ),
                             directives: [
-                                3846..3875 @15 Directive {
+                                3846..3875 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        3859..3874 @15 Argument {
+                                        3859..3874 @17 Argument {
                                             name: "graph",
-                                            value: 3866..3874 @15 Enum(
+                                            value: 3866..3874 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -1879,23 +1879,23 @@ Schema {
                     },
                     "reviewProduct": Component {
                         origin: Definition,
-                        node: 3878..3958 @15 FieldDefinition {
+                        node: 3878..3958 @17 FieldDefinition {
                             description: None,
                             name: "reviewProduct",
                             arguments: [
-                                3892..3904 @15 InputValueDefinition {
+                                3892..3904 @17 InputValueDefinition {
                                     description: None,
                                     name: "upc",
-                                    ty: 3897..3904 @15 NonNullNamed(
+                                    ty: 3897..3904 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
                                     directives: [],
                                 },
-                                3906..3919 @15 InputValueDefinition {
+                                3906..3919 @17 InputValueDefinition {
                                     description: None,
                                     name: "body",
-                                    ty: 3912..3919 @15 NonNullNamed(
+                                    ty: 3912..3919 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
@@ -1906,12 +1906,12 @@ Schema {
                                 "Product",
                             ),
                             directives: [
-                                3930..3958 @15 Directive {
+                                3930..3958 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        3943..3957 @15 Argument {
+                                        3943..3957 @17 Argument {
                                             name: "graph",
-                                            value: 3950..3957 @15 Enum(
+                                            value: 3950..3957 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -1922,14 +1922,14 @@ Schema {
                     },
                     "updateReview": Component {
                         origin: Definition,
-                        node: 3961..4038 @15 FieldDefinition {
+                        node: 3961..4038 @17 FieldDefinition {
                             description: None,
                             name: "updateReview",
                             arguments: [
-                                3974..4000 @15 InputValueDefinition {
+                                3974..4000 @17 InputValueDefinition {
                                     description: None,
                                     name: "review",
-                                    ty: 3982..4000 @15 NonNullNamed(
+                                    ty: 3982..4000 @17 NonNullNamed(
                                         "UpdateReviewInput",
                                     ),
                                     default_value: None,
@@ -1940,12 +1940,12 @@ Schema {
                                 "Review",
                             ),
                             directives: [
-                                4010..4038 @15 Directive {
+                                4010..4038 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4023..4037 @15 Argument {
+                                        4023..4037 @17 Argument {
                                             name: "graph",
-                                            value: 4030..4037 @15 Enum(
+                                            value: 4030..4037 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -1956,14 +1956,14 @@ Schema {
                     },
                     "deleteReview": Component {
                         origin: Definition,
-                        node: 4041..4100 @15 FieldDefinition {
+                        node: 4041..4100 @17 FieldDefinition {
                             description: None,
                             name: "deleteReview",
                             arguments: [
-                                4054..4061 @15 InputValueDefinition {
+                                4054..4061 @17 InputValueDefinition {
                                     description: None,
                                     name: "id",
-                                    ty: 4058..4061 @15 NonNullNamed(
+                                    ty: 4058..4061 @17 NonNullNamed(
                                         "ID",
                                     ),
                                     default_value: None,
@@ -1974,12 +1974,12 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                4072..4100 @15 Directive {
+                                4072..4100 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4085..4099 @15 Argument {
+                                        4085..4099 @17 Argument {
                                             name: "graph",
-                                            value: 4092..4099 @15 Enum(
+                                            value: 4092..4099 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -1992,7 +1992,7 @@ Schema {
             },
         ),
         "Name": Object(
-            4104..4148 @15 ObjectType {
+            4104..4148 @17 ObjectType {
                 description: None,
                 name: "Name",
                 implements_interfaces: {},
@@ -2000,7 +2000,7 @@ Schema {
                 fields: {
                     "first": Component {
                         origin: Definition,
-                        node: 4118..4131 @15 FieldDefinition {
+                        node: 4118..4131 @17 FieldDefinition {
                             description: None,
                             name: "first",
                             arguments: [],
@@ -2012,7 +2012,7 @@ Schema {
                     },
                     "last": Component {
                         origin: Definition,
-                        node: 4134..4146 @15 FieldDefinition {
+                        node: 4134..4146 @17 FieldDefinition {
                             description: None,
                             name: "last",
                             arguments: [],
@@ -2026,7 +2026,7 @@ Schema {
             },
         ),
         "NamedObject": Interface(
-            4150..4191 @15 InterfaceType {
+            4150..4191 @17 InterfaceType {
                 description: None,
                 name: "NamedObject",
                 implements_interfaces: {},
@@ -2034,7 +2034,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 4176..4189 @15 FieldDefinition {
+                        node: 4176..4189 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -2048,19 +2048,19 @@ Schema {
             },
         ),
         "PasswordAccount": Object(
-            4193..4337 @15 ObjectType {
+            4193..4337 @17 ObjectType {
                 description: None,
                 name: "PasswordAccount",
                 implements_interfaces: {},
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 4214..4243 @15 Directive {
+                        node: 4214..4243 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                4227..4242 @15 Argument {
+                                4227..4242 @17 Argument {
                                     name: "graph",
-                                    value: 4234..4242 @15 Enum(
+                                    value: 4234..4242 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
@@ -2069,18 +2069,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 4244..4286 @15 Directive {
+                        node: 4244..4286 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                4256..4271 @15 Argument {
+                                4256..4271 @17 Argument {
                                     name: "graph",
-                                    value: 4263..4271 @15 Enum(
+                                    value: 4263..4271 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
-                                4273..4285 @15 Argument {
+                                4273..4285 @17 Argument {
                                     name: "key",
-                                    value: 4278..4285 @15 String(
+                                    value: 4278..4285 @17 String(
                                         "email",
                                     ),
                                 },
@@ -2091,7 +2091,7 @@ Schema {
                 fields: {
                     "email": Component {
                         origin: Definition,
-                        node: 4291..4335 @15 FieldDefinition {
+                        node: 4291..4335 @17 FieldDefinition {
                             description: None,
                             name: "email",
                             arguments: [],
@@ -2099,12 +2099,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                4306..4335 @15 Directive {
+                                4306..4335 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4319..4334 @15 Argument {
+                                        4319..4334 @17 Argument {
                                             name: "graph",
-                                            value: 4326..4334 @15 Enum(
+                                            value: 4326..4334 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -2117,7 +2117,7 @@ Schema {
             },
         ),
         "Product": Interface(
-            4339..4486 @15 InterfaceType {
+            4339..4486 @17 InterfaceType {
                 description: None,
                 name: "Product",
                 implements_interfaces: {},
@@ -2125,7 +2125,7 @@ Schema {
                 fields: {
                     "upc": Component {
                         origin: Definition,
-                        node: 4361..4373 @15 FieldDefinition {
+                        node: 4361..4373 @17 FieldDefinition {
                             description: None,
                             name: "upc",
                             arguments: [],
@@ -2137,7 +2137,7 @@ Schema {
                     },
                     "sku": Component {
                         origin: Definition,
-                        node: 4376..4388 @15 FieldDefinition {
+                        node: 4376..4388 @17 FieldDefinition {
                             description: None,
                             name: "sku",
                             arguments: [],
@@ -2149,7 +2149,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 4391..4403 @15 FieldDefinition {
+                        node: 4391..4403 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -2161,7 +2161,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 4406..4419 @15 FieldDefinition {
+                        node: 4406..4419 @17 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -2173,7 +2173,7 @@ Schema {
                     },
                     "details": Component {
                         origin: Definition,
-                        node: 4422..4445 @15 FieldDefinition {
+                        node: 4422..4445 @17 FieldDefinition {
                             description: None,
                             name: "details",
                             arguments: [],
@@ -2185,7 +2185,7 @@ Schema {
                     },
                     "inStock": Component {
                         origin: Definition,
-                        node: 4448..4464 @15 FieldDefinition {
+                        node: 4448..4464 @17 FieldDefinition {
                             description: None,
                             name: "inStock",
                             arguments: [],
@@ -2197,7 +2197,7 @@ Schema {
                     },
                     "reviews": Component {
                         origin: Definition,
-                        node: 4467..4484 @15 FieldDefinition {
+                        node: 4467..4484 @17 FieldDefinition {
                             description: None,
                             name: "reviews",
                             arguments: [],
@@ -2213,7 +2213,7 @@ Schema {
             },
         ),
         "ProductDetails": Interface(
-            4488..4534 @15 InterfaceType {
+            4488..4534 @17 InterfaceType {
                 description: None,
                 name: "ProductDetails",
                 implements_interfaces: {},
@@ -2221,7 +2221,7 @@ Schema {
                 fields: {
                     "country": Component {
                         origin: Definition,
-                        node: 4517..4532 @15 FieldDefinition {
+                        node: 4517..4532 @17 FieldDefinition {
                             description: None,
                             name: "country",
                             arguments: [],
@@ -2235,7 +2235,7 @@ Schema {
             },
         ),
         "ProductDetailsBook": Object(
-            4536..4620 @15 ObjectType {
+            4536..4620 @17 ObjectType {
                 description: None,
                 name: "ProductDetailsBook",
                 implements_interfaces: {
@@ -2248,7 +2248,7 @@ Schema {
                 fields: {
                     "country": Component {
                         origin: Definition,
-                        node: 4590..4605 @15 FieldDefinition {
+                        node: 4590..4605 @17 FieldDefinition {
                             description: None,
                             name: "country",
                             arguments: [],
@@ -2260,7 +2260,7 @@ Schema {
                     },
                     "pages": Component {
                         origin: Definition,
-                        node: 4608..4618 @15 FieldDefinition {
+                        node: 4608..4618 @17 FieldDefinition {
                             description: None,
                             name: "pages",
                             arguments: [],
@@ -2274,7 +2274,7 @@ Schema {
             },
         ),
         "ProductDetailsFurniture": Object(
-            4622..4714 @15 ObjectType {
+            4622..4714 @17 ObjectType {
                 description: None,
                 name: "ProductDetailsFurniture",
                 implements_interfaces: {
@@ -2287,7 +2287,7 @@ Schema {
                 fields: {
                     "country": Component {
                         origin: Definition,
-                        node: 4681..4696 @15 FieldDefinition {
+                        node: 4681..4696 @17 FieldDefinition {
                             description: None,
                             name: "country",
                             arguments: [],
@@ -2299,7 +2299,7 @@ Schema {
                     },
                     "color": Component {
                         origin: Definition,
-                        node: 4699..4712 @15 FieldDefinition {
+                        node: 4699..4712 @17 FieldDefinition {
                             description: None,
                             name: "color",
                             arguments: [],
@@ -2313,7 +2313,7 @@ Schema {
             },
         ),
         "Query": Object(
-            4716..5344 @15 ObjectType {
+            4716..5344 @17 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -2321,14 +2321,14 @@ Schema {
                 fields: {
                     "user": Component {
                         origin: Definition,
-                        node: 4731..4780 @15 FieldDefinition {
+                        node: 4731..4780 @17 FieldDefinition {
                             description: None,
                             name: "user",
                             arguments: [
-                                4736..4743 @15 InputValueDefinition {
+                                4736..4743 @17 InputValueDefinition {
                                     description: None,
                                     name: "id",
-                                    ty: 4740..4743 @15 NonNullNamed(
+                                    ty: 4740..4743 @17 NonNullNamed(
                                         "ID",
                                     ),
                                     default_value: None,
@@ -2339,12 +2339,12 @@ Schema {
                                 "User",
                             ),
                             directives: [
-                                4751..4780 @15 Directive {
+                                4751..4780 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4764..4779 @15 Argument {
+                                        4764..4779 @17 Argument {
                                             name: "graph",
-                                            value: 4771..4779 @15 Enum(
+                                            value: 4771..4779 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -2355,7 +2355,7 @@ Schema {
                     },
                     "me": Component {
                         origin: Definition,
-                        node: 4783..4821 @15 FieldDefinition {
+                        node: 4783..4821 @17 FieldDefinition {
                             description: None,
                             name: "me",
                             arguments: [],
@@ -2363,12 +2363,12 @@ Schema {
                                 "User",
                             ),
                             directives: [
-                                4792..4821 @15 Directive {
+                                4792..4821 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4805..4820 @15 Argument {
+                                        4805..4820 @17 Argument {
                                             name: "graph",
-                                            value: 4812..4820 @15 Enum(
+                                            value: 4812..4820 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -2379,14 +2379,14 @@ Schema {
                     },
                     "book": Component {
                         origin: Definition,
-                        node: 4824..4876 @15 FieldDefinition {
+                        node: 4824..4876 @17 FieldDefinition {
                             description: None,
                             name: "book",
                             arguments: [
-                                4829..4842 @15 InputValueDefinition {
+                                4829..4842 @17 InputValueDefinition {
                                     description: None,
                                     name: "isbn",
-                                    ty: 4835..4842 @15 NonNullNamed(
+                                    ty: 4835..4842 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
@@ -2397,12 +2397,12 @@ Schema {
                                 "Book",
                             ),
                             directives: [
-                                4850..4876 @15 Directive {
+                                4850..4876 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4863..4875 @15 Argument {
+                                        4863..4875 @17 Argument {
                                             name: "graph",
-                                            value: 4870..4875 @15 Enum(
+                                            value: 4870..4875 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -2413,7 +2413,7 @@ Schema {
                     },
                     "books": Component {
                         origin: Definition,
-                        node: 4879..4919 @15 FieldDefinition {
+                        node: 4879..4919 @17 FieldDefinition {
                             description: None,
                             name: "books",
                             arguments: [],
@@ -2423,12 +2423,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                4893..4919 @15 Directive {
+                                4893..4919 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4906..4918 @15 Argument {
+                                        4906..4918 @17 Argument {
                                             name: "graph",
-                                            value: 4913..4918 @15 Enum(
+                                            value: 4913..4918 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -2439,14 +2439,14 @@ Schema {
                     },
                     "library": Component {
                         origin: Definition,
-                        node: 4922..4974 @15 FieldDefinition {
+                        node: 4922..4974 @17 FieldDefinition {
                             description: None,
                             name: "library",
                             arguments: [
-                                4930..4937 @15 InputValueDefinition {
+                                4930..4937 @17 InputValueDefinition {
                                     description: None,
                                     name: "id",
-                                    ty: 4934..4937 @15 NonNullNamed(
+                                    ty: 4934..4937 @17 NonNullNamed(
                                         "ID",
                                     ),
                                     default_value: None,
@@ -2457,12 +2457,12 @@ Schema {
                                 "Library",
                             ),
                             directives: [
-                                4948..4974 @15 Directive {
+                                4948..4974 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        4961..4973 @15 Argument {
+                                        4961..4973 @17 Argument {
                                             name: "graph",
-                                            value: 4968..4973 @15 Enum(
+                                            value: 4968..4973 @17 Enum(
                                                 "BOOKS",
                                             ),
                                         },
@@ -2473,7 +2473,7 @@ Schema {
                     },
                     "body": Component {
                         origin: Definition,
-                        node: 4977..5019 @15 FieldDefinition {
+                        node: 4977..5019 @17 FieldDefinition {
                             description: None,
                             name: "body",
                             arguments: [],
@@ -2481,12 +2481,12 @@ Schema {
                                 "Body",
                             ),
                             directives: [
-                                4989..5019 @15 Directive {
+                                4989..5019 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5002..5018 @15 Argument {
+                                        5002..5018 @17 Argument {
                                             name: "graph",
-                                            value: 5009..5018 @15 Enum(
+                                            value: 5009..5018 @17 Enum(
                                                 "DOCUMENTS",
                                             ),
                                         },
@@ -2497,14 +2497,14 @@ Schema {
                     },
                     "product": Component {
                         origin: Definition,
-                        node: 5022..5081 @15 FieldDefinition {
+                        node: 5022..5081 @17 FieldDefinition {
                             description: None,
                             name: "product",
                             arguments: [
-                                5030..5042 @15 InputValueDefinition {
+                                5030..5042 @17 InputValueDefinition {
                                     description: None,
                                     name: "upc",
-                                    ty: 5035..5042 @15 NonNullNamed(
+                                    ty: 5035..5042 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
@@ -2515,12 +2515,12 @@ Schema {
                                 "Product",
                             ),
                             directives: [
-                                5053..5081 @15 Directive {
+                                5053..5081 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5066..5080 @15 Argument {
+                                        5066..5080 @17 Argument {
                                             name: "graph",
-                                            value: 5073..5080 @15 Enum(
+                                            value: 5073..5080 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -2531,14 +2531,14 @@ Schema {
                     },
                     "vehicle": Component {
                         origin: Definition,
-                        node: 5084..5142 @15 FieldDefinition {
+                        node: 5084..5142 @17 FieldDefinition {
                             description: None,
                             name: "vehicle",
                             arguments: [
-                                5092..5103 @15 InputValueDefinition {
+                                5092..5103 @17 InputValueDefinition {
                                     description: None,
                                     name: "id",
-                                    ty: 5096..5103 @15 NonNullNamed(
+                                    ty: 5096..5103 @17 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
@@ -2549,12 +2549,12 @@ Schema {
                                 "Vehicle",
                             ),
                             directives: [
-                                5114..5142 @15 Directive {
+                                5114..5142 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5127..5141 @15 Argument {
+                                        5127..5141 @17 Argument {
                                             name: "graph",
-                                            value: 5134..5141 @15 Enum(
+                                            value: 5134..5141 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -2565,18 +2565,18 @@ Schema {
                     },
                     "topProducts": Component {
                         origin: Definition,
-                        node: 5145..5212 @15 FieldDefinition {
+                        node: 5145..5212 @17 FieldDefinition {
                             description: None,
                             name: "topProducts",
                             arguments: [
-                                5157..5171 @15 InputValueDefinition {
+                                5157..5171 @17 InputValueDefinition {
                                     description: None,
                                     name: "first",
-                                    ty: 5164..5167 @15 Named(
+                                    ty: 5164..5167 @17 Named(
                                         "Int",
                                     ),
                                     default_value: Some(
-                                        5170..5171 @15 Int(
+                                        5170..5171 @17 Int(
                                             5,
                                         ),
                                     ),
@@ -2589,12 +2589,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                5184..5212 @15 Directive {
+                                5184..5212 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5197..5211 @15 Argument {
+                                        5197..5211 @17 Argument {
                                             name: "graph",
-                                            value: 5204..5211 @15 Enum(
+                                            value: 5204..5211 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -2605,18 +2605,18 @@ Schema {
                     },
                     "topCars": Component {
                         origin: Definition,
-                        node: 5215..5274 @15 FieldDefinition {
+                        node: 5215..5274 @17 FieldDefinition {
                             description: None,
                             name: "topCars",
                             arguments: [
-                                5223..5237 @15 InputValueDefinition {
+                                5223..5237 @17 InputValueDefinition {
                                     description: None,
                                     name: "first",
-                                    ty: 5230..5233 @15 Named(
+                                    ty: 5230..5233 @17 Named(
                                         "Int",
                                     ),
                                     default_value: Some(
-                                        5236..5237 @15 Int(
+                                        5236..5237 @17 Int(
                                             5,
                                         ),
                                     ),
@@ -2629,12 +2629,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                5246..5274 @15 Directive {
+                                5246..5274 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5259..5273 @15 Argument {
+                                        5259..5273 @17 Argument {
                                             name: "graph",
-                                            value: 5266..5273 @15 Enum(
+                                            value: 5266..5273 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -2645,18 +2645,18 @@ Schema {
                     },
                     "topReviews": Component {
                         origin: Definition,
-                        node: 5277..5342 @15 FieldDefinition {
+                        node: 5277..5342 @17 FieldDefinition {
                             description: None,
                             name: "topReviews",
                             arguments: [
-                                5288..5302 @15 InputValueDefinition {
+                                5288..5302 @17 InputValueDefinition {
                                     description: None,
                                     name: "first",
-                                    ty: 5295..5298 @15 Named(
+                                    ty: 5295..5298 @17 Named(
                                         "Int",
                                     ),
                                     default_value: Some(
-                                        5301..5302 @15 Int(
+                                        5301..5302 @17 Int(
                                             5,
                                         ),
                                     ),
@@ -2669,12 +2669,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                5314..5342 @15 Directive {
+                                5314..5342 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5327..5341 @15 Argument {
+                                        5327..5341 @17 Argument {
                                             name: "graph",
-                                            value: 5334..5341 @15 Enum(
+                                            value: 5334..5341 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -2687,19 +2687,19 @@ Schema {
             },
         ),
         "Review": Object(
-            5346..5710 @15 ObjectType {
+            5346..5710 @17 ObjectType {
                 description: None,
                 name: "Review",
                 implements_interfaces: {},
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 5358..5386 @15 Directive {
+                        node: 5358..5386 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                5371..5385 @15 Argument {
+                                5371..5385 @17 Argument {
                                     name: "graph",
-                                    value: 5378..5385 @15 Enum(
+                                    value: 5378..5385 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
@@ -2708,18 +2708,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 5387..5425 @15 Directive {
+                        node: 5387..5425 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                5399..5413 @15 Argument {
+                                5399..5413 @17 Argument {
                                     name: "graph",
-                                    value: 5406..5413 @15 Enum(
+                                    value: 5406..5413 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
-                                5415..5424 @15 Argument {
+                                5415..5424 @17 Argument {
                                     name: "key",
-                                    value: 5420..5424 @15 String(
+                                    value: 5420..5424 @17 String(
                                         "id",
                                     ),
                                 },
@@ -2730,7 +2730,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 5430..5466 @15 FieldDefinition {
+                        node: 5430..5466 @17 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -2738,12 +2738,12 @@ Schema {
                                 "ID",
                             ),
                             directives: [
-                                5438..5466 @15 Directive {
+                                5438..5466 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5451..5465 @15 Argument {
+                                        5451..5465 @17 Argument {
                                             name: "graph",
-                                            value: 5458..5465 @15 Enum(
+                                            value: 5458..5465 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -2754,18 +2754,18 @@ Schema {
                     },
                     "body": Component {
                         origin: Definition,
-                        node: 5469..5535 @15 FieldDefinition {
+                        node: 5469..5535 @17 FieldDefinition {
                             description: None,
                             name: "body",
                             arguments: [
-                                5474..5497 @15 InputValueDefinition {
+                                5474..5497 @17 InputValueDefinition {
                                     description: None,
                                     name: "format",
-                                    ty: 5482..5489 @15 Named(
+                                    ty: 5482..5489 @17 Named(
                                         "Boolean",
                                     ),
                                     default_value: Some(
-                                        5492..5497 @15 Boolean(
+                                        5492..5497 @17 Boolean(
                                             false,
                                         ),
                                     ),
@@ -2776,12 +2776,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                5507..5535 @15 Directive {
+                                5507..5535 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5520..5534 @15 Argument {
+                                        5520..5534 @17 Argument {
                                             name: "graph",
-                                            value: 5527..5534 @15 Enum(
+                                            value: 5527..5534 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -2792,7 +2792,7 @@ Schema {
                     },
                     "author": Component {
                         origin: Definition,
-                        node: 5538..5601 @15 FieldDefinition {
+                        node: 5538..5601 @17 FieldDefinition {
                             description: None,
                             name: "author",
                             arguments: [],
@@ -2800,18 +2800,18 @@ Schema {
                                 "User",
                             ),
                             directives: [
-                                5551..5601 @15 Directive {
+                                5551..5601 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5564..5578 @15 Argument {
+                                        5564..5578 @17 Argument {
                                             name: "graph",
-                                            value: 5571..5578 @15 Enum(
+                                            value: 5571..5578 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
-                                        5580..5600 @15 Argument {
+                                        5580..5600 @17 Argument {
                                             name: "provides",
-                                            value: 5590..5600 @15 String(
+                                            value: 5590..5600 @17 String(
                                                 "username",
                                             ),
                                         },
@@ -2822,7 +2822,7 @@ Schema {
                     },
                     "product": Component {
                         origin: Definition,
-                        node: 5604..5649 @15 FieldDefinition {
+                        node: 5604..5649 @17 FieldDefinition {
                             description: None,
                             name: "product",
                             arguments: [],
@@ -2830,12 +2830,12 @@ Schema {
                                 "Product",
                             ),
                             directives: [
-                                5621..5649 @15 Directive {
+                                5621..5649 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5634..5648 @15 Argument {
+                                        5634..5648 @17 Argument {
                                             name: "graph",
-                                            value: 5641..5648 @15 Enum(
+                                            value: 5641..5648 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -2846,7 +2846,7 @@ Schema {
                     },
                     "metadata": Component {
                         origin: Definition,
-                        node: 5652..5708 @15 FieldDefinition {
+                        node: 5652..5708 @17 FieldDefinition {
                             description: None,
                             name: "metadata",
                             arguments: [],
@@ -2856,12 +2856,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                5680..5708 @15 Directive {
+                                5680..5708 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5693..5707 @15 Argument {
+                                        5693..5707 @17 Argument {
                                             name: "graph",
-                                            value: 5700..5707 @15 Enum(
+                                            value: 5700..5707 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -2874,19 +2874,19 @@ Schema {
             },
         ),
         "SMSAccount": Object(
-            5712..5852 @15 ObjectType {
+            5712..5852 @17 ObjectType {
                 description: None,
                 name: "SMSAccount",
                 implements_interfaces: {},
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 5728..5757 @15 Directive {
+                        node: 5728..5757 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                5741..5756 @15 Argument {
+                                5741..5756 @17 Argument {
                                     name: "graph",
-                                    value: 5748..5756 @15 Enum(
+                                    value: 5748..5756 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
@@ -2895,18 +2895,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 5758..5801 @15 Directive {
+                        node: 5758..5801 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                5770..5785 @15 Argument {
+                                5770..5785 @17 Argument {
                                     name: "graph",
-                                    value: 5777..5785 @15 Enum(
+                                    value: 5777..5785 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
-                                5787..5800 @15 Argument {
+                                5787..5800 @17 Argument {
                                     name: "key",
-                                    value: 5792..5800 @15 String(
+                                    value: 5792..5800 @17 String(
                                         "number",
                                     ),
                                 },
@@ -2917,7 +2917,7 @@ Schema {
                 fields: {
                     "number": Component {
                         origin: Definition,
-                        node: 5806..5850 @15 FieldDefinition {
+                        node: 5806..5850 @17 FieldDefinition {
                             description: None,
                             name: "number",
                             arguments: [],
@@ -2925,12 +2925,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                5821..5850 @15 Directive {
+                                5821..5850 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        5834..5849 @15 Argument {
+                                        5834..5849 @17 Argument {
                                             name: "graph",
-                                            value: 5841..5849 @15 Enum(
+                                            value: 5841..5849 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -2943,7 +2943,7 @@ Schema {
             },
         ),
         "Text": Object(
-            5854..5936 @15 ObjectType {
+            5854..5936 @17 ObjectType {
                 description: None,
                 name: "Text",
                 implements_interfaces: {
@@ -2956,7 +2956,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 5891..5904 @15 FieldDefinition {
+                        node: 5891..5904 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -2968,7 +2968,7 @@ Schema {
                     },
                     "attributes": Component {
                         origin: Definition,
-                        node: 5907..5934 @15 FieldDefinition {
+                        node: 5907..5934 @17 FieldDefinition {
                             description: None,
                             name: "attributes",
                             arguments: [],
@@ -2982,7 +2982,7 @@ Schema {
             },
         ),
         "TextAttributes": Object(
-            5938..5992 @15 ObjectType {
+            5938..5992 @17 ObjectType {
                 description: None,
                 name: "TextAttributes",
                 implements_interfaces: {},
@@ -2990,7 +2990,7 @@ Schema {
                 fields: {
                     "bold": Component {
                         origin: Definition,
-                        node: 5962..5975 @15 FieldDefinition {
+                        node: 5962..5975 @17 FieldDefinition {
                             description: None,
                             name: "bold",
                             arguments: [],
@@ -3002,7 +3002,7 @@ Schema {
                     },
                     "text": Component {
                         origin: Definition,
-                        node: 5978..5990 @15 FieldDefinition {
+                        node: 5978..5990 @17 FieldDefinition {
                             description: None,
                             name: "text",
                             arguments: [],
@@ -3016,7 +3016,7 @@ Schema {
             },
         ),
         "Thing": Union(
-            5994..6018 @15 UnionType {
+            5994..6018 @17 UnionType {
                 description: None,
                 name: "Thing",
                 directives: [],
@@ -3033,17 +3033,17 @@ Schema {
             },
         ),
         "UpdateReviewInput": InputObject(
-            6020..6072 @15 InputObjectType {
+            6020..6072 @17 InputObjectType {
                 description: None,
                 name: "UpdateReviewInput",
                 directives: [],
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 6048..6055 @15 InputValueDefinition {
+                        node: 6048..6055 @17 InputValueDefinition {
                             description: None,
                             name: "id",
-                            ty: 6052..6055 @15 NonNullNamed(
+                            ty: 6052..6055 @17 NonNullNamed(
                                 "ID",
                             ),
                             default_value: None,
@@ -3052,10 +3052,10 @@ Schema {
                     },
                     "body": Component {
                         origin: Definition,
-                        node: 6058..6070 @15 InputValueDefinition {
+                        node: 6058..6070 @17 InputValueDefinition {
                             description: None,
                             name: "body",
-                            ty: 6064..6070 @15 Named(
+                            ty: 6064..6070 @17 Named(
                                 "String",
                             ),
                             default_value: None,
@@ -3066,19 +3066,19 @@ Schema {
             },
         ),
         "User": Object(
-            6074..7017 @15 ObjectType {
+            6074..7017 @17 ObjectType {
                 description: None,
                 name: "User",
                 implements_interfaces: {},
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 6084..6113 @15 Directive {
+                        node: 6084..6113 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                6097..6112 @15 Argument {
+                                6097..6112 @17 Argument {
                                     name: "graph",
-                                    value: 6104..6112 @15 Enum(
+                                    value: 6104..6112 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
@@ -3087,18 +3087,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 6114..6153 @15 Directive {
+                        node: 6114..6153 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                6126..6141 @15 Argument {
+                                6126..6141 @17 Argument {
                                     name: "graph",
-                                    value: 6133..6141 @15 Enum(
+                                    value: 6133..6141 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
-                                6143..6152 @15 Argument {
+                                6143..6152 @17 Argument {
                                     name: "key",
-                                    value: 6148..6152 @15 String(
+                                    value: 6148..6152 @17 String(
                                         "id",
                                     ),
                                 },
@@ -3107,18 +3107,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 6154..6216 @15 Directive {
+                        node: 6154..6216 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                6166..6181 @15 Argument {
+                                6166..6181 @17 Argument {
                                     name: "graph",
-                                    value: 6173..6181 @15 Enum(
+                                    value: 6173..6181 @17 Enum(
                                         "ACCOUNTS",
                                     ),
                                 },
-                                6183..6215 @15 Argument {
+                                6183..6215 @17 Argument {
                                     name: "key",
-                                    value: 6188..6215 @15 String(
+                                    value: 6188..6215 @17 String(
                                         "username name{first last}",
                                     ),
                                 },
@@ -3127,18 +3127,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 6217..6257 @15 Directive {
+                        node: 6217..6257 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                6229..6245 @15 Argument {
+                                6229..6245 @17 Argument {
                                     name: "graph",
-                                    value: 6236..6245 @15 Enum(
+                                    value: 6236..6245 @17 Enum(
                                         "INVENTORY",
                                     ),
                                 },
-                                6247..6256 @15 Argument {
+                                6247..6256 @17 Argument {
                                     name: "key",
-                                    value: 6252..6256 @15 String(
+                                    value: 6252..6256 @17 String(
                                         "id",
                                     ),
                                 },
@@ -3147,18 +3147,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 6258..6296 @15 Directive {
+                        node: 6258..6296 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                6270..6284 @15 Argument {
+                                6270..6284 @17 Argument {
                                     name: "graph",
-                                    value: 6277..6284 @15 Enum(
+                                    value: 6277..6284 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
-                                6286..6295 @15 Argument {
+                                6286..6295 @17 Argument {
                                     name: "key",
-                                    value: 6291..6295 @15 String(
+                                    value: 6291..6295 @17 String(
                                         "id",
                                     ),
                                 },
@@ -3167,18 +3167,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 6297..6335 @15 Directive {
+                        node: 6297..6335 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                6309..6323 @15 Argument {
+                                6309..6323 @17 Argument {
                                     name: "graph",
-                                    value: 6316..6323 @15 Enum(
+                                    value: 6316..6323 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
-                                6325..6334 @15 Argument {
+                                6325..6334 @17 Argument {
                                     name: "key",
-                                    value: 6330..6334 @15 String(
+                                    value: 6330..6334 @17 String(
                                         "id",
                                     ),
                                 },
@@ -3189,7 +3189,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 6340..6377 @15 FieldDefinition {
+                        node: 6340..6377 @17 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -3197,12 +3197,12 @@ Schema {
                                 "ID",
                             ),
                             directives: [
-                                6348..6377 @15 Directive {
+                                6348..6377 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6361..6376 @15 Argument {
+                                        6361..6376 @17 Argument {
                                             name: "graph",
-                                            value: 6368..6376 @15 Enum(
+                                            value: 6368..6376 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -3213,7 +3213,7 @@ Schema {
                     },
                     "name": Component {
                         origin: Definition,
-                        node: 6380..6420 @15 FieldDefinition {
+                        node: 6380..6420 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -3221,12 +3221,12 @@ Schema {
                                 "Name",
                             ),
                             directives: [
-                                6391..6420 @15 Directive {
+                                6391..6420 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6404..6419 @15 Argument {
+                                        6404..6419 @17 Argument {
                                             name: "graph",
-                                            value: 6411..6419 @15 Enum(
+                                            value: 6411..6419 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -3237,7 +3237,7 @@ Schema {
                     },
                     "username": Component {
                         origin: Definition,
-                        node: 6423..6469 @15 FieldDefinition {
+                        node: 6423..6469 @17 FieldDefinition {
                             description: None,
                             name: "username",
                             arguments: [],
@@ -3245,12 +3245,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                6440..6469 @15 Directive {
+                                6440..6469 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6453..6468 @15 Argument {
+                                        6453..6468 @17 Argument {
                                             name: "graph",
-                                            value: 6460..6468 @15 Enum(
+                                            value: 6460..6468 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -3261,14 +3261,14 @@ Schema {
                     },
                     "birthDate": Component {
                         origin: Definition,
-                        node: 6472..6535 @15 FieldDefinition {
+                        node: 6472..6535 @17 FieldDefinition {
                             description: None,
                             name: "birthDate",
                             arguments: [
-                                6482..6496 @15 InputValueDefinition {
+                                6482..6496 @17 InputValueDefinition {
                                     description: None,
                                     name: "locale",
-                                    ty: 6490..6496 @15 Named(
+                                    ty: 6490..6496 @17 Named(
                                         "String",
                                     ),
                                     default_value: None,
@@ -3279,12 +3279,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                6506..6535 @15 Directive {
+                                6506..6535 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6519..6534 @15 Argument {
+                                        6519..6534 @17 Argument {
                                             name: "graph",
-                                            value: 6526..6534 @15 Enum(
+                                            value: 6526..6534 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -3295,7 +3295,7 @@ Schema {
                     },
                     "account": Component {
                         origin: Definition,
-                        node: 6538..6588 @15 FieldDefinition {
+                        node: 6538..6588 @17 FieldDefinition {
                             description: None,
                             name: "account",
                             arguments: [],
@@ -3303,12 +3303,12 @@ Schema {
                                 "AccountType",
                             ),
                             directives: [
-                                6559..6588 @15 Directive {
+                                6559..6588 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6572..6587 @15 Argument {
+                                        6572..6587 @17 Argument {
                                             name: "graph",
-                                            value: 6579..6587 @15 Enum(
+                                            value: 6579..6587 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -3319,7 +3319,7 @@ Schema {
                     },
                     "metadata": Component {
                         origin: Definition,
-                        node: 6591..6645 @15 FieldDefinition {
+                        node: 6591..6645 @17 FieldDefinition {
                             description: None,
                             name: "metadata",
                             arguments: [],
@@ -3329,12 +3329,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                6616..6645 @15 Directive {
+                                6616..6645 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6629..6644 @15 Argument {
+                                        6629..6644 @17 Argument {
                                             name: "graph",
-                                            value: 6636..6644 @15 Enum(
+                                            value: 6636..6644 @17 Enum(
                                                 "ACCOUNTS",
                                             ),
                                         },
@@ -3345,7 +3345,7 @@ Schema {
                     },
                     "goodDescription": Component {
                         origin: Definition,
-                        node: 6648..6738 @15 FieldDefinition {
+                        node: 6648..6738 @17 FieldDefinition {
                             description: None,
                             name: "goodDescription",
                             arguments: [],
@@ -3353,18 +3353,18 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                6673..6738 @15 Directive {
+                                6673..6738 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6686..6702 @15 Argument {
+                                        6686..6702 @17 Argument {
                                             name: "graph",
-                                            value: 6693..6702 @15 Enum(
+                                            value: 6693..6702 @17 Enum(
                                                 "INVENTORY",
                                             ),
                                         },
-                                        6704..6737 @15 Argument {
+                                        6704..6737 @17 Argument {
                                             name: "requires",
-                                            value: 6714..6737 @15 String(
+                                            value: 6714..6737 @17 String(
                                                 "metadata{description}",
                                             ),
                                         },
@@ -3375,7 +3375,7 @@ Schema {
                     },
                     "vehicle": Component {
                         origin: Definition,
-                        node: 6741..6786 @15 FieldDefinition {
+                        node: 6741..6786 @17 FieldDefinition {
                             description: None,
                             name: "vehicle",
                             arguments: [],
@@ -3383,12 +3383,12 @@ Schema {
                                 "Vehicle",
                             ),
                             directives: [
-                                6758..6786 @15 Directive {
+                                6758..6786 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6771..6785 @15 Argument {
+                                        6771..6785 @17 Argument {
                                             name: "graph",
-                                            value: 6778..6785 @15 Enum(
+                                            value: 6778..6785 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -3399,7 +3399,7 @@ Schema {
                     },
                     "thing": Component {
                         origin: Definition,
-                        node: 6789..6830 @15 FieldDefinition {
+                        node: 6789..6830 @17 FieldDefinition {
                             description: None,
                             name: "thing",
                             arguments: [],
@@ -3407,12 +3407,12 @@ Schema {
                                 "Thing",
                             ),
                             directives: [
-                                6802..6830 @15 Directive {
+                                6802..6830 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6815..6829 @15 Argument {
+                                        6815..6829 @17 Argument {
                                             name: "graph",
-                                            value: 6822..6829 @15 Enum(
+                                            value: 6822..6829 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -3423,7 +3423,7 @@ Schema {
                     },
                     "reviews": Component {
                         origin: Definition,
-                        node: 6833..6879 @15 FieldDefinition {
+                        node: 6833..6879 @17 FieldDefinition {
                             description: None,
                             name: "reviews",
                             arguments: [],
@@ -3433,12 +3433,12 @@ Schema {
                                 ),
                             ),
                             directives: [
-                                6851..6879 @15 Directive {
+                                6851..6879 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6864..6878 @15 Argument {
+                                        6864..6878 @17 Argument {
                                             name: "graph",
-                                            value: 6871..6878 @15 Enum(
+                                            value: 6871..6878 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -3449,7 +3449,7 @@ Schema {
                     },
                     "numberOfReviews": Component {
                         origin: Definition,
-                        node: 6882..6932 @15 FieldDefinition {
+                        node: 6882..6932 @17 FieldDefinition {
                             description: None,
                             name: "numberOfReviews",
                             arguments: [],
@@ -3457,12 +3457,12 @@ Schema {
                                 "Int",
                             ),
                             directives: [
-                                6904..6932 @15 Directive {
+                                6904..6932 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6917..6931 @15 Argument {
+                                        6917..6931 @17 Argument {
                                             name: "graph",
-                                            value: 6924..6931 @15 Enum(
+                                            value: 6924..6931 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
@@ -3473,7 +3473,7 @@ Schema {
                     },
                     "goodAddress": Component {
                         origin: Definition,
-                        node: 6935..7015 @15 FieldDefinition {
+                        node: 6935..7015 @17 FieldDefinition {
                             description: None,
                             name: "goodAddress",
                             arguments: [],
@@ -3481,18 +3481,18 @@ Schema {
                                 "Boolean",
                             ),
                             directives: [
-                                6956..7015 @15 Directive {
+                                6956..7015 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        6969..6983 @15 Argument {
+                                        6969..6983 @17 Argument {
                                             name: "graph",
-                                            value: 6976..6983 @15 Enum(
+                                            value: 6976..6983 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
-                                        6985..7014 @15 Argument {
+                                        6985..7014 @17 Argument {
                                             name: "requires",
-                                            value: 6995..7014 @15 String(
+                                            value: 6995..7014 @17 String(
                                                 "metadata{address}",
                                             ),
                                         },
@@ -3505,7 +3505,7 @@ Schema {
             },
         ),
         "UserMetadata": Object(
-            7019..7095 @15 ObjectType {
+            7019..7095 @17 ObjectType {
                 description: None,
                 name: "UserMetadata",
                 implements_interfaces: {},
@@ -3513,7 +3513,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 7041..7053 @15 FieldDefinition {
+                        node: 7041..7053 @17 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -3525,7 +3525,7 @@ Schema {
                     },
                     "address": Component {
                         origin: Definition,
-                        node: 7056..7071 @15 FieldDefinition {
+                        node: 7056..7071 @17 FieldDefinition {
                             description: None,
                             name: "address",
                             arguments: [],
@@ -3537,7 +3537,7 @@ Schema {
                     },
                     "description": Component {
                         origin: Definition,
-                        node: 7074..7093 @15 FieldDefinition {
+                        node: 7074..7093 @17 FieldDefinition {
                             description: None,
                             name: "description",
                             arguments: [],
@@ -3551,7 +3551,7 @@ Schema {
             },
         ),
         "Van": Object(
-            7097..7444 @15 ObjectType {
+            7097..7444 @17 ObjectType {
                 description: None,
                 name: "Van",
                 implements_interfaces: {
@@ -3563,12 +3563,12 @@ Schema {
                 directives: [
                     Component {
                         origin: Definition,
-                        node: 7125..7153 @15 Directive {
+                        node: 7125..7153 @17 Directive {
                             name: "join__owner",
                             arguments: [
-                                7138..7152 @15 Argument {
+                                7138..7152 @17 Argument {
                                     name: "graph",
-                                    value: 7145..7152 @15 Enum(
+                                    value: 7145..7152 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
@@ -3577,18 +3577,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 7154..7192 @15 Directive {
+                        node: 7154..7192 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                7166..7180 @15 Argument {
+                                7166..7180 @17 Argument {
                                     name: "graph",
-                                    value: 7173..7180 @15 Enum(
+                                    value: 7173..7180 @17 Enum(
                                         "PRODUCT",
                                     ),
                                 },
-                                7182..7191 @15 Argument {
+                                7182..7191 @17 Argument {
                                     name: "key",
-                                    value: 7187..7191 @15 String(
+                                    value: 7187..7191 @17 String(
                                         "id",
                                     ),
                                 },
@@ -3597,18 +3597,18 @@ Schema {
                     },
                     Component {
                         origin: Definition,
-                        node: 7193..7231 @15 Directive {
+                        node: 7193..7231 @17 Directive {
                             name: "join__type",
                             arguments: [
-                                7205..7219 @15 Argument {
+                                7205..7219 @17 Argument {
                                     name: "graph",
-                                    value: 7212..7219 @15 Enum(
+                                    value: 7212..7219 @17 Enum(
                                         "REVIEWS",
                                     ),
                                 },
-                                7221..7230 @15 Argument {
+                                7221..7230 @17 Argument {
                                     name: "key",
-                                    value: 7226..7230 @15 String(
+                                    value: 7226..7230 @17 String(
                                         "id",
                                     ),
                                 },
@@ -3619,7 +3619,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 7236..7276 @15 FieldDefinition {
+                        node: 7236..7276 @17 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -3627,12 +3627,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                7248..7276 @15 Directive {
+                                7248..7276 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        7261..7275 @15 Argument {
+                                        7261..7275 @17 Argument {
                                             name: "graph",
-                                            value: 7268..7275 @15 Enum(
+                                            value: 7268..7275 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -3643,7 +3643,7 @@ Schema {
                     },
                     "description": Component {
                         origin: Definition,
-                        node: 7279..7327 @15 FieldDefinition {
+                        node: 7279..7327 @17 FieldDefinition {
                             description: None,
                             name: "description",
                             arguments: [],
@@ -3651,12 +3651,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                7299..7327 @15 Directive {
+                                7299..7327 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        7312..7326 @15 Argument {
+                                        7312..7326 @17 Argument {
                                             name: "graph",
-                                            value: 7319..7326 @15 Enum(
+                                            value: 7319..7326 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -3667,7 +3667,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 7330..7372 @15 FieldDefinition {
+                        node: 7330..7372 @17 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -3675,12 +3675,12 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                7344..7372 @15 Directive {
+                                7344..7372 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        7357..7371 @15 Argument {
+                                        7357..7371 @17 Argument {
                                             name: "graph",
-                                            value: 7364..7371 @15 Enum(
+                                            value: 7364..7371 @17 Enum(
                                                 "PRODUCT",
                                             ),
                                         },
@@ -3691,7 +3691,7 @@ Schema {
                     },
                     "retailPrice": Component {
                         origin: Definition,
-                        node: 7375..7442 @15 FieldDefinition {
+                        node: 7375..7442 @17 FieldDefinition {
                             description: None,
                             name: "retailPrice",
                             arguments: [],
@@ -3699,18 +3699,18 @@ Schema {
                                 "String",
                             ),
                             directives: [
-                                7395..7442 @15 Directive {
+                                7395..7442 @17 Directive {
                                     name: "join__field",
                                     arguments: [
-                                        7408..7422 @15 Argument {
+                                        7408..7422 @17 Argument {
                                             name: "graph",
-                                            value: 7415..7422 @15 Enum(
+                                            value: 7415..7422 @17 Enum(
                                                 "REVIEWS",
                                             ),
                                         },
-                                        7424..7441 @15 Argument {
+                                        7424..7441 @17 Argument {
                                             name: "requires",
-                                            value: 7434..7441 @15 String(
+                                            value: 7434..7441 @17 String(
                                                 "price",
                                             ),
                                         },
@@ -3723,7 +3723,7 @@ Schema {
             },
         ),
         "Vehicle": Interface(
-            7446..7541 @15 InterfaceType {
+            7446..7541 @17 InterfaceType {
                 description: None,
                 name: "Vehicle",
                 implements_interfaces: {},
@@ -3731,7 +3731,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 7468..7479 @15 FieldDefinition {
+                        node: 7468..7479 @17 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -3743,7 +3743,7 @@ Schema {
                     },
                     "description": Component {
                         origin: Definition,
-                        node: 7482..7501 @15 FieldDefinition {
+                        node: 7482..7501 @17 FieldDefinition {
                             description: None,
                             name: "description",
                             arguments: [],
@@ -3755,7 +3755,7 @@ Schema {
                     },
                     "price": Component {
                         origin: Definition,
-                        node: 7504..7517 @15 FieldDefinition {
+                        node: 7504..7517 @17 FieldDefinition {
                             description: None,
                             name: "price",
                             arguments: [],
@@ -3767,7 +3767,7 @@ Schema {
                     },
                     "retailPrice": Component {
                         origin: Definition,
-                        node: 7520..7539 @15 FieldDefinition {
+                        node: 7520..7539 @17 FieldDefinition {
                             description: None,
                             name: "retailPrice",
                             arguments: [],
@@ -3784,11 +3784,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        15: SourceFile {
+        17: SourceFile {
             path: "0015_supergraph.graphql",
             source_text: "schema\n@core(feature: \"https://specs.apollo.dev/core/v0.1\"),\n@core(feature: \"https://specs.apollo.dev/join/v0.1\")\n{\n  query: Query\n  mutation: Mutation\n}\n\ndirective @core(feature: String!) repeatable on SCHEMA\ndirective @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION\ndirective @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on OBJECT | INTERFACE\ndirective @join__owner(graph: join__Graph!) on OBJECT | INTERFACE\ndirective @join__graph(name: String!, url: String!) on ENUM_VALUE\ndirective @stream on FIELD\ndirective @transform(from: String!) on FIELD\n\nunion AccountType = PasswordAccount | SMSAccount\n\ntype Amazon {\n  referrer: String\n}\n\nunion Body = Image | Text\n\ntype Book implements Product\n@join__owner(graph: BOOKS)\n@join__type(graph: BOOKS, key: \"isbn\")\n@join__type(graph: INVENTORY, key: \"isbn\")\n@join__type(graph: PRODUCT, key: \"isbn\")\n@join__type(graph: REVIEWS, key: \"isbn\")\n{\n  isbn: String! @join__field(graph: BOOKS)\n  title: String @join__field(graph: BOOKS)\n  year: Int @join__field(graph: BOOKS)\n  similarBooks: [Book]! @join__field(graph: BOOKS)\n  metadata: [MetadataOrError] @join__field(graph: BOOKS)\n  inStock: Boolean @join__field(graph: INVENTORY)\n  isCheckedOut: Boolean @join__field(graph: INVENTORY)\n  upc: String! @join__field(graph: PRODUCT)\n  sku: String! @join__field(graph: PRODUCT)\n  name(delimeter: String = \" \"): String @join__field(graph: PRODUCT, requires: \"title year\")\n  price: String @join__field(graph: PRODUCT)\n  details: ProductDetailsBook @join__field(graph: PRODUCT)\n  reviews: [Review] @join__field(graph: REVIEWS)\n  relatedReviews: [Review!]! @join__field(graph: REVIEWS, requires: \"similarBooks{isbn}\")\n}\n\nunion Brand = Ikea | Amazon\n\ntype Car implements Vehicle\n@join__owner(graph: PRODUCT)\n@join__type(graph: PRODUCT, key: \"id\")\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: String! @join__field(graph: PRODUCT)\n  description: String @join__field(graph: PRODUCT)\n  price: String @join__field(graph: PRODUCT)\n  retailPrice: String @join__field(graph: REVIEWS, requires: \"price\")\n}\n\ntype Error {\n  code: Int\n  message: String\n}\n\ntype Furniture implements Product\n@join__owner(graph: PRODUCT)\n@join__type(graph: PRODUCT, key: \"upc\")\n@join__type(graph: PRODUCT, key: \"sku\")\n@join__type(graph: INVENTORY, key: \"sku\")\n@join__type(graph: REVIEWS, key: \"upc\")\n{\n  upc: String! @join__field(graph: PRODUCT)\n  sku: String! @join__field(graph: PRODUCT)\n  name: String @join__field(graph: PRODUCT)\n  price: String @join__field(graph: PRODUCT)\n  brand: Brand @join__field(graph: PRODUCT)\n  metadata: [MetadataOrError] @join__field(graph: PRODUCT)\n  details: ProductDetailsFurniture @join__field(graph: PRODUCT)\n  inStock: Boolean @join__field(graph: INVENTORY)\n  isHeavy: Boolean @join__field(graph: INVENTORY)\n  reviews: [Review] @join__field(graph: REVIEWS)\n}\n\ntype Ikea {\n  asile: Int\n}\n\ntype Image implements NamedObject {\n  name: String!\n  attributes: ImageAttributes!\n}\n\ntype ImageAttributes {\n  url: String!\n}\n\nscalar join__FieldSet @specifiedBy(url: \"https://spec.graphql.org/\")\n\nenum join__Graph {\nACCOUNTS @join__graph(name: \"accounts\" url: \"\")\nBOOKS @join__graph(name: \"books\" url: \"\")\nDOCUMENTS @join__graph(name: \"documents\" url: \"\")\nINVENTORY @join__graph(name: \"inventory\" url: \"\")\nPRODUCT @join__graph(name: \"product\" url: \"\")\nREVIEWS @join__graph(name: \"reviews\" url: \"\")\n}\n\ntype KeyValue {\n  key: String!\n  value: String!\n}\n\ntype Library\n@join__owner(graph: BOOKS)\n@join__type(graph: BOOKS, key: \"id\")\n@join__type(graph: ACCOUNTS, key: \"id\")\n{\n  id: ID! @join__field(graph: BOOKS)\n  name: String @join__field(graph: BOOKS)\n  userAccount(id: ID! = 1): User @join__field(graph: ACCOUNTS, requires: \"name\")\n}\n\nunion MetadataOrError = KeyValue | Error\n\ntype Mutation {\n  login(username: String!, password: String!): User @join__field(graph: ACCOUNTS)\n  reviewProduct(upc: String!, body: String!): Product @join__field(graph: REVIEWS)\n  updateReview(review: UpdateReviewInput!): Review @join__field(graph: REVIEWS)\n  deleteReview(id: ID!): Boolean @join__field(graph: REVIEWS)\n}\n\ntype Name {\n  first: String\n  last: String\n}\n\ninterface NamedObject {\n  name: String!\n}\n\ntype PasswordAccount\n@join__owner(graph: ACCOUNTS)\n@join__type(graph: ACCOUNTS, key: \"email\")\n{\n  email: String! @join__field(graph: ACCOUNTS)\n}\n\ninterface Product {\n  upc: String!\n  sku: String!\n  name: String\n  price: String\n  details: ProductDetails\n  inStock: Boolean\n  reviews: [Review]\n}\n\ninterface ProductDetails {\n  country: String\n}\n\ntype ProductDetailsBook implements ProductDetails {\n  country: String\n  pages: Int\n}\n\ntype ProductDetailsFurniture implements ProductDetails {\n  country: String\n  color: String\n}\n\ntype Query {\n  user(id: ID!): User @join__field(graph: ACCOUNTS)\n  me: User @join__field(graph: ACCOUNTS)\n  book(isbn: String!): Book @join__field(graph: BOOKS)\n  books: [Book] @join__field(graph: BOOKS)\n  library(id: ID!): Library @join__field(graph: BOOKS)\n  body: Body! @join__field(graph: DOCUMENTS)\n  product(upc: String!): Product @join__field(graph: PRODUCT)\n  vehicle(id: String!): Vehicle @join__field(graph: PRODUCT)\n  topProducts(first: Int = 5): [Product] @join__field(graph: PRODUCT)\n  topCars(first: Int = 5): [Car] @join__field(graph: PRODUCT)\n  topReviews(first: Int = 5): [Review] @join__field(graph: REVIEWS)\n}\n\ntype Review\n@join__owner(graph: REVIEWS)\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: ID! @join__field(graph: REVIEWS)\n  body(format: Boolean = false): String @join__field(graph: REVIEWS)\n  author: User @join__field(graph: REVIEWS, provides: \"username\")\n  product: Product @join__field(graph: REVIEWS)\n  metadata: [MetadataOrError] @join__field(graph: REVIEWS)\n}\n\ntype SMSAccount\n@join__owner(graph: ACCOUNTS)\n@join__type(graph: ACCOUNTS, key: \"number\")\n{\n  number: String @join__field(graph: ACCOUNTS)\n}\n\ntype Text implements NamedObject {\n  name: String!\n  attributes: TextAttributes!\n}\n\ntype TextAttributes {\n  bold: Boolean\n  text: String\n}\n\nunion Thing = Car | Ikea\n\ninput UpdateReviewInput {\n  id: ID!\n  body: String\n}\n\ntype User\n@join__owner(graph: ACCOUNTS)\n@join__type(graph: ACCOUNTS, key: \"id\")\n@join__type(graph: ACCOUNTS, key: \"username name{first last}\")\n@join__type(graph: INVENTORY, key: \"id\")\n@join__type(graph: PRODUCT, key: \"id\")\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: ID! @join__field(graph: ACCOUNTS)\n  name: Name @join__field(graph: ACCOUNTS)\n  username: String @join__field(graph: ACCOUNTS)\n  birthDate(locale: String): String @join__field(graph: ACCOUNTS)\n  account: AccountType @join__field(graph: ACCOUNTS)\n  metadata: [UserMetadata] @join__field(graph: ACCOUNTS)\n  goodDescription: Boolean @join__field(graph: INVENTORY, requires: \"metadata{description}\")\n  vehicle: Vehicle @join__field(graph: PRODUCT)\n  thing: Thing @join__field(graph: PRODUCT)\n  reviews: [Review] @join__field(graph: REVIEWS)\n  numberOfReviews: Int! @join__field(graph: REVIEWS)\n  goodAddress: Boolean @join__field(graph: REVIEWS, requires: \"metadata{address}\")\n}\n\ntype UserMetadata {\n  name: String\n  address: String\n  description: String\n}\n\ntype Van implements Vehicle\n@join__owner(graph: PRODUCT)\n@join__type(graph: PRODUCT, key: \"id\")\n@join__type(graph: REVIEWS, key: \"id\")\n{\n  id: String! @join__field(graph: PRODUCT)\n  description: String @join__field(graph: PRODUCT)\n  price: String @join__field(graph: PRODUCT)\n  retailPrice: String @join__field(graph: REVIEWS, requires: \"price\")\n}\n\ninterface Vehicle {\n  id: String!\n  description: String\n  price: String\n  retailPrice: String\n}",
         },

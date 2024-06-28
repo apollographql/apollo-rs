@@ -1,15 +1,15 @@
 Schema {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        3: SourceFile {
+        5: SourceFile {
             path: "0003_schema_definition_with_custom_operation_types.graphql",
             source_text: "schema {\n  query: customPetQuery,\n  subscription: customPetSubscription\n  mutation: customPetMutation\n}\n\nenum PetType {\n  CAT,\n  DOG,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}\n\ntype customPetSubscription {\n  changeInPetHousehold: Result\n}\n\ntype customPetMutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n",
         },
     },
-    schema_definition: 0..103 @3 SchemaDefinition {
+    schema_definition: 0..103 @5 SchemaDefinition {
         description: None,
         directives: [],
         query: Some(
@@ -52,14 +52,14 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "PetType": Enum(
-            105..135 @3 EnumType {
+            105..135 @5 EnumType {
                 description: None,
                 name: "PetType",
                 directives: [],
                 values: {
                     "CAT": Component {
                         origin: Definition,
-                        node: 122..125 @3 EnumValueDefinition {
+                        node: 122..125 @5 EnumValueDefinition {
                             description: None,
                             value: "CAT",
                             directives: [],
@@ -67,7 +67,7 @@ Schema {
                     },
                     "DOG": Component {
                         origin: Definition,
-                        node: 129..132 @3 EnumValueDefinition {
+                        node: 129..132 @5 EnumValueDefinition {
                             description: None,
                             value: "DOG",
                             directives: [],
@@ -77,7 +77,7 @@ Schema {
             },
         ),
         "customPetQuery": Object(
-            137..187 @3 ObjectType {
+            137..187 @5 ObjectType {
                 description: None,
                 name: "customPetQuery",
                 implements_interfaces: {},
@@ -85,7 +85,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 161..173 @3 FieldDefinition {
+                        node: 161..173 @5 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -97,7 +97,7 @@ Schema {
                     },
                     "age": Component {
                         origin: Definition,
-                        node: 177..185 @3 FieldDefinition {
+                        node: 177..185 @5 FieldDefinition {
                             description: None,
                             name: "age",
                             arguments: [],
@@ -111,7 +111,7 @@ Schema {
             },
         ),
         "customPetSubscription": Object(
-            189..250 @3 ObjectType {
+            189..250 @5 ObjectType {
                 description: None,
                 name: "customPetSubscription",
                 implements_interfaces: {},
@@ -119,7 +119,7 @@ Schema {
                 fields: {
                     "changeInPetHousehold": Component {
                         origin: Definition,
-                        node: 220..248 @3 FieldDefinition {
+                        node: 220..248 @5 FieldDefinition {
                             description: None,
                             name: "changeInPetHousehold",
                             arguments: [],
@@ -133,7 +133,7 @@ Schema {
             },
         ),
         "customPetMutation": Object(
-            252..330 @3 ObjectType {
+            252..330 @5 ObjectType {
                 description: None,
                 name: "customPetMutation",
                 implements_interfaces: {},
@@ -141,23 +141,23 @@ Schema {
                 fields: {
                     "addPet": Component {
                         origin: Definition,
-                        node: 279..328 @3 FieldDefinition {
+                        node: 279..328 @5 FieldDefinition {
                             description: None,
                             name: "addPet",
                             arguments: [
-                                287..300 @3 InputValueDefinition {
+                                287..300 @5 InputValueDefinition {
                                     description: None,
                                     name: "name",
-                                    ty: 293..300 @3 NonNullNamed(
+                                    ty: 293..300 @5 NonNullNamed(
                                         "String",
                                     ),
                                     default_value: None,
                                     directives: [],
                                 },
-                                302..318 @3 InputValueDefinition {
+                                302..318 @5 InputValueDefinition {
                                     description: None,
                                     name: "petType",
-                                    ty: 311..318 @3 Named(
+                                    ty: 311..318 @5 Named(
                                         "PetType",
                                     ),
                                     default_value: None,
@@ -174,7 +174,7 @@ Schema {
             },
         ),
         "Result": Object(
-            332..360 @3 ObjectType {
+            332..360 @5 ObjectType {
                 description: None,
                 name: "Result",
                 implements_interfaces: {},
@@ -182,7 +182,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 348..358 @3 FieldDefinition {
+                        node: 348..358 @5 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -199,11 +199,11 @@ Schema {
 }
 ExecutableDocument {
     sources: {
-        -1: SourceFile {
+        1: SourceFile {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        3: SourceFile {
+        5: SourceFile {
             path: "0003_schema_definition_with_custom_operation_types.graphql",
             source_text: "schema {\n  query: customPetQuery,\n  subscription: customPetSubscription\n  mutation: customPetMutation\n}\n\nenum PetType {\n  CAT,\n  DOG,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}\n\ntype customPetSubscription {\n  changeInPetHousehold: Result\n}\n\ntype customPetMutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n",
         },

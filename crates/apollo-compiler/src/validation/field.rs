@@ -1,11 +1,15 @@
-use crate::coordinate::{FieldArgumentCoordinate, TypeAttributeCoordinate};
-use crate::validation::diagnostics::DiagnosticData;
-use crate::{ast, executable, schema, ExecutableDocument, Node};
-
-use super::operation::OperationValidationConfig;
+use crate::ast;
 use crate::ast::Name;
+use crate::coordinate::FieldArgumentCoordinate;
+use crate::coordinate::TypeAttributeCoordinate;
+use crate::executable;
+use crate::schema;
 use crate::schema::Component;
+use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
+use crate::validation::OperationValidationContext;
+use crate::ExecutableDocument;
+use crate::Node;
 use indexmap::IndexMap;
 
 pub(crate) fn validate_field(
@@ -14,13 +18,13 @@ pub(crate) fn validate_field(
     // May be None if a parent selection was invalid
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     field: &Node<executable::Field>,
-    context: OperationValidationConfig<'_>,
+    context: OperationValidationContext<'_>,
 ) {
     // First do all the validation that we can without knowing the type of the field.
 
     super::directive::validate_directives(
         diagnostics,
-        context.schema,
+        context.schema(),
         field.directives.iter(),
         ast::DirectiveLocation::Field,
         context.variables,
@@ -106,7 +110,15 @@ pub(crate) fn validate_field(
             }
         }
 
-        if validate_leaf_field_selection(diagnostics, schema, field, &field_definition.ty).is_ok() {
+        if validate_leaf_field_selection(
+            diagnostics,
+            schema,
+            against_type,
+            field,
+            &field_definition.ty,
+        )
+        .is_ok()
+        {
             super::selection::validate_selection_set(
                 diagnostics,
                 document,
@@ -177,6 +189,7 @@ pub(crate) fn validate_field_definitions(
 pub(crate) fn validate_leaf_field_selection(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    parent_type: &ast::NamedType,
     field: &Node<executable::Field>,
     field_type: &ast::Type,
 ) -> Result<(), ()> {
@@ -202,9 +215,10 @@ pub(crate) fn validate_leaf_field_selection(
             field.location(),
             DiagnosticData::MissingSubselection {
                 coordinate: TypeAttributeCoordinate {
-                    ty: tname.clone(),
+                    ty: parent_type.clone(),
                     attribute: fname.clone(),
                 },
+                output_type: tname.clone(),
                 describe_type: type_def.describe(),
             },
         );
