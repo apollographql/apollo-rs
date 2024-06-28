@@ -185,7 +185,7 @@ impl Name {
         }
     }
 
-    /// If this string contains a location, convert it to starting line and column numbers
+    /// If this string contains a location, convert it to line and column numbers
     pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }

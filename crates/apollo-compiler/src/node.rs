@@ -108,8 +108,7 @@ impl<T: ?Sized> Node<T> {
         self.location().map(|l| l.file_id()) == Some(FileId::BUILT_IN)
     }
 
-    /// If this node contains a location, convert it to the line and column numbers of the
-    /// start of the node.
+    /// If this node contains a location, convert it to the line and column numbers.
     pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
