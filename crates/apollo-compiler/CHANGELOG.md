@@ -28,8 +28,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * `apollo_compiler::executable::Name`
   These other paths emitted deprecation warnings in 1.0.0-beta.18 and are now removed.
 
+- **Move operations of an `ExecutableDocument` into a new struct - [SimonSapin] in [pull/879].**
+  * `doc.anonymous_operation` → `doc.operations.anonymous`
+  * `doc.named_operations` → `doc.operations.named`
+  * `doc.get_operation()` → `doc.operations.get()`
+  * `doc.get_operation_mut()` → `doc.operations.get_mut()`
+  * `doc.insert_operation()` → `doc.operations.insert()`
+  * `doc.all_operations()` → `doc.operations.iter()`
+  This change makes `get_mut()` borrow only `doc.operations` instead of the entire document,
+  making it possible to also mutate `doc.fragments` during that mutable borrow.
+
 [SimonSapin]: https://github.com/SimonSapin
 [pull/877]: https://github.com/apollographql/apollo-rs/pull/877
+[pull/879]: https://github.com/apollographql/apollo-rs/pull/879
 
 
 # [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27

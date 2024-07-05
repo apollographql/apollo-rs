@@ -27,7 +27,7 @@ fn test() {
     let introspect = |query, variables: JsonMap| {
         let document =
             ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
-        let operation = document.get_operation(None).unwrap();
+        let operation = document.operations.get(None).unwrap();
         let variables = coerce_variable_values(&schema, operation, &variables).unwrap();
         let response = SchemaIntrospectionQuery::split_and_execute(
             &schema,

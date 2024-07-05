@@ -36,7 +36,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &schema,
         &query,
         query
-            .get_operation(None)
+            .operations
+            .get(None)
             .map_err(|_| "Provided query must be an anonymous introspection query")?,
         Valid::assume_valid_ref(&variables),
         |_| panic!("Provided query must not have non-introspection elements"),

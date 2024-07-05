@@ -232,11 +232,10 @@ fn make_single_operation_document(
 ) -> Valid<ExecutableDocument> {
     let mut new_document = ExecutableDocument {
         sources: document.sources.clone(),
-        anonymous_operation: None,
-        named_operations: IndexMap::new(),
+        operations: Default::default(),
         fragments,
     };
-    new_document.insert_operation(new_operation);
+    new_document.operations.insert(new_operation);
     if cfg!(debug_assertions) {
         new_document
             .validate(schema)

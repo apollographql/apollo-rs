@@ -68,13 +68,13 @@ type User {
 
     let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
-    let operation_names: Vec<_> = doc.named_operations.keys().map(|n| n.as_str()).collect();
+    let operation_names: Vec<_> = doc.operations.named.keys().map(|n| n.as_str()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
 
     let fragment_names: Vec<_> = doc.fragments.keys().map(|n| n.as_str()).collect();
     assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
-    let result = doc.get_operation(Some("ExampleQuery"));
+    let result = doc.operations.get(Some("ExampleQuery"));
     let operation_variables = match &result {
         Ok(op) => op.variables.iter().map(|var| var.name.as_str()).collect(),
         Err(_) => Vec::new(),
@@ -107,7 +107,7 @@ type Query {
 
     let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
-    let op = doc.get_operation(Some("ExampleQuery")).unwrap();
+    let op = doc.operations.get(Some("ExampleQuery")).unwrap();
     let field_names: Vec<&str> = op.selection_set.fields().map(|f| f.name.as_str()).collect();
     assert_eq!(
         field_names,
@@ -154,7 +154,7 @@ union Union = Concrete
 
     let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
-    let op = doc.get_operation(Some("ExampleQuery")).unwrap();
+    let op = doc.operations.get(Some("ExampleQuery")).unwrap();
     let fields: Vec<_> = op.selection_set.fields().collect();
 
     let interface_field = fields.iter().find(|f| f.name == "interface").unwrap();
@@ -247,7 +247,7 @@ enum join__Graph {
     let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
 
     // Get the types of the two top level fields - topProducts and size
-    let get_product_op = doc.get_operation(Some("getProduct")).unwrap();
+    let get_product_op = doc.operations.get(Some("getProduct")).unwrap();
     let op_fields: Vec<_> = get_product_op.selection_set.fields().collect();
     let name_field_def: Vec<_> = op_fields
         .iter()
@@ -358,7 +358,7 @@ fragment vipCustomer on User {
     let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
     let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
 
-    let op = doc.get_operation(Some("getProduct")).unwrap();
+    let op = doc.operations.get(Some("getProduct")).unwrap();
     let fragment_in_op: Vec<_> = op
         .selection_set
         .fields()
@@ -804,7 +804,8 @@ scalar URL
                         ExecutableDocument::parse_and_validate(&schema, query, "query.graphql")
                             .unwrap();
                     let selections = &document
-                        .anonymous_operation
+                        .operations
+                        .anonymous
                         .as_ref()?
                         .selection_set
                         .selections;
