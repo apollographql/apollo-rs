@@ -741,7 +741,7 @@ impl Convert for cst::Value {
 }
 
 impl Convert for cst::ObjectField {
-    type Target = (ast::Name, Node<ast::Value>);
+    type Target = (crate::Name, Node<ast::Value>);
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         let name = self.name()?.convert(file_id)?;
@@ -765,7 +765,7 @@ impl Convert for cst::Name {
         let loc = NodeLocation::new(file_id, self.syntax());
         let token = &self.syntax().first_token()?;
         let str = token.text();
-        debug_assert!(ast::Name::is_valid_syntax(str));
+        debug_assert!(crate::Name::is_valid_syntax(str));
         Some(crate::Name::new(str).ok()?.with_location(loc))
     }
 }

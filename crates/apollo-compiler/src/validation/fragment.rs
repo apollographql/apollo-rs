@@ -1,5 +1,4 @@
 use crate::ast;
-use crate::ast::Name;
 use crate::ast::NamedType;
 use crate::executable;
 use crate::schema;
@@ -12,6 +11,7 @@ use crate::validation::OperationValidationContext;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
 use crate::ExecutableDocument;
+use crate::Name;
 use crate::Node;
 use std::borrow::Cow;
 use std::collections::HashMap;
