@@ -31,24 +31,19 @@ use std::ops::RangeInclusive;
 
 /// Uses a byte sequence (typically provided by a fuzzer) as a source of entropy
 /// to generate various arbitrary values.
-pub struct Entropy<'a> {
-    bytes: std::slice::Iter<'a, u8>,
+pub struct Entropy<'arbitrary_bytes> {
+    bytes: std::slice::Iter<'arbitrary_bytes, u8>,
 }
 
-impl<'a> Entropy<'a> {
+impl<'arbitrary_bytes> Entropy<'arbitrary_bytes> {
     /// Create a new source of entropy from bytes typically
     /// [provided by cargo-fuzz](https://rust-fuzz.github.io/book/cargo-fuzz/tutorial.html).
     ///
     /// Bytes are assumed to have a mostly uniform distribution in the `0..=255` range.
-    pub fn new(arbitrary_bytes: &'a [u8]) -> Self {
+    pub fn new(arbitrary_bytes: &'arbitrary_bytes [u8]) -> Self {
         Self {
             bytes: arbitrary_bytes.iter(),
         }
-    }
-
-    /// Returns the number of remaining bytes of entropy
-    pub fn len(&self) -> usize {
-        self.bytes.len()
     }
 
     /// Returns whether entropy has been exhausted
@@ -56,8 +51,13 @@ impl<'a> Entropy<'a> {
         self.bytes.len() == 0
     }
 
+    /// Take all remaining entropy. After this, [`Self::is_empty`] return true.
+    pub fn take_all(&mut self) {
+        self.bytes = Default::default()
+    }
+
     /// Generates an arbitary byte, or zero if entropy is exhausted.
-    pub fn byte(&mut self) -> u8 {
+    pub fn u8(&mut self) -> u8 {
         if let Some(&b) = self.bytes.next() {
             b
         } else {
@@ -65,9 +65,23 @@ impl<'a> Entropy<'a> {
         }
     }
 
+    pub fn u8_array<const N: usize>(&mut self) -> [u8; N] {
+        std::array::from_fn(|_| self.u8())
+    }
+
+    pub fn i32(&mut self) -> i32 {
+        i32::from_le_bytes(self.u8_array())
+    }
+
+    pub fn f64(&mut self) -> f64 {
+        f64::from_le_bytes(self.u8_array())
+    }
+
     /// Generates an arbitrary boolean, or `false` if entropy is exhausted.
     ///
-    /// If used in a loop break condition,
+    /// Generally, code paths that cause more entropy to be consumed
+    /// should be taken when this method returns `true`.
+    /// If used in a loop break condition for example,
     /// make sure to use this boolean as “keep going?” instead of “break?”
     /// so that the loop stops when entropy is exhausted.
     ///
@@ -86,7 +100,7 @@ impl<'a> Entropy<'a> {
     /// To make a similar loop that runs more than one iteration on average
     /// we need “keep going” boolean conditions with higher probability.
     pub fn bool(&mut self) -> bool {
-        (self.byte() & 1) == 1
+        (self.u8() & 1) == 1
     }
 
     /// Generates an arbitrary index in `0..collection_len`, or zero if entropy is exhausted.
@@ -100,6 +114,19 @@ impl<'a> Entropy<'a> {
     pub fn index(&mut self, collection_len: usize) -> Option<usize> {
         let last = collection_len.checked_sub(1)?;
         Some(self.int(0..=last))
+    }
+
+    /// Chooses an arbitrary item of the given slice, or the first if entropy is exhausted.
+    ///
+    /// Retuns `None` if the slice is empty.
+    ///
+    /// The returned index is biased towards earlier items:
+    ///
+    /// * If the slice length is not a power of two, or
+    /// * If entropy becomes exhausted while generating the index
+    pub fn choose<'a, T>(&mut self, slice: &'a [T]) -> Option<&'a T> {
+        let index = self.index(slice.len())?;
+        Some(&slice[index])
     }
 
     /// Generates an arbitrary integer in the given range,
