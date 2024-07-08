@@ -23,7 +23,6 @@ pub(crate) mod union_;
 pub(crate) mod value;
 pub(crate) mod variable;
 
-use crate::ast::Name;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;
@@ -37,6 +36,7 @@ use crate::execution::Response;
 pub(crate) use crate::node::FileId;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
+use crate::Name;
 use crate::Node;
 use crate::NodeLocation;
 use crate::SourceMap;

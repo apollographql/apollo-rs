@@ -1,11 +1,11 @@
 use crate::ast;
 use crate::ast::DirectiveLocation;
-use crate::ast::Name;
 use crate::ast::Type;
 use crate::coordinate::SchemaCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
 use crate::executable;
+use crate::Name;
 use crate::Node;
 use crate::NodeLocation;
 use std::fmt;

@@ -31,10 +31,8 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 
+use crate::Name;
 use crate::Node;
-
-#[deprecated = "import `apollo_compiler::Name` instead"]
-pub type Name = crate::Name;
 
 pub(crate) mod from_cst;
 pub(crate) mod impls;

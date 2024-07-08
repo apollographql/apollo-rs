@@ -6,6 +6,7 @@ use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
+use crate::Name;
 use crate::Node;
 use std::collections::HashMap;
 
@@ -150,7 +151,7 @@ pub(crate) fn validate_argument_definitions(
 ) {
     validate_input_value_definitions(diagnostics, schema, input_values, directive_location);
 
-    let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
+    let mut seen: HashMap<Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
         let name = &input_value.name;
         if let Some(prev_value) = seen.get(name) {

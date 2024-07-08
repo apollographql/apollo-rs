@@ -17,6 +17,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## BREAKING
+
+- **Remove deprecated `Name` reexports - [SimonSapin] in [pull/877].**
+  `apollo_compiler::Name` should now be imported instead of:
+  * `apollo_compiler::ast::Name`
+  * `apollo_compiler::schema::Name`
+  * `apollo_compiler::executable::Name`
+  These other paths emitted deprecation warnings in 1.0.0-beta.18 and are now removed.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/877]: https://github.com/apollographql/apollo-rs/pull/877
+
+
 # [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27
 
 ## BREAKING

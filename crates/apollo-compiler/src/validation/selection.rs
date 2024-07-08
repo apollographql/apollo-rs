@@ -1,5 +1,4 @@
 use crate::ast;
-use crate::ast::Name;
 use crate::ast::NamedType;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
@@ -12,6 +11,7 @@ use crate::schema;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
+use crate::Name;
 use crate::Node;
 use apollo_parser::LimitTracker;
 use indexmap::IndexMap;
