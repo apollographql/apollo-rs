@@ -67,7 +67,8 @@
 //!     }
 //! }
 //! ```
-use crate::execution::{GraphQLError, GraphQLLocation};
+use crate::execution::GraphQLError;
+use crate::execution::GraphQLLocation;
 use crate::validation::FileId;
 #[cfg(doc)]
 use crate::ExecutableDocument;
