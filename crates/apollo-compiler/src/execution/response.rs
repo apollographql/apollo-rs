@@ -144,7 +144,6 @@ impl GraphQLError {
             locations: location
                 .into_iter()
                 .filter_map(|location| location.line_column(sources))
-                .map(GraphQLLocation::from)
                 .collect(),
             path: Default::default(),
             extensions: Default::default(),
