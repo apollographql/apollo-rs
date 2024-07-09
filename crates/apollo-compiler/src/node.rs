@@ -1,4 +1,4 @@
-use crate::parser::LineColumn;
+use crate::execution::GraphQLLocation;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use crate::SourceMap;
@@ -109,7 +109,7 @@ impl<T: ?Sized> Node<T> {
     }
 
     /// If this node contains a location, convert it to the line and column numbers.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
         self.location()?.line_column_range(sources)
     }
 
@@ -308,14 +308,14 @@ impl NodeLocation {
     }
 
     /// The line and column numbers of [`Self::offset`]
-    pub fn line_column(&self, sources: &SourceMap) -> Option<LineColumn> {
+    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
         let source = sources.get(&self.file_id)?;
         source.get_line_column(self.offset())
     }
 
     /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
     /// inclusive.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
         let source = sources.get(&self.file_id)?;
         let start = source.get_line_column(self.offset())?;
         let end = source.get_line_column(self.end_offset())?;

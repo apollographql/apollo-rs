@@ -1,7 +1,6 @@
 use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
 use crate::node::NodeLocation;
-use crate::parser::LineColumn;
 use crate::SourceMap;
 use serde::Deserialize;
 use serde::Serialize;
@@ -75,7 +74,7 @@ pub struct GraphQLError {
     pub extensions: JsonMap,
 }
 
-/// A source location (line and column numbers) for a [`GraphQLError`].
+/// A source location (1-indexed line and column numbers) within GraphQL SDL.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GraphQLLocation {
@@ -149,15 +148,6 @@ impl GraphQLError {
                 .collect(),
             path: Default::default(),
             extensions: Default::default(),
-        }
-    }
-}
-
-impl From<LineColumn> for GraphQLLocation {
-    fn from(value: LineColumn) -> Self {
-        Self {
-            line: value.line + 1,
-            column: value.column + 1,
         }
     }
 }

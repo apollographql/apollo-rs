@@ -2,6 +2,7 @@ use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::executable;
+use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
@@ -362,21 +363,13 @@ impl SourceFile {
         })
     }
 
-    pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
-        let (_, line, column) = self.ariadne().get_byte_line(index)?;
-        Some(LineColumn { line, column })
+    pub(crate) fn get_line_column(&self, index: usize) -> Option<GraphQLLocation> {
+        let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(index)?;
+        Some(GraphQLLocation {
+            line: zero_indexed_line + 1,
+            column: zero_indexed_column + 1,
+        })
     }
-}
-
-/// A specific location within the source of a file, like an offset.
-///
-/// See also [`crate::node::LineColumnRange`].
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct LineColumn {
-    /// The line number, starting at 0 for the first line (not 1 like [`GraphQLError`]).
-    pub line: usize,
-    /// The column number, starting at 0 for the first character of the line.
-    pub column: usize,
 }
 
 impl std::fmt::Debug for SourceFile {

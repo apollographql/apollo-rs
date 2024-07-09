@@ -67,11 +67,10 @@
 //!     }
 //! }
 //! ```
-use crate::execution::GraphQLError;
+use crate::execution::{GraphQLError, GraphQLLocation};
 use crate::validation::FileId;
 #[cfg(doc)]
 use crate::ExecutableDocument;
-use crate::LineColumn;
 use crate::NodeLocation;
 #[cfg(doc)]
 use crate::Schema;
@@ -326,7 +325,7 @@ impl<T: ToCliReport> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToCliReport> Diagnostic<'_, T> {
     /// Get the line and column numbers where this diagnostic spans.
-    pub fn line_column_range(&self) -> Option<Range<LineColumn>> {
+    pub fn line_column_range(&self) -> Option<Range<GraphQLLocation>> {
         self.error.location()?.line_column_range(self.sources)
     }
 

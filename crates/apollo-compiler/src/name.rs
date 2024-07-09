@@ -1,10 +1,10 @@
 use crate::diagnostic::CliReport;
 use crate::diagnostic::ToCliReport;
+use crate::execution::GraphQLLocation;
 use crate::node::TaggedFileId;
 use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
 use crate::FileId;
-use crate::LineColumn;
 use crate::NodeLocation;
 use crate::SourceMap;
 use rowan::TextRange;
@@ -186,7 +186,7 @@ impl Name {
     }
 
     /// If this string contains a location, convert it to line and column numbers
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
         self.location()?.line_column_range(sources)
     }
 
