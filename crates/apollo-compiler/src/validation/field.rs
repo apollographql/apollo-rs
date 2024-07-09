@@ -1,5 +1,4 @@
 use crate::ast;
-use crate::ast::Name;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
@@ -9,6 +8,7 @@ use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
+use crate::Name;
 use crate::Node;
 use indexmap::IndexMap;
 

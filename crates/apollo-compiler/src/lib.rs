@@ -1,5 +1,4 @@
 #![doc = include_str!("../README.md")]
-#![allow(deprecated)] // TODO: after the transition, remove this and `ast::Name`
 
 #[macro_use]
 mod macros;

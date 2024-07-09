@@ -6,7 +6,7 @@
 //! ```rust
 //! use apollo_compiler::NodeLocation;
 //! use apollo_compiler::Schema;
-//! use apollo_compiler::ast::Name;
+//! use apollo_compiler::Name;
 //! use apollo_compiler::diagnostic::CliReport;
 //! use apollo_compiler::diagnostic::Diagnostic;
 //! use apollo_compiler::diagnostic::ToCliReport;

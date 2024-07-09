@@ -1,4 +1,3 @@
-use crate::ast::Name;
 use crate::ast::Value;
 use crate::executable::Field;
 use crate::executable::Selection;
@@ -18,6 +17,7 @@ use crate::schema::Type;
 use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
+use crate::Name;
 use crate::Schema;
 use crate::SourceMap;
 use indexmap::IndexMap;

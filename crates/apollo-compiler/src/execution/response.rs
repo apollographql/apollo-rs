@@ -90,7 +90,7 @@ pub struct GraphQLLocation {
 #[serde(untagged)]
 pub enum ResponseDataPathElement {
     /// The relevant key in an object value
-    Field(crate::ast::Name),
+    Field(crate::Name),
 
     /// The index of the relevant item in a list value
     ListIndex(usize),

@@ -28,7 +28,6 @@ pub use crate::ast::DirectiveLocation;
 pub use crate::ast::EnumValueDefinition;
 pub use crate::ast::FieldDefinition;
 pub use crate::ast::InputValueDefinition;
-pub use crate::ast::Name;
 pub use crate::ast::NamedType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
@@ -37,6 +36,7 @@ use crate::ty;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
+pub use crate::Name;
 
 /// High-level representation of a GraphQL schema
 #[derive(Clone)]

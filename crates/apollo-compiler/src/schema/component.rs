@@ -1,4 +1,4 @@
-use crate::ast::Name;
+use crate::Name;
 use crate::Node;
 use crate::NodeLocation;
 use std::fmt;

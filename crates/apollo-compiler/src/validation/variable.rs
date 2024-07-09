@@ -7,6 +7,7 @@ use crate::validation::RecursionGuard;
 use crate::validation::RecursionLimitError;
 use crate::validation::RecursionStack;
 use crate::ExecutableDocument;
+use crate::Name;
 use crate::Node;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -17,7 +18,7 @@ pub(crate) fn validate_variable_definitions(
     schema: Option<&crate::Schema>,
     variables: &[Node<ast::VariableDefinition>],
 ) {
-    let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
+    let mut seen: HashMap<Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
         super::directive::validate_directives(
             diagnostics,
@@ -126,7 +127,7 @@ fn walk_selections<'doc>(
     result
 }
 
-fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &ast::Name> + '_ {
+fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &Name> + '_ {
     let mut value_stack = vec![value];
     std::iter::from_fn(move || {
         while let Some(value) = value_stack.pop() {
@@ -143,13 +144,13 @@ fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &ast::Name> + 
     })
 }
 
-fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = &ast::Name> + '_ {
+fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = &Name> + '_ {
     args.iter().flat_map(|arg| variables_in_value(&arg.value))
 }
 
 fn variables_in_directives(
     directives: &[Node<ast::Directive>],
-) -> impl Iterator<Item = &ast::Name> + '_ {
+) -> impl Iterator<Item = &Name> + '_ {
     directives
         .iter()
         .flat_map(|directive| variables_in_arguments(&directive.arguments))
