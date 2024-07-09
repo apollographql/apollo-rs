@@ -80,29 +80,36 @@ fn arbitrary_value(context: &mut Context<'_, '_>, expected_type: &schema::Type) 
                     }
                 }
             }
-            let name = Name::try_from(format!("var{}", variable_definitions.len())).unwrap();
+
             let var_type = abritrary_type_assignable_to(context.entropy, expected_type);
-            let var_def = executable::VariableDefinition {
-                name: name.clone(),
-                // No default if entropy is exhausted
-                default_value: {
-                    if context.entropy.bool() {
-                        Some(arbitrary_value(context, &var_type).into())
-                    } else {
-                        None
-                    }
-                },
-                ty: var_type.into(),
-                directives: abritrary_directive_list(
-                    context,
-                    schema::DirectiveLocation::VariableDefinition,
-                ),
+            let define_default_value = context.entropy.bool();
+            let mut context_for_var_def = Context {
+                schema: context.schema,
+                directive_definitions_by_location: context.directive_definitions_by_location,
+                entropy: context.entropy,
+                // Both DefaultValue and Directives are const inside a VariableDefinition:
+                variable_definitions: None,
             };
-            context
-                .variable_definitions
-                .as_mut()
-                .unwrap()
-                .push(var_def.into());
+            // No default if entropy is exhausted
+            let default_value = if define_default_value {
+                Some(arbitrary_value(&mut context_for_var_def, &var_type).into())
+            } else {
+                None
+            };
+            let directives = abritrary_directive_list(
+                &mut context_for_var_def,
+                schema::DirectiveLocation::VariableDefinition,
+            );
+            let name = Name::try_from(format!("var{}", variable_definitions.len())).unwrap();
+            variable_definitions.push(
+                (executable::VariableDefinition {
+                    name: name.clone(),
+                    default_value,
+                    ty: var_type.into(),
+                    directives,
+                })
+                .into(),
+            );
             return Value::Variable(name);
         }
     }
@@ -234,4 +241,86 @@ pub(crate) fn abritrary_directive_list(
         }
     }
     list
+}
+
+#[cfg(test)]
+pub(crate) mod tests {
+    use super::abritrary_type_assignable_to;
+    use super::arbitary_name;
+    use crate::arbitrary::entropy::Entropy;
+    use crate::ty;
+    use crate::Name;
+    use expect_test::expect;
+    use std::fmt::Write;
+
+    pub(crate) fn arbitrary_bytes(seed: u64, len: usize) -> Vec<u8> {
+        let mut rng = oorandom::Rand32::new(seed);
+        (0..len).map(|_| rng.rand_u32() as u8).collect()
+    }
+
+    pub(crate) fn with_entropy<R>(
+        seed: u64,
+        len: usize,
+        f: impl FnOnce(&mut Entropy<'_>) -> R,
+    ) -> R {
+        f(&mut Entropy::new(&arbitrary_bytes(seed, len)))
+    }
+
+    #[test]
+    fn name() {
+        expect!["A"].assert_eq(&with_entropy::<Name>(0, 0, arbitary_name));
+        expect!["K"].assert_eq(&with_entropy::<Name>(1, 1, arbitary_name));
+        expect!["mA"].assert_eq(&with_entropy::<Name>(2, 2, arbitary_name));
+        expect!["t"].assert_eq(&with_entropy::<Name>(3, 3, arbitary_name));
+        expect!["wo"].assert_eq(&with_entropy::<Name>(4, 4, arbitary_name));
+        expect!["fD"].assert_eq(&with_entropy::<Name>(5, 4, arbitary_name));
+        expect!["J"].assert_eq(&with_entropy::<Name>(6, 4, arbitary_name));
+        expect!["x7A"].assert_eq(&with_entropy::<Name>(7, 4, arbitary_name));
+        expect!["gLA"].assert_eq(&with_entropy::<Name>(8, 4, arbitary_name));
+    }
+
+    #[test]
+    fn type_assignable_to() {
+        let gen =
+            |seed, ty| with_entropy(0, seed, |e| abritrary_type_assignable_to(e, &ty)).to_string();
+        expect!["Int"].assert_eq(&gen(0, ty!(Int)));
+        expect!["Int!"].assert_eq(&gen(1, ty!(Int)));
+        expect!["Int!"].assert_eq(&gen(0, ty!(Int!)));
+        expect!["Int!"].assert_eq(&gen(1, ty!(Int!)));
+        expect!["[[[Int]]!]!"].assert_eq(&gen(2, ty!([[[Int]]])));
+    }
+
+    #[test]
+    fn directives_by_location() {
+        let schema = "
+            type Query { field: Int }
+            directive @defer(label: String, if: Boolean! = true) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+        ";
+        let schema = crate::Schema::parse_and_validate(schema, "").unwrap();
+        let mut formatted = String::new();
+        for (location, definitions) in super::gather_directive_definitions_by_location(&schema)
+            .into_iter()
+            .map(|(loc, defs)| (loc.to_string(), defs))
+            // For deterministic ordering:
+            .collect::<std::collections::BTreeMap<_, _>>()
+        {
+            writeln!(
+                &mut formatted,
+                "{location}: {:?}",
+                definitions.into_iter().map(|d| &d.name).collect::<Vec<_>>()
+            )
+            .unwrap();
+        }
+        expect![[r#"
+            ARGUMENT_DEFINITION: ["deprecated"]
+            ENUM_VALUE: ["deprecated"]
+            FIELD: ["skip", "include"]
+            FIELD_DEFINITION: ["deprecated"]
+            FRAGMENT_SPREAD: ["skip", "include", "defer"]
+            INLINE_FRAGMENT: ["skip", "include", "defer"]
+            INPUT_FIELD_DEFINITION: ["deprecated"]
+            SCALAR: ["specifiedBy"]
+        "#]]
+        .assert_eq(&formatted);
+    }
 }

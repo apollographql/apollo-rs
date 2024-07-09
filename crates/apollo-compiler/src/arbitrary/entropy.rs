@@ -330,3 +330,150 @@ impl_int! {
     i128: u128;
     isize: usize;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Entropy;
+
+    #[test]
+    fn exhausted() {
+        let mut e = Entropy::new(&[]);
+        assert_eq!(e.u8(), 0);
+        assert_eq!(e.u8_array(), [0, 0, 0]);
+        assert_eq!(e.i32(), 0);
+        assert_eq!(e.f64(), 0.0);
+        assert!(!e.bool());
+        assert_eq!(e.int(4..=7), 4);
+        assert_eq!(e.index(10).unwrap(), 0);
+        assert_eq!(*e.choose(b"abc").unwrap(), b'a');
+    }
+
+    // Tests below based on https://docs.rs/arbitrary/1.3.2/src/arbitrary/unstructured.rs.html#888
+
+    #[test]
+    fn int_in_range_of_one() {
+        let mut e = Entropy::new(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 6]);
+        let x = e.int(0..=0);
+        assert_eq!(x, 0);
+        let choice = *e.choose(&[42]).unwrap();
+        assert_eq!(choice, 42)
+    }
+
+    #[test]
+    fn int_uses_minimal_amount_of_bytes() {
+        let mut e = Entropy::new(&[1, 2]);
+        assert_eq!(1, e.int::<u8>(0..=u8::MAX));
+        assert_eq!(e.bytes.len(), 1);
+
+        let mut e = Entropy::new(&[1, 2]);
+        assert_eq!(1, e.int::<u32>(0..=u8::MAX as u32));
+        assert_eq!(e.bytes.len(), 1);
+
+        let mut e = Entropy::new(&[1]);
+        assert_eq!(1, e.int::<u32>(0..=u8::MAX as u32 + 1));
+        assert!(e.is_empty());
+    }
+
+    #[test]
+    fn int_in_bounds() {
+        for input in u8::MIN..=u8::MAX {
+            let input = [input];
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(1..=u8::MAX);
+            assert_ne!(x, 0);
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(0..=u8::MAX - 1);
+            assert_ne!(x, u8::MAX);
+        }
+    }
+
+    #[test]
+    fn int_covers_unsigned_range() {
+        // Test that we generate all values within the range given to `int`.
+
+        let mut full = [false; u8::MAX as usize + 1];
+        let mut no_zero = [false; u8::MAX as usize];
+        let mut no_max = [false; u8::MAX as usize];
+        let mut narrow = [false; 10];
+
+        for input in u8::MIN..=u8::MAX {
+            let input = [input];
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(0..=u8::MAX);
+            full[x as usize] = true;
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(1..=u8::MAX);
+            no_zero[x as usize - 1] = true;
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(0..=u8::MAX - 1);
+            no_max[x as usize] = true;
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(100..=109);
+            narrow[x as usize - 100] = true;
+        }
+
+        for (i, covered) in full.iter().enumerate() {
+            assert!(covered, "full[{}] should have been generated", i);
+        }
+        for (i, covered) in no_zero.iter().enumerate() {
+            assert!(covered, "no_zero[{}] should have been generated", i);
+        }
+        for (i, covered) in no_max.iter().enumerate() {
+            assert!(covered, "no_max[{}] should have been generated", i);
+        }
+        for (i, covered) in narrow.iter().enumerate() {
+            assert!(covered, "narrow[{}] should have been generated", i);
+        }
+    }
+
+    #[test]
+    fn int_covers_signed_range() {
+        // Test that we generate all values within the range given to `int`.
+
+        let mut full = [false; u8::MAX as usize + 1];
+        let mut no_min = [false; u8::MAX as usize];
+        let mut no_max = [false; u8::MAX as usize];
+        let mut narrow = [false; 21];
+
+        let abs_i8_min: isize = 128;
+
+        for input in 0..=u8::MAX {
+            let input = [input];
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(i8::MIN..=i8::MAX);
+            full[(x as isize + abs_i8_min) as usize] = true;
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(i8::MIN + 1..=i8::MAX);
+            no_min[(x as isize + abs_i8_min - 1) as usize] = true;
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(i8::MIN..=i8::MAX - 1);
+            no_max[(x as isize + abs_i8_min) as usize] = true;
+
+            let mut e = Entropy::new(&input);
+            let x = e.int(-10..=10);
+            narrow[(x as isize + 10) as usize] = true;
+        }
+
+        for (i, covered) in full.iter().enumerate() {
+            assert!(covered, "full[{}] should have been generated", i);
+        }
+        for (i, covered) in no_min.iter().enumerate() {
+            assert!(covered, "no_min[{}] should have been generated", i);
+        }
+        for (i, covered) in no_max.iter().enumerate() {
+            assert!(covered, "no_max[{}] should have been generated", i);
+        }
+        for (i, covered) in narrow.iter().enumerate() {
+            assert!(covered, "narrow[{}] should have been generated", i);
+        }
+    }
+}

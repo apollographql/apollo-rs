@@ -55,7 +55,7 @@ pub fn arbitrary_valid_executable_document(
         executable::OperationType::Mutation => DirectiveLocation::Mutation,
         executable::OperationType::Subscription => DirectiveLocation::Subscription,
     };
-    executable::ExecutableDocument {
+    let doc = executable::ExecutableDocument {
         sources: Default::default(),
         operations: executable::OperationMap::from_one(executable::Operation {
             operation_type,
@@ -65,9 +65,10 @@ pub fn arbitrary_valid_executable_document(
             selection_set: operation_selection_set,
         }),
         fragments: builder.fragment_map,
-    }
-    .validate(schema)
-    .expect("bug in arbitrary_valid_executable_document")
+    };
+    println!("{doc}");
+    doc.validate(schema)
+        .expect("bug in arbitrary_valid_executable_document")
 }
 
 struct Builder<'a> {
@@ -81,7 +82,7 @@ struct Builder<'a> {
     field_counter: usize,
 }
 
-/// For all output types in the schema, the set of type conditions that a fragment can have:
+/// For all output non-leaf types in the schema, the set of type conditions that a fragment can have:
 /// <https://spec.graphql.org/draft/#sec-Fragment-Spread-Is-Possible>
 type CompatibleTypesMap<'schema> = HashMap<&'schema NamedType, IndexSet<&'schema NamedType>>;
 
@@ -241,14 +242,17 @@ impl<'a> Builder<'a> {
             .expect("object or interface type without fields");
         let definition = field_definitions[index].node.clone();
         let arguments = arbitrary_arguments(&mut self.context(), &definition.arguments);
+        let ty = definition.ty.inner_named_type().clone();
         selection_set.push(executable::Field {
             alias,
             name: definition.name.clone(),
             arguments,
             directives: self.abritrary_directive_list(DirectiveLocation::Field),
-            selection_set: self.arbitrary_selection_set_with_one_selection(
-                definition.ty.inner_named_type().clone(),
-            ),
+            selection_set: if self.schema.types[&ty].is_leaf() {
+                executable::SelectionSet::new(ty)
+            } else {
+                self.arbitrary_selection_set_with_one_selection(ty)
+            },
             definition,
         })
     }
@@ -256,12 +260,15 @@ impl<'a> Builder<'a> {
     fn arbitrary_inline_fragment_into(&mut self, selection_set: &mut executable::SelectionSet) {
         let nested_type;
         let type_condition;
+        // Even though generating type condition normally consumes more entropy,
+        // do so when we’ve run out already so that we don’t get stuck
+        // on a union type with no field and overflow the stack.
         if self.entropy.bool() {
-            nested_type = self.abritrary_type_condition(&selection_set.ty);
-            type_condition = Some(nested_type.clone());
-        } else {
             nested_type = selection_set.ty.clone();
             type_condition = None;
+        } else {
+            nested_type = self.abritrary_type_condition(&selection_set.ty);
+            type_condition = Some(nested_type.clone());
         };
         selection_set.push(executable::InlineFragment {
             type_condition,
@@ -300,7 +307,7 @@ impl<'a> Builder<'a> {
     }
 }
 
-/// For all output types in the schema, the set of type conditions that a fragment can have:
+/// For all output non-leaf types in the schema, the set of type conditions that a fragment can have:
 /// <https://spec.graphql.org/draft/#sec-Fragment-Spread-Is-Possible>
 // Clippy false positive: https://github.com/rust-lang/rust-clippy/issues/12908
 #[allow(clippy::needless_lifetimes)]
@@ -321,7 +328,7 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
     schema
         .types
         .iter()
-        .filter(|(_name, type_def)| type_def.is_output_type())
+        .filter(|(_name, type_def)| type_def.is_output_type() && !type_def.is_leaf())
         .map(|(name, type_def)| {
             let mut compatible_types = IndexSet::new();
             let mut add_object_type_and_its_supertypes = |object: &'schema schema::ObjectType| {
@@ -329,7 +336,9 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
                 // so that when entropy is exhausted `abritrary_type_condition` selects
                 // a type that definitely has fields.
                 compatible_types.insert(&object.name);
-                compatible_types.extend(&unions_map[&object.name]);
+                if let Some(unions) = unions_map.get(&object.name) {
+                    compatible_types.extend(unions);
+                }
                 compatible_types.extend(
                     object
                         .implements_interfaces
@@ -347,11 +356,13 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
                     // Ensure that a concrete object type is first,
                     // so that when entropy is exhausted `abritrary_type_condition` selects
                     // a type that definitely has fields.
-                    for object_name in &implementers_map[name].objects {
-                        let object = schema
-                            .get_object(object_name)
-                            .expect("implementers_map refers to undefined object");
-                        add_object_type_and_its_supertypes(object)
+                    if let Some(implementers) = implementers_map.get(name) {
+                        for object_name in &implementers.objects {
+                            let object = schema
+                                .get_object(object_name)
+                                .expect("implementers_map refers to undefined object");
+                            add_object_type_and_its_supertypes(object)
+                        }
                     }
                     // Compatible with itself
                     compatible_types.insert(name);
@@ -374,4 +385,206 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
             (name, compatible_types)
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::arbitrary_valid_executable_document;
+    use super::gather_compatible_types;
+    use crate::arbitrary::common::tests::arbitrary_bytes;
+    use crate::Schema;
+    use expect_test::expect;
+    use std::fmt::Write;
+
+    fn format_compatible_types(schema: &str) -> String {
+        let schema = Schema::parse_and_validate(schema, "").unwrap();
+        let mut formatted = String::new();
+        for (name, others) in gather_compatible_types(&schema)
+            .into_iter()
+            // For deterministic ordering:
+            .map(|(k, v)| (k, v.into_iter().collect::<std::collections::BTreeSet<_>>()))
+            .collect::<std::collections::BTreeMap<_, _>>()
+        {
+            writeln!(&mut formatted, "{name}: {others:?}",).unwrap();
+        }
+        formatted
+    }
+
+    #[test]
+    fn compatible_types() {
+        let expected = expect![[r#"
+            Alien: {"Alien", "HumanOrAlien", "Sentient"}
+            Cat: {"Cat", "CatOrDog", "Pet"}
+            CatOrDog: {"Cat", "CatOrDog", "Dog", "DogOrHuman", "Pet"}
+            Dog: {"CatOrDog", "Dog", "DogOrHuman", "Pet"}
+            DogOrHuman: {"CatOrDog", "Dog", "DogOrHuman", "Human", "HumanOrAlien", "Pet", "Sentient"}
+            Human: {"DogOrHuman", "Human", "HumanOrAlien", "Sentient"}
+            HumanOrAlien: {"Alien", "DogOrHuman", "Human", "HumanOrAlien", "Sentient"}
+            Pet: {"Cat", "CatOrDog", "Dog", "DogOrHuman", "Pet"}
+            Query: {"Query"}
+            Sentient: {"Alien", "DogOrHuman", "Human", "HumanOrAlien", "Sentient"}
+            __Directive: {"__Directive"}
+            __EnumValue: {"__EnumValue"}
+            __Field: {"__Field"}
+            __InputValue: {"__InputValue"}
+            __Schema: {"__Schema"}
+            __Type: {"__Type"}
+        "#]];
+        let schema = include_str!("../../examples/documents/schema.graphql");
+        expected.assert_eq(&format_compatible_types(schema));
+    }
+
+    #[test]
+    fn executable_document() {
+        let schema = include_str!("../../benches/testdata/supergraph.graphql");
+        let schema = Schema::parse_and_validate(schema, "").unwrap();
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(0, 0));
+        expect![[r#"
+            {
+              field0: user(id: 0) {
+                field1: id
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(1, 1));
+        expect![[r#"
+            mutation {
+              field0: login(username: "A", password: "A") {
+                field1: id
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(2, 2));
+        expect![[r#"
+            query A {
+              field0: user(id: 0) {
+                field1: id
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(3, 4));
+        expect![[r#"
+            {
+              ... {
+                field0: user(id: 0) {
+                  field1: id
+                }
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(4, 8));
+        expect![[r#"
+            mutation H($var0: ID!) {
+              field0: deleteReview(id: $var0)
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(4, 16));
+        expect![[r#"
+            mutation H($var0: ID! = 702642197) {
+              field0: deleteReview(id: $var0)
+              ...Frag0
+            }
+
+            fragment Frag0 on Mutation {
+              field1: login(username: "A", password: "A") {
+                field2: id
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(5, 16));
+        expect![[r#"
+            mutation X($var0: ID!) {
+              ...Frag0
+              field1: login(username: "A", password: "A") {
+                field2: id
+              }
+            }
+
+            fragment Frag0 on Mutation {
+              ... on Mutation {
+                field0: deleteReview(id: $var0)
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(6, 16));
+        expect![[r#"
+            {
+              field0: user(id: 936425828) @skip(if: true) {
+                field1: id
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(6, 100));
+        expect![[r#"
+            query($var0: Boolean! = false) {
+              field0: user(id: 936425828) @skip(if: true) {
+                ... {
+                  ... on User {
+                    ... {
+                      ... on User {
+                        ... {
+                          field1: reviews {
+                            ... on Review {
+                              field2: author {
+                                field3: goodAddress
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  ... on User {
+                    field4: username
+                  }
+                }
+                field5: birthDate(locale: null)
+              }
+              ... on Query {
+                ... on Query @skip(if: $var0) {
+                  ... on Query {
+                    field6: topReviews {
+                      field7: body
+                    }
+                  }
+                }
+              }
+              ... {
+                field8: user(id: 2053829692) {
+                  ...Frag0
+                }
+              }
+            }
+
+            fragment Frag0 on User {
+              ... @skip(if: false) {
+                field9: id
+              }
+            }
+        "#]]
+        .assert_eq(&doc.to_string());
+
+        // Generate a bunch more just to check generation completes
+        // without panic or stack overflow, and returns something valid
+        for seed in 1000..2000 {
+            arbitrary_valid_executable_document(&schema, &arbitrary_bytes(seed, 100));
+        }
+    }
 }
