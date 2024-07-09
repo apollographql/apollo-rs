@@ -38,8 +38,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This change makes `get_mut()` borrow only `doc.operations` instead of the entire document,
   making it possible to also mutate `doc.fragments` during that mutable borrow.
 
+## Fixes
+
+- **Fix potential hash collision bug in validation - [goto-bus-stop] in [pull/878]**
+
 [SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/877]: https://github.com/apollographql/apollo-rs/pull/877
+[pull/878]: https://github.com/apollographql/apollo-rs/pull/878
 [pull/879]: https://github.com/apollographql/apollo-rs/pull/879
 
 
