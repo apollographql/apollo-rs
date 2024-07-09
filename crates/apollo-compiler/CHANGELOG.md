@@ -28,8 +28,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   * `apollo_compiler::executable::Name`
   These other paths emitted deprecation warnings in 1.0.0-beta.18 and are now removed.
 
+## Fixes
+
+- **Fix potential hash collision bug in validation - [goto-bus-stop] in [pull/878]**
+
 [SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/877]: https://github.com/apollographql/apollo-rs/pull/877
+[pull/878]: https://github.com/apollographql/apollo-rs/pull/878
 
 
 # [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27
