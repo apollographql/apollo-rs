@@ -20,20 +20,25 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::hash::BuildHasher;
+use std::hash::Hash;
+use std::hash::RandomState;
 use std::rc::Rc;
+use std::sync::OnceLock;
 
 type Arena<'doc> = typed_arena::Arena<Vec<FieldSelection<'doc>>>;
 
 /// Represents a field selected against a parent type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct FieldSelection<'a> {
+    /// Cached hash: field selections are always hashed at least once, and often multiple times.
+    /// Hashing Node<Field> is not that cheap, so we do it eagerly.
     hash: u64,
     /// The type of the selection set this field selection is part of.
     pub parent_type: &'a NamedType,
     pub field: &'a Node<executable::Field>,
 }
 
-impl<'a> std::hash::Hash for FieldSelection<'a> {
+impl<'a> Hash for FieldSelection<'a> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         state.write_u64(self.hash)
     }
@@ -41,11 +46,10 @@ impl<'a> std::hash::Hash for FieldSelection<'a> {
 
 impl<'a> FieldSelection<'a> {
     fn new(parent_type: &'a NamedType, field: &'a Node<executable::Field>) -> Self {
-        static SHARED_RANDOM: std::sync::OnceLock<std::hash::RandomState> =
-            std::sync::OnceLock::new();
+        static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
         let hash = SHARED_RANDOM
-            .get_or_init(std::hash::RandomState::new)
-            .hash_one(&(parent_type, field));
+            .get_or_init(RandomState::new)
+            .hash_one((parent_type, field));
         Self {
             hash,
             parent_type,
@@ -529,7 +533,7 @@ impl<'alloc, 's, 'doc> FieldsInSetCanMerge<'alloc, 's, 'doc> {
         diagnostics: &mut DiagnosticList,
     ) {
         let fields = self.expand_selections(std::iter::once(&operation.selection_set));
-        let set = self.lookup(&fields);
+        let set = self.lookup(fields);
         set.same_response_shape_by_name(self, diagnostics);
         set.same_for_common_parents_by_name(self, diagnostics);
 
