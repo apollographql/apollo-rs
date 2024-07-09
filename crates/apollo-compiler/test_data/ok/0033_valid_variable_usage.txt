@@ -158,192 +158,194 @@ ExecutableDocument {
             source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "nullableStringArg": 0..296 @34 Operation {
-            operation_type: Query,
-            name: Some(
-                "nullableStringArg",
-            ),
-            variables: [
-                24..48 @34 VariableDefinition {
-                    name: "nonNullableVar",
-                    ty: 41..48 @34 NonNullNamed(
-                        "String",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-                50..78 @34 VariableDefinition {
-                    name: "nonNullableList",
-                    ty: 68..78 @34 NonNullList(
-                        NonNullNamed(
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "nullableStringArg": 0..296 @34 Operation {
+                operation_type: Query,
+                name: Some(
+                    "nullableStringArg",
+                ),
+                variables: [
+                    24..48 @34 VariableDefinition {
+                        name: "nonNullableVar",
+                        ty: 41..48 @34 NonNullNamed(
                             "String",
                         ),
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-                80..111 @34 VariableDefinition {
-                    name: "nonNullableListList",
-                    ty: 102..111 @34 List(
-                        NonNullList(
+                        default_value: None,
+                        directives: [],
+                    },
+                    50..78 @34 VariableDefinition {
+                        name: "nonNullableList",
+                        ty: 68..78 @34 NonNullList(
                             NonNullNamed(
-                                "Int",
+                                "String",
                             ),
                         ),
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        117..294 @34 Field {
-                            definition: 315..335 @34 FieldDefinition {
-                                description: None,
+                        default_value: None,
+                        directives: [],
+                    },
+                    80..111 @34 VariableDefinition {
+                        name: "nonNullableListList",
+                        ty: 102..111 @34 List(
+                            NonNullList(
+                                NonNullNamed(
+                                    "Int",
+                                ),
+                            ),
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            117..294 @34 Field {
+                                definition: 315..335 @34 FieldDefinition {
+                                    description: None,
+                                    name: "arguments",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Arguments",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "arguments",
                                 arguments: [],
-                                ty: Named(
-                                    "Arguments",
-                                ),
                                 directives: [],
-                            },
-                            alias: None,
-                            name: "arguments",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Arguments",
-                                selections: [
-                                    Field(
-                                        133..180 @34 Field {
-                                            definition: 360..406 @34 FieldDefinition {
-                                                description: None,
-                                                name: "nullableString",
-                                                arguments: [
-                                                    375..397 @34 InputValueDefinition {
-                                                        description: None,
-                                                        name: "nullableString",
-                                                        ty: 391..397 @34 Named(
-                                                            "String",
-                                                        ),
-                                                        default_value: None,
-                                                        directives: [],
-                                                    },
-                                                ],
-                                                ty: Named(
-                                                    "String",
-                                                ),
-                                                directives: [],
-                                            },
-                                            alias: None,
-                                            name: "nullableString",
-                                            arguments: [
-                                                148..179 @34 Argument {
+                                selection_set: SelectionSet {
+                                    ty: "Arguments",
+                                    selections: [
+                                        Field(
+                                            133..180 @34 Field {
+                                                definition: 360..406 @34 FieldDefinition {
+                                                    description: None,
                                                     name: "nullableString",
-                                                    value: 164..179 @34 Variable(
-                                                        "nonNullableVar",
-                                                    ),
-                                                },
-                                            ],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "String",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
-                                    Field(
-                                        185..229 @34 Field {
-                                            definition: 411..455 @34 FieldDefinition {
-                                                description: None,
-                                                name: "nullableList",
-                                                arguments: [
-                                                    424..446 @34 InputValueDefinition {
-                                                        description: None,
-                                                        name: "nullableList",
-                                                        ty: 438..446 @34 List(
-                                                            Named(
+                                                    arguments: [
+                                                        375..397 @34 InputValueDefinition {
+                                                            description: None,
+                                                            name: "nullableString",
+                                                            ty: 391..397 @34 Named(
                                                                 "String",
                                                             ),
+                                                            default_value: None,
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: Named(
+                                                        "String",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "nullableString",
+                                                arguments: [
+                                                    148..179 @34 Argument {
+                                                        name: "nullableString",
+                                                        value: 164..179 @34 Variable(
+                                                            "nonNullableVar",
                                                         ),
-                                                        default_value: None,
-                                                        directives: [],
                                                     },
                                                 ],
-                                                ty: Named(
-                                                    "String",
-                                                ),
                                                 directives: [],
-                                            },
-                                            alias: None,
-                                            name: "nullableList",
-                                            arguments: [
-                                                198..228 @34 Argument {
-                                                    name: "nullableList",
-                                                    value: 212..228 @34 Variable(
-                                                        "nonNullableList",
-                                                    ),
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
                                                 },
-                                            ],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "String",
-                                                selections: [],
                                             },
-                                        },
-                                    ),
-                                    Field(
-                                        234..290 @34 Field {
-                                            definition: 460..508 @34 FieldDefinition {
-                                                description: None,
-                                                name: "nullableListList",
-                                                arguments: [
-                                                    477..502 @34 InputValueDefinition {
-                                                        description: None,
-                                                        name: "nullableListList",
-                                                        ty: 495..502 @34 List(
-                                                            List(
+                                        ),
+                                        Field(
+                                            185..229 @34 Field {
+                                                definition: 411..455 @34 FieldDefinition {
+                                                    description: None,
+                                                    name: "nullableList",
+                                                    arguments: [
+                                                        424..446 @34 InputValueDefinition {
+                                                            description: None,
+                                                            name: "nullableList",
+                                                            ty: 438..446 @34 List(
                                                                 Named(
-                                                                    "Int",
+                                                                    "String",
                                                                 ),
                                                             ),
+                                                            default_value: None,
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: Named(
+                                                        "String",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "nullableList",
+                                                arguments: [
+                                                    198..228 @34 Argument {
+                                                        name: "nullableList",
+                                                        value: 212..228 @34 Variable(
+                                                            "nonNullableList",
                                                         ),
-                                                        default_value: None,
-                                                        directives: [],
                                                     },
                                                 ],
-                                                ty: Named(
-                                                    "Int",
-                                                ),
                                                 directives: [],
-                                            },
-                                            alias: None,
-                                            name: "nullableListList",
-                                            arguments: [
-                                                251..289 @34 Argument {
-                                                    name: "nullableListList",
-                                                    value: 269..289 @34 Variable(
-                                                        "nonNullableListList",
-                                                    ),
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
                                                 },
-                                            ],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
                                             },
-                                        },
-                                    ),
-                                ],
+                                        ),
+                                        Field(
+                                            234..290 @34 Field {
+                                                definition: 460..508 @34 FieldDefinition {
+                                                    description: None,
+                                                    name: "nullableListList",
+                                                    arguments: [
+                                                        477..502 @34 InputValueDefinition {
+                                                            description: None,
+                                                            name: "nullableListList",
+                                                            ty: 495..502 @34 List(
+                                                                List(
+                                                                    Named(
+                                                                        "Int",
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            default_value: None,
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: Named(
+                                                        "Int",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "nullableListList",
+                                                arguments: [
+                                                    251..289 @34 Argument {
+                                                        name: "nullableListList",
+                                                        value: 269..289 @34 Variable(
+                                                            "nonNullableListList",
+                                                        ),
+                                                    },
+                                                ],
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "Int",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
         },
     },

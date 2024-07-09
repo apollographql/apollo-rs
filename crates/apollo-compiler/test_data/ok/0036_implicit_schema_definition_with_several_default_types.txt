@@ -135,7 +135,9 @@ ExecutableDocument {
             source_text: "type Query {\n    name: String\n}\n\ntype Mutation {\n   add(name: String!): Result!\n}\n\ntype Result {\n  id: String\n}\n\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

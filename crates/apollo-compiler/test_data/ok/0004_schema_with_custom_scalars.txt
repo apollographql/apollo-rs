@@ -110,7 +110,9 @@ ExecutableDocument {
             source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

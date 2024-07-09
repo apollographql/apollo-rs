@@ -110,193 +110,195 @@ ExecutableDocument {
             source_text: "type Query {\n  field(arg: Boolean): Int\n  fragField: Int\n  inlineField: Int\n}\n\nfragment fragment on Query {\n  fragField @include(if: $indirectDirective)\n}\n\nquery (\n  $fieldDirective: Boolean = true,\n  $fragDirective: Boolean = false,\n  $inlineDirective: Boolean = false,\n  $argDirective: Boolean = false,\n  $indirectDirective: Boolean = false,\n) {\n  field(arg: $argDirective) @skip(if: $fieldDirective)\n\n  ...fragment @include(if: $fragDirective)\n\n  ... @skip(if: $inlineDirective) {\n    inlineField\n  }\n}\n",
         },
     },
-    anonymous_operation: Some(
-        156..505 @25 Operation {
-            operation_type: Query,
-            name: None,
-            variables: [
-                166..197 @25 VariableDefinition {
-                    name: "fieldDirective",
-                    ty: 183..190 @25 Named(
-                        "Boolean",
-                    ),
-                    default_value: Some(
-                        193..197 @25 Boolean(
-                            true,
+    operations: OperationMap {
+        anonymous: Some(
+            156..505 @25 Operation {
+                operation_type: Query,
+                name: None,
+                variables: [
+                    166..197 @25 VariableDefinition {
+                        name: "fieldDirective",
+                        ty: 183..190 @25 Named(
+                            "Boolean",
                         ),
-                    ),
-                    directives: [],
-                },
-                201..232 @25 VariableDefinition {
-                    name: "fragDirective",
-                    ty: 217..224 @25 Named(
-                        "Boolean",
-                    ),
-                    default_value: Some(
-                        227..232 @25 Boolean(
-                            false,
+                        default_value: Some(
+                            193..197 @25 Boolean(
+                                true,
+                            ),
                         ),
-                    ),
-                    directives: [],
-                },
-                236..269 @25 VariableDefinition {
-                    name: "inlineDirective",
-                    ty: 254..261 @25 Named(
-                        "Boolean",
-                    ),
-                    default_value: Some(
-                        264..269 @25 Boolean(
-                            false,
+                        directives: [],
+                    },
+                    201..232 @25 VariableDefinition {
+                        name: "fragDirective",
+                        ty: 217..224 @25 Named(
+                            "Boolean",
                         ),
-                    ),
-                    directives: [],
-                },
-                273..303 @25 VariableDefinition {
-                    name: "argDirective",
-                    ty: 288..295 @25 Named(
-                        "Boolean",
-                    ),
-                    default_value: Some(
-                        298..303 @25 Boolean(
-                            false,
+                        default_value: Some(
+                            227..232 @25 Boolean(
+                                false,
+                            ),
                         ),
-                    ),
-                    directives: [],
-                },
-                307..342 @25 VariableDefinition {
-                    name: "indirectDirective",
-                    ty: 327..334 @25 Named(
-                        "Boolean",
-                    ),
-                    default_value: Some(
-                        337..342 @25 Boolean(
-                            false,
+                        directives: [],
+                    },
+                    236..269 @25 VariableDefinition {
+                        name: "inlineDirective",
+                        ty: 254..261 @25 Named(
+                            "Boolean",
                         ),
-                    ),
-                    directives: [],
-                },
-            ],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        350..402 @25 Field {
-                            definition: 15..39 @25 FieldDefinition {
-                                description: None,
+                        default_value: Some(
+                            264..269 @25 Boolean(
+                                false,
+                            ),
+                        ),
+                        directives: [],
+                    },
+                    273..303 @25 VariableDefinition {
+                        name: "argDirective",
+                        ty: 288..295 @25 Named(
+                            "Boolean",
+                        ),
+                        default_value: Some(
+                            298..303 @25 Boolean(
+                                false,
+                            ),
+                        ),
+                        directives: [],
+                    },
+                    307..342 @25 VariableDefinition {
+                        name: "indirectDirective",
+                        ty: 327..334 @25 Named(
+                            "Boolean",
+                        ),
+                        default_value: Some(
+                            337..342 @25 Boolean(
+                                false,
+                            ),
+                        ),
+                        directives: [],
+                    },
+                ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            350..402 @25 Field {
+                                definition: 15..39 @25 FieldDefinition {
+                                    description: None,
+                                    name: "field",
+                                    arguments: [
+                                        21..33 @25 InputValueDefinition {
+                                            description: None,
+                                            name: "arg",
+                                            ty: 26..33 @25 Named(
+                                                "Boolean",
+                                            ),
+                                            default_value: None,
+                                            directives: [],
+                                        },
+                                    ],
+                                    ty: Named(
+                                        "Int",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "field",
                                 arguments: [
-                                    21..33 @25 InputValueDefinition {
-                                        description: None,
+                                    356..374 @25 Argument {
                                         name: "arg",
-                                        ty: 26..33 @25 Named(
-                                            "Boolean",
+                                        value: 361..374 @25 Variable(
+                                            "argDirective",
                                         ),
-                                        default_value: None,
-                                        directives: [],
                                     },
                                 ],
-                                ty: Named(
-                                    "Int",
-                                ),
-                                directives: [],
-                            },
-                            alias: None,
-                            name: "field",
-                            arguments: [
-                                356..374 @25 Argument {
-                                    name: "arg",
-                                    value: 361..374 @25 Variable(
-                                        "argDirective",
-                                    ),
-                                },
-                            ],
-                            directives: [
-                                376..402 @25 Directive {
-                                    name: "skip",
-                                    arguments: [
-                                        382..401 @25 Argument {
-                                            name: "if",
-                                            value: 386..401 @25 Variable(
-                                                "fieldDirective",
-                                            ),
-                                        },
-                                    ],
-                                },
-                            ],
-                            selection_set: SelectionSet {
-                                ty: "Int",
-                                selections: [],
-                            },
-                        },
-                    ),
-                    FragmentSpread(
-                        406..446 @25 FragmentSpread {
-                            fragment_name: "fragment",
-                            directives: [
-                                418..446 @25 Directive {
-                                    name: "include",
-                                    arguments: [
-                                        427..445 @25 Argument {
-                                            name: "if",
-                                            value: 431..445 @25 Variable(
-                                                "fragDirective",
-                                            ),
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    ),
-                    InlineFragment(
-                        450..503 @25 InlineFragment {
-                            type_condition: None,
-                            directives: [
-                                454..481 @25 Directive {
-                                    name: "skip",
-                                    arguments: [
-                                        460..480 @25 Argument {
-                                            name: "if",
-                                            value: 464..480 @25 Variable(
-                                                "inlineDirective",
-                                            ),
-                                        },
-                                    ],
-                                },
-                            ],
-                            selection_set: SelectionSet {
-                                ty: "Query",
-                                selections: [
-                                    Field(
-                                        488..499 @25 Field {
-                                            definition: 59..75 @25 FieldDefinition {
-                                                description: None,
-                                                name: "inlineField",
-                                                arguments: [],
-                                                ty: Named(
-                                                    "Int",
+                                directives: [
+                                    376..402 @25 Directive {
+                                        name: "skip",
+                                        arguments: [
+                                            382..401 @25 Argument {
+                                                name: "if",
+                                                value: 386..401 @25 Variable(
+                                                    "fieldDirective",
                                                 ),
-                                                directives: [],
                                             },
-                                            alias: None,
-                                            name: "inlineField",
-                                            arguments: [],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
+                                        ],
+                                    },
+                                ],
+                                selection_set: SelectionSet {
+                                    ty: "Int",
+                                    selections: [],
+                                },
+                            },
+                        ),
+                        FragmentSpread(
+                            406..446 @25 FragmentSpread {
+                                fragment_name: "fragment",
+                                directives: [
+                                    418..446 @25 Directive {
+                                        name: "include",
+                                        arguments: [
+                                            427..445 @25 Argument {
+                                                name: "if",
+                                                value: 431..445 @25 Variable(
+                                                    "fragDirective",
+                                                ),
                                             },
-                                        },
-                                    ),
+                                        ],
+                                    },
                                 ],
                             },
-                        },
-                    ),
-                ],
+                        ),
+                        InlineFragment(
+                            450..503 @25 InlineFragment {
+                                type_condition: None,
+                                directives: [
+                                    454..481 @25 Directive {
+                                        name: "skip",
+                                        arguments: [
+                                            460..480 @25 Argument {
+                                                name: "if",
+                                                value: 464..480 @25 Variable(
+                                                    "inlineDirective",
+                                                ),
+                                            },
+                                        ],
+                                    },
+                                ],
+                                selection_set: SelectionSet {
+                                    ty: "Query",
+                                    selections: [
+                                        Field(
+                                            488..499 @25 Field {
+                                                definition: 59..75 @25 FieldDefinition {
+                                                    description: None,
+                                                    name: "inlineField",
+                                                    arguments: [],
+                                                    ty: Named(
+                                                        "Int",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "inlineField",
+                                                arguments: [],
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "Int",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                    ],
+                },
             },
-        },
-    ),
-    named_operations: {},
+        ),
+        named: {},
+    },
     fragments: {
         "fragment": 79..154 @25 Fragment {
             name: "fragment",

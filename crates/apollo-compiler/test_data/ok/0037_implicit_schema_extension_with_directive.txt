@@ -99,7 +99,9 @@ ExecutableDocument {
             source_text: "type Query {\n    name: String\n}\n\nextend schema @dir\ndirective @dir on SCHEMA",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

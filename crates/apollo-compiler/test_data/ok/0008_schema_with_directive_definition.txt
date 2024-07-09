@@ -147,7 +147,9 @@ ExecutableDocument {
             source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

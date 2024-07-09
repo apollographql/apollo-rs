@@ -154,7 +154,9 @@ ExecutableDocument {
             source_text: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n}",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

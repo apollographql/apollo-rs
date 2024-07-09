@@ -120,47 +120,49 @@ ExecutableDocument {
             source_text: "query IntrospectionQuery {\n  foo {\n    ...Bar\n  }\n}\n\nfragment Bar on Foo {\n  baz {\n    ...Quux\n  }\n}\n\nfragment Quux on Baz {\n  id\n}\n\ntype Query {\n  foo: Foo\n}\n\ntype Foo {\n  baz: Baz\n}\n\ntype Baz {\n  id: ID\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "IntrospectionQuery": 0..51 @13 Operation {
-            operation_type: Query,
-            name: Some(
-                "IntrospectionQuery",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        29..49 @13 Field {
-                            definition: 148..156 @13 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "IntrospectionQuery": 0..51 @13 Operation {
+                operation_type: Query,
+                name: Some(
+                    "IntrospectionQuery",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            29..49 @13 Field {
+                                definition: 148..156 @13 FieldDefinition {
+                                    description: None,
+                                    name: "foo",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Foo",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "foo",
                                 arguments: [],
-                                ty: Named(
-                                    "Foo",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Foo",
+                                    selections: [
+                                        FragmentSpread(
+                                            39..45 @13 FragmentSpread {
+                                                fragment_name: "Bar",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "foo",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Foo",
-                                selections: [
-                                    FragmentSpread(
-                                        39..45 @13 FragmentSpread {
-                                            fragment_name: "Bar",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
         },
     },

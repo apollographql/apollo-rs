@@ -161,7 +161,9 @@ ExecutableDocument {
             source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }
