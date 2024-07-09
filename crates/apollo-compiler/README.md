@@ -122,7 +122,7 @@ let schema = Schema::parse_and_validate(schema_input, "schema.graphql").unwrap()
 let document = ExecutableDocument::parse_and_validate(&schema, query_input, "query.graphql")
     .unwrap();
 
-let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
+let op = document.operations.get(Some("getUser")).expect("getUser query does not exist");
 let fragment_in_op = op.selection_set.selections.iter().filter_map(|sel| match sel {
     executable::Selection::FragmentSpread(spread) => {
         Some(document.fragments.get(&spread.fragment_name)?.as_ref())
@@ -182,7 +182,8 @@ let document = ExecutableDocument::parse_and_validate(&schema, query_input, "que
     .unwrap();
 
 let get_product_op = document
-    .get_operation(Some("getProduct"))
+    .operations
+    .get(Some("getProduct"))
     .expect("getProduct query does not exist");
 
 let in_stock_field = &get_product_op
