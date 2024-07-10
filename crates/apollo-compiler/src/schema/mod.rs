@@ -54,7 +54,7 @@ pub struct Schema {
 
     /// Definitions and extensions of built-in scalars, introspection types,
     /// and explicit types
-    pub types: IndexMap<NamedType, ExtendedType>,
+    pub types: IndexMap<Name, ExtendedType, ahash::RandomState>,
 }
 
 /// The `schema` definition and its extensions, defining root operations
@@ -1037,7 +1037,7 @@ impl std::fmt::Debug for Schema {
 
 struct DebugDirectiveDefinitions<'a>(&'a IndexMap<Name, Node<DirectiveDefinition>>);
 
-struct DebugTypes<'a>(&'a IndexMap<Name, ExtendedType>);
+struct DebugTypes<'a>(&'a IndexMap<Name, ExtendedType, ahash::RandomState>);
 
 impl std::fmt::Debug for DebugDirectiveDefinitions<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

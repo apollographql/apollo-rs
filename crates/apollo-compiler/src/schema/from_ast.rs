@@ -46,7 +46,7 @@ impl SchemaBuilder {
                             subscription: None,
                         }),
                         directive_definitions: IndexMap::new(),
-                        types: IndexMap::new(),
+                        types: IndexMap::with_hasher(Default::default()),
                     },
                     schema_definition: SchemaDefinitionStatus::NoneSoFar {
                         orphan_extensions: Vec::new(),

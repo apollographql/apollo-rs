@@ -34,7 +34,7 @@ impl Schema {
 impl Node<SchemaDefinition> {
     fn to_ast(
         &self,
-        types: &IndexMap<Name, ExtendedType>,
+        types: &IndexMap<Name, ExtendedType, ahash::RandomState>,
     ) -> impl Iterator<Item = ast::Definition> + '_ {
         let SchemaDefinition {
             description,

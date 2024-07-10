@@ -220,7 +220,7 @@ fn check_non_query<'doc>(
 }
 
 /// As found in `ExecutableDocument::fragments`
-type FragmentMap = IndexMap<Name, Node<Fragment>>;
+type FragmentMap = IndexMap<Name, Node<Fragment>, ahash::RandomState>;
 
 /// The given operation and fragments are expected to form a valid document.
 /// This is checked iff debug assertions are enabled.
@@ -233,7 +233,7 @@ fn make_single_operation_document(
     let mut new_document = ExecutableDocument {
         sources: document.sources.clone(),
         anonymous_operation: None,
-        named_operations: IndexMap::new(),
+        named_operations: IndexMap::with_hasher(Default::default()),
         fragments,
     };
     new_document.insert_operation(new_operation);

@@ -34,7 +34,7 @@ pub struct SourceFile {
     pub(crate) source: OnceLock<ariadne::Source>,
 }
 
-pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>, ahash::RandomState>>;
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.

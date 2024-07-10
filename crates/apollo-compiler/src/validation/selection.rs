@@ -19,9 +19,7 @@ use std::cell::OnceCell;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::hash::BuildHasher;
 use std::hash::Hash;
-use std::hash::RandomState;
 use std::rc::Rc;
 use std::sync::OnceLock;
 
@@ -46,9 +44,9 @@ impl<'a> Hash for FieldSelection<'a> {
 
 impl<'a> FieldSelection<'a> {
     fn new(parent_type: &'a NamedType, field: &'a Node<executable::Field>) -> Self {
-        static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
+        static SHARED_RANDOM: OnceLock<ahash::RandomState> = OnceLock::new();
         let hash = SHARED_RANDOM
-            .get_or_init(RandomState::new)
+            .get_or_init(Default::default)
             .hash_one((parent_type, field));
         Self {
             hash,
@@ -67,12 +65,12 @@ impl<'a> FieldSelection<'a> {
 
 /// Expand one or more selection sets to a list of all fields selected.
 pub(crate) fn expand_selections<'doc>(
-    fragments: &'doc IndexMap<Name, Node<executable::Fragment>>,
+    fragments: &'doc IndexMap<Name, Node<executable::Fragment>, ahash::RandomState>,
     selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
     let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.collect();
-    let mut seen_fragments = HashSet::new();
+    let mut seen_fragments = HashSet::with_hasher(ahash::RandomState::new());
 
     while let Some(next_set) = queue.pop_front() {
         for selection in &next_set.selections {
@@ -84,9 +82,8 @@ pub(crate) fn expand_selections<'doc>(
                     queue.push_back(&spread.selection_set)
                 }
                 executable::Selection::FragmentSpread(spread)
-                    if !seen_fragments.contains(&spread.fragment_name) =>
+                    if !seen_fragments.insert(&spread.fragment_name) =>
                 {
-                    seen_fragments.insert(&spread.fragment_name);
                     if let Some(fragment) = fragments.get(&spread.fragment_name) {
                         queue.push_back(&fragment.selection_set);
                     }
@@ -317,7 +314,7 @@ impl OnceBool {
 /// Represents a merged field set that may or may not be valid.
 struct MergedFieldSet<'alloc, 'doc> {
     selections: &'alloc [FieldSelection<'doc>],
-    grouped_by_output_names: OnceCell<IndexMap<Name, &'alloc [FieldSelection<'doc>]>>,
+    grouped_by_output_names: OnceCell<IndexMap<Name, &'alloc [FieldSelection<'doc>], ahash::RandomState>>,
     grouped_by_common_parents: OnceCell<Vec<&'alloc [FieldSelection<'doc>]>>,
     same_response_shape_guard: OnceBool,
     same_for_common_parents_guard: OnceBool,
@@ -422,9 +419,9 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
     fn group_by_output_name(
         &self,
         alloc: &'alloc Arena<'doc>,
-    ) -> &IndexMap<schema::Name, &'alloc [FieldSelection<'doc>]> {
+    ) -> &IndexMap<schema::Name, &'alloc [FieldSelection<'doc>], ahash::RandomState> {
         self.grouped_by_output_names.get_or_init(|| {
-            let mut map = IndexMap::<_, Vec<_>>::new();
+            let mut map = IndexMap::<_, Vec<_>, ahash::RandomState>::with_hasher(Default::default());
             for selection in self.selections {
                 map.entry(selection.field.response_key().clone())
                     .or_default()
@@ -498,7 +495,7 @@ pub(crate) struct FieldsInSetCanMerge<'alloc, 's, 'doc> {
     ///
     /// The value is an Rc because it needs to have an independent lifetime from `self`,
     /// so the cache can be updated while a field set is borrowed.
-    cache: HashMap<&'alloc [FieldSelection<'doc>], Rc<MergedFieldSet<'alloc, 'doc>>>,
+    cache: HashMap<&'alloc [FieldSelection<'doc>], Rc<MergedFieldSet<'alloc, 'doc>>, ahash::RandomState>,
     // The recursion limit is used for two separate recursions, but they are not interleaved,
     // so the effective limit does apply to field nesting levels in both cases.
     recursion_limit: LimitTracker,

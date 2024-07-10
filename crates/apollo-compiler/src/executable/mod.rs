@@ -43,8 +43,8 @@ pub struct ExecutableDocument {
     pub sources: crate::SourceMap,
 
     pub anonymous_operation: Option<Node<Operation>>,
-    pub named_operations: IndexMap<Name, Node<Operation>>,
-    pub fragments: IndexMap<Name, Node<Fragment>>,
+    pub named_operations: IndexMap<Name, Node<Operation>, ahash::RandomState>,
+    pub fragments: IndexMap<Name, Node<Fragment>, ahash::RandomState>,
 }
 
 /// FieldSet information created for FieldSet parsing in `@requires` directive.
