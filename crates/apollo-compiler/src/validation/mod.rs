@@ -23,6 +23,7 @@ pub(crate) mod union_;
 pub(crate) mod value;
 pub(crate) mod variable;
 
+use crate::collections::fast::IndexSet;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;
@@ -40,7 +41,6 @@ use crate::Name;
 use crate::Node;
 use crate::NodeLocation;
 use crate::SourceMap;
-use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
@@ -1102,7 +1102,7 @@ struct RecursionStack {
 impl RecursionStack {
     fn new() -> Self {
         Self {
-            seen: IndexSet::new(),
+            seen: IndexSet::with_hasher(Default::default()),
             high: 0,
             limit: DEFAULT_RECURSION_LIMIT,
         }

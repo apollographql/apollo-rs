@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::ast::NamedType;
+use crate::collections::fast::IndexMap;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
 use crate::executable::BuildError;
@@ -14,14 +15,11 @@ use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 use apollo_parser::LimitTracker;
-use indexmap::IndexMap;
 use std::cell::OnceCell;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::hash::BuildHasher;
 use std::hash::Hash;
-use std::hash::RandomState;
 use std::rc::Rc;
 use std::sync::OnceLock;
 
@@ -46,9 +44,9 @@ impl<'a> Hash for FieldSelection<'a> {
 
 impl<'a> FieldSelection<'a> {
     fn new(parent_type: &'a NamedType, field: &'a Node<executable::Field>) -> Self {
-        static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
+        static SHARED_RANDOM: OnceLock<ahash::RandomState> = OnceLock::new();
         let hash = SHARED_RANDOM
-            .get_or_init(RandomState::new)
+            .get_or_init(Default::default)
             .hash_one((parent_type, field));
         Self {
             hash,
@@ -72,7 +70,7 @@ pub(crate) fn expand_selections<'doc>(
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
     let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.collect();
-    let mut seen_fragments = HashSet::new();
+    let mut seen_fragments = HashSet::with_hasher(ahash::RandomState::new());
 
     while let Some(next_set) = queue.pop_front() {
         for selection in &next_set.selections {
@@ -84,9 +82,8 @@ pub(crate) fn expand_selections<'doc>(
                     queue.push_back(&spread.selection_set)
                 }
                 executable::Selection::FragmentSpread(spread)
-                    if !seen_fragments.contains(&spread.fragment_name) =>
+                    if seen_fragments.insert(&spread.fragment_name) =>
                 {
-                    seen_fragments.insert(&spread.fragment_name);
                     if let Some(fragment) = fragments.get(&spread.fragment_name) {
                         queue.push_back(&fragment.selection_set);
                     }
@@ -424,7 +421,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
         alloc: &'alloc Arena<'doc>,
     ) -> &IndexMap<schema::Name, &'alloc [FieldSelection<'doc>]> {
         self.grouped_by_output_names.get_or_init(|| {
-            let mut map = IndexMap::<_, Vec<_>>::new();
+            let mut map = IndexMap::<_, Vec<_>>::with_hasher(Default::default());
             for selection in self.selections {
                 map.entry(selection.field.response_key().clone())
                     .or_default()
@@ -446,7 +443,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
     ) -> &Vec<&'alloc [FieldSelection<'doc>]> {
         self.grouped_by_common_parents.get_or_init(|| {
             let mut abstract_parents = vec![];
-            let mut concrete_parents = IndexMap::<_, Vec<_>>::new();
+            let mut concrete_parents = IndexMap::<_, Vec<_>>::with_hasher(Default::default());
             for selection in self.selections {
                 match schema.types.get(selection.parent_type) {
                     Some(schema::ExtendedType::Object(object)) => {
@@ -498,7 +495,11 @@ pub(crate) struct FieldsInSetCanMerge<'alloc, 's, 'doc> {
     ///
     /// The value is an Rc because it needs to have an independent lifetime from `self`,
     /// so the cache can be updated while a field set is borrowed.
-    cache: HashMap<&'alloc [FieldSelection<'doc>], Rc<MergedFieldSet<'alloc, 'doc>>>,
+    cache: HashMap<
+        &'alloc [FieldSelection<'doc>],
+        Rc<MergedFieldSet<'alloc, 'doc>>,
+        ahash::RandomState,
+    >,
     // The recursion limit is used for two separate recursions, but they are not interleaved,
     // so the effective limit does apply to field nesting levels in both cases.
     recursion_limit: LimitTracker,

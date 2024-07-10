@@ -45,13 +45,13 @@ impl SchemaBuilder {
                             mutation: None,
                             subscription: None,
                         }),
-                        directive_definitions: IndexMap::new(),
-                        types: IndexMap::new(),
+                        directive_definitions: IndexMap::with_hasher(Default::default()),
+                        types: IndexMap::with_hasher(Default::default()),
                     },
                     schema_definition: SchemaDefinitionStatus::NoneSoFar {
                         orphan_extensions: Vec::new(),
                     },
-                    orphan_type_extensions: IndexMap::new(),
+                    orphan_type_extensions: IndexMap::with_hasher(Default::default()),
                     errors: DiagnosticList::new(Default::default()),
                 };
                 let input = include_str!("../built_in_types.graphql").to_owned();
@@ -941,7 +941,7 @@ fn collect_sticky<'a, V>(
     iter: impl IntoIterator<Item = (&'a Name, V)>,
     duplicate: impl FnMut(&Name, V),
 ) -> IndexMap<Name, V> {
-    let mut map = IndexMap::new();
+    let mut map = IndexMap::with_hasher(Default::default());
     extend_sticky(&mut map, iter, duplicate);
     map
 }
@@ -964,7 +964,7 @@ fn collect_sticky_set(
     iter: impl IntoIterator<Item = ComponentName>,
     duplicate: impl FnMut(&ComponentName, ComponentName),
 ) -> IndexSet<ComponentName> {
-    let mut set = IndexSet::new();
+    let mut set = IndexSet::with_hasher(Default::default());
     extend_sticky_set(&mut set, iter, duplicate);
     set
 }

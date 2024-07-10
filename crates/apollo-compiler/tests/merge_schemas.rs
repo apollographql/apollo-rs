@@ -1,11 +1,11 @@
 use apollo_compiler::ast;
+use apollo_compiler::collections::fast::IndexMap;
+use apollo_compiler::collections::fast::IndexSet;
 use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
 use apollo_compiler::schema::ComponentName;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::Schema;
-use indexmap::IndexMap;
-use indexmap::IndexSet;
 
 type MergeError = &'static str;
 
