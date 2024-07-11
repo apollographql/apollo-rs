@@ -70,7 +70,6 @@ pub fn arbitrary_valid_executable_document(
         }),
         fragments: builder.fragment_map,
     };
-    println!("{doc}");
     doc.validate(schema)
         .expect("bug in arbitrary_valid_executable_document")
 }
