@@ -12,7 +12,7 @@ pub(crate) fn document_from_ast(
     errors: &mut DiagnosticList,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
-    let mut named_operations =  IndexMap::with_hasher(Default::default());
+    let mut named_operations = IndexMap::with_hasher(Default::default());
     let mut anonymous_operation = None::<Node<Operation>>;
     let mut multiple_anonymous = false;
     let mut fragments = IndexMap::with_hasher(Default::default());

@@ -1,4 +1,5 @@
 use crate::ast::Value;
+use crate::collections::fast::IndexMap;
 use crate::executable::Field;
 use crate::executable::Selection;
 use crate::execution::input_coercion::coerce_argument_values;
@@ -20,7 +21,6 @@ use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
 use crate::SourceMap;
-use crate::collections::fast::IndexMap;
 use std::collections::HashSet;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>

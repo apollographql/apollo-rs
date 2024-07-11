@@ -2,6 +2,7 @@
 //! which can contain operations and fragments.
 
 use crate::ast;
+use crate::collections::fast::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema;
@@ -9,7 +10,6 @@ use crate::Node;
 use crate::Parser;
 use crate::Schema;
 use indexmap::map::Entry;
-use crate::collections::fast::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
 

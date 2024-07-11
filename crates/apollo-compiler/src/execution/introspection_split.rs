@@ -1,4 +1,6 @@
 use crate::ast;
+use crate::collections::fast::HashSet;
+use crate::collections::fast::IndexMap;
 use crate::executable::Field;
 use crate::executable::Fragment;
 use crate::executable::FragmentSpread;
@@ -20,9 +22,6 @@ use crate::Node;
 use crate::Schema;
 use crate::SourceMap;
 use indexmap::map::Entry;
-use crate::collections::fast::IndexMap;
-use crate::collections::fast::HashSet;
-
 
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.
 ///

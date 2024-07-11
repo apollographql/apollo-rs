@@ -134,6 +134,7 @@ fn expect_valid(query: &'static str) {
     ExecutableDocument::parse_and_validate(schema, unindent(query), "query.graphql").unwrap();
 }
 
+#[track_caller]
 fn expect_errors(query: &'static str, expect: Expect) {
     let schema = test_schema();
 

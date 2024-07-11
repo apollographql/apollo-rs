@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::ast::NamedType;
+use crate::collections::fast::IndexMap;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
 use crate::executable::BuildError;
@@ -14,7 +15,6 @@ use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 use apollo_parser::LimitTracker;
-use crate::collections::fast::IndexMap;
 use std::cell::OnceCell;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -82,7 +82,7 @@ pub(crate) fn expand_selections<'doc>(
                     queue.push_back(&spread.selection_set)
                 }
                 executable::Selection::FragmentSpread(spread)
-                    if !seen_fragments.insert(&spread.fragment_name) =>
+                    if seen_fragments.insert(&spread.fragment_name) =>
                 {
                     if let Some(fragment) = fragments.get(&spread.fragment_name) {
                         queue.push_back(&fragment.selection_set);
@@ -495,7 +495,11 @@ pub(crate) struct FieldsInSetCanMerge<'alloc, 's, 'doc> {
     ///
     /// The value is an Rc because it needs to have an independent lifetime from `self`,
     /// so the cache can be updated while a field set is borrowed.
-    cache: HashMap<&'alloc [FieldSelection<'doc>], Rc<MergedFieldSet<'alloc, 'doc>>, ahash::RandomState>,
+    cache: HashMap<
+        &'alloc [FieldSelection<'doc>],
+        Rc<MergedFieldSet<'alloc, 'doc>>,
+        ahash::RandomState,
+    >,
     // The recursion limit is used for two separate recursions, but they are not interleaved,
     // so the effective limit does apply to field nesting levels in both cases.
     recursion_limit: LimitTracker,

@@ -8,6 +8,7 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset work correctly
 
 use apollo_compiler::ast;
+use apollo_compiler::collections::fast::IndexMap;
 use apollo_compiler::name;
 use apollo_compiler::schema;
 use apollo_compiler::ty;
@@ -15,7 +16,6 @@ use apollo_compiler::validation::DiagnosticList;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
-use apollo_compiler::collections::fast::IndexMap;
 use serial_test::serial;
 use std::env;
 use std::fmt::Write;
@@ -249,7 +249,8 @@ fn test_invalid_synthetic_node() {
                 }
                 .into(),
             )]
-            .into_iter().collect(),
+            .into_iter()
+            .collect(),
         }
         .into(),
     );

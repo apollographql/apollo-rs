@@ -3,6 +3,7 @@
 #[macro_use]
 mod macros;
 pub mod ast;
+pub mod collections;
 pub mod coordinate;
 pub mod diagnostic;
 pub mod executable;
@@ -12,7 +13,6 @@ mod node;
 mod parser;
 pub mod schema;
 pub mod validation;
-pub mod collections;
 
 pub use self::executable::ExecutableDocument;
 pub use self::name::InvalidNameError;
