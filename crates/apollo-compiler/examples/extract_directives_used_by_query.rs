@@ -8,7 +8,8 @@ use apollo_compiler::Schema;
 fn get_directives_used_in_query(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
     // seed the stack with top-level fields
     let mut stack: Vec<_> = doc
-        .all_operations()
+        .operations
+        .iter()
         .flat_map(|op| op.selection_set.fields())
         .collect();
 

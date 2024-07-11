@@ -9,7 +9,8 @@ fn compile_query() -> Option<Node<executable::Fragment>> {
 
     let (_, document) = apollo_compiler::parse_mixed_validate(src, file).unwrap();
     let operation_names: Vec<_> = document
-        .named_operations
+        .operations
+        .named
         .keys()
         .map(|n| n.as_str())
         .collect();
@@ -22,7 +23,8 @@ fn compile_query() -> Option<Node<executable::Fragment>> {
     assert_eq!(["vipCustomer"], fragments.as_slice());
 
     let operation_variables: Vec<&str> = document
-        .named_operations
+        .operations
+        .named
         .get("ExampleQuery")?
         .variables
         .iter()

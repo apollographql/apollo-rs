@@ -76,7 +76,9 @@ ExecutableDocument {
             source_text: "type Query {\n    name: String\n}",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

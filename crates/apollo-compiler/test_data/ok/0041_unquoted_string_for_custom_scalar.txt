@@ -102,72 +102,74 @@ ExecutableDocument {
             source_text: "scalar Currency\n\ntype Query {\n  convertToUSD(amount: Int!, currency: Currency!): Int!\n}\n\nquery {\n  convertToUSD(amount: 100, currency: EUR)\n}\n",
         },
     },
-    anonymous_operation: Some(
-        89..141 @42 Operation {
-            operation_type: Query,
-            name: None,
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        99..139 @42 Field {
-                            definition: 32..85 @42 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: Some(
+            89..141 @42 Operation {
+                operation_type: Query,
+                name: None,
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            99..139 @42 Field {
+                                definition: 32..85 @42 FieldDefinition {
+                                    description: None,
+                                    name: "convertToUSD",
+                                    arguments: [
+                                        45..57 @42 InputValueDefinition {
+                                            description: None,
+                                            name: "amount",
+                                            ty: 53..57 @42 NonNullNamed(
+                                                "Int",
+                                            ),
+                                            default_value: None,
+                                            directives: [],
+                                        },
+                                        59..78 @42 InputValueDefinition {
+                                            description: None,
+                                            name: "currency",
+                                            ty: 69..78 @42 NonNullNamed(
+                                                "Currency",
+                                            ),
+                                            default_value: None,
+                                            directives: [],
+                                        },
+                                    ],
+                                    ty: NonNullNamed(
+                                        "Int",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "convertToUSD",
                                 arguments: [
-                                    45..57 @42 InputValueDefinition {
-                                        description: None,
+                                    112..123 @42 Argument {
                                         name: "amount",
-                                        ty: 53..57 @42 NonNullNamed(
-                                            "Int",
+                                        value: 120..123 @42 Int(
+                                            100,
                                         ),
-                                        default_value: None,
-                                        directives: [],
                                     },
-                                    59..78 @42 InputValueDefinition {
-                                        description: None,
+                                    125..138 @42 Argument {
                                         name: "currency",
-                                        ty: 69..78 @42 NonNullNamed(
-                                            "Currency",
+                                        value: 135..138 @42 Enum(
+                                            "EUR",
                                         ),
-                                        default_value: None,
-                                        directives: [],
                                     },
                                 ],
-                                ty: NonNullNamed(
-                                    "Int",
-                                ),
                                 directives: [],
-                            },
-                            alias: None,
-                            name: "convertToUSD",
-                            arguments: [
-                                112..123 @42 Argument {
-                                    name: "amount",
-                                    value: 120..123 @42 Int(
-                                        100,
-                                    ),
+                                selection_set: SelectionSet {
+                                    ty: "Int",
+                                    selections: [],
                                 },
-                                125..138 @42 Argument {
-                                    name: "currency",
-                                    value: 135..138 @42 Enum(
-                                        "EUR",
-                                    ),
-                                },
-                            ],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Int",
-                                selections: [],
                             },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
-        },
-    ),
-    named_operations: {},
+        ),
+        named: {},
+    },
     fragments: {},
 }

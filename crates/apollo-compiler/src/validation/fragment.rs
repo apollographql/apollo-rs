@@ -363,7 +363,8 @@ pub(crate) fn validate_fragment_used(
     let fragment_name = &fragment.name;
 
     let mut all_selections = document
-        .all_operations()
+        .operations
+        .iter()
         .map(|operation| &operation.selection_set)
         .chain(
             document

@@ -366,7 +366,9 @@ ExecutableDocument {
             source_text: "type Query {\n  \"LF: a\\nb\"\n  f1: Int\n\n  \"CRLF: a\\r\\nb\"\n  f2: Int\n\n  \"\"\"\n    a\n\n    b\n  \n\n  \"\"\"\n  f3: Int\n\n  \"a \\\"b\\\" c\"\n  f4: Int\n\n  \"\"\"a \\\"\"\"b\\\"\"\" c\"\"\"\n  f5: Int\n\n  \"\"\"\n  regex: \\d+\n  \"\"\"\n  f6: Int\n\n  \"\\nLeading empty line to preserve\"\n  f7: Int\n\n  \" \\nLeading whitespace-only line to preserve\"\n  f8: Int\n\n  \"Trailing empty line to preserve\\n\"\n  f9: Int\n\n  \"Trailing whitespace-only line to preserve\\n\\t\"\n  f10: Int\n\n  f11(arg: String = \"a\\nb\"): Int\n\n  f12(arg: String = \"a \\\"b\\\" c\"): Int\n\n  f13(arg: String = \"regex: \\\\d+\"): Int\n\n  \"Trailing backslash \\\\\"\n  f14: Int\n\n  \"Trailing quote\\\"\"\n  f15: Int\n\n  \"   Leading whitespace on a single line to preserve\"\n  f16: Int\n\n  \"   Leading whitespace in multi-line string to preserve\\nNo leading whitespace on second line\"\n  f17: Int\n\n  \"\\n   Leading empty line + indent to preserve\"\n  f18: Int\n\n  \"When serialized as a block string, \\\\\\\"\\\"\\\" outputs \\\\ in front of the escaped triple quote\"\n  f19: Int\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

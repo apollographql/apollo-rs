@@ -12,10 +12,10 @@ impl ExecutableDocument {
 
     pub(crate) fn to_ast(&self) -> ast::Document {
         let mut doc = ast::Document::new();
-        if let Some(operation) = &self.anonymous_operation {
+        if let Some(operation) = &self.operations.anonymous {
             doc.definitions.push(operation.to_ast(operation.location()))
         }
-        for operation in self.named_operations.values() {
+        for operation in self.operations.named.values() {
             doc.definitions.push(operation.to_ast(operation.location()))
         }
         for fragment in self.fragments.values() {
