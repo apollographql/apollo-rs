@@ -54,7 +54,7 @@ pub struct Schema {
 
     /// Definitions and extensions of built-in scalars, introspection types,
     /// and explicit types
-    pub types: IndexMap<Name, ExtendedType>,
+    pub types: IndexMap<NamedType, ExtendedType>,
 }
 
 /// The `schema` definition and its extensions, defining root operations
