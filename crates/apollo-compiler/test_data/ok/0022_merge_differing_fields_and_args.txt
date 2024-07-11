@@ -305,129 +305,131 @@ ExecutableDocument {
             source_text: "interface Pet {\n  name: String!\n}\n\nenum DogCommand {\n  SIT\n  HEEL\n}\n\nenum CatCommand {\n  JUMP\n}\n\ntype Query {\n  pet: Pet\n}\n\ntype Dog implements Pet {\n  name: String!\n  nickname: String!\n  barkVolume: Int!\n  doesKnowCommand(dogCommand: DogCommand!): Boolean!\n  isAtLocation(x: Int, y: Int): Boolean!\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int!\n  doesKnowCommand(catCommand: CatCommand!): Boolean!\n}\n\nquery barkVolume {\n  pet {\n    ...safeDifferingFields\n  }\n}\n\nquery doesKnowCommand {\n  pet {\n    ...safeDifferingArgs\n  }\n}\n\nquery isAtLocation {\n  pet {\n    ...safeDifferingArgOrder\n  }\n}\n\nfragment safeDifferingFields on Pet {\n  ... on Dog {\n    volume: barkVolume\n  }\n  ... on Cat {\n    volume: meowVolume\n  }\n}\n\nfragment safeDifferingArgs on Pet {\n  ... on Dog {\n    doesKnowCommand(dogCommand: SIT)\n  }\n  ... on Cat {\n    doesKnowCommand(catCommand: JUMP)\n  }\n}\n\nfragment safeDifferingArgOrder on Dog {\n  isAtLocation(x: 0, y: 0)\n  isAtLocation(y: 0, x: 0)\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "barkVolume": 419..478 @24 Operation {
-            operation_type: Query,
-            name: Some(
-                "barkVolume",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        440..476 @24 Field {
-                            definition: 112..120 @24 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "barkVolume": 419..478 @24 Operation {
+                operation_type: Query,
+                name: Some(
+                    "barkVolume",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            440..476 @24 Field {
+                                definition: 112..120 @24 FieldDefinition {
+                                    description: None,
+                                    name: "pet",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Pet",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "pet",
                                 arguments: [],
-                                ty: Named(
-                                    "Pet",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Pet",
+                                    selections: [
+                                        FragmentSpread(
+                                            450..472 @24 FragmentSpread {
+                                                fragment_name: "safeDifferingFields",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "pet",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Pet",
-                                selections: [
-                                    FragmentSpread(
-                                        450..472 @24 FragmentSpread {
-                                            fragment_name: "safeDifferingFields",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
-        },
-        "doesKnowCommand": 480..542 @24 Operation {
-            operation_type: Query,
-            name: Some(
-                "doesKnowCommand",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        506..540 @24 Field {
-                            definition: 112..120 @24 FieldDefinition {
-                                description: None,
+            "doesKnowCommand": 480..542 @24 Operation {
+                operation_type: Query,
+                name: Some(
+                    "doesKnowCommand",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            506..540 @24 Field {
+                                definition: 112..120 @24 FieldDefinition {
+                                    description: None,
+                                    name: "pet",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Pet",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "pet",
                                 arguments: [],
-                                ty: Named(
-                                    "Pet",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Pet",
+                                    selections: [
+                                        FragmentSpread(
+                                            516..536 @24 FragmentSpread {
+                                                fragment_name: "safeDifferingArgs",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "pet",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Pet",
-                                selections: [
-                                    FragmentSpread(
-                                        516..536 @24 FragmentSpread {
-                                            fragment_name: "safeDifferingArgs",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
-        },
-        "isAtLocation": 544..607 @24 Operation {
-            operation_type: Query,
-            name: Some(
-                "isAtLocation",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        567..605 @24 Field {
-                            definition: 112..120 @24 FieldDefinition {
-                                description: None,
+            "isAtLocation": 544..607 @24 Operation {
+                operation_type: Query,
+                name: Some(
+                    "isAtLocation",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            567..605 @24 Field {
+                                definition: 112..120 @24 FieldDefinition {
+                                    description: None,
+                                    name: "pet",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Pet",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "pet",
                                 arguments: [],
-                                ty: Named(
-                                    "Pet",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Pet",
+                                    selections: [
+                                        FragmentSpread(
+                                            577..601 @24 FragmentSpread {
+                                                fragment_name: "safeDifferingArgOrder",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "pet",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Pet",
-                                selections: [
-                                    FragmentSpread(
-                                        577..601 @24 FragmentSpread {
-                                            fragment_name: "safeDifferingArgOrder",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
         },
     },

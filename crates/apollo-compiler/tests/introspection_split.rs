@@ -364,7 +364,7 @@ fn test_variables() {
 fn assert_split(doc: &str, expected: expect_test::Expect) {
     let schema = Schema::parse_and_validate(SCHEMA, "schema.graphql").unwrap();
     let doc = ExecutableDocument::parse_and_validate(&schema, doc, "doc.graphql").unwrap();
-    let operation = doc.get_operation(Some("TheOperation")).unwrap();
+    let operation = doc.operations.get(Some("TheOperation")).unwrap();
 
     match SchemaIntrospectionSplit::split(&schema, &doc, operation) {
         Ok(SchemaIntrospectionSplit::None) => expected.assert_eq("None"),

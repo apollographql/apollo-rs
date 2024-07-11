@@ -82,7 +82,7 @@ impl SchemaIntrospectionQuery {
         schema: &Valid<Schema>,
         variable_values: &Valid<JsonMap>,
     ) -> Result<Response, SuspectedValidationBug> {
-        let operation = self.0.get_operation(None).unwrap();
+        let operation = self.0.operations.get(None).unwrap();
         debug_assert_eq!(operation.operation_type, OperationType::Query);
 
         // https://spec.graphql.org/October2021/#sec-Query

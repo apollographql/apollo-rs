@@ -350,151 +350,153 @@ ExecutableDocument {
             source_text: "interface Pet {\n  name: String!\n}\n\ntype Dog implements Pet {\n  name: String!\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String!\n  meowVolume: Int\n}\n\nunion CatOrDog = Cat | Dog\n\ntype Human {\n  pets: [Pet!]\n}\n\nunion DogOrHuman = Dog | Human\n\n# https://spec.graphql.org/October2021/#sec-Object-Spreads-In-Object-Scope\nfragment dogFragment on Dog {\n  ... on Dog {\n    barkVolume\n  }\n}\n\n# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Object-Scope\nfragment petNameFragment on Pet {\n  name\n}\n\nfragment interfaceWithinObjectFragment on Dog {\n  ...petNameFragment\n}\n\nfragment catOrDogNameFragment on CatOrDog {\n  ... on Cat {\n    meowVolume\n  }\n}\n\nfragment unionWithObjectFragment on Dog {\n  ...catOrDogNameFragment\n}\n\n# https://spec.graphql.org/October2021/#sec-Object-Spreads-In-Abstract-Scope\nfragment petFragment on Pet {\n  name\n  ... on Dog {\n    barkVolume\n  }\n}\n\nfragment catOrDogFragment on CatOrDog {\n  ... on Cat {\n    meowVolume\n  }\n}\n\n# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Abstract-Scope\nfragment unionWithInterface on Pet {\n  ...dogOrHumanFragment\n}\n\nfragment dogOrHumanFragment on DogOrHuman {\n  ... on Dog {\n    barkVolume\n  }\n}\n\n# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Abstract-Scope.Interface-Spreads-in-implemented-Interface-Scope\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  url: String\n}\n\n# The validation for fragment spreads works on concrete types.\ntype ConcreteResource implements Resource & Node {\n  id: ID!\n  url: String\n}\n\nfragment interfaceWithInterface on Node {\n  ...resourceFragment\n}\n\nfragment resourceFragment on Resource {\n  url\n}\n\n# Make sure the above fragments are used\ntype Query {\n  pet: Pet\n  resource: Resource\n}\n\nquery UseAllFragments {\n  pet {\n    ... dogFragment\n    ... interfaceWithinObjectFragment\n    ... unionWithObjectFragment\n    ... petFragment\n    ... catOrDogFragment\n    ... unionWithInterface\n  }\n  resource {\n    ...interfaceWithInterface\n    ... @skip(if: true) {\n      urlInInlineFragment: url\n    }\n  }\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "UseAllFragments": 1759..2068 @32 Operation {
-            operation_type: Query,
-            name: Some(
-                "UseAllFragments",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        1785..1956 @32 Field {
-                            definition: 1726..1734 @32 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "UseAllFragments": 1759..2068 @32 Operation {
+                operation_type: Query,
+                name: Some(
+                    "UseAllFragments",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            1785..1956 @32 Field {
+                                definition: 1726..1734 @32 FieldDefinition {
+                                    description: None,
+                                    name: "pet",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Pet",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "pet",
                                 arguments: [],
-                                ty: Named(
-                                    "Pet",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Pet",
+                                    selections: [
+                                        FragmentSpread(
+                                            1795..1810 @32 FragmentSpread {
+                                                fragment_name: "dogFragment",
+                                                directives: [],
+                                            },
+                                        ),
+                                        FragmentSpread(
+                                            1815..1848 @32 FragmentSpread {
+                                                fragment_name: "interfaceWithinObjectFragment",
+                                                directives: [],
+                                            },
+                                        ),
+                                        FragmentSpread(
+                                            1853..1880 @32 FragmentSpread {
+                                                fragment_name: "unionWithObjectFragment",
+                                                directives: [],
+                                            },
+                                        ),
+                                        FragmentSpread(
+                                            1885..1900 @32 FragmentSpread {
+                                                fragment_name: "petFragment",
+                                                directives: [],
+                                            },
+                                        ),
+                                        FragmentSpread(
+                                            1905..1925 @32 FragmentSpread {
+                                                fragment_name: "catOrDogFragment",
+                                                directives: [],
+                                            },
+                                        ),
+                                        FragmentSpread(
+                                            1930..1952 @32 FragmentSpread {
+                                                fragment_name: "unionWithInterface",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "pet",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Pet",
-                                selections: [
-                                    FragmentSpread(
-                                        1795..1810 @32 FragmentSpread {
-                                            fragment_name: "dogFragment",
-                                            directives: [],
-                                        },
+                        ),
+                        Field(
+                            1959..2066 @32 Field {
+                                definition: 1737..1755 @32 FieldDefinition {
+                                    description: None,
+                                    name: "resource",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Resource",
                                     ),
-                                    FragmentSpread(
-                                        1815..1848 @32 FragmentSpread {
-                                            fragment_name: "interfaceWithinObjectFragment",
-                                            directives: [],
-                                        },
-                                    ),
-                                    FragmentSpread(
-                                        1853..1880 @32 FragmentSpread {
-                                            fragment_name: "unionWithObjectFragment",
-                                            directives: [],
-                                        },
-                                    ),
-                                    FragmentSpread(
-                                        1885..1900 @32 FragmentSpread {
-                                            fragment_name: "petFragment",
-                                            directives: [],
-                                        },
-                                    ),
-                                    FragmentSpread(
-                                        1905..1925 @32 FragmentSpread {
-                                            fragment_name: "catOrDogFragment",
-                                            directives: [],
-                                        },
-                                    ),
-                                    FragmentSpread(
-                                        1930..1952 @32 FragmentSpread {
-                                            fragment_name: "unionWithInterface",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                    Field(
-                        1959..2066 @32 Field {
-                            definition: 1737..1755 @32 FieldDefinition {
-                                description: None,
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "resource",
                                 arguments: [],
-                                ty: Named(
-                                    "Resource",
-                                ),
                                 directives: [],
-                            },
-                            alias: None,
-                            name: "resource",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Resource",
-                                selections: [
-                                    FragmentSpread(
-                                        1974..1999 @32 FragmentSpread {
-                                            fragment_name: "interfaceWithInterface",
-                                            directives: [],
-                                        },
-                                    ),
-                                    InlineFragment(
-                                        2004..2062 @32 InlineFragment {
-                                            type_condition: None,
-                                            directives: [
-                                                2008..2023 @32 Directive {
-                                                    name: "skip",
-                                                    arguments: [
-                                                        2014..2022 @32 Argument {
-                                                            name: "if",
-                                                            value: 2018..2022 @32 Boolean(
-                                                                true,
-                                                            ),
-                                                        },
-                                                    ],
-                                                },
-                                            ],
-                                            selection_set: SelectionSet {
-                                                ty: "Resource",
-                                                selections: [
-                                                    Field(
-                                                        2032..2056 @32 Field {
-                                                            definition: 1398..1409 @32 FieldDefinition {
-                                                                description: None,
+                                selection_set: SelectionSet {
+                                    ty: "Resource",
+                                    selections: [
+                                        FragmentSpread(
+                                            1974..1999 @32 FragmentSpread {
+                                                fragment_name: "interfaceWithInterface",
+                                                directives: [],
+                                            },
+                                        ),
+                                        InlineFragment(
+                                            2004..2062 @32 InlineFragment {
+                                                type_condition: None,
+                                                directives: [
+                                                    2008..2023 @32 Directive {
+                                                        name: "skip",
+                                                        arguments: [
+                                                            2014..2022 @32 Argument {
+                                                                name: "if",
+                                                                value: 2018..2022 @32 Boolean(
+                                                                    true,
+                                                                ),
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                                selection_set: SelectionSet {
+                                                    ty: "Resource",
+                                                    selections: [
+                                                        Field(
+                                                            2032..2056 @32 Field {
+                                                                definition: 1398..1409 @32 FieldDefinition {
+                                                                    description: None,
+                                                                    name: "url",
+                                                                    arguments: [],
+                                                                    ty: Named(
+                                                                        "String",
+                                                                    ),
+                                                                    directives: [],
+                                                                },
+                                                                alias: Some(
+                                                                    "urlInInlineFragment",
+                                                                ),
                                                                 name: "url",
                                                                 arguments: [],
-                                                                ty: Named(
-                                                                    "String",
-                                                                ),
                                                                 directives: [],
+                                                                selection_set: SelectionSet {
+                                                                    ty: "String",
+                                                                    selections: [],
+                                                                },
                                                             },
-                                                            alias: Some(
-                                                                "urlInInlineFragment",
-                                                            ),
-                                                            name: "url",
-                                                            arguments: [],
-                                                            directives: [],
-                                                            selection_set: SelectionSet {
-                                                                ty: "String",
-                                                                selections: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                ],
+                                                        ),
+                                                    ],
+                                                },
                                             },
-                                        },
-                                    ),
-                                ],
+                                        ),
+                                    ],
+                                },
                             },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
         },
     },

@@ -91,7 +91,7 @@ pub(crate) fn validate_operation_definitions(
     document: &ExecutableDocument,
     context: &ExecutableValidationContext<'_>,
 ) {
-    for operation in document.all_operations() {
+    for operation in document.operations.iter() {
         validate_operation(diagnostics, document, operation, context);
     }
 }

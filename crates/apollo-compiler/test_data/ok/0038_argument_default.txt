@@ -123,70 +123,72 @@ ExecutableDocument {
             source_text: "directive @defer(\n  label: String\n  if: Boolean! = true\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n  guitarAmp(upTo: Int! = 11): String\n}\n\n{\n  ... @defer {\n    guitarAmp\n  }\n}\n",
         },
     },
-    anonymous_operation: Some(
-        149..185 @39 Operation {
-            operation_type: Query,
-            name: None,
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    InlineFragment(
-                        153..183 @39 InlineFragment {
-                            type_condition: None,
-                            directives: [
-                                157..163 @39 Directive {
-                                    name: "defer",
-                                    arguments: [],
-                                },
-                            ],
-                            selection_set: SelectionSet {
-                                ty: "Query",
-                                selections: [
-                                    Field(
-                                        170..179 @39 Field {
-                                            definition: 111..145 @39 FieldDefinition {
-                                                description: None,
-                                                name: "guitarAmp",
-                                                arguments: [
-                                                    121..136 @39 InputValueDefinition {
-                                                        description: None,
-                                                        name: "upTo",
-                                                        ty: 127..131 @39 NonNullNamed(
-                                                            "Int",
-                                                        ),
-                                                        default_value: Some(
-                                                            134..136 @39 Int(
-                                                                11,
-                                                            ),
-                                                        ),
-                                                        directives: [],
-                                                    },
-                                                ],
-                                                ty: Named(
-                                                    "String",
-                                                ),
-                                                directives: [],
-                                            },
-                                            alias: None,
-                                            name: "guitarAmp",
-                                            arguments: [],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "String",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
+    operations: OperationMap {
+        anonymous: Some(
+            149..185 @39 Operation {
+                operation_type: Query,
+                name: None,
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        InlineFragment(
+                            153..183 @39 InlineFragment {
+                                type_condition: None,
+                                directives: [
+                                    157..163 @39 Directive {
+                                        name: "defer",
+                                        arguments: [],
+                                    },
                                 ],
+                                selection_set: SelectionSet {
+                                    ty: "Query",
+                                    selections: [
+                                        Field(
+                                            170..179 @39 Field {
+                                                definition: 111..145 @39 FieldDefinition {
+                                                    description: None,
+                                                    name: "guitarAmp",
+                                                    arguments: [
+                                                        121..136 @39 InputValueDefinition {
+                                                            description: None,
+                                                            name: "upTo",
+                                                            ty: 127..131 @39 NonNullNamed(
+                                                                "Int",
+                                                            ),
+                                                            default_value: Some(
+                                                                134..136 @39 Int(
+                                                                    11,
+                                                                ),
+                                                            ),
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: Named(
+                                                        "String",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "guitarAmp",
+                                                arguments: [],
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
-        },
-    ),
-    named_operations: {},
+        ),
+        named: {},
+    },
     fragments: {},
 }

@@ -42,10 +42,19 @@ pub struct ExecutableDocument {
     /// The document may have been modified since.
     pub sources: crate::SourceMap,
 
-    pub anonymous_operation: Option<Node<Operation>>,
-    pub named_operations: IndexMap<Name, Node<Operation>>,
-    pub fragments: IndexMap<Name, Node<Fragment>>,
+    pub operations: OperationMap,
+    pub fragments: FragmentMap,
 }
+
+/// Operations definitions for a given executable document
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct OperationMap {
+    pub anonymous: Option<Node<Operation>>,
+    pub named: IndexMap<Name, Node<Operation>>,
+}
+
+/// Definitions of named fragments for a given executable document
+pub type FragmentMap = IndexMap<Name, Node<Fragment>>;
 
 /// FieldSet information created for FieldSet parsing in `@requires` directive.
 /// Annotated with type information.
@@ -315,12 +324,30 @@ impl ExecutableDocument {
         errors.into_valid_result(self)
     }
 
+    serialize_method!();
+}
+
+impl Eq for ExecutableDocument {}
+
+/// `sources` and `build_errors` are ignored for comparison
+impl PartialEq for ExecutableDocument {
+    fn eq(&self, other: &Self) -> bool {
+        let Self {
+            sources: _,
+            operations,
+            fragments,
+        } = self;
+        *operations == other.operations && *fragments == other.fragments
+    }
+}
+
+impl OperationMap {
     /// Returns an iterator of operations, both anonymous and named
-    pub fn all_operations(&self) -> impl Iterator<Item = &'_ Node<Operation>> {
-        self.anonymous_operation
+    pub fn iter(&self) -> impl Iterator<Item = &'_ Node<Operation>> {
+        self.anonymous
             .as_ref()
             .into_iter()
-            .chain(self.named_operations.values())
+            .chain(self.named.values())
     }
 
     /// Return the relevant operation for a request, or a request error
@@ -333,41 +360,38 @@ impl ExecutableDocument {
     /// with that name, which is expected to exist. When it is not given / null / `None`,
     /// the document is expected to contain a single operation (which may or may not be named)
     /// to avoid ambiguity.
-    pub fn get_operation(
-        &self,
-        name_request: Option<&str>,
-    ) -> Result<&Node<Operation>, GetOperationError> {
+    pub fn get(&self, name_request: Option<&str>) -> Result<&Node<Operation>, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named_operations.get(name)
-        } else if let Some(op) = &self.anonymous_operation {
+            self.named.get(name)
+        } else if let Some(op) = &self.anonymous {
             // No name request, return the anonymous operation if it’s the only operation
-            self.named_operations.is_empty().then_some(op)
+            self.named.is_empty().then_some(op)
         } else {
             // No name request or anonymous operation, return a named operation if it’s the only one
-            self.named_operations
+            self.named
                 .values()
                 .next()
-                .and_then(|op| (self.named_operations.len() == 1).then_some(op))
+                .and_then(|op| (self.named.len() == 1).then_some(op))
         }
         .ok_or(GetOperationError())
     }
 
-    /// Similar to [`get_operation`][Self::get_operation] but returns a mutable reference.
-    pub fn get_operation_mut(
+    /// Similar to [`get`][Self::get] but returns a mutable reference.
+    pub fn get_mut(
         &mut self,
         name_request: Option<&str>,
     ) -> Result<&mut Operation, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named_operations.get_mut(name)
-        } else if let Some(op) = &mut self.anonymous_operation {
+            self.named.get_mut(name)
+        } else if let Some(op) = &mut self.anonymous {
             // No name request, return the anonymous operation if it’s the only operation
-            self.named_operations.is_empty().then_some(op)
+            self.named.is_empty().then_some(op)
         } else {
             // No name request or anonymous operation, return a named operation if it’s the only one
-            let len = self.named_operations.len();
-            self.named_operations
+            let len = self.named.len();
+            self.named
                 .values_mut()
                 .next()
                 .and_then(|op| (len == 1).then_some(op))
@@ -378,35 +402,13 @@ impl ExecutableDocument {
 
     /// Insert the given operation in either `named_operations` or `anonymous_operation`
     /// as appropriate, and return the old operation (if any) with that name (or lack thereof).
-    pub fn insert_operation(
-        &mut self,
-        operation: impl Into<Node<Operation>>,
-    ) -> Option<Node<Operation>> {
+    pub fn insert(&mut self, operation: impl Into<Node<Operation>>) -> Option<Node<Operation>> {
         let operation = operation.into();
         if let Some(name) = &operation.name {
-            self.named_operations.insert(name.clone(), operation)
+            self.named.insert(name.clone(), operation)
         } else {
-            self.anonymous_operation.replace(operation)
+            self.anonymous.replace(operation)
         }
-    }
-
-    serialize_method!();
-}
-
-impl Eq for ExecutableDocument {}
-
-/// `sources` and `build_errors` are ignored for comparison
-impl PartialEq for ExecutableDocument {
-    fn eq(&self, other: &Self) -> bool {
-        let Self {
-            sources: _,
-            anonymous_operation,
-            named_operations,
-            fragments,
-        } = self;
-        *anonymous_operation == other.anonymous_operation
-            && *named_operations == other.named_operations
-            && *fragments == other.fragments
     }
 }
 

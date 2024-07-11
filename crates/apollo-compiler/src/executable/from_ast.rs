@@ -12,8 +12,7 @@ pub(crate) fn document_from_ast(
     errors: &mut DiagnosticList,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
-    let mut named_operations = IndexMap::new();
-    let mut anonymous_operation = None::<Node<Operation>>;
+    let mut operations = OperationMap::default();
     let mut multiple_anonymous = false;
     let mut fragments = IndexMap::new();
     let mut errors = BuildErrors {
@@ -29,13 +28,13 @@ pub(crate) fn document_from_ast(
         match definition {
             ast::Definition::OperationDefinition(operation) => {
                 if let Some(name) = &operation.name {
-                    if let Some(anonymous) = &anonymous_operation {
+                    if let Some(anonymous) = &operations.anonymous {
                         errors.errors.push(
                             anonymous.location(),
                             BuildError::AmbiguousAnonymousOperation,
                         )
                     }
-                    if let Entry::Vacant(entry) = named_operations.entry(name.clone()) {
+                    if let Entry::Vacant(entry) = operations.named.entry(name.clone()) {
                         errors.path.root = ExecutableDefinitionName::NamedOperation(
                             operation.operation_type,
                             name.clone(),
@@ -51,7 +50,7 @@ pub(crate) fn document_from_ast(
                             )
                         }
                     } else {
-                        let (key, _) = named_operations.get_key_value(name).unwrap();
+                        let (key, _) = operations.named.get_key_value(name).unwrap();
                         errors.errors.push(
                             name.location(),
                             BuildError::OperationNameCollision {
@@ -59,7 +58,7 @@ pub(crate) fn document_from_ast(
                             },
                         );
                     }
-                } else if let Some(previous) = &anonymous_operation {
+                } else if let Some(previous) = &operations.anonymous {
                     if !multiple_anonymous {
                         multiple_anonymous = true;
                         errors
@@ -70,7 +69,7 @@ pub(crate) fn document_from_ast(
                         operation.location(),
                         BuildError::AmbiguousAnonymousOperation,
                     )
-                } else if !named_operations.is_empty() {
+                } else if !operations.named.is_empty() {
                     errors.errors.push(
                         operation.location(),
                         BuildError::AmbiguousAnonymousOperation,
@@ -79,7 +78,7 @@ pub(crate) fn document_from_ast(
                     errors.path.root =
                         ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
                     if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
-                        anonymous_operation = Some(operation.same_location(op));
+                        operations.anonymous = Some(operation.same_location(op));
                     } else {
                         errors.errors.push(
                             operation.location(),
@@ -121,8 +120,7 @@ pub(crate) fn document_from_ast(
     }
     ExecutableDocument {
         sources: document.sources.clone(),
-        named_operations,
-        anonymous_operation,
+        operations,
         fragments,
     }
 }

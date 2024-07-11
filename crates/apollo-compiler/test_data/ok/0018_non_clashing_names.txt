@@ -115,47 +115,49 @@ ExecutableDocument {
             source_text: "# Types, directives, fragments, and operations each have their own namespace.\ntype A @A {\n  a: Int\n}\ntype Query {\n  a: A\n}\n\ndirective @A on OBJECT\n\nfragment A on A {\n  a\n}\n\nquery A {\n  a {\n    ...A\n  }\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "A": 173..203 @20 Operation {
-            operation_type: Query,
-            name: Some(
-                "A",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        185..201 @20 Field {
-                            definition: 116..120 @20 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "A": 173..203 @20 Operation {
+                operation_type: Query,
+                name: Some(
+                    "A",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            185..201 @20 Field {
+                                definition: 116..120 @20 FieldDefinition {
+                                    description: None,
+                                    name: "a",
+                                    arguments: [],
+                                    ty: Named(
+                                        "A",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "a",
                                 arguments: [],
-                                ty: Named(
-                                    "A",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "A",
+                                    selections: [
+                                        FragmentSpread(
+                                            193..197 @20 FragmentSpread {
+                                                fragment_name: "A",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "a",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "A",
-                                selections: [
-                                    FragmentSpread(
-                                        193..197 @20 FragmentSpread {
-                                            fragment_name: "A",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
         },
     },

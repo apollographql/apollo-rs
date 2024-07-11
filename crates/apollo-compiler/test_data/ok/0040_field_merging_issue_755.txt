@@ -134,48 +134,50 @@ ExecutableDocument {
             source_text: "# Different fragments selecting the same name from different types\n# into different subselections -- all valid, unless apollo-rs\n# propagates type conditions incorrectly :)\n\ntype Subselection {\n  createdAt: Int!\n}\n\ntype Issue {\n  createdAt: Int\n  subselection: [Subselection!]\n}\n\ntype Query {\n  issue755: Issue\n}\n\nfragment topLevelFragment on Issue {\n  subselection {\n    createdAt\n    ...subselectionFragment\n  }\n  ...collidingTopLevelFragment\n}\nfragment collidingTopLevelFragment on Issue {\n  subselection {\n    createdAt\n  }\n}\nfragment subselectionFragment on Subselection {\n  createdAt\n}\nquery  {\n  issue755 {\n    ...topLevelFragment\n  }\n}\n",
         },
     },
-    anonymous_operation: Some(
-        592..643 @41 Operation {
-            operation_type: Query,
-            name: None,
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        603..641 @41 Field {
-                            definition: 295..310 @41 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: Some(
+            592..643 @41 Operation {
+                operation_type: Query,
+                name: None,
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            603..641 @41 Field {
+                                definition: 295..310 @41 FieldDefinition {
+                                    description: None,
+                                    name: "issue755",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Issue",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "issue755",
                                 arguments: [],
-                                ty: Named(
-                                    "Issue",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Issue",
+                                    selections: [
+                                        FragmentSpread(
+                                            618..637 @41 FragmentSpread {
+                                                fragment_name: "topLevelFragment",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "issue755",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Issue",
-                                selections: [
-                                    FragmentSpread(
-                                        618..637 @41 FragmentSpread {
-                                            fragment_name: "topLevelFragment",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
-        },
-    ),
-    named_operations: {},
+        ),
+        named: {},
+    },
     fragments: {
         "topLevelFragment": 314..446 @41 Fragment {
             name: "topLevelFragment",

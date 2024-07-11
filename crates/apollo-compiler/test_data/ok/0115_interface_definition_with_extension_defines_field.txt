@@ -104,7 +104,9 @@ ExecutableDocument {
             source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {},
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
     fragments: {},
 }

@@ -149,152 +149,154 @@ ExecutableDocument {
             source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
         },
     },
-    anonymous_operation: Some(
-        156..302 @30 Operation {
-            operation_type: Query,
-            name: None,
-            variables: [
-                163..186 @30 VariableDefinition {
-                    name: "attributeName",
-                    ty: 179..186 @30 NonNullNamed(
-                        "String",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-                188..195 @30 VariableDefinition {
-                    name: "v",
-                    ty: 192..195 @30 Named(
-                        "Int",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        201..300 @30 Field {
-                            definition: 116..152 @30 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: Some(
+            156..302 @30 Operation {
+                operation_type: Query,
+                name: None,
+                variables: [
+                    163..186 @30 VariableDefinition {
+                        name: "attributeName",
+                        ty: 179..186 @30 NonNullNamed(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                    188..195 @30 VariableDefinition {
+                        name: "v",
+                        ty: 192..195 @30 Named(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            201..300 @30 Field {
+                                definition: 116..152 @30 FieldDefinition {
+                                    description: None,
+                                    name: "field",
+                                    arguments: [
+                                        127..137 @30 InputValueDefinition {
+                                            description: None,
+                                            name: "opts",
+                                            ty: 133..137 @30 Named(
+                                                "Opts",
+                                            ),
+                                            default_value: None,
+                                            directives: [],
+                                        },
+                                    ],
+                                    ty: List(
+                                        Named(
+                                            "Product",
+                                        ),
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "field",
                                 arguments: [
-                                    127..137 @30 InputValueDefinition {
-                                        description: None,
+                                    207..246 @30 Argument {
                                         name: "opts",
-                                        ty: 133..137 @30 Named(
-                                            "Opts",
-                                        ),
-                                        default_value: None,
-                                        directives: [],
-                                    },
-                                ],
-                                ty: List(
-                                    Named(
-                                        "Product",
-                                    ),
-                                ),
-                                directives: [],
-                            },
-                            alias: None,
-                            name: "field",
-                            arguments: [
-                                207..246 @30 Argument {
-                                    name: "opts",
-                                    value: 213..246 @30 Object(
-                                        [
-                                            (
-                                                "prop",
-                                                219..241 @30 List(
-                                                    [
-                                                        226..229 @30 List(
-                                                            [
-                                                                227..228 @30 Int(
-                                                                    2,
-                                                                ),
-                                                            ],
-                                                        ),
-                                                        231..235 @30 List(
-                                                            [
-                                                                232..234 @30 Variable(
-                                                                    "v",
-                                                                ),
-                                                            ],
-                                                        ),
-                                                        237..240 @30 List(
-                                                            [
-                                                                238..239 @30 Int(
-                                                                    4,
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ],
-                                                ),
-                                            ),
-                                        ],
-                                    ),
-                                },
-                            ],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Product",
-                                selections: [
-                                    Field(
-                                        254..296 @30 Field {
-                                            definition: 17..63 @30 FieldDefinition {
-                                                description: None,
-                                                name: "attributes",
-                                                arguments: [
-                                                    28..51 @30 InputValueDefinition {
-                                                        description: None,
-                                                        name: "includeNames",
-                                                        ty: 42..51 @30 List(
-                                                            NonNullNamed(
-                                                                "String",
-                                                            ),
-                                                        ),
-                                                        default_value: None,
-                                                        directives: [],
-                                                    },
-                                                ],
-                                                ty: List(
-                                                    NonNullNamed(
-                                                        "String",
-                                                    ),
-                                                ),
-                                                directives: [],
-                                            },
-                                            alias: None,
-                                            name: "attributes",
-                                            arguments: [
-                                                265..295 @30 Argument {
-                                                    name: "includeNames",
-                                                    value: 279..295 @30 List(
+                                        value: 213..246 @30 Object(
+                                            [
+                                                (
+                                                    "prop",
+                                                    219..241 @30 List(
                                                         [
-                                                            280..294 @30 Variable(
-                                                                "attributeName",
+                                                            226..229 @30 List(
+                                                                [
+                                                                    227..228 @30 Int(
+                                                                        2,
+                                                                    ),
+                                                                ],
+                                                            ),
+                                                            231..235 @30 List(
+                                                                [
+                                                                    232..234 @30 Variable(
+                                                                        "v",
+                                                                    ),
+                                                                ],
+                                                            ),
+                                                            237..240 @30 List(
+                                                                [
+                                                                    238..239 @30 Int(
+                                                                        4,
+                                                                    ),
+                                                                ],
                                                             ),
                                                         ],
                                                     ),
-                                                },
+                                                ),
                                             ],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "String",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
+                                        ),
+                                    },
                                 ],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Product",
+                                    selections: [
+                                        Field(
+                                            254..296 @30 Field {
+                                                definition: 17..63 @30 FieldDefinition {
+                                                    description: None,
+                                                    name: "attributes",
+                                                    arguments: [
+                                                        28..51 @30 InputValueDefinition {
+                                                            description: None,
+                                                            name: "includeNames",
+                                                            ty: 42..51 @30 List(
+                                                                NonNullNamed(
+                                                                    "String",
+                                                                ),
+                                                            ),
+                                                            default_value: None,
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: List(
+                                                        NonNullNamed(
+                                                            "String",
+                                                        ),
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "attributes",
+                                                arguments: [
+                                                    265..295 @30 Argument {
+                                                        name: "includeNames",
+                                                        value: 279..295 @30 List(
+                                                            [
+                                                                280..294 @30 Variable(
+                                                                    "attributeName",
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    },
+                                                ],
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
-        },
-    ),
-    named_operations: {},
+        ),
+        named: {},
+    },
     fragments: {},
 }

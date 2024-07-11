@@ -144,62 +144,64 @@ ExecutableDocument {
             source_text: "query A($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nquery B($atOtherHomes: Boolean) {\n  ...HouseTrainedFragment\n}\n\nfragment HouseTrainedFragment on Query {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\ntype Query {\n  dog: Dog\n}\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "A": 0..61 @18 Operation {
-            operation_type: Query,
-            name: Some(
-                "A",
-            ),
-            variables: [
-                8..30 @18 VariableDefinition {
-                    name: "atOtherHomes",
-                    ty: 23..30 @18 Named(
-                        "Boolean",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    FragmentSpread(
-                        36..59 @18 FragmentSpread {
-                            fragment_name: "HouseTrainedFragment",
-                            directives: [],
-                        },
-                    ),
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "A": 0..61 @18 Operation {
+                operation_type: Query,
+                name: Some(
+                    "A",
+                ),
+                variables: [
+                    8..30 @18 VariableDefinition {
+                        name: "atOtherHomes",
+                        ty: 23..30 @18 Named(
+                            "Boolean",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
                 ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        FragmentSpread(
+                            36..59 @18 FragmentSpread {
+                                fragment_name: "HouseTrainedFragment",
+                                directives: [],
+                            },
+                        ),
+                    ],
+                },
             },
-        },
-        "B": 63..124 @18 Operation {
-            operation_type: Query,
-            name: Some(
-                "B",
-            ),
-            variables: [
-                71..93 @18 VariableDefinition {
-                    name: "atOtherHomes",
-                    ty: 86..93 @18 Named(
-                        "Boolean",
-                    ),
-                    default_value: None,
-                    directives: [],
-                },
-            ],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    FragmentSpread(
-                        99..122 @18 FragmentSpread {
-                            fragment_name: "HouseTrainedFragment",
-                            directives: [],
-                        },
-                    ),
+            "B": 63..124 @18 Operation {
+                operation_type: Query,
+                name: Some(
+                    "B",
+                ),
+                variables: [
+                    71..93 @18 VariableDefinition {
+                        name: "atOtherHomes",
+                        ty: 86..93 @18 Named(
+                            "Boolean",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
                 ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        FragmentSpread(
+                            99..122 @18 FragmentSpread {
+                                fragment_name: "HouseTrainedFragment",
+                                directives: [],
+                            },
+                        ),
+                    ],
+                },
             },
         },
     },

@@ -31,7 +31,7 @@ fn validate_with_schema(
 ) {
     let alloc = typed_arena::Arena::new();
     let mut fields_in_set_can_merge = FieldsInSetCanMerge::new(&alloc, schema, document);
-    for operation in document.all_operations() {
+    for operation in document.operations.iter() {
         crate::validation::operation::validate_subscription(document, operation, errors);
         fields_in_set_can_merge.validate_operation(operation, errors);
     }

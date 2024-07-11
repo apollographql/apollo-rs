@@ -133,97 +133,99 @@ ExecutableDocument {
             source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
         },
     },
-    anonymous_operation: None,
-    named_operations: {
-        "queryPupper": 126..204 @23 Operation {
-            operation_type: Query,
-            name: Some(
-                "queryPupper",
-            ),
-            variables: [],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        148..202 @23 Field {
-                            definition: 114..122 @23 FieldDefinition {
-                                description: None,
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "queryPupper": 126..204 @23 Operation {
+                operation_type: Query,
+                name: Some(
+                    "queryPupper",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            148..202 @23 Field {
+                                definition: 114..122 @23 FieldDefinition {
+                                    description: None,
+                                    name: "pet",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Dog",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "pet",
                                 arguments: [],
-                                ty: Named(
-                                    "Dog",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Dog",
+                                    selections: [
+                                        FragmentSpread(
+                                            158..198 @23 FragmentSpread {
+                                                fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "pet",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Dog",
-                                selections: [
-                                    FragmentSpread(
-                                        158..198 @23 FragmentSpread {
-                                            fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
-            },
-        },
-        "queryPupperAgain": 206..316 @23 Operation {
-            operation_type: Query,
-            name: Some(
-                "queryPupperAgain",
-            ),
-            variables: [
-                229..252 @23 VariableDefinition {
-                    name: "dogCommand",
-                    ty: 242..252 @23 Named(
-                        "DogCommand",
-                    ),
-                    default_value: None,
-                    directives: [],
+                        ),
+                    ],
                 },
-            ],
-            directives: [],
-            selection_set: SelectionSet {
-                ty: "Query",
-                selections: [
-                    Field(
-                        258..314 @23 Field {
-                            definition: 114..122 @23 FieldDefinition {
-                                description: None,
+            },
+            "queryPupperAgain": 206..316 @23 Operation {
+                operation_type: Query,
+                name: Some(
+                    "queryPupperAgain",
+                ),
+                variables: [
+                    229..252 @23 VariableDefinition {
+                        name: "dogCommand",
+                        ty: 242..252 @23 Named(
+                            "DogCommand",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            258..314 @23 Field {
+                                definition: 114..122 @23 FieldDefinition {
+                                    description: None,
+                                    name: "pet",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Dog",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
                                 name: "pet",
                                 arguments: [],
-                                ty: Named(
-                                    "Dog",
-                                ),
                                 directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Dog",
+                                    selections: [
+                                        FragmentSpread(
+                                            268..310 @23 FragmentSpread {
+                                                fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
                             },
-                            alias: None,
-                            name: "pet",
-                            arguments: [],
-                            directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Dog",
-                                selections: [
-                                    FragmentSpread(
-                                        268..310 @23 FragmentSpread {
-                                            fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
-                        },
-                    ),
-                ],
+                        ),
+                    ],
+                },
             },
         },
     },
