@@ -14,7 +14,7 @@ use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 use apollo_parser::LimitTracker;
-use indexmap::IndexMap;
+use crate::collections::fast::IndexMap;
 use std::cell::OnceCell;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -65,7 +65,7 @@ impl<'a> FieldSelection<'a> {
 
 /// Expand one or more selection sets to a list of all fields selected.
 pub(crate) fn expand_selections<'doc>(
-    fragments: &'doc IndexMap<Name, Node<executable::Fragment>, ahash::RandomState>,
+    fragments: &'doc IndexMap<Name, Node<executable::Fragment>>,
     selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
@@ -314,7 +314,7 @@ impl OnceBool {
 /// Represents a merged field set that may or may not be valid.
 struct MergedFieldSet<'alloc, 'doc> {
     selections: &'alloc [FieldSelection<'doc>],
-    grouped_by_output_names: OnceCell<IndexMap<Name, &'alloc [FieldSelection<'doc>], ahash::RandomState>>,
+    grouped_by_output_names: OnceCell<IndexMap<Name, &'alloc [FieldSelection<'doc>]>>,
     grouped_by_common_parents: OnceCell<Vec<&'alloc [FieldSelection<'doc>]>>,
     same_response_shape_guard: OnceBool,
     same_for_common_parents_guard: OnceBool,
@@ -419,9 +419,9 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
     fn group_by_output_name(
         &self,
         alloc: &'alloc Arena<'doc>,
-    ) -> &IndexMap<schema::Name, &'alloc [FieldSelection<'doc>], ahash::RandomState> {
+    ) -> &IndexMap<schema::Name, &'alloc [FieldSelection<'doc>]> {
         self.grouped_by_output_names.get_or_init(|| {
-            let mut map = IndexMap::<_, Vec<_>, ahash::RandomState>::with_hasher(Default::default());
+            let mut map = IndexMap::<_, Vec<_>>::with_hasher(Default::default());
             for selection in self.selections {
                 map.entry(selection.field.response_key().clone())
                     .or_default()
@@ -443,7 +443,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
     ) -> &Vec<&'alloc [FieldSelection<'doc>]> {
         self.grouped_by_common_parents.get_or_init(|| {
             let mut abstract_parents = vec![];
-            let mut concrete_parents = IndexMap::<_, Vec<_>>::new();
+            let mut concrete_parents = IndexMap::<_, Vec<_>>::with_hasher(Default::default());
             for selection in self.selections {
                 match schema.types.get(selection.parent_type) {
                     Some(schema::ExtendedType::Object(object)) => {

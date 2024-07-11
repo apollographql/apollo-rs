@@ -10,7 +10,7 @@ use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
-use indexmap::IndexMap;
+use crate::collections::fast::IndexMap;
 
 pub(crate) fn validate_field(
     diagnostics: &mut DiagnosticList,

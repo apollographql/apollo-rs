@@ -5,8 +5,8 @@ use crate::validation::FileId;
 use crate::Node;
 use crate::NodeLocation;
 use crate::Parser;
-use indexmap::IndexMap;
-use indexmap::IndexSet;
+use crate::collections::fast::IndexMap;
+use crate::collections::fast::IndexSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
@@ -54,7 +54,7 @@ pub struct Schema {
 
     /// Definitions and extensions of built-in scalars, introspection types,
     /// and explicit types
-    pub types: IndexMap<Name, ExtendedType, ahash::RandomState>,
+    pub types: IndexMap<Name, ExtendedType>,
 }
 
 /// The `schema` definition and its extensions, defining root operations
@@ -1037,7 +1037,7 @@ impl std::fmt::Debug for Schema {
 
 struct DebugDirectiveDefinitions<'a>(&'a IndexMap<Name, Node<DirectiveDefinition>>);
 
-struct DebugTypes<'a>(&'a IndexMap<Name, ExtendedType, ahash::RandomState>);
+struct DebugTypes<'a>(&'a IndexMap<Name, ExtendedType>);
 
 impl std::fmt::Debug for DebugDirectiveDefinitions<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

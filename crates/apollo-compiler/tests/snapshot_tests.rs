@@ -15,7 +15,7 @@ use apollo_compiler::validation::DiagnosticList;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
-use indexmap::IndexMap;
+use apollo_compiler::collections::fast::IndexMap;
 use serial_test::serial;
 use std::env;
 use std::fmt::Write;
@@ -187,7 +187,7 @@ fn graphql_files_in_dir(dir: &Path) -> Vec<PathBuf> {
     paths.sort();
 
     // Check for duplicate numbers.
-    let mut seen = IndexMap::new();
+    let mut seen = IndexMap::with_hasher(Default::default());
     let next_number = paths.len() + 1;
     for path in &paths {
         let file_name = path.file_name().unwrap().to_string_lossy();
@@ -249,7 +249,7 @@ fn test_invalid_synthetic_node() {
                 }
                 .into(),
             )]
-            .into(),
+            .into_iter().collect(),
         }
         .into(),
     );

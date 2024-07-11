@@ -9,7 +9,7 @@ use crate::Node;
 use crate::Parser;
 use crate::Schema;
 use indexmap::map::Entry;
-use indexmap::IndexMap;
+use crate::collections::fast::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
 
@@ -43,8 +43,8 @@ pub struct ExecutableDocument {
     pub sources: crate::SourceMap,
 
     pub anonymous_operation: Option<Node<Operation>>,
-    pub named_operations: IndexMap<Name, Node<Operation>, ahash::RandomState>,
-    pub fragments: IndexMap<Name, Node<Fragment>, ahash::RandomState>,
+    pub named_operations: IndexMap<Name, Node<Operation>>,
+    pub fragments: IndexMap<Name, Node<Fragment>>,
 }
 
 /// FieldSet information created for FieldSet parsing in `@requires` directive.

@@ -1,6 +1,7 @@
 use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
+use crate::collections::fast::IndexMap;
 use crate::executable;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
@@ -11,7 +12,6 @@ use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::NodeLocation;
 use crate::Schema;
-use indexmap::IndexMap;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -34,7 +34,7 @@ pub struct SourceFile {
     pub(crate) source: OnceLock<ariadne::Source>,
 }
 
-pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>, ahash::RandomState>>;
+pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.

@@ -12,6 +12,7 @@ mod node;
 mod parser;
 pub mod schema;
 pub mod validation;
+pub mod collections;
 
 pub use self::executable::ExecutableDocument;
 pub use self::name::InvalidNameError;

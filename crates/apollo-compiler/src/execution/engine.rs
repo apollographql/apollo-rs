@@ -20,7 +20,7 @@ use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
 use crate::SourceMap;
-use indexmap::IndexMap;
+use crate::collections::fast::IndexMap;
 use std::collections::HashSet;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
@@ -59,7 +59,7 @@ pub(crate) fn execute_selection_set<'a>(
     object_value: &ObjectValue<'_>,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
-    let mut grouped_field_set = IndexMap::new();
+    let mut grouped_field_set = IndexMap::with_hasher(Default::default());
     collect_fields(
         schema,
         document,

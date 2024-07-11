@@ -8,7 +8,7 @@ use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;
 use crate::Node;
 use crate::NodeLocation;
-use indexmap::IndexSet;
+use crate::collections::fast::IndexSet;
 
 pub(crate) fn validate_interface_definitions(
     diagnostics: &mut DiagnosticList,
