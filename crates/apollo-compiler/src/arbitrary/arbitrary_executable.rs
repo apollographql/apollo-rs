@@ -49,6 +49,10 @@ pub fn arbitrary_valid_executable_document(
     while !builder.entropy.is_empty() {
         builder.expand_arbitrary_selection_set(&mut operation_selection_set, is_subscription);
     }
+    // Make fragment ordering independent of `swap_remove` + re-`insert` operations.
+    builder
+        .fragment_map
+        .sort_by_cached_key(|name, _| name.strip_prefix("Frag").unwrap().parse::<u32>().unwrap());
 
     let location = match operation_type {
         executable::OperationType::Query => DirectiveLocation::Query,
@@ -158,7 +162,7 @@ impl<'a> Builder<'a> {
                 // so that we can mutably borrow its selection set independently of `&mut self`
                 let mut fragment_def = self
                     .fragment_map
-                    .remove(&spread.fragment_name)
+                    .swap_remove(&spread.fragment_name)
                     .expect("spread of undefined named fragment");
                 let selection_set_to_expand = &mut fragment_def.make_mut().selection_set;
                 self.expand_arbitrary_selection_set(
