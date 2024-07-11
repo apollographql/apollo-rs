@@ -74,7 +74,7 @@ pub struct GraphQLError {
     pub extensions: JsonMap,
 }
 
-/// A source location (1-indexed line and column numbers) within GraphQL SDL.
+/// A source location (1-indexed line and column numbers) within a GraphQL document.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GraphQLLocation {
