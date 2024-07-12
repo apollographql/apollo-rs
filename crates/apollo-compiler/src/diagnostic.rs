@@ -325,9 +325,9 @@ impl ariadne::Cache<FileId> for Cache<'_> {
 impl<T: ToCliReport> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToCliReport> Diagnostic<'_, T> {
-    /// Get the line and column number where this diagnostic was raised.
-    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(self.sources, self.error.location())
+    /// Get the line and column numbers where this diagnostic spans.
+    pub fn line_column_range(&self) -> Option<Range<GraphQLLocation>> {
+        self.error.location()?.line_column_range(self.sources)
     }
 
     /// Get a [`serde`]-serializable version of the current diagnostic. The shape is compatible

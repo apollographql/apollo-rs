@@ -2,6 +2,7 @@ use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::executable;
+use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
@@ -362,9 +363,12 @@ impl SourceFile {
         })
     }
 
-    pub fn get_line_column(&self, index: usize) -> Option<(usize, usize)> {
-        let (_, line, column) = self.ariadne().get_byte_line(index)?;
-        Some((line, column))
+    pub(crate) fn get_line_column(&self, index: usize) -> Option<GraphQLLocation> {
+        let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(index)?;
+        Some(GraphQLLocation {
+            line: zero_indexed_line + 1,
+            column: zero_indexed_column + 1,
+        })
     }
 }
 

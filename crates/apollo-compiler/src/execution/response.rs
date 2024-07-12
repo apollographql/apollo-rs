@@ -74,7 +74,7 @@ pub struct GraphQLError {
     pub extensions: JsonMap,
 }
 
-/// A source location (line and column numbers) for a [`GraphQLError`].
+/// A source location (1-indexed line and column numbers) within a GraphQL document.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GraphQLLocation {
@@ -141,26 +141,13 @@ impl GraphQLError {
     ) -> Self {
         Self {
             message: message.into(),
-            locations: GraphQLLocation::from_node(sources, location)
+            locations: location
                 .into_iter()
+                .filter_map(|location| location.line_column(sources))
                 .collect(),
             path: Default::default(),
             extensions: Default::default(),
         }
-    }
-}
-
-impl GraphQLLocation {
-    /// Convert a `NodeLocation` to a line and column number
-    pub fn from_node(sources: &SourceMap, location: Option<NodeLocation>) -> Option<Self> {
-        let loc = location?;
-        let source = sources.get(&loc.file_id)?;
-        source
-            .get_line_column(loc.offset())
-            .map(|(line, column)| GraphQLLocation {
-                line: line + 1,
-                column: column + 1,
-            })
     }
 }
 

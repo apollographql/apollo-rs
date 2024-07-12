@@ -8,6 +8,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::num::NonZeroU64;
+use std::ops::Range;
 use std::sync::atomic;
 use std::sync::atomic::AtomicU64;
 use triomphe::HeaderSlice;
@@ -107,9 +108,9 @@ impl<T: ?Sized> Node<T> {
         self.location().map(|l| l.file_id()) == Some(FileId::BUILT_IN)
     }
 
-    /// If this node contains a location, convert it to line and column numbers
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(sources, self.location())
+    /// If this node contains a location, convert it to the line and column numbers.
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+        self.location()?.line_column_range(sources)
     }
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
@@ -277,6 +278,8 @@ impl NodeLocation {
     }
 
     /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
+    ///
+    /// The range is exclusive, so this offset is one past the end of the range.
     pub fn end_offset(&self) -> usize {
         self.text_range.end().into()
     }
@@ -302,6 +305,21 @@ impl NodeLocation {
                 })
             }
         }
+    }
+
+    /// The line and column numbers of [`Self::offset`]
+    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        let source = sources.get(&self.file_id)?;
+        source.get_line_column(self.offset())
+    }
+
+    /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
+    /// inclusive.
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+        let source = sources.get(&self.file_id)?;
+        let start = source.get_line_column(self.offset())?;
+        let end = source.get_line_column(self.end_offset())?;
+        Some(Range { start, end })
     }
 }
 

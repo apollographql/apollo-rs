@@ -12,6 +12,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::mem::size_of;
 use std::mem::ManuallyDrop;
+use std::ops::Range;
 use std::ptr::NonNull;
 use std::sync::Arc;
 
@@ -185,8 +186,8 @@ impl Name {
     }
 
     /// If this string contains a location, convert it to line and column numbers
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        GraphQLLocation::from_node(sources, self.location())
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+        self.location()?.line_column_range(sources)
     }
 
     #[allow(clippy::len_without_is_empty)] // GraphQL Name is never empty
