@@ -4,6 +4,6 @@ pub mod fast {
 
     pub type IndexMap<K, V> = IM<K, V, ahash::RandomState>;
     pub type IndexSet<T> = IS<T, ahash::RandomState>;
-    pub type HashMap<K, V> = std::collections::HashMap<K,V, ahash::RandomState>;
+    pub type HashMap<K, V> = std::collections::HashMap<K, V, ahash::RandomState>;
     pub type HashSet<T> = std::collections::HashSet<T, ahash::RandomState>;
 }
