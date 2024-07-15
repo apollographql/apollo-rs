@@ -1,3 +1,6 @@
+//! Type aliases for hashing-based collections configured with a specific hasher,
+//! as used in various places thorough the API
+
 use indexmap::IndexMap as IM;
 use indexmap::IndexSet as IS;
 
