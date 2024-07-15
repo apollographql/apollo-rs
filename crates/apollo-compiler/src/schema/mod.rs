@@ -1,8 +1,8 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
-use crate::collections::fast::IndexMap;
-use crate::collections::fast::IndexSet;
+use crate::collections::IndexMap;
+use crate::collections::IndexSet;
 use crate::validation::FileId;
 use crate::Node;
 use crate::NodeLocation;

@@ -1,5 +1,5 @@
 use crate::ast::Value;
-use crate::collections::fast::IndexMap;
+use crate::collections::IndexMap;
 use crate::executable::Field;
 use crate::executable::Selection;
 use crate::execution::input_coercion::coerce_argument_values;

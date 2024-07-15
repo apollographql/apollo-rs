@@ -23,7 +23,7 @@ pub(crate) mod union_;
 pub(crate) mod value;
 pub(crate) mod variable;
 
-use crate::collections::fast::IndexSet;
+use crate::collections::IndexSet;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;

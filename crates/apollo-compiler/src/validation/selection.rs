@@ -1,6 +1,6 @@
 use crate::ast;
 use crate::ast::NamedType;
-use crate::collections::fast::IndexMap;
+use crate::collections::IndexMap;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
 use crate::executable::BuildError;

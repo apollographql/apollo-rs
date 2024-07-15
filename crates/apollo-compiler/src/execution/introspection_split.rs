@@ -1,6 +1,6 @@
 use crate::ast;
-use crate::collections::fast::HashSet;
-use crate::collections::fast::IndexMap;
+use crate::collections::HashSet;
+use crate::collections::IndexMap;
 use crate::executable::Field;
 use crate::executable::Fragment;
 use crate::executable::FragmentSpread;

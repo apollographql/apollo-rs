@@ -1,7 +1,7 @@
 use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
-use crate::collections::fast::IndexMap;
+use crate::collections::IndexMap;
 use crate::executable;
 use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;

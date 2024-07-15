@@ -1,5 +1,5 @@
 use crate::ast;
-use crate::collections::fast::IndexMap;
+use crate::collections::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;

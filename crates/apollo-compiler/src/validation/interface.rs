@@ -1,5 +1,5 @@
 use crate::ast;
-use crate::collections::fast::IndexSet;
+use crate::collections::IndexSet;
 use crate::schema::ComponentName;
 use crate::schema::ExtendedType;
 use crate::schema::InterfaceType;

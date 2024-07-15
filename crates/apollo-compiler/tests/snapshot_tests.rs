@@ -8,7 +8,7 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset work correctly
 
 use apollo_compiler::ast;
-use apollo_compiler::collections::fast::IndexMap;
+use apollo_compiler::collections::IndexMap;
 use apollo_compiler::name;
 use apollo_compiler::schema;
 use apollo_compiler::ty;

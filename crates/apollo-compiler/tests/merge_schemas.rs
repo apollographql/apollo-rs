@@ -1,6 +1,6 @@
 use apollo_compiler::ast;
-use apollo_compiler::collections::fast::IndexMap;
-use apollo_compiler::collections::fast::IndexSet;
+use apollo_compiler::collections::IndexMap;
+use apollo_compiler::collections::IndexSet;
 use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
 use apollo_compiler::schema::ComponentName;
