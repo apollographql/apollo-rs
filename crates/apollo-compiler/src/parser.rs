@@ -1,6 +1,7 @@
 use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
+use crate::collections::IndexMap;
 use crate::executable;
 use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;
@@ -12,7 +13,6 @@ use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::NodeLocation;
 use crate::Schema;
-use indexmap::IndexMap;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;

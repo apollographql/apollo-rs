@@ -14,7 +14,7 @@ pub(crate) fn document_from_ast(
 ) -> ExecutableDocument {
     let mut operations = OperationMap::default();
     let mut multiple_anonymous = false;
-    let mut fragments = IndexMap::new();
+    let mut fragments = IndexMap::with_hasher(Default::default());
     let mut errors = BuildErrors {
         errors,
         path: SelectionPath {

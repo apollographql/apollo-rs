@@ -18,6 +18,7 @@ edition = "2021"
 autotests = false # Most tests/*.rs files are modules of tests/main.rs
 
 [dependencies]
+ahash = "0.8.11"
 apollo-parser = { path = "../apollo-parser", version = "0.7.7" }
 ariadne = { version = "0.4.1", features = ["auto-color"] }
 indexmap = "2.0.0"

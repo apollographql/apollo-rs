@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::collections::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
@@ -10,7 +11,6 @@ use crate::validation::OperationValidationContext;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
-use indexmap::IndexMap;
 
 pub(crate) fn validate_field(
     diagnostics: &mut DiagnosticList,

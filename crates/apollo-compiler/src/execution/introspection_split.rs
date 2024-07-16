@@ -1,4 +1,6 @@
 use crate::ast;
+use crate::collections::HashSet;
+use crate::collections::IndexMap;
 use crate::executable::Field;
 use crate::executable::Fragment;
 use crate::executable::FragmentSpread;
@@ -20,8 +22,6 @@ use crate::Node;
 use crate::Schema;
 use crate::SourceMap;
 use indexmap::map::Entry;
-use indexmap::IndexMap;
-use std::collections::HashSet;
 
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.
 ///
@@ -105,7 +105,7 @@ impl SchemaIntrospectionSplit {
             return Ok(Self::None);
         }
 
-        let mut fragments_info = IndexMap::new();
+        let mut fragments_info = IndexMap::with_hasher(Default::default());
         let operation_field_kinds =
             collect_field_kinds(document, &mut fragments_info, &operation.selection_set)?;
         if operation_field_kinds.schema_introspection.is_none() {
@@ -122,7 +122,7 @@ impl SchemaIntrospectionSplit {
                 make_single_operation_document(schema, document, new_operation, fragments);
             Ok(Self::Only(SchemaIntrospectionQuery(introspection_document)))
         } else {
-            let mut fragments_done = HashSet::new();
+            let mut fragments_done = HashSet::with_hasher(Default::default());
             let mut new_documents = Split {
                 introspection: DocumentBuilder::new(document, operation),
                 other: DocumentBuilder::new(document, operation),
@@ -197,8 +197,8 @@ fn check_non_query<'doc>(
         ),
         location: field.location(),
     };
-    let mut fragments_visited = HashSet::new();
-    let mut fragments_to_visit = HashSet::new();
+    let mut fragments_visited = HashSet::with_hasher(Default::default());
+    let mut fragments_to_visit = HashSet::with_hasher(Default::default());
     check_selection_set(
         &mut fragments_visited,
         &mut fragments_to_visit,
