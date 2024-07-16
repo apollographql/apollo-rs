@@ -7,8 +7,8 @@ use crate::arbitrary::common::DirectiveDefinitionsByLocation;
 use crate::arbitrary::entropy::Entropy;
 use crate::executable;
 use crate::schema;
-use crate::schema::Component;
 use crate::schema::DirectiveLocation;
+use crate::schema::MetaFieldDefinitions;
 use crate::schema::NamedType;
 use crate::validation::Valid;
 use crate::Name;
@@ -200,50 +200,42 @@ impl<'a> Builder<'a> {
     }
 
     fn arbitrary_selection_into(&mut self, selection_set: &mut executable::SelectionSet) {
-        let maybe_fields = match &self.schema.types[&selection_set.ty] {
-            schema::ExtendedType::Interface(def) => Some(&def.fields),
-            schema::ExtendedType::Object(def) => Some(&def.fields),
-            schema::ExtendedType::Scalar(_)
-            | schema::ExtendedType::Union(_)
-            | schema::ExtendedType::Enum(_)
-            | schema::ExtendedType::InputObject(_) => None,
-        };
-        if let Some(field_definitions) = maybe_fields {
-            match self.entropy.u8() {
-                // 50% of cases
-                0..=127 => self.arbitrary_field_into(field_definitions, selection_set),
+        match self.entropy.u8() {
+            // 50% of cases
+            0..=127 => self.arbitrary_field_into(selection_set),
 
-                // 37.5% of cases
-                128..=223 => self.arbitrary_inline_fragment_into(selection_set),
+            // 37.5% of cases
+            128..=223 => self.arbitrary_inline_fragment_into(selection_set),
 
-                // 12.5% of cases
-                _ => self.arbitrary_fragment_spread_into(selection_set),
-            }
-        } else {
-            match self.entropy.u8() {
-                // 75% of cases
-                0..=192 => self.arbitrary_inline_fragment_into(selection_set),
-
-                // 25% of cases
-                _ => self.arbitrary_fragment_spread_into(selection_set),
-            }
+            // 12.5% of cases
+            _ => self.arbitrary_fragment_spread_into(selection_set),
         }
     }
 
-    fn arbitrary_field_into(
-        &mut self,
-        field_definitions: &IndexMap<Name, Component<schema::FieldDefinition>>,
-        selection_set: &mut executable::SelectionSet,
-    ) {
+    fn arbitrary_field_into(&mut self, selection_set: &mut executable::SelectionSet) {
         // TODO: don’t always generate an alias, sometimes use an already-used response key while
         // ensuring https://spec.graphql.org/draft/#sec-Field-Selection-Merging
         let alias = Some(Name::try_from(format!("field{}", self.field_counter)).unwrap());
         self.field_counter += 1;
-        let index = self
-            .entropy
-            .index(field_definitions.len())
-            .expect("object or interface type without fields");
-        let definition = field_definitions[index].node.clone();
+
+        let empty = IndexMap::new();
+        let explicit_fields = match &self.schema.types[&selection_set.ty] {
+            schema::ExtendedType::Interface(def) => &def.fields,
+            schema::ExtendedType::Object(def) => &def.fields,
+            schema::ExtendedType::Scalar(_)
+            | schema::ExtendedType::Union(_)
+            | schema::ExtendedType::Enum(_)
+            | schema::ExtendedType::InputObject(_) => &empty,
+        };
+        let meta_fields = [&MetaFieldDefinitions::get().__typename];
+        let field_count = meta_fields.len() + explicit_fields.len();
+        // unwrap: `field_count` is always at least 1 for `__typename`
+        let choice = self.entropy.index(field_count).unwrap();
+        let definition = if let Some(index) = choice.checked_sub(meta_fields.len()) {
+            explicit_fields[index].node.clone()
+        } else {
+            meta_fields[choice].node.clone()
+        };
         let arguments = arbitrary_arguments(&mut self.context(), &definition.arguments);
         let ty = definition.ty.inner_named_type().clone();
         selection_set.push(executable::Field {
@@ -263,15 +255,13 @@ impl<'a> Builder<'a> {
     fn arbitrary_inline_fragment_into(&mut self, selection_set: &mut executable::SelectionSet) {
         let nested_type;
         let type_condition;
-        // Even though generating type condition normally consumes more entropy,
-        // do so when we’ve run out already so that we don’t get stuck
-        // on a union type with no field and overflow the stack.
-        if self.entropy.bool() {
-            nested_type = selection_set.ty.clone();
-            type_condition = None;
-        } else {
+        let use_type_condition = self.entropy.bool();
+        if use_type_condition {
             nested_type = self.abritrary_type_condition(&selection_set.ty);
             type_condition = Some(nested_type.clone());
+        } else {
+            nested_type = selection_set.ty.clone();
+            type_condition = None;
         };
         selection_set.push(executable::InlineFragment {
             type_condition,
@@ -334,10 +324,10 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
         .filter(|(_name, type_def)| type_def.is_output_type() && !type_def.is_leaf())
         .map(|(name, type_def)| {
             let mut compatible_types = IndexSet::new();
+            // Any type is compatible with itself
+            compatible_types.insert(name);
+
             let mut add_object_type_and_its_supertypes = |object: &'schema schema::ObjectType| {
-                // Ensure that a concrete object type is first,
-                // so that when entropy is exhausted `abritrary_type_condition` selects
-                // a type that definitely has fields.
                 compatible_types.insert(&object.name);
                 if let Some(unions) = unions_map.get(&object.name) {
                     compatible_types.extend(unions);
@@ -350,15 +340,9 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
                 );
             };
             match type_def {
-                schema::ExtendedType::Scalar(_) | schema::ExtendedType::Enum(_) => {
-                    // Compatible with itself
-                    compatible_types.insert(name);
-                }
+                schema::ExtendedType::Scalar(_) | schema::ExtendedType::Enum(_) => {}
                 schema::ExtendedType::Object(object) => add_object_type_and_its_supertypes(object),
                 schema::ExtendedType::Interface(_) => {
-                    // Ensure that a concrete object type is first,
-                    // so that when entropy is exhausted `abritrary_type_condition` selects
-                    // a type that definitely has fields.
                     if let Some(implementers) = implementers_map.get(name) {
                         for object_name in &implementers.objects {
                             let object = schema
@@ -367,21 +351,14 @@ fn gather_compatible_types<'schema>(schema: &'schema Valid<Schema>) -> Compatibl
                             add_object_type_and_its_supertypes(object)
                         }
                     }
-                    // Compatible with itself
-                    compatible_types.insert(name);
                 }
                 schema::ExtendedType::Union(union_) => {
-                    // Ensure that a concrete object type is first,
-                    // so that when entropy is exhausted `abritrary_type_condition` selects
-                    // a type that definitely has fields.
                     for object_name in &union_.members {
                         let object = schema
                             .get_object(object_name)
                             .expect("union has undefined object type as a member");
                         add_object_type_and_its_supertypes(object)
                     }
-                    // Compatible with itself
-                    compatible_types.insert(name);
                 }
                 schema::ExtendedType::InputObject(_) => unreachable!(),
             }
@@ -445,9 +422,7 @@ mod tests {
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(0, 0));
         expect![[r#"
             {
-              field0: user(id: 0) {
-                field1: id
-              }
+              field0: __typename
             }
         "#]]
         .assert_eq(&doc.to_string());
@@ -455,9 +430,7 @@ mod tests {
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(1, 1));
         expect![[r#"
             mutation {
-              field0: login(username: "A", password: "A") {
-                field1: id
-              }
+              field0: __typename
             }
         "#]]
         .assert_eq(&doc.to_string());
@@ -465,9 +438,7 @@ mod tests {
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(2, 2));
         expect![[r#"
             query A {
-              field0: user(id: 0) {
-                field1: id
-              }
+              field0: __typename
             }
         "#]]
         .assert_eq(&doc.to_string());
@@ -475,10 +446,8 @@ mod tests {
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(3, 4));
         expect![[r#"
             {
-              ... {
-                field0: user(id: 0) {
-                  field1: id
-                }
+              ... on Query {
+                field0: __typename
               }
             }
         "#]]
@@ -486,22 +455,19 @@ mod tests {
 
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(4, 8));
         expect![[r#"
-            mutation H($var0: ID!) {
-              field0: deleteReview(id: $var0)
+            mutation H {
+              field0: __typename
+              field1: __typename
             }
         "#]]
         .assert_eq(&doc.to_string());
 
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(4, 16));
         expect![[r#"
-            mutation H($var0: ID! = 702642197) {
-              field0: deleteReview(id: $var0)
-              ...Frag0
-            }
-
-            fragment Frag0 on Mutation {
-              field1: login(username: "A", password: "A") {
-                field2: id
+            mutation H {
+              field0: __typename
+              field1: login(username: "NIm", password: "A") {
+                field2: __typename
               }
             }
         "#]]
@@ -509,16 +475,16 @@ mod tests {
 
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(5, 16));
         expect![[r#"
-            mutation X($var0: ID!) {
+            mutation X {
               ...Frag0
-              field1: login(username: "A", password: "A") {
-                field2: id
+              field1: updateReview(review: {id: 0}) {
+                field2: __typename
               }
             }
 
             fragment Frag0 on Mutation {
-              ... on Mutation {
-                field0: deleteReview(id: $var0)
+              ... {
+                field0: __typename
               }
             }
         "#]]
@@ -527,8 +493,8 @@ mod tests {
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(6, 16));
         expect![[r#"
             {
-              field0: user(id: 936425828) @skip(if: true) {
-                field1: id
+              field0: product(upc: "vTQ") @include(if: false) {
+                field1: __typename
               }
             }
         "#]]
@@ -536,49 +502,44 @@ mod tests {
 
         let doc = arbitrary_valid_executable_document(&schema, &arbitrary_bytes(6, 100));
         expect![[r#"
-            query($var0: Boolean! = false) {
-              field0: user(id: 936425828) @skip(if: true) {
-                ... {
-                  ... on User {
+            query($var0: String!, $var1: Int, $var2: Boolean! = false) {
+              field0: product(upc: "vTQ") @include(if: false) {
+                ... on Product {
+                  field1: name @transform(from: $var0)
+                  ... on Furniture {
                     ... {
-                      ... on User {
-                        ... {
-                          field1: reviews {
-                            ... on Review {
-                              field2: author {
-                                field3: goodAddress
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                  ... on User {
-                    field4: username
-                  }
-                }
-                field5: birthDate(locale: null)
-              }
-              ... on Query {
-                ... on Query @skip(if: $var0) {
-                  ... on Query {
-                    field6: topReviews {
-                      field7: body
+                      ...Frag0
                     }
                   }
                 }
+                field5: __typename
               }
+              field2: topCars(first: $var1) {
+                ... on Thing {
+                  field3: __typename
+                }
+                field6: retailPrice
+              }
+              field7: me {
+                ...Frag1
+              }
+            }
+
+            fragment Frag0 on Product {
               ... {
-                field8: user(id: 2053829692) {
-                  ...Frag0
+                ... {
+                  ... @skip(if: $var2) {
+                    ... {
+                      field4: __typename
+                    }
+                  }
                 }
               }
             }
 
-            fragment Frag0 on User {
-              ... @skip(if: false) {
-                field9: id
+            fragment Frag1 on User {
+              ... on User @skip(if: false) {
+                field8: __typename
               }
             }
         "#]]
