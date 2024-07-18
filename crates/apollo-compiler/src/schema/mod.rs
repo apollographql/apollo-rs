@@ -552,6 +552,18 @@ impl Schema {
 }
 
 impl SchemaDefinition {
+    pub fn iter_root_operations(
+        &self,
+    ) -> impl Iterator<Item = (ast::OperationType, &ComponentName)> {
+        [
+            (ast::OperationType::Query, &self.query),
+            (ast::OperationType::Mutation, &self.mutation),
+            (ast::OperationType::Subscription, &self.subscription),
+        ]
+        .into_iter()
+        .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
+    }
+
     /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -638,6 +650,14 @@ impl ExtendedType {
 
     pub fn is_input_object(&self) -> bool {
         matches!(self, Self::InputObject(_))
+    }
+
+    /// Returns wether this type is a leaf type: scalar or enum.
+    ///
+    /// Field selections must have sub-selections if and only if
+    /// their inner named type is *not* a leaf field.
+    pub fn is_leaf(&self) -> bool {
+        matches!(self, Self::Scalar(_) | Self::Enum(_))
     }
 
     /// Returns true if a value of this type can be used as an input value.
@@ -924,11 +944,11 @@ impl PartialEq for Schema {
     fn eq(&self, other: &Self) -> bool {
         let Self {
             sources: _, // ignored
-            schema_definition: root_operations,
+            schema_definition,
             directive_definitions,
             types,
         } = self;
-        *root_operations == other.schema_definition
+        *schema_definition == other.schema_definition
             && *directive_definitions == other.directive_definitions
             && *types == other.types
     }
@@ -1067,14 +1087,14 @@ impl std::fmt::Debug for DebugTypes<'_> {
     }
 }
 
-struct MetaFieldDefinitions {
-    __typename: Component<FieldDefinition>,
-    __schema: Component<FieldDefinition>,
-    __type: Component<FieldDefinition>,
+pub(crate) struct MetaFieldDefinitions {
+    pub(crate) __typename: Component<FieldDefinition>,
+    pub(crate) __schema: Component<FieldDefinition>,
+    pub(crate) __type: Component<FieldDefinition>,
 }
 
 impl MetaFieldDefinitions {
-    fn get() -> &'static Self {
+    pub(crate) fn get() -> &'static Self {
         static DEFS: OnceLock<MetaFieldDefinitions> = OnceLock::new();
         DEFS.get_or_init(|| Self {
             // __typename: String!

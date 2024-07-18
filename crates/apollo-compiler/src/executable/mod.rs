@@ -342,6 +342,13 @@ impl PartialEq for ExecutableDocument {
 }
 
 impl OperationMap {
+    /// Creates a new `OperationMap` containing one operation
+    pub fn from_one(operation: impl Into<Node<Operation>>) -> Self {
+        let mut map = Self::default();
+        map.insert(operation);
+        map
+    }
+
     /// Returns an iterator of operations, both anonymous and named
     pub fn iter(&self) -> impl Iterator<Item = &'_ Node<Operation>> {
         self.anonymous

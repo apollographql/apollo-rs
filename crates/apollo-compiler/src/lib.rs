@@ -2,6 +2,7 @@
 
 #[macro_use]
 mod macros;
+pub mod arbitrary;
 pub mod ast;
 pub mod collections;
 pub mod coordinate;

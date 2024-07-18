@@ -73,15 +73,9 @@ impl Node<SchemaDefinition> {
                 .into_iter()
                 .any(|op| op.is_some());
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
-            let root_op = |op: &Option<ComponentName>, ty| {
-                op.as_ref()
-                    .filter(|name| name.origin.extension_id() == ext)
-                    .map(|name| (ty, name.name.clone()).into())
-                    .into_iter()
-            };
-            root_op(&self.query, OperationType::Query)
-                .chain(root_op(&self.mutation, OperationType::Mutation))
-                .chain(root_op(&self.subscription, OperationType::Subscription))
+            self.iter_root_operations()
+                .filter(|(_, op)| op.origin.extension_id() == ext)
+                .map(|(ty, op)| (ty, op.name.clone()).into())
                 .collect()
         };
         if implict {
