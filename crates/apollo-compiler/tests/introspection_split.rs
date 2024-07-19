@@ -78,7 +78,7 @@ fn test_nested() {
         GraphQLError {
             message: "Schema introspection field __schema is not supported nested in other fields",
             locations: [
-                GraphQLLocation {
+                LineColumn {
                     line: 2,
                     column: 43,
                 },
@@ -100,7 +100,7 @@ fn test_nested_in_fragment() {
         GraphQLError {
             message: "Schema introspection field __schema is not supported nested in other fields",
             locations: [
-                GraphQLLocation {
+                LineColumn {
                     line: 3,
                     column: 41,
                 },
@@ -121,7 +121,7 @@ fn test_mutation() {
         GraphQLError {
             message: "Schema introspection field __schema is not supported in a mutation operation",
             locations: [
-                GraphQLLocation {
+                LineColumn {
                     line: 2,
                     column: 33,
                 },
@@ -142,7 +142,7 @@ fn test_mutation_nested() {
         GraphQLError {
             message: "Schema introspection field __schema is not supported in a mutation operation",
             locations: [
-                GraphQLLocation {
+                LineColumn {
                     line: 2,
                     column: 46,
                 },

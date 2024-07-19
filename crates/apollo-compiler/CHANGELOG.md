@@ -47,19 +47,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   Moved to the `parser` module and renamed:
   * `NodeLocation` → `SourceSpan`
+  * `GraphQLLocation` → `LineColumn`
 
 - **Return ranges of line/column locations - [dylan-apollo] in [pull/861].**
   `NodeLocation` contains a file ID and a range of UTF-8 offsets within that file.
   Various APIs can convert offsets to line and column numbers,
   but often only considered the start offset.
   They are now changed to consider the range of start and end positions.
-  Added, returning `Option<Range<GraphQLLocation>>`:
+  Added, returning `Option<Range<LineColumn>>`:
   * `NodeLocation::line_column_range`
   * `Diagnostic::line_column_range`
   * `Name::line_column_range`
 
   Removed:
-  * `GraphQLLocation::from_node`
+  * `LineColumn::from_node`
   * `Diagnostic::get_line_column`
   * `SourceFile::get_line_column`
 

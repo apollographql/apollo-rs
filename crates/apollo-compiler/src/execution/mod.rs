@@ -19,7 +19,6 @@ pub use self::introspection_execute::SchemaIntrospectionQuery;
 pub use self::introspection_split::SchemaIntrospectionError;
 pub use self::introspection_split::SchemaIntrospectionSplit;
 pub use self::response::GraphQLError;
-pub use self::response::GraphQLLocation;
 pub use self::response::Response;
 pub use self::response::ResponseData;
 pub use self::response::ResponseDataPathElement;

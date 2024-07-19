@@ -1,9 +1,9 @@
 use crate::diagnostic::CliReport;
 use crate::diagnostic::ToCliReport;
-use crate::execution::GraphQLLocation;
 use crate::parser::FileId;
-use crate::parser::SourceSpan;
+use crate::parser::LineColumn;
 use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::parser::TaggedFileId;
 use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
@@ -186,7 +186,7 @@ impl Name {
     }
 
     /// If this string contains a location, convert it to line and column numbers
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
 

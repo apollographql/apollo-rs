@@ -68,8 +68,8 @@
 //! }
 //! ```
 use crate::execution::GraphQLError;
-use crate::execution::GraphQLLocation;
 use crate::parser::FileId;
+use crate::parser::LineColumn;
 use crate::parser::SourceFile;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
@@ -326,7 +326,7 @@ impl<T: ToCliReport> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToCliReport> Diagnostic<'_, T> {
     /// Get the line and column numbers where this diagnostic spans.
-    pub fn line_column_range(&self) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self) -> Option<Range<LineColumn>> {
         self.error.location()?.line_column_range(self.sources)
     }
 

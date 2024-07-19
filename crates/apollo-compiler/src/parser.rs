@@ -5,7 +5,6 @@ use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::collections::IndexMap;
 use crate::executable;
-use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
@@ -15,6 +14,8 @@ use crate::ExecutableDocument;
 use crate::Schema;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
+use serde::Deserialize;
+use serde::Serialize;
 use std::num::NonZeroU64;
 use std::ops::Range;
 use std::path::Path;
@@ -64,6 +65,17 @@ pub(crate) struct TaggedFileId {
 pub struct SourceSpan {
     pub(crate) file_id: FileId,
     pub(crate) text_range: TextRange,
+}
+
+/// A line number and column number within a GraphQL document.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LineColumn {
+    /// The line number for this location, starting at 1 for the first line.
+    pub line: usize,
+    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
+    /// Values) like [`str::chars`].
+    pub column: usize,
 }
 
 /// Parse a schema and executable document from the given source text
@@ -392,9 +404,9 @@ impl SourceFile {
         })
     }
 
-    pub(crate) fn get_line_column(&self, index: usize) -> Option<GraphQLLocation> {
+    pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
         let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(index)?;
-        Some(GraphQLLocation {
+        Some(LineColumn {
             line: zero_indexed_line + 1,
             column: zero_indexed_column + 1,
         })
@@ -561,14 +573,14 @@ impl SourceSpan {
     }
 
     /// The line and column numbers of [`Self::offset`]
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+    pub fn line_column(&self, sources: &SourceMap) -> Option<LineColumn> {
         let source = sources.get(&self.file_id)?;
         source.get_line_column(self.offset())
     }
 
     /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
     /// inclusive.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         let source = sources.get(&self.file_id)?;
         let start = source.get_line_column(self.offset())?;
         let end = source.get_line_column(self.end_offset())?;

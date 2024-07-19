@@ -1,5 +1,5 @@
-use crate::execution::GraphQLLocation;
 use crate::parser::FileId;
+use crate::parser::LineColumn;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::schema::Component;
@@ -84,7 +84,7 @@ impl<T: ?Sized> Node<T> {
     }
 
     /// If this node contains a location, convert it to the line and column numbers.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
 
