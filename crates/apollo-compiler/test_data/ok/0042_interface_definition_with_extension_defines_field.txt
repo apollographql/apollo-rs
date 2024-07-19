@@ -5,7 +5,7 @@ Schema {
             source_text: include_str!("built_in.graphql"),
         },
         43: SourceFile {
-            path: "0115_interface_definition_with_extension_defines_field.graphql",
+            path: "0042_interface_definition_with_extension_defines_field.graphql",
             source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
         },
     },
@@ -100,7 +100,7 @@ ExecutableDocument {
             source_text: include_str!("built_in.graphql"),
         },
         43: SourceFile {
-            path: "0115_interface_definition_with_extension_defines_field.graphql",
+            path: "0042_interface_definition_with_extension_defines_field.graphql",
             source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
         },
     },

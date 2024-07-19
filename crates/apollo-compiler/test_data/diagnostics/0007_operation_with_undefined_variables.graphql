@@ -1,13 +1,25 @@
+type Query {
+  topProducts(first: Int): Product
+  field(opts: Opts): [Product]
+}
+
+type Product {
+  attributes(includeNames: [String!]): [String!]
+  name: String
+}
+
+input Opts {
+  prop: [[Int]!]!
+}
+
 query ExampleQuery {
   topProducts(first: $undefinedVariable) {
     name
   }
 }
 
-type Query {
-  topProducts(first: Int): Product,
-}
-
-type Product {
-  name: String
+query withUndefinedVariables {
+  field(opts: { prop: [[2], [$v], [4]] }) {
+    attributes(includeNames: [$attributeName])
+  }
 }
