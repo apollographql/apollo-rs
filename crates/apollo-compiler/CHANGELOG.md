@@ -38,7 +38,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This change makes `get_mut()` borrow only `doc.operations` instead of the entire document,
   making it possible to also mutate `doc.fragments` during that mutable borrow.
 
-- **Move or rename some import paths - [SimonSapin] in [pull/883].**
+- **Move or rename some import paths - [SimonSapin] in [pull/885].**
   Moved from the crate root to the new(ly public) `apollo_compiler::parser` module:
   * `Parser`
   * `SourceFile`
@@ -72,7 +72,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Add a few helper methods - [SimonSapin] in [pull/883]:**
+- **Add a few helper methods - [SimonSapin] in [pull/885]:**
   * `executable::OperationMap::from_one`
   * `schema::SchemaDefinition::iter_root_operations()`
   * `schema::ExtendedType::is_leaf`
@@ -80,6 +80,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 
 - **Fix potential hash collision bug in validation - [goto-bus-stop] in [pull/878]**
+- **Fix validation for undefined variables nested in values - [goto-bus-stop] in [pull/885]**
 
 [SimonSapin]: https://github.com/SimonSapin
 [goto-bus-stop]: https://github.com/goto-bus-stop
@@ -91,6 +92,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/879]: https://github.com/apollographql/apollo-rs/pull/879
 [pull/881]: https://github.com/apollographql/apollo-rs/pull/881
 [pull/883]: https://github.com/apollographql/apollo-rs/pull/883
+[pull/885]: https://github.com/apollographql/apollo-rs/pull/885
 
 
 # [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27
