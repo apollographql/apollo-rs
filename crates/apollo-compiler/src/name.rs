@@ -55,7 +55,7 @@ macro_rules! name {
 /// Internally, the string value is either an atomically-reference counted `Arc<str>`
 /// or a `&'static str` borrow that lives until the end of the program.
 //
-// Fields: equivalent to `(UnpackedRepr, Option<NodeLocation>)` but more compact
+// Fields: equivalent to `(UnpackedRepr, Option<SourceSpan>)` but more compact
 pub struct Name {
     /// Data pointer of either `Arc<str>::into_raw` (if `tagged_file_id.tag() == TAG_ARC`)
     /// or `&'static str` (if `TAG_STATIC`)
