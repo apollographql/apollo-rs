@@ -1,6 +1,6 @@
 query(
     $var1: Boolean!
-    $var2: Boolean! = $var
+    $var2: Boolean! = $var1
 ) {
     f1 @include(if: $var1)
     f2 @include(if: $var2)

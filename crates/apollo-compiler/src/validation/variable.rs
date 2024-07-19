@@ -239,14 +239,6 @@ pub(crate) fn validate_variable_usage(
                 );
                 return Err(());
             }
-        } else {
-            diagnostics.push(
-                argument.value.location(),
-                DiagnosticData::UndefinedVariable {
-                    name: var_name.clone(),
-                },
-            );
-            return Err(());
         }
     }
     // It's super confusing to produce a diagnostic here if either the
