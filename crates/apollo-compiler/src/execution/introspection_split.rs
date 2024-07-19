@@ -55,7 +55,8 @@ pub enum SchemaIntrospectionSplit {
         /// and the fragment definitions that are still needed.
         /// The operation definition name is preserved,
         /// so either `None` or the original `Option<&str>` name request can be passed
-        /// to [`ExecutableDocument::get_operation`] to obtain the one operation.
+        /// to [`OperationMap::get`][crate::executable::OperationMap::get]
+        /// to obtain the one operation.
         filtered_document: Valid<ExecutableDocument>,
     },
 }

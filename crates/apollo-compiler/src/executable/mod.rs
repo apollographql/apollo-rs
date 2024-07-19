@@ -270,7 +270,7 @@ pub(crate) enum ExecutableDefinitionName {
     Fragment(Name),
 }
 
-/// A request error returned by [`ExecutableDocument::get_operation`]
+/// A request error returned by [`OperationMap::get`]
 ///
 /// If `get_operation`’s `name_request` argument was `Some`, this error indicates
 /// that the document does not contain an operation with the requested name.
