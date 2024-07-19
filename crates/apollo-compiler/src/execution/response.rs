@@ -1,7 +1,8 @@
 use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
-use crate::node::NodeLocation;
-use crate::SourceMap;
+use crate::parser::LineColumn;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -58,7 +59,7 @@ pub struct GraphQLError {
     /// Locations in relevant to the error, if any.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(default)]
-    pub locations: Vec<GraphQLLocation>,
+    pub locations: Vec<LineColumn>,
 
     /// If non-empty, the error is a [field error]
     /// for the particular field found at this path in [`Response::data`].
@@ -72,17 +73,6 @@ pub struct GraphQLError {
     #[serde(skip_serializing_if = "JsonMap::is_empty")]
     #[serde(default)]
     pub extensions: JsonMap,
-}
-
-/// A source location (1-indexed line and column numbers) within a GraphQL document.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct GraphQLLocation {
-    /// The line number for this location, starting at 1 for the first line.
-    pub line: usize,
-    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
-    /// Values) like [`str::chars`].
-    pub column: usize,
 }
 
 /// An element of [`GraphQLError::path`]
@@ -136,7 +126,7 @@ impl Response {
 impl GraphQLError {
     pub fn new(
         message: impl Into<String>,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
         sources: &SourceMap,
     ) -> Self {
         Self {

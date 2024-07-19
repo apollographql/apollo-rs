@@ -1,23 +1,20 @@
-use crate::execution::GraphQLLocation;
+use crate::parser::FileId;
+use crate::parser::LineColumn;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
-use crate::SourceMap;
-use apollo_parser::SyntaxNode;
-use rowan::TextRange;
 use std::fmt;
 use std::hash::Hash;
 use std::hash::Hasher;
-use std::num::NonZeroU64;
 use std::ops::Range;
-use std::sync::atomic;
-use std::sync::atomic::AtomicU64;
 use triomphe::HeaderSlice;
 
 /// A thread-safe reference-counted smart pointer for GraphQL nodes.
 ///
 /// Similar to [`std::sync::Arc<T>`] but:
 ///
-/// * In addition to `T`, contains an optional [`NodeLocation`].
+/// * In addition to `T`, contains an optional [`SourceSpan`].
 ///   This location notably allows diagnostics to point to relevant parts of parsed input files.
 /// * Weak references are not supported.
 #[derive(serde::Deserialize)]
@@ -26,35 +23,13 @@ pub struct Node<T: ?Sized>(triomphe::Arc<HeaderSlice<Header, T>>);
 
 #[derive(Clone)]
 struct Header {
-    location: Option<NodeLocation>,
-}
-
-/// The source location of a parsed node:
-/// file ID and source span (start and end byte offsets) within that file.
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
-pub struct NodeLocation {
-    pub(crate) file_id: FileId,
-    pub(crate) text_range: TextRange,
-}
-
-/// Integer identifier for a parsed source file.
-///
-/// Used internally to support validating for example a schema built from multiple source files,
-/// and having diagnostics point to relevant sources.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
-pub struct FileId {
-    id: NonZeroU64,
-}
-
-#[derive(Copy, Clone)]
-pub(crate) struct TaggedFileId {
-    tag_and_id: NonZeroU64,
+    location: Option<SourceSpan>,
 }
 
 impl<T> Node<T> {
     /// Create a new `Node` for something parsed from the given source location
     #[inline]
-    pub fn new_parsed(node: T, location: NodeLocation) -> Self {
+    pub fn new_parsed(node: T, location: SourceSpan) -> Self {
         Self::new_opt_location(node, Some(location))
     }
 
@@ -63,7 +38,7 @@ impl<T> Node<T> {
         Self::new_opt_location(node, None)
     }
 
-    pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
+    pub(crate) fn new_opt_location(node: T, location: Option<SourceSpan>) -> Self {
         Self(triomphe::Arc::new(HeaderSlice {
             header: Header { location },
             slice: node,
@@ -74,7 +49,7 @@ impl<T> Node<T> {
 impl Node<str> {
     /// Create a new `Node<str>` for a string parsed from the given source location
     #[inline]
-    pub fn new_str_parsed(node: &str, location: NodeLocation) -> Self {
+    pub fn new_str_parsed(node: &str, location: SourceSpan) -> Self {
         Self::new_str_opt_location(node, Some(location))
     }
 
@@ -83,7 +58,7 @@ impl Node<str> {
         Self::new_str_opt_location(node, None)
     }
 
-    pub(crate) fn new_str_opt_location(node: &str, location: Option<NodeLocation>) -> Self {
+    pub(crate) fn new_str_opt_location(node: &str, location: Option<SourceSpan>) -> Self {
         Self(triomphe::Arc::from_header_and_str(
             Header { location },
             node,
@@ -98,7 +73,7 @@ impl Node<str> {
 impl<T: ?Sized> Node<T> {
     /// If this node was parsed from a source file, returns the file ID and source span
     /// (start and end byte offsets) within that file.
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         self.0.header.location
     }
 
@@ -109,7 +84,7 @@ impl<T: ?Sized> Node<T> {
     }
 
     /// If this node contains a location, convert it to the line and column numbers.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
 
@@ -259,179 +234,11 @@ impl From<Node<str>> for String {
     }
 }
 
-impl NodeLocation {
-    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
-        Self {
-            file_id,
-            text_range: node.text_range(),
-        }
-    }
-
-    /// Returns the file ID for this location
-    pub fn file_id(&self) -> FileId {
-        self.file_id
-    }
-
-    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
-    pub fn offset(&self) -> usize {
-        self.text_range.start().into()
-    }
-
-    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
-    ///
-    /// The range is exclusive, so this offset is one past the end of the range.
-    pub fn end_offset(&self) -> usize {
-        self.text_range.end().into()
-    }
-
-    /// Returns the length of the range, in UTF-8 bytes
-    pub fn node_len(&self) -> usize {
-        self.text_range.len().into()
-    }
-
-    /// Best effort at making a location with the given start and end
-    pub fn recompose(start_of: Option<Self>, end_of: Option<Self>) -> Option<Self> {
-        match (start_of, end_of) {
-            (None, None) => None,
-            (None, single @ Some(_)) | (single @ Some(_), None) => single,
-            (Some(start), Some(end)) => {
-                if start.file_id != end.file_id {
-                    // Pick one aribtrarily
-                    return Some(end);
-                }
-                Some(NodeLocation {
-                    file_id: start.file_id,
-                    text_range: TextRange::new(start.text_range.start(), end.text_range.end()),
-                })
-            }
-        }
-    }
-
-    /// The line and column numbers of [`Self::offset`]
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        let source = sources.get(&self.file_id)?;
-        source.get_line_column(self.offset())
-    }
-
-    /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
-    /// inclusive.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
-        let source = sources.get(&self.file_id)?;
-        let start = source.get_line_column(self.offset())?;
-        let end = source.get_line_column(self.end_offset())?;
-        Some(Range { start, end })
-    }
-}
-
-impl fmt::Debug for NodeLocation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}..{} @{:?}",
-            self.offset(),
-            self.end_offset(),
-            self.file_id,
-        )
-    }
-}
-
 impl<T: serde::Serialize> serde::Serialize for Node<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         T::serialize(self, serializer)
-    }
-}
-
-impl fmt::Debug for FileId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.id.fmt(f)
-    }
-}
-
-/// The next file ID to use. This is global so file IDs do not conflict between different compiler
-/// instances.
-static NEXT: AtomicU64 = AtomicU64::new(INITIAL);
-static INITIAL: u64 = 3;
-
-const TAG: u64 = 1 << 63;
-const ID_MASK: u64 = !TAG;
-
-#[allow(clippy::assertions_on_constants)]
-const _: () = {
-    assert!(TAG == 0x8000_0000_0000_0000);
-    assert!(ID_MASK == 0x7FFF_FFFF_FFFF_FFFF);
-};
-
-impl FileId {
-    /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
-    pub const BUILT_IN: Self = Self::const_new(1);
-
-    /// Passed to Ariadne to create a report without a location
-    pub(crate) const NONE: Self = Self::const_new(2);
-
-    // Returning a different value every time does not sound like good `impl Default`
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        loop {
-            let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
-            if id & TAG == 0 {
-                return Self {
-                    id: NonZeroU64::new(id).unwrap(),
-                };
-            } else {
-                // Overflowing 63 bits is unlikely, but if it somehow happens
-                // reset the counter and try again.
-                //
-                // `TaggedFileId` behaving incorrectly would be a memory safety issue,
-                // whereas a file ID collision “merely” causes
-                // diagnostics to print the wrong file name and source context.
-                Self::reset()
-            }
-        }
-    }
-
-    /// Reset file ID counter back to its initial value, used to get consistent results in tests.
-    ///
-    /// All tests in the process must use `#[serial_test::serial]`
-    #[doc(hidden)]
-    pub fn reset() {
-        NEXT.store(INITIAL, atomic::Ordering::Release)
-    }
-
-    const fn const_new(id: u64) -> Self {
-        assert!(id & ID_MASK == id);
-        // TODO: use unwrap() when const-stable https://github.com/rust-lang/rust/issues/67441
-        if let Some(id) = NonZeroU64::new(id) {
-            Self { id }
-        } else {
-            panic!()
-        }
-    }
-}
-
-impl TaggedFileId {
-    pub(crate) const fn pack(tag: bool, id: FileId) -> Self {
-        debug_assert!((id.id.get() & TAG) == 0);
-        let tag_and_id = if tag {
-            let packed = id.id.get() | TAG;
-            // SAFETY: `id.id` was non-zero, so setting an additional bit is still non-zero
-            unsafe { NonZeroU64::new_unchecked(packed) }
-        } else {
-            id.id
-        };
-        Self { tag_and_id }
-    }
-
-    pub(crate) fn tag(self) -> bool {
-        (self.tag_and_id.get() & TAG) != 0
-    }
-
-    pub(crate) fn file_id(self) -> FileId {
-        let unpacked = self.tag_and_id.get() & ID_MASK;
-        // SAFETY: `unpacked` has the same value as `id: FileId` did in `pack()`, which is non-zero
-        let id = unsafe { NonZeroU64::new_unchecked(unpacked) };
-        FileId { id }
     }
 }

@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.19](https://crates.io/crates/apollo-compiler/1.0.0-beta.19) - 2024-07-19
 
 ## BREAKING
 
@@ -38,15 +38,61 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This change makes `get_mut()` borrow only `doc.operations` instead of the entire document,
   making it possible to also mutate `doc.fragments` during that mutable borrow.
 
+- **Move or rename some import paths - [SimonSapin] in [pull/885].**
+  Moved from the crate root to the new(ly public) `apollo_compiler::parser` module:
+  * `Parser`
+  * `SourceFile`
+  * `SourceMap`
+  * `FileId`
+
+  Moved to the `parser` module and renamed:
+  * `NodeLocation` → `SourceSpan`
+  * `GraphQLLocation` → `LineColumn`
+
+- **Return ranges of line/column locations - [dylan-apollo] in [pull/861].**
+  `SourceSpan` contains a file ID and a range of UTF-8 offsets within that file.
+  Various APIs can convert offsets to line and column numbers,
+  but often only considered the start offset.
+  They are now changed to consider the range of start and end positions.
+  Added, returning `Option<Range<LineColumn>>`:
+  * `SourceSpan::line_column_range`
+  * `Diagnostic::line_column_range`
+  * `Name::line_column_range`
+
+  Removed:
+  * `LineColumn::from_node`
+  * `Diagnostic::get_line_column`
+  * `SourceFile::get_line_column`
+
+- **Use a fast hasher - [o0Ignition0o] in [pull/881].**
+  Configured all hash-based collections used in apollo-compiler to use `ahash`,
+  which is faster than the default standard library hasher.
+  `apollo_compiler::collections` provides type aliases for collections
+  configured with the same hasher as collections in various parts of the public API.
+
+## Features
+
+- **Add a few helper methods - [SimonSapin] in [pull/885]:**
+  * `executable::OperationMap::from_one`
+  * `schema::SchemaDefinition::iter_root_operations()`
+  * `schema::ExtendedType::is_leaf`
+
 ## Fixes
 
 - **Fix potential hash collision bug in validation - [goto-bus-stop] in [pull/878]**
+- **Fix validation for undefined variables nested in values - [goto-bus-stop] in [pull/885]**
 
 [SimonSapin]: https://github.com/SimonSapin
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[o0Ignition0o]: https://github.com/o0Ignition0o
+[dylan-apollo]: https://github.com/dylan-apollo
+[pull/861]: https://github.com/apollographql/apollo-rs/pull/861
 [pull/877]: https://github.com/apollographql/apollo-rs/pull/877
 [pull/878]: https://github.com/apollographql/apollo-rs/pull/878
 [pull/879]: https://github.com/apollographql/apollo-rs/pull/879
+[pull/881]: https://github.com/apollographql/apollo-rs/pull/881
+[pull/883]: https://github.com/apollographql/apollo-rs/pull/883
+[pull/885]: https://github.com/apollographql/apollo-rs/pull/885
 
 
 # [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27

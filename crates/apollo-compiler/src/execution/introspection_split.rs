@@ -12,7 +12,8 @@ use crate::executable::SelectionSet;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
-use crate::node::NodeLocation;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema;
 use crate::schema::Name;
 use crate::validation::SuspectedValidationBug;
@@ -20,7 +21,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
-use crate::SourceMap;
 use indexmap::map::Entry;
 
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.
@@ -55,7 +55,8 @@ pub enum SchemaIntrospectionSplit {
         /// and the fragment definitions that are still needed.
         /// The operation definition name is preserved,
         /// so either `None` or the original `Option<&str>` name request can be passed
-        /// to [`ExecutableDocument::get_operation`] to obtain the one operation.
+        /// to [`OperationMap::get`][crate::executable::OperationMap::get]
+        /// to obtain the one operation.
         filtered_document: Valid<ExecutableDocument>,
     },
 }
@@ -64,7 +65,7 @@ pub enum SchemaIntrospectionError {
     SuspectedValidationBug(SuspectedValidationBug),
     Unsupported {
         message: String,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
     },
 }
 

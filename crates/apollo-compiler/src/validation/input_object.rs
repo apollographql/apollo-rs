@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::collections::HashMap;
 use crate::schema::ExtendedType;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
@@ -8,7 +9,6 @@ use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
 use crate::Name;
 use crate::Node;
-use std::collections::HashMap;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.
@@ -151,7 +151,7 @@ pub(crate) fn validate_argument_definitions(
 ) {
     validate_input_value_definitions(diagnostics, schema, input_values, directive_location);
 
-    let mut seen: HashMap<Name, &Node<ast::InputValueDefinition>> = HashMap::new();
+    let mut seen: HashMap<Name, &Node<ast::InputValueDefinition>> = HashMap::default();
     for input_value in input_values {
         let name = &input_value.name;
         if let Some(prev_value) = seen.get(name) {

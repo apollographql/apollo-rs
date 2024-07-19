@@ -1,21 +1,21 @@
 use crate::ast;
 use crate::ast::NamedType;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
-use crate::validation::NodeLocation;
 use crate::validation::OperationValidationContext;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
+use crate::validation::SourceSpan;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 use std::borrow::Cow;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
@@ -27,7 +27,7 @@ fn get_possible_types<'a>(
     match type_definition {
         // 1. If `type` is an object type, return a set containing `type`.
         schema::ExtendedType::Object(object) => {
-            let mut set = HashSet::new();
+            let mut set = HashSet::default();
             set.insert(object.name.clone());
             Cow::Owned(set)
         }
@@ -299,7 +299,7 @@ pub(crate) fn validate_fragment_cycles(
     match detect_fragment_cycles(document, &def.selection_set, &mut visited.guard()) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
-            let head_location = NodeLocation::recompose(def.location(), def.name.location());
+            let head_location = SourceSpan::recompose(def.location(), def.name.location());
 
             diagnostics.push(
                 def.location(),
@@ -311,7 +311,7 @@ pub(crate) fn validate_fragment_cycles(
             );
         }
         Err(CycleError::Limit(_)) => {
-            let head_location = NodeLocation::recompose(def.location(), def.name.location());
+            let head_location = SourceSpan::recompose(def.location(), def.name.location());
 
             diagnostics.push(
                 head_location,
@@ -329,7 +329,7 @@ pub(crate) fn validate_fragment_type_condition(
     schema: &crate::Schema,
     fragment_name: Option<Name>,
     type_cond: &NamedType,
-    fragment_location: Option<NodeLocation>,
+    fragment_location: Option<SourceSpan>,
 ) {
     let type_def = schema.types.get(type_cond);
     let is_composite = type_def

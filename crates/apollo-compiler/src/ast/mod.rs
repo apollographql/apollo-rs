@@ -15,7 +15,8 @@
 //!
 //! ## Parsing
 //!
-//! Start with [`Document::parse`], or [`Parser`][crate::Parser] to change the parser configuration.
+//! Start with [`Document::parse`], or [`Parser`][crate::parser::Parser]
+//! to change the parser configuration.
 //!
 //! ## Structural sharing and mutation
 //!
@@ -31,6 +32,7 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 
+use crate::parser::SourceMap;
 use crate::Name;
 use crate::Node;
 
@@ -46,7 +48,7 @@ pub struct Document {
     /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub sources: crate::SourceMap,
+    pub sources: SourceMap,
 
     pub definitions: Vec<Definition>,
 }

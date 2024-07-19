@@ -1,12 +1,12 @@
 use crate::diagnostic::CliReport;
 use crate::diagnostic::ToCliReport;
-use crate::execution::GraphQLLocation;
-use crate::node::TaggedFileId;
+use crate::parser::FileId;
+use crate::parser::LineColumn;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
+use crate::parser::TaggedFileId;
 use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
-use crate::FileId;
-use crate::NodeLocation;
-use crate::SourceMap;
 use rowan::TextRange;
 use std::fmt;
 use std::marker::PhantomData;
@@ -55,7 +55,7 @@ macro_rules! name {
 /// Internally, the string value is either an atomically-reference counted `Arc<str>`
 /// or a `&'static str` borrow that lives until the end of the program.
 //
-// Fields: equivalent to `(UnpackedRepr, Option<NodeLocation>)` but more compact
+// Fields: equivalent to `(UnpackedRepr, Option<SourceSpan>)` but more compact
 pub struct Name {
     /// Data pointer of either `Arc<str>::into_raw` (if `tagged_file_id.tag() == TAG_ARC`)
     /// or `&'static str` (if `TAG_STATIC`)
@@ -78,7 +78,7 @@ enum UnpackedRepr {
 #[error("`{name}` is not a valid GraphQL name")]
 pub struct InvalidNameError {
     pub name: String,
-    pub location: Option<NodeLocation>,
+    pub location: Option<SourceSpan>,
 }
 
 const TAG_ARC: bool = true;
@@ -156,7 +156,7 @@ impl Name {
     }
 
     /// Modifies the given name to add its location in a parsed source file
-    pub fn with_location(mut self, location: NodeLocation) -> Self {
+    pub fn with_location(mut self, location: SourceSpan) -> Self {
         debug_assert_eq!(location.text_range.len(), self.len.into());
         self.start_offset = location.text_range.start().into();
         self.tagged_file_id = TaggedFileId::pack(self.tagged_file_id.tag(), location.file_id);
@@ -173,10 +173,10 @@ impl Name {
 
     /// If this node was parsed from a source file, returns the file ID and source span
     /// (start and end byte offsets) within that file.
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         let file_id = self.tagged_file_id.file_id();
         if file_id != FileId::NONE {
-            Some(NodeLocation {
+            Some(SourceSpan {
                 file_id,
                 text_range: TextRange::at(self.start_offset.into(), self.len.into()),
             })
@@ -186,7 +186,7 @@ impl Name {
     }
 
     /// If this string contains a location, convert it to line and column numbers
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         self.location()?.line_column_range(sources)
     }
 
@@ -502,7 +502,7 @@ impl AsRef<Name> for Name {
 }
 
 impl ToCliReport for InvalidNameError {
-    fn location(&self) -> Option<NodeLocation> {
+    fn location(&self) -> Option<SourceSpan> {
         self.location
     }
     fn report(&self, report: &mut CliReport) {

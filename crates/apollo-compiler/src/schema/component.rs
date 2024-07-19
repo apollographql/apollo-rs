@@ -1,6 +1,6 @@
+use crate::parser::SourceSpan;
 use crate::Name;
 use crate::Node;
-use crate::NodeLocation;
 use std::fmt;
 use std::hash;
 use std::ops::Deref;
@@ -32,7 +32,7 @@ pub enum ComponentOrigin {
 /// even if they contain the same source location.
 #[derive(Debug, Clone, Eq)]
 pub struct ExtensionId {
-    arc: Arc<Option<NodeLocation>>,
+    arc: Arc<Option<SourceSpan>>,
 }
 
 impl ExtensionId {
@@ -42,7 +42,7 @@ impl ExtensionId {
         }
     }
 
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         *self.arc
     }
 

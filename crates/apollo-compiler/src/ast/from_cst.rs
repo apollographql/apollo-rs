@@ -1,9 +1,9 @@
 use crate::ast;
 use crate::ast::Document;
-use crate::validation::FileId;
+use crate::parser::FileId;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::Node;
-use crate::NodeLocation;
-use crate::SourceMap;
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
 use apollo_parser::SyntaxNode;
@@ -28,7 +28,7 @@ pub(crate) trait Convert {
 }
 
 fn with_location<T>(file_id: FileId, syntax_node: &SyntaxNode, node: T) -> Node<T> {
-    Node::new_parsed(node, NodeLocation::new(file_id, syntax_node))
+    Node::new_parsed(node, SourceSpan::new(file_id, syntax_node))
 }
 
 /// Convert and collect, silently skipping entries with conversion errors
@@ -429,7 +429,7 @@ impl Convert for cst::Description {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Node::new_str_parsed(
             &String::from(self.string_value()?),
-            NodeLocation::new(file_id, self.syntax()),
+            SourceSpan::new(file_id, self.syntax()),
         ))
     }
 }
@@ -762,7 +762,7 @@ impl Convert for cst::Name {
     type Target = crate::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let loc = NodeLocation::new(file_id, self.syntax());
+        let loc = SourceSpan::new(file_id, self.syntax());
         let token = &self.syntax().first_token()?;
         let str = token.text();
         debug_assert!(crate::Name::is_valid_syntax(str));

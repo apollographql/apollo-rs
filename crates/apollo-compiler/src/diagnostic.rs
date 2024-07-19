@@ -4,7 +4,7 @@
 //! To use pretty-printing in custom errors, implement the [`ToCliReport`] trait.
 //!
 //! ```rust
-//! use apollo_compiler::NodeLocation;
+//! use apollo_compiler::parser::SourceSpan;
 //! use apollo_compiler::Schema;
 //! use apollo_compiler::Name;
 //! use apollo_compiler::diagnostic::CliReport;
@@ -18,13 +18,13 @@
 //!     InvalidCase { name: Name },
 //!     #[error("Missing @specifiedBy directive on scalar {name}")]
 //!     NoSpecifiedBy {
-//!         location: Option<NodeLocation>,
+//!         location: Option<SourceSpan>,
 //!         name: Name,
 //!     },
 //! }
 //!
 //! impl ToCliReport for LintError {
-//!     fn location(&self) -> Option<NodeLocation> {
+//!     fn location(&self) -> Option<SourceSpan> {
 //!         match self {
 //!             LintError::InvalidCase { name } => name.location(),
 //!             LintError::NoSpecifiedBy { location, .. } => *location,
@@ -52,12 +52,12 @@
 //! ready for formatting:
 //!
 //! ```rust
-//! # use apollo_compiler::{NodeLocation, Schema, diagnostic::{ToCliReport, CliReport}};
+//! # use apollo_compiler::{parser::SourceSpan, Schema, diagnostic::{ToCliReport, CliReport}};
 //! # #[derive(Debug, thiserror::Error)]
 //! # #[error("")]
 //! # struct LintError {}
 //! # impl ToCliReport for LintError {
-//! #     fn location(&self) -> Option<NodeLocation> { None }
+//! #     fn location(&self) -> Option<SourceSpan> { None }
 //! #     fn report(&self, _report: &mut CliReport) {}
 //! # }
 //! fn print_errors(schema: &Schema, errors: &[LintError]) {
@@ -68,15 +68,15 @@
 //! }
 //! ```
 use crate::execution::GraphQLError;
-use crate::execution::GraphQLLocation;
-use crate::validation::FileId;
+use crate::parser::FileId;
+use crate::parser::LineColumn;
+use crate::parser::SourceFile;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 #[cfg(doc)]
 use crate::ExecutableDocument;
-use crate::NodeLocation;
 #[cfg(doc)]
 use crate::Schema;
-use crate::SourceFile;
-use crate::SourceMap;
 use ariadne::ColorGenerator;
 use ariadne::ReportKind;
 use std::cell::Cell;
@@ -128,7 +128,7 @@ pub enum Color {
 pub trait ToCliReport: fmt::Display {
     /// Return the main location for this error. May be `None` if a location doesn't make sense for
     /// the particular error.
-    fn location(&self) -> Option<NodeLocation>;
+    fn location(&self) -> Option<SourceSpan>;
 
     /// Fill in the report with source code labels.
     ///
@@ -157,7 +157,7 @@ pub trait ToCliReport: fmt::Display {
 }
 
 impl<T: ToCliReport> ToCliReport for &T {
-    fn location(&self) -> Option<NodeLocation> {
+    fn location(&self) -> Option<SourceSpan> {
         ToCliReport::location(*self)
     }
 
@@ -166,12 +166,12 @@ impl<T: ToCliReport> ToCliReport for &T {
     }
 }
 
-/// An ariadne span type. We avoid implementing `ariadne::Span` for `NodeLocation`
+/// An ariadne span type. We avoid implementing `ariadne::Span` for `SourceSpan`
 /// so ariadne doesn't leak into the public API of apollo-compiler.
 type AriadneSpan = (FileId, Range<usize>);
 
-/// Translate a NodeLocation into an ariadne span type.
-fn to_span(location: NodeLocation) -> Option<AriadneSpan> {
+/// Translate a SourceSpan into an ariadne span type.
+fn to_span(location: SourceSpan) -> Option<AriadneSpan> {
     let start = location.offset();
     let end = location.end_offset();
     Some((location.file_id, start..end))
@@ -201,7 +201,7 @@ impl<'s> CliReport<'s> {
     /// Source files can be obtained from [`Schema::sources`] or [`ExecutableDocument::sources`].
     pub fn builder(
         sources: &'s SourceMap,
-        main_location: Option<NodeLocation>,
+        main_location: Option<SourceSpan>,
         color: Color,
     ) -> Self {
         let (file_id, range) = main_location
@@ -241,7 +241,7 @@ impl<'s> CliReport<'s> {
     }
 
     /// Add a label at a given location. If the location is `None`, the message is discarded.
-    pub fn with_label_opt(&mut self, location: Option<NodeLocation>, message: impl ToString) {
+    pub fn with_label_opt(&mut self, location: Option<SourceSpan>, message: impl ToString) {
         if let Some(span) = location.and_then(to_span) {
             self.report.add_label(
                 ariadne::Label::new(span)
@@ -326,7 +326,7 @@ impl<T: ToCliReport> std::error::Error for Diagnostic<'_, T> {}
 
 impl<T: ToCliReport> Diagnostic<'_, T> {
     /// Get the line and column numbers where this diagnostic spans.
-    pub fn line_column_range(&self) -> Option<Range<GraphQLLocation>> {
+    pub fn line_column_range(&self) -> Option<Range<LineColumn>> {
         self.error.location()?.line_column_range(self.sources)
     }
 

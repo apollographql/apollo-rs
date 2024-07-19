@@ -1,4 +1,4 @@
-use apollo_compiler::Parser;
+use apollo_compiler::parser::Parser;
 
 #[test]
 fn it_errors_when_selection_set_recursion_limit_exceeded() {

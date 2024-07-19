@@ -1,5 +1,6 @@
 use crate::ast::Type;
 use crate::ast::Value;
+use crate::collections::HashMap;
 use crate::executable::Field;
 use crate::executable::Operation;
 use crate::execution::engine::LinkedPath;
@@ -8,7 +9,8 @@ use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::Response;
-use crate::node::NodeLocation;
+use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::validation::SuspectedValidationBug;
@@ -16,8 +18,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
-use crate::SourceMap;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub enum InputCoercionError {
@@ -25,7 +25,7 @@ pub enum InputCoercionError {
     // TODO: split into more structured variants?
     ValueError {
         message: String,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
     },
 }
 

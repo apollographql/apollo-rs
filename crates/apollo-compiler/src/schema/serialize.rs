@@ -73,15 +73,9 @@ impl Node<SchemaDefinition> {
                 .into_iter()
                 .any(|op| op.is_some());
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
-            let root_op = |op: &Option<ComponentName>, ty| {
-                op.as_ref()
-                    .filter(|name| name.origin.extension_id() == ext)
-                    .map(|name| (ty, name.name.clone()).into())
-                    .into_iter()
-            };
-            root_op(&self.query, OperationType::Query)
-                .chain(root_op(&self.mutation, OperationType::Mutation))
-                .chain(root_op(&self.subscription, OperationType::Subscription))
+            self.iter_root_operations()
+                .filter(|(_, op)| op.origin.extension_id() == ext)
+                .map(|(ty, op)| (ty, op.name.clone()).into())
                 .collect()
         };
         if implict {
@@ -132,7 +126,7 @@ impl ExtendedType {
 }
 
 impl ScalarType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::ScalarTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -156,7 +150,7 @@ impl ScalarType {
 }
 
 impl ObjectType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::ObjectTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -184,7 +178,7 @@ impl ObjectType {
 }
 
 impl InterfaceType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::InterfaceTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -214,7 +208,7 @@ impl InterfaceType {
 }
 
 impl UnionType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::UnionTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -240,7 +234,7 @@ impl UnionType {
 }
 
 impl EnumType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::EnumTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -266,7 +260,7 @@ impl EnumType {
 }
 
 impl InputObjectType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::InputObjectTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),

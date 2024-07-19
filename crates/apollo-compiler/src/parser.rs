@@ -1,20 +1,27 @@
+//! APIs related to parsing `&str` inputs as GraphQL syntax
+
 use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::collections::IndexMap;
 use crate::executable;
-use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::ExecutableDocument;
-use crate::NodeLocation;
 use crate::Schema;
+use apollo_parser::SyntaxNode;
+use rowan::TextRange;
+use serde::Deserialize;
+use serde::Serialize;
+use std::num::NonZeroU64;
+use std::ops::Range;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::atomic;
+use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
@@ -35,7 +42,41 @@ pub struct SourceFile {
     pub(crate) source: OnceLock<ariadne::Source>,
 }
 
+/// A map of source files relevant to a given document
 pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+
+/// Integer identifier for a parsed source file.
+///
+/// Used internally to support validating for example a schema built from multiple source files,
+/// and having diagnostics point to relevant sources.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub struct FileId {
+    id: NonZeroU64,
+}
+
+#[derive(Copy, Clone)]
+pub(crate) struct TaggedFileId {
+    tag_and_id: NonZeroU64,
+}
+
+/// The source location of a parsed node:
+/// file ID and text range (start and end byte offsets) within that file.
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+pub struct SourceSpan {
+    pub(crate) file_id: FileId,
+    pub(crate) text_range: TextRange,
+}
+
+/// A line number and column number within a GraphQL document.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LineColumn {
+    /// The line number for this location, starting at 1 for the first line.
+    pub line: usize,
+    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
+    /// Values) like [`str::chars`].
+    pub column: usize,
+}
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
@@ -136,7 +177,7 @@ impl Parser {
             let Ok(len) = parser_error.data().len().try_into() else {
                 continue;
             };
-            let location = Some(NodeLocation {
+            let location = Some(SourceSpan {
                 file_id,
                 text_range: rowan::TextRange::at(index, len),
             });
@@ -363,9 +404,9 @@ impl SourceFile {
         })
     }
 
-    pub(crate) fn get_line_column(&self, index: usize) -> Option<GraphQLLocation> {
+    pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
         let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(index)?;
-        Some(GraphQLLocation {
+        Some(LineColumn {
             line: zero_indexed_line + 1,
             column: zero_indexed_column + 1,
         })
@@ -390,5 +431,171 @@ impl std::fmt::Debug for SourceFile {
             );
         }
         debug_struct.finish()
+    }
+}
+
+impl std::fmt::Debug for FileId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.id.fmt(f)
+    }
+}
+
+/// The next file ID to use. This is global so file IDs do not conflict between different compiler
+/// instances.
+static NEXT: AtomicU64 = AtomicU64::new(INITIAL);
+static INITIAL: u64 = 3;
+
+const TAG: u64 = 1 << 63;
+const ID_MASK: u64 = !TAG;
+
+#[allow(clippy::assertions_on_constants)]
+const _: () = {
+    assert!(TAG == 0x8000_0000_0000_0000);
+    assert!(ID_MASK == 0x7FFF_FFFF_FFFF_FFFF);
+};
+
+impl FileId {
+    /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
+    pub const BUILT_IN: Self = Self::const_new(1);
+
+    /// Passed to Ariadne to create a report without a location
+    pub(crate) const NONE: Self = Self::const_new(2);
+
+    // Returning a different value every time does not sound like good `impl Default`
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        loop {
+            let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
+            if id & TAG == 0 {
+                return Self {
+                    id: NonZeroU64::new(id).unwrap(),
+                };
+            } else {
+                // Overflowing 63 bits is unlikely, but if it somehow happens
+                // reset the counter and try again.
+                //
+                // `TaggedFileId` behaving incorrectly would be a memory safety issue,
+                // whereas a file ID collision “merely” causes
+                // diagnostics to print the wrong file name and source context.
+                Self::reset()
+            }
+        }
+    }
+
+    /// Reset file ID counter back to its initial value, used to get consistent results in tests.
+    ///
+    /// All tests in the process must use `#[serial_test::serial]`
+    #[doc(hidden)]
+    pub fn reset() {
+        NEXT.store(INITIAL, atomic::Ordering::Release)
+    }
+
+    const fn const_new(id: u64) -> Self {
+        assert!(id & ID_MASK == id);
+        // TODO: use unwrap() when const-stable https://github.com/rust-lang/rust/issues/67441
+        if let Some(id) = NonZeroU64::new(id) {
+            Self { id }
+        } else {
+            panic!()
+        }
+    }
+}
+
+impl TaggedFileId {
+    pub(crate) const fn pack(tag: bool, id: FileId) -> Self {
+        debug_assert!((id.id.get() & TAG) == 0);
+        let tag_and_id = if tag {
+            let packed = id.id.get() | TAG;
+            // SAFETY: `id.id` was non-zero, so setting an additional bit is still non-zero
+            unsafe { NonZeroU64::new_unchecked(packed) }
+        } else {
+            id.id
+        };
+        Self { tag_and_id }
+    }
+
+    pub(crate) fn tag(self) -> bool {
+        (self.tag_and_id.get() & TAG) != 0
+    }
+
+    pub(crate) fn file_id(self) -> FileId {
+        let unpacked = self.tag_and_id.get() & ID_MASK;
+        // SAFETY: `unpacked` has the same value as `id: FileId` did in `pack()`, which is non-zero
+        let id = unsafe { NonZeroU64::new_unchecked(unpacked) };
+        FileId { id }
+    }
+}
+
+impl SourceSpan {
+    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
+        Self {
+            file_id,
+            text_range: node.text_range(),
+        }
+    }
+
+    /// Returns the file ID for this location
+    pub fn file_id(&self) -> FileId {
+        self.file_id
+    }
+
+    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
+    pub fn offset(&self) -> usize {
+        self.text_range.start().into()
+    }
+
+    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
+    pub fn end_offset(&self) -> usize {
+        self.text_range.end().into()
+    }
+
+    /// Returns the length of the range, in UTF-8 bytes
+    pub fn node_len(&self) -> usize {
+        self.text_range.len().into()
+    }
+
+    /// Best effort at making a location with the given start and end
+    pub fn recompose(start_of: Option<Self>, end_of: Option<Self>) -> Option<Self> {
+        match (start_of, end_of) {
+            (None, None) => None,
+            (None, single @ Some(_)) | (single @ Some(_), None) => single,
+            (Some(start), Some(end)) => {
+                if start.file_id != end.file_id {
+                    // Pick one aribtrarily
+                    return Some(end);
+                }
+                Some(SourceSpan {
+                    file_id: start.file_id,
+                    text_range: TextRange::new(start.text_range.start(), end.text_range.end()),
+                })
+            }
+        }
+    }
+
+    /// The line and column numbers of [`Self::offset`]
+    pub fn line_column(&self, sources: &SourceMap) -> Option<LineColumn> {
+        let source = sources.get(&self.file_id)?;
+        source.get_line_column(self.offset())
+    }
+
+    /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
+    /// inclusive.
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
+        let source = sources.get(&self.file_id)?;
+        let start = source.get_line_column(self.offset())?;
+        let end = source.get_line_column(self.end_offset())?;
+        Some(Range { start, end })
+    }
+}
+
+impl std::fmt::Debug for SourceSpan {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}..{} @{:?}",
+            self.offset(),
+            self.end_offset(),
+            self.file_id,
+        )
     }
 }

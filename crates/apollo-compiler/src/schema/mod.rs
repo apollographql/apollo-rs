@@ -1,14 +1,20 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::collections::IndexSet;
-use crate::validation::FileId;
+use crate::name;
+use crate::parser::FileId;
+use crate::parser::Parser;
+use crate::parser::SourceSpan;
+use crate::ty;
+use crate::validation::DiagnosticList;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
+pub use crate::Name;
 use crate::Node;
-use crate::NodeLocation;
-use crate::Parser;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::path::Path;
 use std::sync::OnceLock;
 
@@ -31,12 +37,6 @@ pub use crate::ast::InputValueDefinition;
 pub use crate::ast::NamedType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
-use crate::name;
-use crate::ty;
-use crate::validation::DiagnosticList;
-use crate::validation::Valid;
-use crate::validation::WithErrors;
-pub use crate::Name;
 
 /// High-level representation of a GraphQL schema
 #[derive(Clone)]
@@ -44,7 +44,7 @@ pub struct Schema {
     /// Source files, if any, that were parsed to contribute to this schema.
     ///
     /// The schema (including parsed definitions) may have been modified since parsing.
-    pub sources: crate::SourceMap,
+    pub sources: crate::parser::SourceMap,
 
     /// The `schema` definition and its extensions, defining root operations
     pub schema_definition: Node<SchemaDefinition>,
@@ -192,18 +192,18 @@ pub(crate) enum BuildError {
 
     #[error("must not have multiple `schema` definitions")]
     SchemaDefinitionCollision {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
     },
 
     #[error("the directive `@{name}` is defined multiple times in the schema")]
     DirectiveDefinitionCollision {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
         name: Name,
     },
 
     #[error("the type `{name}` is defined multiple times in the schema")]
     TypeDefinitionCollision {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
         name: Name,
     },
 
@@ -220,13 +220,13 @@ pub(crate) enum BuildError {
     TypeExtensionKindMismatch {
         name: Name,
         describe_ext: &'static str,
-        def_location: Option<NodeLocation>,
+        def_location: Option<SourceSpan>,
         describe_def: &'static str,
     },
 
     #[error("duplicate definitions for the `{operation_type}` root operation type")]
     DuplicateRootOperation {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
         operation_type: &'static str,
     },
 
@@ -466,7 +466,7 @@ impl Schema {
     /// If that is repeated for multiple interfaces,
     /// gathering them all at once amorticizes that cost.
     pub fn implementers_map(&self) -> HashMap<Name, Implementers> {
-        let mut map = HashMap::<Name, Implementers>::new();
+        let mut map = HashMap::<Name, Implementers>::default();
         for (ty_name, ty) in &self.types {
             match ty {
                 ExtendedType::Object(def) => {
@@ -552,6 +552,18 @@ impl Schema {
 }
 
 impl SchemaDefinition {
+    pub fn iter_root_operations(
+        &self,
+    ) -> impl Iterator<Item = (ast::OperationType, &ComponentName)> {
+        [
+            (ast::OperationType::Query, &self.query),
+            (ast::OperationType::Mutation, &self.mutation),
+            (ast::OperationType::Subscription, &self.subscription),
+        ]
+        .into_iter()
+        .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
+    }
+
     /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -594,7 +606,7 @@ impl ExtendedType {
     /// Return the source location of the type's base definition.
     ///
     /// If the type has extensions, those are not covered by this location.
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         match self {
             Self::Scalar(ty) => ty.location(),
             Self::Object(ty) => ty.location(),
@@ -638,6 +650,14 @@ impl ExtendedType {
 
     pub fn is_input_object(&self) -> bool {
         matches!(self, Self::InputObject(_))
+    }
+
+    /// Returns wether this type is a leaf type: scalar or enum.
+    ///
+    /// Field selections must have sub-selections if and only if
+    /// their inner named type is *not* a leaf field.
+    pub fn is_leaf(&self) -> bool {
+        matches!(self, Self::Scalar(_) | Self::Enum(_))
     }
 
     /// Returns true if a value of this type can be used as an input value.
@@ -924,11 +944,11 @@ impl PartialEq for Schema {
     fn eq(&self, other: &Self) -> bool {
         let Self {
             sources: _, // ignored
-            schema_definition: root_operations,
+            schema_definition,
             directive_definitions,
             types,
         } = self;
-        *root_operations == other.schema_definition
+        *schema_definition == other.schema_definition
             && *directive_definitions == other.directive_definitions
             && *types == other.types
     }
