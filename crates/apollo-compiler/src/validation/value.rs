@@ -167,7 +167,7 @@ pub(crate) fn value_of_correct_type(
                     },
                 );
             }
-        },
+        }
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
                 // Accept enum values as input for custom scalars

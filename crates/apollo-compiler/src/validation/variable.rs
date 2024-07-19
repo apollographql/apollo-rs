@@ -239,10 +239,11 @@ pub(crate) fn validate_variable_usage(
                 );
                 return Err(());
             }
+        } else {
+            // If the variable is not defined, we raise an error in `value.rs`
         }
     }
-    // It's super confusing to produce a diagnostic here if either the
-    // location_ty or variable_ty is missing, so just return Ok(());
+
     Ok(())
 }
 
