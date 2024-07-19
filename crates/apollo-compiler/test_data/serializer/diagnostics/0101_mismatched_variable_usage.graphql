@@ -46,6 +46,12 @@ query doubleNestedFragmentNonNullIntArgField($intArg: Int) {
   }
 }
 
+query intCannotGoIntoBooleanList($intArg: Int) {
+  arguments {
+    nonNullBooleanListField(nonNullBooleanListArg: [$intArg])
+  }
+}
+
 type Query {
   arguments: Arguments
 }

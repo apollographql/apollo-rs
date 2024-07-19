@@ -132,34 +132,42 @@ pub(crate) fn value_of_correct_type(
                 unsupported_type(diagnostics, arg_value, ty);
             }
         }
-        ast::Value::Variable(var_name) => match &type_definition {
-            schema::ExtendedType::Scalar(_)
-            | schema::ExtendedType::Enum(_)
-            | schema::ExtendedType::InputObject(_) => {
-                let var_def = var_defs.iter().find(|v| v.name == *var_name);
-                if let Some(var_def) = var_def {
-                    // we don't have the actual variable values here, so just
-                    // compare if two Types are the same
-                    // TODO(@goto-bus-stop) This should use the is_assignable_to check
-                    if var_def.ty.inner_named_type() != ty.inner_named_type() {
-                        unsupported_type(diagnostics, arg_value, ty);
-                    } else if let Some(default_value) = &var_def.default_value {
-                        if var_def.ty.is_non_null() && default_value.is_null() {
-                            unsupported_type(diagnostics, default_value, &var_def.ty)
-                        } else {
-                            value_of_correct_type(
-                                diagnostics,
-                                schema,
-                                &var_def.ty,
-                                default_value,
-                                var_defs,
-                            )
+        ast::Value::Variable(var_name) => {
+            if let Some(var_def) = var_defs.iter().find(|v| v.name == *var_name) {
+                match &type_definition {
+                    schema::ExtendedType::Scalar(_)
+                    | schema::ExtendedType::Enum(_)
+                    | schema::ExtendedType::InputObject(_) => {
+                        // we don't have the actual variable values here, so just
+                        // compare if two Types are the same
+                        // TODO(@goto-bus-stop) This should use the is_assignable_to check
+                        if var_def.ty.inner_named_type() != ty.inner_named_type() {
+                            unsupported_type(diagnostics, arg_value, ty);
+                        } else if let Some(default_value) = &var_def.default_value {
+                            if var_def.ty.is_non_null() && default_value.is_null() {
+                                unsupported_type(diagnostics, default_value, &var_def.ty)
+                            } else {
+                                value_of_correct_type(
+                                    diagnostics,
+                                    schema,
+                                    &var_def.ty,
+                                    default_value,
+                                    var_defs,
+                                )
+                            }
                         }
                     }
+                    _ => unsupported_type(diagnostics, arg_value, ty),
                 }
+            } else {
+                diagnostics.push(
+                    arg_value.location(),
+                    DiagnosticData::UndefinedVariable {
+                        name: var_name.clone(),
+                    },
+                );
             }
-            _ => unsupported_type(diagnostics, arg_value, ty),
-        },
+        }
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
                 // Accept enum values as input for custom scalars
