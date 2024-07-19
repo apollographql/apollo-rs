@@ -38,6 +38,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This change makes `get_mut()` borrow only `doc.operations` instead of the entire document,
   making it possible to also mutate `doc.fragments` during that mutable borrow.
 
+## Features
+
+- **Add a few helper methods - [SimonSapin] in [pull/883]**
+  * `executable::OperationMap::from_one`
+  * `schema::SchemaDefinition::iter_root_operations()`
+  * `schema::ExtendedType::is_leaf`
+
 ## Fixes
 
 - **Fix potential hash collision bug in validation - [goto-bus-stop] in [pull/878]**
@@ -47,6 +54,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/877]: https://github.com/apollographql/apollo-rs/pull/877
 [pull/878]: https://github.com/apollographql/apollo-rs/pull/878
 [pull/879]: https://github.com/apollographql/apollo-rs/pull/879
+[pull/883]: https://github.com/apollographql/apollo-rs/pull/883
 
 
 # [1.0.0-beta.18](https://crates.io/crates/apollo-compiler/1.0.0-beta.18) - 2024-06-27
