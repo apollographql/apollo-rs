@@ -5,13 +5,20 @@ use crate::ast;
 use crate::collections::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
+use crate::parser::Parser;
+use crate::parser::SourceMap;
 use crate::schema;
+use crate::validation::DiagnosticList;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
 use crate::Node;
-use crate::Parser;
+use crate::NodeLocation;
 use crate::Schema;
 use indexmap::map::Entry;
 use std::collections::HashSet;
+use std::fmt;
 use std::path::Path;
+use std::sync::Arc;
 
 pub(crate) mod from_ast;
 mod serialize;
@@ -25,13 +32,7 @@ pub use crate::ast::OperationType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 pub use crate::ast::VariableDefinition;
-use crate::validation::DiagnosticList;
-use crate::validation::Valid;
-use crate::validation::WithErrors;
 pub use crate::Name;
-use crate::NodeLocation;
-use std::fmt;
-use std::sync::Arc;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, Default)]
@@ -40,7 +41,7 @@ pub struct ExecutableDocument {
     /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub sources: crate::SourceMap,
+    pub sources: SourceMap,
 
     pub operations: OperationMap,
     pub fragments: FragmentMap,
@@ -64,7 +65,7 @@ pub struct FieldSet {
     /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub sources: crate::SourceMap,
+    pub sources: SourceMap,
 
     pub selection_set: SelectionSet,
 }

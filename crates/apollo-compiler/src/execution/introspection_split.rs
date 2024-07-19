@@ -13,6 +13,7 @@ use crate::execution::GraphQLError;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
 use crate::node::NodeLocation;
+use crate::parser::SourceMap;
 use crate::schema;
 use crate::schema::Name;
 use crate::validation::SuspectedValidationBug;
@@ -20,7 +21,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
-use crate::SourceMap;
 use indexmap::map::Entry;
 
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.

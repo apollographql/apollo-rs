@@ -9,6 +9,7 @@ use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::Response;
 use crate::node::NodeLocation;
+use crate::parser::SourceMap;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::validation::SuspectedValidationBug;
@@ -16,7 +17,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
-use crate::SourceMap;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]

@@ -3,10 +3,10 @@
 use crate::ast;
 use crate::collections::IndexMap;
 use crate::collections::IndexSet;
+use crate::parser::Parser;
 use crate::validation::FileId;
 use crate::Node;
 use crate::NodeLocation;
-use crate::Parser;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
@@ -44,7 +44,7 @@ pub struct Schema {
     /// Source files, if any, that were parsed to contribute to this schema.
     ///
     /// The schema (including parsed definitions) may have been modified since parsing.
-    pub sources: crate::SourceMap,
+    pub sources: crate::parser::SourceMap,
 
     /// The `schema` definition and its extensions, defining root operations
     pub schema_definition: Node<SchemaDefinition>,

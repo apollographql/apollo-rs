@@ -10,7 +10,7 @@ pub mod executable;
 pub mod execution;
 mod name;
 mod node;
-mod parser;
+pub mod parser;
 pub mod schema;
 pub mod validation;
 
@@ -21,7 +21,4 @@ pub use self::node::FileId;
 pub use self::node::Node;
 pub use self::node::NodeLocation;
 pub use self::parser::parse_mixed_validate;
-pub use self::parser::Parser;
-pub use self::parser::SourceFile;
-pub use self::parser::SourceMap;
 pub use self::schema::Schema;

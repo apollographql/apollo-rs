@@ -11,6 +11,7 @@ use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::ResponseDataPathElement;
 use crate::node::NodeLocation;
+use crate::parser::SourceMap;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::schema::ObjectType;
@@ -20,7 +21,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
-use crate::SourceMap;
 use std::collections::HashSet;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>

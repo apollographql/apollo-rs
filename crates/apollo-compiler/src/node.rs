@@ -1,7 +1,7 @@
 use crate::execution::GraphQLLocation;
+use crate::parser::SourceMap;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
-use crate::SourceMap;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use std::fmt;

@@ -1,12 +1,12 @@
 use super::*;
 use crate::name;
 use crate::node::NodeLocation;
+use crate::parser::Parser;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::ExecutableDocument;
-use crate::Parser;
 use crate::Schema;
 use std::fmt;
 use std::hash;
