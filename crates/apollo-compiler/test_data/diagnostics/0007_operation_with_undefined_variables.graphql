@@ -1,11 +1,23 @@
 query ExampleQuery {
-  topProducts(first: $undefinedVariable) {
+  topProducts(
+    first: $undefinedVariable
+    filter: {
+      offset: $offset
+      keywords: ["a", $keyword]
+    }
+  ) {
     name
   }
 }
 
+input Filter {
+  keywords: [String!]
+  offset: Int
+  limit: Int
+}
+
 type Query {
-  topProducts(first: Int): Product,
+  topProducts(first: Int, filter: Filter): Product,
 }
 
 type Product {

@@ -1,8 +1,8 @@
 Error: variable `$undefinedVariable` is not defined
-   ╭─[0007_operation_with_undefined_variables.graphql:2:22]
+   ╭─[0007_operation_with_undefined_variables.graphql:3:12]
    │
- 2 │   topProducts(first: $undefinedVariable) {
-   │                      ─────────┬────────  
-   │                               ╰────────── not found in this scope
+ 3 │     first: $undefinedVariable
+   │            ─────────┬────────  
+   │                     ╰────────── not found in this scope
 ───╯
 
