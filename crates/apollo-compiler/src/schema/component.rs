@@ -1,6 +1,6 @@
+use crate::parser::SourceSpan;
 use crate::Name;
 use crate::Node;
-use crate::parser::SourceSpan;
 use std::fmt;
 use std::hash;
 use std::ops::Deref;

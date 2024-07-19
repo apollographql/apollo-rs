@@ -23,6 +23,7 @@ pub(crate) mod union_;
 pub(crate) mod value;
 pub(crate) mod variable;
 
+use crate::collections::HashMap;
 use crate::collections::IndexSet;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
@@ -40,7 +41,6 @@ use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
 use crate::Node;
-use crate::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
