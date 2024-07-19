@@ -7,14 +7,16 @@ use crate::execution::GraphQLLocation;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::DiagnosticList;
-use crate::validation::FileId;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::NodeLocation;
 use crate::Schema;
+use std::num::NonZeroU64;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::atomic;
+use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
@@ -36,6 +38,20 @@ pub struct SourceFile {
 }
 
 pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+
+/// Integer identifier for a parsed source file.
+///
+/// Used internally to support validating for example a schema built from multiple source files,
+/// and having diagnostics point to relevant sources.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub struct FileId {
+    id: NonZeroU64,
+}
+
+#[derive(Copy, Clone)]
+pub(crate) struct TaggedFileId {
+    tag_and_id: NonZeroU64,
+}
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
@@ -390,5 +406,97 @@ impl std::fmt::Debug for SourceFile {
             );
         }
         debug_struct.finish()
+    }
+}
+
+impl std::fmt::Debug for FileId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.id.fmt(f)
+    }
+}
+
+/// The next file ID to use. This is global so file IDs do not conflict between different compiler
+/// instances.
+static NEXT: AtomicU64 = AtomicU64::new(INITIAL);
+static INITIAL: u64 = 3;
+
+const TAG: u64 = 1 << 63;
+const ID_MASK: u64 = !TAG;
+
+#[allow(clippy::assertions_on_constants)]
+const _: () = {
+    assert!(TAG == 0x8000_0000_0000_0000);
+    assert!(ID_MASK == 0x7FFF_FFFF_FFFF_FFFF);
+};
+
+impl FileId {
+    /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
+    pub const BUILT_IN: Self = Self::const_new(1);
+
+    /// Passed to Ariadne to create a report without a location
+    pub(crate) const NONE: Self = Self::const_new(2);
+
+    // Returning a different value every time does not sound like good `impl Default`
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        loop {
+            let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
+            if id & TAG == 0 {
+                return Self {
+                    id: NonZeroU64::new(id).unwrap(),
+                };
+            } else {
+                // Overflowing 63 bits is unlikely, but if it somehow happens
+                // reset the counter and try again.
+                //
+                // `TaggedFileId` behaving incorrectly would be a memory safety issue,
+                // whereas a file ID collision “merely” causes
+                // diagnostics to print the wrong file name and source context.
+                Self::reset()
+            }
+        }
+    }
+
+    /// Reset file ID counter back to its initial value, used to get consistent results in tests.
+    ///
+    /// All tests in the process must use `#[serial_test::serial]`
+    #[doc(hidden)]
+    pub fn reset() {
+        NEXT.store(INITIAL, atomic::Ordering::Release)
+    }
+
+    const fn const_new(id: u64) -> Self {
+        assert!(id & ID_MASK == id);
+        // TODO: use unwrap() when const-stable https://github.com/rust-lang/rust/issues/67441
+        if let Some(id) = NonZeroU64::new(id) {
+            Self { id }
+        } else {
+            panic!()
+        }
+    }
+}
+
+impl TaggedFileId {
+    pub(crate) const fn pack(tag: bool, id: FileId) -> Self {
+        debug_assert!((id.id.get() & TAG) == 0);
+        let tag_and_id = if tag {
+            let packed = id.id.get() | TAG;
+            // SAFETY: `id.id` was non-zero, so setting an additional bit is still non-zero
+            unsafe { NonZeroU64::new_unchecked(packed) }
+        } else {
+            id.id
+        };
+        Self { tag_and_id }
+    }
+
+    pub(crate) fn tag(self) -> bool {
+        (self.tag_and_id.get() & TAG) != 0
+    }
+
+    pub(crate) fn file_id(self) -> FileId {
+        let unpacked = self.tag_and_id.get() & ID_MASK;
+        // SAFETY: `unpacked` has the same value as `id: FileId` did in `pack()`, which is non-zero
+        let id = unsafe { NonZeroU64::new_unchecked(unpacked) };
+        FileId { id }
     }
 }

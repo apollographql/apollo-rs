@@ -17,7 +17,6 @@ pub mod validation;
 pub use self::executable::ExecutableDocument;
 pub use self::name::InvalidNameError;
 pub use self::name::Name;
-pub use self::node::FileId;
 pub use self::node::Node;
 pub use self::node::NodeLocation;
 pub use self::parser::parse_mixed_validate;

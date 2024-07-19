@@ -38,6 +38,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This change makes `get_mut()` borrow only `doc.operations` instead of the entire document,
   making it possible to also mutate `doc.fragments` during that mutable borrow.
 
+- **Move or rename some import paths - [SimonSapin] in [pull/883].**
+  * Moved from the crate root to the new(ly public) `apollo_compiler::parser` module:
+    * `Parser`
+    * `SourceFile`
+    * `SourceMap`
+    * `FileId`
+
 - **Return ranges of line/column locations - [dylan-apollo] in [pull/861].**
   `NodeLocation` contains a file ID and a range of UTF-8 offsets within that file.
   Various APIs can convert offsets to line and column numbers,

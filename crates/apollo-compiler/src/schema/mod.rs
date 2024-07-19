@@ -3,8 +3,8 @@
 use crate::ast;
 use crate::collections::IndexMap;
 use crate::collections::IndexSet;
+use crate::parser::FileId;
 use crate::parser::Parser;
-use crate::validation::FileId;
 use crate::Node;
 use crate::NodeLocation;
 use std::collections::HashMap;

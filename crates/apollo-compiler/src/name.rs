@@ -1,11 +1,11 @@
 use crate::diagnostic::CliReport;
 use crate::diagnostic::ToCliReport;
 use crate::execution::GraphQLLocation;
-use crate::node::TaggedFileId;
+use crate::parser::FileId;
 use crate::parser::SourceMap;
+use crate::parser::TaggedFileId;
 use crate::schema::ComponentName;
 use crate::schema::ComponentOrigin;
-use crate::FileId;
 use crate::NodeLocation;
 use rowan::TextRange;
 use std::fmt;

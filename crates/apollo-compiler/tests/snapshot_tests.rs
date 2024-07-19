@@ -10,10 +10,10 @@
 use apollo_compiler::ast;
 use apollo_compiler::collections::IndexMap;
 use apollo_compiler::name;
+use apollo_compiler::parser::FileId;
 use apollo_compiler::schema;
 use apollo_compiler::ty;
 use apollo_compiler::validation::DiagnosticList;
-use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;
 use serial_test::serial;

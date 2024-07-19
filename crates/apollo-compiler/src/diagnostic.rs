@@ -69,9 +69,9 @@
 //! ```
 use crate::execution::GraphQLError;
 use crate::execution::GraphQLLocation;
+use crate::parser::FileId;
 use crate::parser::SourceFile;
 use crate::parser::SourceMap;
-use crate::validation::FileId;
 #[cfg(doc)]
 use crate::ExecutableDocument;
 use crate::NodeLocation;

@@ -34,7 +34,6 @@ use crate::executable::ConflictingFieldType;
 use crate::executable::VariableDefinition;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
-pub(crate) use crate::node::FileId;
 use crate::parser::SourceMap;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
