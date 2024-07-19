@@ -1,21 +1,21 @@
 use crate::ast;
 use crate::ast::NamedType;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
-use crate::validation::SourceSpan;
 use crate::validation::OperationValidationContext;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
+use crate::validation::SourceSpan;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 use std::borrow::Cow;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
@@ -27,7 +27,7 @@ fn get_possible_types<'a>(
     match type_definition {
         // 1. If `type` is an object type, return a set containing `type`.
         schema::ExtendedType::Object(object) => {
-            let mut set = HashSet::new();
+            let mut set = HashSet::default();
             set.insert(object.name.clone());
             Cow::Owned(set)
         }

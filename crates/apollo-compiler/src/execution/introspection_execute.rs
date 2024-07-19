@@ -1,3 +1,4 @@
+use crate::collections::HashMap;
 use crate::executable::Operation;
 use crate::executable::OperationType;
 use crate::execution::engine::execute_selection_set;
@@ -15,7 +16,6 @@ use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
 use std::borrow::Cow;
-use std::collections::HashMap;
 use std::sync::OnceLock;
 
 /// A document with a single query that only has [schema introspection] fields.

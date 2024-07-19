@@ -1,4 +1,5 @@
 use crate::ast::Value;
+use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::executable::Field;
 use crate::executable::Selection;
@@ -10,8 +11,8 @@ use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::ResponseDataPathElement;
-use crate::parser::SourceSpan;
 use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::schema::ObjectType;
@@ -21,7 +22,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
-use std::collections::HashSet;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
 #[derive(Debug, Copy, Clone)]
@@ -66,7 +66,7 @@ pub(crate) fn execute_selection_set<'a>(
         variable_values,
         object_type,
         selections,
-        &mut HashSet::new(),
+        &mut HashSet::default(),
         &mut grouped_field_set,
     );
 

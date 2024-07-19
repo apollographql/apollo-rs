@@ -4,8 +4,8 @@ use crate::schema::Name;
 use crate::Node;
 use crate::Schema;
 use std::borrow::Cow;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use std::sync::OnceLock;
 
 #[derive(Clone, Copy)]

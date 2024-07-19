@@ -1,16 +1,16 @@
 use super::CycleError;
 use crate::ast;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
 use crate::schema;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
-use crate::validation::SourceSpan;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
+use crate::validation::SourceSpan;
 use crate::Node;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.
@@ -194,7 +194,7 @@ pub(crate) fn validate_directives<'dir>(
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
 ) {
-    let mut seen_directives = HashMap::<_, Option<SourceSpan>>::new();
+    let mut seen_directives = HashMap::<_, Option<SourceSpan>>::default();
 
     for dir in dirs {
         super::argument::validate_arguments(diagnostics, &dir.arguments);

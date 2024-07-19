@@ -1,5 +1,7 @@
 use crate::ast;
 use crate::ast::NamedType;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
@@ -16,8 +18,6 @@ use crate::Name;
 use crate::Node;
 use apollo_parser::LimitTracker;
 use std::cell::OnceCell;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::hash::Hash;
 use std::rc::Rc;
@@ -495,11 +495,7 @@ pub(crate) struct FieldsInSetCanMerge<'alloc, 's, 'doc> {
     ///
     /// The value is an Rc because it needs to have an independent lifetime from `self`,
     /// so the cache can be updated while a field set is borrowed.
-    cache: HashMap<
-        &'alloc [FieldSelection<'doc>],
-        Rc<MergedFieldSet<'alloc, 'doc>>,
-        ahash::RandomState,
-    >,
+    cache: HashMap<&'alloc [FieldSelection<'doc>], Rc<MergedFieldSet<'alloc, 'doc>>>,
     // The recursion limit is used for two separate recursions, but they are not interleaved,
     // so the effective limit does apply to field nesting levels in both cases.
     recursion_limit: LimitTracker,

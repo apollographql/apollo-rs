@@ -40,7 +40,7 @@ use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
 use crate::Node;
-use std::collections::HashMap;
+use crate::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;

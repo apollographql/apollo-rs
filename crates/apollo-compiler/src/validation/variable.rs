@@ -1,24 +1,24 @@
 use crate::ast;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
-use crate::validation::SourceSpan;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionLimitError;
 use crate::validation::RecursionStack;
+use crate::validation::SourceSpan;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 use std::collections::hash_map::Entry;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 pub(crate) fn validate_variable_definitions(
     diagnostics: &mut DiagnosticList,
     schema: Option<&crate::Schema>,
     variables: &[Node<ast::VariableDefinition>],
 ) {
-    let mut seen: HashMap<Name, &Node<ast::VariableDefinition>> = HashMap::new();
+    let mut seen: HashMap<Name, &Node<ast::VariableDefinition>> = HashMap::default();
     for variable in variables.iter() {
         super::directive::validate_directives(
             diagnostics,
@@ -178,7 +178,7 @@ pub(crate) fn validate_unused_variables(
             )
         })
         .collect();
-    let mut used_vars = HashSet::new();
+    let mut used_vars = HashSet::default();
     let walked = walk_selections(
         document,
         &operation.selection_set,

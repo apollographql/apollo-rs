@@ -1,6 +1,8 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
+use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::collections::IndexSet;
 use crate::name;
@@ -13,8 +15,6 @@ use crate::validation::Valid;
 use crate::validation::WithErrors;
 pub use crate::Name;
 use crate::Node;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::path::Path;
 use std::sync::OnceLock;
 
@@ -466,7 +466,7 @@ impl Schema {
     /// If that is repeated for multiple interfaces,
     /// gathering them all at once amorticizes that cost.
     pub fn implementers_map(&self) -> HashMap<Name, Implementers> {
-        let mut map = HashMap::<Name, Implementers>::new();
+        let mut map = HashMap::<Name, Implementers>::default();
         for (ty_name, ty) in &self.types {
             match ty {
                 ExtendedType::Object(def) => {

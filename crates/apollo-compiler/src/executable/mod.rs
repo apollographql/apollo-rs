@@ -2,20 +2,20 @@
 //! which can contain operations and fragments.
 
 use crate::ast;
+use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::parser::Parser;
 use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::Node;
-use crate::parser::SourceSpan;
 use crate::Schema;
 use indexmap::map::Entry;
-use std::collections::HashSet;
 use std::fmt;
 use std::path::Path;
 use std::sync::Arc;
@@ -481,7 +481,7 @@ impl Operation {
         }
 
         self.operation_type == OperationType::Query
-            && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
+            && is_introspection_impl(document, &mut HashSet::default(), &self.selection_set)
     }
 
     serialize_method!();
