@@ -34,8 +34,8 @@ use crate::executable::ConflictingFieldType;
 use crate::executable::VariableDefinition;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
-use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
@@ -227,7 +227,7 @@ impl<T> fmt::Display for WithErrors<T> {
 #[derive(Debug, Clone)]
 pub struct SuspectedValidationBug {
     pub message: String,
-    pub location: Option<NodeLocation>,
+    pub location: Option<SourceSpan>,
 }
 
 impl SuspectedValidationBug {
@@ -260,7 +260,7 @@ pub struct DiagnosticList {
 #[derive(thiserror::Error, Debug, Clone)]
 #[error("{details}")]
 pub struct DiagnosticData {
-    location: Option<NodeLocation>,
+    location: Option<SourceSpan>,
     details: Details,
 }
 
@@ -638,7 +638,7 @@ impl DiagnosticData {
 }
 
 impl ToCliReport for DiagnosticData {
-    fn location(&self) -> Option<NodeLocation> {
+    fn location(&self) -> Option<SourceSpan> {
         self.location
     }
 
@@ -991,7 +991,7 @@ impl DiagnosticList {
             .map(|data| data.to_diagnostic(&self.sources))
     }
 
-    pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: impl Into<Details>) {
+    pub(crate) fn push(&mut self, location: Option<SourceSpan>, details: impl Into<Details>) {
         self.diagnostics_data.push(DiagnosticData {
             location,
             details: details.into(),

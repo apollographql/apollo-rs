@@ -1,7 +1,7 @@
 use crate::ast;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
-use crate::validation::NodeLocation;
+use crate::validation::SourceSpan;
 use crate::Node;
 use std::collections::HashMap;
 
@@ -9,7 +9,7 @@ pub(crate) fn validate_arguments(
     diagnostics: &mut DiagnosticList,
     arguments: &[Node<ast::Argument>],
 ) {
-    let mut seen = HashMap::<_, Option<NodeLocation>>::new();
+    let mut seen = HashMap::<_, Option<SourceSpan>>::new();
 
     for argument in arguments {
         let name = &argument.name;

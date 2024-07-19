@@ -1,3 +1,5 @@
+//! APIs related to parsing `&str` inputs as GraphQL syntax
+
 use crate::ast;
 use crate::ast::from_cst::Convert;
 use crate::ast::Document;
@@ -39,6 +41,7 @@ pub struct SourceFile {
     pub(crate) source: OnceLock<ariadne::Source>,
 }
 
+/// A map of source files relevant to a given document
 pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
 
 /// Integer identifier for a parsed source file.
@@ -56,9 +59,9 @@ pub(crate) struct TaggedFileId {
 }
 
 /// The source location of a parsed node:
-/// file ID and source span (start and end byte offsets) within that file.
+/// file ID and text range (start and end byte offsets) within that file.
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
-pub struct NodeLocation {
+pub struct SourceSpan {
     pub(crate) file_id: FileId,
     pub(crate) text_range: TextRange,
 }
@@ -162,7 +165,7 @@ impl Parser {
             let Ok(len) = parser_error.data().len().try_into() else {
                 continue;
             };
-            let location = Some(NodeLocation {
+            let location = Some(SourceSpan {
                 file_id,
                 text_range: rowan::TextRange::at(index, len),
             });
@@ -511,7 +514,7 @@ impl TaggedFileId {
     }
 }
 
-impl NodeLocation {
+impl SourceSpan {
     pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
         Self {
             file_id,
@@ -549,7 +552,7 @@ impl NodeLocation {
                     // Pick one aribtrarily
                     return Some(end);
                 }
-                Some(NodeLocation {
+                Some(SourceSpan {
                     file_id: start.file_id,
                     text_range: TextRange::new(start.text_range.start(), end.text_range.end()),
                 })
@@ -573,7 +576,7 @@ impl NodeLocation {
     }
 }
 
-impl std::fmt::Debug for NodeLocation {
+impl std::fmt::Debug for SourceSpan {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

@@ -1,7 +1,7 @@
 use crate::execution::GraphQLLocation;
 use crate::parser::FileId;
-use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use std::fmt;
@@ -14,7 +14,7 @@ use triomphe::HeaderSlice;
 ///
 /// Similar to [`std::sync::Arc<T>`] but:
 ///
-/// * In addition to `T`, contains an optional [`NodeLocation`].
+/// * In addition to `T`, contains an optional [`SourceSpan`].
 ///   This location notably allows diagnostics to point to relevant parts of parsed input files.
 /// * Weak references are not supported.
 #[derive(serde::Deserialize)]
@@ -23,13 +23,13 @@ pub struct Node<T: ?Sized>(triomphe::Arc<HeaderSlice<Header, T>>);
 
 #[derive(Clone)]
 struct Header {
-    location: Option<NodeLocation>,
+    location: Option<SourceSpan>,
 }
 
 impl<T> Node<T> {
     /// Create a new `Node` for something parsed from the given source location
     #[inline]
-    pub fn new_parsed(node: T, location: NodeLocation) -> Self {
+    pub fn new_parsed(node: T, location: SourceSpan) -> Self {
         Self::new_opt_location(node, Some(location))
     }
 
@@ -38,7 +38,7 @@ impl<T> Node<T> {
         Self::new_opt_location(node, None)
     }
 
-    pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
+    pub(crate) fn new_opt_location(node: T, location: Option<SourceSpan>) -> Self {
         Self(triomphe::Arc::new(HeaderSlice {
             header: Header { location },
             slice: node,
@@ -49,7 +49,7 @@ impl<T> Node<T> {
 impl Node<str> {
     /// Create a new `Node<str>` for a string parsed from the given source location
     #[inline]
-    pub fn new_str_parsed(node: &str, location: NodeLocation) -> Self {
+    pub fn new_str_parsed(node: &str, location: SourceSpan) -> Self {
         Self::new_str_opt_location(node, Some(location))
     }
 
@@ -58,7 +58,7 @@ impl Node<str> {
         Self::new_str_opt_location(node, None)
     }
 
-    pub(crate) fn new_str_opt_location(node: &str, location: Option<NodeLocation>) -> Self {
+    pub(crate) fn new_str_opt_location(node: &str, location: Option<SourceSpan>) -> Self {
         Self(triomphe::Arc::from_header_and_str(
             Header { location },
             node,
@@ -73,7 +73,7 @@ impl Node<str> {
 impl<T: ?Sized> Node<T> {
     /// If this node was parsed from a source file, returns the file ID and source span
     /// (start and end byte offsets) within that file.
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         self.0.header.location
     }
 

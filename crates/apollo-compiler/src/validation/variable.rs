@@ -2,7 +2,7 @@ use crate::ast;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
-use crate::validation::NodeLocation;
+use crate::validation::SourceSpan;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionLimitError;
 use crate::validation::RecursionStack;
@@ -174,7 +174,7 @@ pub(crate) fn validate_unused_variables(
         .map(|var| {
             (
                 &var.name,
-                NodeLocation::recompose(var.location(), var.name.location()),
+                SourceSpan::recompose(var.location(), var.name.location()),
             )
         })
         .collect();

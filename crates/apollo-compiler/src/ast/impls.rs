@@ -1,7 +1,7 @@
 use super::*;
 use crate::name;
-use crate::parser::NodeLocation;
 use crate::parser::Parser;
+use crate::parser::SourceSpan;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
@@ -212,7 +212,7 @@ impl Definition {
         }
     }
 
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         match self {
             Self::OperationDefinition(def) => def.location(),
             Self::FragmentDefinition(def) => def.location(),
@@ -853,7 +853,7 @@ impl EnumValueDefinition {
 }
 
 impl Selection {
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         match self {
             Self::Field(field) => field.location(),
             Self::FragmentSpread(fragment) => fragment.location(),

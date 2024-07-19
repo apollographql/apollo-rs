@@ -1,7 +1,7 @@
 use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
-use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
+use crate::parser::SourceSpan;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -136,7 +136,7 @@ impl Response {
 impl GraphQLError {
     pub fn new(
         message: impl Into<String>,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
         sources: &SourceMap,
     ) -> Self {
         Self {

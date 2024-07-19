@@ -8,7 +8,7 @@ use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::Response;
-use crate::parser::NodeLocation;
+use crate::parser::SourceSpan;
 use crate::parser::SourceMap;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
@@ -25,7 +25,7 @@ pub enum InputCoercionError {
     // TODO: split into more structured variants?
     ValueError {
         message: String,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
     },
 }
 

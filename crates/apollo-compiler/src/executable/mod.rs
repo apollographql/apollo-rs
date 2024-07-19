@@ -12,7 +12,7 @@ use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::Node;
-use crate::parser::NodeLocation;
+use crate::parser::SourceSpan;
 use crate::Schema;
 use indexmap::map::Entry;
 use std::collections::HashSet;
@@ -217,10 +217,10 @@ pub(crate) enum BuildError {
 pub(crate) struct ConflictingFieldType {
     /// Name or alias of the non-unique field.
     pub(crate) alias: Name,
-    pub(crate) original_location: Option<NodeLocation>,
+    pub(crate) original_location: Option<SourceSpan>,
     pub(crate) original_coordinate: TypeAttributeCoordinate,
     pub(crate) original_type: Type,
-    pub(crate) conflicting_location: Option<NodeLocation>,
+    pub(crate) conflicting_location: Option<SourceSpan>,
     pub(crate) conflicting_coordinate: TypeAttributeCoordinate,
     pub(crate) conflicting_type: Type,
 }
@@ -230,10 +230,10 @@ pub(crate) struct ConflictingFieldType {
 pub(crate) struct ConflictingFieldArgument {
     /// Name or alias of the non-unique field.
     pub(crate) alias: Name,
-    pub(crate) original_location: Option<NodeLocation>,
+    pub(crate) original_location: Option<SourceSpan>,
     pub(crate) original_coordinate: FieldArgumentCoordinate,
     pub(crate) original_value: Option<Value>,
-    pub(crate) conflicting_location: Option<NodeLocation>,
+    pub(crate) conflicting_location: Option<SourceSpan>,
     pub(crate) conflicting_coordinate: FieldArgumentCoordinate,
     pub(crate) conflicting_value: Option<Value>,
 }
@@ -243,9 +243,9 @@ pub(crate) struct ConflictingFieldArgument {
 pub(crate) struct ConflictingFieldName {
     /// Name of the non-unique field.
     pub(crate) alias: Name,
-    pub(crate) original_location: Option<NodeLocation>,
+    pub(crate) original_location: Option<SourceSpan>,
     pub(crate) original_selection: TypeAttributeCoordinate,
-    pub(crate) conflicting_location: Option<NodeLocation>,
+    pub(crate) conflicting_location: Option<SourceSpan>,
     pub(crate) conflicting_selection: TypeAttributeCoordinate,
 }
 

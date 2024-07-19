@@ -126,7 +126,7 @@ impl ExtendedType {
 }
 
 impl ScalarType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::ScalarTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -150,7 +150,7 @@ impl ScalarType {
 }
 
 impl ObjectType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::ObjectTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -178,7 +178,7 @@ impl ObjectType {
 }
 
 impl InterfaceType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::InterfaceTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -208,7 +208,7 @@ impl InterfaceType {
 }
 
 impl UnionType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::UnionTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -234,7 +234,7 @@ impl UnionType {
 }
 
 impl EnumType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::EnumTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),
@@ -260,7 +260,7 @@ impl EnumType {
 }
 
 impl InputObjectType {
-    fn to_ast(&self, location: Option<NodeLocation>) -> impl Iterator<Item = ast::Definition> + '_ {
+    fn to_ast(&self, location: Option<SourceSpan>) -> impl Iterator<Item = ast::Definition> + '_ {
         let def = ast::InputObjectTypeDefinition {
             description: self.description.clone(),
             name: self.name.clone(),

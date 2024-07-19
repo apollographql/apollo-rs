@@ -26,7 +26,7 @@ impl ExecutableDocument {
 }
 
 impl Operation {
-    fn to_ast(&self, location: Option<NodeLocation>) -> ast::Definition {
+    fn to_ast(&self, location: Option<SourceSpan>) -> ast::Definition {
         let def = ast::OperationDefinition {
             operation_type: self.operation_type,
             name: self.name.clone(),
@@ -43,7 +43,7 @@ impl Operation {
 }
 
 impl Fragment {
-    fn to_ast(&self, location: Option<NodeLocation>) -> ast::Definition {
+    fn to_ast(&self, location: Option<SourceSpan>) -> ast::Definition {
         let def = ast::FragmentDefinition {
             name: self.name.clone(),
             type_condition: self.selection_set.ty.clone(),

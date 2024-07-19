@@ -3,9 +3,15 @@
 use crate::ast;
 use crate::collections::IndexMap;
 use crate::collections::IndexSet;
+use crate::name;
 use crate::parser::FileId;
-use crate::parser::NodeLocation;
 use crate::parser::Parser;
+use crate::parser::SourceSpan;
+use crate::ty;
+use crate::validation::DiagnosticList;
+use crate::validation::Valid;
+use crate::validation::WithErrors;
+pub use crate::Name;
 use crate::Node;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -31,12 +37,6 @@ pub use crate::ast::InputValueDefinition;
 pub use crate::ast::NamedType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
-use crate::name;
-use crate::ty;
-use crate::validation::DiagnosticList;
-use crate::validation::Valid;
-use crate::validation::WithErrors;
-pub use crate::Name;
 
 /// High-level representation of a GraphQL schema
 #[derive(Clone)]
@@ -192,18 +192,18 @@ pub(crate) enum BuildError {
 
     #[error("must not have multiple `schema` definitions")]
     SchemaDefinitionCollision {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
     },
 
     #[error("the directive `@{name}` is defined multiple times in the schema")]
     DirectiveDefinitionCollision {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
         name: Name,
     },
 
     #[error("the type `{name}` is defined multiple times in the schema")]
     TypeDefinitionCollision {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
         name: Name,
     },
 
@@ -220,13 +220,13 @@ pub(crate) enum BuildError {
     TypeExtensionKindMismatch {
         name: Name,
         describe_ext: &'static str,
-        def_location: Option<NodeLocation>,
+        def_location: Option<SourceSpan>,
         describe_def: &'static str,
     },
 
     #[error("duplicate definitions for the `{operation_type}` root operation type")]
     DuplicateRootOperation {
-        previous_location: Option<NodeLocation>,
+        previous_location: Option<SourceSpan>,
         operation_type: &'static str,
     },
 
@@ -606,7 +606,7 @@ impl ExtendedType {
     /// Return the source location of the type's base definition.
     ///
     /// If the type has extensions, those are not covered by this location.
-    pub fn location(&self) -> Option<NodeLocation> {
+    pub fn location(&self) -> Option<SourceSpan> {
         match self {
             Self::Scalar(ty) => ty.location(),
             Self::Object(ty) => ty.location(),

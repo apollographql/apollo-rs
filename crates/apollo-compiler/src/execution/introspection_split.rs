@@ -12,7 +12,7 @@ use crate::executable::SelectionSet;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
-use crate::parser::NodeLocation;
+use crate::parser::SourceSpan;
 use crate::parser::SourceMap;
 use crate::schema;
 use crate::schema::Name;
@@ -65,7 +65,7 @@ pub enum SchemaIntrospectionError {
     SuspectedValidationBug(SuspectedValidationBug),
     Unsupported {
         message: String,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
     },
 }
 

@@ -39,11 +39,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   making it possible to also mutate `doc.fragments` during that mutable borrow.
 
 - **Move or rename some import paths - [SimonSapin] in [pull/883].**
-  * Moved from the crate root to the new(ly public) `apollo_compiler::parser` module:
-    * `Parser`
-    * `SourceFile`
-    * `SourceMap`
-    * `FileId`
+  Moved from the crate root to the new(ly public) `apollo_compiler::parser` module:
+  * `Parser`
+  * `SourceFile`
+  * `SourceMap`
+  * `FileId`
+
+  Moved to the `parser` module and renamed:
+  * `NodeLocation` → `SourceSpan`
 
 - **Return ranges of line/column locations - [dylan-apollo] in [pull/861].**
   `NodeLocation` contains a file ID and a range of UTF-8 offsets within that file.

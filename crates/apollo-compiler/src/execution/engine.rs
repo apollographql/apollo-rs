@@ -10,7 +10,7 @@ use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::ResponseDataPathElement;
-use crate::parser::NodeLocation;
+use crate::parser::SourceSpan;
 use crate::parser::SourceMap;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
@@ -294,7 +294,7 @@ impl GraphQLError {
     pub(crate) fn field_error(
         message: impl Into<String>,
         path: LinkedPath<'_>,
-        location: Option<NodeLocation>,
+        location: Option<SourceSpan>,
         sources: &SourceMap,
     ) -> Self {
         let mut err = Self::new(message, location, sources);

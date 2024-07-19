@@ -7,7 +7,7 @@ use crate::diagnostic::CliReport;
 use crate::executable;
 use crate::Name;
 use crate::Node;
-use crate::parser::NodeLocation;
+use crate::parser::SourceSpan;
 use std::fmt;
 use thiserror::Error;
 
@@ -18,26 +18,26 @@ pub(crate) enum DiagnosticData {
     #[error("the variable `${name}` is declared multiple times")]
     UniqueVariable {
         name: Name,
-        original_definition: Option<NodeLocation>,
-        redefined_definition: Option<NodeLocation>,
+        original_definition: Option<SourceSpan>,
+        redefined_definition: Option<SourceSpan>,
     },
     #[error("the argument `{name}` is provided multiple times")]
     UniqueArgument {
         name: Name,
-        original_definition: Option<NodeLocation>,
-        redefined_definition: Option<NodeLocation>,
+        original_definition: Option<SourceSpan>,
+        redefined_definition: Option<SourceSpan>,
     },
     #[error("the value `{name}` is defined multiple times")]
     UniqueInputValue {
         name: Name,
-        original_definition: Option<NodeLocation>,
-        redefined_definition: Option<NodeLocation>,
+        original_definition: Option<SourceSpan>,
+        redefined_definition: Option<SourceSpan>,
     },
     #[error("the argument `{name}` is not supported by `{coordinate}`")]
     UndefinedArgument {
         name: Name,
         coordinate: SchemaCoordinate,
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error("cannot find type `{name}` in this document")]
     UndefinedDefinition {
@@ -65,7 +65,7 @@ pub(crate) enum DiagnosticData {
         value: Name,
         /// Name of the enum
         definition: Name,
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error("field `{value}` does not exist on `{definition}`")]
     UndefinedInputValue {
@@ -73,31 +73,31 @@ pub(crate) enum DiagnosticData {
         value: Name,
         /// Name of the input object type
         definition: Name,
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error("type `{name}` does not satisfy interface `{interface}`: missing field `{field}`")]
     MissingInterfaceField {
         name: Name,
         /// Location of the `implements XYZ` of the interface
-        implements_location: Option<NodeLocation>,
+        implements_location: Option<SourceSpan>,
         interface: Name,
         field: Name,
         /// Location of the definition of the field in the interface
-        field_location: Option<NodeLocation>,
+        field_location: Option<SourceSpan>,
     },
     #[error("the required argument `{coordinate}` is not provided")]
     RequiredArgument {
         name: Name,
         coordinate: SchemaCoordinate,
         expected_type: Node<Type>,
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error("the required field `{coordinate}` is not provided")]
     RequiredField {
         name: Name,
         coordinate: TypeAttributeCoordinate,
         expected_type: Node<Type>,
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error(
         "interface `{interface}` declares that it implements `{via_interface}`, but to do so it must also implement `{missing_interface}`"
@@ -108,7 +108,7 @@ pub(crate) enum DiagnosticData {
         /// Super interface that declares the implementation
         via_interface: Name,
         /// Source location where the super interface declares the implementation
-        transitive_interface_location: Option<NodeLocation>,
+        transitive_interface_location: Option<SourceSpan>,
         /// Interface that should be implemented
         missing_interface: Name,
     },
@@ -118,7 +118,7 @@ pub(crate) enum DiagnosticData {
         name: Name,
         /// The kind of type that the field is declared with.
         describe_type: &'static str,
-        type_location: Option<NodeLocation>,
+        type_location: Option<SourceSpan>,
     },
     #[error("`{name}` field must be of an input type")]
     InputType {
@@ -126,7 +126,7 @@ pub(crate) enum DiagnosticData {
         name: Name,
         /// The kind of type that the field is declared with.
         describe_type: &'static str,
-        type_location: Option<NodeLocation>,
+        type_location: Option<SourceSpan>,
     },
     #[error("`${name}` variable must be of an input type")]
     VariableInputType {
@@ -163,7 +163,7 @@ pub(crate) enum DiagnosticData {
         /// Locations that *are* valid for this directive
         valid_locations: Vec<DirectiveLocation>,
         /// The source location where the directive that's being used was defined.
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error("expected value of type {ty}, found {}", .value.describe())]
     UnsupportedValueType {
@@ -171,7 +171,7 @@ pub(crate) enum DiagnosticData {
         value: Node<ast::Value>,
         /// Expected concrete type
         ty: Node<Type>,
-        definition_location: Option<NodeLocation>,
+        definition_location: Option<SourceSpan>,
     },
     #[error("int cannot represent non 32-bit signed integer value")]
     IntCoercionError {
@@ -187,7 +187,7 @@ pub(crate) enum DiagnosticData {
     UniqueDirective {
         /// Name of the non-unique directive.
         name: Name,
-        original_application: Option<NodeLocation>,
+        original_application: Option<SourceSpan>,
     },
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection {
@@ -216,9 +216,9 @@ pub(crate) enum DiagnosticData {
         type_name: Name,
         type_condition: Name,
         /// Source location where the fragment is defined
-        fragment_location: Option<NodeLocation>,
+        fragment_location: Option<SourceSpan>,
         /// Source location of the type the fragment is being applied to.
-        type_location: Option<NodeLocation>,
+        type_location: Option<SourceSpan>,
     },
     #[error("fragment `{name}` must be used in an operation")]
     UnusedFragment {
@@ -232,11 +232,11 @@ pub(crate) enum DiagnosticData {
         /// Name of the variable being used in an argument
         variable: Name,
         variable_type: Type,
-        variable_location: Option<NodeLocation>,
+        variable_location: Option<SourceSpan>,
         /// Name of the argument where variable is used
         argument: Name,
         argument_type: Type,
-        argument_location: Option<NodeLocation>,
+        argument_location: Option<SourceSpan>,
     },
     #[error("`{name}` directive definition cannot reference itself")]
     RecursiveDirectiveDefinition {
@@ -253,7 +253,7 @@ pub(crate) enum DiagnosticData {
     #[error("`{name}` fragment cannot reference itself")]
     RecursiveFragmentDefinition {
         /// Source location of just the "fragment FragName" part.
-        head_location: Option<NodeLocation>,
+        head_location: Option<SourceSpan>,
         name: Name,
         trace: Vec<Node<executable::FragmentSpread>>,
     },
@@ -267,31 +267,31 @@ pub(crate) enum DiagnosticData {
     #[error("`{type_name}` has no fields")]
     EmptyFieldSet {
         type_name: Name,
-        type_location: Option<NodeLocation>,
-        extensions_locations: Vec<Option<NodeLocation>>,
+        type_location: Option<SourceSpan>,
+        extensions_locations: Vec<Option<SourceSpan>>,
     },
     #[error("`{type_name}` has no enum values")]
     EmptyValueSet {
         type_name: Name,
-        type_location: Option<NodeLocation>,
-        extensions_locations: Vec<Option<NodeLocation>>,
+        type_location: Option<SourceSpan>,
+        extensions_locations: Vec<Option<SourceSpan>>,
     },
     #[error("`{type_name}` has no member types")]
     EmptyMemberSet {
         type_name: Name,
-        type_location: Option<NodeLocation>,
-        extensions_locations: Vec<Option<NodeLocation>>,
+        type_location: Option<SourceSpan>,
+        extensions_locations: Vec<Option<SourceSpan>>,
     },
     #[error("`{type_name}` has no input values")]
     EmptyInputValueSet {
         type_name: Name,
-        type_location: Option<NodeLocation>,
-        extensions_locations: Vec<Option<NodeLocation>>,
+        type_location: Option<SourceSpan>,
+        extensions_locations: Vec<Option<SourceSpan>>,
     },
 }
 
 impl DiagnosticData {
-    pub(crate) fn report(&self, main_location: Option<NodeLocation>, report: &mut CliReport) {
+    pub(crate) fn report(&self, main_location: Option<SourceSpan>, report: &mut CliReport) {
         match self {
             DiagnosticData::UniqueVariable {
                 name,
@@ -720,8 +720,8 @@ impl DiagnosticData {
     fn report_empty_type(
         report: &mut CliReport,
         type_name: &Name,
-        type_location: &Option<NodeLocation>,
-        extensions_locations: &[Option<NodeLocation>],
+        type_location: &Option<SourceSpan>,
+        extensions_locations: &[Option<SourceSpan>],
         describe_missing_kind: &str,
     ) {
         report.with_label_opt(

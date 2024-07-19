@@ -1,6 +1,6 @@
 use crate::ast;
 use crate::collections::IndexSet;
-use crate::parser::NodeLocation;
+use crate::parser::SourceSpan;
 use crate::schema::ComponentName;
 use crate::schema::ExtendedType;
 use crate::schema::InterfaceType;
@@ -120,7 +120,7 @@ pub(crate) fn validate_implements_interfaces(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     implementor_name: &Name,
-    implementor_location: Option<NodeLocation>,
+    implementor_location: Option<SourceSpan>,
     implements_interfaces: &IndexSet<ComponentName>,
 ) {
     let interface_definitions = implements_interfaces
