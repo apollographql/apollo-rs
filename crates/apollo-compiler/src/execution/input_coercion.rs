@@ -8,7 +8,7 @@ use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::JsonValue;
 use crate::execution::Response;
-use crate::node::NodeLocation;
+use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;

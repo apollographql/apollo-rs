@@ -1,10 +1,9 @@
 use crate::execution::GraphQLLocation;
 use crate::parser::FileId;
+use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
-use apollo_parser::SyntaxNode;
-use rowan::TextRange;
 use std::fmt;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -25,14 +24,6 @@ pub struct Node<T: ?Sized>(triomphe::Arc<HeaderSlice<Header, T>>);
 #[derive(Clone)]
 struct Header {
     location: Option<NodeLocation>,
-}
-
-/// The source location of a parsed node:
-/// file ID and source span (start and end byte offsets) within that file.
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
-pub struct NodeLocation {
-    pub(crate) file_id: FileId,
-    pub(crate) text_range: TextRange,
 }
 
 impl<T> Node<T> {
@@ -240,82 +231,6 @@ impl From<&'_ Node<str>> for String {
 impl From<Node<str>> for String {
     fn from(node: Node<str>) -> Self {
         node.as_str().to_owned()
-    }
-}
-
-impl NodeLocation {
-    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
-        Self {
-            file_id,
-            text_range: node.text_range(),
-        }
-    }
-
-    /// Returns the file ID for this location
-    pub fn file_id(&self) -> FileId {
-        self.file_id
-    }
-
-    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
-    pub fn offset(&self) -> usize {
-        self.text_range.start().into()
-    }
-
-    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
-    ///
-    /// The range is exclusive, so this offset is one past the end of the range.
-    pub fn end_offset(&self) -> usize {
-        self.text_range.end().into()
-    }
-
-    /// Returns the length of the range, in UTF-8 bytes
-    pub fn node_len(&self) -> usize {
-        self.text_range.len().into()
-    }
-
-    /// Best effort at making a location with the given start and end
-    pub fn recompose(start_of: Option<Self>, end_of: Option<Self>) -> Option<Self> {
-        match (start_of, end_of) {
-            (None, None) => None,
-            (None, single @ Some(_)) | (single @ Some(_), None) => single,
-            (Some(start), Some(end)) => {
-                if start.file_id != end.file_id {
-                    // Pick one aribtrarily
-                    return Some(end);
-                }
-                Some(NodeLocation {
-                    file_id: start.file_id,
-                    text_range: TextRange::new(start.text_range.start(), end.text_range.end()),
-                })
-            }
-        }
-    }
-
-    /// The line and column numbers of [`Self::offset`]
-    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
-        let source = sources.get(&self.file_id)?;
-        source.get_line_column(self.offset())
-    }
-
-    /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
-    /// inclusive.
-    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
-        let source = sources.get(&self.file_id)?;
-        let start = source.get_line_column(self.offset())?;
-        let end = source.get_line_column(self.end_offset())?;
-        Some(Range { start, end })
-    }
-}
-
-impl fmt::Debug for NodeLocation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}..{} @{:?}",
-            self.offset(),
-            self.end_offset(),
-            self.file_id,
-        )
     }
 }
 

@@ -7,7 +7,7 @@ use crate::diagnostic::CliReport;
 use crate::executable;
 use crate::Name;
 use crate::Node;
-use crate::NodeLocation;
+use crate::parser::NodeLocation;
 use std::fmt;
 use thiserror::Error;
 

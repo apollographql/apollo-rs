@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::collections::IndexSet;
+use crate::parser::NodeLocation;
 use crate::schema::ComponentName;
 use crate::schema::ExtendedType;
 use crate::schema::InterfaceType;
@@ -8,7 +9,6 @@ use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;
 use crate::Node;
-use crate::NodeLocation;
 
 pub(crate) fn validate_interface_definitions(
     diagnostics: &mut DiagnosticList,

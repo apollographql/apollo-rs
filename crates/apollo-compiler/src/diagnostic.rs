@@ -70,11 +70,11 @@
 use crate::execution::GraphQLError;
 use crate::execution::GraphQLLocation;
 use crate::parser::FileId;
+use crate::parser::NodeLocation;
 use crate::parser::SourceFile;
 use crate::parser::SourceMap;
 #[cfg(doc)]
 use crate::ExecutableDocument;
-use crate::NodeLocation;
 #[cfg(doc)]
 use crate::Schema;
 use ariadne::ColorGenerator;

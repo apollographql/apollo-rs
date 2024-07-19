@@ -1,6 +1,6 @@
 use super::*;
 use crate::name;
-use crate::node::NodeLocation;
+use crate::parser::NodeLocation;
 use crate::parser::Parser;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;

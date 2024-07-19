@@ -12,7 +12,7 @@ use crate::executable::SelectionSet;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
-use crate::node::NodeLocation;
+use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
 use crate::schema;
 use crate::schema::Name;

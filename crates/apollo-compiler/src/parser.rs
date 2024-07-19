@@ -10,9 +10,11 @@ use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::ExecutableDocument;
-use crate::NodeLocation;
 use crate::Schema;
+use apollo_parser::SyntaxNode;
+use rowan::TextRange;
 use std::num::NonZeroU64;
+use std::ops::Range;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::atomic;
@@ -51,6 +53,14 @@ pub struct FileId {
 #[derive(Copy, Clone)]
 pub(crate) struct TaggedFileId {
     tag_and_id: NonZeroU64,
+}
+
+/// The source location of a parsed node:
+/// file ID and source span (start and end byte offsets) within that file.
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+pub struct NodeLocation {
+    pub(crate) file_id: FileId,
+    pub(crate) text_range: TextRange,
 }
 
 /// Parse a schema and executable document from the given source text
@@ -498,5 +508,79 @@ impl TaggedFileId {
         // SAFETY: `unpacked` has the same value as `id: FileId` did in `pack()`, which is non-zero
         let id = unsafe { NonZeroU64::new_unchecked(unpacked) };
         FileId { id }
+    }
+}
+
+impl NodeLocation {
+    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
+        Self {
+            file_id,
+            text_range: node.text_range(),
+        }
+    }
+
+    /// Returns the file ID for this location
+    pub fn file_id(&self) -> FileId {
+        self.file_id
+    }
+
+    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
+    pub fn offset(&self) -> usize {
+        self.text_range.start().into()
+    }
+
+    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
+    pub fn end_offset(&self) -> usize {
+        self.text_range.end().into()
+    }
+
+    /// Returns the length of the range, in UTF-8 bytes
+    pub fn node_len(&self) -> usize {
+        self.text_range.len().into()
+    }
+
+    /// Best effort at making a location with the given start and end
+    pub fn recompose(start_of: Option<Self>, end_of: Option<Self>) -> Option<Self> {
+        match (start_of, end_of) {
+            (None, None) => None,
+            (None, single @ Some(_)) | (single @ Some(_), None) => single,
+            (Some(start), Some(end)) => {
+                if start.file_id != end.file_id {
+                    // Pick one aribtrarily
+                    return Some(end);
+                }
+                Some(NodeLocation {
+                    file_id: start.file_id,
+                    text_range: TextRange::new(start.text_range.start(), end.text_range.end()),
+                })
+            }
+        }
+    }
+
+    /// The line and column numbers of [`Self::offset`]
+    pub fn line_column(&self, sources: &SourceMap) -> Option<GraphQLLocation> {
+        let source = sources.get(&self.file_id)?;
+        source.get_line_column(self.offset())
+    }
+
+    /// The line and column numbers of the range from [`Self::offset`] to [`Self::end_offset`]
+    /// inclusive.
+    pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<GraphQLLocation>> {
+        let source = sources.get(&self.file_id)?;
+        let start = source.get_line_column(self.offset())?;
+        let end = source.get_line_column(self.end_offset())?;
+        Some(Range { start, end })
+    }
+}
+
+impl std::fmt::Debug for NodeLocation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}..{} @{:?}",
+            self.offset(),
+            self.end_offset(),
+            self.file_id,
+        )
     }
 }

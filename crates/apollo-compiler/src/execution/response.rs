@@ -1,6 +1,6 @@
 use crate::execution::engine::PropagateNull;
 use crate::execution::JsonMap;
-use crate::node::NodeLocation;
+use crate::parser::NodeLocation;
 use crate::parser::SourceMap;
 use serde::Deserialize;
 use serde::Serialize;

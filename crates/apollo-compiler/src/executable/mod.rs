@@ -12,7 +12,7 @@ use crate::validation::DiagnosticList;
 use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::Node;
-use crate::NodeLocation;
+use crate::parser::NodeLocation;
 use crate::Schema;
 use indexmap::map::Entry;
 use std::collections::HashSet;

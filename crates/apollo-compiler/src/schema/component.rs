@@ -1,6 +1,6 @@
 use crate::Name;
 use crate::Node;
-use crate::NodeLocation;
+use crate::parser::NodeLocation;
 use std::fmt;
 use std::hash;
 use std::ops::Deref;
