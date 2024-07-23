@@ -1,6 +1,5 @@
 use crate::ast;
 use crate::collections::HashMap;
-use crate::collections::HashSet;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
@@ -167,8 +166,8 @@ pub(crate) fn validate_unused_variables(
     document: &ExecutableDocument,
     operation: &executable::Operation,
 ) {
-    let defined_vars: HashSet<_> = operation.variables.iter().map(|var| &var.name).collect();
-    let locations: HashMap<_, _> = operation
+    // Start off by considering all variables unused: names are removed from this as we find them.
+    let mut unused_vars: HashMap<_, _> = operation
         .variables
         .iter()
         .map(|var| {
@@ -178,23 +177,32 @@ pub(crate) fn validate_unused_variables(
             )
         })
         .collect();
-    let mut used_vars = HashSet::default();
     let walked = walk_selections(
         document,
         &operation.selection_set,
         |selection| match selection {
             executable::Selection::Field(field) => {
-                used_vars.extend(variables_in_directives(&field.directives));
-                used_vars.extend(variables_in_arguments(&field.arguments));
+                for used in variables_in_directives(&field.directives) {
+                    unused_vars.remove(used);
+                }
+                for used in variables_in_arguments(&field.arguments) {
+                    unused_vars.remove(used);
+                }
             }
             executable::Selection::FragmentSpread(fragment) => {
                 if let Some(fragment_def) = document.fragments.get(&fragment.fragment_name) {
-                    used_vars.extend(variables_in_directives(&fragment_def.directives));
+                    for used in variables_in_directives(&fragment_def.directives) {
+                        unused_vars.remove(used);
+                    }
                 }
-                used_vars.extend(variables_in_directives(&fragment.directives));
+                for used in variables_in_directives(&fragment.directives) {
+                    unused_vars.remove(used);
+                }
             }
             executable::Selection::InlineFragment(fragment) => {
-                used_vars.extend(variables_in_directives(&fragment.directives));
+                for used in variables_in_directives(&fragment.directives) {
+                    unused_vars.remove(used);
+                }
             }
         },
     );
@@ -203,9 +211,9 @@ pub(crate) fn validate_unused_variables(
         return;
     }
 
-    for &unused_var in defined_vars.difference(&used_vars) {
+    for (unused_var, location) in unused_vars {
         diagnostics.push(
-            locations[unused_var],
+            location,
             DiagnosticData::UnusedVariable {
                 name: unused_var.clone(),
             },
