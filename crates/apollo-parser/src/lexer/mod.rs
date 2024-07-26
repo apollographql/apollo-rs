@@ -255,11 +255,13 @@ impl<'a> Cursor<'a> {
                 },
                 State::StringLiteralEscapedUnicode(remaining) => match c {
                     '"' => {
-                        return Err(Error::with_loc(
+                        self.add_err(Error::with_loc(
                             "incomplete unicode escape sequence",
-                            self.current_str().to_string(),
+                            c.to_string(),
                             token.index,
                         ));
+                        token.data = self.current_str();
+                        return self.done(token);
                     }
                     c if !c.is_ascii_hexdigit() => {
                         self.add_err(Error::new("invalid unicode escape sequence", c.to_string()));
