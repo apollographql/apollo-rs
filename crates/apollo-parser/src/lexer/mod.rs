@@ -264,7 +264,11 @@ impl<'a> Cursor<'a> {
                         return self.done(token);
                     }
                     c if !c.is_ascii_hexdigit() => {
-                        self.add_err(Error::new("invalid unicode escape sequence", c.to_string()));
+                        self.add_err(Error::with_loc(
+                            "invalid unicode escape sequence",
+                            c.to_string(),
+                            0,
+                        ));
                         state = State::StringLiteral;
 
                         continue;
@@ -283,11 +287,12 @@ impl<'a> Cursor<'a> {
                                 // changes both here and in `ast/node_ext.rs`
                                 let escape_sequence_start = hex_start - 2; // include "\u"
                                 let escape_sequence = &self.source[escape_sequence_start..hex_end];
-                                self.add_err(Error::new(
+                                self.add_err(Error::with_loc(
                                     "surrogate code point is invalid in unicode escape sequence \
                                      (paired surrogate not supported yet: \
                                      https://github.com/apollographql/apollo-rs/issues/657)",
                                     escape_sequence.to_owned(),
+                                    0,
                                 ));
                             }
                             continue;
@@ -302,7 +307,11 @@ impl<'a> Cursor<'a> {
                         return self.done(token);
                     }
                     curr if is_line_terminator(curr) => {
-                        self.add_err(Error::new("unexpected line terminator", "".to_string()));
+                        self.add_err(Error::with_loc(
+                            "unexpected line terminator",
+                            "".to_string(),
+                            0,
+                        ));
                     }
                     '\\' => {
                         state = State::StringLiteralBackslash;
@@ -338,7 +347,11 @@ impl<'a> Cursor<'a> {
                         state = State::StringLiteralEscapedUnicode(4);
                     }
                     _ => {
-                        self.add_err(Error::new("unexpected escaped character", c.to_string()));
+                        self.add_err(Error::with_loc(
+                            "unexpected escaped character",
+                            c.to_string(),
+                            0,
+                        ));
 
                         state = State::StringLiteral;
                     }

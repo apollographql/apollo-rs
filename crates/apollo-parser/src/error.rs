@@ -69,15 +69,6 @@ pub struct Error {
 }
 
 impl Error {
-    /// Create a new instance of `Error`.
-    pub fn new<S: Into<String>>(message: S, data: String) -> Self {
-        Self {
-            message: message.into(),
-            data: ErrorData::Text(data),
-            index: 0,
-        }
-    }
-
     /// Create a new instance of `Error` with a `Location`.
     pub fn with_loc<S: Into<String>>(message: S, data: String, index: usize) -> Self {
         Self {
