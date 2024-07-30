@@ -1,7 +1,21 @@
-Error: variable `$value` is not defined
-    ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:10:21]
+Error: variable `$queryLabel` is not defined
+   ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:4:51]
+   │
+ 4 │ query ExampleQuery($variable: Int) @report(label: $queryLabel) {
+   │                                                   ─────┬─────  
+   │                                                        ╰─────── not found in this scope
+───╯
+Error: variable `$productsLabel` is not defined
+    ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:11:41]
     │
- 10 │     price(setPrice: $value)
+ 11 │ fragment subFrag on Query @track(label: $productsLabel) {
+    │                                         ───────┬──────  
+    │                                                ╰──────── not found in this scope
+────╯
+Error: variable `$value` is not defined
+    ╭─[0009_operation_with_undefined_variables_in_fragment.graphql:13:21]
+    │
+ 13 │     price(setPrice: $value)
     │                     ───┬──  
     │                        ╰──── not found in this scope
 ────╯
