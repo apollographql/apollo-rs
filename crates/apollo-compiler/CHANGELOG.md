@@ -17,6 +17,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.0.0-beta.20](https://crates.io/crates/apollo-compiler/1.0.0-beta.20) - 2024-07-30
+
+## Fixes
+
+- **Fix variable validation in operation directives - [goto-bus-stop] in [pull/888].**
+  * `query ($var: Int) @directive(arg: $var)` is now accepted-it used to raise an unused variable error for `$var`.
+
+## Maintenance
+
+- **Make unused variable validation more efficient - [goto-bus-stop] in [pull/887].**
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/887]: https://github.com/apollographql/apollo-rs/pull/887
+[pull/888]: https://github.com/apollographql/apollo-rs/pull/888
+
 # [1.0.0-beta.19](https://crates.io/crates/apollo-compiler/1.0.0-beta.19) - 2024-07-19
 
 ## BREAKING
