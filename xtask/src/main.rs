@@ -116,7 +116,7 @@ pub(crate) fn ensure_file_contents(file: &Path, contents: &str) -> Result<()> {
         }
         _ => (),
     }
-    let display_path = file.strip_prefix(&root_path()).unwrap_or(file);
+    let display_path = file.strip_prefix(root_path()).unwrap_or(file);
     eprintln!(
         "\n\x1b[31;1merror\x1b[0m: {} was not up-to-date, updating\n",
         display_path.display()
