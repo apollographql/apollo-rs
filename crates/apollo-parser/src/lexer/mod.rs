@@ -194,10 +194,11 @@ impl<'a> Cursor<'a> {
                             state = State::Whitespace;
                         }
                         c => {
-                            return Err(Error::new(
+                            return Err(Error::with_loc(
                                 format!("Unexpected character \"{}\"", c),
                                 self.current_str().to_string(),
-                            ))
+                                token.index,
+                            ));
                         }
                     };
                 }
@@ -254,15 +255,20 @@ impl<'a> Cursor<'a> {
                 },
                 State::StringLiteralEscapedUnicode(remaining) => match c {
                     '"' => {
-                        self.add_err(Error::new(
+                        self.add_err(Error::with_loc(
                             "incomplete unicode escape sequence",
                             c.to_string(),
+                            token.index,
                         ));
                         token.data = self.current_str();
                         return self.done(token);
                     }
                     c if !c.is_ascii_hexdigit() => {
-                        self.add_err(Error::new("invalid unicode escape sequence", c.to_string()));
+                        self.add_err(Error::with_loc(
+                            "invalid unicode escape sequence",
+                            c.to_string(),
+                            0,
+                        ));
                         state = State::StringLiteral;
 
                         continue;
@@ -281,11 +287,12 @@ impl<'a> Cursor<'a> {
                                 // changes both here and in `ast/node_ext.rs`
                                 let escape_sequence_start = hex_start - 2; // include "\u"
                                 let escape_sequence = &self.source[escape_sequence_start..hex_end];
-                                self.add_err(Error::new(
+                                self.add_err(Error::with_loc(
                                     "surrogate code point is invalid in unicode escape sequence \
                                      (paired surrogate not supported yet: \
                                      https://github.com/apollographql/apollo-rs/issues/657)",
                                     escape_sequence.to_owned(),
+                                    0,
                                 ));
                             }
                             continue;
@@ -300,7 +307,11 @@ impl<'a> Cursor<'a> {
                         return self.done(token);
                     }
                     curr if is_line_terminator(curr) => {
-                        self.add_err(Error::new("unexpected line terminator", "".to_string()));
+                        self.add_err(Error::with_loc(
+                            "unexpected line terminator",
+                            "".to_string(),
+                            0,
+                        ));
                     }
                     '\\' => {
                         state = State::StringLiteralBackslash;
@@ -336,7 +347,11 @@ impl<'a> Cursor<'a> {
                         state = State::StringLiteralEscapedUnicode(4);
                     }
                     _ => {
-                        self.add_err(Error::new("unexpected escaped character", c.to_string()));
+                        self.add_err(Error::with_loc(
+                            "unexpected escaped character",
+                            c.to_string(),
+                            0,
+                        ));
 
                         state = State::StringLiteral;
                     }
@@ -351,15 +366,17 @@ impl<'a> Cursor<'a> {
                         state = State::ExponentIndicator;
                     }
                     _ if c.is_ascii_digit() => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             "Numbers must not have non-significant leading zeroes",
                             self.current_str().to_string(),
+                            token.index,
                         ));
                     }
                     _ if lookup::is_namestart(c) => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}` as integer suffix"),
                             self.current_str().to_string(),
+                            token.index,
                         ));
                     }
                     _ => {
@@ -378,9 +395,10 @@ impl<'a> Cursor<'a> {
                         state = State::ExponentIndicator;
                     }
                     _ if lookup::is_namestart(c) => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}` as integer suffix"),
                             self.current_str().to_string(),
+                            token.index,
                         ));
                     }
                     _ => {
@@ -393,9 +411,10 @@ impl<'a> Cursor<'a> {
                         state = State::FractionalPart;
                     }
                     _ => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}`, expected fractional digit"),
                             self.current_str().to_string(),
+                            token.index,
                         ));
                     }
                 },
@@ -405,9 +424,10 @@ impl<'a> Cursor<'a> {
                         state = State::ExponentIndicator;
                     }
                     _ if c == '.' || lookup::is_namestart(c) => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}` as float suffix"),
                             self.current_str().to_string(),
+                            token.index,
                         ));
                     }
                     _ => {
@@ -423,9 +443,10 @@ impl<'a> Cursor<'a> {
                         state = State::ExponentSign;
                     }
                     _ => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}`, expected exponent digit or sign"),
                             self.current_str().to_string(),
+                            token.index,
                         ))
                     }
                 },
@@ -434,9 +455,10 @@ impl<'a> Cursor<'a> {
                         state = State::ExponentDigit;
                     }
                     _ => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}`, expected exponent digit"),
                             self.current_str().to_string(),
+                            token.index,
                         ))
                     }
                 },
@@ -445,9 +467,10 @@ impl<'a> Cursor<'a> {
                         state = State::ExponentDigit;
                     }
                     _ if c == '.' || lookup::is_namestart(c) => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}` as float suffix"),
                             self.current_str().to_string(),
+                            token.index,
                         ));
                     }
                     _ => {
@@ -470,9 +493,10 @@ impl<'a> Cursor<'a> {
                         state = State::IntegerPart;
                     }
                     _ => {
-                        return Err(Error::new(
+                        return Err(Error::with_loc(
                             format!("Unexpected character `{c}`"),
                             self.current_str().to_string(),
+                            token.index,
                         ))
                     }
                 },
@@ -496,9 +520,10 @@ impl<'a> Cursor<'a> {
             State::StringLiteralStart => {
                 let curr = self.current_str();
 
-                Err(Error::new(
+                Err(Error::with_loc(
                     "unexpected end of data while lexing string value",
                     curr.to_string(),
+                    token.index,
                 ))
             }
             State::StringLiteral
@@ -515,14 +540,16 @@ impl<'a> Cursor<'a> {
                 ))
             }
             State::SpreadOperator => self.unterminated_spread_operator(&token),
-            State::MinusSign => Err(Error::new(
+            State::MinusSign => Err(Error::with_loc(
                 "Unexpected character \"-\"",
                 self.current_str().to_string(),
+                token.index,
             )),
             State::DecimalPoint | State::ExponentIndicator | State::ExponentSign => {
-                Err(Error::new(
+                Err(Error::with_loc(
                     "Unexpected EOF in float value",
                     self.current_str().to_string(),
+                    token.index,
                 ))
             }
             State::Ident
@@ -729,6 +756,26 @@ Escape character followed by a quote:
         "#
                 .to_string(),
                 59,
+            )]
+        );
+    }
+
+    #[test]
+    fn unexpected_character() {
+        let schema = r#"
+type Query {
+    name: String
+}
+/
+        "#;
+        let (tokens, errors) = Lexer::new(schema).lex();
+        dbg!(tokens);
+        assert_eq!(
+            errors,
+            &[Error::with_loc(
+                "Unexpected character \"/\"",
+                "/".to_string(),
+                33,
             )]
         );
     }
