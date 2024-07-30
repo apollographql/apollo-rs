@@ -4,7 +4,7 @@ Schema {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        43: SourceFile {
+        44: SourceFile {
             path: "0115_interface_definition_with_extension_defines_field.graphql",
             source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
         },
@@ -42,7 +42,7 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Query": Object(
-            0..28 @43 ObjectType {
+            0..28 @44 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -50,7 +50,7 @@ Schema {
                 fields: {
                     "foo": Component {
                         origin: Definition,
-                        node: 17..26 @43 FieldDefinition {
+                        node: 17..26 @44 FieldDefinition {
                             description: None,
                             name: "foo",
                             arguments: [],
@@ -64,7 +64,7 @@ Schema {
             },
         ),
         "Node": Interface(
-            30..44 @43 InterfaceType {
+            30..44 @44 InterfaceType {
                 description: None,
                 name: "Node",
                 implements_interfaces: {},
@@ -74,11 +74,11 @@ Schema {
                         origin: Extension(
                             ExtensionId {
                                 arc: Some(
-                                    46..87 @43,
+                                    46..87 @44,
                                 ),
                             },
                         ),
-                        node: 74..85 @43 FieldDefinition {
+                        node: 74..85 @44 FieldDefinition {
                             description: None,
                             name: "bar",
                             arguments: [],
@@ -99,7 +99,7 @@ ExecutableDocument {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        43: SourceFile {
+        44: SourceFile {
             path: "0115_interface_definition_with_extension_defines_field.graphql",
             source_text: "type Query {\n    foo: Node\n}\n\ninterface Node\n\nextend interface Node {\n    bar: String\n}\n",
         },
