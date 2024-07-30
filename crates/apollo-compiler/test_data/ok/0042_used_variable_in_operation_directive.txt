@@ -1,0 +1,401 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        43: SourceFile {
+            path: "0042_used_variable_in_operation_directive.graphql",
+            source_text: "directive @x(y: Int!) on QUERY | MUTATION | SUBSCRIPTION\ndirective @z(f: Boolean) on FRAGMENT_DEFINITION\n\ntype Query { field: Boolean }\ntype Mutation { field: Boolean }\ntype Subscription { field: Boolean }\n\nquery Q ($a: Int!, $f: Boolean) @x(y: $a) { field ...f }\nmutation M ($b: Int!) @x(y: $b) { field }\nsubscription S ($c: Int!) @x(y: $c) { field }\n\nfragment f on Query @z(f: $f) { field }\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Mutation",
+            },
+        ),
+        subscription: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Subscription",
+            },
+        ),
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+        "x": 0..56 @43 DirectiveDefinition {
+            description: None,
+            name: "x",
+            arguments: [
+                13..20 @43 InputValueDefinition {
+                    description: None,
+                    name: "y",
+                    ty: 16..20 @43 NonNullNamed(
+                        "Int",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            repeatable: false,
+            locations: [
+                "QUERY",
+                "MUTATION",
+                "SUBSCRIPTION",
+            ],
+        },
+        "z": 57..104 @43 DirectiveDefinition {
+            description: None,
+            name: "z",
+            arguments: [
+                70..80 @43 InputValueDefinition {
+                    description: None,
+                    name: "f",
+                    ty: 73..80 @43 Named(
+                        "Boolean",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            repeatable: false,
+            locations: [
+                "FRAGMENT_DEFINITION",
+            ],
+        },
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            106..135 @43 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 119..133 @43 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Mutation": Object(
+            136..168 @43 ObjectType {
+                description: None,
+                name: "Mutation",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 152..166 @43 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Subscription": Object(
+            169..205 @43 ObjectType {
+                description: None,
+                name: "Subscription",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 189..203 @43 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Boolean",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        43: SourceFile {
+            path: "0042_used_variable_in_operation_directive.graphql",
+            source_text: "directive @x(y: Int!) on QUERY | MUTATION | SUBSCRIPTION\ndirective @z(f: Boolean) on FRAGMENT_DEFINITION\n\ntype Query { field: Boolean }\ntype Mutation { field: Boolean }\ntype Subscription { field: Boolean }\n\nquery Q ($a: Int!, $f: Boolean) @x(y: $a) { field ...f }\nmutation M ($b: Int!) @x(y: $b) { field }\nsubscription S ($c: Int!) @x(y: $c) { field }\n\nfragment f on Query @z(f: $f) { field }\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "Q": 207..263 @43 Operation {
+                operation_type: Query,
+                name: Some(
+                    "Q",
+                ),
+                variables: [
+                    216..224 @43 VariableDefinition {
+                        name: "a",
+                        ty: 220..224 @43 NonNullNamed(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                    226..237 @43 VariableDefinition {
+                        name: "f",
+                        ty: 230..237 @43 Named(
+                            "Boolean",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [
+                    239..248 @43 Directive {
+                        name: "x",
+                        arguments: [
+                            242..247 @43 Argument {
+                                name: "y",
+                                value: 245..247 @43 Variable(
+                                    "a",
+                                ),
+                            },
+                        ],
+                    },
+                ],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            251..256 @43 Field {
+                                definition: 119..133 @43 FieldDefinition {
+                                    description: None,
+                                    name: "field",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Boolean",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "field",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Boolean",
+                                    selections: [],
+                                },
+                            },
+                        ),
+                        FragmentSpread(
+                            257..261 @43 FragmentSpread {
+                                fragment_name: "f",
+                                directives: [],
+                            },
+                        ),
+                    ],
+                },
+            },
+            "M": 264..305 @43 Operation {
+                operation_type: Mutation,
+                name: Some(
+                    "M",
+                ),
+                variables: [
+                    276..284 @43 VariableDefinition {
+                        name: "b",
+                        ty: 280..284 @43 NonNullNamed(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [
+                    286..295 @43 Directive {
+                        name: "x",
+                        arguments: [
+                            289..294 @43 Argument {
+                                name: "y",
+                                value: 292..294 @43 Variable(
+                                    "b",
+                                ),
+                            },
+                        ],
+                    },
+                ],
+                selection_set: SelectionSet {
+                    ty: "Mutation",
+                    selections: [
+                        Field(
+                            298..303 @43 Field {
+                                definition: 152..166 @43 FieldDefinition {
+                                    description: None,
+                                    name: "field",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Boolean",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "field",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Boolean",
+                                    selections: [],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+            "S": 306..351 @43 Operation {
+                operation_type: Subscription,
+                name: Some(
+                    "S",
+                ),
+                variables: [
+                    322..330 @43 VariableDefinition {
+                        name: "c",
+                        ty: 326..330 @43 NonNullNamed(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [
+                    332..341 @43 Directive {
+                        name: "x",
+                        arguments: [
+                            335..340 @43 Argument {
+                                name: "y",
+                                value: 338..340 @43 Variable(
+                                    "c",
+                                ),
+                            },
+                        ],
+                    },
+                ],
+                selection_set: SelectionSet {
+                    ty: "Subscription",
+                    selections: [
+                        Field(
+                            344..349 @43 Field {
+                                definition: 189..203 @43 FieldDefinition {
+                                    description: None,
+                                    name: "field",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Boolean",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "field",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Boolean",
+                                    selections: [],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+        },
+    },
+    fragments: {
+        "f": 353..392 @43 Fragment {
+            name: "f",
+            directives: [
+                373..382 @43 Directive {
+                    name: "z",
+                    arguments: [
+                        376..381 @43 Argument {
+                            name: "f",
+                            value: 379..381 @43 Variable(
+                                "f",
+                            ),
+                        },
+                    ],
+                },
+            ],
+            selection_set: SelectionSet {
+                ty: "Query",
+                selections: [
+                    Field(
+                        385..390 @43 Field {
+                            definition: 119..133 @43 FieldDefinition {
+                                description: None,
+                                name: "field",
+                                arguments: [],
+                                ty: Named(
+                                    "Boolean",
+                                ),
+                                directives: [],
+                            },
+                            alias: None,
+                            name: "field",
+                            arguments: [],
+                            directives: [],
+                            selection_set: SelectionSet {
+                                ty: "Boolean",
+                                selections: [],
+                            },
+                        },
+                    ),
+                ],
+            },
+        },
+    },
+}

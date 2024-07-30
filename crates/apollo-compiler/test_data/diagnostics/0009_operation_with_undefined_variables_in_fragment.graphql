@@ -1,11 +1,14 @@
-query ExampleQuery($variable: Int) {
+directive @track(label: String) on FRAGMENT_DEFINITION
+directive @report(label: String) on QUERY | MUTATION | SUBSCRIPTION
+
+query ExampleQuery($variable: Int) @report(label: $queryLabel) {
   topProducts(first: $variable) {
     name
   }
   ... subFrag
 }
 
-fragment subFrag on Query {
+fragment subFrag on Query @track(label: $productsLabel) {
   topProducts(first: $variable) {
     price(setPrice: $value)
   }

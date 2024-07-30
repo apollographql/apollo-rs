@@ -1,0 +1,12 @@
+directive @x(y: Int!) on QUERY | MUTATION | SUBSCRIPTION
+directive @z(f: Boolean) on FRAGMENT_DEFINITION
+
+type Query { field: Boolean }
+type Mutation { field: Boolean }
+type Subscription { field: Boolean }
+
+query Q ($a: Int!, $f: Boolean) @x(y: $a) { field ...f }
+mutation M ($b: Int!) @x(y: $b) { field }
+subscription S ($c: Int!) @x(y: $c) { field }
+
+fragment f on Query @z(f: $f) { field }

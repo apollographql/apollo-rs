@@ -177,6 +177,12 @@ pub(crate) fn validate_unused_variables(
             )
         })
         .collect();
+
+    // You're allowed to do `query($var: Int!) @dir(arg: $var) {}`
+    for used in variables_in_directives(&operation.directives) {
+        unused_vars.remove(used);
+    }
+
     let walked = walk_selections(
         document,
         &operation.selection_set,
