@@ -18,6 +18,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.10.0](https://crates.io/crates/apollo-smith/0.10.0) - 2024-07-31
+
+- **Update apollo-parser dependency to `0.8.0`**
+- **Update apollo-compiler dependency to `=1.0.0-beta.20`**
+
 # [0.9.0](https://crates.io/crates/apollo-smith/0.9.0) - 2024-07-19
 
 - **Update apollo-compiler dependency to `=1.0.0-beta.19`**
