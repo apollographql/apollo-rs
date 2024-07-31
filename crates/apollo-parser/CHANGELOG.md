@@ -19,8 +19,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [0.8.0](https://crates.io/crates/apollo-parser/0.8.0) - 2024-07-30
 
+## BREAKING
 This release removes the `Error::new` constructor. We recommend not creating instances of
-`apollo_parser::Error` yourself at all, but this is a breaking change.
+`apollo_parser::Error` yourself at all.
 
 ## Fixes
 - **add missing location information for lexer errors - [PhoebeSzmucer], [pull/886], [issue/731]**
