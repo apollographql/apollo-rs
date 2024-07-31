@@ -22,7 +22,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 
 - **Fix variable validation in operation directives - [goto-bus-stop] in [pull/888].**
-  * `query ($var: Int) @directive(arg: $var)` is now accepted-it used to raise an unused variable error for `$var`.
+  * `query ($var: Int) @directive(arg: $var)` is now accepted - it used to raise an unused variable error for `$var`.
 
 ## Maintenance
 
