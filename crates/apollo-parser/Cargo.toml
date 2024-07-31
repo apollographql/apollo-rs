@@ -1,6 +1,6 @@
 [package]
 name = "apollo-parser"
-version = "0.7.7" # When bumping, also update README.md
+version = "0.8.0" # When bumping, also update README.md
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"

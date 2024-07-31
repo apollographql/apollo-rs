@@ -17,6 +17,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.8.0](https://crates.io/crates/apollo-parser/0.8.0) - 2024-07-30
+
+## BREAKING
+This release removes the `Error::new` constructor. We recommend not creating instances of
+`apollo_parser::Error` yourself at all.
+
+## Fixes
+- **add missing location information for lexer errors - [PhoebeSzmucer], [pull/886], [issue/731]**
+  Unexpected characters now raise an error pointing to the character itself, instead of the start of the input document.
+
+[PhoebeSzmucer]: https://github.com/PhoebeSzmucer
+[issue/731]: https://github.com/apollographql/apollo-rs/issues/731
+[pull/886]: https://github.com/apollographql/apollo-rs/pull/886
+
 # [0.7.7](https://crates.io/crates/apollo-parser/0.7.7) - 2024-04-08
 
 ## Fixes
