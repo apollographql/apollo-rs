@@ -2,15 +2,15 @@ type Query {
   intf: Intf
 }
 interface Intf {
-  nothing: Int
+  field: Int
 }
 
 query SelectDirectly {
-  intf { nothing }
+  intf { field }
 }
 
 query UsingInlineFragment {
   intf {
-    ... on Intf { nothing }
+    ... on Intf { field }
   }
 }

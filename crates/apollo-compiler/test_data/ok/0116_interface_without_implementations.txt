@@ -1,0 +1,232 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        45: SourceFile {
+            path: "0116_interface_without_implementations.graphql",
+            source_text: "type Query {\n  intf: Intf\n}\ninterface Intf {\n  field: Int\n}\n\nquery SelectDirectly {\n  intf { field }\n}\n\nquery UsingInlineFragment {\n  intf {\n    ... on Intf { field }\n  }\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "Float": built_in_type!("Float"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "ID": built_in_type!("ID"),
+        "Query": Object(
+            0..27 @45 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "intf": Component {
+                        origin: Definition,
+                        node: 15..25 @45 FieldDefinition {
+                            description: None,
+                            name: "intf",
+                            arguments: [],
+                            ty: Named(
+                                "Intf",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Intf": Interface(
+            28..59 @45 InterfaceType {
+                description: None,
+                name: "Intf",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 47..57 @45 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        45: SourceFile {
+            path: "0116_interface_without_implementations.graphql",
+            source_text: "type Query {\n  intf: Intf\n}\ninterface Intf {\n  field: Int\n}\n\nquery SelectDirectly {\n  intf { field }\n}\n\nquery UsingInlineFragment {\n  intf {\n    ... on Intf { field }\n  }\n}\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "SelectDirectly": 61..102 @45 Operation {
+                operation_type: Query,
+                name: Some(
+                    "SelectDirectly",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            86..100 @45 Field {
+                                definition: 15..25 @45 FieldDefinition {
+                                    description: None,
+                                    name: "intf",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Intf",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "intf",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Intf",
+                                    selections: [
+                                        Field(
+                                            93..98 @45 Field {
+                                                definition: 47..57 @45 FieldDefinition {
+                                                    description: None,
+                                                    name: "field",
+                                                    arguments: [],
+                                                    ty: Named(
+                                                        "Int",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "field",
+                                                arguments: [],
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "Int",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+            "UsingInlineFragment": 104..172 @45 Operation {
+                operation_type: Query,
+                name: Some(
+                    "UsingInlineFragment",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            134..170 @45 Field {
+                                definition: 15..25 @45 FieldDefinition {
+                                    description: None,
+                                    name: "intf",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Intf",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "intf",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Intf",
+                                    selections: [
+                                        InlineFragment(
+                                            145..166 @45 InlineFragment {
+                                                type_condition: Some(
+                                                    "Intf",
+                                                ),
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "Intf",
+                                                    selections: [
+                                                        Field(
+                                                            159..164 @45 Field {
+                                                                definition: 47..57 @45 FieldDefinition {
+                                                                    description: None,
+                                                                    name: "field",
+                                                                    arguments: [],
+                                                                    ty: Named(
+                                                                        "Int",
+                                                                    ),
+                                                                    directives: [],
+                                                                },
+                                                                alias: None,
+                                                                name: "field",
+                                                                arguments: [],
+                                                                directives: [],
+                                                                selection_set: SelectionSet {
+                                                                    ty: "Int",
+                                                                    selections: [],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+        },
+    },
+    fragments: {},
+}

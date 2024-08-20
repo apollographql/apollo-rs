@@ -4,13 +4,17 @@ interface A implements B {
 interface B implements A {
   name: String
 }
+type Impl implements A & B {
+  name: String
+}
+type Query {
+  get: A
+}
+
 fragment recursive on A {
   name
 }
 
-type Query {
-  get: A
-}
 query {
   get { ...recursive }
 }

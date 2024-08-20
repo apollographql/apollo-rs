@@ -57,6 +57,13 @@ fn validate_fragment_spread_type(
     selection: &executable::Selection,
     context: OperationValidationContext<'_>,
 ) {
+    // Treat a spread that's just literally on the parent type as always valid:
+    // by spec text, it shouldn't be, but graphql-{js,java,go} and others all do this.
+    // See https://github.com/graphql/graphql-spec/issues/1109
+    if type_condition == against_type {
+        return;
+    }
+
     // Another diagnostic will be raised if the type condition was wrong.
     // We reduce noise by silencing other issues with the fragment.
     let Some(type_condition_definition) = schema.types.get(type_condition) else {

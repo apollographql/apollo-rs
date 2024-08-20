@@ -3,19 +3,19 @@ type Query {
 }
 
 interface Intf {
-  nothing: Int
+  field: Int
 }
 
 query SelectDirectly {
   intf {
-    nothing
+    field
   }
 }
 
 query UsingInlineFragment {
   intf {
     ... on Intf {
-      nothing
+      field
     }
   }
 }

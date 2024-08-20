@@ -6,12 +6,16 @@ interface B implements A {
   name: String
 }
 
-fragment recursive on A {
-  name
+type Impl implements A & B {
+  name: String
 }
 
 type Query {
   get: A
+}
+
+fragment recursive on A {
+  name
 }
 
 query {
