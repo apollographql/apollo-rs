@@ -19,7 +19,7 @@ pub use crate::parser::SyntaxElement;
 pub use crate::parser::SyntaxKind;
 pub use crate::parser::SyntaxNode;
 pub(crate) use crate::parser::SyntaxNodeChildren;
-pub(crate) use crate::parser::SyntaxToken;
+pub use crate::parser::SyntaxToken;
 pub use crate::parser::SyntaxTree;
 pub(crate) use crate::parser::TokenText;
 pub use rowan::TextRange;
