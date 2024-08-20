@@ -16,6 +16,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.8.1](https://crates.io/crates/apollo-parser/0.8.1) - 2024-08-20
+
+## Features
+- **make `SyntaxToken` a publicly accessible API - [g-plane], [pull/894]**
+
+This makes it easier for pretty-printers, linters and the like to work with the
+parser API.
+
+[g-plane]: https://github.com/g-plane
+[pull/894]: https://github.com/apollographql/apollo-rs/pull/894
 
 # [0.8.0](https://crates.io/crates/apollo-parser/0.8.0) - 2024-07-30
 
