@@ -17,6 +17,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## BREAKING
+
+- **Change `Implementers` fields from `HashMap` to `IndexMap` - [SimonSapin] in [pull/898]**
+  This struct returned by `Schema::implementers_map` maps interface types
+  to (object or interface) types that implement that interface.
+  Now the ordering of implementers is deterministic
+  and matches their definition order in the schema.
+  This helps fuzzing, where the same entropy source should generate the same test case.
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/898]: https://github.com/apollographql/apollo-rs/pull/898
+
+
 # [1.0.0-beta.20](https://crates.io/crates/apollo-compiler/1.0.0-beta.20) - 2024-07-30
 
 ## Fixes

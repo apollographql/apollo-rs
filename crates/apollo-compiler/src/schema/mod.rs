@@ -2,7 +2,6 @@
 
 use crate::ast;
 use crate::collections::HashMap;
-use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::collections::IndexSet;
 use crate::name;
@@ -179,9 +178,9 @@ pub struct InputObjectType {
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Implementers {
     /// Names of the concrete types that implement an interface.
-    pub objects: HashSet<Name>,
+    pub objects: IndexSet<Name>,
     /// Names of the interfaces that implement an interface.
-    pub interfaces: HashSet<Name>,
+    pub interfaces: IndexSet<Name>,
 }
 
 /// AST node that has been skipped during conversion to `Schema`
