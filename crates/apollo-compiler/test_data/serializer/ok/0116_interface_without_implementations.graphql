@@ -1,0 +1,21 @@
+type Query {
+  intf: Intf
+}
+
+interface Intf {
+  field: Int
+}
+
+query SelectDirectly {
+  intf {
+    field
+  }
+}
+
+query UsingInlineFragment {
+  intf {
+    ... on Intf {
+      field
+    }
+  }
+}

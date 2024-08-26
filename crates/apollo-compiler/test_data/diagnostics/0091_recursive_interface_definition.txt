@@ -23,23 +23,4 @@ Error: interface `B` declares that it implements `A`, but to do so it must also 
    │ │       
    │ ╰─────── B must also be implemented here
 ───╯
-Error: fragment `recursive` with type condition `A` cannot be applied to `A`
-    ╭─[0091_recursive_interface_definition.graphql:15:9]
-    │
-  1 │ ╭───▶ interface A implements B {
-    ┆ ┆     
-  3 │ ├───▶ }
-    │ │         
-    │ ╰───────── type condition `A` is not assignable to this type
-    │ 
-  7 │   ╭─▶ fragment recursive on A {
-    ┆   ┆   
-  9 │   ├─▶ }
-    │   │       
-    │   ╰─────── fragment declared with type condition `A` here
-    │ 
- 15 │         get { ...recursive }
-    │               ──────┬─────  
-    │                     ╰─────── fragment `recursive` cannot be applied
-────╯
 
