@@ -1,7 +1,7 @@
 use crate::ast;
 use crate::ast::NamedType;
 use crate::collections::HashMap;
-use crate::collections::HashSet;
+use crate::collections::IndexSet;
 use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
@@ -23,11 +23,11 @@ use std::borrow::Cow;
 fn get_possible_types<'a>(
     type_definition: &schema::ExtendedType,
     implementers_map: &'a HashMap<Name, Implementers>,
-) -> Cow<'a, HashSet<NamedType>> {
+) -> Cow<'a, IndexSet<NamedType>> {
     match type_definition {
         // 1. If `type` is an object type, return a set containing `type`.
         schema::ExtendedType::Object(object) => {
-            let mut set = HashSet::default();
+            let mut set = IndexSet::default();
             set.insert(object.name.clone());
             Cow::Owned(set)
         }
