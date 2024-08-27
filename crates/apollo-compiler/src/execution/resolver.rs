@@ -79,7 +79,10 @@ macro_rules! impl_resolver {
                         },
                     )*
                     _ => Err(crate::execution::resolver::ResolverError {
-                        message: format!("unexpected field name: {field_name}")
+                        message: format!(
+                            "unexpected field name: {field_name} in type {}",
+                            self.type_name()
+                        )
                     }),
                 }
             }

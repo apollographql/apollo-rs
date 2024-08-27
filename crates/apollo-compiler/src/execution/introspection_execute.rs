@@ -22,6 +22,7 @@ use std::sync::OnceLock;
 /// Obtained from [`SchemaIntrospectionSplit::split`].
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+#[derive(Clone, Debug)]
 pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
 
 impl std::ops::Deref for SchemaIntrospectionQuery {

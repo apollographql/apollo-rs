@@ -360,6 +360,7 @@ impl DiagnosticData {
                 ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
                 ExecutableBuildError::ConflictingFieldArgument(_) => "ConflictingFieldArgument",
             }),
+            Details::RecursionLimitError => Some("RecursionLimitError"),
             _ => None,
         }
     }

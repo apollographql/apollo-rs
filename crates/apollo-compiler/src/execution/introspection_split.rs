@@ -26,6 +26,7 @@ use indexmap::map::Entry;
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+#[derive(Clone, Debug)]
 pub enum SchemaIntrospectionSplit {
     /// The selected operation does *not* use [schema introspection] fields.
     /// It should be executed unchanged.
@@ -61,6 +62,7 @@ pub enum SchemaIntrospectionSplit {
     },
 }
 
+#[derive(Debug)]
 pub enum SchemaIntrospectionError {
     SuspectedValidationBug(SuspectedValidationBug),
     Unsupported {
