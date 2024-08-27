@@ -556,7 +556,9 @@ impl_resolver! {
     }
 
     fn defaultValue(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.default_value.as_ref().map(|val| val.to_string())))
+        Ok(ResolvedValue::leaf(self_.def.default_value.as_ref().map(|val| {
+            val.serialize().no_indent().to_string()
+        })))
     }
 
     fn isDeprecated(&self_) {
