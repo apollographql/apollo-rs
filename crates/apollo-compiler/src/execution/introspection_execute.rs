@@ -433,7 +433,7 @@ impl_resolver! {
     fn possibleTypes() { Ok(ResolvedValue::null()) }
     fn enumValues() { Ok(ResolvedValue::null()) }
     fn inputFields() { Ok(ResolvedValue::null()) }
-    fn specifiedBy() { Ok(ResolvedValue::null()) }
+    fn specifiedByURL() { Ok(ResolvedValue::null()) }
 }
 
 impl_resolver! {
