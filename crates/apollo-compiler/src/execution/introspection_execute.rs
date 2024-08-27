@@ -301,7 +301,7 @@ impl_resolver! {
             schema::ExtendedType::Enum(_) |
             schema::ExtendedType::InputObject(_) => return Ok(ResolvedValue::null()),
         };
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(fields
             .values()
             .filter(move |def| {
@@ -353,7 +353,7 @@ impl_resolver! {
         let schema::ExtendedType::Enum(def) = self_.def else {
             return Ok(ResolvedValue::null());
         };
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(def
             .values
             .values()
@@ -370,7 +370,7 @@ impl_resolver! {
         let schema::ExtendedType::InputObject(def) = self_.def else {
             return Ok(ResolvedValue::null());
         };
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(def
             .fields
             .values()
@@ -450,7 +450,7 @@ impl_resolver! {
     }
 
     fn args(&self_, args) {
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(self_
             .def
             .arguments
@@ -489,7 +489,7 @@ impl_resolver! {
     }
 
     fn args(&self_, args) {
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(self_
             .def
             .arguments
@@ -565,5 +565,14 @@ impl_resolver! {
 
     fn deprecationReason(&self_) {
         Ok(deprecation_reason(self_.def.directives.get("deprecated")))
+    }
+}
+
+/// Although it should be non-null, the `includeDeprecated: Boolean = false` argument is nullable
+fn include_deprecated(args: &JsonMap) -> bool {
+    match &args["includeDeprecated"] {
+        serde_json_bytes::Value::Bool(b) => *b,
+        serde_json_bytes::Value::Null => false,
+        _ => unreachable!(),
     }
 }
