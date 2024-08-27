@@ -239,13 +239,9 @@ fn make_single_operation_document(
         fragments,
     };
     new_document.operations.insert(new_operation);
-    if cfg!(debug_assertions) {
-        new_document
-            .validate(schema)
-            .expect("filtering a valid document should result in a valid document")
-    } else {
-        Valid::assume_valid(new_document)
-    }
+    new_document
+        .validate(schema)
+        .expect("filtering a valid document should result in a valid document")
 }
 
 fn get_fragment<'doc>(
