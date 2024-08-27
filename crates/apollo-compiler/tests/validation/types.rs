@@ -1738,25 +1738,25 @@ mod directive_arguments {
                      │                    ──┬──  
                      │                      ╰──── provided value is a string
                      │
-                     ├─[built_in.graphql:105:7]
+                     ├─[built_in.graphql:146:7]
                      │
-                 105 │   if: Boolean!
+                 146 │   if: Boolean!
                      │       ────┬───  
                      │           ╰───── expected type declared here as Boolean!
                 ─────╯
                 Error: expected value of type Boolean!, found an enum
-                    ╭─[query.graphql:3:20]
-                    │
-                  3 │     name @skip(if: ENUM)
-                    │                    ──┬─  
-                    │                      ╰─── provided value is an enum
-                    │
-                    ├─[built_in.graphql:99:7]
-                    │
-                 99 │   if: Boolean!
-                    │       ────┬───  
-                    │           ╰───── expected type declared here as Boolean!
-                ────╯
+                     ╭─[query.graphql:3:20]
+                     │
+                   3 │     name @skip(if: ENUM)
+                     │                    ──┬─  
+                     │                      ╰─── provided value is an enum
+                     │
+                     ├─[built_in.graphql:140:7]
+                     │
+                 140 │   if: Boolean!
+                     │       ────┬───  
+                     │           ╰───── expected type declared here as Boolean!
+                ─────╯
             "#]],
         );
     }

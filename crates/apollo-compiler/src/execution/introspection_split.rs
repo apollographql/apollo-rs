@@ -26,6 +26,7 @@ use indexmap::map::Entry;
 /// Result of [`split`][Self::split]ting [schema introspection] fields from an operation.
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+#[derive(Clone, Debug)]
 pub enum SchemaIntrospectionSplit {
     /// The selected operation does *not* use [schema introspection] fields.
     /// It should be executed unchanged.
@@ -61,6 +62,7 @@ pub enum SchemaIntrospectionSplit {
     },
 }
 
+#[derive(Debug)]
 pub enum SchemaIntrospectionError {
     SuspectedValidationBug(SuspectedValidationBug),
     Unsupported {
@@ -237,13 +239,9 @@ fn make_single_operation_document(
         fragments,
     };
     new_document.operations.insert(new_operation);
-    if cfg!(debug_assertions) {
-        new_document
-            .validate(schema)
-            .expect("filtering a valid document should result in a valid document")
-    } else {
-        Valid::assume_valid(new_document)
-    }
+    new_document
+        .validate(schema)
+        .expect("filtering a valid document should result in a valid document")
 }
 
 fn get_fragment<'doc>(

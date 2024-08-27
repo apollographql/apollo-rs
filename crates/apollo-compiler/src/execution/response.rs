@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 /// A [GraphQL response](https://spec.graphql.org/October2021/#sec-Response-Format)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Response {
     // <https://spec.graphql.org/October2021/#note-6f005> suggests serializing this first
@@ -26,7 +26,7 @@ pub struct Response {
 }
 
 /// The `data` entry of a [`Response`]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(from = "Option<JsonMap>")]
 pub enum ResponseData {
     /// Execution returned an object.
@@ -143,7 +143,7 @@ impl GraphQLError {
 
 impl ResponseData {
     /// For serde `skip_serializing_if`
-    fn is_absent(&self) -> bool {
+    pub fn is_absent(&self) -> bool {
         matches!(self, Self::Absent)
     }
 

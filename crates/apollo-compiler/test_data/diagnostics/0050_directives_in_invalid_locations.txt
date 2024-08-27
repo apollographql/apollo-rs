@@ -5,11 +5,11 @@ Error: skip directive is not supported for VARIABLE_DEFINITION location
      │                              ───────┬───────  
      │                                     ╰───────── directive cannot be used on VARIABLE_DEFINITION
      │
-     ├─[built_in.graphql:96:1]
+     ├─[built_in.graphql:137:1]
      │
-  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+ 137 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
      ┆ ┆   
- 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 141 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     
@@ -22,11 +22,11 @@ Error: skip directive is not supported for QUERY location
      │                                               ────────┬───────  
      │                                                       ╰───────── directive cannot be used on QUERY
      │
-     ├─[built_in.graphql:96:1]
+     ├─[built_in.graphql:137:1]
      │
-  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+ 137 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
      ┆ ┆   
- 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 141 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     
@@ -39,11 +39,11 @@ Error: deprecated directive is not supported for FIELD location
      │                             ─────┬─────  
      │                                  ╰─────── directive cannot be used on FIELD
      │
-     ├─[built_in.graphql:108:1]
+     ├─[built_in.graphql:149:1]
      │
- 108 │ ╭─▶ "Marks an element of a GraphQL schema as no longer supported."
+ 149 │ ╭─▶ "Marks an element of a GraphQL schema as no longer supported."
      ┆ ┆   
- 117 │ ├─▶ ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+ 155 │ ├─▶ ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
      │ │                                                                                       
      │ ╰─────────────────────────────────────────────────────────────────────────────────────── directive defined here
      │     
@@ -108,11 +108,11 @@ Error: skip directive is not supported for MUTATION location
      │                     ───────┬───────  
      │                            ╰───────── directive cannot be used on MUTATION
      │
-     ├─[built_in.graphql:96:1]
+     ├─[built_in.graphql:137:1]
      │
-  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+ 137 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
      ┆ ┆   
- 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 141 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     
@@ -125,11 +125,11 @@ Error: skip directive is not supported for INTERFACE location
      │               ───────┬───────  
      │                      ╰───────── directive cannot be used on INTERFACE
      │
-     ├─[built_in.graphql:96:1]
+     ├─[built_in.graphql:137:1]
      │
-  96 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
+ 137 │ ╭─▶ "Directs the executor to skip this field or fragment when the `if` argument is true."
      ┆ ┆   
- 100 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 141 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     
@@ -155,11 +155,11 @@ Error: include directive is not supported for INPUT_OBJECT location
      │               ─────────┬────────  
      │                        ╰────────── directive cannot be used on INPUT_OBJECT
      │
-     ├─[built_in.graphql:102:1]
+     ├─[built_in.graphql:143:1]
      │
- 102 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
+ 143 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
      ┆ ┆   
- 106 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 147 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     
@@ -172,11 +172,11 @@ Error: include directive is not supported for INPUT_FIELD_DEFINITION location
      │                 ─────────┬────────  
      │                          ╰────────── directive cannot be used on INPUT_FIELD_DEFINITION
      │
-     ├─[built_in.graphql:102:1]
+     ├─[built_in.graphql:143:1]
      │
- 102 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
+ 143 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
      ┆ ┆   
- 106 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 147 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     
@@ -228,11 +228,11 @@ Error: deprecated directive is not supported for OBJECT location
      │            ─────┬─────  
      │                 ╰─────── directive cannot be used on OBJECT
      │
-     ├─[built_in.graphql:108:1]
+     ├─[built_in.graphql:149:1]
      │
- 108 │ ╭─▶ "Marks an element of a GraphQL schema as no longer supported."
+ 149 │ ╭─▶ "Marks an element of a GraphQL schema as no longer supported."
      ┆ ┆   
- 117 │ ├─▶ ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+ 155 │ ├─▶ ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
      │ │                                                                                       
      │ ╰─────────────────────────────────────────────────────────────────────────────────────── directive defined here
      │     
@@ -245,11 +245,11 @@ Error: specifiedBy directive is not supported for ARGUMENT_DEFINITION location
      │                           ────────────────────────────┬───────────────────────────  
      │                                                       ╰───────────────────────────── directive cannot be used on ARGUMENT_DEFINITION
      │
-     ├─[built_in.graphql:119:1]
+     ├─[built_in.graphql:157:1]
      │
- 119 │ ╭─▶ "Exposes a URL that specifies the behaviour of this scalar."
+ 157 │ ╭─▶ "Exposes a URL that specifies the behavior of this scalar."
      ┆ ┆   
- 123 │ ├─▶ ) on SCALAR
+ 161 │ ├─▶ ) on SCALAR
      │ │                 
      │ ╰───────────────── directive defined here
      │     
@@ -262,11 +262,11 @@ Error: include directive is not supported for SCHEMA location
      │        ─────────┬────────  
      │                 ╰────────── directive cannot be used on SCHEMA
      │
-     ├─[built_in.graphql:102:1]
+     ├─[built_in.graphql:143:1]
      │
- 102 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
+ 143 │ ╭─▶ "Directs the executor to include this field or fragment only when the `if` argument is true."
      ┆ ┆   
- 106 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+ 147 │ ├─▶ ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
      │ │                                                    
      │ ╰──────────────────────────────────────────────────── directive defined here
      │     

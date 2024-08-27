@@ -22,6 +22,7 @@ use std::sync::OnceLock;
 /// Obtained from [`SchemaIntrospectionSplit::split`].
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+#[derive(Clone, Debug)]
 pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
 
 impl std::ops::Deref for SchemaIntrospectionQuery {
@@ -135,7 +136,7 @@ impl<'a> SchemaWithCache<'a> {
             .get_or_init(|| self.schema.implementers_map())
             .get(interface_name)
             .into_iter()
-            .flat_map(Implementers::iter)
+            .flat_map(|implementers| &implementers.objects)
     }
 }
 
@@ -301,7 +302,7 @@ impl_resolver! {
             schema::ExtendedType::Enum(_) |
             schema::ExtendedType::InputObject(_) => return Ok(ResolvedValue::null()),
         };
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(fields
             .values()
             .filter(move |def| {
@@ -353,7 +354,7 @@ impl_resolver! {
         let schema::ExtendedType::Enum(def) = self_.def else {
             return Ok(ResolvedValue::null());
         };
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(def
             .values
             .values()
@@ -370,7 +371,7 @@ impl_resolver! {
         let schema::ExtendedType::InputObject(def) = self_.def else {
             return Ok(ResolvedValue::null());
         };
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(def
             .fields
             .values()
@@ -433,7 +434,7 @@ impl_resolver! {
     fn possibleTypes() { Ok(ResolvedValue::null()) }
     fn enumValues() { Ok(ResolvedValue::null()) }
     fn inputFields() { Ok(ResolvedValue::null()) }
-    fn specifiedBy() { Ok(ResolvedValue::null()) }
+    fn specifiedByURL() { Ok(ResolvedValue::null()) }
 }
 
 impl_resolver! {
@@ -450,7 +451,7 @@ impl_resolver! {
     }
 
     fn args(&self_, args) {
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(self_
             .def
             .arguments
@@ -489,7 +490,7 @@ impl_resolver! {
     }
 
     fn args(&self_, args) {
-        let include_deprecated = args["includeDeprecated"].as_bool().unwrap();
+        let include_deprecated = include_deprecated(args);
         Ok(ResolvedValue::list(self_
             .def
             .arguments
@@ -556,7 +557,9 @@ impl_resolver! {
     }
 
     fn defaultValue(&self_) {
-        Ok(ResolvedValue::leaf(self_.def.default_value.as_ref().map(|val| val.to_string())))
+        Ok(ResolvedValue::leaf(self_.def.default_value.as_ref().map(|val| {
+            val.serialize().no_indent().to_string()
+        })))
     }
 
     fn isDeprecated(&self_) {
@@ -565,5 +568,14 @@ impl_resolver! {
 
     fn deprecationReason(&self_) {
         Ok(deprecation_reason(self_.def.directives.get("deprecated")))
+    }
+}
+
+/// Although it should be non-null, the `includeDeprecated: Boolean = false` argument is nullable
+fn include_deprecated(args: &JsonMap) -> bool {
+    match &args["includeDeprecated"] {
+        serde_json_bytes::Value::Bool(b) => *b,
+        serde_json_bytes::Value::Null => false,
+        _ => unreachable!(),
     }
 }

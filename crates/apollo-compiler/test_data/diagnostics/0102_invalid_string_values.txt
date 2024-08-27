@@ -425,9 +425,9 @@ Error: expected value of type Boolean!, found a string
      │                    ──┬──  
      │                      ╰──── provided value is a string
      │
-     ├─[built_in.graphql:105:7]
+     ├─[built_in.graphql:146:7]
      │
- 105 │   if: Boolean!
+ 146 │   if: Boolean!
      │       ────┬───  
      │           ╰───── expected type declared here as Boolean!
 ─────╯
@@ -438,9 +438,9 @@ Error: expected value of type Boolean!, found an enum
      │                    ──┬─  
      │                      ╰─── provided value is an enum
      │
-     ├─[built_in.graphql:99:7]
+     ├─[built_in.graphql:140:7]
      │
-  99 │   if: Boolean!
+ 140 │   if: Boolean!
      │       ────┬───  
      │           ╰───── expected type declared here as Boolean!
 ─────╯
