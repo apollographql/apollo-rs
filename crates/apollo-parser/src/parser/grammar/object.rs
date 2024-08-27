@@ -19,31 +19,45 @@ use crate::T;
 pub(crate) fn object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
 
-    if let Some(TokenKind::StringValue) = p.peek() {
-        description::description(p);
-    }
-
-    if let Some("type") = p.peek_data() {
-        p.bump(SyntaxKind::type_KW);
-    }
-
-    match p.peek() {
-        Some(TokenKind::Name) => name::name(p),
-        _ => p.err("expected a name"),
-    }
-
-    if let Some(TokenKind::Name) = p.peek() {
-        if p.peek_data().unwrap() == "implements" {
-            implements_interfaces(p);
+    if let Some(token) = p.peek_token() {
+        if token.kind() == TokenKind::StringValue {
+            description::description(p);
         }
     }
 
-    if let Some(T![@]) = p.peek() {
-        directive::directives(p, Constness::Const);
+    if let Some(token) = p.peek_token() {
+        if token.data() == "type" {
+            p.bump(SyntaxKind::type_KW);
+        }
     }
 
-    if let Some(T!['{']) = p.peek() {
-        field::fields_definition(p);
+    if let Some(token) = p.peek_token() {
+        match token.kind() {
+            TokenKind::Name => name::name(p),
+            _ => p.err("expected a name"),
+        }
+    }
+
+    if let Some(token) = p.peek_token() {
+        if token.kind() == TokenKind::Name {
+            if token.data() == "implements" {
+                implements_interfaces(p);
+            } else {
+                p.err("unexpected Name");
+            }
+        }
+    }
+
+    if let Some(token) = p.peek_token() {
+        if token.kind() == T![@] {
+            directive::directives(p, Constness::Const);
+        }
+    }
+
+    if let Some(token) = p.peek_token() {
+        if token.kind() == T!['{'] {
+            field::fields_definition(p);
+        }
     }
 }
 
@@ -62,24 +76,32 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
     // FieldsDefinitions is provided. If none are present, we push an error.
     let mut meets_requirements = false;
 
-    match p.peek() {
-        Some(TokenKind::Name) => name::name(p),
-        _ => p.err("expected a Name"),
+    if let Some(token) = p.peek_token() {
+        match token.kind() {
+            TokenKind::Name => name::name(p),
+            _ => p.err("expected a Name"),
+        }
     }
 
-    if let Some("implements") = p.peek_data() {
-        meets_requirements = true;
-        implements_interfaces(p);
+    if let Some(token) = p.peek_token() {
+        if token.data() == "implements" {
+            meets_requirements = true;
+            implements_interfaces(p);
+        }
     }
 
-    if let Some(T![@]) = p.peek() {
-        meets_requirements = true;
-        directive::directives(p, Constness::Const)
+    if let Some(token) = p.peek_token() {
+        if token.kind() == T![@] {
+            meets_requirements = true;
+            directive::directives(p, Constness::Const);
+        }
     }
 
-    if let Some(T!['{']) = p.peek() {
-        meets_requirements = true;
-        field::fields_definition(p)
+    if let Some(token) = p.peek_token() {
+        if token.kind() == T!['{'] {
+            meets_requirements = true;
+            field::fields_definition(p);
+        }
     }
 
     if !meets_requirements {
@@ -97,10 +119,12 @@ pub(crate) fn implements_interfaces(p: &mut Parser) {
     p.bump(SyntaxKind::implements_KW);
 
     p.parse_separated_list(T![&], S![&], |p| {
-        if let Some(TokenKind::Name) = p.peek() {
-            ty::named_type(p);
-        } else {
-            p.err("expected an Interface name");
+        if let Some(token) = p.peek_token() {
+            if token.kind() == TokenKind::Name {
+                ty::named_type(p);
+            } else {
+                p.err("expected an Interface name");
+            }
         }
     });
 }
