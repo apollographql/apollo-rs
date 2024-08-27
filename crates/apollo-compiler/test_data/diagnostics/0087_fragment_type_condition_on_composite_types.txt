@@ -25,9 +25,9 @@ Error: type `Int` does not have a field `name`
      │       ──┬─  
      │         ╰─── field `name` selected here
      │
-     ├─[built_in.graphql:129:8]
+     ├─[built_in.graphql:166:8]
      │
- 129 │ scalar Int
+ 166 │ scalar Int
      │        ─┬─  
      │         ╰─── type `Int` defined here
      │ 
@@ -51,9 +51,9 @@ Error: type `Int` does not have a field `name`
      │   ──┬─  
      │     ╰─── field `name` selected here
      │
-     ├─[built_in.graphql:129:8]
+     ├─[built_in.graphql:166:8]
      │
- 129 │ scalar Int
+ 166 │ scalar Int
      │        ─┬─  
      │         ╰─── type `Int` defined here
      │ 
@@ -77,9 +77,9 @@ Error: type `Int` does not have a field `name`
      │     ──┬─  
      │       ╰─── field `name` selected here
      │
-     ├─[built_in.graphql:129:8]
+     ├─[built_in.graphql:166:8]
      │
- 129 │ scalar Int
+ 166 │ scalar Int
      │        ─┬─  
      │         ╰─── type `Int` defined here
      │ 
