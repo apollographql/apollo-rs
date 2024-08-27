@@ -135,7 +135,7 @@ impl<'a> SchemaWithCache<'a> {
             .get_or_init(|| self.schema.implementers_map())
             .get(interface_name)
             .into_iter()
-            .flat_map(Implementers::iter)
+            .flat_map(|implementers| &implementers.objects)
     }
 }
 
