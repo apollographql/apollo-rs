@@ -1086,14 +1086,14 @@ impl std::fmt::Debug for DebugTypes<'_> {
     }
 }
 
-struct MetaFieldDefinitions {
-    __typename: Component<FieldDefinition>,
-    __schema: Component<FieldDefinition>,
-    __type: Component<FieldDefinition>,
+pub(crate) struct MetaFieldDefinitions {
+    pub(crate) __typename: Component<FieldDefinition>,
+    pub(crate) __schema: Component<FieldDefinition>,
+    pub(crate) __type: Component<FieldDefinition>,
 }
 
 impl MetaFieldDefinitions {
-    fn get() -> &'static Self {
+    pub(crate) fn get() -> &'static Self {
         static DEFS: OnceLock<MetaFieldDefinitions> = OnceLock::new();
         DEFS.get_or_init(|| Self {
             // __typename: String!
