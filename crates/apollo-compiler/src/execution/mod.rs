@@ -9,6 +9,7 @@ mod resolver;
 mod engine;
 mod input_coercion;
 mod introspection_execute;
+mod introspection_max_depth;
 mod introspection_split;
 mod response;
 mod result_coercion;
