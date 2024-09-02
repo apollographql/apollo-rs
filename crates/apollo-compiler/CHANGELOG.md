@@ -28,8 +28,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   and matches their definition order in the schema.
   This helps fuzzing, where the same entropy source should generate the same test case.
 
+## Features
+
+- **Port MaxIntrospectionDepthRule from graphql-js - [SimonSapin] in [pull/904].**
+  This limits list nesting in introspection query which can cause very large responses.
+
 [SimonSapin]: https://github.com/SimonSapin
 [pull/898]: https://github.com/apollographql/apollo-rs/pull/898
+[pull/904]: https://github.com/apollographql/apollo-rs/pull/904
 
 
 # [1.0.0-beta.20](https://crates.io/crates/apollo-compiler/1.0.0-beta.20) - 2024-07-30
