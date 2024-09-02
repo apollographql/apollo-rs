@@ -2,7 +2,6 @@
 //! which can contain operations and fragments.
 
 use crate::ast;
-use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
@@ -350,6 +349,14 @@ impl OperationMap {
         map
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.anonymous.is_none() && self.named.is_empty()
+    }
+
+    pub fn len(&self) -> usize {
+        self.anonymous.is_some() as usize + self.named.len()
+    }
+
     /// Returns an iterator of operations, both anonymous and named
     pub fn iter(&self) -> impl Iterator<Item = &'_ Node<Operation>> {
         self.anonymous
@@ -444,44 +451,107 @@ impl Operation {
     /// Return whether this operation is a query that only selects introspection meta-fields:
     /// `__type`, `__schema`, and `__typename`
     pub fn is_introspection(&self, document: &ExecutableDocument) -> bool {
-        fn is_introspection_impl<'a>(
-            document: &'a ExecutableDocument,
-            seen_fragments: &mut HashSet<&'a Name>,
-            set: &'a SelectionSet,
-        ) -> bool {
-            set.selections.iter().all(|selection| match selection {
-                Selection::Field(field) => {
-                    matches!(field.name.as_str(), "__type" | "__schema" | "__typename")
-                }
-                Selection::FragmentSpread(spread) => {
-                    document
-                        .fragments
-                        .get(&spread.fragment_name)
-                        .is_some_and(|fragment| {
-                            let new = seen_fragments.insert(&spread.fragment_name);
-                            if new {
-                                is_introspection_impl(
-                                    document,
-                                    seen_fragments,
-                                    &fragment.selection_set,
-                                )
-                            } else {
-                                // This isn't the first time we've seen this spread.
-                                // We trust that the first visit will find all
-                                // relevant fields and stop the recursion (without
-                                // affecting the overall `all` result).
-                                true
-                            }
-                        })
-                }
-                Selection::InlineFragment(inline) => {
-                    is_introspection_impl(document, seen_fragments, &inline.selection_set)
-                }
-            })
-        }
+        self.is_query()
+            && self
+                .root_fields(document)
+                .all(|field| matches!(field.name.as_str(), "__type" | "__schema" | "__typename"))
+    }
 
-        self.operation_type == OperationType::Query
-            && is_introspection_impl(document, &mut HashSet::default(), &self.selection_set)
+    /// Returns an iterator of field selections that are at the root of the response.
+    /// That is, inline fragments and fragment spreads at the root are traversed,
+    /// but field sub-selections are not.
+    ///
+    /// See also [`all_fields`][Self::all_fields].
+    ///
+    /// `document` is used to look up fragment definitions.
+    ///
+    /// This does **not** perform [field merging] nor fragment spreads de-duplication,
+    /// so multiple items in this iterator may have the same response key,
+    /// point to the same field definition, or even be the same field selection.
+    ///
+    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    pub fn root_fields<'doc>(
+        &'doc self,
+        document: &'doc ExecutableDocument,
+    ) -> impl Iterator<Item = &'doc Node<Field>> {
+        let mut stack = vec![self.selection_set.selections.iter()];
+        std::iter::from_fn(move || {
+            while let Some(selection_set_iter) = stack.last_mut() {
+                match selection_set_iter.next() {
+                    Some(Selection::Field(field)) => {
+                        // Yield one item from the `root_fields()` iterator
+                        // but ignore its sub-selections in `field.selection_set`
+                        return Some(field);
+                    }
+                    Some(Selection::InlineFragment(inline)) => {
+                        stack.push(inline.selection_set.selections.iter())
+                    }
+                    Some(Selection::FragmentSpread(spread)) => {
+                        if let Some(def) = document.fragments.get(&spread.fragment_name) {
+                            stack.push(def.selection_set.selections.iter())
+                        } else {
+                            // Undefined fragments are silently ignored.
+                            // They should never happen in a valid document.
+                        }
+                    }
+                    None => {
+                        // Remove an empty iterator from the stack
+                        // and continue with the parent selection set
+                        stack.pop();
+                    }
+                }
+            }
+            None
+        })
+    }
+
+    /// Returns an iterator of all field selections in this operation.
+    ///
+    /// See also [`root_fields`][Self::root_fields].
+    ///
+    /// `document` is used to look up fragment definitions.
+    ///
+    /// This does **not** perform [field merging] nor fragment spreads de-duplication,
+    /// so multiple items in this iterator may have the same response key,
+    /// point to the same field definition, or even be the same field selection.
+    ///
+    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    pub fn all_fields<'doc>(
+        &'doc self,
+        document: &'doc ExecutableDocument,
+    ) -> impl Iterator<Item = &'doc Node<Field>> {
+        let mut stack = vec![self.selection_set.selections.iter()];
+        std::iter::from_fn(move || {
+            while let Some(selection_set_iter) = stack.last_mut() {
+                match selection_set_iter.next() {
+                    Some(Selection::Field(field)) => {
+                        if !field.selection_set.is_empty() {
+                            // Will be considered for the next call
+                            stack.push(field.selection_set.selections.iter())
+                        }
+                        // Yield one item from the `all_fields()` iterator
+                        return Some(field);
+                    }
+                    Some(Selection::InlineFragment(inline)) => {
+                        stack.push(inline.selection_set.selections.iter())
+                    }
+                    Some(Selection::FragmentSpread(spread)) => {
+                        if let Some(def) = document.fragments.get(&spread.fragment_name) {
+                            stack.push(def.selection_set.selections.iter())
+                        } else {
+                            // Undefined fragments are silently ignored.
+                            // They should never happen in a valid document.
+                        }
+                    }
+                    None => {
+                        // Remove an empty iterator from the stack
+                        // and continue with the parent selection set
+                        stack.pop();
+                    }
+                }
+            }
+            None
+        })
     }
 
     serialize_method!();
