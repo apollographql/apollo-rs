@@ -6,6 +6,7 @@ use crate::execution::engine::ExecutionMode;
 use crate::execution::resolver::ResolvedValue;
 use crate::execution::JsonMap;
 use crate::execution::Response;
+use crate::execution::SchemaIntrospectionError;
 use crate::execution::SchemaIntrospectionSplit;
 use crate::schema;
 use crate::schema::Implementers;
@@ -23,7 +24,7 @@ use std::sync::OnceLock;
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
 #[derive(Clone, Debug)]
-pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
+pub struct SchemaIntrospectionQuery(Valid<ExecutableDocument>);
 
 impl std::ops::Deref for SchemaIntrospectionQuery {
     type Target = Valid<ExecutableDocument>;
@@ -40,6 +41,22 @@ impl std::fmt::Display for SchemaIntrospectionQuery {
 }
 
 impl SchemaIntrospectionQuery {
+    /// Construct a `SchemaIntrospectionQuery` from a document
+    /// assumed to contain exactly one operation that only has [schema introspection] fields.
+    ///
+    /// Generally [`split`][SchemaIntrospectionSplit::split] should be used instead.
+    ///
+    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+    #[doc(hidden)]
+    // Hidden to discourage usage, but pub to allow Router "both" mode to use legacy code
+    // for deciding what is or isn’t an introspection query.
+    pub fn assume_only_intropsection_fields(
+        document: Valid<ExecutableDocument>,
+    ) -> Result<Self, SchemaIntrospectionError> {
+        super::introspection_max_depth::check_document(&document)?;
+        Ok(Self(document))
+    }
+
     /// Execute the [schema introspection] parts of an operation
     /// and wrap a callback to execute the rest (if any).
     ///
