@@ -9,6 +9,7 @@ use crate::executable::Operation;
 use crate::executable::OperationType;
 use crate::executable::Selection;
 use crate::executable::SelectionSet;
+use crate::execution::introspection_max_depth::DeeplyNestedIntrospectionListError;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
@@ -65,7 +66,7 @@ pub enum SchemaIntrospectionSplit {
 #[derive(Debug)]
 pub enum SchemaIntrospectionError {
     SuspectedValidationBug(SuspectedValidationBug),
-    DeeplyNestedIntrospectionList(Option<SourceSpan>),
+    DeeplyNestedIntrospectionList(DeeplyNestedIntrospectionListError),
     Unsupported {
         message: String,
         location: Option<SourceSpan>,
@@ -597,8 +598,8 @@ impl SchemaIntrospectionError {
     pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
         match self {
             Self::SuspectedValidationBug(s) => s.into_graphql_error(sources),
-            Self::DeeplyNestedIntrospectionList(location) => {
-                GraphQLError::new("Maximum introspection depth exceeded", location, sources)
+            Self::DeeplyNestedIntrospectionList(e) => {
+                GraphQLError::new("Maximum introspection depth exceeded", e.location, sources)
             }
             Self::Unsupported { message, location } => {
                 GraphQLError::new(message, location, sources)
