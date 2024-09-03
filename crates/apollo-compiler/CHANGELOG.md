@@ -32,10 +32,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - **Port MaxIntrospectionDepthRule from graphql-js - [SimonSapin] in [pull/904].**
   This limits list nesting in introspection query which can cause very large responses.
+- **Add convenience APIs on operations - [SimonSapin] in [pull/905]**
+  * `OperationMap::len` and `OperationMap::is_empty`, making it more like a collection type
+  * `Operation::all_fields` and `Operation::root_fields` iterators
 
 [SimonSapin]: https://github.com/SimonSapin
 [pull/898]: https://github.com/apollographql/apollo-rs/pull/898
 [pull/904]: https://github.com/apollographql/apollo-rs/pull/904
+[pull/905]: https://github.com/apollographql/apollo-rs/pull/905
 
 
 # [1.0.0-beta.20](https://crates.io/crates/apollo-compiler/1.0.0-beta.20) - 2024-07-30
