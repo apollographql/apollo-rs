@@ -274,12 +274,28 @@ impl SchemaBuilder {
                 // This a macro rather than a closure to generate separate `static`s
                 let schema_def = schema.schema_definition.make_mut();
                 let mut has_implicit_root_operation = false;
-                for (operation_type, root_operation) in [
+                'root_operation_loop: for (operation_type, root_operation) in [
                     (OperationType::Query, &mut schema_def.query),
                     (OperationType::Mutation, &mut schema_def.mutation),
                     (OperationType::Subscription, &mut schema_def.subscription),
                 ] {
                     let name = operation_type.default_type_name();
+                    // If `adopt_orphan_extensions` is enabled, we should scan
+                    // each orphan schema extension for root operations. If we
+                    // see one, we should skip adding that particular implicit
+                    // root operation since the extensions will be applied
+                    // further down.
+                    if adopt_orphan_extensions {
+                        for ext in &orphan_extensions {
+                            for node in &ext.root_operations {
+                                let current_operation_type = node.as_ref().0;
+                                if current_operation_type == operation_type {
+                                    continue 'root_operation_loop;
+                                }
+                            }
+                        }
+                    }
+
                     if schema.types.get(&name).is_some_and(|def| def.is_object()) {
                         *root_operation = Some(name.into());
                         has_implicit_root_operation = true
