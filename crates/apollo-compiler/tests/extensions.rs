@@ -35,6 +35,22 @@ fn test_orphan_extensions() {
 }
 
 #[test]
+fn test_orphan_extensions_schema_with_default_query_name() {
+    let input = r#"
+        extend schema { query: Query }
+        type Query { x: Int }
+    "#;
+
+    let schema = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap();
+
+    schema.validate().unwrap();
+}
+
+#[test]
 fn test_orphan_extensions_kind_mismatch() {
     let input = r#"
     extend type T @dir
