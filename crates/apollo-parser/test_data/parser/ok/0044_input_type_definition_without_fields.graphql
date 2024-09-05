@@ -1,0 +1,6 @@
+"An input with no fields"
+input AnInputWithoutFields
+
+extend input AnInputWithoutFields {
+  limit: Int!
+}
