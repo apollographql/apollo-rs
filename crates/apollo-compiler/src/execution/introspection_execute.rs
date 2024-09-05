@@ -4,13 +4,14 @@ use crate::executable::OperationType;
 use crate::execution::engine::execute_selection_set;
 use crate::execution::engine::ExecutionMode;
 use crate::execution::resolver::ResolvedValue;
+use crate::execution::GraphQLError;
 use crate::execution::JsonMap;
 use crate::execution::Response;
+use crate::execution::SchemaIntrospectionError;
 use crate::execution::SchemaIntrospectionSplit;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::schema::Name;
-use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Node;
@@ -23,7 +24,7 @@ use std::sync::OnceLock;
 ///
 /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
 #[derive(Clone, Debug)]
-pub struct SchemaIntrospectionQuery(pub(crate) Valid<ExecutableDocument>);
+pub struct SchemaIntrospectionQuery(Valid<ExecutableDocument>);
 
 impl std::ops::Deref for SchemaIntrospectionQuery {
     type Target = Valid<ExecutableDocument>;
@@ -40,6 +41,21 @@ impl std::fmt::Display for SchemaIntrospectionQuery {
 }
 
 impl SchemaIntrospectionQuery {
+    /// Construct a `SchemaIntrospectionQuery` from a document
+    /// assumed to contain exactly one operation that only has [schema introspection] fields.
+    ///
+    /// Generally [`split`][SchemaIntrospectionSplit::split] should be used instead.
+    ///
+    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
+    pub(crate) fn assume_only_intropsection_fields(
+        document: Valid<ExecutableDocument>,
+    ) -> Result<Self, SchemaIntrospectionError> {
+        let operation = document.operations.get(None).unwrap();
+        super::introspection_max_depth::check_introspection_max_depth(&document, operation)
+            .map_err(SchemaIntrospectionError::DeeplyNestedIntrospectionList)?;
+        Ok(Self(document))
+    }
+
     /// Execute the [schema introspection] parts of an operation
     /// and wrap a callback to execute the rest (if any).
     ///
@@ -55,9 +71,9 @@ impl SchemaIntrospectionQuery {
         execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
     ) -> Response {
         match SchemaIntrospectionSplit::split(schema, document, operation) {
-            Ok(SchemaIntrospectionSplit::Only(introspection_query)) => introspection_query
-                .execute(schema, variable_values)
-                .unwrap_or_else(|err| err.into_response(&document.sources)),
+            Ok(SchemaIntrospectionSplit::Only(introspection_query)) => {
+                introspection_query.execute(schema, variable_values)
+            }
             Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
             Ok(SchemaIntrospectionSplit::Both {
                 introspection_query,
@@ -65,9 +81,7 @@ impl SchemaIntrospectionQuery {
             }) => {
                 let non_introspection_response =
                     execute_non_introspection_parts(&filtered_operation);
-                let introspection_response = introspection_query
-                    .execute(schema, variable_values)
-                    .unwrap_or_else(|err| err.into_response(&document.sources));
+                let introspection_response = introspection_query.execute(schema, variable_values);
                 non_introspection_response.merge(introspection_response)
             }
             Err(err) => err.into_response(&document.sources),
@@ -78,49 +92,65 @@ impl SchemaIntrospectionQuery {
     /// that can also be converted with [`into_response`][SuspectedValidationBug::into_response].
     ///
     /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-    pub fn execute(
-        &self,
-        schema: &Valid<Schema>,
-        variable_values: &Valid<JsonMap>,
-    ) -> Result<Response, SuspectedValidationBug> {
+    pub fn execute(&self, schema: &Valid<Schema>, variable_values: &Valid<JsonMap>) -> Response {
         let operation = self.0.operations.get(None).unwrap();
-        debug_assert_eq!(operation.operation_type, OperationType::Query);
+        execute_introspection_only_query(schema, &self.0, operation, variable_values)
+    }
+}
 
-        // https://spec.graphql.org/October2021/#sec-Query
-        let object_type_name = operation.object_type();
-        let object_type_def =
-            schema
-                .get_object(object_type_name)
-                .ok_or_else(|| SuspectedValidationBug {
-                    message: format!(
-                    "Root operation type {object_type_name} is undefined or not an object type."
-                ),
-                    location: None,
-                })?;
-        let implementers_map = &OnceLock::new();
-        let initial_value = &IntrospectionRootResolver(SchemaWithCache {
-            schema,
-            implementers_map,
-        });
+/// Execute a query whose [root fields][Operation::root_fields] are all intropsection meta-fields:
+/// `__schema`, `__type`, or `__typename`.
+///
+/// Returns an error if `operation_name` does not [correspond to a an operation definition](https://spec.graphql.org/October2021/#GetOperation())
+pub fn execute_introspection_only_query(
+    schema: &Valid<Schema>,
+    document: &Valid<ExecutableDocument>,
+    operation: &Node<Operation>,
+    variable_values: &Valid<JsonMap>,
+) -> Response {
+    if operation.operation_type != OperationType::Query {
+        return Response::from_request_error(GraphQLError::new(
+            format!(
+                "execute_introspection_only_query called with a {}",
+                operation.operation_type.name()
+            ),
+            operation.location(),
+            &document.sources,
+        ));
+    }
 
-        let mut errors = Vec::new();
-        let path = None;
-        let data = execute_selection_set(
-            schema,
-            &self.0,
-            variable_values,
-            &mut errors,
-            path,
-            ExecutionMode::Normal,
-            object_type_def,
-            initial_value,
-            &operation.selection_set.selections,
-        );
-        Ok(Response {
-            data: data.into(),
-            errors,
-            extensions: Default::default(),
-        })
+    // https://spec.graphql.org/October2021/#sec-Query
+    let object_type_name = operation.object_type();
+    let Some(object_type_def) = schema.get_object(object_type_name) else {
+        return Response::from_request_error(GraphQLError::new(
+            "Undefined root operation type",
+            object_type_name.location(),
+            &document.sources,
+        ));
+    };
+    let implementers_map = &OnceLock::new();
+    let initial_value = &IntrospectionRootResolver(SchemaWithCache {
+        schema,
+        implementers_map,
+    });
+
+    let mut errors = Vec::new();
+    let path = None;
+    let data = execute_selection_set(
+        schema,
+        document,
+        variable_values,
+        &mut errors,
+        path,
+        ExecutionMode::Normal,
+        object_type_def,
+        initial_value,
+        &operation.selection_set.selections,
+    );
+    Response {
+        data: data.into(),
+        errors,
+        extensions: Default::default(),
     }
 }
 

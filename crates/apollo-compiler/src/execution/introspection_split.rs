@@ -9,6 +9,7 @@ use crate::executable::Operation;
 use crate::executable::OperationType;
 use crate::executable::Selection;
 use crate::executable::SelectionSet;
+use crate::execution::introspection_max_depth::DeeplyNestedIntrospectionListError;
 use crate::execution::GraphQLError;
 use crate::execution::Response;
 use crate::execution::SchemaIntrospectionQuery;
@@ -65,6 +66,7 @@ pub enum SchemaIntrospectionSplit {
 #[derive(Debug)]
 pub enum SchemaIntrospectionError {
     SuspectedValidationBug(SuspectedValidationBug),
+    DeeplyNestedIntrospectionList(DeeplyNestedIntrospectionListError),
     Unsupported {
         message: String,
         location: Option<SourceSpan>,
@@ -123,7 +125,9 @@ impl SchemaIntrospectionSplit {
                 .collect();
             let introspection_document =
                 make_single_operation_document(schema, document, new_operation, fragments);
-            Ok(Self::Only(SchemaIntrospectionQuery(introspection_document)))
+            Ok(Self::Only(
+                SchemaIntrospectionQuery::assume_only_intropsection_fields(introspection_document)?,
+            ))
         } else {
             let mut fragments_done = HashSet::with_hasher(Default::default());
             let mut new_documents = Split {
@@ -136,11 +140,13 @@ impl SchemaIntrospectionSplit {
                 &operation.selection_set,
             );
             Ok(Self::Both {
-                introspection_query: SchemaIntrospectionQuery(new_documents.introspection.build(
-                    schema,
-                    document,
-                    operation_selection_set.introspection,
-                )),
+                introspection_query: SchemaIntrospectionQuery::assume_only_intropsection_fields(
+                    new_documents.introspection.build(
+                        schema,
+                        document,
+                        operation_selection_set.introspection,
+                    ),
+                )?,
                 filtered_document: new_documents.other.build(
                     schema,
                     document,
@@ -244,7 +250,7 @@ fn make_single_operation_document(
         .expect("filtering a valid document should result in a valid document")
 }
 
-fn get_fragment<'doc>(
+pub(crate) fn get_fragment<'doc>(
     document: &'doc Valid<ExecutableDocument>,
     name: &Name,
 ) -> Result<&'doc Node<Fragment>, SchemaIntrospectionError> {
@@ -592,6 +598,9 @@ impl SchemaIntrospectionError {
     pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
         match self {
             Self::SuspectedValidationBug(s) => s.into_graphql_error(sources),
+            Self::DeeplyNestedIntrospectionList(e) => {
+                GraphQLError::new("Maximum introspection depth exceeded", e.location, sources)
+            }
             Self::Unsupported { message, location } => {
                 GraphQLError::new(message, location, sources)
             }

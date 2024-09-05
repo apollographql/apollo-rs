@@ -233,3 +233,57 @@ fn is_introspection_repeated_fragment() {
             .is_introspection(&query_doc_direct)
     );
 }
+
+#[test]
+fn iter_root_fields() {
+    let schema = r#"
+        type Query {
+          f1: T
+          f2: Int
+          f3: Int
+        }
+        type T {
+          inner: String
+        }
+    "#;
+    let doc = r#"
+      { f1 { inner } ... { f2 } ... F ... F }
+      fragment F on Query { f3 }
+    "#;
+    let schema = Schema::parse_and_validate(schema, "").unwrap();
+    let doc = ExecutableDocument::parse_and_validate(&schema, doc, "").unwrap();
+    let op = doc.operations.get(None).unwrap();
+    assert_eq!(
+        op.root_fields(&doc)
+            .map(|f| f.name.as_str())
+            .collect::<Vec<_>>(),
+        ["f1", "f2", "f3", "f3"]
+    );
+}
+
+#[test]
+fn iter_all_fields() {
+    let schema = r#"
+        type Query {
+          f1: T
+          f2: Int
+          f3: Int
+        }
+        type T {
+          inner: String
+        }
+    "#;
+    let doc = r#"
+      { f1 { inner } ... { f2 } ... F ... F }
+      fragment F on Query { f3 }
+    "#;
+    let schema = Schema::parse_and_validate(schema, "").unwrap();
+    let doc = ExecutableDocument::parse_and_validate(&schema, doc, "").unwrap();
+    let op = doc.operations.get(None).unwrap();
+    assert_eq!(
+        op.all_fields(&doc)
+            .map(|f| f.name.as_str())
+            .collect::<Vec<_>>(),
+        ["f1", "inner", "f2", "f3", "f3"]
+    );
+}

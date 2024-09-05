@@ -9,13 +9,16 @@ mod resolver;
 mod engine;
 mod input_coercion;
 mod introspection_execute;
+mod introspection_max_depth;
 mod introspection_split;
 mod response;
 mod result_coercion;
 
 pub use self::input_coercion::coerce_variable_values;
 pub use self::input_coercion::InputCoercionError;
+pub use self::introspection_execute::execute_introspection_only_query;
 pub use self::introspection_execute::SchemaIntrospectionQuery;
+pub use self::introspection_max_depth::check_introspection_max_depth;
 pub use self::introspection_split::SchemaIntrospectionError;
 pub use self::introspection_split::SchemaIntrospectionSplit;
 pub use self::response::GraphQLError;
