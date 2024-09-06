@@ -35,8 +35,6 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
     if let Some(TokenKind::Name) = p.peek() {
         if p.peek_data().unwrap() == "implements" {
             implements_interfaces(p);
-        } else {
-            p.err("unexpected Name");
         }
     }
 
