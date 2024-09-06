@@ -35,6 +35,64 @@ fn test_orphan_extensions() {
 }
 
 #[test]
+fn test_orphan_extensions_schema_with_default_query_name() {
+    let input = r#"
+        extend schema { query: Query }
+        type Query { x: Int }
+    "#;
+
+    let schema = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap();
+
+    schema.validate().unwrap();
+}
+
+#[test]
+fn test_orphan_extensions_schema_def_with_extensions() {
+    let input = r#"
+        extend schema { query: Query }
+        extend schema { subscription: S }
+        schema { mutation: Mutation }
+        type Query { x: Int }
+        type Mutation { y: Int }
+        type S { z: Int }
+    "#;
+
+    let schema = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap();
+
+    schema.validate().unwrap();
+}
+
+#[test]
+fn test_invalid_orphan_extensions_schema_def_with_duplicate_root_operation() {
+    let input = r#"
+        extend schema { query: Query }
+        extend schema { subscription: S }
+        schema { mutation: Mutation, query: AnotherQuery }
+        type Query { x: Int }
+        type Mutation { y: Int }
+        type S { z: Int }
+        type AnotherQuery { a: String }
+    "#;
+
+    let invalid = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap_err();
+
+    let err = invalid.errors.to_string();
+    assert!(err.contains("duplicate definitions for the `query` root operation type"));
+}
+
+#[test]
 fn test_orphan_extensions_kind_mismatch() {
     let input = r#"
     extend type T @dir
