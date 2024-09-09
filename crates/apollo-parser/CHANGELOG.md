@@ -16,6 +16,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [0.8.2](https://crates.io/crates/apollo-parser/0.8.2) - 2024-09-09
+
+## Fixes
+- **Allow object type definition syntax without fields - [trevor-scheer], [pull/901].**
+  Object types must have at least one field during validation,
+  but at the syntax level field definitions can all be in `extend type` extensions,
+  with the main `type` definition not including `{}` curly braces or fields.
+
+[trevor-scheer]: https://github.com/trevor-scheer
+[pull/901]: https://github.com/apollographql/apollo-rs/pull/901
+
 # [0.8.1](https://crates.io/crates/apollo-parser/0.8.1) - 2024-08-20
 
 ## Features
