@@ -17,7 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.0.0-beta.21](https://crates.io/crates/apollo-compiler/1.0.0-beta.21) - 2024-08-03
+# [1.0.0-beta.22](https://crates.io/crates/apollo-compiler/1.0.0-beta.21) - 2024-09-09
+
+## Fixes
+- **Allow adopted orphan schema extensions to define root operations - [trevor-scheer], [pull/907].**
+  This is only relevant in the non-standard `adopt_orphan_extensions` mode.
+
+[trevor-scheer]: https://github.com/trevor-scheer
+[pull/907]: https://github.com/apollographql/apollo-rs/pull/907
+
+
+# [1.0.0-beta.21](https://crates.io/crates/apollo-compiler/1.0.0-beta.21) - 2024-09-03
 
 ## BREAKING
 

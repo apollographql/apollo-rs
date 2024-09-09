@@ -273,53 +273,35 @@ impl SchemaBuilder {
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
                 // This a macro rather than a closure to generate separate `static`s
                 let schema_def = schema.schema_definition.make_mut();
-                let mut has_implicit_root_operation = false;
-                'root_operation_loop: for (operation_type, root_operation) in [
-                    (OperationType::Query, &mut schema_def.query),
-                    (OperationType::Mutation, &mut schema_def.mutation),
-                    (OperationType::Subscription, &mut schema_def.subscription),
-                ] {
-                    let name = operation_type.default_type_name();
-                    // If `adopt_orphan_extensions` is enabled, we should scan
-                    // each orphan schema extension for root operations. If we
-                    // see one, we should skip adding that particular implicit
-                    // root operation since the extensions will be applied
-                    // further down.
-                    if adopt_orphan_extensions {
-                        for ext in &orphan_extensions {
-                            for node in &ext.root_operations {
-                                let current_operation_type = node.as_ref().0;
-                                if current_operation_type == operation_type {
-                                    continue 'root_operation_loop;
-                                }
-                            }
-                        }
-                    }
-
-                    if schema.types.get(&name).is_some_and(|def| def.is_object()) {
-                        *root_operation = Some(name.into());
-                        has_implicit_root_operation = true
-                    }
-                }
-
-                let apply_schema_extensions =
-                    // https://github.com/apollographql/apollo-rs/issues/682
-                    // If we have no explict `schema` definition but do have object type(s)
-                    // with a default type name for root operations,
-                    // an implicit schema definition is generated with those root operations.
-                    // That implict definition can be extended:
-                    has_implicit_root_operation ||
+                if adopt_orphan_extensions {
                     // https://github.com/apollographql/apollo-rs/pull/678
                     // In this opt-in mode we unconditionally assume
                     // an implicit schema definition to extend
-                    adopt_orphan_extensions;
-                if apply_schema_extensions {
                     for ext in &orphan_extensions {
                         schema_def.extend_ast(&mut errors, ext)
                     }
+                    if schema_def.query.is_none()
+                        && schema_def.mutation.is_none()
+                        && schema_def.subscription.is_none()
+                    {
+                        add_implicit_root_types(schema_def, &schema.types);
+                    }
                 } else {
-                    for ext in &orphan_extensions {
-                        errors.push(ext.location(), BuildError::OrphanSchemaExtension)
+                    let has_implicit_root_operation =
+                        add_implicit_root_types(schema_def, &schema.types);
+                    if has_implicit_root_operation {
+                        // https://github.com/apollographql/apollo-rs/issues/682
+                        // If we have no explict `schema` definition but do have object type(s)
+                        // with a default type name for root operations,
+                        // an implicit schema definition is generated with those root operations.
+                        // That implict definition can be extended:
+                        for ext in &orphan_extensions {
+                            schema_def.extend_ast(&mut errors, ext)
+                        }
+                    } else {
+                        for ext in &orphan_extensions {
+                            errors.push(ext.location(), BuildError::OrphanSchemaExtension)
+                        }
                     }
                 }
             }
@@ -341,6 +323,25 @@ impl SchemaBuilder {
         }
         (schema, errors)
     }
+}
+
+fn add_implicit_root_types(
+    schema_def: &mut SchemaDefinition,
+    types: &IndexMap<Name, ExtendedType>,
+) -> bool {
+    let mut has_implicit_root_operation = false;
+    for (operation_type, root_operation) in [
+        (OperationType::Query, &mut schema_def.query),
+        (OperationType::Mutation, &mut schema_def.mutation),
+        (OperationType::Subscription, &mut schema_def.subscription),
+    ] {
+        let name = operation_type.default_type_name();
+        if types.get(&name).is_some_and(|def| def.is_object()) {
+            *root_operation = Some(name.into());
+            has_implicit_root_operation = true
+        }
+    }
+    has_implicit_root_operation
 }
 
 fn adopt_type_extensions(
