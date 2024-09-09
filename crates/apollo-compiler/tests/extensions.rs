@@ -93,6 +93,25 @@ fn test_invalid_orphan_extensions_schema_def_with_duplicate_root_operation() {
 }
 
 #[test]
+fn test_orphan_schema_extension_disables_implicit_root_types() {
+    let input = r#"
+        extend schema { query: Query }
+        type Query { viruses: [Virus] }
+        type Virus { mutations: [Mutation] }
+        type Mutation { something: String }
+    "#;
+
+    let schema = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap();
+
+    assert!(schema.schema_definition.mutation.is_none());
+    schema.validate().unwrap();
+}
+
+#[test]
 fn test_orphan_extensions_kind_mismatch() {
     let input = r#"
     extend type T @dir
