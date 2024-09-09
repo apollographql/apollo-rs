@@ -21,9 +21,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 - **Allow object type definition syntax without fields - [trevor-scheer], [pull/901].**
-  Object types must have at least one field during validation,
-  but at the syntax level field definitions can all be in `extend type` extensions,
-  with the main `type` definition not including `{}` curly braces or fields.
+  It is syntactically valid for an object type to have no fields
+  when the `{}` curly braces are omitted.
+  During validation, this is also valid as long as an extension for the type
+  also exists which does include field definitions.
 
 [trevor-scheer]: https://github.com/trevor-scheer
 [pull/901]: https://github.com/apollographql/apollo-rs/pull/901
