@@ -280,7 +280,10 @@ impl SchemaBuilder {
                     for ext in &orphan_extensions {
                         schema_def.extend_ast(&mut errors, ext)
                     }
-                    if orphan_extensions.is_empty() {
+                    if schema_def.query.is_none()
+                        && schema_def.mutation.is_none()
+                        && schema_def.subscription.is_none()
+                    {
                         add_implicit_root_types(schema_def, &schema.types);
                     }
                 } else {
