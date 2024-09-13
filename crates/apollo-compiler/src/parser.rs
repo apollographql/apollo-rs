@@ -274,14 +274,14 @@ impl Parser {
         let executable_definitions_are_errors = false;
         let type_system_definitions_are_errors = false;
         builder.add_ast_document_not_adding_sources(&ast, executable_definitions_are_errors);
-        let (schema, mut errors) = builder.build_inner();
+        let (mut schema, mut errors) = builder.build_inner();
         let executable = crate::executable::from_ast::document_from_ast(
             Some(&schema),
             &ast,
             &mut errors,
             type_system_definitions_are_errors,
         );
-        crate::schema::validation::validate_schema(&mut errors, &schema);
+        crate::schema::validation::validate_schema(&mut errors, &mut schema);
         crate::executable::validation::validate_executable_document(
             &mut errors,
             &schema,

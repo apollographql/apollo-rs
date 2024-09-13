@@ -329,8 +329,8 @@ impl Schema {
     ) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut builder = Schema::builder();
         Parser::default().parse_into_schema_builder(source_text, path, &mut builder);
-        let (schema, mut errors) = builder.build_inner();
-        validation::validate_schema(&mut errors, &schema);
+        let (mut schema, mut errors) = builder.build_inner();
+        validation::validate_schema(&mut errors, &mut schema);
         errors.into_valid_result(schema)
     }
 
@@ -346,9 +346,9 @@ impl Schema {
         SchemaBuilder::new()
     }
 
-    pub fn validate(self) -> Result<Valid<Self>, WithErrors<Self>> {
+    pub fn validate(mut self) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut errors = DiagnosticList::new(self.sources.clone());
-        validation::validate_schema(&mut errors, &self);
+        validation::validate_schema(&mut errors, &mut self);
         errors.into_valid_result(self)
     }
 
