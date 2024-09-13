@@ -1,6 +1,5 @@
 use crate::ast;
 use crate::collections::HashMap;
-use crate::schema::ExtendedType;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
@@ -62,17 +61,6 @@ impl FindRecursiveInputValue<'_> {
         let mut recursion_stack = RecursionStack::with_root(input_object.name.clone());
         FindRecursiveInputValue { schema }
             .input_object_definition(recursion_stack.guard(), input_object)
-    }
-}
-
-pub(crate) fn validate_input_object_definitions(
-    diagnostics: &mut DiagnosticList,
-    schema: &crate::Schema,
-) {
-    for ty in schema.types.values() {
-        if let ExtendedType::InputObject(input_object) = ty {
-            validate_input_object_definition(diagnostics, schema, input_object);
-        }
     }
 }
 

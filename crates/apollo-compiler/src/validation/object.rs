@@ -1,21 +1,9 @@
 use crate::ast;
-use crate::schema::ExtendedType;
 use crate::schema::ObjectType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;
 use crate::Node;
-
-pub(crate) fn validate_object_type_definitions(
-    diagnostics: &mut DiagnosticList,
-    schema: &crate::Schema,
-) {
-    for ty in schema.types.values() {
-        if let ExtendedType::Object(object) = ty {
-            validate_object_type_definition(diagnostics, schema, object)
-        }
-    }
-}
 
 pub(crate) fn validate_object_type_definition(
     diagnostics: &mut DiagnosticList,
