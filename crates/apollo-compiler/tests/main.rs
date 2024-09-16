@@ -5,6 +5,7 @@ mod field_type;
 mod introspection;
 mod introspection_max_depth;
 mod introspection_split;
+mod locations;
 mod merge_schemas;
 /// Formerly in src/lib.rs
 mod misc;

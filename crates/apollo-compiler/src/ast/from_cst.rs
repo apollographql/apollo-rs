@@ -745,7 +745,8 @@ impl Convert for cst::ObjectField {
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         let name = self.name()?.convert(file_id)?;
-        let value = with_location(file_id, self.syntax(), self.value()?.convert(file_id)?);
+        let value = self.value()?;
+        let value = with_location(file_id, value.syntax(), value.convert(file_id)?);
         Some((name, value))
     }
 }
