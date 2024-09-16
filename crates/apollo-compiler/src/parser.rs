@@ -68,7 +68,7 @@ pub struct SourceSpan {
 }
 
 /// A line number and column number within a GraphQL document.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct LineColumn {
     /// The line number for this location, starting at 1 for the first line.
@@ -76,6 +76,12 @@ pub struct LineColumn {
     /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
     /// Values) like [`str::chars`].
     pub column: usize,
+}
+
+impl std::fmt::Debug for LineColumn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}", self.line, self.column)
+    }
 }
 
 /// Parse a schema and executable document from the given source text
