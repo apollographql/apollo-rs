@@ -66,10 +66,7 @@ fn test_3_nested_fields_lists() {
         GraphQLError {
             message: "Maximum introspection depth exceeded",
             locations: [
-                LineColumn {
-                    line: 8,
-                    column: 19,
-                },
+                8:19,
             ],
             path: [],
             extensions: {},
@@ -120,10 +117,7 @@ fn test_3_nested_input_fields_lists() {
         GraphQLError {
             message: "Maximum introspection depth exceeded",
             locations: [
-                LineColumn {
-                    line: 8,
-                    column: 19,
-                },
+                8:19,
             ],
             path: [],
             extensions: {},
@@ -172,10 +166,7 @@ fn test_3_nested_interfaces_lists() {
         GraphQLError {
             message: "Maximum introspection depth exceeded",
             locations: [
-                LineColumn {
-                    line: 7,
-                    column: 17,
-                },
+                7:17,
             ],
             path: [],
             extensions: {},
@@ -224,10 +215,7 @@ fn test_3_nested_possible_types_lists() {
         GraphQLError {
             message: "Maximum introspection depth exceeded",
             locations: [
-                LineColumn {
-                    line: 7,
-                    column: 17,
-                },
+                7:17,
             ],
             path: [],
             extensions: {},
@@ -294,10 +282,7 @@ fn test_3_nested_possible_types_lists_with_inline_fragments() {
         GraphQLError {
             message: "Maximum introspection depth exceeded",
             locations: [
-                LineColumn {
-                    line: 11,
-                    column: 25,
-                },
+                11:25,
             ],
             path: [],
             extensions: {},
@@ -367,10 +352,7 @@ fn test_3_nested_possible_types_lists_with_named_fragments() {
         GraphQLError {
             message: "Maximum introspection depth exceeded",
             locations: [
-                LineColumn {
-                    line: 20,
-                    column: 9,
-                },
+                20:9,
             ],
             path: [],
             extensions: {},
