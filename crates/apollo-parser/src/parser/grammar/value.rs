@@ -52,21 +52,22 @@ pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
             p.bump(SyntaxKind::STRING);
         }
         Some(TokenKind::Name) => {
-            let node = p.peek_data().unwrap();
-            match node {
-                "true" => {
-                    let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
-                    p.bump(SyntaxKind::true_KW);
+            if let Some(token) = p.peek_token() {
+                match token.data() {
+                    "true" => {
+                        let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
+                        p.bump(SyntaxKind::true_KW);
+                    }
+                    "false" => {
+                        let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
+                        p.bump(SyntaxKind::false_KW);
+                    }
+                    "null" => {
+                        let _g = p.start_node(SyntaxKind::NULL_VALUE);
+                        p.bump(SyntaxKind::null_KW)
+                    }
+                    _ => enum_value(p),
                 }
-                "false" => {
-                    let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
-                    p.bump(SyntaxKind::false_KW);
-                }
-                "null" => {
-                    let _g = p.start_node(SyntaxKind::NULL_VALUE);
-                    p.bump(SyntaxKind::null_KW)
-                }
-                _ => enum_value(p),
             }
         }
         Some(T!['[']) => list_value(p, constness),
