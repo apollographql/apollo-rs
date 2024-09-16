@@ -4,6 +4,7 @@ use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
 use crate::schema;
+use crate::schema::validation::BuiltInScalars;
 use crate::schema::Component;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
@@ -133,6 +134,7 @@ pub(crate) fn validate_field(
 pub(crate) fn validate_field_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     field: &Node<ast::FieldDefinition>,
 ) {
     super::directive::validate_directives(
@@ -147,6 +149,7 @@ pub(crate) fn validate_field_definition(
     super::input_object::validate_argument_definitions(
         diagnostics,
         schema,
+        built_in_scalars,
         &field.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
     );
@@ -155,15 +158,18 @@ pub(crate) fn validate_field_definition(
 pub(crate) fn validate_field_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     fields: &IndexMap<Name, Component<ast::FieldDefinition>>,
 ) {
     for field in fields.values() {
-        validate_field_definition(diagnostics, schema, field);
+        validate_field_definition(diagnostics, schema, built_in_scalars, field);
 
         // Field types in Object Types must be of output type
         let loc = field.location();
-        let type_location = field.ty.inner_named_type().location();
-        if let Some(field_ty) = schema.types.get(field.ty.inner_named_type()) {
+        let named_type = field.ty.inner_named_type();
+        let type_location = named_type.location();
+        let is_built_in = built_in_scalars.record_type_ref(schema, named_type);
+        if let Some(field_ty) = schema.types.get(named_type) {
             if !field_ty.is_output_type() {
                 // Output types are unreachable
                 diagnostics.push(
@@ -175,11 +181,13 @@ pub(crate) fn validate_field_definitions(
                     },
                 );
             }
+        } else if is_built_in {
+            // `validate_schema()` will insert the missing definition
         } else {
             diagnostics.push(
                 type_location,
                 DiagnosticData::UndefinedDefinition {
-                    name: field.ty.inner_named_type().clone(),
+                    name: named_type.clone(),
                 },
             );
         }

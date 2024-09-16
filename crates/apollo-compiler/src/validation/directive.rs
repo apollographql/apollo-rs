@@ -5,6 +5,7 @@ use crate::collections::HashSet;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
 use crate::schema;
+use crate::schema::validation::BuiltInScalars;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
 use crate::validation::RecursionGuard;
@@ -140,11 +141,13 @@ impl FindRecursiveDirective<'_> {
 pub(crate) fn validate_directive_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     def: &Node<ast::DirectiveDefinition>,
 ) {
     super::input_object::validate_argument_definitions(
         diagnostics,
         schema,
+        built_in_scalars,
         &def.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
     );
@@ -179,9 +182,10 @@ pub(crate) fn validate_directive_definition(
 pub(crate) fn validate_directive_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
 ) {
     for directive_definition in schema.directive_definitions.values() {
-        validate_directive_definition(diagnostics, schema, directive_definition);
+        validate_directive_definition(diagnostics, schema, built_in_scalars, directive_definition);
     }
 }
 

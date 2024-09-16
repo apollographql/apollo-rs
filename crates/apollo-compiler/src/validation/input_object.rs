@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::collections::HashMap;
+use crate::schema::validation::BuiltInScalars;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
@@ -67,6 +68,7 @@ impl FindRecursiveInputValue<'_> {
 pub(crate) fn validate_input_object_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     input_object: &Node<InputObjectType>,
 ) {
     super::directive::validate_directives(
@@ -109,6 +111,7 @@ pub(crate) fn validate_input_object_definition(
     validate_input_value_definitions(
         diagnostics,
         schema,
+        built_in_scalars,
         &fields,
         ast::DirectiveLocation::InputFieldDefinition,
     );
@@ -134,10 +137,17 @@ pub(crate) fn validate_input_object_definition(
 pub(crate) fn validate_argument_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) {
-    validate_input_value_definitions(diagnostics, schema, input_values, directive_location);
+    validate_input_value_definitions(
+        diagnostics,
+        schema,
+        built_in_scalars,
+        input_values,
+        directive_location,
+    );
 
     let mut seen: HashMap<Name, &Node<ast::InputValueDefinition>> = HashMap::default();
     for input_value in input_values {
@@ -163,6 +173,7 @@ pub(crate) fn validate_argument_definitions(
 pub(crate) fn validate_input_value_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) {
@@ -176,7 +187,9 @@ pub(crate) fn validate_input_value_definitions(
         );
         // Input values must only contain input types.
         let loc = input_value.location();
-        if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
+        let named_type = input_value.ty.inner_named_type();
+        let is_built_in = built_in_scalars.record_type_ref(schema, named_type);
+        if let Some(field_ty) = schema.types.get(named_type) {
             if !field_ty.is_input_type() {
                 diagnostics.push(
                     loc,
@@ -187,8 +200,9 @@ pub(crate) fn validate_input_value_definitions(
                     },
                 );
             }
+        } else if is_built_in {
+            // `validate_schema()` will insert the missing definition
         } else {
-            let named_type = input_value.ty.inner_named_type();
             let loc = named_type.location();
             diagnostics.push(
                 loc,

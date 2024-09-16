@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::schema::validation::BuiltInScalars;
 use crate::schema::ObjectType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::field::validate_field_definitions;
@@ -8,6 +9,7 @@ use crate::Node;
 pub(crate) fn validate_object_type_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     object: &Node<ObjectType>,
 ) {
     super::directive::validate_directives(
@@ -20,7 +22,7 @@ pub(crate) fn validate_object_type_definition(
     );
 
     // Object Type field validations.
-    validate_field_definitions(diagnostics, schema, &object.fields);
+    validate_field_definitions(diagnostics, schema, built_in_scalars, &object.fields);
 
     // validate there is at least one field on the type
     // https://spec.graphql.org/draft/#sel-FAHZhCFDBAACDA4qe

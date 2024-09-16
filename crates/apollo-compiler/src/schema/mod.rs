@@ -51,8 +51,18 @@ pub struct Schema {
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
 
-    /// Definitions and extensions of built-in scalars, introspection types,
-    /// and explicit types
+    /// Definitions and extensions of all types relevant to a schema:
+    ///
+    /// * Explict types in parsed input files or added programatically.
+    ///
+    /// * [Schema-introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+    ///   types such as `__Schema`, `__Field`, etc.
+    ///
+    /// * When a `Schema` is initially created or parsed,
+    ///   all [Built-in scalars](https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars).
+    ///   After validation, the Rust `types` map in a `Valid<Schema>` only contains
+    ///   built-in scalar definitions for scalars that are used in the schema.
+    ///   We reflect in this Rust API the behavior of `__Schema.types` in GraphQL introspection.
     pub types: IndexMap<NamedType, ExtendedType>,
 }
 
