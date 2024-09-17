@@ -17,16 +17,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.23](https://crates.io/crates/apollo-compiler/1.0.0-beta.23) - 2024-09-17
 
 ## Fixes
 - **Validation adds/removes built-in scalar definitions based on usage - [SimonSapin], [pull/911].**
+- **Fix source spans for object field values - [dylan-apollo], [pull/912].**
 
 [SimonSapin]: https://github.com/SimonSapin
+[dylan-apollo]: https://github.com/dylan-apollo
 [pull/911]: https://github.com/apollographql/apollo-rs/pull/911
+[pull/912]: https://github.com/apollographql/apollo-rs/pull/912
 
 
-# [1.0.0-beta.22](https://crates.io/crates/apollo-compiler/1.0.0-beta.21) - 2024-09-09
+# [1.0.0-beta.22](https://crates.io/crates/apollo-compiler/1.0.0-beta.22) - 2024-09-09
 
 ## Fixes
 - **Allow adopted orphan schema extensions to define root operations - [trevor-scheer], [pull/907].**
