@@ -1618,11 +1618,11 @@ mod invalid_input_object_values {
       ",
             expect![[r#"
                 Error: expected value of type Boolean!, found null
-                    ╭─[query.graphql:5:7]
+                    ╭─[query.graphql:5:21]
                     │
                   5 │       nonNullField: null,
-                    │       ─────────┬────────  
-                    │                ╰────────── provided value is null
+                    │                     ──┬─  
+                    │                       ╰─── provided value is null
                     │
                     ├─[schema.graphql:61:17]
                     │
@@ -1649,11 +1649,11 @@ mod invalid_input_object_values {
       "#,
             expect![[r#"
                 Error: field `invalidField` does not exist on `ComplexInput`
-                    ╭─[query.graphql:5:7]
+                    ╭─[query.graphql:5:21]
                     │
                   5 │       invalidField: "value"
-                    │       ──────────┬──────────  
-                    │                 ╰──────────── value does not exist on `ComplexInput` input object
+                    │                     ───┬───  
+                    │                        ╰───── value does not exist on `ComplexInput` input object
                     │
                     ├─[schema.graphql:59:1]
                     │
@@ -1859,11 +1859,11 @@ mod variable_default_values {
                     │              ╰───────────── field defined here
                 ────╯
                 Error: expected value of type Boolean!, found null
-                    ╭─[query.graphql:4:24]
+                    ╭─[query.graphql:4:39]
                     │
                   4 │   $c: ComplexInput = { requiredField: null, intField: null }
-                    │                        ─────────┬─────────  
-                    │                                 ╰─────────── provided value is null
+                    │                                       ──┬─  
+                    │                                         ╰─── provided value is null
                     │
                     ├─[schema.graphql:60:18]
                     │
@@ -1937,11 +1937,11 @@ mod variable_default_values {
       "#,
             expect![[r#"
                 Error: expected value of type Boolean!, found an integer
-                    ╭─[query.graphql:2:24]
+                    ╭─[query.graphql:2:39]
                     │
                   2 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
-                    │                        ─────────┬────────  
-                    │                                 ╰────────── provided value is an integer
+                    │                                       ─┬─  
+                    │                                        ╰─── provided value is an integer
                     │
                     ├─[schema.graphql:60:18]
                     │
@@ -1950,11 +1950,11 @@ mod variable_default_values {
                     │                      ╰───── expected type declared here as Boolean!
                 ────╯
                 Error: expected value of type Int, found a string
-                    ╭─[query.graphql:2:44]
+                    ╭─[query.graphql:2:54]
                     │
                   2 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
-                    │                                            ───────┬───────  
-                    │                                                   ╰───────── provided value is a string
+                    │                                                      ──┬──  
+                    │                                                        ╰──── provided value is a string
                     │
                     ├─[schema.graphql:62:13]
                     │
