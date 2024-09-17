@@ -395,18 +395,18 @@ Error: expected value of type String, found an integer
      │                                ╰── provided value is an integer
 ─────╯
 Error: expected value of type Boolean!, found null
-     ╭─[0102_invalid_string_values.graphql:271:7]
+     ╭─[0102_invalid_string_values.graphql:271:21]
      │
   33 │   nonNullField: Boolean! = false
      │                 ────┬───  
      │                     ╰───── expected type declared here as Boolean!
      │ 
  271 │       nonNullField: null,
-     │       ─────────┬────────  
-     │                ╰────────── provided value is null
+     │                     ──┬─  
+     │                       ╰─── provided value is null
 ─────╯
 Error: field `invalidField` does not exist on `ComplexInput`
-     ╭─[0102_invalid_string_values.graphql:280:7]
+     ╭─[0102_invalid_string_values.graphql:280:21]
      │
   31 │ ╭─▶ input ComplexInput {
      ┆ ┆   
@@ -415,8 +415,8 @@ Error: field `invalidField` does not exist on `ComplexInput`
      │ ╰─────── input object defined here
      │ 
  280 │           invalidField: "value"
-     │           ──────────┬──────────  
-     │                     ╰──────────── value does not exist on `ComplexInput` input object
+     │                         ───┬───  
+     │                            ╰───── value does not exist on `ComplexInput` input object
 ─────╯
 Error: expected value of type Boolean!, found a string
      ╭─[0102_invalid_string_values.graphql:287:20]
@@ -474,15 +474,15 @@ Error: the required field `ComplexInput.requiredField` is not provided
      │                                         ╰───────────────────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type Boolean!, found null
-     ╭─[0102_invalid_string_values.graphql:296:24]
+     ╭─[0102_invalid_string_values.graphql:296:39]
      │
   32 │   requiredField: Boolean!
      │                  ────┬───  
      │                      ╰───── expected type declared here as Boolean!
      │ 
  296 │   $c: ComplexInput = { requiredField: null, intField: null }
-     │                        ─────────┬─────────  
-     │                                 ╰─────────── provided value is null
+     │                                       ──┬─  
+     │                                         ╰─── provided value is null
 ─────╯
 Error: expected value of type Int, found a string
      ╭─[0102_invalid_string_values.graphql:306:13]
@@ -512,26 +512,26 @@ Error: expected value of type ComplexInput, found a string
      │                              ╰───────── provided value is a string
 ─────╯
 Error: expected value of type Boolean!, found an integer
-     ╭─[0102_invalid_string_values.graphql:318:24]
+     ╭─[0102_invalid_string_values.graphql:318:39]
      │
   32 │   requiredField: Boolean!
      │                  ────┬───  
      │                      ╰───── expected type declared here as Boolean!
      │ 
  318 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
-     │                        ─────────┬────────  
-     │                                 ╰────────── provided value is an integer
+     │                                       ─┬─  
+     │                                        ╰─── provided value is an integer
 ─────╯
 Error: expected value of type Int, found a string
-     ╭─[0102_invalid_string_values.graphql:318:44]
+     ╭─[0102_invalid_string_values.graphql:318:54]
      │
   34 │   intField: Int
      │             ─┬─  
      │              ╰─── expected type declared here as Int
      │ 
  318 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
-     │                                            ───────┬───────  
-     │                                                   ╰───────── provided value is a string
+     │                                                      ──┬──  
+     │                                                        ╰──── provided value is a string
 ─────╯
 Error: the required field `ComplexInput.requiredField` is not provided
      ╭─[0102_invalid_string_values.graphql:326:22]
