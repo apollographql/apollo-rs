@@ -49,7 +49,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.12.0"
+apollo-smith = "0.13.0"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
