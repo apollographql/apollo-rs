@@ -51,8 +51,18 @@ pub struct Schema {
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
 
-    /// Definitions and extensions of built-in scalars, introspection types,
-    /// and explicit types
+    /// Definitions and extensions of all types relevant to a schema:
+    ///
+    /// * Explict types in parsed input files or added programatically.
+    ///
+    /// * [Schema-introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+    ///   types such as `__Schema`, `__Field`, etc.
+    ///
+    /// * When a `Schema` is initially created or parsed,
+    ///   all [Built-in scalars](https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars).
+    ///   After validation, the Rust `types` map in a `Valid<Schema>` only contains
+    ///   built-in scalar definitions for scalars that are used in the schema.
+    ///   We reflect in this Rust API the behavior of `__Schema.types` in GraphQL introspection.
     pub types: IndexMap<NamedType, ExtendedType>,
 }
 
@@ -329,8 +339,8 @@ impl Schema {
     ) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut builder = Schema::builder();
         Parser::default().parse_into_schema_builder(source_text, path, &mut builder);
-        let (schema, mut errors) = builder.build_inner();
-        validation::validate_schema(&mut errors, &schema);
+        let (mut schema, mut errors) = builder.build_inner();
+        validation::validate_schema(&mut errors, &mut schema);
         errors.into_valid_result(schema)
     }
 
@@ -346,9 +356,9 @@ impl Schema {
         SchemaBuilder::new()
     }
 
-    pub fn validate(self) -> Result<Valid<Self>, WithErrors<Self>> {
+    pub fn validate(mut self) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut errors = DiagnosticList::new(self.sources.clone());
-        validation::validate_schema(&mut errors, &self);
+        validation::validate_schema(&mut errors, &mut self);
         errors.into_valid_result(self)
     }
 

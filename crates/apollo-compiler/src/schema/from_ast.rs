@@ -7,7 +7,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
-    schema: Schema,
+    pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
     pub(crate) errors: DiagnosticList,
@@ -28,43 +28,44 @@ impl Default for SchemaBuilder {
 }
 
 impl SchemaBuilder {
+    pub(crate) fn built_in() -> &'static Self {
+        static BUILT_IN: std::sync::OnceLock<SchemaBuilder> = std::sync::OnceLock::new();
+        BUILT_IN.get_or_init(|| {
+            let mut builder = SchemaBuilder {
+                adopt_orphan_extensions: false,
+                schema: Schema {
+                    sources: Default::default(),
+                    schema_definition: Node::new(SchemaDefinition {
+                        description: None,
+                        directives: DirectiveList::default(),
+                        query: None,
+                        mutation: None,
+                        subscription: None,
+                    }),
+                    directive_definitions: IndexMap::with_hasher(Default::default()),
+                    types: IndexMap::with_hasher(Default::default()),
+                },
+                schema_definition: SchemaDefinitionStatus::NoneSoFar {
+                    orphan_extensions: Vec::new(),
+                },
+                orphan_type_extensions: IndexMap::with_hasher(Default::default()),
+                errors: DiagnosticList::new(Default::default()),
+            };
+            let input = include_str!("../built_in_types.graphql").to_owned();
+            let path = "built_in.graphql";
+            let id = FileId::BUILT_IN;
+            let ast = ast::Document::parser().parse_ast_inner(input, path, id, &mut builder.errors);
+            let executable_definitions_are_errors = true;
+            builder.add_ast_document(&ast, executable_definitions_are_errors);
+            assert!(builder.errors.is_empty());
+            builder
+        })
+    }
+
     /// Returns a new schema builder initialized with built-in directives, built-in scalars,
     /// and introspection types
     pub fn new() -> Self {
-        static BUILT_IN_TYPES: std::sync::OnceLock<SchemaBuilder> = std::sync::OnceLock::new();
-        BUILT_IN_TYPES
-            .get_or_init(|| {
-                let mut builder = SchemaBuilder {
-                    adopt_orphan_extensions: false,
-                    schema: Schema {
-                        sources: Default::default(),
-                        schema_definition: Node::new(SchemaDefinition {
-                            description: None,
-                            directives: DirectiveList::default(),
-                            query: None,
-                            mutation: None,
-                            subscription: None,
-                        }),
-                        directive_definitions: IndexMap::with_hasher(Default::default()),
-                        types: IndexMap::with_hasher(Default::default()),
-                    },
-                    schema_definition: SchemaDefinitionStatus::NoneSoFar {
-                        orphan_extensions: Vec::new(),
-                    },
-                    orphan_type_extensions: IndexMap::with_hasher(Default::default()),
-                    errors: DiagnosticList::new(Default::default()),
-                };
-                let input = include_str!("../built_in_types.graphql").to_owned();
-                let path = "built_in.graphql";
-                let id = FileId::BUILT_IN;
-                let ast =
-                    ast::Document::parser().parse_ast_inner(input, path, id, &mut builder.errors);
-                let executable_definitions_are_errors = true;
-                builder.add_ast_document(&ast, executable_definitions_are_errors);
-                assert!(builder.errors.is_empty());
-                builder
-            })
-            .clone()
+        Self::built_in().clone()
     }
 
     /// Configure the builder so that “orphan” schema extensions and type extensions

@@ -3,17 +3,6 @@ use crate::schema;
 use crate::validation::DiagnosticList;
 use crate::Node;
 
-pub(crate) fn validate_scalar_definitions(
-    diagnostics: &mut DiagnosticList,
-    schema: &crate::Schema,
-) {
-    for def in schema.types.values() {
-        if let schema::ExtendedType::Scalar(scalar) = def {
-            validate_scalar_definition(diagnostics, schema, scalar);
-        }
-    }
-}
-
 pub(crate) fn validate_scalar_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
