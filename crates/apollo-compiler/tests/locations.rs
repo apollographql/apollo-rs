@@ -42,7 +42,7 @@ mod directive_inputs {
         };
         let field = query.fields.get(field_name).unwrap();
         let directive = field.directives.get("withSomeArgs").unwrap();
-        directive.argument_by_name(argument_name).unwrap()
+        directive.specified_argument_by_name(argument_name).unwrap()
     }
     fn argument_input_location(field_name: &str, argument_name: &str) -> Range<LineColumn> {
         let schema = schema();
