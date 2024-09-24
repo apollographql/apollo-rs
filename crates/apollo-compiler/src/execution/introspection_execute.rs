@@ -203,6 +203,7 @@ struct FieldResolver<'a> {
 }
 
 struct EnumValueResolver<'a> {
+    schema: SchemaWithCache<'a>,
     def: &'a schema::EnumValueDefinition,
 }
 
@@ -242,10 +243,13 @@ fn ty<'a>(schema: SchemaWithCache<'a>, ty: &'a schema::Type) -> ResolvedValue<'a
     }
 }
 
-fn deprecation_reason(opt_directive: Option<&Node<schema::Directive>>) -> ResolvedValue<'_> {
+fn deprecation_reason<'a>(
+    schema: &SchemaWithCache<'_>,
+    opt_directive: Option<&Node<schema::Directive>>,
+) -> ResolvedValue<'a> {
     ResolvedValue::leaf(
         opt_directive
-            .and_then(|directive| directive.argument_by_name("reason"))
+            .and_then(|directive| directive.argument_by_name("reason", schema.schema).ok())
             .and_then(|arg| arg.as_str()),
     )
 }
@@ -392,7 +396,7 @@ impl_resolver! {
                 include_deprecated || def.directives.get("deprecated").is_none()
             })
             .map(|def| {
-                ResolvedValue::object(EnumValueResolver { def })
+                ResolvedValue::object(EnumValueResolver { schema: self_.schema, def })
             })
         ))
     }
@@ -424,7 +428,7 @@ impl_resolver! {
         };
         Ok(ResolvedValue::leaf(def
             .directives.get("specifiedBy")
-            .and_then(|dir| dir.argument_by_name("url"))
+            .and_then(|dir| dir.specified_argument_by_name("url"))
             .and_then(|arg| arg.as_str())
         ))
     }
@@ -543,7 +547,7 @@ impl_resolver! {
     }
 
     fn deprecationReason(&self_) {
-        Ok(deprecation_reason(self_.def.directives.get("deprecated")))
+        Ok(deprecation_reason(&self_.schema, self_.def.directives.get("deprecated")))
     }
 }
 
@@ -565,7 +569,7 @@ impl_resolver! {
     }
 
     fn deprecationReason(&self_) {
-        Ok(deprecation_reason(self_.def.directives.get("deprecated")))
+        Ok(deprecation_reason(&self_.schema, self_.def.directives.get("deprecated")))
     }
 }
 
@@ -597,7 +601,7 @@ impl_resolver! {
     }
 
     fn deprecationReason(&self_) {
-        Ok(deprecation_reason(self_.def.directives.get("deprecated")))
+        Ok(deprecation_reason(&self_.schema, self_.def.directives.get("deprecated")))
     }
 }
 

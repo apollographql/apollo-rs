@@ -31,6 +31,7 @@ pub use crate::ast::OperationType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 pub use crate::ast::VariableDefinition;
+use crate::schema::ArgumentByNameError;
 pub use crate::Name;
 
 /// Executable definitions, annotated with type information
@@ -775,9 +776,24 @@ impl Field {
         schema.types.get(self.ty().inner_named_type())
     }
 
-    /// Returns the argument by a given name.
-    pub fn argument_by_name(&self, name: &str) -> Option<&'_ Node<Argument>> {
-        self.arguments.iter().find(|argument| argument.name == name)
+    /// Returns the value of the argument named `name`, accounting for nullability
+    /// and for the default value in `schema`’s directive definition.
+    pub fn argument_by_name(&self, name: &str) -> Result<&Node<Value>, ArgumentByNameError> {
+        Argument::argument_by_name(&self.arguments, name, || {
+            self.definition
+                .argument_by_name(name)
+                .ok_or(ArgumentByNameError::NoSuchArgument)
+        })
+    }
+
+    /// Returns the value of the argument named `name`, as specified in the field selection.
+    ///
+    /// Returns `None` if the field selection does not specify this argument.
+    ///
+    /// If the field definition makes this argument nullable or defines a default value,
+    /// consider using [`argument_by_name`][Self::argument_by_name] instead.
+    pub fn specified_argument_by_name(&self, name: &str) -> Option<&Node<Value>> {
+        Argument::specified_argument_by_name(&self.arguments, name)
     }
 
     serialize_method!();

@@ -2,6 +2,7 @@ use super::*;
 use crate::name;
 use crate::parser::Parser;
 use crate::parser::SourceSpan;
+use crate::schema::ArgumentByNameError;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
@@ -11,6 +12,7 @@ use crate::Schema;
 use std::fmt;
 use std::hash;
 use std::path::Path;
+use std::sync::OnceLock;
 
 impl Document {
     /// Create an empty document
@@ -614,14 +616,64 @@ impl FromIterator<Directive> for DirectiveList {
 }
 
 impl Directive {
-    /// Returns the value provided to the named argument.
-    pub fn argument_by_name(&self, name: &str) -> Option<&Node<Value>> {
-        self.arguments
-            .iter()
-            .find_map(|arg| (arg.name == name).then_some(&arg.value))
+    /// Returns the value of the argument named `name`, accounting for nullability
+    /// and for the default value in `schema`’s directive definition.
+    pub fn argument_by_name<'doc_or_schema>(
+        &'doc_or_schema self,
+        name: &str,
+        schema: &'doc_or_schema Schema,
+    ) -> Result<&'doc_or_schema Node<Value>, ArgumentByNameError> {
+        Argument::argument_by_name(&self.arguments, name, || {
+            schema
+                .directive_definitions
+                .get(&self.name)
+                .ok_or(ArgumentByNameError::UndefinedDirective)?
+                .argument_by_name(name)
+                .ok_or(ArgumentByNameError::NoSuchArgument)
+        })
+    }
+
+    /// Returns the value of the argument named `name`, as specified in the directive application.
+    ///
+    /// Returns `None` if the directive application does not specify this argument.
+    ///
+    /// If the directive definition makes this argument nullable or defines a default value,
+    /// consider using [`argument_by_name`][Self::argument_by_name] instead.
+    pub fn specified_argument_by_name(&self, name: &str) -> Option<&Node<Value>> {
+        Argument::specified_argument_by_name(&self.arguments, name)
     }
 
     serialize_method!();
+}
+
+impl Argument {
+    pub(crate) fn argument_by_name<'doc_or_def>(
+        arguments: &'doc_or_def [Node<Self>],
+        name: &str,
+        def: impl FnOnce() -> Result<&'doc_or_def Node<InputValueDefinition>, ArgumentByNameError>,
+    ) -> Result<&'doc_or_def Node<Value>, ArgumentByNameError> {
+        if let Some(value) = Self::specified_argument_by_name(arguments, name) {
+            Ok(value)
+        } else {
+            let argument_def = def()?;
+            if let Some(value) = &argument_def.default_value {
+                Ok(value)
+            } else if argument_def.ty.is_non_null() {
+                Err(ArgumentByNameError::RequiredArgumentNotSpecified)
+            } else {
+                Ok(Value::static_null())
+            }
+        }
+    }
+
+    pub(crate) fn specified_argument_by_name<'doc>(
+        arguments: &'doc [Node<Self>],
+        name: &str,
+    ) -> Option<&'doc Node<Value>> {
+        arguments
+            .iter()
+            .find_map(|arg| (arg.name == name).then_some(&arg.value))
+    }
 }
 
 impl OperationType {
@@ -996,6 +1048,11 @@ impl Value {
             Value::List(_) => "a list",
             Value::Object(_) => "an input object",
         }
+    }
+
+    pub(crate) fn static_null() -> &'static Node<Self> {
+        static NULL: OnceLock<Node<Value>> = OnceLock::new();
+        NULL.get_or_init(|| Value::Null.into())
     }
 
     serialize_method!();

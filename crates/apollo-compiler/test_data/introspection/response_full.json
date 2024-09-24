@@ -2,7 +2,7 @@
   "data": {
     "__schema": {
       "queryType": {
-        "name": "Query"
+        "name": "TheQuery"
       },
       "mutationType": null,
       "subscriptionType": null,
@@ -956,8 +956,8 @@
         },
         {
           "kind": "OBJECT",
-          "name": "Query",
-          "description": null,
+          "name": "TheQuery",
+          "description": "Root query type",
           "fields": [
             {
               "name": "id",
@@ -976,16 +976,28 @@
               "deprecationReason": null
             },
             {
-              "name": "int",
+              "name": "ints",
               "description": null,
               "args": [],
               "type": {
                 "kind": "NON_NULL",
                 "name": null,
                 "ofType": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "SCALAR",
+                        "name": "Int",
+                        "ofType": null
+                      }
+                    }
+                  }
                 }
               },
               "isDeprecated": true,
@@ -994,13 +1006,38 @@
             {
               "name": "url",
               "description": null,
-              "args": [],
+              "args": [
+                {
+                  "name": "arg",
+                  "description": null,
+                  "type": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "In",
+                    "ofType": null
+                  },
+                  "defaultValue": "{b: 4, a: 2}",
+                  "isDeprecated": false,
+                  "deprecationReason": null
+                }
+              ],
               "type": {
                 "kind": "SCALAR",
                 "name": "Url",
                 "ofType": null
               },
               "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "union",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "UNION",
+                "name": "U",
+                "ofType": null
+              },
+              "isDeprecated": true,
               "deprecationReason": null
             }
           ],
@@ -1043,10 +1080,49 @@
           "possibleTypes": [
             {
               "kind": "OBJECT",
-              "name": "Query",
+              "name": "TheQuery",
               "ofType": null
             }
           ]
+        },
+        {
+          "kind": "INPUT_OBJECT",
+          "name": "In",
+          "description": null,
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "a",
+              "description": null,
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null,
+              "isDeprecated": true,
+              "deprecationReason": null
+            },
+            {
+              "name": "b",
+              "description": null,
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              },
+              "defaultValue": null,
+              "isDeprecated": true,
+              "deprecationReason": "No longer supported"
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
         },
         {
           "kind": "SCALAR",
@@ -1056,6 +1132,73 @@
           "inputFields": null,
           "interfaces": null,
           "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "UNION",
+          "name": "U",
+          "description": null,
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": [
+            {
+              "kind": "OBJECT",
+              "name": "TheQuery",
+              "ofType": null
+            },
+            {
+              "kind": "OBJECT",
+              "name": "T",
+              "ofType": null
+            }
+          ]
+        },
+        {
+          "kind": "OBJECT",
+          "name": "T",
+          "description": null,
+          "fields": [
+            {
+              "name": "enum",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "ENUM",
+                "name": "E",
+                "ofType": null
+              },
+              "isDeprecated": true,
+              "deprecationReason": "No longer supported"
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "E",
+          "description": null,
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "NEW",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "OLD",
+              "description": null,
+              "isDeprecated": true,
+              "deprecationReason": "No longer supported"
+            }
+          ],
           "possibleTypes": null
         }
       ],

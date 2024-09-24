@@ -200,7 +200,7 @@ fn eval_if_arg(
     match selection
         .directives()
         .get(directive_name)?
-        .argument_by_name("if")?
+        .specified_argument_by_name("if")?
         .as_ref()
     {
         Value::Boolean(value) => Some(*value),

@@ -15,17 +15,42 @@ use expect_test::expect_file;
 #[test]
 fn test() {
     let schema = r#"
-        type Query implements I {
+        "The schema"
+        schema {
+            query: TheQuery
+        }
+
+        """
+        Root query type
+        """
+        type TheQuery implements I {
             id: ID!
-            int: Int! @deprecated(reason: "…")
-            url: Url
+            ints: [[Int!]]! @deprecated(reason: "…")
+            url(arg: In = { b: 4, a: 2 }): Url
+            union: U @deprecated(reason: null)
         }
 
         interface I {
             id: ID!
         }
 
+        input In {
+            a: Int! @deprecated(reason: null)
+            b: Int @deprecated
+        }
+
         scalar Url @specifiedBy(url: "https://url.spec.whatwg.org/")
+
+        union U = TheQuery | T
+
+        type T {
+            enum: E @deprecated
+        }
+
+        enum E { 
+            NEW
+            OLD @deprecated
+        }
     "#;
     let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
 
@@ -82,7 +107,7 @@ fn test() {
             "I": {
               "possibleTypes": [
                 {
-                  "name": "Query",
+                  "name": "TheQuery",
                   "fields": [
                     {
                       "name": "id"
@@ -108,18 +133,22 @@ fn test() {
             "I": {
               "possibleTypes": [
                 {
-                  "name": "Query",
+                  "name": "TheQuery",
                   "verboseFields": [
                     {
                       "name": "id",
                       "deprecationReason": null
                     },
                     {
-                      "name": "int",
+                      "name": "ints",
                       "deprecationReason": "…"
                     },
                     {
                       "name": "url",
+                      "deprecationReason": null
+                    },
+                    {
+                      "name": "union",
                       "deprecationReason": null
                     }
                   ]

@@ -310,6 +310,17 @@ pub enum FieldLookupError<'schema> {
     NoSuchField(&'schema NamedType, &'schema ExtendedType),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ArgumentByNameError {
+    /// The directive is not definied in the schema
+    UndefinedDirective,
+    /// The directive or field definition does not define an argument with the requested name
+    NoSuchArgument,
+    /// The argument is required (does not define a default value and has non-null type)
+    /// but not specified
+    RequiredArgumentNotSpecified,
+}
+
 impl Schema {
     /// Returns an (almost) empty schema.
     ///

@@ -17,6 +17,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## BREAKING
+
+- **Argument value lookup accounts for default value and nullability - [SimonSapin], [pull/914].**
+  `argument_by_name` methods of `Directive` and `executable::Field` can now
+  return a default value or `Value::Null` based on the directive or field definition in the schema.
+  On `Directive`, the method takes a new `&Schema` parameter.
+  (`executable::Field` on the other hand already contains a reference to its field definition.)
+  Both methods now return a `Result` instead of an `Option`.
+
+  The previous behavior and signature is available as `specified_argument_by_name` methods.
+
+## Fixes
+
+- **Introspection `deprecationReason` field returns the default string instead of `null` for argument-less `@deprecated` - [SimonSapin], [pull/914].**
+  The directive argument is defined as `reason: String = "No longer supported"`.
+
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/914]: https://github.com/apollographql/apollo-rs/pull/914
+
+
 # [1.0.0-beta.23](https://crates.io/crates/apollo-compiler/1.0.0-beta.23) - 2024-09-17
 
 ## Fixes
