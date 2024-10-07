@@ -12,7 +12,7 @@ fn get_operations() {
     let op = r#"{ name }"#;
     let named_op = r#"query getName { name } "#;
     let several_named_op = r#"query getName { name } query getAnotherName { name }"#;
-    let noop = r#""#;
+    let empty = r#""#;
 
     let schema = Schema::parse_and_validate(type_system, "ts.graphql").unwrap();
     let doc = ExecutableDocument::parse_and_validate(&schema, op, "op.graphql").unwrap();
@@ -27,7 +27,10 @@ fn get_operations() {
     assert!(doc.operations.get(Some("getName")).is_ok());
     assert!(doc.operations.get(None).is_err());
 
-    let doc = ExecutableDocument::parse_and_validate(&schema, noop, "op.graphql").unwrap();
+    // Empty document is a syntax error
+    let doc = ExecutableDocument::parse_and_validate(&schema, empty, "op.graphql")
+        .unwrap_err()
+        .partial;
     assert!(doc.operations.get(Some("getName")).is_err());
     assert!(doc.operations.get(None).is_err());
 }
