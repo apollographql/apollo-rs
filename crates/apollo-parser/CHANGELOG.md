@@ -17,6 +17,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.8.3](https://crates.io/crates/apollo-parser/0.8.3) - 2024-10-07
+
+## Fixes
+- **Parsing an empty document is a syntax error - [SimonSapin], [pull/918].**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/918]: https://github.com/apollographql/apollo-rs/pull/918
+
+
 # [0.8.2](https://crates.io/crates/apollo-parser/0.8.2) - 2024-09-09
 
 ## Fixes
