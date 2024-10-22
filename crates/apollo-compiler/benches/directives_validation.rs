@@ -1,4 +1,5 @@
-use apollo_compiler::{ExecutableDocument, Schema};
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use criterion::*;
 
 fn bench_many_identical_directives(c: &mut Criterion) {
@@ -25,7 +26,8 @@ fn bench_many_identical_directives_query(c: &mut Criterion) {
         type Query { hello: String! }
         "#,
         "schema.graphql",
-    ).unwrap();
+    )
+    .unwrap();
 
     let query = format!(
         r#"
@@ -38,7 +40,8 @@ fn bench_many_identical_directives_query(c: &mut Criterion) {
 
     c.bench_function("many_same_directive_query", move |b| {
         b.iter(|| {
-            let result = ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
+            let result =
+                ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
             black_box(result);
         });
     });
@@ -50,7 +53,8 @@ fn bench_many_invalid_directives_query(c: &mut Criterion) {
         type Query { hello: String! }
         "#,
         "schema.graphql",
-    ).unwrap();
+    )
+    .unwrap();
 
     let query = format!(
         r#"
