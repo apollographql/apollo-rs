@@ -48,6 +48,11 @@ path = "benches/multi_source.rs"
 harness = false
 
 [[bench]]
+name = "directives-validation"
+path = "benches/directives_validation.rs"
+harness = false
+
+[[bench]]
 name = "fields-validation"
 path = "benches/fields_validation.rs"
 harness = false
