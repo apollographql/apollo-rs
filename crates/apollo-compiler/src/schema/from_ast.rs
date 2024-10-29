@@ -255,6 +255,7 @@ impl SchemaBuilder {
     }
 
     /// Returns the schema built from all added documents
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn build(self) -> Result<Schema, WithErrors<Schema>> {
         let (schema, errors) = self.build_inner();
         errors.into_result_with(schema)

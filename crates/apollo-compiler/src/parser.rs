@@ -208,6 +208,7 @@ impl Parser {
     ///
     /// To have multiple files contribute to a schema,
     /// use [`Schema::builder`] and [`Parser::parse_into_schema_builder`].
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_schema(
         &mut self,
         source_text: impl Into<String>,
@@ -241,6 +242,7 @@ impl Parser {
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_executable(
         &mut self,
         schema: &Valid<Schema>,
