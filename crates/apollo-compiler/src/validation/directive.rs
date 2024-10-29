@@ -144,6 +144,7 @@ pub(crate) fn validate_directive_definition(
     built_in_scalars: &mut BuiltInScalars,
     def: &Node<ast::DirectiveDefinition>,
 ) {
+    schema::validation::validate_type_system_name(diagnostics, &def.name, "a directive definition");
     super::input_object::validate_argument_definitions(
         diagnostics,
         schema,

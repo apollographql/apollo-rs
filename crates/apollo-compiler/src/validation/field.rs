@@ -137,6 +137,7 @@ pub(crate) fn validate_field_definition(
     built_in_scalars: &mut BuiltInScalars,
     field: &Node<ast::FieldDefinition>,
 ) {
+    crate::schema::validation::validate_type_system_name(diagnostics, &field.name, "a field");
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
