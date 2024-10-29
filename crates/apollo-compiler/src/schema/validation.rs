@@ -1,7 +1,9 @@
 use super::ExtendedType;
 use crate::collections::HashMap;
 use crate::collections::HashSet;
+use crate::parser::FileId;
 use crate::schema::ScalarType;
+use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::directive::validate_directive_definitions;
 use crate::validation::enum_::validate_enum_definition;
 use crate::validation::input_object::validate_input_object_definition;
@@ -20,7 +22,8 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &mut Schema) 
     let mut builtin_scalars = BuiltInScalars::new();
     validate_schema_definition(errors, schema);
     validate_directive_definitions(errors, schema, &mut builtin_scalars);
-    for def in schema.types.values() {
+    for (name, def) in &schema.types {
+        validate_type_system_name(errors, name, def.describe());
         match def {
             ExtendedType::Scalar(def) => validate_scalar_definition(errors, schema, def),
             ExtendedType::Object(def) => {
@@ -64,6 +67,25 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &mut Schema) 
         schema
             .types
             .insert(def.name.clone(), ExtendedType::Scalar(def.clone()));
+    }
+}
+
+/// <https://spec.graphql.org/draft/#sec-Names.Reserved-Names>
+pub(crate) fn validate_type_system_name(
+    errors: &mut DiagnosticList,
+    name: &Name,
+    describe: &'static str,
+) {
+    let location = name.location();
+    let is_built_in = location.is_some_and(|loc| loc.file_id == FileId::BUILT_IN);
+    if !is_built_in && name.starts_with("__") {
+        errors.push(
+            location,
+            DiagnosticData::ReservedName {
+                name: name.clone(),
+                describe,
+            },
+        );
     }
 }
 
