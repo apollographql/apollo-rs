@@ -335,6 +335,7 @@ impl Schema {
     ///
     /// Create a [`Parser`] to use different parser configuration.
     /// Use [`builder()`][Self::builder] to build a schema from multiple parsed files.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse(
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
@@ -344,6 +345,7 @@ impl Schema {
 
     /// [`parse`][Self::parse] then [`validate`][Self::validate],
     /// to get a `Valid<Schema>` when mutating it isn’t needed.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_and_validate(
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
@@ -367,6 +369,7 @@ impl Schema {
         SchemaBuilder::new()
     }
 
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn validate(mut self) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut errors = DiagnosticList::new(self.sources.clone());
         validation::validate_schema(&mut errors, &mut self);
