@@ -54,6 +54,7 @@ impl Document {
     }
 
     /// Build a schema with this AST document as its sole input.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn to_schema(&self) -> Result<Schema, WithErrors<Schema>> {
         let mut builder = Schema::builder();
         let executable_definitions_are_errors = true;
@@ -62,6 +63,7 @@ impl Document {
     }
 
     /// Build and validate a schema with this AST document as its sole input.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn to_schema_validate(&self) -> Result<Valid<Schema>, WithErrors<Schema>> {
         let mut builder = Schema::builder();
         let executable_definitions_are_errors = true;
@@ -72,6 +74,7 @@ impl Document {
     }
 
     /// Build an executable document from this AST, with the given schema
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn to_executable(
         &self,
         schema: &Valid<Schema>,
@@ -82,6 +85,7 @@ impl Document {
     }
 
     /// Build and validate an executable document from this AST, with the given schema
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn to_executable_validate(
         &self,
         schema: &Valid<Schema>,

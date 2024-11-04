@@ -5,4 +5,11 @@ Error: subscription `sub` can not have an introspection field as a root field
    │   ─────┬────  
    │        ╰────── __typename is an introspection field
 ───╯
+Error: a field cannot be named `__typename` as names starting with two underscores are reserved
+   ╭─[0051_subscription_operation_with_root_introspection_field.graphql:6:3]
+   │
+ 6 │   __typename: String
+   │   ─────┬────  
+   │        ╰────── Pick a different name here
+───╯
 

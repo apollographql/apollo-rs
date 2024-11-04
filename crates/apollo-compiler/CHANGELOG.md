@@ -17,6 +17,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2024-mm-dd
+
+## Fixes
+- **Validate against reserved names starting with `__` in schemas - [SimonSapin], [pull/923].**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/923]: https://github.com/apollographql/apollo-rs/issues/923
+
+
 # [1.0.0-beta.24](https://crates.io/crates/apollo-compiler/1.0.0-beta.24) - 2024-09-24
 
 ## BREAKING

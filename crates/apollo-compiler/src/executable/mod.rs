@@ -295,6 +295,7 @@ impl ExecutableDocument {
     /// to identify this source file to users.
     ///
     /// Create a [`Parser`] to use different parser configuration.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse(
         schema: &Valid<Schema>,
         source_text: impl Into<String>,
@@ -305,6 +306,7 @@ impl ExecutableDocument {
 
     /// [`parse`][Self::parse] then [`validate`][Self::validate],
     /// to get a `Valid<ExecutableDocument>` when mutating it isn’t needed.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_and_validate(
         schema: &Valid<Schema>,
         source_text: impl Into<String>,
@@ -317,6 +319,7 @@ impl ExecutableDocument {
         errors.into_valid_result(doc)
     }
 
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn validate(self, schema: &Valid<Schema>) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut sources = IndexMap::clone(&schema.sources);
         sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));

@@ -331,6 +331,7 @@ impl DiagnosticData {
                     EmptyValueSet { .. } => "EmptyValueSet",
                     EmptyMemberSet { .. } => "EmptyMemberSet",
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
+                    ReservedName { .. } => "ReservedName",
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
@@ -527,6 +528,7 @@ impl DiagnosticData {
                     EmptyValueSet { .. } => None,
                     EmptyMemberSet { .. } => None,
                     EmptyInputValueSet { .. } => None,
+                    ReservedName { .. } => None,
                 }
             }
             Details::ExecutableBuildError(error) => match error {

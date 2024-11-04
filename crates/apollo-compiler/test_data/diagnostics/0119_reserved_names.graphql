@@ -1,0 +1,21 @@
+directive @__Prime(__if: Boolean!) on SCHEMA
+
+schema @__Prime(__if: true) {
+    query: __MyQuery
+}
+
+type __MyQuery {
+    __secretField(__heatedArgument: __In): Int
+}
+
+input __In {
+    __amount: __BigInt
+}
+
+scalar __BigInt
+
+enum __Maybe {
+    Yes
+    No
+    __FileNotFound
+}
