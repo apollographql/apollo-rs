@@ -204,17 +204,17 @@ impl<'s> CliReport<'s> {
         main_location: Option<SourceSpan>,
         color: Color,
     ) -> Self {
-        let (file_id, range) = main_location
+        let span = main_location
             .and_then(to_span)
             .unwrap_or((FileId::NONE, 0..0));
-        let report = ariadne::Report::build(ReportKind::Error, file_id, range.start);
+        let report = ariadne::Report::build(ReportKind::Error, span);
         let enable_color = match color {
             Color::Never => false,
             // Rely on ariadne's `auto-color` feature, which uses `concolor` to enable colors
             // only if stderr is a terminal.
             Color::StderrIsTerminal => true,
         };
-        let config = ariadne::Config::default()
+        let config = ariadne::Config::new()
             .with_index_type(ariadne::IndexType::Byte)
             .with_color(enable_color);
         Self {
