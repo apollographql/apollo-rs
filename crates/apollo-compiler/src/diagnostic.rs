@@ -214,7 +214,7 @@ impl<'s> CliReport<'s> {
             // only if stderr is a terminal.
             Color::StderrIsTerminal => true,
         };
-        let config = ariadne::Config::default()
+        let config = ariadne::Config::new()
             .with_index_type(ariadne::IndexType::Byte)
             .with_color(enable_color);
         Self {
