@@ -3,6 +3,7 @@ use crate::collections::HashMap;
 use crate::schema::validation::BuiltInScalars;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::value::value_of_correct_type;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
 use crate::validation::RecursionGuard;
@@ -207,6 +208,10 @@ pub(crate) fn validate_input_value_definitions(
                         type_location: input_value.ty.location(),
                     },
                 );
+            }
+            if let Some(default) = &input_value.default_value {
+                let var_defs = &[];
+                value_of_correct_type(diagnostics, schema, &input_value.ty, default, var_defs);
             }
         } else if is_built_in {
             // `validate_schema()` will insert the missing definition

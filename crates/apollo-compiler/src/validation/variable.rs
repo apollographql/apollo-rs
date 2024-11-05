@@ -2,6 +2,7 @@ use crate::ast;
 use crate::collections::HashMap;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::value::value_of_correct_type;
 use crate::validation::DiagnosticList;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionLimitError;
@@ -35,7 +36,11 @@ pub(crate) fn validate_variable_definitions(
 
             match type_definition {
                 Some(type_definition) if type_definition.is_input_type() => {
-                    // OK!
+                    if let Some(default) = &variable.default_value {
+                        // Default values are "const", not allowed to refer to other variables:
+                        let var_defs_in_scope = &[];
+                        value_of_correct_type(diagnostics, schema, ty, default, var_defs_in_scope);
+                    }
                 }
                 Some(type_definition) => {
                     diagnostics.push(
