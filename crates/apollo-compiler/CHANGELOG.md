@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.0.0-beta.25](https://crates.io/crates/apollo-compiler/1.0.0-beta.25) - 2024-11-22
 
 ## Features
 - **Add support for `.serialize().compact()` - [SimonSapin], [pull/928].**
