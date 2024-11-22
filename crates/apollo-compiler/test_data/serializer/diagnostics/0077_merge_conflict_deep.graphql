@@ -15,3 +15,5 @@ query {
     x: b
   }
 }
+type O { a: Int b: Int } type Query { field: O } query { field { x: a } field { x: b } }
+type O{a:Int b:Int} type Query{field:O} query{field{x:a} field{x:b}}

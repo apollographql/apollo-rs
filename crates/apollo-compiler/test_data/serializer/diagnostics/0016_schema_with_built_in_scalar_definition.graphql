@@ -3,3 +3,5 @@ type Query {
 }
 
 scalar Int
+type Query { amount: Int } scalar Int
+type Query{amount:Int} scalar Int

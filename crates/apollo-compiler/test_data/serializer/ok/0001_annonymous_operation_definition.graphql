@@ -11,3 +11,5 @@ type Query {
 type Pet {
   name: String
 }
+{ cat { name } } type Query { cat: Pet } type Pet { name: String }
+{cat{name}} type Query{cat:Pet} type Pet{name:String}

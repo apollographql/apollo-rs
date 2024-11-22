@@ -25,3 +25,5 @@ query {
     }
   }
 }
+union SearchResult = Photo | Person type Person { name: String age: Int } type Photo { height: Int width: Int } type Query { firstSearchResult: SearchResult } query { firstSearchResult { __typename ... on Person { name } ... on Photo { height } } }
+union SearchResult=Photo|Person type Person{name:String age:Int} type Photo{height:Int width:Int} type Query{firstSearchResult:SearchResult} query{firstSearchResult{__typename ...on Person{name} ...on Photo{height}}}

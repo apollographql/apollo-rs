@@ -25,3 +25,5 @@ extend input E {
 extend enum F {
   MEMBER
 }
+type Query { x: Int } extend scalar A @deprecated(reason: "Use B instead") extend type B { field: Int! } extend schema { query: Query } extend union C = String extend interface D { field: Int } extend input E { field: Int } extend enum F { MEMBER }
+type Query{x:Int} extend scalar A@deprecated(reason:"Use B instead") extend type B{field:Int!} extend schema{query:Query} extend union C=String extend interface D{field:Int} extend input E{field:Int} extend enum F{MEMBER}

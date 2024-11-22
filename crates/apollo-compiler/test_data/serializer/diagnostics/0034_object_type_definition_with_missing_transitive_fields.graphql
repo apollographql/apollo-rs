@@ -9,3 +9,5 @@ interface Node {
 interface Resource {
   width: Int
 }
+type Query implements Node & Resource { name: String } interface Node { id: ID! } interface Resource { width: Int }
+type Query implements Node&Resource{name:String} interface Node{id:ID!} interface Resource{width:Int}

@@ -9,3 +9,5 @@ interface SomeInterface {
 type ShouldBeTheQuery {
   name: String
 }
+schema { query: SomeInterface } interface SomeInterface { name: String } type ShouldBeTheQuery { name: String }
+schema{query:SomeInterface} interface SomeInterface{name:String} type ShouldBeTheQuery{name:String}

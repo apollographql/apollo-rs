@@ -5,3 +5,5 @@ type Query implements NamedEntity {
 interface NamedEntity implements NamedEntity {
   name: String
 }
+type Query implements NamedEntity { name: String } interface NamedEntity implements NamedEntity { name: String }
+type Query implements NamedEntity{name:String} interface NamedEntity implements NamedEntity{name:String}

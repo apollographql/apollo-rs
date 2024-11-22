@@ -5,3 +5,5 @@ type Query {
 extend schema {
   query: Query
 }
+type Query { name: String } extend schema { query: Query }
+type Query{name:String} extend schema{query:Query}

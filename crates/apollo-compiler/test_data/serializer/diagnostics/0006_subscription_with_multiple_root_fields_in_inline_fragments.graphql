@@ -21,3 +21,5 @@ type Result {
 type Query {
   message: String
 }
+subscription sub { ... on Subscription { newMessage { body sender } disallowedSecondRootField } } type Subscription { newMessage: Result disallowedSecondRootField: String } type Result { body: String sender: String } type Query { message: String }
+subscription sub{...on Subscription{newMessage{body sender} disallowedSecondRootField}} type Subscription{newMessage:Result disallowedSecondRootField:String} type Result{body:String sender:String} type Query{message:String}

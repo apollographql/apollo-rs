@@ -30,3 +30,5 @@ fragment invalidInlineFragment on Interface {
 fragment invalidFragmentCondition on Interface2 {
   a
 }
+query Query { interface { ...invalidFragmentCondition ...invalidInlineFragment ... on MissingSecondType { a } } } type Query { interface: Interface } interface Interface { a: String } type JustImplements implements Interface { a: String } fragment invalidInlineFragment on Interface { a ... on MissingType { a } } fragment invalidFragmentCondition on Interface2 { a }
+query Query{interface{...invalidFragmentCondition ...invalidInlineFragment ...on MissingSecondType{a}}} type Query{interface:Interface} interface Interface{a:String} type JustImplements implements Interface{a:String} fragment invalidInlineFragment on Interface{a ...on MissingType{a}} fragment invalidFragmentCondition on Interface2{a}

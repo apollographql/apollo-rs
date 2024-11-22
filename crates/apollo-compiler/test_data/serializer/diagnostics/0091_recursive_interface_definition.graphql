@@ -23,3 +23,5 @@ query {
     ...recursive
   }
 }
+interface A implements B { name: String } interface B implements A { name: String } type Impl implements A & B { name: String } type Query { get: A } fragment recursive on A { name } query { get { ...recursive } }
+interface A implements B{name:String} interface B implements A{name:String} type Impl implements A&B{name:String} type Query{get:A} fragment recursive on A{name} query{get{...recursive}}

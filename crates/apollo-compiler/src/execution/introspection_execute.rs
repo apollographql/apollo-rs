@@ -592,7 +592,7 @@ impl_resolver! {
 
     fn defaultValue(&self_) {
         Ok(ResolvedValue::leaf(self_.def.default_value.as_ref().map(|val| {
-            val.serialize().no_indent().to_string()
+            val.serialize().single_line().to_string()
         })))
     }
 

@@ -23,3 +23,5 @@ fragment petFragment on Pet {
   name
   owner
 }
+type Query { pet: Pet } type Pet { name: String! owner: String } query getPet { pet { name ...petFragment } } fragment petFragment on Pet { name owner } fragment petFragment on Pet { name owner }
+type Query{pet:Pet} type Pet{name:String! owner:String} query getPet{pet{name ...petFragment}} fragment petFragment on Pet{name owner} fragment petFragment on Pet{name owner}

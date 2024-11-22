@@ -19,3 +19,5 @@ interface SubIntf implements Intf & Intf {
 type Query {
   x: Int
 }
+interface Intf { field: String } type Object implements Intf & Intf { field: String } type Extended implements Intf { field: String } extend type Extended implements Intf interface SubIntf implements Intf & Intf { field: String } type Query { x: Int }
+interface Intf{field:String} type Object implements Intf&Intf{field:String} type Extended implements Intf{field:String} extend type Extended implements Intf interface SubIntf implements Intf&Intf{field:String} type Query{x:Int}

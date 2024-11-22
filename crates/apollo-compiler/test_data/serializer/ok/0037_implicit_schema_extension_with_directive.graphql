@@ -5,3 +5,5 @@ type Query {
 extend schema @dir
 
 directive @dir on SCHEMA
+type Query { name: String } extend schema @dir directive @dir on SCHEMA
+type Query{name:String} extend schema@dir directive @dir on SCHEMA

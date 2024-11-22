@@ -9,3 +9,5 @@ query getName {
 type Query {
   cat: String
 }
+query getName { cat } query getName { cat } type Query { cat: String }
+query getName{cat} query getName{cat} type Query{cat:String}

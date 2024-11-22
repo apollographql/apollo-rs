@@ -11,3 +11,5 @@ query {
     ...undefinedFragment
   }
 }
+type Dog { name: String! } type Query { dog: Dog } query { dog { ...undefinedFragment } }
+type Dog{name:String!} type Query{dog:Dog} query{dog{...undefinedFragment}}

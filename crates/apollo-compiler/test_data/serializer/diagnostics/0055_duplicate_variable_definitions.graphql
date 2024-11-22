@@ -14,3 +14,5 @@ type Dog {
   barkVolume: Int
   isHouseTrained(atOtherHomes: Boolean): Boolean!
 }
+query houseTrainedQuery($atOtherHomes: Boolean, $atOtherHomes: Boolean) { dog { isHouseTrained(atOtherHomes: $atOtherHomes) } } type Query { dog: Dog } type Dog { name: String! nickname: String barkVolume: Int isHouseTrained(atOtherHomes: Boolean): Boolean! }
+query houseTrainedQuery($atOtherHomes:Boolean,$atOtherHomes:Boolean){dog{isHouseTrained(atOtherHomes:$atOtherHomes)}} type Query{dog:Dog} type Dog{name:String! nickname:String barkVolume:Int isHouseTrained(atOtherHomes:Boolean):Boolean!}

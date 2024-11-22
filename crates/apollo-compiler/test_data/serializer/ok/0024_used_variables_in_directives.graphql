@@ -15,3 +15,5 @@ query($fieldDirective: Boolean = true, $fragDirective: Boolean = false, $inlineD
     inlineField
   }
 }
+type Query { field(arg: Boolean): Int fragField: Int inlineField: Int } fragment fragment on Query { fragField @include(if: $indirectDirective) } query($fieldDirective: Boolean = true, $fragDirective: Boolean = false, $inlineDirective: Boolean = false, $argDirective: Boolean = false, $indirectDirective: Boolean = false) { field(arg: $argDirective) @skip(if: $fieldDirective) ...fragment @include(if: $fragDirective) ... @skip(if: $inlineDirective) { inlineField } }
+type Query{field(arg:Boolean):Int fragField:Int inlineField:Int} fragment fragment on Query{fragField@include(if:$indirectDirective)} query($fieldDirective:Boolean=true,$fragDirective:Boolean=false,$inlineDirective:Boolean=false,$argDirective:Boolean=false,$indirectDirective:Boolean=false){field(arg:$argDirective)@skip(if:$fieldDirective) ...fragment@include(if:$fragDirective) ...@skip(if:$inlineDirective){inlineField}}

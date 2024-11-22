@@ -2,3 +2,5 @@ type Query {
   name: String
   name: String
 }
+type Query { name: String name: String }
+type Query{name:String name:String}

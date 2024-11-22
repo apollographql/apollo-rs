@@ -17,3 +17,5 @@ type Query {
 type Product {
   name: String
 }
+query ExampleQuery { topProducts(first: $undefinedVariable, filter: {offset: $offset, keywords: ["a", $keyword]}) { name } } input Filter { keywords: [String!] offset: Int limit: Int } type Query { topProducts(first: Int, filter: Filter): Product } type Product { name: String }
+query ExampleQuery{topProducts(first:$undefinedVariable,filter:{offset:$offset,keywords:["a",$keyword]}){name}} input Filter{keywords:[String!] offset:Int limit:Int} type Query{topProducts(first:Int,filter:Filter):Product} type Product{name:String}

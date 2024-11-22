@@ -22,3 +22,5 @@ mutation introspect {
     }
   }
 }
+schema { query: MyQueryRootType mutation: MyMutationRootType } type MyQueryRootType { someField: String } type MyMutationRootType { setSomeField(to: String): String } mutation introspect { __type(name: "User") { name fields { name type { name } } } }
+schema{query:MyQueryRootType mutation:MyMutationRootType} type MyQueryRootType{someField:String} type MyMutationRootType{setSomeField(to:String):String} mutation introspect{__type(name:"User"){name fields{name type{name}}}}

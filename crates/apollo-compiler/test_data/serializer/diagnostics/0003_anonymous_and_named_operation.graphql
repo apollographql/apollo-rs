@@ -25,3 +25,5 @@ type Result {
   pageNumber: Int
   response: String
 }
+{ cat } mutation getName { addPet { response } } type Query { cat: String } type Mutation { addPet(name: String!, petType: PetType): Result! } enum PetType { CAT DOG } type Result { pageNumber: Int response: String }
+{cat} mutation getName{addPet{response}} type Query{cat:String} type Mutation{addPet(name:String!,petType:PetType):Result!} enum PetType{CAT DOG} type Result{pageNumber:Int response:String}

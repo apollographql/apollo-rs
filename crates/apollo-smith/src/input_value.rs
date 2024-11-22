@@ -439,7 +439,7 @@ mod tests {
 
         let input_val_str = apollo_compiler::ast::Value::from(input_val)
             .serialize()
-            .no_indent()
+            .single_line()
             .to_string();
 
         assert_eq!(

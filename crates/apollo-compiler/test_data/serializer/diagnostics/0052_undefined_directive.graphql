@@ -4,3 +4,5 @@ type Query {
 }
 
 directive @directiveB on FIELD_DEFINITION
+type Query { name: String status: Int @directiveA } directive @directiveB on FIELD_DEFINITION
+type Query{name:String status:Int@directiveA} directive @directiveB on FIELD_DEFINITION

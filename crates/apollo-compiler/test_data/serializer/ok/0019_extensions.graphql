@@ -37,3 +37,5 @@ extend input Input {
 type Query {
   object: Object
 }
+scalar Scalar type Object implements Intf { field: Int } interface Intf { field: Int } input Input { field: Enum } enum Enum { MEMBER } extend scalar Scalar @specifiedBy(url: "https://apollographql.com") extend interface Intf { field2: Scalar } extend type Object { field2: Scalar } extend enum Enum { MEMBER_2 } extend input Input { field2: Int } type Query { object: Object }
+scalar Scalar type Object implements Intf{field:Int} interface Intf{field:Int} input Input{field:Enum} enum Enum{MEMBER} extend scalar Scalar@specifiedBy(url:"https://apollographql.com") extend interface Intf{field2:Scalar} extend type Object{field2:Scalar} extend enum Enum{MEMBER_2} extend input Input{field2:Int} type Query{object:Object}

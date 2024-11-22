@@ -23,3 +23,5 @@ fragment sameAliasesWithDifferentFieldTargets on Dog {
   fido: name
   fido: nickname
 }
+type Query { pet: Dog } type Dog { nickname: String name: String! } query queryPupper { pet { ...conflictingBecauseAlias ...sameAliasesWithDifferentFieldTargets } } fragment conflictingBecauseAlias on Dog { name: nickname name } fragment sameAliasesWithDifferentFieldTargets on Dog { fido: name fido: nickname }
+type Query{pet:Dog} type Dog{nickname:String name:String!} query queryPupper{pet{...conflictingBecauseAlias ...sameAliasesWithDifferentFieldTargets}} fragment conflictingBecauseAlias on Dog{name:nickname name} fragment sameAliasesWithDifferentFieldTargets on Dog{fido:name fido:nickname}

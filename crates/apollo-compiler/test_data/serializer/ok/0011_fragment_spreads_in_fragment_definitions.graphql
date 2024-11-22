@@ -25,3 +25,5 @@ type Foo {
 type Baz {
   id: ID
 }
+query IntrospectionQuery { foo { ...Bar } } fragment Bar on Foo { baz { ...Quux } } fragment Quux on Baz { id } type Query { foo: Foo } type Foo { baz: Baz } type Baz { id: ID }
+query IntrospectionQuery{foo{...Bar}} fragment Bar on Foo{baz{...Quux}} fragment Quux on Baz{id} type Query{foo:Foo} type Foo{baz:Baz} type Baz{id:ID}

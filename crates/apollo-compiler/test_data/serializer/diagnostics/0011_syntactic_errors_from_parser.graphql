@@ -8,3 +8,5 @@ type Product {
   name: String
   birthday: String
 }
+query getName {} type Query { topProducts(first: Int): Product } type Product { name: String birthday: String }
+query getName{} type Query{topProducts(first:Int):Product} type Product{name:String birthday:String}

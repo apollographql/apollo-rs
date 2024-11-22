@@ -29,3 +29,5 @@ type Product {
   name: String
   price(setPrice: Int): Int
 }
+query ExampleQuery($variable: Int) { topProducts { name } ...subFrag } fragment subFrag on Query { topProducts { price(setPrice: $variable) } } type Query { topProducts(first: Int): Product reviews: Review } type Review { message: Message } type Message { body: String sender(attribute: String): String } type Product { name: String price(setPrice: Int): Int }
+query ExampleQuery($variable:Int){topProducts{name} ...subFrag} fragment subFrag on Query{topProducts{price(setPrice:$variable)}} type Query{topProducts(first:Int):Product reviews:Review} type Review{message:Message} type Message{body:String sender(attribute:String):String} type Product{name:String price(setPrice:Int):Int}

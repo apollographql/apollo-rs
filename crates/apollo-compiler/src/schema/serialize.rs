@@ -309,7 +309,7 @@ fn names(names: &IndexSet<ComponentName>, ext: Option<&ExtensionId>) -> Vec<Name
 impl DirectiveList {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         for directive in self.iter() {
-            state.write(" ")?;
+            state.optional_space()?;
             directive.serialize_impl(state)?;
         }
         Ok(())

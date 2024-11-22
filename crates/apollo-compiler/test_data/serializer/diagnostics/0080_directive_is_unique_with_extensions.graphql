@@ -21,3 +21,5 @@ extend interface Intf @nonRepeatable
 type Query {
   x: Int
 }
+directive @nonRepeatable on OBJECT | SCALAR | INTERFACE extend type TestObject @nonRepeatable type TestObject @nonRepeatable { field: String } extend type TestObject @nonRepeatable scalar Scalar @nonRepeatable extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com") interface Intf @nonRepeatable { field: String } extend interface Intf @nonRepeatable type Query { x: Int }
+directive @nonRepeatable on OBJECT|SCALAR|INTERFACE extend type TestObject@nonRepeatable type TestObject@nonRepeatable{field:String} extend type TestObject@nonRepeatable scalar Scalar@nonRepeatable extend scalar Scalar@nonRepeatable@specifiedBy(url:"example.com") interface Intf@nonRepeatable{field:String} extend interface Intf@nonRepeatable type Query{x:Int}

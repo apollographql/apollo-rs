@@ -111,17 +111,27 @@ fn serialize_and_reparse_ast() {
             let output_path = output_dir.join(input_path.file_name().unwrap());
             let original = ast::Document::parse(&input, "input.graphql")
                 .unwrap_or_else(|invalid| invalid.partial);
-            let serialized = original.to_string();
-            expect_file![output_path].assert_eq(&serialized);
+            let serialized_indented = original.to_string();
+            let serialized_single_line = original.serialize().single_line().to_string();
+            let serialized_compact = original.serialize().compact().to_string();
+            let all =
+                format!("{serialized_indented}{serialized_single_line}\n{serialized_compact}\n");
+            expect_file![output_path].assert_eq(&all);
 
-            let round_tripped = ast::Document::parse(&serialized, "serialized.graphql")
-                .unwrap_or_else(|invalid| invalid.partial);
-            if original != round_tripped {
-                panic!(
-                    "Serialization does not round-trip for {input_path:?}:\n\
+            for (kind, serialized) in [
+                ("Indented", serialized_indented),
+                ("Single line", serialized_single_line),
+                ("Compact", serialized_compact),
+            ] {
+                let round_tripped = ast::Document::parse(&serialized, "serialized.graphql")
+                    .unwrap_or_else(|invalid| invalid.partial);
+                if original != round_tripped {
+                    panic!(
+                        "{kind} serialization does not round-trip for {input_path:?}:\n\
                      {input}\n=>\n{original:#?}\n=>\n{serialized}\n=>\n\
                      {round_tripped:#?}\n=>\n{round_tripped}\n"
-                );
+                    );
+                }
             }
         }
     }

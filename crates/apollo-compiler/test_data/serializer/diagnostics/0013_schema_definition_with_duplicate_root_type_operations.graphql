@@ -10,3 +10,5 @@ type customPetQuery {
 type thatOtherQuery {
   age: Int
 }
+schema { query: customPetQuery query: thatOtherQuery } type customPetQuery { name: String } type thatOtherQuery { age: Int }
+schema{query:customPetQuery query:thatOtherQuery} type customPetQuery{name:String} type thatOtherQuery{age:Int}

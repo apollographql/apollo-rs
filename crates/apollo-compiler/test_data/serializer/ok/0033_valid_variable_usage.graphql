@@ -15,3 +15,5 @@ type Arguments {
   nullableList(nullableList: [String]): String
   nullableListList(nullableListList: [[Int]]): Int
 }
+query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) { arguments { nullableString(nullableString: $nonNullableVar) nullableList(nullableList: $nonNullableList) nullableListList(nullableListList: $nonNullableListList) } } type Query { arguments: Arguments } type Arguments { nullableString(nullableString: String): String nullableList(nullableList: [String]): String nullableListList(nullableListList: [[Int]]): Int }
+query nullableStringArg($nonNullableVar:String!,$nonNullableList:[String!]!,$nonNullableListList:[[Int!]!]){arguments{nullableString(nullableString:$nonNullableVar) nullableList(nullableList:$nonNullableList) nullableListList(nullableListList:$nonNullableListList)}} type Query{arguments:Arguments} type Arguments{nullableString(nullableString:String):String nullableList(nullableList:[String]):String nullableListList(nullableListList:[[Int]]):Int}

@@ -34,3 +34,5 @@ query {
     }
   }
 }
+type A { unrelated: String overlapping: Int } type B { overlapping: Int! } type C { overlapping: Int } union Union = A | B | C type Query { root: Union } query { root { ... on A { unrelated } } root { ... on B { overlapping } } root { ... on C { overlapping } } }
+type A{unrelated:String overlapping:Int} type B{overlapping:Int!} type C{overlapping:Int} union Union=A|B|C type Query{root:Union} query{root{...on A{unrelated}} root{...on B{overlapping}} root{...on C{overlapping}}}

@@ -9,3 +9,5 @@ type customSubscription {
 type Result {
   id: String
 }
+schema { subscription: customSubscription } type customSubscription { changeInPetHousehold: Result } type Result { id: String }
+schema{subscription:customSubscription} type customSubscription{changeInPetHousehold:Result} type Result{id:String}

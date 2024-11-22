@@ -17,3 +17,5 @@ query A {
     ...A
   }
 }
+type A @A { a: Int } type Query { a: A } directive @A on OBJECT fragment A on A { a } query A { a { ...A } }
+type A@A{a:Int} type Query{a:A} directive @A on OBJECT fragment A on A{a} query A{a{...A}}

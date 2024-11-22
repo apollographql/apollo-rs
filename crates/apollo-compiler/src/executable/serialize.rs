@@ -139,7 +139,7 @@ impl FieldSet {
         if let Some((first, rest)) = self.selection_set.selections.split_first() {
             first.serialize_impl(state)?;
             for value in rest {
-                state.new_line_or_space()?;
+                state.new_line_or_mandatory_space()?;
                 value.serialize_impl(state)?;
             }
         }

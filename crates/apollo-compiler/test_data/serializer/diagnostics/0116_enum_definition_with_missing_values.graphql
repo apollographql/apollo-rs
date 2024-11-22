@@ -7,3 +7,5 @@ type Query {
 enum WEEKDAY
 
 extend enum WEEKDAY @foo
+directive @foo on ENUM type Query { foo: WEEKDAY } enum WEEKDAY extend enum WEEKDAY @foo
+directive @foo on ENUM type Query{foo:WEEKDAY} enum WEEKDAY extend enum WEEKDAY@foo

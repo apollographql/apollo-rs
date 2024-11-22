@@ -12,8 +12,15 @@ pub struct Serialize<'a, T> {
 
 #[derive(Debug, Clone)]
 pub(crate) struct Config<'a> {
-    indent_prefix: Option<&'a str>,
+    whitespace_style: WhitespaceStyle<'a>,
     initial_indent_level: usize,
+}
+
+#[derive(Debug, Clone)]
+enum WhitespaceStyle<'a> {
+    Indent { prefix: &'a str },
+    SingleLine,
+    Compact,
 }
 
 pub(crate) struct State<'config, 'fmt, 'fmt2> {
@@ -30,13 +37,25 @@ impl<'a, T> Serialize<'a, T> {
     /// `prefix` is repeated at the start of each line by the number of indentation levels.
     /// The default is `"  "`, two spaces.
     pub fn indent_prefix(mut self, prefix: &'a str) -> Self {
-        self.config.indent_prefix = Some(prefix);
+        self.config.whitespace_style = WhitespaceStyle::Indent { prefix };
         self
     }
 
     /// Disable indentation and line breaks
-    pub fn no_indent(mut self) -> Self {
-        self.config.indent_prefix = None;
+    #[deprecated = "renamed to .single_line(), but see also .compact()"]
+    pub fn no_indent(self) -> Self {
+        self.single_line()
+    }
+
+    /// Disable indentation and line breaks, but keep some spaces for readability
+    pub fn single_line(mut self) -> Self {
+        self.config.whitespace_style = WhitespaceStyle::SingleLine;
+        self
+    }
+
+    /// Disable most whitespace
+    pub fn compact(mut self) -> Self {
+        self.config.whitespace_style = WhitespaceStyle::Compact;
         self
     }
 
@@ -49,7 +68,7 @@ impl<'a, T> Serialize<'a, T> {
 impl Default for Config<'_> {
     fn default() -> Self {
         Self {
-            indent_prefix: Some("  "),
+            whitespace_style: WhitespaceStyle::Indent { prefix: "  " },
             initial_indent_level: 0,
         }
     }
@@ -71,12 +90,23 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
         self.output.write_str(str)
     }
 
+    pub(crate) fn optional_space(&mut self) -> fmt::Result {
+        match self.config.whitespace_style {
+            WhitespaceStyle::Indent { .. } | WhitespaceStyle::SingleLine => self.write(" "),
+            WhitespaceStyle::Compact => Ok(()),
+        }
+    }
+
+    pub(crate) fn mandatory_space(&mut self) -> fmt::Result {
+        self.write(" ")
+    }
+
     pub(crate) fn indent(&mut self) -> fmt::Result {
         self.indent_level += 1;
         self.new_line_common(false)
     }
 
-    pub(crate) fn indent_or_space(&mut self) -> fmt::Result {
+    pub(crate) fn indent_or_optional_space(&mut self) -> fmt::Result {
         self.indent_level += 1;
         self.new_line_common(true)
     }
@@ -86,33 +116,43 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
         self.new_line_common(false)
     }
 
-    pub(crate) fn dedent_or_space(&mut self) -> fmt::Result {
+    pub(crate) fn dedent_or_optional_space(&mut self) -> fmt::Result {
         self.indent_level -= 1; // checked underflow in debug mode
         self.new_line_common(true)
     }
 
-    pub(crate) fn new_line_or_space(&mut self) -> fmt::Result {
+    pub(crate) fn new_line_or_optional_space(&mut self) -> fmt::Result {
         self.new_line_common(true)
     }
 
-    fn new_line_common(&mut self, space: bool) -> fmt::Result {
-        if let Some(prefix) = self.config.indent_prefix {
-            self.write("\n")?;
-            for _ in 0..self.indent_level {
-                self.write(prefix)?;
-            }
-        } else if space {
-            self.write(" ")?
+    pub(crate) fn new_line_or_mandatory_space(&mut self) -> fmt::Result {
+        match self.config.whitespace_style {
+            WhitespaceStyle::Indent { prefix } => self.new_line_indented(prefix),
+            WhitespaceStyle::SingleLine | WhitespaceStyle::Compact => self.write(" "),
+        }
+    }
+
+    fn new_line_common(&mut self, optional_space: bool) -> fmt::Result {
+        match self.config.whitespace_style {
+            WhitespaceStyle::Indent { prefix } => self.new_line_indented(prefix),
+            WhitespaceStyle::SingleLine if optional_space => self.write(" "),
+            _ => Ok(()),
+        }
+    }
+
+    fn new_line_indented(&mut self, prefix: &str) -> Result<(), fmt::Error> {
+        self.write("\n")?;
+        for _ in 0..self.indent_level {
+            self.write(prefix)?;
         }
         Ok(())
     }
 
     /// Panics if newlines are disabled
     fn require_new_line(&mut self) -> fmt::Result {
-        let prefix = self
-            .config
-            .indent_prefix
-            .expect("require_new_line called with newlines disabled");
+        let WhitespaceStyle::Indent { prefix } = self.config.whitespace_style else {
+            panic!("require_new_line called with newlines disabled")
+        };
         self.write("\n")?;
         for _ in 0..self.indent_level {
             self.write(prefix)?;
@@ -121,14 +161,30 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
     }
 
     pub(crate) fn newlines_enabled(&self) -> bool {
-        self.config.indent_prefix.is_some()
+        matches!(self.config.whitespace_style, WhitespaceStyle::Indent { .. })
     }
 
     pub(crate) fn on_single_line<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> R {
-        let indent_prefix = self.config.indent_prefix.take();
+        let indent_prefix = match self.config.whitespace_style {
+            WhitespaceStyle::Indent { prefix } => {
+                self.config.whitespace_style = WhitespaceStyle::SingleLine;
+                Some(prefix)
+            }
+            WhitespaceStyle::SingleLine => None,
+            WhitespaceStyle::Compact => None,
+        };
         let result = f(self);
-        self.config.indent_prefix = indent_prefix;
+        if let Some(prefix) = indent_prefix {
+            self.config.whitespace_style = WhitespaceStyle::Indent { prefix };
+        }
         result
+    }
+
+    fn if_compact(&mut self, if_compact: &str, if_not_compact: &str) -> fmt::Result {
+        self.write(match self.config.whitespace_style {
+            WhitespaceStyle::Indent { .. } | WhitespaceStyle::SingleLine => if_not_compact,
+            WhitespaceStyle::Compact => if_compact,
+        })
     }
 }
 
@@ -153,7 +209,7 @@ pub(crate) fn top_level<T>(
                 // Empty line between top-level definitions
                 state.write("\n")?;
             }
-            state.new_line_or_space()?;
+            state.new_line_or_mandatory_space()?;
             serialize_one(state, item)
         })?;
         // Trailing newline
@@ -208,7 +264,7 @@ impl OperationDefinition {
         if !shorthand {
             state.write(operation_type.name())?;
             if let Some(name) = &name {
-                state.write(" ")?;
+                state.mandatory_space()?;
                 state.write(name)?;
             }
             if !variables.is_empty() {
@@ -219,7 +275,7 @@ impl OperationDefinition {
                 })?
             }
             directives.serialize_impl(state)?;
-            state.write(" ")?;
+            state.optional_space()?;
         }
         curly_brackets_space_separated(state, selection_set, |state, sel| sel.serialize_impl(state))
     }
@@ -235,7 +291,7 @@ impl FragmentDefinition {
         } = self;
         display!(state, "fragment {} on {}", name, type_condition)?;
         directives.serialize_impl(state)?;
-        state.write(" ")?;
+        state.optional_space()?;
         curly_brackets_space_separated(state, selection_set, |state, sel| sel.serialize_impl(state))
     }
 }
@@ -261,7 +317,7 @@ impl DirectiveDefinition {
             state.write(" on ")?;
             state.write(first.name())?;
             for location in rest {
-                state.write(" | ")?;
+                state.if_compact("|", " | ")?;
                 state.write(location.name())?;
             }
         }
@@ -301,12 +357,22 @@ impl SchemaDefinition {
         serialize_description(state, description)?;
         state.write("schema")?;
         directives.serialize_impl(state)?;
-        state.write(" ")?;
-        curly_brackets_space_separated(state, root_operations, |state, op| {
-            let (operation_type, operation_name) = &**op;
-            display!(state, "{}: {}", operation_type, operation_name)
-        })
+        state.optional_space()?;
+        serialize_root_operations(state, root_operations)
     }
+}
+
+fn serialize_root_operations(
+    state: &mut State,
+    root_operations: &[Node<(OperationType, Name)>],
+) -> fmt::Result {
+    curly_brackets_space_separated(state, root_operations, |state, op| {
+        let (operation_type, operation_name) = &**op;
+        state.write(operation_type.name())?;
+        state.write(":")?;
+        state.optional_space()?;
+        state.write(operation_name)
+    })
 }
 
 impl ScalarTypeDefinition {
@@ -350,14 +416,14 @@ fn serialize_object_type_like(
         state.write(" implements ")?;
         state.write(first)?;
         for name in rest {
-            state.write(" & ")?;
+            state.if_compact("&", " & ")?;
             state.write(name)?;
         }
     }
     directives.serialize_impl(state)?;
 
     if !fields.is_empty() {
-        state.write(" ")?;
+        state.optional_space()?;
         curly_brackets_space_separated(state, fields, |state, field| field.serialize_impl(state))?;
     }
     Ok(())
@@ -401,10 +467,10 @@ fn serialize_union(
     state.write(name)?;
     directives.serialize_impl(state)?;
     if let Some((first, rest)) = members.split_first() {
-        state.write(" = ")?;
+        state.if_compact("=", " = ")?;
         state.write(first)?;
         for member in rest {
-            state.write(" | ")?;
+            state.if_compact("|", " | ")?;
             state.write(member)?;
         }
     }
@@ -424,7 +490,7 @@ impl EnumTypeDefinition {
         state.write(name)?;
         directives.serialize_impl(state)?;
         if !values.is_empty() {
-            state.write(" ")?;
+            state.optional_space()?;
             curly_brackets_space_separated(state, values, |state, value| {
                 value.serialize_impl(state)
             })?;
@@ -446,7 +512,7 @@ impl InputObjectTypeDefinition {
         state.write(name)?;
         directives.serialize_impl(state)?;
         if !fields.is_empty() {
-            state.write(" ")?;
+            state.optional_space()?;
             curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))?;
         }
         Ok(())
@@ -462,11 +528,8 @@ impl SchemaExtension {
         state.write("extend schema")?;
         directives.serialize_impl(state)?;
         if !root_operations.is_empty() {
-            state.write(" ")?;
-            curly_brackets_space_separated(state, root_operations, |state, op| {
-                let (operation_type, operation_name) = &**op;
-                display!(state, "{}: {}", operation_type, operation_name)
-            })?;
+            state.optional_space()?;
+            serialize_root_operations(state, root_operations)?;
         }
         Ok(())
     }
@@ -530,7 +593,7 @@ impl EnumTypeExtension {
         state.write(name)?;
         directives.serialize_impl(state)?;
         if !values.is_empty() {
-            state.write(" ")?;
+            state.optional_space()?;
             curly_brackets_space_separated(state, values, |state, value| {
                 value.serialize_impl(state)
             })?;
@@ -550,7 +613,7 @@ impl InputObjectTypeExtension {
         state.write(name)?;
         directives.serialize_impl(state)?;
         if !fields.is_empty() {
-            state.write(" ")?;
+            state.optional_space()?;
             curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))?;
         }
         Ok(())
@@ -560,7 +623,7 @@ impl InputObjectTypeExtension {
 impl DirectiveList {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         for dir in self {
-            state.write(" ")?;
+            state.optional_space()?;
             dir.serialize_impl(state)?;
         }
         Ok(())
@@ -586,10 +649,11 @@ impl VariableDefinition {
         } = self;
         state.write("$")?;
         state.write(name)?;
-        state.write(": ")?;
+        state.write(":")?;
+        state.optional_space()?;
         display!(state, ty)?;
         if let Some(value) = default_value {
-            state.write(" = ")?;
+            state.if_compact("=", " = ")?;
             value.serialize_impl(state)?
         }
         directives.serialize_impl(state)
@@ -608,7 +672,8 @@ impl FieldDefinition {
         serialize_description(state, description)?;
         state.write(name)?;
         serialize_arguments_definition(state, arguments)?;
-        state.write(": ")?;
+        state.write(":")?;
+        state.optional_space()?;
         display!(state, ty)?;
         directives.serialize_impl(state)
     }
@@ -625,10 +690,11 @@ impl InputValueDefinition {
         } = self;
         serialize_description(state, description)?;
         state.write(name)?;
-        state.write(": ")?;
+        state.write(":")?;
+        state.optional_space()?;
         display!(state, ty)?;
         if let Some(value) = default_value {
-            state.write(" = ")?;
+            state.if_compact("=", " = ")?;
             value.serialize_impl(state)?
         }
         directives.serialize_impl(state)
@@ -669,13 +735,14 @@ impl Field {
         } = self;
         if let Some(alias) = alias {
             state.write(alias)?;
-            state.write(": ")?;
+            state.write(":")?;
+            state.optional_space()?;
         }
         state.write(name)?;
         serialize_arguments(state, arguments)?;
         directives.serialize_impl(state)?;
         if !selection_set.is_empty() {
-            state.write(" ")?;
+            state.optional_space()?;
             curly_brackets_space_separated(state, selection_set, |state, sel| {
                 sel.serialize_impl(state)
             })?
@@ -704,13 +771,13 @@ impl InlineFragment {
             selection_set,
         } = self;
         if let Some(type_name) = type_condition {
-            state.write("... on ")?;
+            state.if_compact("...on ", "... on ")?;
             state.write(type_name)?;
         } else {
             state.write("...")?;
         }
         directives.serialize_impl(state)?;
-        state.write(" ")?;
+        state.optional_space()?;
         curly_brackets_space_separated(state, selection_set, |state, sel| sel.serialize_impl(state))
     }
 }
@@ -735,7 +802,8 @@ impl Value {
             Value::Object(value) => {
                 comma_separated(state, "{", "}", value, |state, (name, value)| {
                     state.write(name)?;
-                    state.write(": ")?;
+                    state.write(":")?;
+                    state.optional_space()?;
                     value.serialize_impl(state)
                 })
             }
@@ -746,7 +814,8 @@ impl Value {
 impl Argument {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         state.write(&self.name)?;
-        state.write(": ")?;
+        state.write(":")?;
+        state.optional_space()?;
         self.value.serialize_impl(state)
     }
 }
@@ -784,7 +853,7 @@ fn comma_separated<T>(
         serialize_one(state, first)?;
         for value in rest {
             state.write(",")?;
-            state.new_line_or_space()?;
+            state.new_line_or_optional_space()?;
             serialize_one(state, value)?;
         }
         // Trailing comma
@@ -812,13 +881,13 @@ pub(crate) fn curly_brackets_space_separated<T>(
 ) -> fmt::Result {
     state.write("{")?;
     if let Some((first, rest)) = values.split_first() {
-        state.indent_or_space()?;
+        state.indent_or_optional_space()?;
         serialize_one(state, first)?;
         for value in rest {
-            state.new_line_or_space()?;
+            state.new_line_or_mandatory_space()?;
             serialize_one(state, value)?;
         }
-        state.dedent_or_space()?;
+        state.dedent_or_optional_space()?;
     }
     state.write("}")
 }
@@ -945,7 +1014,7 @@ fn serialize_description(state: &mut State, description: &Option<Node<str>>) -> 
     if let Some(description) = description {
         let is_description = true;
         serialize_string_value(state, is_description, description)?;
-        state.new_line_or_space()?;
+        state.new_line_or_optional_space()?;
     }
     Ok(())
 }
@@ -994,7 +1063,7 @@ macro_rules! impl_display {
                     };
                     // Indent the first line.
                     // Subsequent lines will be indented when writing a line break.
-                    if let Some(prefix) = state.config.indent_prefix {
+                    if let WhitespaceStyle::Indent {prefix} = state.config.whitespace_style {
                         for _ in 0..state.indent_level {
                             state.write(prefix)?;
                         }

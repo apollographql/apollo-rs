@@ -22,3 +22,5 @@ interface Image implements Resource {
   width: Int
   thumbnail: String
 }
+type Query implements Image { name: String id: ID! url: String width: Int thumbnail: String } interface Node { id: ID! } interface Resource implements Node { id: ID! url: String width: Int } interface Image implements Resource { id: ID! url: String width: Int thumbnail: String }
+type Query implements Image{name:String id:ID! url:String width:Int thumbnail:String} interface Node{id:ID!} interface Resource implements Node{id:ID! url:String width:Int} interface Image implements Resource{id:ID! url:String width:Int thumbnail:String}

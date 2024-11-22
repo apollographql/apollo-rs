@@ -16,3 +16,5 @@ enum Snack {
   ACANA
   THRIVE_PET_FOODS
 }
+type Query { pet: Pet snacks: Snack } enum Pet { CAT DOG FOX CAT } enum Snack { THRIVE_PET_FOODS LILYS_KITCHEN ACANA THRIVE_PET_FOODS }
+type Query{pet:Pet snacks:Snack} enum Pet{CAT DOG FOX CAT} enum Snack{THRIVE_PET_FOODS LILYS_KITCHEN ACANA THRIVE_PET_FOODS}

@@ -20,3 +20,5 @@ query fieldWithFragment {
     ...X
   }
 }
+type Query { field(arg1: Int): Int item: Field } type Field { field(arg4: Int): Int } fragment X on Field { field(arg4: 1, arg2: 2, arg3: 3) } query field { field(arg2: 3) } query fieldWithFragment { item { ...X } }
+type Query{field(arg1:Int):Int item:Field} type Field{field(arg4:Int):Int} fragment X on Field{field(arg4:1,arg2:2,arg3:3)} query field{field(arg2:3)} query fieldWithFragment{item{...X}}

@@ -15,3 +15,5 @@ type Product {
   name: String
   price(setPrice: Int): Int
 }
+query ExampleQuery { topProducts { name ... on Product { price(setPrice: $value) } } } type Query { topProducts(first: Int): Product } type Product { name: String price(setPrice: Int): Int }
+query ExampleQuery{topProducts{name ...on Product{price(setPrice:$value)}}} type Query{topProducts(first:Int):Product} type Product{name:String price(setPrice:Int):Int}

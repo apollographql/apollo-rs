@@ -4,3 +4,5 @@ type Query {
 }
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+type Query { website: URL amount: Int } scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+type Query{website:URL amount:Int} scalar URL@specifiedBy(url:"https://tools.ietf.org/html/rfc3986")

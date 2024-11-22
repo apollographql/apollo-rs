@@ -5,3 +5,5 @@ type Query {
 query {
   field
 }
+type Query { field: Int } query { field }
+type Query{field:Int} query{field}

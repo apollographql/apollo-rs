@@ -14,3 +14,5 @@ interface Image implements Resource & Url {
   width: Int
   thumbnail: String
 }
+type Query implements Resource { id: ID! width: Int } interface Resource { id: ID! width: Int } interface Image implements Resource & Url { id: ID! url: String width: Int thumbnail: String }
+type Query implements Resource{id:ID! width:Int} interface Resource{id:ID! width:Int} interface Image implements Resource&Url{id:ID! url:String width:Int thumbnail:String}

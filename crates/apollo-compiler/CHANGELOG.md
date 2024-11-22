@@ -19,13 +19,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2024-mm-dd
 
+## Features
+- **Add support for `.serialize().compact()` - [SimonSapin], [pull/928].**
+
 ## Fixes
 - **Validate against reserved names starting with `__` in schemas - [SimonSapin], [pull/923].**
 - **Fix duplicate diagnostic for variable with invalid default value - [SimonSapin], [pull/925] and [pull/929].**
 
 [SimonSapin]: https://github.com/SimonSapin
-[pull/923]: https://github.com/apollographql/apollo-rs/issues/923
-[pull/925]: https://github.com/apollographql/apollo-rs/issues/925
+[pull/923]: https://github.com/apollographql/apollo-rs/pull/923
+[pull/925]: https://github.com/apollographql/apollo-rs/pull/925
+[pull/928]: https://github.com/apollographql/apollo-rs/pull/928
 [pull/929]: https://github.com/apollographql/apollo-rs/pull/929
 
 

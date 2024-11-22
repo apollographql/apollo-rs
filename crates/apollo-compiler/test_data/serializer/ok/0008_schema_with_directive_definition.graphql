@@ -7,3 +7,5 @@ directive @delegateField(name: String!) repeatable on OBJECT | INTERFACE
 type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
   id: ID!
 }
+type Query { literature: Book } directive @delegateField(name: String!) repeatable on OBJECT | INTERFACE type Book @delegateField(name: "pageCount") @delegateField(name: "author") { id: ID! }
+type Query{literature:Book} directive @delegateField(name:String!) repeatable on OBJECT|INTERFACE type Book@delegateField(name:"pageCount")@delegateField(name:"author"){id:ID!}

@@ -24,3 +24,5 @@ type Pet {
 type PetOwner {
   name: String
 }
+query getCatName { cat { name } } query getOwnerName { cat { owner { name } } } type Query { cat: Pet } type Pet { name: String owner: PetOwner } type PetOwner { name: String }
+query getCatName{cat{name}} query getOwnerName{cat{owner{name}}} type Query{cat:Pet} type Pet{name:String owner:PetOwner} type PetOwner{name:String}

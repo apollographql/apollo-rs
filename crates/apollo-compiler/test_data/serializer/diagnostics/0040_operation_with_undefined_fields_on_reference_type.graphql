@@ -21,3 +21,5 @@ enum join__Graph {
 }
 
 scalar join__FieldSet @specifiedBy(url: "https://apollographql.com")
+query getProduct { size weight } type Query { name: String topProducts: Product } type Product { inStock: Boolean @join__field(graph: INVENTORY) name: String @join__field(graph: PRODUCTS) } directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION enum join__Graph { INVENTORY PRODUCTS } scalar join__FieldSet @specifiedBy(url: "https://apollographql.com")
+query getProduct{size weight} type Query{name:String topProducts:Product} type Product{inStock:Boolean@join__field(graph:INVENTORY) name:String@join__field(graph:PRODUCTS)} directive @join__field(graph:join__Graph,requires:join__FieldSet,provides:join__FieldSet) on FIELD_DEFINITION enum join__Graph{INVENTORY PRODUCTS} scalar join__FieldSet@specifiedBy(url:"https://apollographql.com")

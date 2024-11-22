@@ -11,3 +11,5 @@ query {
   field @unique
   field @unique
 }
+directive @repeatable repeatable on FIELD directive @unique on FIELD type Query { field: Int } query { field @repeatable @repeatable field @unique field @unique }
+directive @repeatable repeatable on FIELD directive @unique on FIELD type Query{field:Int} query{field@repeatable@repeatable field@unique field@unique}

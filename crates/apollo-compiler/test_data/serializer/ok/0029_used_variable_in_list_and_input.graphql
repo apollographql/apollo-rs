@@ -15,3 +15,5 @@ query($attributeName: String!, $v: Int) {
     attributes(includeNames: [$attributeName])
   }
 }
+type Product { attributes(includeNames: [String!]): [String!] } input Opts { prop: [[Int]!]! } type Query { field(opts: Opts): [Product] } query($attributeName: String!, $v: Int) { field(opts: {prop: [[2], [$v], [4]]}) { attributes(includeNames: [$attributeName]) } }
+type Product{attributes(includeNames:[String!]):[String!]} input Opts{prop:[[Int]!]!} type Query{field(opts:Opts):[Product]} query($attributeName:String!,$v:Int){field(opts:{prop:[[2],[$v],[4]]}){attributes(includeNames:[$attributeName])}}

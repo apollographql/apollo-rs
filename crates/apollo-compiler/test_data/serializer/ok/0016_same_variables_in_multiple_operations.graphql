@@ -22,3 +22,5 @@ type Dog {
   barkVolume: Int
   isHouseTrained(atOtherHomes: Boolean): Boolean!
 }
+query A($atOtherHomes: Boolean) { ...HouseTrainedFragment } query B($atOtherHomes: Boolean) { ...HouseTrainedFragment } fragment HouseTrainedFragment on Query { dog { isHouseTrained(atOtherHomes: $atOtherHomes) } } type Query { dog: Dog } type Dog { name: String! nickname: String barkVolume: Int isHouseTrained(atOtherHomes: Boolean): Boolean! }
+query A($atOtherHomes:Boolean){...HouseTrainedFragment} query B($atOtherHomes:Boolean){...HouseTrainedFragment} fragment HouseTrainedFragment on Query{dog{isHouseTrained(atOtherHomes:$atOtherHomes)}} type Query{dog:Dog} type Dog{name:String! nickname:String barkVolume:Int isHouseTrained(atOtherHomes:Boolean):Boolean!}

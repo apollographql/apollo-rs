@@ -71,7 +71,7 @@ fn test() {
                     "NON_INTROSPECTION".into(),
                     non_introspection_document
                         .serialize()
-                        .no_indent()
+                        .single_line()
                         .to_string()
                         .into(),
                 )]

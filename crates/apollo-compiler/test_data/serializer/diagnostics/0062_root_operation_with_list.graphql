@@ -3,3 +3,5 @@ schema {}
 type Object {
   field: Int
 }
+schema {} type Object { field: Int }
+schema{} type Object{field:Int}

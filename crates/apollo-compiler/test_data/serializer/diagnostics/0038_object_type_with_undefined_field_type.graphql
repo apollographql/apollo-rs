@@ -3,3 +3,5 @@ type Query {
   img: Url
   relationship: Person
 }
+type Query { width: Int img: Url relationship: Person }
+type Query{width:Int img:Url relationship:Person}

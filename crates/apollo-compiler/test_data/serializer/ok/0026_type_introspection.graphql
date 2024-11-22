@@ -17,3 +17,5 @@ query {
     }
   }
 }
+type Query { id: String name: String birthday: Date } scalar Date @specifiedBy(url: "datespec.com") query { __type(name: "User") { name fields { name type { name } } } }
+type Query{id:String name:String birthday:Date} scalar Date@specifiedBy(url:"datespec.com") query{__type(name:"User"){name fields{name type{name}}}}

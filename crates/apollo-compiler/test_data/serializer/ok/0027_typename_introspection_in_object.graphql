@@ -10,3 +10,5 @@ query {
   name
   __typename
 }
+type Query { id: String name: String birthday: Date } scalar Date @specifiedBy(url: "datespec.com") query { name __typename }
+type Query{id:String name:String birthday:Date} scalar Date@specifiedBy(url:"datespec.com") query{name __typename}

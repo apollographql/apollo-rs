@@ -5,3 +5,5 @@ schema {
 type ShouldBeTheQuery {
   name: String
 }
+schema { query: SomeQuery } type ShouldBeTheQuery { name: String }
+schema{query:SomeQuery} type ShouldBeTheQuery{name:String}

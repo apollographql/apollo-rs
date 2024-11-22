@@ -21,3 +21,5 @@ query getProduct {
 fragment productFragment on Product {
   notExistingField
 }
+type Query { name: String topProducts: Product } type Product { inStock: Boolean name: String } query getProduct { name topProduct { ...productFragment } topProducts { ...productFragment } } fragment productFragment on Product { notExistingField }
+type Query{name:String topProducts:Product} type Product{inStock:Boolean name:String} query getProduct{name topProduct{...productFragment} topProducts{...productFragment}} fragment productFragment on Product{notExistingField}

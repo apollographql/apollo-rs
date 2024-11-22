@@ -5,3 +5,5 @@ type Query {
 query GetDuplicate {
   single(arg: true, arg: false)
 }
+type Query { single(arg: Boolean): Int } query GetDuplicate { single(arg: true, arg: false) }
+type Query{single(arg:Boolean):Int} query GetDuplicate{single(arg:true,arg:false)}
