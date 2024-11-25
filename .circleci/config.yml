@@ -240,3 +240,7 @@ commands:
                   [net]
                   git-fetch-with-cli = true
                   "@
+            # Remove this step when https://github.com/rust-fuzz/libfuzzer/issues/126 is fixed on crates.io
+            - run:
+                name: Downgrade libfuzzer-sys for https://github.com/rust-fuzz/libfuzzer/issues/126
+                command: cargo update -p libfuzzer-sys --precise 0.4.7
