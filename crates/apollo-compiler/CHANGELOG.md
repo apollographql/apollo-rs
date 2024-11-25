@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 - **Validate against reserved names starting with `__` in schemas - [SimonSapin], [pull/923].**
-- **Validate the default value of input fields and arguments - [SimonSapin], [pull/925].**
+- **Fix duplicate diagnostic for variable with invalid default value - [SimonSapin], [pull/925].**
 
 [SimonSapin]: https://github.com/SimonSapin
 [pull/923]: https://github.com/apollographql/apollo-rs/issues/923
