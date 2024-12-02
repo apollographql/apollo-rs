@@ -82,7 +82,7 @@ impl TryFrom<apollo_parser::cst::Selection> for Selection {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `SelectionSet`
     pub fn selection_set(&mut self) -> ArbitraryResult<SelectionSet> {
         let mut exclude_names = Vec::new();

@@ -15,7 +15,7 @@ use crate::T;
 ///     NonNullType
 ///         NamedType **!**
 ///         ListType **!**
-
+//
 // NOTE(lrlna): Because Type cannot be parsed in a typical LR fashion, the
 // following parsing rule does not follow the same pattern as all other parsing
 // rules in this library. The parent node type is determined based on what its

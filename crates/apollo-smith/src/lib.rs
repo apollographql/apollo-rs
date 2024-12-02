@@ -94,7 +94,7 @@ pub struct DocumentBuilder<'a> {
     pub(crate) chosen_aliases: IndexMap<Name, Name>,
 }
 
-impl<'a> Debug for DocumentBuilder<'a> {
+impl Debug for DocumentBuilder<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DocumentBuilder")
             .field("input_object_type_defs", &self.input_object_type_defs)

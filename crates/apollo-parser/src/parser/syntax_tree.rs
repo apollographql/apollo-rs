@@ -42,7 +42,7 @@ use std::slice::Iter;
 /// let nodes: Vec<_> = doc.definitions().into_iter().collect();
 /// assert_eq!(nodes.len(), 1);
 /// ```
-
+//
 // NOTE(@lrlna): This enum helps us setup a type state for document and field
 // set parsing.  Without the wrapper we'd have to add type annotations to
 // SyntaxTreeBuilder, which then annotates the vast majority of the parser's

@@ -78,7 +78,7 @@ impl TryFrom<apollo_parser::cst::ScalarTypeExtension> for ScalarTypeDef {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `ScalarTypeDef`
     pub fn scalar_type_definition(&mut self) -> ArbitraryResult<ScalarTypeDef> {
         let extend = !self.scalar_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);

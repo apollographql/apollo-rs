@@ -107,7 +107,7 @@ impl TryFrom<apollo_parser::cst::UnionTypeExtension> for UnionTypeDef {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `UnionTypeDef`
     pub fn union_type_definition(&mut self) -> ArbitraryResult<UnionTypeDef> {
         let extend = !self.union_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);

@@ -26,7 +26,7 @@ impl<'a> Token<'a> {
     }
 }
 
-impl<'a> fmt::Debug for Token<'a> {
+impl fmt::Debug for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let start = self.index;
         let end = self.index + self.data.len();

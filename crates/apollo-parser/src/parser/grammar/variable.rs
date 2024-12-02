@@ -64,7 +64,6 @@ pub(crate) fn variable(p: &mut Parser) {
 }
 
 #[cfg(test)]
-
 mod test {
     use crate::cst;
     use crate::Parser;

@@ -122,7 +122,7 @@ impl TryFrom<apollo_parser::cst::SchemaExtension> for SchemaDef {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `SchemaDef`
     pub fn schema_definition(&mut self) -> ArbitraryResult<SchemaDef> {
         let description = self
