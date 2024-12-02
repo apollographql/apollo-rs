@@ -139,7 +139,7 @@ impl TryFrom<apollo_parser::cst::ObjectTypeExtension> for ObjectTypeDef {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `ObjectTypeDef`
     pub fn object_type_definition(&mut self) -> ArbitraryResult<ObjectTypeDef> {
         let extend = !self.object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);

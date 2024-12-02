@@ -163,7 +163,7 @@ impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `InputValue`
     pub fn input_value(&mut self, constness: Constness) -> ArbitraryResult<InputValue> {
         let index = match constness {

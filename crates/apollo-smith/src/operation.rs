@@ -108,7 +108,7 @@ impl From<apollo_parser::cst::OperationType> for OperationType {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
     pub fn operation_definition(&mut self) -> ArbitraryResult<Option<OperationDef>> {
         let schema = match self.schema_def.clone() {

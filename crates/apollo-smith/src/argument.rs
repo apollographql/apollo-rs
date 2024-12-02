@@ -74,7 +74,7 @@ impl TryFrom<apollo_parser::cst::Argument> for Argument {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary vector of `Argument`
     pub fn arguments(&mut self, constness: Constness) -> ArbitraryResult<Vec<Argument>> {
         let num_arguments = self.u.int_in_range(0..=4)?;
