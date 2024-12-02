@@ -23,7 +23,7 @@ pub(crate) trait Resolver {
         &'a self,
         field_name: &'a str,
         arguments: &'a JsonMap,
-    ) -> Result<ResolvedValue<'_>, ResolverError>;
+    ) -> Result<ResolvedValue<'a>, ResolverError>;
 }
 
 pub(crate) struct ResolverError {
@@ -62,7 +62,7 @@ macro_rules! impl_resolver {
                 field_name: &'a str,
                 arguments: &'a $crate::execution::JsonMap,
             ) -> Result<
-                $crate::execution::resolver::ResolvedValue<'_>,
+                $crate::execution::resolver::ResolvedValue<'a>,
                 crate::execution::resolver::ResolverError
             > {
                 let _allow_unused = arguments;

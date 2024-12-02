@@ -51,7 +51,7 @@ impl Arbitrary<'_> for Description {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `Description`
     pub fn description(&mut self) -> ArbitraryResult<Description> {
         self.u.arbitrary()

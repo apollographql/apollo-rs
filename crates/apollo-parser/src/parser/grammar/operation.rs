@@ -13,7 +13,6 @@ use crate::T;
 /// *OperationDefinition*:
 ///    OperationType Name? VariableDefinitions? Directives? SelectionSet
 ///    SelectionSet
-
 pub(crate) fn operation_definition(p: &mut Parser) {
     match p.peek() {
         Some(TokenKind::Name) => {

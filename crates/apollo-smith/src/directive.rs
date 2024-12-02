@@ -133,7 +133,7 @@ impl Directive {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary vector of `Directive`
     pub fn directives(
         &mut self,

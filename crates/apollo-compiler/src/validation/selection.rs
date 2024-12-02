@@ -36,7 +36,7 @@ pub(crate) struct FieldSelection<'a> {
     pub field: &'a Node<executable::Field>,
 }
 
-impl<'a> Hash for FieldSelection<'a> {
+impl Hash for FieldSelection<'_> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         state.write_u64(self.hash)
     }

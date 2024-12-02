@@ -452,7 +452,7 @@ impl<'de> serde::Deserialize<'de> for Name {
     {
         const EXPECTING: &str = "a string in GraphQL Name syntax";
         struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
+        impl serde::de::Visitor<'_> for Visitor {
             type Value = Name;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

@@ -65,7 +65,7 @@ macro_rules! display {
 
 }
 
-impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
+impl State<'_, '_, '_> {
     pub(crate) fn write(&mut self, str: &str) -> fmt::Result {
         self.output_empty = false;
         self.output.write_str(str)

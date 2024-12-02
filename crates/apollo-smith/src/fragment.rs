@@ -150,7 +150,7 @@ impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `FragmentDef`
     pub fn fragment_definition(&mut self) -> ArbitraryResult<FragmentDef> {
         // TODO: also choose between enum/scalars/object
