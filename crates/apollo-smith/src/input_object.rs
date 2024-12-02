@@ -115,7 +115,7 @@ impl TryFrom<apollo_parser::cst::InputObjectTypeExtension> for InputObjectTypeDe
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `InputObjectTypeDef`
     pub fn input_object_type_definition(&mut self) -> ArbitraryResult<InputObjectTypeDef> {
         let extend = !self.input_object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);

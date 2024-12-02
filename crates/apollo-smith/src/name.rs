@@ -72,7 +72,7 @@ impl Name {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `Name`
     pub fn name(&mut self) -> ArbitraryResult<Name> {
         Ok(Name::new(self.limited_string(30)?))

@@ -88,7 +88,7 @@ impl Ty {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `Ty`
     pub fn ty(&mut self) -> ArbitraryResult<Ty> {
         self.generate_ty(true)

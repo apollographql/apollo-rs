@@ -121,7 +121,7 @@ impl TryFrom<apollo_parser::cst::Field> for Field {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary list of `FieldDef`
     pub fn fields_definition(&mut self, exclude: &[&Name]) -> ArbitraryResult<Vec<FieldDef>> {
         let num_fields = self.u.int_in_range(2..=50usize)?;

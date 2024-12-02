@@ -1216,7 +1216,7 @@ impl<'de> serde::Deserialize<'de> for IntValue {
     {
         const EXPECTING: &str = "a string in GraphQL IntValue syntax";
         struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
+        impl serde::de::Visitor<'_> for Visitor {
             type Value = IntValue;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -1256,7 +1256,7 @@ impl<'de> serde::Deserialize<'de> for FloatValue {
     {
         const EXPECTING: &str = "a string in GraphQL FloatValue syntax";
         struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
+        impl serde::de::Visitor<'_> for Visitor {
             type Value = FloatValue;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
