@@ -57,7 +57,8 @@ workflows:
           matrix:
             parameters:
               platform: [linux, macos, windows]
-              rust_channel: [stable, nightly]
+              # The Apollo Router is stuck on 1.76.0
+              rust_channel: [1.76.0, stable, nightly]
   miri:
     jobs:
       - miri:
@@ -85,8 +86,7 @@ jobs:
   lint:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
         default: stable
       platform:
         type: executor
@@ -111,8 +111,7 @@ jobs:
   wasm:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
         default: stable
       platform:
         type: executor
@@ -129,8 +128,7 @@ jobs:
   test:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
         default: stable
       platform:
         type: executor
@@ -169,8 +167,7 @@ commands:
       platform:
         type: executor
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
     steps:
       - when:
           condition:
@@ -204,8 +201,7 @@ commands:
   install_rust_toolchain:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
       platform:
         type: executor
     steps:
