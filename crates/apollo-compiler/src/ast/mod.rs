@@ -39,6 +39,7 @@ use crate::Node;
 pub(crate) mod from_cst;
 pub(crate) mod impls;
 pub(crate) mod serialize;
+pub(crate) mod visitor;
 
 pub use self::serialize::Serialize;
 
