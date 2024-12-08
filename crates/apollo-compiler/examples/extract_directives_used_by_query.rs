@@ -71,9 +71,8 @@ fn main() {
           }
         }
         "#;
-    let query =
-        ExecutableDocument::parse_and_validate(&schema, query_src, "not-used-here.graphql")
-            .unwrap();
+    let query = ExecutableDocument::parse_and_validate(&schema, query_src, "not-used-here.graphql")
+        .unwrap();
 
     let directives = get_directives_used_in_query(&query);
     assert_eq!(directives.len(), 4);
