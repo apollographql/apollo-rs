@@ -5,7 +5,7 @@ use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Node;
 use apollo_compiler::Schema;
 
-fn get_directives_used_in_query(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
+fn get_field_directives(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
     // seed the stack with top-level fields
     let mut stack: Vec<_> = doc
         .operations
@@ -74,7 +74,7 @@ fn main() {
     let query = ExecutableDocument::parse_and_validate(&schema, query_src, "not-used-here.graphql")
         .unwrap();
 
-    let directives = get_directives_used_in_query(&query);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 4);
 
     let query_src = r#"query {
@@ -85,7 +85,7 @@ fn main() {
         "#;
     let query = ExecutableDocument::parse(&schema, query_src, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&query);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 2);
 
     let query_src = r#"query {
@@ -96,7 +96,7 @@ fn main() {
         "#;
     let query = ExecutableDocument::parse(&schema, query_src, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&query);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 0);
 
     let query_src = r#"query {
@@ -110,6 +110,6 @@ fn main() {
         "#;
     let query = ExecutableDocument::parse(&schema, query_src, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&query);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 2);
 }
