@@ -398,7 +398,7 @@ impl DiagnosticData {
                     UndefinedEnumValue {
                         value, definition, ..
                     } => Some(format!(
-                        r#"Value "{value} does not exist in "{definition}" enum."#
+                        r#"Value "{value}" does not exist in "{definition}" enum."#
                     )),
                     UndefinedInputValue {
                         value, definition, ..
