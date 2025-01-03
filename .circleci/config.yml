@@ -56,8 +56,7 @@ workflows:
           matrix:
             parameters:
               platform: [linux, macos, windows]
-              # The Apollo Router is stuck on 1.76.0
-              rust_channel: [1.76.0, stable, nightly]
+              rust_channel: [stable, nightly]
   miri:
     jobs:
       - miri:
