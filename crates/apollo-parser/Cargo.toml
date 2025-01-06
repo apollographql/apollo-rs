@@ -18,7 +18,7 @@ edition = "2021"
 
 [dependencies]
 memchr = "2.6.1"
-rowan = "0.15.15"
+rowan = "0.16.0"
 thiserror = "1.0.30"
 
 [dev-dependencies]
