@@ -22,7 +22,7 @@ ahash = "0.8.11"
 apollo-parser = { path = "../apollo-parser", version = "0.8.0" }
 ariadne = { version = "0.5.0", features = ["auto-color"] }
 indexmap = "2.0.0"
-rowan = "=0.15.15"
+rowan = "0.15.15"
 serde = { version = "1.0", features = ["derive"] }
 serde_json_bytes = { version = "0.2.2", features = ["preserve_order"] }
 thiserror = "1.0.31"
