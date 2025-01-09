@@ -2,7 +2,6 @@ use super::*;
 use crate::name;
 use crate::parser::Parser;
 use crate::parser::SourceSpan;
-use crate::schema::ArgumentByNameError;
 use crate::schema::SchemaBuilder;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
@@ -218,6 +217,8 @@ impl Definition {
         }
     }
 
+    /// If this node was parsed from a source file, returns the file ID and source span
+    /// (start and end byte offsets) within that file.
     pub fn location(&self) -> Option<SourceSpan> {
         match self {
             Self::OperationDefinition(def) => def.location(),
@@ -242,7 +243,8 @@ impl Definition {
 
     /// Return the name of this type definition or extension.
     ///
-    /// Operations may be anonymous, and schema definitions never have a name, in that case this function returns `None`.
+    /// Operations may be anonymous, and schema definitions and extensions never have a name.
+    /// In those cases this method returns `None`.
     pub fn name(&self) -> Option<&Name> {
         match self {
             Self::OperationDefinition(def) => def.name.as_ref(),
@@ -554,6 +556,11 @@ impl DirectiveList {
         self.get(name).is_some()
     }
 
+    /// Accepts either [`Node<Directive>`] or [`Directive`].
+    pub fn push(&mut self, directive: impl Into<Node<Directive>>) {
+        self.0.push(directive.into());
+    }
+
     serialize_method!();
 }
 
@@ -620,6 +627,13 @@ impl FromIterator<Directive> for DirectiveList {
 }
 
 impl Directive {
+    pub fn new(name: Name) -> Self {
+        Self {
+            name,
+            arguments: Vec::new(),
+        }
+    }
+
     /// Returns the value of the argument named `name`, accounting for nullability
     /// and for the default value in `schema`’s directive definition.
     pub fn argument_by_name<'doc_or_schema>(
@@ -802,7 +816,9 @@ impl Type {
         Type::List(Box::new(self))
     }
 
-    /// If the type is a list type or a non-null list type, return the item type.
+    /// If the type is a list type (nullable or not), returns the inner item type.
+    ///
+    /// Otherwise returns `self` unchanged.
     ///
     /// # Example
     /// ```
@@ -832,18 +848,20 @@ impl Type {
         matches!(self, Type::NonNullNamed(_) | Type::NonNullList(_))
     }
 
-    /// Returns whether this type is a list, on a non-null list
+    /// Returns whether this type is a list type (nullable or not)
     pub fn is_list(&self) -> bool {
         matches!(self, Type::List(_) | Type::NonNullList(_))
     }
 
+    /// Returns whether this type is a named type (nullable or not), as opposed to a list type.
     pub fn is_named(&self) -> bool {
         matches!(self, Type::Named(_) | Type::NonNullNamed(_))
     }
 
     /// Can a value of this type be used when the `target` type is expected?
     ///
-    /// Implementation of spec function `AreTypesCompatible()`.
+    /// Implementation of spec function
+    /// [_AreTypesCompatible()_](https://spec.graphql.org/draft/#AreTypesCompatible()).
     pub fn is_assignable_to(&self, target: &Self) -> bool {
         match (target, self) {
             // Can't assign a nullable type to a non-nullable type.
@@ -894,7 +912,7 @@ impl FieldDefinition {
 impl InputValueDefinition {
     /// Returns true if usage sites are required to provide a value for this input value.
     ///
-    /// That means:
+    /// An input value is required when:
     /// - its type is non-null, and
     /// - it does not have a default value
     pub fn is_required(&self) -> bool {
@@ -909,6 +927,8 @@ impl EnumValueDefinition {
 }
 
 impl Selection {
+    /// If this node was parsed from a source file, returns the file ID and source span
+    /// (start and end byte offsets) within that file.
     pub fn location(&self) -> Option<SourceSpan> {
         match self {
             Self::Field(field) => field.location(),
@@ -945,17 +965,19 @@ impl Selection {
 }
 
 impl Field {
-    /// Get the name that will be used for this field selection in response formatting.
+    /// Get the name that will be used for this field selection in [response `data`].
     ///
-    /// For example, in this operation, the response name is "sourceField":
+    /// For example, in this operation, the response name is `sourceField`:
     /// ```graphql
     /// query GetField { sourceField }
     /// ```
     ///
-    /// But in this operation that uses an alias, the response name is "responseField":
+    /// But in this operation that uses an alias, the response name is `responseField`:
     /// ```graphql
     /// query GetField { responseField: sourceField }
     /// ```
+    ///
+    /// [response `data`]: https://spec.graphql.org/draft/#sec-Response-Format
     pub fn response_name(&self) -> &Name {
         self.alias.as_ref().unwrap_or(&self.name)
     }
@@ -1000,6 +1022,9 @@ impl Value {
         }
     }
 
+    /// Convert a [`FloatValue`] **_or [`IntValue`]_** to floating point representation.
+    ///
+    /// Returns `None` if the value is of a different kind, or if the conversion overflows.
     pub fn to_f64(&self) -> Option<f64> {
         match self {
             Value::Float(value) => value.try_to_f64().ok(),
@@ -1523,6 +1548,7 @@ impl From<InputObjectTypeExtension> for Definition {
     }
 }
 
+/// The Rust unit value a.k.a empty tuple converts to [`Value::Null`].
 impl From<()> for Value {
     fn from(_value: ()) -> Self {
         Value::Null
@@ -1565,6 +1591,7 @@ impl From<bool> for Value {
     }
 }
 
+/// The Rust unit value a.k.a empty tuple converts to [`Value::Null`].
 impl From<()> for Node<Value> {
     fn from(value: ()) -> Self {
         Node::new(value.into())

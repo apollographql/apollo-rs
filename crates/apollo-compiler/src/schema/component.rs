@@ -9,8 +9,9 @@ use triomphe::Arc;
 
 /// A component of a type or `schema`, for example a field of an object type.
 ///
-/// Wraps a [`Node<T>`] and adds its origin: either a (schema or type) definition
-/// or a specific extension.
+/// Wraps a [`Node<T>`] and additionally tracks its `origin`:
+/// either a “main” definition like `schema` or `type ExampleObj`,
+/// or an extension like `extend schema` or `extend type ExampleObj`.
 ///
 /// Implements [`Deref`] and [`DerefMut`]
 /// so that methods and fields of `Node<T>` and `T` can be accessed directly.
@@ -20,6 +21,8 @@ pub struct Component<T: ?Sized> {
     pub node: Node<T>,
 }
 
+/// The origin of a [`Component`]: either a “main” definition like `schema` or `type ExampleObj`,
+/// or an extension like `extend schema` or `extend type ExampleObj`.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ComponentOrigin {
     Definition,
@@ -42,6 +45,8 @@ impl ExtensionId {
         }
     }
 
+    /// If this extension was parsed from a source file, returns the file ID and source span
+    /// (start and end byte offsets) within that file.
     pub fn location(&self) -> Option<SourceSpan> {
         *self.arc
     }
@@ -122,10 +127,21 @@ impl<T> From<T> for Component<T> {
     }
 }
 
-/// A string component of a type or `schema`, for example the name of a union member type.
+impl<T> From<Node<T>> for Component<T> {
+    fn from(node: Node<T>) -> Self {
+        Self {
+            origin: ComponentOrigin::Definition,
+            node,
+        }
+    }
+}
+
+/// A GraphQL [_Name_](https://spec.graphql.org/draft/#Name)
+/// that is component of a type or `schema`, for example the name of a union member type.
 ///
-/// Wraps a [`Name`] and adds its origin: either a (`schema` or type) definition
-/// or a specific extension.
+/// Wraps a [`Name`] and adds its origin:
+/// either a “main” definition like `schema` or `enum ExampleEnum`,
+/// or an extension like `extend schema` or `extend enum ExampleEnum`
 ///
 /// Implements [`Deref`]
 /// so that methods and fields of `Name` and [`str`] can be accessed directly.

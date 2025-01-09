@@ -19,14 +19,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2024-mm-dd
 
+## BREAKING
+
+- **Move `apollo_compiler::schema::ArgumentByNameError` into `apollo_compiler::ast` - [SimonSapin], [pull/942]**
+
+## Features
+
+- **Overload `DirectiveList::push` to also accept a plain `Directive`, not just `Node<Directive>` - [SimonSapin], [pull/942]**
+
 ## Fixes
 - **Validate against reserved names starting with `__` in schemas - [SimonSapin], [pull/923].**
 - **Fix duplicate diagnostic for variable with invalid default value - [SimonSapin], [pull/925] and [pull/929].**
+
+## Documentation
+
+- **Added or reworded many doc-comments - [SimonSapin], [pull/942]**
 
 [SimonSapin]: https://github.com/SimonSapin
 [pull/923]: https://github.com/apollographql/apollo-rs/issues/923
 [pull/925]: https://github.com/apollographql/apollo-rs/issues/925
 [pull/929]: https://github.com/apollographql/apollo-rs/pull/929
+[pull/942]: https://github.com/apollographql/apollo-rs/pull/942
 
 
 # [1.0.0-beta.24](https://crates.io/crates/apollo-compiler/1.0.0-beta.24) - 2024-09-24

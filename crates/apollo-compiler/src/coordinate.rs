@@ -18,7 +18,9 @@ use crate::Node;
 use std::fmt;
 use std::str::FromStr;
 
-/// Create a static schema coordinate at compile time.
+/// Create a [`DirectiveCoordinate`], [`DirectiveArgumentCoordinate`],
+/// [`TypeCoordinate`], [`TypeAttributeCoordinate`],
+/// or [`FieldArgumentCoordinate`] at compile time.
 ///
 /// ```rust
 /// use apollo_compiler::coord;
@@ -29,6 +31,16 @@ use std::str::FromStr;
 /// assert_eq!(coord!(Type.field).to_string(), "Type.field");
 /// assert_eq!(coord!(Type.field(arg:)).to_string(), "Type.field(arg:)");
 /// assert_eq!(coord!(EnumType.ENUM_VALUE).to_string(), "EnumType.ENUM_VALUE");
+/// ```
+///
+/// All possible return types of this macro implement
+/// [`From`]`<`[`SchemaCoordinate`]`>` so they can be converted `.into()`:
+///
+/// ```
+/// use apollo_compiler::coord;
+/// use apollo_compiler::coordinate::SchemaCoordinate;
+///
+/// let _: SchemaCoordinate = coord!(Query).into();
 /// ```
 #[macro_export]
 macro_rules! coord {
@@ -173,7 +185,7 @@ pub enum SchemaCoordinateParseError {
     InvalidName(#[from] InvalidNameError),
 }
 
-/// Errors that can occur while looking up a schema coordinate.
+/// The error type for [`SchemaCoordinate::lookup`] and other `lookup*` methods.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum SchemaLookupError<'coord, 'schema> {
@@ -195,7 +207,7 @@ pub enum SchemaLookupError<'coord, 'schema> {
     InvalidType(&'schema ExtendedType),
 }
 
-/// Possible types selected by a type attribute coordinate, of the form `Type.field`.
+/// Return type of [`TypeAttributeCoordinate::lookup`], for coordinates of the form `Type.field`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 // Should this be non-exhaustive? Allows for future extension should unions ever be added.
 #[non_exhaustive]
@@ -205,7 +217,7 @@ pub enum TypeAttributeLookup<'schema> {
     EnumValue(&'schema Component<EnumValueDefinition>),
 }
 
-/// Possible types selected by a schema coordinate.
+/// Return type of [`SchemaCoordinate::lookup`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum SchemaCoordinateLookup<'schema> {

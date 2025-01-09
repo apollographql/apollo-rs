@@ -1,4 +1,15 @@
-//! APIs related to parsing `&str` inputs as GraphQL syntax
+//! APIs related to parsing `&str` inputs as GraphQL syntax.
+//!
+//! This module typically does not need to be imported directly.
+//! If the default parser configuration is adequate, use constructors such as:
+//!
+//! * [`ast::Document::parse`]
+//! * [`Schema::parse`]
+//! * [`Schema::parse_and_validate`]
+//! * [`ExecutableDocument::parse`]
+//! * [`ExecutableDocument::parse_and_validate`]
+//!
+//! If not, create a [`Parser`] and use its builder methods to change configuration.
 
 use crate::ast;
 use crate::ast::from_cst::Convert;
@@ -99,11 +110,19 @@ pub fn parse_mixed_validate(
 }
 
 impl Parser {
+    /// Create a `Parser` with default configuration.
+    /// Use other methods to change the configuration.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Configure the recursion to use while parsing.
+    /// Configure the recursion limit to use while parsing.
+    ///
+    /// This protects against stack overflow.
+    /// If unset, use [`apollo-parser`][apollo_parser]’s default limit.
+    /// The exact meaning is unspecified,
+    /// but for GraphQL constructs like selection sets whose syntax can be nested,
+    /// the nesting level encountered during parsing counts towards this limit.
     pub fn recursion_limit(mut self, value: usize) -> Self {
         self.recursion_limit = Some(value);
         self
@@ -300,7 +319,10 @@ impl Parser {
             .map(|()| (Valid(schema), Valid(executable)))
     }
 
-    /// Parse the given source text as a selection set with optional outer brackets.
+    /// Parse the given source text (e.g. `field_1 field_2 { field_2_1 }`
+    /// as a selection set with optional outer brackets.
+    ///
+    /// This is the syntax of the string argument to some Apollo Federation directives.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -351,7 +373,7 @@ impl Parser {
         (field_set, errors)
     }
 
-    /// Parse the given source text as a reference to a type.
+    /// Parse the given source text (e.g. `[Foo!]!`) as a reference to a GraphQL type.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -387,7 +409,7 @@ impl Parser {
     /// How many tokens were created during the last call to a `parse_*` method.
     ///
     /// Collecting this on a corpus of documents can help decide
-    /// how to set [`recursion_limit`][Self::token_limit].
+    /// how to set [`token_limit`][Self::token_limit].
     pub fn tokens_reached(&self) -> usize {
         self.tokens_reached
     }

@@ -24,6 +24,7 @@ mod serialize;
 pub(crate) mod validation;
 
 pub use crate::ast::Argument;
+use crate::ast::ArgumentByNameError;
 pub use crate::ast::Directive;
 pub use crate::ast::DirectiveList;
 pub use crate::ast::NamedType;
@@ -31,7 +32,6 @@ pub use crate::ast::OperationType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 pub use crate::ast::VariableDefinition;
-use crate::schema::ArgumentByNameError;
 pub use crate::Name;
 
 /// Executable definitions, annotated with type information
