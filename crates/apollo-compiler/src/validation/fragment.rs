@@ -339,17 +339,12 @@ pub(crate) fn validate_fragment_type_condition(
     fragment_location: Option<SourceSpan>,
 ) {
     let type_def = schema.types.get(type_cond);
-    let is_composite = type_def
-        .as_ref()
-        // .map_or(false, |ty| ty.is_composite_definition());
-        .map_or(false, |ty| {
-            matches!(
-                ty,
-                schema::ExtendedType::Object(_)
-                    | schema::ExtendedType::Interface(_)
-                    | schema::ExtendedType::Union(_)
-            )
-        });
+    let is_composite = matches!(
+        type_def,
+        Some(schema::ExtendedType::Object(_))
+            | Some(schema::ExtendedType::Interface(_))
+            | Some(schema::ExtendedType::Union(_))
+    );
 
     if !is_composite {
         diagnostics.push(
