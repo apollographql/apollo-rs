@@ -20,7 +20,7 @@
 //! In some cases like [`SchemaDefinition`], this module and the [`ast`] module
 //! define different Rust types with the same names.
 //! In other cases like [`Directive`] there is no data structure difference needed,
-//! so this modules reuses and publicly re-exports some Rust types from the [`ast`] module.
+//! so this module reuses and publicly re-exports some Rust types from the [`ast`] module.
 //!
 //! ## Build errors
 //!

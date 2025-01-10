@@ -34,7 +34,7 @@ use std::str::FromStr;
 /// ```
 ///
 /// All possible return types of this macro implement
-/// [`From`]`<`[`SchemaCoordinate`]`>` so they can be converted `.into()`:
+/// [`From`]`<`[`SchemaCoordinate`]`>` so they can be converted using `.into()`:
 ///
 /// ```
 /// use apollo_compiler::coord;
