@@ -4,6 +4,8 @@ use crate::schema;
 use std::fmt;
 use std::fmt::Display;
 
+/// Builder pattern for GraphQL serialization configuration.
+/// Implements [`Display`] and [`ToString`].
 #[derive(Debug, Clone)]
 pub struct Serialize<'a, T> {
     pub(crate) node: &'a T,
