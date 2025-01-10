@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Features
 
 - **Overload `DirectiveList::push` to also accept a plain `Directive`, not just `Node<Directive>` - [SimonSapin], [pull/942]**
+- **Add `ExtendedType::as_scalar(&self) -> Option<&ScalarType>` and similar - [SimonSapin], [pull/942]**
 
 ## Fixes
 - **Validate against reserved names starting with `__` in schemas - [SimonSapin], [pull/923].**
