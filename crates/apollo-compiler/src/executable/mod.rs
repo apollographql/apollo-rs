@@ -471,7 +471,8 @@ impl Operation {
     ///
     /// This does **not** perform [field merging] nor fragment spreads de-duplication,
     /// so multiple items in this iterator may have the same response key,
-    /// point to the same field definition, or even be the same field selection.
+    /// point to the same field definition,
+    /// or even be the same field selection (reached through different fragments).
     ///
     /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
     pub fn root_fields<'doc>(

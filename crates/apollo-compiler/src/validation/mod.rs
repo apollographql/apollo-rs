@@ -33,10 +33,9 @@ use crate::executable::ConflictingFieldArgument;
 use crate::executable::ConflictingFieldName;
 use crate::executable::ConflictingFieldType;
 use crate::executable::VariableDefinition;
-use crate::execution::GraphQLError;
-use crate::execution::Response;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::response::GraphQLError;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
@@ -132,7 +131,7 @@ pub(crate) struct ExecutableValidationContext<'a> {
 }
 
 impl<'a> ExecutableValidationContext<'a> {
-    pub fn new(schema: Option<&'a Schema>) -> Self {
+    pub(crate) fn new(schema: Option<&'a Schema>) -> Self {
         Self {
             schema,
             implementers_map: Default::default(),
@@ -140,12 +139,12 @@ impl<'a> ExecutableValidationContext<'a> {
     }
 
     /// Returns the schema to validate against, if any.
-    pub fn schema(&self) -> Option<&'a Schema> {
+    pub(crate) fn schema(&self) -> Option<&'a Schema> {
         self.schema
     }
 
     /// Returns a cached reference to the implementers map.
-    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+    pub(crate) fn implementers_map(&self) -> &HashMap<Name, Implementers> {
         self.implementers_map.get_or_init(|| {
             self.schema
                 .map(|schema| schema.implementers_map())
@@ -154,7 +153,7 @@ impl<'a> ExecutableValidationContext<'a> {
     }
 
     /// Returns a context for operation validation.
-    pub fn operation_context<'o>(
+    pub(crate) fn operation_context<'o>(
         &'o self,
         variables: &'o [Node<VariableDefinition>],
     ) -> OperationValidationContext<'o> {
@@ -176,12 +175,12 @@ pub(crate) struct OperationValidationContext<'a> {
 }
 
 impl<'a> OperationValidationContext<'a> {
-    pub fn schema(&self) -> Option<&'a Schema> {
+    pub(crate) fn schema(&self) -> Option<&'a Schema> {
         self.executable.schema
     }
 
     /// Returns a cached reference to the implementers map.
-    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+    pub(crate) fn implementers_map(&self) -> &HashMap<Name, Implementers> {
         self.executable.implementers_map()
     }
 }
@@ -225,28 +224,9 @@ impl<T> fmt::Display for WithErrors<T> {
 /// which populates [`extensions`][GraphQLError::extensions]
 /// with a `"APOLLO_SUSPECTED_VALIDATION_BUG": true` entry.
 #[derive(Debug, Clone)]
-pub struct SuspectedValidationBug {
+pub(crate) struct SuspectedValidationBug {
     pub message: String,
     pub location: Option<SourceSpan>,
-}
-
-impl SuspectedValidationBug {
-    /// Convert into a JSON-serializable error as represented in a GraphQL response
-    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
-        let Self { message, location } = self;
-        let mut err = GraphQLError::new(message, location, sources);
-        err.extensions
-            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
-        err
-    }
-
-    /// Convert into a response with this error as a [request error]
-    /// that prevented execution from starting.
-    ///
-    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-    pub fn into_response(self, sources: &SourceMap) -> Response {
-        Response::from_request_error(self.into_graphql_error(sources))
-    }
 }
 
 /// A collection of diagnostics returned by some validation method

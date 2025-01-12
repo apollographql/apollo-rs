@@ -67,12 +67,12 @@
 //!     }
 //! }
 //! ```
-use crate::execution::GraphQLError;
 use crate::parser::FileId;
 use crate::parser::LineColumn;
 use crate::parser::SourceFile;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::response::GraphQLError;
 #[cfg(doc)]
 use crate::ExecutableDocument;
 #[cfg(doc)]

@@ -1,4 +1,4 @@
-use apollo_compiler::execution::SchemaIntrospectionQuery;
+use apollo_compiler::introspection;
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err("Provide a query to execute".into());
     };
 
-    let query = if filename.starts_with('{') {
+    let doc = if filename.starts_with('{') {
         ExecutableDocument::parse_and_validate(&schema, filename, "input.graphql")
     } else {
         ExecutableDocument::parse_and_validate(
@@ -31,17 +31,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     .map_err(|err| err.errors.to_string())?;
 
-    let variables = Default::default();
-    let response = SchemaIntrospectionQuery::split_and_execute(
+    let response = introspection::partial_execute(
         &schema,
-        &query,
-        query
-            .operations
+        &schema.implementers_map(),
+        &doc,
+        doc.operations
             .get(None)
-            .map_err(|_| "Provided query must be an anonymous introspection query")?,
-        Valid::assume_valid_ref(&variables),
-        |_| panic!("Provided query must not have non-introspection elements"),
-    );
+            .map_err(|_| "Must have exactly one operation")?,
+        Valid::assume_valid_ref(&Default::default()),
+    )
+    .map_err(|e| e.message().to_string())?;
 
     serde_json::to_writer_pretty(std::io::stdout().lock(), &response)?;
 
