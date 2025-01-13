@@ -21,8 +21,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-- **Reduce scope of execution / introspection APIs - [SimonSapin], [pull/942]**
-- **Move `apollo_compiler::schema::ArgumentByNameError` into `apollo_compiler::ast` - [SimonSapin], [pull/944]**
+- **Reduce scope of execution / introspection APIs - [SimonSapin], [pull/944]**
+- **Move `apollo_compiler::schema::ArgumentByNameError` into `apollo_compiler::ast` - [SimonSapin], [pull/942]**
 
 ## Features
 
