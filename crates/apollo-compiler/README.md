@@ -179,9 +179,11 @@ assert_eq!(in_stock_directive, ["join__field"]);
 
 #### Printing diagnostics for a faulty GraphQL document
 ```rust
+use apollo_compiler::parser::Parser;
+
 let input = "{ ... }";
 
-if let Err(diagnostics) = apollo_compiler::parse_mixed_validate(input, "document.graphql") {
+if let Err(diagnostics) = Parser::new().parse_mixed_validate(input, "document.graphql") {
     println!("{diagnostics}")
 }
 ```

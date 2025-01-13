@@ -1,4 +1,4 @@
-use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use std::fs;
@@ -19,7 +19,9 @@ fn compile_from_dir() -> io::Result<()> {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let src = fs::read_to_string(entry.path()).expect("Could not read document file.");
-            let (_schema, _executable) = parse_mixed_validate(&src, entry.path()).unwrap();
+            let (_schema, _executable) = Parser::new()
+                .parse_mixed_validate(&src, entry.path())
+                .unwrap();
         }
     }
     Ok(())

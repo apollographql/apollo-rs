@@ -11,6 +11,7 @@ use apollo_compiler::ast;
 use apollo_compiler::collections::IndexMap;
 use apollo_compiler::name;
 use apollo_compiler::parser::FileId;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::schema;
 use apollo_compiler::ty;
 use apollo_compiler::validation::DiagnosticList;
@@ -36,7 +37,7 @@ use std::path::PathBuf;
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let file_name = path.file_name().unwrap();
-        match apollo_compiler::parse_mixed_validate(text, file_name) {
+        match Parser::new().parse_mixed_validate(text, file_name) {
             Err(errors) => {
                 println!("{errors}");
                 panic!(
@@ -68,7 +69,7 @@ fn validation() {
                 Ok(ast) => ast.validate_standalone_executable().err(),
             };
         } else {
-            schema_validation_errors = apollo_compiler::parse_mixed_validate(text, filename).err();
+            schema_validation_errors = Parser::new().parse_mixed_validate(text, filename).err();
             executable_validation_errors = None;
         };
         let mut formatted = String::new();

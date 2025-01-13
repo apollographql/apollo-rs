@@ -1,4 +1,4 @@
-use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 
@@ -58,7 +58,9 @@ fn is_introspection_operation() {
           }
         }
     "#;
-    let (_, doc) = parse_mixed_validate(query_input, "query.graphql").unwrap();
+    let (_, doc) = Parser::new()
+        .parse_mixed_validate(query_input, "query.graphql")
+        .unwrap();
     assert!(doc.operations.named["TypeIntrospect"].is_introspection(&doc));
 }
 
@@ -92,8 +94,12 @@ fn is_not_introspection_operation() {
         }
     "#;
 
-    let (_, query_doc) = parse_mixed_validate(query_input, "query.graphql").unwrap();
-    let (_, mutation_doc) = parse_mixed_validate(mutation_input, "mutation.graphql").unwrap();
+    let (_, query_doc) = Parser::new()
+        .parse_mixed_validate(query_input, "query.graphql")
+        .unwrap();
+    let (_, mutation_doc) = Parser::new()
+        .parse_mixed_validate(mutation_input, "mutation.graphql")
+        .unwrap();
 
     assert!(!query_doc.operations.named["CheckStock"].is_introspection(&query_doc));
     assert!(!mutation_doc.operations.named["PurchaseBasket"].is_introspection(&mutation_doc));
@@ -173,9 +179,12 @@ fn is_introspection_deep() {
     let query_input_not_introspect = format!("{query_input}{non_introspection_fragment}");
     let query_input = format!("{query_input}{introspection_fragment}");
 
-    let (_, query_doc) = parse_mixed_validate(query_input, "query.graphql").unwrap();
-    let (_, query_not_introspect_doc) =
-        parse_mixed_validate(query_input_not_introspect, "query2.graphql").unwrap();
+    let (_, query_doc) = Parser::new()
+        .parse_mixed_validate(query_input, "query.graphql")
+        .unwrap();
+    let (_, query_not_introspect_doc) = Parser::new()
+        .parse_mixed_validate(query_input_not_introspect, "query2.graphql")
+        .unwrap();
 
     assert!(query_doc.operations.named["IntrospectDeepFragments"].is_introspection(&query_doc));
     assert!(
@@ -223,9 +232,12 @@ fn is_introspection_repeated_fragment() {
       }
     "#;
 
-    let (_, query_doc_indirect) =
-        parse_mixed_validate(query_input_indirect, "indirect.graphql").unwrap();
-    let (_, query_doc_direct) = parse_mixed_validate(query_input_direct, "direct.graphql").unwrap();
+    let (_, query_doc_indirect) = Parser::new()
+        .parse_mixed_validate(query_input_indirect, "indirect.graphql")
+        .unwrap();
+    let (_, query_doc_direct) = Parser::new()
+        .parse_mixed_validate(query_input_direct, "direct.graphql")
+        .unwrap();
 
     assert!(
         query_doc_indirect.operations.named["IntrospectRepeatedIndirectFragment"]
