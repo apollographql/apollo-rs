@@ -1,7 +1,11 @@
 //! GraphQL [requests](https://spec.graphql.org/draft/#request)
+//!
+//! This exists primarily to support [`introspection::partial_execute`].
 
 use crate::executable::Operation;
 use crate::execution::input_coercion::InputCoercionError;
+#[cfg(doc)]
+use crate::introspection;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::response::GraphQLError;

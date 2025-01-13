@@ -1,6 +1,8 @@
 //! [Execution](https://spec.graphql.org/draft/#sec-Execution) engine
 //! for the [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
 //! portion of a query
+//!
+//! The main entry point is [`partial_execute`].
 
 use crate::collections::HashMap;
 use crate::executable::Operation;
@@ -46,6 +48,7 @@ pub fn check_max_depth(
 /// Excecutes the [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
 /// portion of a query and returns a partial response.
 ///
+/// * Consider calling [`check_max_depth`] before this function
 /// * `implementers_map` is expected to be form
 ///   [`schema.implementers_map()`][Schema::implementers_map],
 ///   allowing it to be computed once and reused for many queries

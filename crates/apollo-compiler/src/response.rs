@@ -1,5 +1,9 @@
 //! GraphQL [responses](https://spec.graphql.org/draft/#sec-Response)
+//!
+//! This exists primarily to support [`introspection::partial_execute`].
 
+#[cfg(doc)]
+use crate::introspection;
 use crate::parser::LineColumn;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
