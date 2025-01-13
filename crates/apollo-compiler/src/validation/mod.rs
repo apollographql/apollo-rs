@@ -53,7 +53,7 @@ use std::sync::OnceLock;
 /// * [`Schema::validate`]
 /// * [`ExecutableDocument::parse_and_validate`]
 /// * [`ExecutableDocument::validate`]
-/// * [`coerce_variable_values`][crate::execution::coerce_variable_values]
+/// * [`coerce_variable_values`][crate::request::coerce_variable_values]
 ///
 /// … or by explicitly skipping it with [`Valid::assume_valid`].
 ///

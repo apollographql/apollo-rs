@@ -39,7 +39,7 @@ pub struct ExecutionResponse {
 }
 
 /// A serializable [error](https://spec.graphql.org/October2021/#sec-Errors.Error-result-format),
-/// as found in a GraphQL [response][Response].
+/// as found in a GraphQL response.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GraphQLError {
@@ -52,7 +52,7 @@ pub struct GraphQLError {
     pub locations: Vec<LineColumn>,
 
     /// If non-empty, the error is a [field error]
-    /// for the particular field found at this path in [`Response::data`].
+    /// for the particular field found at this path in [`ExecutionResponse::data`].
     ///
     /// [field error]: https://spec.graphql.org/October2021/#sec-Errors.Field-errors
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -67,7 +67,7 @@ pub struct GraphQLError {
 
 /// A `Vec<ResponseDataPathSegment>` like in [`GraphQLError::path`]
 /// represents a [path](https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format)
-/// into [`Response::data`],
+/// into [`ExecutionResponse::data`],
 /// starting at the root and indexing into increasingly nested JSON objects or arrays.
 ///
 /// # Example
