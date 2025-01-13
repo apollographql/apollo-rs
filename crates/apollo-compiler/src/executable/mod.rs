@@ -1,5 +1,52 @@
 //! High-level representation of an executable document,
 //! which can contain operations and fragments.
+//!
+//! Compared to an [`ast::Document`] which follows closely the structure of GraphQL syntax,
+//! an [`ExecutableDocument`] interpreted in the context of a valid [`Schema`]
+//! and contains typing information.
+//!
+//! In some cases like [`SelectionSet`], this module and the [`ast`] module
+//! define different Rust types with the same names.
+//! In other cases like [`Directive`] there is no data structure difference needed,
+//! so this module reuses and publicly re-exports some Rust types from the [`ast`] module.
+//!
+//! ## “Build” errors
+//!
+//! As a result of how `ExecutableDocument` containing typing information,
+//! not all AST documents (even if filtering out type system definitions) can be fully represented:
+//! creating a `ExecutableDocument` can cause errors (on top of any potential syntax error)
+//! for cases like selecting a field not defined in the schema.
+//!
+//! When such errors (or in [`ExecutableDocument::parse`], syntax errors) happen,
+//! a partial document is returned together with a list of diagnostics.
+//!
+//! ## Structural sharing and mutation
+//!
+//! Like in AST, many parts of a `ExecutableDocument` are reference-counted with [`Node`].
+//! This allows sharing nodes between documents without cloning entire subtrees.
+//! To modify a node, the [`make_mut`][Node::make_mut] method provides copy-on-write semantics.
+//!
+//! ## Validation
+//!
+//! The [Validation] section of the GraphQL specification defines validation rules
+//! beyond syntax errors and errors detected while constructing a `ExecutableDocument`.
+//! The [`validate`][ExecutableDocument::validate] method returns either:
+//!
+//! * An immutable [`Valid<ExecutableDocument>`] type wrapper, or
+//! * The document together with a list of diagnostics
+//!
+//! If there is no mutation needed between parsing and validation,
+//! [`ExecutableDocument::parse_and_validate`] does both in one step.
+//!
+//! [Validation]: https://spec.graphql.org/draft/#sec-Validation
+//!
+//! ## Serialization
+//!
+//! `ExecutableDocument` and other types types implement [`Display`][std::fmt::Display]
+//! and [`ToString`] by serializing to GraphQL syntax with a default configuration.
+//! [`serialize`][ExecutableDocument::serialize] methods return a builder
+//! that has chaining methods for setting serialization configuration,
+//! and also implements `Display` and `ToString`.
 
 use crate::ast;
 use crate::collections::IndexMap;
@@ -70,6 +117,8 @@ pub struct FieldSet {
     pub selection_set: SelectionSet,
 }
 
+/// An [_OperationDefinition_](https://spec.graphql.org/draft/#OperationDefinition)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,
@@ -79,6 +128,8 @@ pub struct Operation {
     pub selection_set: SelectionSet,
 }
 
+/// A [_FragmentDefinition_](https://spec.graphql.org/draft/#FragmentDefinition)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
     pub name: Name,
@@ -86,12 +137,16 @@ pub struct Fragment {
     pub selection_set: SelectionSet,
 }
 
+/// A [_SelectionSet_](https://spec.graphql.org/draft/#SelectionSet)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectionSet {
     pub ty: NamedType,
     pub selections: Vec<Selection>,
 }
 
+/// A [_Selection_](https://spec.graphql.org/draft/#Selection)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
     Field(Node<Field>),
@@ -99,6 +154,8 @@ pub enum Selection {
     InlineFragment(Node<InlineFragment>),
 }
 
+/// A [_Field_](https://spec.graphql.org/draft/#Field) selection,
+/// linked to the corresponding field definition in the schema.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Field {
     /// The definition of this field in an object type or interface type definition in the schema
@@ -110,12 +167,16 @@ pub struct Field {
     pub selection_set: SelectionSet,
 }
 
+/// A [_FragmentSpread_](https://spec.graphql.org/draft/#FragmentSpread)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
     pub directives: DirectiveList,
 }
 
+/// A [_InlineFragment_](https://spec.graphql.org/draft/#InlineFragment)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,

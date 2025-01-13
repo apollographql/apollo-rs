@@ -22,12 +22,15 @@
 //! In other cases like [`Directive`] there is no data structure difference needed,
 //! so this module reuses and publicly re-exports some Rust types from the [`ast`] module.
 //!
-//! ## Build errors
+//! ## “Build” errors
 //!
-//! As a result, not all AST documents (even if excluding executable definitions)
-//! can be fully represented:
+//! As a result of how `Schema` is structured,
+//! not all AST documents (even if filtering out executable definitions) can be fully represented:
 //! creating a `Schema` can cause errors (on top of any potential syntax error)
 //! for cases like name collisions.
+//!
+//! When such errors (or in [`Schema::parse`], syntax errors) happen,
+//! a partial schema is returned together with a list of diagnostics.
 //!
 //! ## Structural sharing and mutation
 //!
@@ -35,6 +38,20 @@
 //! This allows sharing nodes between documents without cloning entire subtrees.
 //! To modify a node or component,
 //! the [`make_mut`][Node::make_mut] method provides copy-on-write semantics.
+//!
+//! ## Validation
+//!
+//! The [Type System] section of the GraphQL specification defines validation rules
+//! beyond syntax errors and errors detected while constructing a `Schema`.
+//! The [`validate`][Schema::validate] method returns either:
+//!
+//! * An immutable [`Valid<Schema>`] type wrapper, or
+//! * The schema together with a list of diagnostics
+//!
+//! If there is no mutation needed between parsing and validation,
+//! [`Schema::parse_and_validate`] does both in one step.
+//!
+//! [Type System]: https://spec.graphql.org/draft/#sec-Type-System
 //!
 //! ## Serialization
 //!
