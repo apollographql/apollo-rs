@@ -1,7 +1,7 @@
 use apollo_compiler::ast;
 use apollo_compiler::ast::Value;
 use apollo_compiler::name;
-use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::Node;
 
@@ -42,7 +42,8 @@ type Products {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(
@@ -75,7 +76,8 @@ type Product {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(
@@ -125,7 +127,8 @@ type Product {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(
@@ -242,7 +245,9 @@ fn variables_in_const_contexts() {
         *value.make_mut() = Value::Variable(name!(x))
     }
 
-    let (schema, doc) = apollo_compiler::parse_mixed_validate(input, "input.graphql").unwrap();
+    let (schema, doc) = Parser::new()
+        .parse_mixed_validate(input, "input.graphql")
+        .unwrap();
     let mut doc = doc.into_inner();
 
     let operation = doc.operations.anonymous.as_mut().unwrap().make_mut();

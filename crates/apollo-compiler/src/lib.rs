@@ -18,5 +18,4 @@ pub use self::executable::ExecutableDocument;
 pub use self::name::InvalidNameError;
 pub use self::name::Name;
 pub use self::node::Node;
-pub use self::parser::parse_mixed_validate;
 pub use self::schema::Schema;

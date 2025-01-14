@@ -1,4 +1,5 @@
 use apollo_compiler::executable;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::Node;
 use std::fs;
 use std::path::Path;
@@ -7,7 +8,7 @@ fn compile_query() -> Option<Node<executable::Fragment>> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
-    let (_, document) = apollo_compiler::parse_mixed_validate(src, file).unwrap();
+    let (_, document) = Parser::new().parse_mixed_validate(src, file).unwrap();
     let operation_names: Vec<_> = document
         .operations
         .named

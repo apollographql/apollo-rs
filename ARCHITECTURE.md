@@ -7,8 +7,8 @@ This document gives an overview of how various bits of `apollo-rs` work together
 theme for Rust as a language, and we want to make sure that all component APIs
 we provide are aligned with these principles.
 
-2. **Stability and reliability.** Spec-compliant, and idempotent APIs which,
-when complete, can be used safely in enterprise-grade codebases.
+2. **Stability and reliability.** Spec-compliant and idempotent APIs
+which can be used safely in enterprise-grade codebases.
 
 3. **Diagnostics.** The tools are to be written in a way that will allow us to
 produce detailed diagnostics. It does not panic or return early if there is a
@@ -20,19 +20,17 @@ maintaining this project.
 4. **Extensibility.** The parser is written to work with different use cases in
 our budding Rust GraphQL ecosystem, be it building schema-diagnostics for Rover,
 or writing out query planning and composition algorithms in Rust. These all have
-quite different requirements when it comes to CST manipulation. We wanted to
+quite different requirements when it comes to document manipulation. We wanted to
 make sure we account for them early on.
 
 ## `apollo-parser`
 
 `apollo-parser` is the parser crate of `apollo-rs`. Its job is to take GraphQL
-queries or schemas as input and produce an Concrete Syntax Tree (CST). Users of
-apollo-parser can then programmatically traverse the CST to get information
-about their input. 
+queries or schemas as string input and produce an Concrete Syntax Tree (CST).
+Users of apollo-parser can then programmatically traverse the CST to get information
+about their input.
 
-There are three main components of `apollo-parser`: the lexer, the parser, and the analyser. We already have the lexer and the parser, and the analyser is in the process of getting written.
-
-![An overview of apollo-parser diagram. We initially start of with input data. A Lexer performs lexical analysis on the data and produces tokens. Tokens get syntactically analysed by the parser, first into an untyped syntax tree, then into a typed syntax tree. "Future Work" indicates that a typed syntax tree will be semantically analysed by the "Analyser" to produce a semantic model.](images/apollo-parser-overview.png)
+There are two main components of `apollo-parser`: the lexer and the parser.
 
 `apollo-parser` is a hand-written recursive-descent parser. This is a type of
 parser that starts from the top of a file and recursively walks its way down
@@ -66,7 +64,8 @@ if has_exponent || has_fractional {
 }
 ```
 
-The lexer returns a `Vec<Token>` and `Vec<Error>` that the parser then uses to create a tree. If the error vec is empty, we can be sure that the input is lexically correct!
+The lexer is an iterator of `Result<Token, Error>` that the parser then uses to create a tree.
+If no error is emitted, we can be sure that the input is lexically correct!
 
 ### Parser
 The next step in our parsing pipeline is the parser. The parser’s job is to take the tokens produced by the lexer and create nodes with information and relationships that in the end make up a syntax tree. Much like with the lexer, the parser is error resilient. Syntactic errors, such as a missing `Name` in a `ScalarDefinition`, are added to parser’s error vector while the parser carries on parsing.
