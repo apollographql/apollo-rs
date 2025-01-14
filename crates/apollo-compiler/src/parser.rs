@@ -95,20 +95,6 @@ impl std::fmt::Debug for LineColumn {
     }
 }
 
-/// Parse a schema and executable document from the given source text
-/// containing a mixture of type system definitions and executable definitions.
-/// and validate them.
-/// This is mostly useful for unit tests.
-///
-/// `path` is the filesystem path (or arbitrary string) used in diagnostics
-/// to identify this source file to users.
-pub fn parse_mixed_validate(
-    source_text: impl Into<String>,
-    path: impl AsRef<Path>,
-) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList> {
-    Parser::new().parse_mixed_validate(source_text, path)
-}
-
 impl Parser {
     /// Create a `Parser` with default configuration.
     /// Use other methods to change the configuration.
