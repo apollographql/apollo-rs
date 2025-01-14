@@ -713,6 +713,18 @@ impl OperationType {
         }
     }
 
+    pub fn is_query(&self) -> bool {
+        matches!(self, Self::Query)
+    }
+
+    pub fn is_mutation(&self) -> bool {
+        matches!(self, Self::Mutation)
+    }
+
+    pub fn is_subscription(&self) -> bool {
+        matches!(self, Self::Subscription)
+    }
+
     serialize_method!();
 }
 

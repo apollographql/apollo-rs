@@ -55,7 +55,7 @@ impl<'a> FieldSelection<'a> {
         }
     }
 
-    pub fn coordinate(&self) -> TypeAttributeCoordinate {
+    pub(crate) fn coordinate(&self) -> TypeAttributeCoordinate {
         TypeAttributeCoordinate {
             ty: self.parent_type.clone(),
             attribute: self.field.name.clone(),
