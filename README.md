@@ -16,7 +16,7 @@ following crates currently exist:
 
 * [**`apollo-compiler`**](crates/apollo-compiler/) - a library to manipulet, semantically analyze, and validate GraphQL schema definition and query language
 * [**`apollo-parser`**](crates/apollo-parser) - a library to parse the GraphQL (used by `apollo-compiler`)
-* [**`apollo-smith`**](crates/apollo-smith) - a test case generator to deterministically producing arbitrary GraphQL documents
+* [**`apollo-smith`**](crates/apollo-smith) - a test case generator to deterministically produce arbitrary GraphQL documents
 
 Please check out their respective READMEs for usage examples.
 
