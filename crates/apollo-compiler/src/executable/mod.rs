@@ -32,6 +32,7 @@ pub use crate::ast::OperationType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 pub use crate::ast::VariableDefinition;
+use crate::request::RequestError;
 pub use crate::Name;
 
 /// Executable definitions, annotated with type information
@@ -271,18 +272,6 @@ pub(crate) enum ExecutableDefinitionName {
     Fragment(Name),
 }
 
-/// A request error returned by [`OperationMap::get`]
-///
-/// If `get_operation`’s `name_request` argument was `Some`, this error indicates
-/// that the document does not contain an operation with the requested name.
-///
-/// If `name_request` was `None`, the request is ambiguous
-/// because the document contains multiple operations
-/// (or zero, though the document would be invalid in that case).
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub struct GetOperationError();
-
 impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
@@ -371,7 +360,7 @@ impl OperationMap {
 
     /// Return the relevant operation for a request, or a request error
     ///
-    /// This the [GetOperation()](https://spec.graphql.org/October2021/#GetOperation())
+    /// This is the [_GetOperation()_](https://spec.graphql.org/October2021/#GetOperation())
     /// algorithm in the _Executing Requests_ section of the specification.
     ///
     /// A GraphQL request comes with a document (which may contain multiple operations)
@@ -379,44 +368,65 @@ impl OperationMap {
     /// with that name, which is expected to exist. When it is not given / null / `None`,
     /// the document is expected to contain a single operation (which may or may not be named)
     /// to avoid ambiguity.
-    pub fn get(&self, name_request: Option<&str>) -> Result<&Node<Operation>, GetOperationError> {
+    pub fn get(&self, name_request: Option<&str>) -> Result<&Node<Operation>, RequestError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named.get(name)
-        } else if let Some(op) = &self.anonymous {
-            // No name request, return the anonymous operation if it’s the only operation
-            self.named.is_empty().then_some(op)
-        } else {
-            // No name request or anonymous operation, return a named operation if it’s the only one
             self.named
-                .values()
-                .next()
-                .and_then(|op| (self.named.len() == 1).then_some(op))
+                .get(name)
+                .ok_or_else(|| format!("No operation named '{name}'"))
+        } else {
+            // No name request (`operationName` unspecified or null)
+            if let Some(op) = &self.anonymous {
+                // Return the anonymous operation if it’s the only operation
+                self.named.is_empty().then_some(op)
+            } else {
+                // No anonymous operation, return a named operation if it’s the only one
+                self.named
+                    .values()
+                    .next()
+                    .and_then(|op| (self.named.len() == 1).then_some(op))
+            }
+            .ok_or_else(|| {
+                "Ambiguous request: multiple operations but no specified `operationName`".to_owned()
+            })
         }
-        .ok_or(GetOperationError())
+        .map_err(|message| RequestError {
+            message,
+            location: None,
+            is_suspected_validation_bug: false,
+        })
     }
 
     /// Similar to [`get`][Self::get] but returns a mutable reference.
-    pub fn get_mut(
-        &mut self,
-        name_request: Option<&str>,
-    ) -> Result<&mut Operation, GetOperationError> {
+    pub fn get_mut(&mut self, name_request: Option<&str>) -> Result<&mut Operation, RequestError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named.get_mut(name)
-        } else if let Some(op) = &mut self.anonymous {
-            // No name request, return the anonymous operation if it’s the only operation
-            self.named.is_empty().then_some(op)
-        } else {
-            // No name request or anonymous operation, return a named operation if it’s the only one
-            let len = self.named.len();
             self.named
-                .values_mut()
-                .next()
-                .and_then(|op| (len == 1).then_some(op))
+                .get_mut(name)
+                .ok_or_else(|| format!("No operation named '{name}'"))
+        } else {
+            // No name request (`operationName` unspecified or null)
+            if let Some(op) = &mut self.anonymous {
+                // Return the anonymous operation if it’s the only operation
+                self.named.is_empty().then_some(op)
+            } else {
+                // No anonymous operation, return a named operation if it’s the only one
+                let len = self.named.len();
+                self.named
+                    .values_mut()
+                    .next()
+                    .and_then(|op| (len == 1).then_some(op))
+            }
+            .ok_or_else(|| {
+                "Ambiguous request: multiple operations but no specified `operationName`".to_owned()
+            })
         }
         .map(Node::make_mut)
-        .ok_or(GetOperationError())
+        .map_err(|message| RequestError {
+            message,
+            location: None,
+            is_suspected_validation_bug: false,
+        })
     }
 
     /// Insert the given operation in either `named_operations` or `anonymous_operation`
