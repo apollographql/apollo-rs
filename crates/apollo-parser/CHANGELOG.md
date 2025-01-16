@@ -17,6 +17,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.8.4](https://crates.io/crates/apollo-parser/0.8.4) - 2025-01-16
+
+## Maintenance
+- **Update `rowan` dependency to 0.16 - [pull/927].**
+
+[pull/927]: https://github.com/apollographql/apollo-rs/pull/927
+
+
 # [0.8.3](https://crates.io/crates/apollo-parser/0.8.3) - 2024-10-07
 
 ## Fixes
