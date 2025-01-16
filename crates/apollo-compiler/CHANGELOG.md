@@ -4,7 +4,7 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2024-mm-dd
+<!-- # [x.x.x] (unreleased) - 2025-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -17,12 +17,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2024-mm-dd
+# [1.25.0](https://crates.io/crates/apollo-compiler/1.25.0) - 2025-01-14
+
+## `apollo-compiler` 1.x is stable!
+
+While version 1.25.0 has some breaking changes compared to 1.0.0-beta.24 (see below),
+with this release `apollo-compiler` 1.x is leaving "beta" status
+and will adhere to [semantic versioning](https://semver.org) going forward:
+we will try to avoid breaking changes, and when they do happen it will be in version 2.0.
+
+For stable versions we recommend using a “normal” dependency like `apollo_compiler = "1.25.0"`
+instead of an `=` exact dependency like `apollo_compiler = "=1.0.0-beta.24"`.
 
 ## BREAKING
 
 - **Reduce scope of execution / introspection APIs - [SimonSapin], [pull/944]**
 - **Move `apollo_compiler::schema::ArgumentByNameError` into `apollo_compiler::ast` - [SimonSapin], [pull/942]**
+- **Remove the `parse_mixed_validate` free function, use the `Parser` method instead - [SimonSapin], [pull/945]**
 
 ## Features
 
@@ -43,6 +54,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/929]: https://github.com/apollographql/apollo-rs/pull/929
 [pull/942]: https://github.com/apollographql/apollo-rs/pull/942
 [pull/944]: https://github.com/apollographql/apollo-rs/pull/944
+[pull/945]: https://github.com/apollographql/apollo-rs/pull/945
 
 
 # [1.0.0-beta.24](https://crates.io/crates/apollo-compiler/1.0.0-beta.24) - 2024-09-24
