@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.26.0](https://crates.io/crates/apollo-compiler/1.26.0) - 2025-01-23
+
+## Features
+
+- **Provide access to line/col lookup on a `SourceFile` - [dylan-apollo], [pull/949]**
+
+[dylan-apollo]: https://github.com/dylan-apollo
+[pull/949]: https://github.com/apollographql/apollo-rs/issues/949
+
+
 # [1.25.0](https://crates.io/crates/apollo-compiler/1.25.0) - 2025-01-14
 
 ## `apollo-compiler` 1.x is stable!
