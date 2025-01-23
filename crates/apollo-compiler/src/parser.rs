@@ -433,7 +433,7 @@ impl SourceFile {
 
     /// Get starting and ending [`LineColumn`]s for the given `range` 0-indexed UTF-8 byte offsets.
     ///
-    /// Returns `None` if the offset is out of bounds.
+    /// Returns `None` if either offset is out of bounds.
     pub fn get_line_column_range(&self, range: Range<usize>) -> Option<Range<LineColumn>> {
         let start = self.get_line_column(range.start)?;
         let end = self.get_line_column(range.end)?;
