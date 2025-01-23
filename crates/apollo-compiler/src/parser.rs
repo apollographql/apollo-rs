@@ -420,12 +420,24 @@ impl SourceFile {
         })
     }
 
-    pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
-        let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(index)?;
+    /// Get [`LineColumn`] for the given 0-indexed UTF-8 byte `offset` from the start of the file.
+    ///
+    /// Returns None if the offset is out of bounds.
+    pub fn get_line_column(&self, offset: usize) -> Option<LineColumn> {
+        let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(offset)?;
         Some(LineColumn {
             line: zero_indexed_line + 1,
             column: zero_indexed_column + 1,
         })
+    }
+
+    /// Get starting and ending [`LineColumn`]s for the given `range` 0-indexed UTF-8 byte offsets.
+    ///
+    /// Returns `None` if either offset is out of bounds.
+    pub fn get_line_column_range(&self, range: Range<usize>) -> Option<Range<LineColumn>> {
+        let start = self.get_line_column(range.start)?;
+        let end = self.get_line_column(range.end)?;
+        Some(start..end)
     }
 }
 
@@ -598,9 +610,7 @@ impl SourceSpan {
     /// inclusive.
     pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         let source = sources.get(&self.file_id)?;
-        let start = source.get_line_column(self.offset())?;
-        let end = source.get_line_column(self.end_offset())?;
-        Some(Range { start, end })
+        source.get_line_column_range(self.offset()..self.end_offset())
     }
 }
 
