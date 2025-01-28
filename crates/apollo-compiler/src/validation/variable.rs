@@ -1,12 +1,11 @@
 use crate::ast;
 use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::value::value_of_correct_type;
 use crate::validation::DiagnosticList;
-use crate::validation::RecursionGuard;
 use crate::validation::RecursionLimitError;
-use crate::validation::RecursionStack;
 use crate::validation::SourceSpan;
 use crate::ExecutableDocument;
 use crate::Name;
@@ -81,29 +80,27 @@ pub(crate) fn validate_variable_definitions(
     }
 }
 
-fn walk_selections<'doc>(
+/// Named fragments are "deduplicated": only visited once even if spread multiple times
+fn walk_selections_with_deduped_fragments<'doc>(
     document: &'doc ExecutableDocument,
     selections: &'doc executable::SelectionSet,
     mut f: impl FnMut(&'doc executable::Selection),
 ) -> Result<(), RecursionLimitError> {
-    fn walk_selections_inner<'doc, 'guard>(
+    fn walk_selections_inner<'doc>(
         document: &'doc ExecutableDocument,
         selection_set: &'doc executable::SelectionSet,
-        guard: &mut RecursionGuard<'guard>,
+        seen: &mut HashSet<&'doc Name>,
         f: &mut dyn FnMut(&'doc executable::Selection),
     ) -> Result<(), RecursionLimitError> {
         for selection in &selection_set.selections {
             f(selection);
             match selection {
                 executable::Selection::Field(field) => {
-                    walk_selections_inner(document, &field.selection_set, guard, f)?;
+                    walk_selections_inner(document, &field.selection_set, seen, f)?;
                 }
                 executable::Selection::FragmentSpread(fragment) => {
-                    // Prevent chasing a cyclical reference.
-                    // Note we do not report `CycleError::Recursed` here, as that is already caught
-                    // by the cyclical fragment validation--we just need to ensure that we don't
-                    // overflow the stack.
-                    if guard.contains(&fragment.fragment_name) {
+                    let new = seen.insert(&fragment.fragment_name);
+                    if !new {
                         continue;
                     }
 
@@ -113,22 +110,20 @@ fn walk_selections<'doc>(
                         walk_selections_inner(
                             document,
                             &fragment_definition.selection_set,
-                            &mut guard.push(&fragment.fragment_name)?,
+                            seen,
                             f,
                         )?;
                     }
                 }
                 executable::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(document, &fragment.selection_set, guard, f)?;
+                    walk_selections_inner(document, &fragment.selection_set, seen, f)?;
                 }
             }
         }
         Ok(())
     }
 
-    let mut stack = RecursionStack::new().with_limit(100);
-    let result = walk_selections_inner(document, selections, &mut stack.guard(), &mut f);
-    result
+    walk_selections_inner(document, selections, &mut HashSet::default(), &mut f)
 }
 
 fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &Name> + '_ {
@@ -188,35 +183,34 @@ pub(crate) fn validate_unused_variables(
         unused_vars.remove(used);
     }
 
-    let walked = walk_selections(
-        document,
-        &operation.selection_set,
-        |selection| match selection {
-            executable::Selection::Field(field) => {
-                for used in variables_in_directives(&field.directives) {
-                    unused_vars.remove(used);
-                }
-                for used in variables_in_arguments(&field.arguments) {
-                    unused_vars.remove(used);
-                }
-            }
-            executable::Selection::FragmentSpread(fragment) => {
-                if let Some(fragment_def) = document.fragments.get(&fragment.fragment_name) {
-                    for used in variables_in_directives(&fragment_def.directives) {
+    let walked =
+        walk_selections_with_deduped_fragments(document, &operation.selection_set, |selection| {
+            match selection {
+                executable::Selection::Field(field) => {
+                    for used in variables_in_directives(&field.directives) {
+                        unused_vars.remove(used);
+                    }
+                    for used in variables_in_arguments(&field.arguments) {
                         unused_vars.remove(used);
                     }
                 }
-                for used in variables_in_directives(&fragment.directives) {
-                    unused_vars.remove(used);
+                executable::Selection::FragmentSpread(fragment) => {
+                    if let Some(fragment_def) = document.fragments.get(&fragment.fragment_name) {
+                        for used in variables_in_directives(&fragment_def.directives) {
+                            unused_vars.remove(used);
+                        }
+                    }
+                    for used in variables_in_directives(&fragment.directives) {
+                        unused_vars.remove(used);
+                    }
+                }
+                executable::Selection::InlineFragment(fragment) => {
+                    for used in variables_in_directives(&fragment.directives) {
+                        unused_vars.remove(used);
+                    }
                 }
             }
-            executable::Selection::InlineFragment(fragment) => {
-                for used in variables_in_directives(&fragment.directives) {
-                    unused_vars.remove(used);
-                }
-            }
-        },
-    );
+        });
     if walked.is_err() {
         diagnostics.push(None, DiagnosticData::RecursionError {});
         return;
