@@ -1,25 +1,38 @@
+use crate::collections::HashSet;
 use crate::executable::Selection;
 use crate::executable::SelectionSet;
 use crate::request::RequestError;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
+use crate::Name;
 
 const MAX_LISTS_DEPTH: u32 = 3;
 
-pub(super) fn check_selection_set(
-    document: &Valid<ExecutableDocument>,
+pub(super) fn check_selection_set<'doc>(
+    document: &'doc Valid<ExecutableDocument>,
+    fragments_visited: &mut HashSet<&'doc Name>,
     depth_so_far: u32,
-    selection_set: &SelectionSet,
+    selection_set: &'doc SelectionSet,
 ) -> Result<(), RequestError> {
     for selection in &selection_set.selections {
         match selection {
-            Selection::InlineFragment(inline) => {
-                check_selection_set(document, depth_so_far, &inline.selection_set)?
-            }
+            Selection::InlineFragment(inline) => check_selection_set(
+                document,
+                fragments_visited,
+                depth_so_far,
+                &inline.selection_set,
+            )?,
             Selection::FragmentSpread(spread) => {
-                // Validation ensures that `Valid<ExecutableDocument>` does not contain fragment cycles
                 if let Some(def) = document.fragments.get(&spread.fragment_name) {
-                    check_selection_set(document, depth_so_far, &def.selection_set)?
+                    let new = fragments_visited.insert(&spread.fragment_name);
+                    if new {
+                        check_selection_set(
+                            document,
+                            fragments_visited,
+                            depth_so_far,
+                            &def.selection_set,
+                        )?
+                    }
                 }
             }
             Selection::Field(field) => {
@@ -37,7 +50,7 @@ pub(super) fn check_selection_set(
                         });
                     }
                 }
-                check_selection_set(document, depth, &field.selection_set)?
+                check_selection_set(document, fragments_visited, depth, &field.selection_set)?
             }
         }
     }
