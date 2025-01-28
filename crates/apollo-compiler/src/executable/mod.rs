@@ -79,6 +79,7 @@ pub use crate::ast::OperationType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 pub use crate::ast::VariableDefinition;
+use crate::collections::HashSet;
 use crate::request::RequestError;
 pub use crate::Name;
 
@@ -540,10 +541,10 @@ impl Operation {
     ///
     /// `document` is used to look up fragment definitions.
     ///
-    /// This does **not** perform [field merging] nor fragment spreads de-duplication,
-    /// so multiple items in this iterator may have the same response key,
-    /// point to the same field definition,
-    /// or even be the same field selection (reached through different fragments).
+    /// This does **not** perform [field merging],
+    /// so multiple items in this iterator may have the same response key
+    /// or point to the same field definition.
+    /// Named fragments however are only traversed once even if spread multiple times.
     ///
     /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
     pub fn root_fields<'doc>(
@@ -551,6 +552,7 @@ impl Operation {
         document: &'doc ExecutableDocument,
     ) -> impl Iterator<Item = &'doc Node<Field>> {
         let mut stack = vec![self.selection_set.selections.iter()];
+        let mut fragments_seen = HashSet::default();
         std::iter::from_fn(move || {
             while let Some(selection_set_iter) = stack.last_mut() {
                 match selection_set_iter.next() {
@@ -564,7 +566,10 @@ impl Operation {
                     }
                     Some(Selection::FragmentSpread(spread)) => {
                         if let Some(def) = document.fragments.get(&spread.fragment_name) {
-                            stack.push(def.selection_set.selections.iter())
+                            let new = fragments_seen.insert(&spread.fragment_name);
+                            if new {
+                                stack.push(def.selection_set.selections.iter())
+                            }
                         } else {
                             // Undefined fragments are silently ignored.
                             // They should never happen in a valid document.
@@ -587,9 +592,10 @@ impl Operation {
     ///
     /// `document` is used to look up fragment definitions.
     ///
-    /// This does **not** perform [field merging] nor fragment spreads de-duplication,
-    /// so multiple items in this iterator may have the same response key,
-    /// point to the same field definition, or even be the same field selection.
+    /// This does **not** perform [field merging],
+    /// so multiple items in this iterator may have the same response key
+    /// or point to the same field definition.
+    /// Named fragments however are only traversed once even if spread multiple times.
     ///
     /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
     pub fn all_fields<'doc>(
@@ -597,6 +603,7 @@ impl Operation {
         document: &'doc ExecutableDocument,
     ) -> impl Iterator<Item = &'doc Node<Field>> {
         let mut stack = vec![self.selection_set.selections.iter()];
+        let mut fragments_seen = HashSet::default();
         std::iter::from_fn(move || {
             while let Some(selection_set_iter) = stack.last_mut() {
                 match selection_set_iter.next() {
@@ -613,7 +620,10 @@ impl Operation {
                     }
                     Some(Selection::FragmentSpread(spread)) => {
                         if let Some(def) = document.fragments.get(&spread.fragment_name) {
-                            stack.push(def.selection_set.selections.iter())
+                            let new = fragments_seen.insert(&spread.fragment_name);
+                            if new {
+                                stack.push(def.selection_set.selections.iter())
+                            }
                         } else {
                             // Undefined fragments are silently ignored.
                             // They should never happen in a valid document.

@@ -272,7 +272,7 @@ fn iter_root_fields() {
         op.root_fields(&doc)
             .map(|f| f.name.as_str())
             .collect::<Vec<_>>(),
-        ["f1", "f2", "f3", "f3"]
+        ["f1", "f2", "f3"]
     );
 }
 
@@ -299,6 +299,6 @@ fn iter_all_fields() {
         op.all_fields(&doc)
             .map(|f| f.name.as_str())
             .collect::<Vec<_>>(),
-        ["f1", "inner", "f2", "f3", "f3"]
+        ["f1", "inner", "f2", "f3"]
     );
 }
