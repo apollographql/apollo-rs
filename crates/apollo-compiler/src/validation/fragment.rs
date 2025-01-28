@@ -56,7 +56,7 @@ fn validate_fragment_spread_type(
     against_type: &NamedType,
     type_condition: &NamedType,
     selection: &executable::Selection,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     // Treat a spread that's just literally on the parent type as always valid:
     // by spec text, it shouldn't be, but graphql-{js,java,go} and others all do this.
@@ -119,7 +119,7 @@ pub(crate) fn validate_inline_fragment(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     inline: &Node<executable::InlineFragment>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -172,7 +172,7 @@ pub(crate) fn validate_fragment_spread(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     spread: &Node<executable::FragmentSpread>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -195,7 +195,12 @@ pub(crate) fn validate_fragment_spread(
                     context,
                 );
             }
-            validate_fragment_definition(diagnostics, document, def, context);
+            let new = context
+                .validated_fragments
+                .insert(spread.fragment_name.clone());
+            if new {
+                validate_fragment_definition(diagnostics, document, def, context);
+            }
         }
         None => {
             diagnostics.push(
@@ -212,7 +217,7 @@ pub(crate) fn validate_fragment_definition(
     diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     fragment: &Node<executable::Fragment>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
