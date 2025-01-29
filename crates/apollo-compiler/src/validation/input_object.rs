@@ -114,6 +114,7 @@ pub(crate) fn validate_input_object_definition(
         built_in_scalars,
         &fields,
         ast::DirectiveLocation::InputFieldDefinition,
+        "an input object field",
     );
 
     // validate there is at least one input value on the input object type
@@ -147,6 +148,7 @@ pub(crate) fn validate_argument_definitions(
         built_in_scalars,
         input_values,
         directive_location,
+        "an argument",
     );
 
     let mut seen: HashMap<Name, &Node<ast::InputValueDefinition>> = HashMap::default();
@@ -176,8 +178,14 @@ pub(crate) fn validate_input_value_definitions(
     built_in_scalars: &mut BuiltInScalars,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
+    describe: &'static str,
 ) {
     for input_value in input_values {
+        crate::schema::validation::validate_type_system_name(
+            diagnostics,
+            &input_value.name,
+            describe,
+        );
         super::directive::validate_directives(
             diagnostics,
             Some(schema),
@@ -200,6 +208,13 @@ pub(crate) fn validate_input_value_definitions(
                     },
                 );
             }
+            // TODO: Validate default values in apollo-compiler 2.0
+            // https://github.com/apollographql/apollo-rs/issues/928
+            //
+            // if let Some(default) = &input_value.default_value {
+            //     let var_defs = &[];
+            //     value_of_correct_type(diagnostics, schema, &input_value.ty, default, var_defs);
+            // }
         } else if is_built_in {
             // `validate_schema()` will insert the missing definition
         } else {

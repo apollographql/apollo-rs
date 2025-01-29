@@ -1,176 +1,31 @@
 use crate::collections::HashMap;
-use crate::executable::Operation;
-use crate::executable::OperationType;
-use crate::execution::engine::execute_selection_set;
-use crate::execution::engine::ExecutionMode;
 use crate::execution::resolver::ResolvedValue;
-use crate::execution::GraphQLError;
-use crate::execution::JsonMap;
-use crate::execution::Response;
-use crate::execution::SchemaIntrospectionError;
-use crate::execution::SchemaIntrospectionSplit;
+use crate::execution::resolver::Resolver;
+use crate::execution::resolver::ResolverError;
+use crate::response::JsonMap;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::schema::Name;
-use crate::validation::Valid;
-use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
 use std::borrow::Cow;
-use std::sync::OnceLock;
-
-/// A document with a single query that only has [schema introspection] fields.
-/// Obtained from [`SchemaIntrospectionSplit::split`].
-///
-/// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-#[derive(Clone, Debug)]
-pub struct SchemaIntrospectionQuery(Valid<ExecutableDocument>);
-
-impl std::ops::Deref for SchemaIntrospectionQuery {
-    type Target = Valid<ExecutableDocument>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::fmt::Display for SchemaIntrospectionQuery {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl SchemaIntrospectionQuery {
-    /// Construct a `SchemaIntrospectionQuery` from a document
-    /// assumed to contain exactly one operation that only has [schema introspection] fields.
-    ///
-    /// Generally [`split`][SchemaIntrospectionSplit::split] should be used instead.
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    pub(crate) fn assume_only_intropsection_fields(
-        document: Valid<ExecutableDocument>,
-    ) -> Result<Self, SchemaIntrospectionError> {
-        let operation = document.operations.get(None).unwrap();
-        super::introspection_max_depth::check_introspection_max_depth(&document, operation)
-            .map_err(SchemaIntrospectionError::DeeplyNestedIntrospectionList)?;
-        Ok(Self(document))
-    }
-
-    /// Execute the [schema introspection] parts of an operation
-    /// and wrap a callback to execute the rest (if any).
-    ///
-    /// This is a convenience wrapper for [`split`][SchemaIntrospectionSplit::split]
-    /// and [`execute`][Self::execute].
-    ///
-    /// [schema introspection]: https://spec.graphql.org/October2021/#sec-Schema-Introspection
-    pub fn split_and_execute(
-        schema: &Valid<Schema>,
-        document: &Valid<ExecutableDocument>,
-        operation: &Node<Operation>,
-        variable_values: &Valid<JsonMap>,
-        execute_non_introspection_parts: impl FnOnce(&Valid<ExecutableDocument>) -> Response,
-    ) -> Response {
-        match SchemaIntrospectionSplit::split(schema, document, operation) {
-            Ok(SchemaIntrospectionSplit::Only(introspection_query)) => {
-                introspection_query.execute(schema, variable_values)
-            }
-            Ok(SchemaIntrospectionSplit::None) => execute_non_introspection_parts(document),
-            Ok(SchemaIntrospectionSplit::Both {
-                introspection_query,
-                filtered_document: filtered_operation,
-            }) => {
-                let non_introspection_response =
-                    execute_non_introspection_parts(&filtered_operation);
-                let introspection_response = introspection_query.execute(schema, variable_values);
-                non_introspection_response.merge(introspection_response)
-            }
-            Err(err) => err.into_response(&document.sources),
-        }
-    }
-
-    /// Execute this query and return either a response with data or a [request error]
-    /// that can also be converted with [`into_response`][SuspectedValidationBug::into_response].
-    ///
-    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-    pub fn execute(&self, schema: &Valid<Schema>, variable_values: &Valid<JsonMap>) -> Response {
-        let operation = self.0.operations.get(None).unwrap();
-        execute_introspection_only_query(schema, &self.0, operation, variable_values)
-    }
-}
-
-/// Execute a query whose [root fields][Operation::root_fields] are all intropsection meta-fields:
-/// `__schema`, `__type`, or `__typename`.
-///
-/// Returns an error if `operation_name` does not [correspond to a an operation definition](https://spec.graphql.org/October2021/#GetOperation())
-pub fn execute_introspection_only_query(
-    schema: &Valid<Schema>,
-    document: &Valid<ExecutableDocument>,
-    operation: &Node<Operation>,
-    variable_values: &Valid<JsonMap>,
-) -> Response {
-    if operation.operation_type != OperationType::Query {
-        return Response::from_request_error(GraphQLError::new(
-            format!(
-                "execute_introspection_only_query called with a {}",
-                operation.operation_type.name()
-            ),
-            operation.location(),
-            &document.sources,
-        ));
-    }
-
-    // https://spec.graphql.org/October2021/#sec-Query
-    let object_type_name = operation.object_type();
-    let Some(object_type_def) = schema.get_object(object_type_name) else {
-        return Response::from_request_error(GraphQLError::new(
-            "Undefined root operation type",
-            object_type_name.location(),
-            &document.sources,
-        ));
-    };
-    let implementers_map = &OnceLock::new();
-    let initial_value = &IntrospectionRootResolver(SchemaWithCache {
-        schema,
-        implementers_map,
-    });
-
-    let mut errors = Vec::new();
-    let path = None;
-    let data = execute_selection_set(
-        schema,
-        document,
-        variable_values,
-        &mut errors,
-        path,
-        ExecutionMode::Normal,
-        object_type_def,
-        initial_value,
-        &operation.selection_set.selections,
-    );
-    Response {
-        data: data.into(),
-        errors,
-        extensions: Default::default(),
-    }
-}
 
 #[derive(Clone, Copy)]
-struct SchemaWithCache<'a> {
-    schema: &'a Schema,
-    implementers_map: &'a OnceLock<HashMap<Name, Implementers>>,
+pub(crate) struct SchemaWithImplementersMap<'a> {
+    pub(crate) schema: &'a Schema,
+    pub(crate) implementers_map: &'a HashMap<Name, Implementers>,
 }
 
-impl<'a> SchemaWithCache<'a> {
+impl<'a> SchemaWithImplementersMap<'a> {
     fn implementers_of(&self, interface_name: &str) -> impl Iterator<Item = &'a Name> {
         self.implementers_map
-            .get_or_init(|| self.schema.implementers_map())
             .get(interface_name)
             .into_iter()
             .flat_map(|implementers| &implementers.objects)
     }
 }
 
-impl<'a> std::ops::Deref for SchemaWithCache<'a> {
+impl<'a> std::ops::Deref for SchemaWithImplementersMap<'a> {
     type Target = &'a Schema;
 
     fn deref(&self) -> &Self::Target {
@@ -178,41 +33,41 @@ impl<'a> std::ops::Deref for SchemaWithCache<'a> {
     }
 }
 
-struct IntrospectionRootResolver<'a>(SchemaWithCache<'a>);
+pub(crate) struct IntrospectionRootResolver<'a>(pub(crate) SchemaWithImplementersMap<'a>);
 
 struct TypeDefResolver<'a> {
-    schema: SchemaWithCache<'a>,
+    schema: SchemaWithImplementersMap<'a>,
     name: &'a str,
     def: &'a schema::ExtendedType,
 }
 
 /// Only used for non-null and list types. `TypeDef` is used for everything else.
-struct TypeResolver<'a> {
-    schema: SchemaWithCache<'a>,
+pub(crate) struct TypeResolver<'a> {
+    schema: SchemaWithImplementersMap<'a>,
     ty: Cow<'a, schema::Type>,
 }
 
 struct DirectiveResolver<'a> {
-    schema: SchemaWithCache<'a>,
+    schema: SchemaWithImplementersMap<'a>,
     def: &'a schema::DirectiveDefinition,
 }
 
 struct FieldResolver<'a> {
-    schema: SchemaWithCache<'a>,
+    schema: SchemaWithImplementersMap<'a>,
     def: &'a schema::FieldDefinition,
 }
 
 struct EnumValueResolver<'a> {
-    schema: SchemaWithCache<'a>,
+    schema: SchemaWithImplementersMap<'a>,
     def: &'a schema::EnumValueDefinition,
 }
 
 struct InputValueResolver<'a> {
-    schema: SchemaWithCache<'a>,
+    schema: SchemaWithImplementersMap<'a>,
     def: &'a schema::InputValueDefinition,
 }
 
-fn type_def(schema: SchemaWithCache<'_>, name: impl AsRef<str>) -> ResolvedValue<'_> {
+fn type_def(schema: SchemaWithImplementersMap<'_>, name: impl AsRef<str>) -> ResolvedValue<'_> {
     ResolvedValue::opt_object(
         schema
             .types
@@ -222,7 +77,7 @@ fn type_def(schema: SchemaWithCache<'_>, name: impl AsRef<str>) -> ResolvedValue
 }
 
 fn type_def_opt<'a>(
-    schema: SchemaWithCache<'a>,
+    schema: SchemaWithImplementersMap<'a>,
     name: &Option<impl AsRef<str>>,
 ) -> ResolvedValue<'a> {
     if let Some(name) = name.as_ref() {
@@ -232,7 +87,7 @@ fn type_def_opt<'a>(
     }
 }
 
-fn ty<'a>(schema: SchemaWithCache<'a>, ty: &'a schema::Type) -> ResolvedValue<'a> {
+fn ty<'a>(schema: SchemaWithImplementersMap<'a>, ty: &'a schema::Type) -> ResolvedValue<'a> {
     if let schema::Type::Named(name) = ty {
         type_def(schema, name)
     } else {
@@ -244,7 +99,7 @@ fn ty<'a>(schema: SchemaWithCache<'a>, ty: &'a schema::Type) -> ResolvedValue<'a
 }
 
 fn deprecation_reason<'a>(
-    schema: &SchemaWithCache<'_>,
+    schema: &SchemaWithImplementersMap<'_>,
     opt_directive: Option<&Node<schema::Directive>>,
 ) -> ResolvedValue<'a> {
     ResolvedValue::leaf(
@@ -254,23 +109,35 @@ fn deprecation_reason<'a>(
     )
 }
 
-impl_resolver! {
-    for IntrospectionRootResolver<'_>:
-
-    __typename = unreachable!();
-
-    fn __schema(&self_) {
-        Ok(ResolvedValue::object(self_.0))
+impl Resolver for IntrospectionRootResolver<'_> {
+    fn type_name(&self) -> &'static str {
+        unreachable!()
     }
 
-    fn __type(&self_, args) {
-        let name = args["name"].as_str().unwrap();
-        Ok(type_def(self_.0, name))
+    fn resolve_field<'a>(
+        &'a self,
+        field_name: &'a str,
+        arguments: &'a JsonMap,
+    ) -> Result<ResolvedValue<'a>, ResolverError> {
+        match field_name {
+            "__schema" => Ok(ResolvedValue::object(self.0)),
+            "__type" => {
+                let name = arguments["name"].as_str().unwrap();
+                Ok(type_def(self.0, name))
+            }
+            // "__typename" is handled in `execute_selection_set` without calling here.
+            // Other fields are skipped in `skip_field` below.
+            _ => unreachable!(),
+        }
+    }
+
+    fn skip_field(&self, field_name: &str) -> bool {
+        !matches!(field_name, "__schema" | "__type" | "__typename")
     }
 }
 
 impl_resolver! {
-    for SchemaWithCache<'_>:
+    for SchemaWithImplementersMap<'_>:
 
     __typename = "__Schema";
 

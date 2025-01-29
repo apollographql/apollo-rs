@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use anyhow::Result;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
@@ -112,7 +113,9 @@ impl FileWatcher {
         src_path: PathBuf,
     ) -> Result<PathBuf, anyhow::Error> {
         let full_path = fs::canonicalize(&src_path)?;
-        let doc = apollo_compiler::parse_mixed_validate(proposed_document, src_path).unwrap();
+        let doc = Parser::new()
+            .parse_mixed_validate(proposed_document, src_path)
+            .unwrap();
         self.manifest.insert(full_path.clone(), doc);
         Ok(full_path)
     }

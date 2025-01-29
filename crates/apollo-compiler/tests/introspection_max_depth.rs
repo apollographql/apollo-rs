@@ -1,4 +1,4 @@
-use apollo_compiler::execution::SchemaIntrospectionSplit;
+use apollo_compiler::introspection;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use expect_test::expect;
@@ -368,8 +368,8 @@ fn assert_split(doc: &str, expected: expect_test::Expect) {
     let doc = ExecutableDocument::parse_and_validate(&schema, doc, "doc.graphql").unwrap();
     let operation = doc.operations.get(None).unwrap();
 
-    match SchemaIntrospectionSplit::split(&schema, &doc, operation) {
+    match introspection::check_max_depth(&doc, operation) {
         Ok(_) => expected.assert_eq("Ok"),
-        Err(err) => expected.assert_debug_eq(&err.into_graphql_error(&doc.sources)),
+        Err(err) => expected.assert_debug_eq(&err.to_graphql_error(&doc.sources)),
     }
 }

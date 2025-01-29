@@ -1,3 +1,4 @@
+use apollo_compiler::parser::Parser;
 use expect_test::expect;
 
 fn build_fragment_chain(size: usize) -> String {
@@ -107,14 +108,15 @@ fn long_fragment_chains_do_not_overflow_stack() {
     // Validating it would take a lot of recursion and blow the stack
     let query = build_fragment_chain(1_000);
 
-    let errors = apollo_compiler::parse_mixed_validate(
-        format!(
-            "type Query {{ a: Int }}
+    let errors = Parser::new()
+        .parse_mixed_validate(
+            format!(
+                "type Query {{ a: Int }}
             {query}"
-        ),
-        "overflow.graphql",
-    )
-    .expect_err("must have recursion errors");
+            ),
+            "overflow.graphql",
+        )
+        .expect_err("must have recursion errors");
 
     let expected = expect_test::expect![[r#"
         Error: too much recursion
@@ -135,14 +137,15 @@ fn not_long_enough_fragment_chain_applies_correctly() {
     // Stay just under the recursion limit
     let query = build_fragment_chain(99);
 
-    apollo_compiler::parse_mixed_validate(
-        format!(
-            "type Query {{ a: Int }}
+    Parser::new()
+        .parse_mixed_validate(
+            format!(
+                "type Query {{ a: Int }}
             {query}"
-        ),
-        "no_overflow.graphql",
-    )
-    .expect("must not have recursion errors");
+            ),
+            "no_overflow.graphql",
+        )
+        .expect("must not have recursion errors");
 }
 
 #[test]
@@ -214,9 +217,9 @@ type Query {
 
     let query = build_nested_selection(400);
 
-    let errors =
-        apollo_compiler::parse_mixed_validate(format!("{schema}\n{query}"), "selection.graphql")
-            .expect_err("must have validation error");
+    let errors = Parser::new()
+        .parse_mixed_validate(format!("{schema}\n{query}"), "selection.graphql")
+        .expect_err("must have validation error");
 
     expect![[r#"
         Error: too much recursion

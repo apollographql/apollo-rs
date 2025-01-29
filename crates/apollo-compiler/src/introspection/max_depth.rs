@@ -1,30 +1,16 @@
-use crate::executable::Operation;
 use crate::executable::Selection;
 use crate::executable::SelectionSet;
-use crate::parser::SourceSpan;
+use crate::request::RequestError;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
 
 const MAX_LISTS_DEPTH: u32 = 3;
 
-#[derive(Debug)]
-pub struct DeeplyNestedIntrospectionListError {
-    pub location: Option<SourceSpan>,
-}
-
-pub fn check_introspection_max_depth(
-    document: &Valid<ExecutableDocument>,
-    operation: &Operation,
-) -> Result<(), DeeplyNestedIntrospectionListError> {
-    let initial_depth = 0;
-    check_selection_set(document, initial_depth, &operation.selection_set)
-}
-
-fn check_selection_set(
+pub(super) fn check_selection_set(
     document: &Valid<ExecutableDocument>,
     depth_so_far: u32,
     selection_set: &SelectionSet,
-) -> Result<(), DeeplyNestedIntrospectionListError> {
+) -> Result<(), RequestError> {
     for selection in &selection_set.selections {
         match selection {
             Selection::InlineFragment(inline) => {
@@ -44,8 +30,10 @@ fn check_selection_set(
                 ) {
                     depth += 1;
                     if depth >= MAX_LISTS_DEPTH {
-                        return Err(DeeplyNestedIntrospectionListError {
+                        return Err(RequestError {
+                            message: "Maximum introspection depth exceeded".into(),
                             location: field.name.location(),
+                            is_suspected_validation_bug: false,
                         });
                     }
                 }

@@ -1,10 +1,9 @@
 use apollo_compiler::ast::FieldDefinition;
 use apollo_compiler::ast::InputValueDefinition;
-use apollo_compiler::execution::coerce_variable_values;
-use apollo_compiler::execution::JsonMap;
-use apollo_compiler::execution::Response;
-use apollo_compiler::execution::SchemaIntrospectionQuery;
+use apollo_compiler::introspection;
 use apollo_compiler::name;
+use apollo_compiler::request::coerce_variable_values;
+use apollo_compiler::response::JsonMap;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ty;
 use apollo_compiler::ExecutableDocument;
@@ -59,26 +58,14 @@ fn test() {
             ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
         let operation = document.operations.get(None).unwrap();
         let variables = coerce_variable_values(&schema, operation, &variables).unwrap();
-        let response = SchemaIntrospectionQuery::split_and_execute(
+        let response = introspection::partial_execute(
             &schema,
+            &schema.implementers_map(),
             &document,
             operation,
             &variables,
-            |non_introspection_document| Response {
-                errors: Default::default(),
-                data: apollo_compiler::execution::ResponseData::Object(Default::default()),
-                extensions: [(
-                    "NON_INTROSPECTION".into(),
-                    non_introspection_document
-                        .serialize()
-                        .no_indent()
-                        .to_string()
-                        .into(),
-                )]
-                .into_iter()
-                .collect(),
-            },
-        );
+        )
+        .unwrap();
         serde_json::to_string_pretty(&response).unwrap()
     };
 

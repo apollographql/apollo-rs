@@ -512,42 +512,42 @@ Error: expected value of type ComplexInput, found a string
      │                              ╰───────── provided value is a string
 ─────╯
 Error: expected value of type Boolean!, found an integer
-     ╭─[0102_invalid_string_values.graphql:318:39]
+     ╭─[0102_invalid_string_values.graphql:319:39]
      │
   32 │   requiredField: Boolean!
      │                  ────┬───  
      │                      ╰───── expected type declared here as Boolean!
      │ 
- 318 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
+ 319 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
      │                                       ─┬─  
      │                                        ╰─── provided value is an integer
 ─────╯
 Error: expected value of type Int, found a string
-     ╭─[0102_invalid_string_values.graphql:318:54]
+     ╭─[0102_invalid_string_values.graphql:319:54]
      │
   34 │   intField: Int
      │             ─┬─  
      │              ╰─── expected type declared here as Int
      │ 
- 318 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
+ 319 │   $a: ComplexInput = { requiredField: 123, intField: "abc" }
      │                                                      ──┬──  
      │                                                        ╰──── provided value is a string
 ─────╯
 Error: the required field `ComplexInput.requiredField` is not provided
-     ╭─[0102_invalid_string_values.graphql:326:22]
+     ╭─[0102_invalid_string_values.graphql:327:22]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
      │              ╰───────────── field defined here
      │ 
- 326 │   $a: ComplexInput = {intField: 3}
+ 327 │   $a: ComplexInput = {intField: 3}
      │                      ──────┬──────  
      │                            ╰──────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type String, found an integer
-     ╭─[0102_invalid_string_values.graphql:335:26]
+     ╭─[0102_invalid_string_values.graphql:336:26]
      │
- 335 │   $a: [String] = ["one", 2]
+ 336 │   $a: [String] = ["one", 2]
      │       ────┬───           ┬  
      │           ╰───────────────── expected type declared here as String
      │                          │  

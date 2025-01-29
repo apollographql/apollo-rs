@@ -284,6 +284,7 @@ query variablesWithInvalidDefaultValues($a: Int = "one", $b: String = 4, $c: Com
     complexArgField(complexArg: $c)
     intArgField(intArg: $a)
     stringArgField(stringArg: $b)
+    again: stringArgField(stringArg: $b)
   }
 }
 

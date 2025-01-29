@@ -36,7 +36,7 @@ pub(crate) struct FieldSelection<'a> {
     pub field: &'a Node<executable::Field>,
 }
 
-impl<'a> Hash for FieldSelection<'a> {
+impl Hash for FieldSelection<'_> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         state.write_u64(self.hash)
     }
@@ -55,7 +55,7 @@ impl<'a> FieldSelection<'a> {
         }
     }
 
-    pub fn coordinate(&self) -> TypeAttributeCoordinate {
+    pub(crate) fn coordinate(&self) -> TypeAttributeCoordinate {
         TypeAttributeCoordinate {
             ty: self.parent_type.clone(),
             attribute: self.field.name.clone(),

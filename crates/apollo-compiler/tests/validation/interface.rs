@@ -1,4 +1,4 @@
-use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::Schema;
 
 #[test]
@@ -201,7 +201,8 @@ input Point2D {
 
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let errors = parse_mixed_validate(input, "doc.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "doc.graphql")
         .unwrap_err()
         .to_string();
     assert!(

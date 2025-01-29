@@ -5,12 +5,11 @@ use crate::executable::Field;
 use crate::executable::Operation;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::PropagateNull;
-use crate::execution::GraphQLError;
-use crate::execution::JsonMap;
-use crate::execution::JsonValue;
-use crate::execution::Response;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::response::GraphQLError;
+use crate::response::JsonMap;
+use crate::response::JsonValue;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::validation::SuspectedValidationBug;
@@ -20,7 +19,7 @@ use crate::Node;
 use crate::Schema;
 
 #[derive(Debug, Clone)]
-pub enum InputCoercionError {
+pub(crate) enum InputCoercionError {
     SuspectedValidationBug(SuspectedValidationBug),
     // TODO: split into more structured variants?
     ValueError {
@@ -29,13 +28,8 @@ pub enum InputCoercionError {
     },
 }
 
-/// Coerce the values of variables from a GraphQL request to the types expected by the operation.
-///
-/// If type coercion fails, a request error is returned and the request must not be executed.
-///
-/// This is [CoerceVariableValues()](https://spec.graphql.org/October2021/#CoerceVariableValues())
-/// in the GraphQL specification.
-pub fn coerce_variable_values(
+// Documented in `src/request.rs`
+pub(crate) fn coerce_variable_values(
     schema: &Valid<Schema>,
     operation: &Operation,
     values: &JsonMap,
@@ -516,22 +510,6 @@ impl From<SuspectedValidationBug> for InputCoercionError {
 }
 
 impl InputCoercionError {
-    /// Convert into a JSON-serializable error as represented in a GraphQL response
-    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
-        match self {
-            Self::SuspectedValidationBug(s) => s.into_graphql_error(sources),
-            Self::ValueError { message, location } => GraphQLError::new(message, location, sources),
-        }
-    }
-
-    /// Convert into a response with this error as a [request error]
-    /// that prevented execution from starting.
-    ///
-    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-    pub fn into_response(self, sources: &SourceMap) -> Response {
-        Response::from_request_error(self.into_graphql_error(sources))
-    }
-
     pub(crate) fn into_field_error(
         self,
         path: LinkedPath<'_>,

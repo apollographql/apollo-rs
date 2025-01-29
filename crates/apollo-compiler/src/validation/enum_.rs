@@ -45,6 +45,11 @@ pub(crate) fn validate_enum_value(
     schema: &crate::Schema,
     enum_val: &Node<ast::EnumValueDefinition>,
 ) {
+    crate::schema::validation::validate_type_system_name(
+        diagnostics,
+        &enum_val.value,
+        "an enum value",
+    );
     super::directive::validate_directives(
         diagnostics,
         Some(schema),

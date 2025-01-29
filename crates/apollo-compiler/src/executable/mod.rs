@@ -1,5 +1,52 @@
 //! High-level representation of an executable document,
 //! which can contain operations and fragments.
+//!
+//! Compared to an [`ast::Document`] which follows closely the structure of GraphQL syntax,
+//! an [`ExecutableDocument`] interpreted in the context of a valid [`Schema`]
+//! and contains typing information.
+//!
+//! In some cases like [`SelectionSet`], this module and the [`ast`] module
+//! define different Rust types with the same names.
+//! In other cases like [`Directive`] there is no data structure difference needed,
+//! so this module reuses and publicly re-exports some Rust types from the [`ast`] module.
+//!
+//! ## “Build” errors
+//!
+//! As a result of how `ExecutableDocument` containing typing information,
+//! not all AST documents (even if filtering out type system definitions) can be fully represented:
+//! creating a `ExecutableDocument` can cause errors (on top of any potential syntax error)
+//! for cases like selecting a field not defined in the schema.
+//!
+//! When such errors (or in [`ExecutableDocument::parse`], syntax errors) happen,
+//! a partial document is returned together with a list of diagnostics.
+//!
+//! ## Structural sharing and mutation
+//!
+//! Like in AST, many parts of a `ExecutableDocument` are reference-counted with [`Node`].
+//! This allows sharing nodes between documents without cloning entire subtrees.
+//! To modify a node, the [`make_mut`][Node::make_mut] method provides copy-on-write semantics.
+//!
+//! ## Validation
+//!
+//! The [Validation] section of the GraphQL specification defines validation rules
+//! beyond syntax errors and errors detected while constructing a `ExecutableDocument`.
+//! The [`validate`][ExecutableDocument::validate] method returns either:
+//!
+//! * An immutable [`Valid<ExecutableDocument>`] type wrapper, or
+//! * The document together with a list of diagnostics
+//!
+//! If there is no mutation needed between parsing and validation,
+//! [`ExecutableDocument::parse_and_validate`] does both in one step.
+//!
+//! [Validation]: https://spec.graphql.org/draft/#sec-Validation
+//!
+//! ## Serialization
+//!
+//! `ExecutableDocument` and other types types implement [`Display`][std::fmt::Display]
+//! and [`ToString`] by serializing to GraphQL syntax with a default configuration.
+//! [`serialize`][ExecutableDocument::serialize] methods return a builder
+//! that has chaining methods for setting serialization configuration,
+//! and also implements `Display` and `ToString`.
 
 use crate::ast;
 use crate::collections::IndexMap;
@@ -24,6 +71,7 @@ mod serialize;
 pub(crate) mod validation;
 
 pub use crate::ast::Argument;
+use crate::ast::ArgumentByNameError;
 pub use crate::ast::Directive;
 pub use crate::ast::DirectiveList;
 pub use crate::ast::NamedType;
@@ -31,7 +79,7 @@ pub use crate::ast::OperationType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 pub use crate::ast::VariableDefinition;
-use crate::schema::ArgumentByNameError;
+use crate::request::RequestError;
 pub use crate::Name;
 
 /// Executable definitions, annotated with type information
@@ -70,6 +118,8 @@ pub struct FieldSet {
     pub selection_set: SelectionSet,
 }
 
+/// An [_OperationDefinition_](https://spec.graphql.org/draft/#OperationDefinition)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,
@@ -79,6 +129,8 @@ pub struct Operation {
     pub selection_set: SelectionSet,
 }
 
+/// A [_FragmentDefinition_](https://spec.graphql.org/draft/#FragmentDefinition)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
     pub name: Name,
@@ -86,12 +138,16 @@ pub struct Fragment {
     pub selection_set: SelectionSet,
 }
 
+/// A [_SelectionSet_](https://spec.graphql.org/draft/#SelectionSet)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectionSet {
     pub ty: NamedType,
     pub selections: Vec<Selection>,
 }
 
+/// A [_Selection_](https://spec.graphql.org/draft/#Selection)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
     Field(Node<Field>),
@@ -99,6 +155,8 @@ pub enum Selection {
     InlineFragment(Node<InlineFragment>),
 }
 
+/// A [_Field_](https://spec.graphql.org/draft/#Field) selection,
+/// linked to the corresponding field definition in the schema.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Field {
     /// The definition of this field in an object type or interface type definition in the schema
@@ -110,12 +168,16 @@ pub struct Field {
     pub selection_set: SelectionSet,
 }
 
+/// A [_FragmentSpread_](https://spec.graphql.org/draft/#FragmentSpread)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
     pub directives: DirectiveList,
 }
 
+/// A [_InlineFragment_](https://spec.graphql.org/draft/#InlineFragment)
+/// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
@@ -271,18 +333,6 @@ pub(crate) enum ExecutableDefinitionName {
     Fragment(Name),
 }
 
-/// A request error returned by [`OperationMap::get`]
-///
-/// If `get_operation`’s `name_request` argument was `Some`, this error indicates
-/// that the document does not contain an operation with the requested name.
-///
-/// If `name_request` was `None`, the request is ambiguous
-/// because the document contains multiple operations
-/// (or zero, though the document would be invalid in that case).
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub struct GetOperationError();
-
 impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
@@ -295,6 +345,7 @@ impl ExecutableDocument {
     /// to identify this source file to users.
     ///
     /// Create a [`Parser`] to use different parser configuration.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse(
         schema: &Valid<Schema>,
         source_text: impl Into<String>,
@@ -305,6 +356,7 @@ impl ExecutableDocument {
 
     /// [`parse`][Self::parse] then [`validate`][Self::validate],
     /// to get a `Valid<ExecutableDocument>` when mutating it isn’t needed.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_and_validate(
         schema: &Valid<Schema>,
         source_text: impl Into<String>,
@@ -317,6 +369,7 @@ impl ExecutableDocument {
         errors.into_valid_result(doc)
     }
 
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn validate(self, schema: &Valid<Schema>) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut sources = IndexMap::clone(&schema.sources);
         sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));
@@ -368,7 +421,7 @@ impl OperationMap {
 
     /// Return the relevant operation for a request, or a request error
     ///
-    /// This the [GetOperation()](https://spec.graphql.org/October2021/#GetOperation())
+    /// This is the [_GetOperation()_](https://spec.graphql.org/October2021/#GetOperation())
     /// algorithm in the _Executing Requests_ section of the specification.
     ///
     /// A GraphQL request comes with a document (which may contain multiple operations)
@@ -376,44 +429,65 @@ impl OperationMap {
     /// with that name, which is expected to exist. When it is not given / null / `None`,
     /// the document is expected to contain a single operation (which may or may not be named)
     /// to avoid ambiguity.
-    pub fn get(&self, name_request: Option<&str>) -> Result<&Node<Operation>, GetOperationError> {
+    pub fn get(&self, name_request: Option<&str>) -> Result<&Node<Operation>, RequestError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named.get(name)
-        } else if let Some(op) = &self.anonymous {
-            // No name request, return the anonymous operation if it’s the only operation
-            self.named.is_empty().then_some(op)
-        } else {
-            // No name request or anonymous operation, return a named operation if it’s the only one
             self.named
-                .values()
-                .next()
-                .and_then(|op| (self.named.len() == 1).then_some(op))
+                .get(name)
+                .ok_or_else(|| format!("No operation named '{name}'"))
+        } else {
+            // No name request (`operationName` unspecified or null)
+            if let Some(op) = &self.anonymous {
+                // Return the anonymous operation if it’s the only operation
+                self.named.is_empty().then_some(op)
+            } else {
+                // No anonymous operation, return a named operation if it’s the only one
+                self.named
+                    .values()
+                    .next()
+                    .and_then(|op| (self.named.len() == 1).then_some(op))
+            }
+            .ok_or_else(|| {
+                "Ambiguous request: multiple operations but no specified `operationName`".to_owned()
+            })
         }
-        .ok_or(GetOperationError())
+        .map_err(|message| RequestError {
+            message,
+            location: None,
+            is_suspected_validation_bug: false,
+        })
     }
 
     /// Similar to [`get`][Self::get] but returns a mutable reference.
-    pub fn get_mut(
-        &mut self,
-        name_request: Option<&str>,
-    ) -> Result<&mut Operation, GetOperationError> {
+    pub fn get_mut(&mut self, name_request: Option<&str>) -> Result<&mut Operation, RequestError> {
         if let Some(name) = name_request {
             // Honor the request
-            self.named.get_mut(name)
-        } else if let Some(op) = &mut self.anonymous {
-            // No name request, return the anonymous operation if it’s the only operation
-            self.named.is_empty().then_some(op)
-        } else {
-            // No name request or anonymous operation, return a named operation if it’s the only one
-            let len = self.named.len();
             self.named
-                .values_mut()
-                .next()
-                .and_then(|op| (len == 1).then_some(op))
+                .get_mut(name)
+                .ok_or_else(|| format!("No operation named '{name}'"))
+        } else {
+            // No name request (`operationName` unspecified or null)
+            if let Some(op) = &mut self.anonymous {
+                // Return the anonymous operation if it’s the only operation
+                self.named.is_empty().then_some(op)
+            } else {
+                // No anonymous operation, return a named operation if it’s the only one
+                let len = self.named.len();
+                self.named
+                    .values_mut()
+                    .next()
+                    .and_then(|op| (len == 1).then_some(op))
+            }
+            .ok_or_else(|| {
+                "Ambiguous request: multiple operations but no specified `operationName`".to_owned()
+            })
         }
         .map(Node::make_mut)
-        .ok_or(GetOperationError())
+        .map_err(|message| RequestError {
+            message,
+            location: None,
+            is_suspected_validation_bug: false,
+        })
     }
 
     /// Insert the given operation in either `named_operations` or `anonymous_operation`
@@ -468,7 +542,8 @@ impl Operation {
     ///
     /// This does **not** perform [field merging] nor fragment spreads de-duplication,
     /// so multiple items in this iterator may have the same response key,
-    /// point to the same field definition, or even be the same field selection.
+    /// point to the same field definition,
+    /// or even be the same field selection (reached through different fragments).
     ///
     /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
     pub fn root_fields<'doc>(

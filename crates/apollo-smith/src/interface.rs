@@ -134,7 +134,7 @@ impl TryFrom<apollo_parser::cst::InterfaceTypeExtension> for InterfaceTypeDef {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `InterfaceTypeDef`
     pub fn interface_type_definition(&mut self) -> ArbitraryResult<InterfaceTypeDef> {
         let extend = !self.interface_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);

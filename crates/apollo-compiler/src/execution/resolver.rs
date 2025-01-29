@@ -1,4 +1,4 @@
-use crate::execution::JsonMap;
+use crate::response::JsonMap;
 use serde_json_bytes::Value as JsonValue;
 
 /// A GraphQL object whose fields can be resolved during execution
@@ -23,7 +23,15 @@ pub(crate) trait Resolver {
         &'a self,
         field_name: &'a str,
         arguments: &'a JsonMap,
-    ) -> Result<ResolvedValue<'_>, ResolverError>;
+    ) -> Result<ResolvedValue<'a>, ResolverError>;
+
+    /// Returns true if this field should be skipped,
+    /// as if the corresponding selection has `@skip(if: true)`.
+    ///
+    /// This is used to exclude root concrete fields in [crate::introspection::partial_execute].
+    fn skip_field(&self, _field_name: &str) -> bool {
+        false
+    }
 }
 
 pub(crate) struct ResolverError {
@@ -60,9 +68,9 @@ macro_rules! impl_resolver {
             fn resolve_field<'a>(
                 &'a self,
                 field_name: &'a str,
-                arguments: &'a $crate::execution::JsonMap,
+                arguments: &'a $crate::response::JsonMap,
             ) -> Result<
-                $crate::execution::resolver::ResolvedValue<'_>,
+                $crate::execution::resolver::ResolvedValue<'a>,
                 crate::execution::resolver::ResolverError
             > {
                 let _allow_unused = arguments;

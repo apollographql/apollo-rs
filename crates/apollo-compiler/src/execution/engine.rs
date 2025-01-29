@@ -7,12 +7,12 @@ use crate::execution::input_coercion::coerce_argument_values;
 use crate::execution::resolver::ObjectValue;
 use crate::execution::resolver::ResolverError;
 use crate::execution::result_coercion::complete_value;
-use crate::execution::GraphQLError;
-use crate::execution::JsonMap;
-use crate::execution::JsonValue;
-use crate::execution::ResponseDataPathElement;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::response::GraphQLError;
+use crate::response::JsonMap;
+use crate::response::JsonValue;
+use crate::response::ResponseDataPathSegment;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::schema::ObjectType;
@@ -42,7 +42,7 @@ pub(crate) struct PropagateNull;
 pub(crate) type LinkedPath<'a> = Option<&'a LinkedPathElement<'a>>;
 
 pub(crate) struct LinkedPathElement<'a> {
-    pub(crate) element: ResponseDataPathElement,
+    pub(crate) element: ResponseDataPathSegment,
     pub(crate) next: LinkedPath<'a>,
 }
 
@@ -59,12 +59,13 @@ pub(crate) fn execute_selection_set<'a>(
     object_value: &ObjectValue<'_>,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
-    let mut grouped_field_set = IndexMap::with_hasher(Default::default());
+    let mut grouped_field_set = IndexMap::default();
     collect_fields(
         schema,
         document,
         variable_values,
         object_type,
+        object_value,
         selections,
         &mut HashSet::default(),
         &mut grouped_field_set,
@@ -92,7 +93,7 @@ pub(crate) fn execute_selection_set<'a>(
             JsonValue::from(object_type.name.as_str())
         } else {
             let field_path = LinkedPathElement {
-                element: ResponseDataPathElement::Field(response_key.clone()),
+                element: ResponseDataPathSegment::Field(response_key.clone()),
                 next: path,
             };
             execute_field(
@@ -119,6 +120,7 @@ fn collect_fields<'a>(
     document: &'a ExecutableDocument,
     variable_values: &Valid<JsonMap>,
     object_type: &ObjectType,
+    object_value: &ObjectValue<'_>,
     selections: impl IntoIterator<Item = &'a Selection>,
     visited_fragments: &mut HashSet<&'a Name>,
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
@@ -130,10 +132,14 @@ fn collect_fields<'a>(
             continue;
         }
         match selection {
-            Selection::Field(field) => grouped_fields
-                .entry(field.response_key())
-                .or_default()
-                .push(field.as_ref()),
+            Selection::Field(field) => {
+                if !object_value.skip_field(&field.name) {
+                    grouped_fields
+                        .entry(field.response_key())
+                        .or_default()
+                        .push(field.as_ref())
+                }
+            }
             Selection::FragmentSpread(spread) => {
                 let new = visited_fragments.insert(&spread.fragment_name);
                 if !new {
@@ -150,6 +156,7 @@ fn collect_fields<'a>(
                     document,
                     variable_values,
                     object_type,
+                    object_value,
                     &fragment.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
@@ -166,6 +173,7 @@ fn collect_fields<'a>(
                     document,
                     variable_values,
                     object_type,
+                    object_value,
                     &inline.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
@@ -280,7 +288,7 @@ pub(crate) fn try_nullify(
     }
 }
 
-pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<ResponseDataPathElement> {
+pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<ResponseDataPathSegment> {
     let mut path = Vec::new();
     while let Some(node) = link {
         path.push(node.element.clone());
@@ -309,8 +317,10 @@ impl SuspectedValidationBug {
         sources: &SourceMap,
         path: LinkedPath<'_>,
     ) -> GraphQLError {
-        let mut err = self.into_graphql_error(sources);
-        err.path = path_to_vec(path);
+        let Self { message, location } = self;
+        let mut err = GraphQLError::field_error(message, path, location, sources);
+        err.extensions
+            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
         err
     }
 }

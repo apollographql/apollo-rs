@@ -167,7 +167,7 @@ impl Hash for EnumValueDefinition {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary `EnumTypeDef`
     pub fn enum_type_definition(&mut self) -> Result<EnumTypeDef> {
         let extend = !self.enum_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);

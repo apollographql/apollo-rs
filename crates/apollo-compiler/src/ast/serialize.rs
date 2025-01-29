@@ -4,6 +4,8 @@ use crate::schema;
 use std::fmt;
 use std::fmt::Display;
 
+/// Builder pattern for GraphQL serialization configuration.
+/// Implements [`Display`] and [`ToString`].
 #[derive(Debug, Clone)]
 pub struct Serialize<'a, T> {
     pub(crate) node: &'a T,
@@ -65,7 +67,7 @@ macro_rules! display {
 
 }
 
-impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
+impl State<'_, '_, '_> {
     pub(crate) fn write(&mut self, str: &str) -> fmt::Result {
         self.output_empty = false;
         self.output.write_str(str)
