@@ -804,7 +804,7 @@ impl Field {
     }
 
     pub fn with_opt_alias(mut self, alias: Option<Name>) -> Self {
-        self.alias = alias.map(Into::into);
+        self.alias = alias;
         self
     }
 
