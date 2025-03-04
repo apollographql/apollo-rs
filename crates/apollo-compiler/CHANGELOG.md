@@ -17,6 +17,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.27.0](https://crates.io/crates/apollo-compiler/1.26.0) - 2025-03-04
+
+## Features
+
+- **Add [WebAssembly demo] - [SimonSapin], [pull/954]**
+- **Add `root_fields()` and `all_fields()` to `SelectionSet` - [SimonSapin], [pull/954]**
+
+## Fixes
+
+- **Avoid reprocessing named fragments - [sachindshinde] [goto-bus-stop] and [SimonSapin], [pull/952]**
+
+[sachindshinde]: https://github.com/sachindshinde
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[pull/952]: https://github.com/apollographql/apollo-rs/pull/952
+[pull/953]: https://github.com/apollographql/apollo-rs/pull/953
+[pull/954]: https://github.com/apollographql/apollo-rs/pull/954
+[WebAssembly demo]: https://github.com/apollographql/apollo-rs/tree/main/examples/validation-wasm-demo
+
 # [1.26.0](https://crates.io/crates/apollo-compiler/1.26.0) - 2025-01-23
 
 ## Features
