@@ -551,39 +551,7 @@ impl Operation {
         &'doc self,
         document: &'doc ExecutableDocument,
     ) -> impl Iterator<Item = &'doc Node<Field>> {
-        let mut stack = vec![self.selection_set.selections.iter()];
-        let mut fragments_seen = HashSet::default();
-        std::iter::from_fn(move || {
-            while let Some(selection_set_iter) = stack.last_mut() {
-                match selection_set_iter.next() {
-                    Some(Selection::Field(field)) => {
-                        // Yield one item from the `root_fields()` iterator
-                        // but ignore its sub-selections in `field.selection_set`
-                        return Some(field);
-                    }
-                    Some(Selection::InlineFragment(inline)) => {
-                        stack.push(inline.selection_set.selections.iter())
-                    }
-                    Some(Selection::FragmentSpread(spread)) => {
-                        if let Some(def) = document.fragments.get(&spread.fragment_name) {
-                            let new = fragments_seen.insert(&spread.fragment_name);
-                            if new {
-                                stack.push(def.selection_set.selections.iter())
-                            }
-                        } else {
-                            // Undefined fragments are silently ignored.
-                            // They should never happen in a valid document.
-                        }
-                    }
-                    None => {
-                        // Remove an empty iterator from the stack
-                        // and continue with the parent selection set
-                        stack.pop();
-                    }
-                }
-            }
-            None
-        })
+        self.selection_set.root_fields(document)
     }
 
     /// Returns an iterator of all field selections in this operation.
@@ -602,42 +570,7 @@ impl Operation {
         &'doc self,
         document: &'doc ExecutableDocument,
     ) -> impl Iterator<Item = &'doc Node<Field>> {
-        let mut stack = vec![self.selection_set.selections.iter()];
-        let mut fragments_seen = HashSet::default();
-        std::iter::from_fn(move || {
-            while let Some(selection_set_iter) = stack.last_mut() {
-                match selection_set_iter.next() {
-                    Some(Selection::Field(field)) => {
-                        if !field.selection_set.is_empty() {
-                            // Will be considered for the next call
-                            stack.push(field.selection_set.selections.iter())
-                        }
-                        // Yield one item from the `all_fields()` iterator
-                        return Some(field);
-                    }
-                    Some(Selection::InlineFragment(inline)) => {
-                        stack.push(inline.selection_set.selections.iter())
-                    }
-                    Some(Selection::FragmentSpread(spread)) => {
-                        if let Some(def) = document.fragments.get(&spread.fragment_name) {
-                            let new = fragments_seen.insert(&spread.fragment_name);
-                            if new {
-                                stack.push(def.selection_set.selections.iter())
-                            }
-                        } else {
-                            // Undefined fragments are silently ignored.
-                            // They should never happen in a valid document.
-                        }
-                    }
-                    None => {
-                        // Remove an empty iterator from the stack
-                        // and continue with the parent selection set
-                        stack.pop();
-                    }
-                }
-            }
-            None
-        })
+        self.selection_set.all_fields(document)
     }
 
     serialize_method!();
@@ -705,6 +638,113 @@ impl SelectionSet {
     /// Does not recur into inline fragments or fragment spreads.
     pub fn fields(&self) -> impl Iterator<Item = &Node<Field>> {
         self.selections.iter().filter_map(|sel| sel.as_field())
+    }
+
+    /// Returns an iterator of field selections that are at the root of the response.
+    /// That is, inline fragments and fragment spreads at the root are traversed,
+    /// but field sub-selections are not.
+    ///
+    /// See also [`all_fields`][Self::all_fields].
+    ///
+    /// `document` is used to look up fragment definitions.
+    ///
+    /// This does **not** perform [field merging],
+    /// so multiple items in this iterator may have the same response key
+    /// or point to the same field definition.
+    /// Named fragments however are only traversed once even if spread multiple times.
+    ///
+    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    pub fn root_fields<'doc>(
+        &'doc self,
+        document: &'doc ExecutableDocument,
+    ) -> impl Iterator<Item = &'doc Node<Field>> {
+        let mut stack = vec![self.selections.iter()];
+        let mut fragments_seen = HashSet::default();
+        std::iter::from_fn(move || {
+            while let Some(selection_set_iter) = stack.last_mut() {
+                match selection_set_iter.next() {
+                    Some(Selection::Field(field)) => {
+                        // Yield one item from the `root_fields()` iterator
+                        // but ignore its sub-selections in `field.selection_set`
+                        return Some(field);
+                    }
+                    Some(Selection::InlineFragment(inline)) => {
+                        stack.push(inline.selection_set.selections.iter())
+                    }
+                    Some(Selection::FragmentSpread(spread)) => {
+                        if let Some(def) = document.fragments.get(&spread.fragment_name) {
+                            let new = fragments_seen.insert(&spread.fragment_name);
+                            if new {
+                                stack.push(def.selection_set.selections.iter())
+                            }
+                        } else {
+                            // Undefined fragments are silently ignored.
+                            // They should never happen in a valid document.
+                        }
+                    }
+                    None => {
+                        // Remove an empty iterator from the stack
+                        // and continue with the parent selection set
+                        stack.pop();
+                    }
+                }
+            }
+            None
+        })
+    }
+
+    /// Returns an iterator of all field selections in this operation.
+    ///
+    /// See also [`root_fields`][Self::root_fields].
+    ///
+    /// `document` is used to look up fragment definitions.
+    ///
+    /// This does **not** perform [field merging],
+    /// so multiple items in this iterator may have the same response key
+    /// or point to the same field definition.
+    /// Named fragments however are only traversed once even if spread multiple times.
+    ///
+    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    pub fn all_fields<'doc>(
+        &'doc self,
+        document: &'doc ExecutableDocument,
+    ) -> impl Iterator<Item = &'doc Node<Field>> {
+        let mut stack = vec![self.selections.iter()];
+        let mut fragments_seen = HashSet::default();
+        std::iter::from_fn(move || {
+            while let Some(selection_set_iter) = stack.last_mut() {
+                match selection_set_iter.next() {
+                    Some(Selection::Field(field)) => {
+                        if !field.selection_set.is_empty() {
+                            // Will be considered for the next call
+                            stack.push(field.selection_set.selections.iter())
+                        }
+                        // Yield one item from the `all_fields()` iterator
+                        return Some(field);
+                    }
+                    Some(Selection::InlineFragment(inline)) => {
+                        stack.push(inline.selection_set.selections.iter())
+                    }
+                    Some(Selection::FragmentSpread(spread)) => {
+                        if let Some(def) = document.fragments.get(&spread.fragment_name) {
+                            let new = fragments_seen.insert(&spread.fragment_name);
+                            if new {
+                                stack.push(def.selection_set.selections.iter())
+                            }
+                        } else {
+                            // Undefined fragments are silently ignored.
+                            // They should never happen in a valid document.
+                        }
+                    }
+                    None => {
+                        // Remove an empty iterator from the stack
+                        // and continue with the parent selection set
+                        stack.pop();
+                    }
+                }
+            }
+            None
+        })
     }
 
     serialize_method!();
