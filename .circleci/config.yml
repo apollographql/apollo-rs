@@ -12,7 +12,7 @@ orbs:
 executors:
   linux: &linux
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:current
     resource_class: medium+
   macos: &macos
     macos:
