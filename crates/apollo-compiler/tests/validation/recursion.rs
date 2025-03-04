@@ -120,7 +120,6 @@ fn long_fragment_chains_do_not_overflow_stack() {
 
     let expected = expect_test::expect![[r#"
         Error: too much recursion
-        Error: too much recursion
         Error: `typeFragment1` contains too much nesting
             ╭─[overflow.graphql:11:11]
             │

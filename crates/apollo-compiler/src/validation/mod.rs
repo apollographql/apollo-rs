@@ -24,6 +24,7 @@ pub(crate) mod value;
 pub(crate) mod variable;
 
 use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::collections::IndexSet;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
@@ -160,18 +161,20 @@ impl<'a> ExecutableValidationContext<'a> {
         OperationValidationContext {
             executable: self,
             variables,
+            validated_fragments: HashSet::default(),
         }
     }
 }
 
 /// Shared context when validating things inside an operation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub(crate) struct OperationValidationContext<'a> {
     /// Parent context. Using a reference so the `OnceLock` is shared between all operation
     /// contexts.
     executable: &'a ExecutableValidationContext<'a>,
     /// The variables defined for this operation.
-    pub variables: &'a [Node<VariableDefinition>],
+    pub(crate) variables: &'a [Node<VariableDefinition>],
+    pub(crate) validated_fragments: HashSet<Name>,
 }
 
 impl<'a> OperationValidationContext<'a> {

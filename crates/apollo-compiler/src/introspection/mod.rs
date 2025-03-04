@@ -42,7 +42,13 @@ pub fn check_max_depth(
     operation: &Operation,
 ) -> Result<(), RequestError> {
     let initial_depth = 0;
-    max_depth::check_selection_set(document, initial_depth, &operation.selection_set)
+    max_depth::check_selection_set(
+        document,
+        &mut HashMap::default(),
+        initial_depth,
+        &operation.selection_set,
+    )
+    .map(drop)
 }
 
 /// Excecutes the [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
