@@ -1,0 +1,13 @@
+[package]
+name = "validation-wasm-demo"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+apollo-compiler.path = "../../crates/apollo-compiler"
+# https://docs.rs/getrandom/0.2.15/getrandom/index.html#webassembly-support
+getrandom = { version = "0.2", features = ["js"] }
+wasm-bindgen = "0.2.100"
