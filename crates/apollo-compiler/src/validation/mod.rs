@@ -1028,7 +1028,7 @@ impl DiagnosticList {
     }
 }
 
-/// Use Debug formatting to output with colors: `format!("{diagnostics:?}")`
+/// Use Display formatting to output without colors: `format!("{diagnostics}")`
 impl fmt::Display for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
@@ -1038,7 +1038,7 @@ impl fmt::Display for DiagnosticList {
     }
 }
 
-/// Use Display formatting to output without colors: `format!("{diagnostics}")`
+/// Use Debug formatting to output with colors: `format!("{diagnostics:?}")`
 impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
