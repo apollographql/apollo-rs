@@ -1,5 +1,13 @@
 use wasm_bindgen::prelude::*;
 
+/// Returns diagnostics formatted to a string,
+/// or `None` / `null` if the schema and documents are valid together.
+///
+/// The format is intitially intended for terminal output and contains symbol-based
+/// underlyning and arrows that require a monospace font to display properly.
+///
+/// This interface is just enough for a demo.
+/// In a real application you may want something more structured.
 #[wasm_bindgen]
 pub fn validate(schema_sdl: &str, executable_document: &str) -> Option<String> {
     let schema_result = apollo_compiler::Schema::parse_and_validate(schema_sdl, "schema.graphql");
