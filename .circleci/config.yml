@@ -106,8 +106,11 @@ jobs:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       - run:
-          name: Build to wasm target
-          command: rustup target add wasm32-unknown-unknown && cargo build --package apollo-parser --package apollo-compiler --target wasm32-unknown-unknown
+          name: Install wasm-pack
+          command: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run:
+          name: Build wasm demo
+          command: wasm-pack build --target web examples/validation-wasm-demo
 
   test:
     parameters:
