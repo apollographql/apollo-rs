@@ -91,6 +91,13 @@ jobs:
       - run:
           name: Run cargo +nightly fmt check
           command: cargo +nightly fmt --all -- --check
+      - run:
+          name: Install cargo-semver-check
+          command: cargo install cargo-semver-checks --locked
+      - run:
+          name: Run cargo-semver-check
+          command: cargo semver-checks --exclude validation-wasm-demo
+
 
   wasm:
     parameters:
