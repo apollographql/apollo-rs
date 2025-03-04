@@ -93,7 +93,9 @@ jobs:
           command: cargo +nightly fmt --all -- --check
       - run:
           name: Install cargo-semver-check
-          command: cargo install cargo-semver-checks --locked
+          command: >
+            curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
+            cargo binstall cargo-semver-checks
       - run:
           name: Run cargo-semver-check
           command: cargo semver-checks --exclude validation-wasm-demo
