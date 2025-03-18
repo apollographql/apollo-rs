@@ -283,7 +283,7 @@ struct Cache<'a>(&'a SourceMap);
 impl ariadne::Cache<FileId> for Cache<'_> {
     type Storage = String;
 
-    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
+    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, impl fmt::Debug> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -300,24 +300,25 @@ impl ariadne::Cache<FileId> for Cache<'_> {
         }
     }
 
-    fn display<'a>(&self, file_id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
+    fn display<'a>(&self, file_id: &'a FileId) -> Option<impl fmt::Display + 'a> {
+        enum Path {
+            SourceFile(Arc<SourceFile>),
+            NoSourceFile,
+        }
+        impl fmt::Display for Path {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    Path::SourceFile(source_file) => source_file.path().display().fmt(f),
+                    Path::NoSourceFile => f.write_str("(no source file)"),
+                }
+            }
+        }
+
         if *file_id != FileId::NONE {
-            struct Path(Arc<SourceFile>);
-            impl fmt::Display for Path {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.0.path().display().fmt(f)
-                }
-            }
             let source_file = self.0.get(file_id)?;
-            Some(Box::new(Path(source_file.clone())))
+            Some(Box::new(Path::SourceFile(source_file.clone())))
         } else {
-            struct NoSourceFile;
-            impl fmt::Display for NoSourceFile {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    f.write_str("(no source file)")
-                }
-            }
-            Some(Box::new(NoSourceFile))
+            Some(Box::new(Path::NoSourceFile))
         }
     }
 }
