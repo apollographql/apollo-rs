@@ -17,6 +17,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.2x.x] (unreleased) - 2025-mm-dd
+## Fixes
+
+- **Update `ariadne` trait implementations - [lrlna], [pull/960]**
+`ariadne@0.5.1` release changed their type signature for `ariadne::Cache` trait, which required an update to `apollo-compiler`'s implementation of `ariadne::Cache<FileId>`. 
+
+This release also had a slight change to path formatting, so if you had any snapshots in your tests, you can expect a change from this:
+```
+Error: `typeFragment1` contains too much nesting
+    ╭─[overflow.graphql:11:11]
+```
+
+to this (notice the extra white space around the file path):
+```
+Error: `typeFragment1` contains too much nesting
+    ╭─[ overflow.graphql:11:11 ]
+```
+
+[lrlna]: https://github.com/lrlna
+
 # [1.27.0](https://crates.io/crates/apollo-compiler/1.26.0) - 2025-03-04
 
 ## Features
