@@ -1,12 +1,12 @@
 Error: unused variable: `$variable`
-   ╭─[0045_operation_with_unused_variable_in_fragment.graphql:1:20]
+   ╭─[ 0045_operation_with_unused_variable_in_fragment.graphql:1:20 ]
    │
  1 │ query ExampleQuery($variable: Int) {
    │                    ────┬────  
    │                        ╰────── variable is never used
 ───╯
 Error: fragment `unusedFrag` must be used in an operation
-    ╭─[0045_operation_with_unused_variable_in_fragment.graphql:7:1]
+    ╭─[ 0045_operation_with_unused_variable_in_fragment.graphql:7:1 ]
     │
   7 │ ╭─▶ fragment unusedFrag on Query {
     ┆ ┆   

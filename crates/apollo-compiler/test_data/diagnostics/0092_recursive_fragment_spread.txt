@@ -1,5 +1,5 @@
 Error: `fragA` fragment cannot reference itself
-    ╭─[0092_recursive_fragment_spread.graphql:14:1]
+    ╭─[ 0092_recursive_fragment_spread.graphql:14:1 ]
     │
  14 │ fragment fragA on Human { name, ...fragB }
     │ ───────┬──────                  ────┬───  
@@ -14,7 +14,7 @@ Error: `fragA` fragment cannot reference itself
     │                                     ╰───── `fragC` circularly references `fragA` here
 ────╯
 Error: `cycle1` fragment cannot reference itself
-    ╭─[0092_recursive_fragment_spread.graphql:19:1]
+    ╭─[ 0092_recursive_fragment_spread.graphql:19:1 ]
     │
  19 │ fragment cycle1 on __Type { kind, ...cycle2 }
     │ ───────┬───────                   ────┬────  

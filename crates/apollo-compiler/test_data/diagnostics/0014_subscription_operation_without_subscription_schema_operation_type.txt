@@ -1,5 +1,5 @@
 Error: `subscription` root operation type is not defined
-   ╭─[0014_subscription_operation_without_subscription_schema_operation_type.graphql:1:1]
+   ╭─[ 0014_subscription_operation_without_subscription_schema_operation_type.graphql:1:1 ]
    │
  1 │ ╭─▶ subscription messageSubscription {
    ┆ ┆   

@@ -1,5 +1,5 @@
 Error: unused variable: `$unusedVariable`
-   ╭─[0010_operation_with_unused_variable.graphql:1:20]
+   ╭─[ 0010_operation_with_unused_variable.graphql:1:20 ]
    │
  1 │ query ExampleQuery($unusedVariable: Int) {
    │                    ───────┬───────  

@@ -1,5 +1,5 @@
 Error: type `MyMutationRootType` does not have a field `__type`
-    ╭─[0082_introspection_types_in_mutation.graphql:15:3]
+    ╭─[ 0082_introspection_types_in_mutation.graphql:15:3 ]
     │
  10 │ type MyMutationRootType {
     │      ─────────┬────────  

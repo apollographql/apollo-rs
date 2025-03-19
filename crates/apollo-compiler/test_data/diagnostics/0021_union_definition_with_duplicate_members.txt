@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `Photo` member of union type `SearchResult`
-   ╭─[0021_union_definition_with_duplicate_members.graphql:5:30]
+   ╭─[ 0021_union_definition_with_duplicate_members.graphql:5:30 ]
    │
  5 │ union SearchResult = Photo | Photo
    │                      ──┬──   ──┬──  

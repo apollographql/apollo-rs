@@ -1,5 +1,5 @@
 Error: `Search` has no member types
-   ╭─[0117_union_definition_with_missing_members.graphql:6:1]
+   ╭─[ 0117_union_definition_with_missing_members.graphql:6:1 ]
    │
  6 │ union Search
    │ ──────┬─────  

@@ -1,5 +1,5 @@
 Error: operation must not select different types using the same name `name`
-    ╭─[0074_merge_identical_fields.graphql:19:3]
+    ╭─[ 0074_merge_identical_fields.graphql:19:3 ]
     │
  18 │   name: nickname
     │   ───────┬──────  
@@ -9,7 +9,7 @@ Error: operation must not select different types using the same name `name`
     │     ╰─── `name` is selected from `Dog.name: String!` here
 ────╯
 Error: cannot select different fields into the same alias `name`
-    ╭─[0074_merge_identical_fields.graphql:19:3]
+    ╭─[ 0074_merge_identical_fields.graphql:19:3 ]
     │
  18 │   name: nickname
     │   ───────┬──────  
@@ -21,7 +21,7 @@ Error: cannot select different fields into the same alias `name`
     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯
 Error: operation must not select different types using the same name `fido`
-    ╭─[0074_merge_identical_fields.graphql:24:3]
+    ╭─[ 0074_merge_identical_fields.graphql:24:3 ]
     │
  23 │   fido: name
     │   ─────┬────  
@@ -31,7 +31,7 @@ Error: operation must not select different types using the same name `fido`
     │          ╰──────── `fido` is selected from `Dog.nickname: String` here
 ────╯
 Error: cannot select different fields into the same alias `fido`
-    ╭─[0074_merge_identical_fields.graphql:24:3]
+    ╭─[ 0074_merge_identical_fields.graphql:24:3 ]
     │
  23 │   fido: name
     │   ─────┬────  

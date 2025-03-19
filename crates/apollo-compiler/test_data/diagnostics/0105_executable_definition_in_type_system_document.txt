@@ -1,5 +1,5 @@
 Error: a schema document must not contain an operation definition
-   ╭─[0105_executable_definition_in_type_system_document.graphql:5:1]
+   ╭─[ 0105_executable_definition_in_type_system_document.graphql:5:1 ]
    │
  5 │ ╭─▶ query {
    ┆ ┆   

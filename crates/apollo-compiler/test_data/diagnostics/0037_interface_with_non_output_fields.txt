@@ -1,12 +1,12 @@
 Error: cannot find type `Auth` in this document
-    ╭─[0037_interface_with_non_output_fields.graphql:18:16]
+    ╭─[ 0037_interface_with_non_output_fields.graphql:18:16 ]
     │
  18 │   permissions: Auth
     │                ──┬─  
     │                  ╰─── not found in this scope
 ────╯
 Error: `coordinates` field must return an output type
-    ╭─[0037_interface_with_non_output_fields.graphql:19:3]
+    ╭─[ 0037_interface_with_non_output_fields.graphql:19:3 ]
     │
  19 │   coordinates: Point2D
     │                ───┬───  
@@ -15,14 +15,14 @@ Error: `coordinates` field must return an output type
     │ Help: Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.
 ────╯
 Error: cannot find type `mainPage` in this document
-    ╭─[0037_interface_with_non_output_fields.graphql:20:9]
+    ╭─[ 0037_interface_with_non_output_fields.graphql:20:9 ]
     │
  20 │   main: mainPage
     │         ────┬───  
     │             ╰───── not found in this scope
 ────╯
 Error: cannot find type `Photo` in this document
-    ╭─[0037_interface_with_non_output_fields.graphql:37:22]
+    ╭─[ 0037_interface_with_non_output_fields.graphql:37:22 ]
     │
  37 │ union SearchResult = Photo | Person
     │                      ──┬──  

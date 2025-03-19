@@ -1,5 +1,5 @@
 Error: anonymous operation cannot be selected when the document contains other operations
-   ╭─[0002_multiple_anonymous_operations.graphql:1:1]
+   ╭─[ 0002_multiple_anonymous_operations.graphql:1:1 ]
    │
  1 │ ╭─▶ query {
    ┆ ┆   
@@ -10,7 +10,7 @@ Error: anonymous operation cannot be selected when the document contains other o
    │     Help: GraphQL requires operations to be named if the document has more than one
 ───╯
 Error: anonymous operation cannot be selected when the document contains other operations
-   ╭─[0002_multiple_anonymous_operations.graphql:5:1]
+   ╭─[ 0002_multiple_anonymous_operations.graphql:5:1 ]
    │
  5 │ ╭─▶ mutation {
    ┆ ┆   

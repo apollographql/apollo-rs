@@ -1,5 +1,5 @@
 Error: interface NamedEntity cannot implement itself
-   ╭─[0023_interface_definition_with_cyclic_implements_interfaces.graphql:5:34]
+   ╭─[ 0023_interface_definition_with_cyclic_implements_interfaces.graphql:5:34 ]
    │
  5 │ interface NamedEntity implements NamedEntity {
    │                                  ─────┬─────  

@@ -1,5 +1,5 @@
 Error: operation must not select different types using the same name `someValue`
-    ╭─[0076_merge_differing_responses.graphql:42:5]
+    ╭─[ 0076_merge_differing_responses.graphql:42:5 ]
     │
  39 │     someValue: nickname
     │     ─────────┬─────────  

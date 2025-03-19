@@ -1,5 +1,5 @@
 Error: the argument `url` is provided multiple times
-   ╭─[0046_duplicate_directive_arguments.graphql:1:75]
+   ╭─[ 0046_duplicate_directive_arguments.graphql:1:75 ]
    │
  1 │ scalar newScalar @specifiedBy(url: "https://tools.ietf.org/html/rfc4122", url: "https://tools.ietf.org/html/rfc4125")
    │                               ─────────────────────┬────────────────────  ─────────────────────┬────────────────────  
@@ -10,7 +10,7 @@ Error: the argument `url` is provided multiple times
    │ Help: `url` argument must only be provided once.
 ───╯
 Error: the argument `if` is provided multiple times
-   ╭─[0046_duplicate_directive_arguments.graphql:5:40]
+   ╭─[ 0046_duplicate_directive_arguments.graphql:5:40 ]
    │
  5 │   response: String @example(if: false, if: true)
    │                             ────┬────  ────┬───  

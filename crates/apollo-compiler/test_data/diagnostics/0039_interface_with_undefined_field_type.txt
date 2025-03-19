@@ -1,12 +1,12 @@
 Error: cannot find type `Url` in this document
-   ╭─[0039_interface_with_undefined_field_type.graphql:3:8]
+   ╭─[ 0039_interface_with_undefined_field_type.graphql:3:8 ]
    │
  3 │   img: Url
    │        ─┬─  
    │         ╰─── not found in this scope
 ───╯
 Error: cannot find type `Person` in this document
-   ╭─[0039_interface_with_undefined_field_type.graphql:7:17]
+   ╭─[ 0039_interface_with_undefined_field_type.graphql:7:17 ]
    │
  7 │   relationship: Person
    │                 ───┬──  

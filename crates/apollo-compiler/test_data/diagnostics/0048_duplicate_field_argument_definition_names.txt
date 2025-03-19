@@ -1,5 +1,5 @@
 Error: the value `arg` is defined multiple times
-   ╭─[0048_duplicate_field_argument_definition_names.graphql:2:13]
+   ╭─[ 0048_duplicate_field_argument_definition_names.graphql:2:13 ]
    │
  2 │   duplicate(arg: Boolean, arg: Boolean): Int
    │             ──────┬─────  ──────┬─────  
@@ -10,7 +10,7 @@ Error: the value `arg` is defined multiple times
    │ Help: `arg` must only be defined once in this argument list or input object definition.
 ───╯
 Error: the value `arg` is defined multiple times
-   ╭─[0048_duplicate_field_argument_definition_names.graphql:7:13]
+   ╭─[ 0048_duplicate_field_argument_definition_names.graphql:7:13 ]
    │
  7 │   duplicate(arg: Boolean, arg: Boolean): Int
    │             ──────┬─────  ──────┬─────  

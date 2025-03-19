@@ -1,5 +1,5 @@
 Error: subscription `sub` can only have one root field
-   ╭─[0005_subscription_with_multiple_root_fields_in_fragment_spreads.graphql:1:1]
+   ╭─[ 0005_subscription_with_multiple_root_fields_in_fragment_spreads.graphql:1:1 ]
    │
  1 │ ╭─▶ subscription sub {
    ┆ ┆   

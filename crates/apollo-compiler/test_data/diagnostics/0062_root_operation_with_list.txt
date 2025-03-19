@@ -1,5 +1,5 @@
 Error: missing query root operation type in schema definition
-   ╭─[0062_root_operation_with_list.graphql:1:1]
+   ╭─[ 0062_root_operation_with_list.graphql:1:1 ]
    │
  1 │ ╭─▶ schema {
  2 │ ├─▶   query: [Object]
@@ -7,35 +7,35 @@ Error: missing query root operation type in schema definition
    │ ╰─────────────────────── `query` root operation type must be defined here
 ───╯
 Error: syntax error: expected R_CURLY, got [
-   ╭─[0062_root_operation_with_list.graphql:2:10]
+   ╭─[ 0062_root_operation_with_list.graphql:2:10 ]
    │
  2 │   query: [Object]
    │          ┬  
    │          ╰── expected R_CURLY, got [
 ───╯
 Error: syntax error: expected a StringValue, Name or OperationDefinition
-   ╭─[0062_root_operation_with_list.graphql:2:10]
+   ╭─[ 0062_root_operation_with_list.graphql:2:10 ]
    │
  2 │   query: [Object]
    │          ┬  
    │          ╰── expected a StringValue, Name or OperationDefinition
 ───╯
 Error: syntax error: expected definition
-   ╭─[0062_root_operation_with_list.graphql:2:11]
+   ╭─[ 0062_root_operation_with_list.graphql:2:11 ]
    │
  2 │   query: [Object]
    │           ───┬──  
    │              ╰──── expected definition
 ───╯
 Error: syntax error: expected a StringValue, Name or OperationDefinition
-   ╭─[0062_root_operation_with_list.graphql:2:17]
+   ╭─[ 0062_root_operation_with_list.graphql:2:17 ]
    │
  2 │   query: [Object]
    │                 ┬  
    │                 ╰── expected a StringValue, Name or OperationDefinition
 ───╯
 Error: syntax error: expected a StringValue, Name or OperationDefinition
-   ╭─[0062_root_operation_with_list.graphql:3:1]
+   ╭─[ 0062_root_operation_with_list.graphql:3:1 ]
    │
  3 │ }
    │ ┬  

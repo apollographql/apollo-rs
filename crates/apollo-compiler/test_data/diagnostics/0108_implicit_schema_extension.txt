@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `query` root operation type
-   ╭─[0108_implicit_schema_extension.graphql:6:5]
+   ╭─[ 0108_implicit_schema_extension.graphql:6:5 ]
    │
  6 │     query: Query
    │     ──────┬─────  

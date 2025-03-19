@@ -1,5 +1,5 @@
 Error: fragment `catInDogFragmentInvalid` with type condition `Dog` cannot be applied to `Human`
-    ╭─[0090_fragment_spread_impossible.graphql:39:9]
+    ╭─[ 0090_fragment_spread_impossible.graphql:39:9 ]
     │
  25 │   ╭─▶ type Human implements Sentient {
     ┆   ┆   
@@ -18,7 +18,7 @@ Error: fragment `catInDogFragmentInvalid` with type condition `Dog` cannot be ap
     │ ╰───────── fragment declared with type condition `Dog` here
 ────╯
 Error: fragment `nonIntersectingInterfaces` with type condition `Pet` cannot be applied to `Human`
-    ╭─[0090_fragment_spread_impossible.graphql:42:9]
+    ╭─[ 0090_fragment_spread_impossible.graphql:42:9 ]
     │
  25 │   ╭─▶ type Human implements Sentient {
     ┆   ┆   
@@ -37,7 +37,7 @@ Error: fragment `nonIntersectingInterfaces` with type condition `Pet` cannot be 
     │ ╰───────── fragment declared with type condition `Pet` here
 ────╯
 Error: inline fragment with type condition `Cat` cannot be applied to `Dog`
-    ╭─[0090_fragment_spread_impossible.graphql:48:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:48:3 ]
     │
  13 │ ╭───▶ type Dog implements Pet {
     ┆ ┆     
@@ -52,7 +52,7 @@ Error: inline fragment with type condition `Cat` cannot be applied to `Dog`
     │   ╰───────── inline fragment cannot be applied
 ────╯
 Error: inline fragment with type condition `Dog` cannot be applied to `Sentient`
-    ╭─[0090_fragment_spread_impossible.graphql:54:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:54:3 ]
     │
   5 │ ╭───▶ interface Sentient {
     ┆ ┆     
@@ -67,7 +67,7 @@ Error: inline fragment with type condition `Dog` cannot be applied to `Sentient`
     │   ╰───────── inline fragment cannot be applied
 ────╯
 Error: inline fragment with type condition `Cat` cannot be applied to `HumanOrAlien`
-    ╭─[0090_fragment_spread_impossible.graphql:60:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:60:3 ]
     │
  35 │     union HumanOrAlien = Human | Alien
     │     ─────────────────┬────────────────  
@@ -80,7 +80,7 @@ Error: inline fragment with type condition `Cat` cannot be applied to `HumanOrAl
     │ ╰───────── inline fragment cannot be applied
 ────╯
 Error: fragment `sentientFragment2` with type condition `Sentient` cannot be applied to `Pet`
-    ╭─[0090_fragment_spread_impossible.graphql:66:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:66:3 ]
     │
   9 │   ╭─▶ interface Pet {
     ┆   ┆   

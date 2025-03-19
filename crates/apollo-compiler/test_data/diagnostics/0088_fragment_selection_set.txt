@@ -1,5 +1,5 @@
 Error: type `Query` does not have a field `topProduct`
-    ╭─[0088_fragment_selection_set.graphql:13:5]
+    ╭─[ 0088_fragment_selection_set.graphql:13:5 ]
     │
   1 │ type Query {
     │      ──┬──  
@@ -12,7 +12,7 @@ Error: type `Query` does not have a field `topProduct`
     │ Note: path to the field: `query getProduct → topProduct`
 ────╯
 Error: type `Product` does not have a field `notExistingField`
-    ╭─[0088_fragment_selection_set.graphql:22:3]
+    ╭─[ 0088_fragment_selection_set.graphql:22:3 ]
     │
   6 │ type Product {
     │      ───┬───  

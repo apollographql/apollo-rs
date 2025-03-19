@@ -1,5 +1,5 @@
 Error: field selection of enum type `Pet` must not have subselections
-   ╭─[0065_subselection_of_enum.graphql:2:3]
+   ╭─[ 0065_subselection_of_enum.graphql:2:3 ]
    │
  2 │   pet1 { name }
    │   ──────┬──────  
@@ -8,7 +8,7 @@ Error: field selection of enum type `Pet` must not have subselections
    │ Note: path to the field: `query SelectionOfEnum → pet1`
 ───╯
 Error: field selection of enum type `Pet` must not have subselections
-   ╭─[0065_subselection_of_enum.graphql:3:3]
+   ╭─[ 0065_subselection_of_enum.graphql:3:3 ]
    │
  3 │   pet2 { name }
    │   ──────┬──────  
@@ -17,7 +17,7 @@ Error: field selection of enum type `Pet` must not have subselections
    │ Note: path to the field: `query SelectionOfEnum → pet2`
 ───╯
 Error: field selection of enum type `Pet` must not have subselections
-   ╭─[0065_subselection_of_enum.graphql:4:3]
+   ╭─[ 0065_subselection_of_enum.graphql:4:3 ]
    │
  4 │   pet3 { name }
    │   ──────┬──────  
@@ -26,7 +26,7 @@ Error: field selection of enum type `Pet` must not have subselections
    │ Note: path to the field: `query SelectionOfEnum → pet3`
 ───╯
 Error: field selection of enum type `Pet` must not have subselections
-   ╭─[0065_subselection_of_enum.graphql:5:3]
+   ╭─[ 0065_subselection_of_enum.graphql:5:3 ]
    │
  5 │   pet4 { name }
    │   ──────┬──────  
@@ -35,7 +35,7 @@ Error: field selection of enum type `Pet` must not have subselections
    │ Note: path to the field: `query SelectionOfEnum → pet4`
 ───╯
 Error: field selection of enum type `Pet` must not have subselections
-   ╭─[0065_subselection_of_enum.graphql:6:3]
+   ╭─[ 0065_subselection_of_enum.graphql:6:3 ]
    │
  6 │   pet5 { name }
    │   ──────┬──────  
@@ -44,7 +44,7 @@ Error: field selection of enum type `Pet` must not have subselections
    │ Note: path to the field: `query SelectionOfEnum → pet5`
 ───╯
 Error: field selection of enum type `Pet` must not have subselections
-   ╭─[0065_subselection_of_enum.graphql:7:3]
+   ╭─[ 0065_subselection_of_enum.graphql:7:3 ]
    │
  7 │   pet6 { name }
    │   ──────┬──────  

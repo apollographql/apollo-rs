@@ -1,5 +1,5 @@
 Error: the value `arg` is defined multiple times
-   ╭─[0049_duplicate_directive_argument_definition_names.graphql:1:20]
+   ╭─[ 0049_duplicate_directive_argument_definition_names.graphql:1:20 ]
    │
  1 │ directive @example(arg: Boolean, arg: Boolean) on FIELD
    │                    ──────┬─────  ──────┬─────  

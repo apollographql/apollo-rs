@@ -1,5 +1,5 @@
 Error: non-repeatable directive nonRepeatable can only be used once per location
-    ╭─[0096_schema_extensions.graphql:11:15]
+    ╭─[ 0096_schema_extensions.graphql:11:15 ]
     │
   8 │ schema @nonRepeatable {
     │        ───────┬──────  

@@ -1,5 +1,5 @@
 Error: cannot find type `Url` in this document
-    ╭─[0027_interface_definition_with_undefined_implements_interface.graphql:11:39]
+    ╭─[ 0027_interface_definition_with_undefined_implements_interface.graphql:11:39 ]
     │
  11 │ interface Image implements Resource & Url {
     │                                       ─┬─  

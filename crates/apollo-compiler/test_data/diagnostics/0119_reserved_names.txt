@@ -1,68 +1,68 @@
 Error: a directive definition cannot be named `__Prime` as names starting with two underscores are reserved
-   ╭─[0119_reserved_names.graphql:1:12]
+   ╭─[ 0119_reserved_names.graphql:1:12 ]
    │
  1 │ directive @__Prime(__if: Boolean!) on SCHEMA
    │            ───┬───  
    │               ╰───── Pick a different name here
 ───╯
 Error: an argument cannot be named `__if` as names starting with two underscores are reserved
-   ╭─[0119_reserved_names.graphql:1:20]
+   ╭─[ 0119_reserved_names.graphql:1:20 ]
    │
  1 │ directive @__Prime(__if: Boolean!) on SCHEMA
    │                    ──┬─  
    │                      ╰─── Pick a different name here
 ───╯
 Error: an object type cannot be named `__MyQuery` as names starting with two underscores are reserved
-   ╭─[0119_reserved_names.graphql:7:6]
+   ╭─[ 0119_reserved_names.graphql:7:6 ]
    │
  7 │ type __MyQuery {
    │      ────┬────  
    │          ╰────── Pick a different name here
 ───╯
 Error: a field cannot be named `__secretField` as names starting with two underscores are reserved
-   ╭─[0119_reserved_names.graphql:8:5]
+   ╭─[ 0119_reserved_names.graphql:8:5 ]
    │
  8 │     __secretField(__heatedArgument: __In): Int
    │     ──────┬──────  
    │           ╰──────── Pick a different name here
 ───╯
 Error: an argument cannot be named `__heatedArgument` as names starting with two underscores are reserved
-   ╭─[0119_reserved_names.graphql:8:19]
+   ╭─[ 0119_reserved_names.graphql:8:19 ]
    │
  8 │     __secretField(__heatedArgument: __In): Int
    │                   ────────┬───────  
    │                           ╰───────── Pick a different name here
 ───╯
 Error: an input object type cannot be named `__In` as names starting with two underscores are reserved
-    ╭─[0119_reserved_names.graphql:11:7]
+    ╭─[ 0119_reserved_names.graphql:11:7 ]
     │
  11 │ input __In {
     │       ──┬─  
     │         ╰─── Pick a different name here
 ────╯
 Error: an input object field cannot be named `__amount` as names starting with two underscores are reserved
-    ╭─[0119_reserved_names.graphql:12:5]
+    ╭─[ 0119_reserved_names.graphql:12:5 ]
     │
  12 │     __amount: __BigInt
     │     ────┬───  
     │         ╰───── Pick a different name here
 ────╯
 Error: a scalar type cannot be named `__BigInt` as names starting with two underscores are reserved
-    ╭─[0119_reserved_names.graphql:15:8]
+    ╭─[ 0119_reserved_names.graphql:15:8 ]
     │
  15 │ scalar __BigInt
     │        ────┬───  
     │            ╰───── Pick a different name here
 ────╯
 Error: an enum type cannot be named `__Maybe` as names starting with two underscores are reserved
-    ╭─[0119_reserved_names.graphql:17:6]
+    ╭─[ 0119_reserved_names.graphql:17:6 ]
     │
  17 │ enum __Maybe {
     │      ───┬───  
     │         ╰───── Pick a different name here
 ────╯
 Error: an enum value cannot be named `__FileNotFound` as names starting with two underscores are reserved
-    ╭─[0119_reserved_names.graphql:20:5]
+    ╭─[ 0119_reserved_names.graphql:20:5 ]
     │
  20 │     __FileNotFound
     │     ───────┬──────  
