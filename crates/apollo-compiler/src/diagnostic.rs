@@ -296,7 +296,7 @@ impl ariadne::Cache<FileId> for Cache<'_> {
             static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
             Ok(EMPTY.get_or_init(|| ariadne::Source::from(String::new())))
         } else {
-            Err(Box::new(NotFound(*file_id)))
+            Err(NotFound(*file_id))
         }
     }
 
@@ -316,9 +316,9 @@ impl ariadne::Cache<FileId> for Cache<'_> {
 
         if *file_id != FileId::NONE {
             let source_file = self.0.get(file_id)?;
-            Some(Box::new(Path::SourceFile(source_file.clone())))
+            Some(Path::SourceFile(source_file.clone()))
         } else {
-            Some(Box::new(Path::NoSourceFile))
+            Some(Path::NoSourceFile)
         }
     }
 }
