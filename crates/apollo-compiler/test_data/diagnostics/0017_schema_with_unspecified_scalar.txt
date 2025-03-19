@@ -1,6 +1,6 @@
 Error: missing query root operation type in schema definition
 Error: syntax error: Unexpected <EOF>.
-   ╭─[0017_schema_with_unspecified_scalar.graphql:1:54]
+   ╭─[ 0017_schema_with_unspecified_scalar.graphql:1:54 ]
    │
  1 │ # Placeholder for removed test, to avoid renumbering
    │                                                      │ 

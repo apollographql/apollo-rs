@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `x` field of input object type `Point2D`
-    ╭─[0031_input_object_with_duplicate_fields.graphql:10:3]
+    ╭─[ 0031_input_object_with_duplicate_fields.graphql:10:3 ]
     │
   9 │   x: Float
     │   ┬  

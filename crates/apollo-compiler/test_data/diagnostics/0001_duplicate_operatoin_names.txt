@@ -1,5 +1,5 @@
 Error: the operation `getName` is defined multiple times in the document
-   ╭─[0001_duplicate_operatoin_names.graphql:5:7]
+   ╭─[ 0001_duplicate_operatoin_names.graphql:5:7 ]
    │
  1 │ query getName {
    │       ───┬───  

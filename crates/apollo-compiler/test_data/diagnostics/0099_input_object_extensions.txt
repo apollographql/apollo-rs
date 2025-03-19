@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `field` field of input object type `UniqueNames`
-   ╭─[0099_input_object_extensions.graphql:5:3]
+   ╭─[ 0099_input_object_extensions.graphql:5:3 ]
    │
  2 │   field: String
    │   ──┬──  
@@ -10,7 +10,7 @@ Error: duplicate definitions for the `field` field of input object type `UniqueN
    │         ╰──────── `field` redefined here
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
-    ╭─[0099_input_object_extensions.graphql:12:30]
+    ╭─[ 0099_input_object_extensions.graphql:12:30 ]
     │
   9 │ input UniqueDirective @nonRepeatable {
     │                       ───────┬──────  

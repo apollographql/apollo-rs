@@ -1,5 +1,5 @@
 Error: anonymous subscription can only have one root field
-   ╭─[0112_anonymous_subscription_with_multiple_root_fields.graphql:1:1]
+   ╭─[ 0112_anonymous_subscription_with_multiple_root_fields.graphql:1:1 ]
    │
  1 │ ╭─▶ subscription {
    ┆ ┆   

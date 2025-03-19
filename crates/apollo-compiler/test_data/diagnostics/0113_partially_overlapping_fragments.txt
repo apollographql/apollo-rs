@@ -1,5 +1,5 @@
 Error: operation must not select different types using the same name `overlapping`
-    ╭─[0113_partially_overlapping_fragments.graphql:27:16]
+    ╭─[ 0113_partially_overlapping_fragments.graphql:27:16 ]
     │
  24 │     ... on B { overlapping }
     │                ─────┬─────  

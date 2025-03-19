@@ -1,5 +1,5 @@
 Error: `Node` has no fields
-   ╭─[0114_interface_definition_with_missing_fields.graphql:6:1]
+   ╭─[ 0114_interface_definition_with_missing_fields.graphql:6:1 ]
    │
  6 │ interface Node
    │ ───────┬──────  

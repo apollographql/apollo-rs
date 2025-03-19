@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `age` field of object type `UniqueNames`
-   ╭─[0094_object_type_extensions.graphql:6:3]
+   ╭─[ 0094_object_type_extensions.graphql:6:3 ]
    │
  5 │   age: Int
    │   ─┬─  
@@ -9,7 +9,7 @@ Error: duplicate definitions for the `age` field of object type `UniqueNames`
    │       ╰───── `age` redefined here
 ───╯
 Error: duplicate definitions for the `name` field of object type `ConflictingNames`
-    ╭─[0094_object_type_extensions.graphql:13:3]
+    ╭─[ 0094_object_type_extensions.graphql:13:3 ]
     │
  10 │   name: String
     │   ──┬─  
@@ -20,7 +20,7 @@ Error: duplicate definitions for the `name` field of object type `ConflictingNam
     │         ╰─────── `name` redefined here
 ────╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
-    ╭─[0094_object_type_extensions.graphql:20:29]
+    ╭─[ 0094_object_type_extensions.graphql:20:29 ]
     │
  17 │ type UniqueDirective @nonRepeatable {
     │                      ───────┬──────  
@@ -31,7 +31,7 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
     │                                    ╰──────── directive `@nonRepeatable` called again here
 ────╯
 Error: object type `UniqueInterfaces` implements interface `Base` more than once
-    ╭─[0094_object_type_extensions.graphql:31:41]
+    ╭─[ 0094_object_type_extensions.graphql:31:41 ]
     │
  27 │ type UniqueInterfaces implements Base {
     │                                  ──┬─  
@@ -42,7 +42,7 @@ Error: object type `UniqueInterfaces` implements interface `Base` more than once
     │                                           ╰─── `Base` implemented again here
 ────╯
 Error: type `ImplementsBaseButNotExtension` does not satisfy interface `ExtendedInterface`: missing field `fail`
-    ╭─[0094_object_type_extensions.graphql:38:1]
+    ╭─[ 0094_object_type_extensions.graphql:38:1 ]
     │
  38 │ ╭─▶ type ImplementsBaseButNotExtension implements ExtendedInterface {
     │ │                                                 ────────┬────────  

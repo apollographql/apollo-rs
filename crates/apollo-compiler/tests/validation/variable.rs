@@ -263,14 +263,14 @@ fn variables_in_const_contexts() {
     let errors = doc.validate(&schema).unwrap_err().errors;
     let expected = expect_test::expect![[r#"
         Error: variable `$x` is not defined
-            ╭─[input.graphql:72:33]
+            ╭─[ input.graphql:72:33 ]
             │
          72 │             $y: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
             │                                 ─┬─  
             │                                  ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:72:54]
+            ╭─[ input.graphql:72:54 ]
             │
          72 │             $y: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
             │                                                      ─┬─  
@@ -360,154 +360,154 @@ fn variables_in_const_contexts() {
     let errors = schema.validate().unwrap_err().errors;
     let expected = expect_test::expect![[r#"
         Error: variable `$x` is not defined
-           ╭─[input.graphql:3:51]
+           ╭─[ input.graphql:3:51 ]
            │
          3 │             arg: InputObj = {x: ["x"]} @dir2(arg: "x")
            │                                                   ─┬─  
            │                                                    ╰─── not found in this scope
         ───╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:32:31]
+            ╭─[ input.graphql:32:31 ]
             │
          32 │         schema @dir(arg: {x: ["x"]}) {
             │                               ─┬─  
             │                                ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:35:38]
+            ╭─[ input.graphql:35:38 ]
             │
          35 │         extend schema @dir(arg: {x: ["x"]})
             │                                      ─┬─  
             │                                       ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:37:33]
+            ╭─[ input.graphql:37:33 ]
             │
          37 │         scalar S @dir(arg: {x: ["x"]})
             │                                 ─┬─  
             │                                  ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:38:40]
+            ╭─[ input.graphql:38:40 ]
             │
          38 │         extend scalar S @dir(arg: {x: ["x"]})
             │                                        ─┬─  
             │                                         ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:40:52]
+            ╭─[ input.graphql:40:52 ]
             │
          40 │         type Query implements Inter @dir(arg: {x: ["x"]}) {
             │                                                    ─┬─  
             │                                                     ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:43:60]
+            ╭─[ input.graphql:43:60 ]
             │
          43 │                 arg2: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
             │                                                            ─┬─  
             │                                                             ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:44:38]
+            ╭─[ input.graphql:44:38 ]
             │
          44 │             ): String @dir(arg: {x: ["x"]})
             │                                      ─┬─  
             │                                       ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:46:42]
+            ╭─[ input.graphql:46:42 ]
             │
          46 │         extend type Query @dir(arg: {x: ["x"]})
             │                                          ─┬─  
             │                                           ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:48:40]
+            ╭─[ input.graphql:48:40 ]
             │
          48 │         interface Inter @dir(arg: {x: ["x"]}) {
             │                                        ─┬─  
             │                                         ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:51:60]
+            ╭─[ input.graphql:51:60 ]
             │
          51 │                 arg2: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
             │                                                            ─┬─  
             │                                                             ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:52:38]
+            ╭─[ input.graphql:52:38 ]
             │
          52 │             ): String @dir(arg: {x: ["x"]})
             │                                      ─┬─  
             │                                       ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:54:47]
+            ╭─[ input.graphql:54:47 ]
             │
          54 │         extend interface Inter @dir(arg: {x: ["x"]})
             │                                               ─┬─  
             │                                                ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:56:32]
+            ╭─[ input.graphql:56:32 ]
             │
          56 │         union U @dir(arg: {x: ["x"]}) = Query
             │                                ─┬─  
             │                                 ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:57:39]
+            ╭─[ input.graphql:57:39 ]
             │
          57 │         extend union U @dir(arg: {x: ["x"]})
             │                                       ─┬─  
             │                                        ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:59:35]
+            ╭─[ input.graphql:59:35 ]
             │
          59 │         enum Maybe @dir(arg: {x: ["x"]}) {
             │                                   ─┬─  
             │                                    ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:60:32]
+            ╭─[ input.graphql:60:32 ]
             │
          60 │             YES @dir(arg: {x: ["x"]})
             │                                ─┬─  
             │                                 ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:61:31]
+            ╭─[ input.graphql:61:31 ]
             │
          61 │             NO @dir(arg: {x: ["x"]})
             │                               ─┬─  
             │                                ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:63:42]
+            ╭─[ input.graphql:63:42 ]
             │
          63 │         extend enum Maybe @dir(arg: {x: ["x"]})
             │                                          ─┬─  
             │                                           ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:65:35]
+            ╭─[ input.graphql:65:35 ]
             │
          65 │         input InputObj @dir2(arg: "x") {
             │                                   ─┬─  
             │                                    ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:66:44]
+            ╭─[ input.graphql:66:44 ]
             │
          66 │             x: [String] = ["x"] @dir2(arg: "x")
             │                                            ─┬─  
             │                                             ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
-            ╭─[input.graphql:68:42]
+            ╭─[ input.graphql:68:42 ]
             │
          68 │         extend input InputObj @dir2(arg: "x")
             │                                          ─┬─  

@@ -1,5 +1,5 @@
 Error: type `Image` does not satisfy interface `Resource`: missing field `width`
-    ╭─[0025_interface_definition_with_missing_transitive_fields.graphql:14:1]
+    ╭─[ 0025_interface_definition_with_missing_transitive_fields.graphql:14:1 ]
     │
  11 │       width: Int
     │       ─────┬────  

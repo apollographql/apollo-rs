@@ -1,5 +1,5 @@
 Error: type `Subscription` does not have a field `undefinedSubscriptionField`
-   ╭─[0041_subscription_operation_with_undefined_fields.graphql:2:3]
+   ╭─[ 0041_subscription_operation_with_undefined_fields.graphql:2:3 ]
    │
  2 │   undefinedSubscriptionField
    │   ─────────────┬────────────  

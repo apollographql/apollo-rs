@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `query` root operation type
-   ╭─[0013_schema_definition_with_duplicate_root_type_operations.graphql:3:3]
+   ╭─[ 0013_schema_definition_with_duplicate_root_type_operations.graphql:3:3 ]
    │
  2 │   query: customPetQuery
    │          ───────┬──────  
