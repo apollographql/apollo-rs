@@ -1,5 +1,5 @@
 Error: non-repeatable directive unique can only be used once per location
-    ╭─[0079_directive_is_unique.graphql:11:18]
+    ╭─[ 0079_directive_is_unique.graphql:11:18 ]
     │
  11 │   fieldB @unique @unique
     │          ───┬─── ───┬───  

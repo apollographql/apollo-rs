@@ -1,5 +1,5 @@
 Error: `mutation` root operation type is not defined
-   ╭─[0015_mutation_operation_without_mutation_schema_definition.graphql:1:1]
+   ╭─[ 0015_mutation_operation_without_mutation_schema_definition.graphql:1:1 ]
    │
  1 │ ╭─▶ mutation adoptAPetMutation {
    ┆ ┆   

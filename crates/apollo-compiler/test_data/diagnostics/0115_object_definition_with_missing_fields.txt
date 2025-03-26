@@ -1,5 +1,5 @@
 Error: `User` has no fields
-   ╭─[0115_object_definition_with_missing_fields.graphql:7:1]
+   ╭─[ 0115_object_definition_with_missing_fields.graphql:7:1 ]
    │
  7 │ type User @foo
    │ ───────┬──────  

@@ -1,5 +1,5 @@
 Error: union member `Scalar` must be an object type
-   ╭─[0064_extension_wrong_type.graphql:8:15]
+   ╭─[ 0064_extension_wrong_type.graphql:8:15 ]
    │
  8 │ union Union = Scalar | Object
    │               ───┬──  
@@ -8,7 +8,7 @@ Error: union member `Scalar` must be an object type
    │ Help: Union members must be object types.
 ───╯
 Error: adding a union type extension, but `Scalar` is a scalar type
-    ╭─[0064_extension_wrong_type.graphql:16:14]
+    ╭─[ 0064_extension_wrong_type.graphql:16:14 ]
     │
   1 │ scalar Scalar @specifiedBy(url: "https://apollographql.com")
     │        ───┬──  
@@ -19,7 +19,7 @@ Error: adding a union type extension, but `Scalar` is a scalar type
     │                 ╰──── extension here
 ────╯
 Error: adding an interface type extension, but `Object` is an object type
-    ╭─[0064_extension_wrong_type.graphql:17:18]
+    ╭─[ 0064_extension_wrong_type.graphql:17:18 ]
     │
   5 │ type Object {
     │      ───┬──  
@@ -30,7 +30,7 @@ Error: adding an interface type extension, but `Object` is an object type
     │                     ╰──── extension here
 ────╯
 Error: adding an enum type extension, but `Intf` is an interface type
-    ╭─[0064_extension_wrong_type.graphql:20:13]
+    ╭─[ 0064_extension_wrong_type.graphql:20:13 ]
     │
   2 │ interface Intf {
     │           ──┬─  
@@ -41,7 +41,7 @@ Error: adding an enum type extension, but `Intf` is an interface type
     │               ╰─── extension here
 ────╯
 Error: adding an object type extension, but `Input` is an input object type
-    ╭─[0064_extension_wrong_type.graphql:23:13]
+    ╭─[ 0064_extension_wrong_type.graphql:23:13 ]
     │
   9 │ input Input {
     │       ──┬──  
@@ -52,7 +52,7 @@ Error: adding an object type extension, but `Input` is an input object type
     │               ╰──── extension here
 ────╯
 Error: adding an input object type extension, but `Enum` is an enum type
-    ╭─[0064_extension_wrong_type.graphql:26:14]
+    ╭─[ 0064_extension_wrong_type.graphql:26:14 ]
     │
  12 │ enum Enum {
     │      ──┬─  

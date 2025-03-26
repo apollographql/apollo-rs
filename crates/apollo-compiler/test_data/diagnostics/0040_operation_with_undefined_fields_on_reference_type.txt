@@ -1,5 +1,5 @@
 Error: type `Query` does not have a field `size`
-   ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:2:3]
+   ╭─[ 0040_operation_with_undefined_fields_on_reference_type.graphql:2:3 ]
    │
  2 │   size
    │   ──┬─  
@@ -12,7 +12,7 @@ Error: type `Query` does not have a field `size`
    │ Note: path to the field: `query getProduct → size`
 ───╯
 Error: type `Query` does not have a field `weight`
-   ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:3:3]
+   ╭─[ 0040_operation_with_undefined_fields_on_reference_type.graphql:3:3 ]
    │
  3 │   weight
    │   ───┬──  

@@ -1,5 +1,5 @@
 Error: field selection of scalar type `Int` must not have subselections
-   ╭─[0087_fragment_type_condition_on_composite_types.graphql:5:5]
+   ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:5:5 ]
    │
  5 │     price { ...fragOnScalar }
    │     ────────────┬────────────  
@@ -8,7 +8,7 @@ Error: field selection of scalar type `Int` must not have subselections
    │ Note: path to the field: `query Query → products → price`
 ───╯
 Error: inline fragment must have a composite type in its type condition
-   ╭─[0087_fragment_type_condition_on_composite_types.graphql:7:5]
+   ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:7:5 ]
    │
  7 │ ╭─▶     ... on Int {
    ┆ ┆   
@@ -19,13 +19,13 @@ Error: inline fragment must have a composite type in its type condition
    │     Help: fragments cannot be defined on enums, scalars and input objects
 ───╯
 Error: type `Int` does not have a field `name`
-     ╭─[0087_fragment_type_condition_on_composite_types.graphql:8:7]
+     ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:8:7 ]
      │
    8 │       name
      │       ──┬─  
      │         ╰─── field `name` selected here
      │
-     ├─[built_in.graphql:166:8]
+     ├─[ built_in.graphql:166:8 ]
      │
  166 │ scalar Int
      │        ─┬─  
@@ -34,7 +34,7 @@ Error: type `Int` does not have a field `name`
      │ Note: path to the field: `query Query → products → name`
 ─────╯
 Error: fragment `fragOnScalar` must be used in an operation
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:21:1]
+    ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:21:1 ]
     │
  21 │ ╭─▶ fragment fragOnScalar on Int {
     ┆ ┆   
@@ -45,13 +45,13 @@ Error: fragment `fragOnScalar` must be used in an operation
     │     Help: fragment `fragOnScalar` must be used in an operation
 ────╯
 Error: type `Int` does not have a field `name`
-     ╭─[0087_fragment_type_condition_on_composite_types.graphql:22:3]
+     ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:22:3 ]
      │
   22 │   name
      │   ──┬─  
      │     ╰─── field `name` selected here
      │
-     ├─[built_in.graphql:166:8]
+     ├─[ built_in.graphql:166:8 ]
      │
  166 │ scalar Int
      │        ─┬─  
@@ -60,7 +60,7 @@ Error: type `Int` does not have a field `name`
      │ Note: path to the field: `fragment fragOnScalar → name`
 ─────╯
 Error: inline fragment must have a composite type in its type condition
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:26:3]
+    ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:26:3 ]
     │
  26 │ ╭─▶   ... on Int {
     ┆ ┆   
@@ -71,13 +71,13 @@ Error: inline fragment must have a composite type in its type condition
     │     Help: fragments cannot be defined on enums, scalars and input objects
 ────╯
 Error: type `Int` does not have a field `name`
-     ╭─[0087_fragment_type_condition_on_composite_types.graphql:27:5]
+     ╭─[ 0087_fragment_type_condition_on_composite_types.graphql:27:5 ]
      │
   27 │     name
      │     ──┬─  
      │       ╰─── field `name` selected here
      │
-     ├─[built_in.graphql:166:8]
+     ├─[ built_in.graphql:166:8 ]
      │
  166 │ scalar Int
      │        ─┬─  

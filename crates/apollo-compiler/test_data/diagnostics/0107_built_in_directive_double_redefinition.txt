@@ -1,5 +1,5 @@
 Error: the directive `@deprecated` is defined multiple times in the schema
-    ╭─[0107_built_in_directive_double_redefinition.graphql:22:12]
+    ╭─[ 0107_built_in_directive_double_redefinition.graphql:22:12 ]
     │
  17 │ directive @deprecated(
     │            ─────┬────  

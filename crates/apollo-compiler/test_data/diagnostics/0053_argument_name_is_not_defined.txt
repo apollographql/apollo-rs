@@ -1,5 +1,5 @@
 Error: the argument `arg2` is not supported by `Field.field`
-    ╭─[0053_argument_name_is_not_defined.graphql:11:18]
+    ╭─[ 0053_argument_name_is_not_defined.graphql:11:18 ]
     │
   7 │   field(arg4: Int): Int
     │   ──────────┬──────────  
@@ -10,7 +10,7 @@ Error: the argument `arg2` is not supported by `Field.field`
     │                     ╰───── argument by this name not found
 ────╯
 Error: the argument `arg3` is not supported by `Field.field`
-    ╭─[0053_argument_name_is_not_defined.graphql:11:27]
+    ╭─[ 0053_argument_name_is_not_defined.graphql:11:27 ]
     │
   7 │   field(arg4: Int): Int
     │   ──────────┬──────────  
@@ -21,7 +21,7 @@ Error: the argument `arg3` is not supported by `Field.field`
     │                              ╰───── argument by this name not found
 ────╯
 Error: the argument `arg2` is not supported by `Query.field`
-    ╭─[0053_argument_name_is_not_defined.graphql:15:9]
+    ╭─[ 0053_argument_name_is_not_defined.graphql:15:9 ]
     │
   2 │   field(arg1: Int): Int
     │   ──────────┬──────────  

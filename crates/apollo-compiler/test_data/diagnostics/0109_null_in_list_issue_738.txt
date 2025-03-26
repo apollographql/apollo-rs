@@ -1,5 +1,5 @@
 Error: expected value of type CustomScalar!, found null
-    ╭─[0109_null_in_list_issue_738.graphql:14:16]
+    ╭─[ 0109_null_in_list_issue_738.graphql:14:16 ]
     │
   8 │   foo(arg: [CustomScalar!]!): String!
     │            ────────┬───────  
@@ -10,7 +10,7 @@ Error: expected value of type CustomScalar!, found null
     │                  ╰─── provided value is null
 ────╯
 Error: expected value of type CustomScalar!, found null
-    ╭─[0109_null_in_list_issue_738.graphql:15:16]
+    ╭─[ 0109_null_in_list_issue_738.graphql:15:16 ]
     │
   8 │   foo(arg: [CustomScalar!]!): String!
     │            ────────┬───────  
@@ -21,7 +21,7 @@ Error: expected value of type CustomScalar!, found null
     │                  ╰─── provided value is null
 ────╯
 Error: expected value of type CustomScalar!, found null
-    ╭─[0109_null_in_list_issue_738.graphql:15:22]
+    ╭─[ 0109_null_in_list_issue_738.graphql:15:22 ]
     │
   8 │   foo(arg: [CustomScalar!]!): String!
     │            ────────┬───────  
@@ -32,7 +32,7 @@ Error: expected value of type CustomScalar!, found null
     │                        ╰─── provided value is null
 ────╯
 Error: expected value of type String!, found null
-    ╭─[0109_null_in_list_issue_738.graphql:16:13]
+    ╭─[ 0109_null_in_list_issue_738.graphql:16:13 ]
     │
   9 │   bar(arg: [String!]): String!
     │            ────┬────  
@@ -43,7 +43,7 @@ Error: expected value of type String!, found null
     │               ╰─── provided value is null
 ────╯
 Error: expected value of type String!, found null
-    ╭─[0109_null_in_list_issue_738.graphql:17:27]
+    ╭─[ 0109_null_in_list_issue_738.graphql:17:27 ]
     │
   4 │   list: [String!]
     │         ────┬────  

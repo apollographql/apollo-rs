@@ -1,5 +1,5 @@
 Error: object type `Object` implements interface `Intf` more than once
-   ╭─[0095_interface_implementation_declared_once.graphql:5:31]
+   ╭─[ 0095_interface_implementation_declared_once.graphql:5:31 ]
    │
  5 │ type Object implements Intf & Intf {
    │                        ──┬─   ──┬─  
@@ -8,7 +8,7 @@ Error: object type `Object` implements interface `Intf` more than once
    │                                 ╰─── `Intf` implemented again here
 ───╯
 Error: object type `Extended` implements interface `Intf` more than once
-    ╭─[0095_interface_implementation_declared_once.graphql:12:33]
+    ╭─[ 0095_interface_implementation_declared_once.graphql:12:33 ]
     │
   9 │ type Extended implements Intf {
     │                          ──┬─  
@@ -19,7 +19,7 @@ Error: object type `Extended` implements interface `Intf` more than once
     │                                   ╰─── `Intf` implemented again here
 ────╯
 Error: interface type `SubIntf` implements interface `Intf` more than once
-    ╭─[0095_interface_implementation_declared_once.graphql:14:37]
+    ╭─[ 0095_interface_implementation_declared_once.graphql:14:37 ]
     │
  14 │ interface SubIntf implements Intf & Intf {
     │                              ──┬─   ──┬─  

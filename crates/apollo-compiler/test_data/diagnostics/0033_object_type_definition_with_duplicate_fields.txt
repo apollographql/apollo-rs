@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `name` field of object type `Query`
-   ╭─[0033_object_type_definition_with_duplicate_fields.graphql:3:3]
+   ╭─[ 0033_object_type_definition_with_duplicate_fields.graphql:3:3 ]
    │
  2 │   name: String
    │   ──┬─  

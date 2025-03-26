@@ -1,5 +1,5 @@
 Error: type `Mutation` does not have a field `undefinedMutationField`
-    ╭─[0042_mutation_operation_with_undefined_fields.graphql:2:3]
+    ╭─[ 0042_mutation_operation_with_undefined_fields.graphql:2:3 ]
     │
   2 │   undefinedMutationField
     │   ───────────┬──────────  

@@ -1,47 +1,47 @@
 Error: type extension for undefined type `A`
-   ╭─[0063_extension_orphan.graphql:5:15]
+   ╭─[ 0063_extension_orphan.graphql:5:15 ]
    │
  5 │ extend scalar A @deprecated(reason: "Use B instead")
    │               ┬  
    │               ╰── extension here
 ───╯
 Error: type extension for undefined type `B`
-   ╭─[0063_extension_orphan.graphql:6:13]
+   ╭─[ 0063_extension_orphan.graphql:6:13 ]
    │
  6 │ extend type B { field: Int! }
    │             ┬  
    │             ╰── extension here
 ───╯
 Error: duplicate definitions for the `query` root operation type
-   ╭─[0063_extension_orphan.graphql:8:3]
+   ╭─[ 0063_extension_orphan.graphql:8:3 ]
    │
  8 │   query: Query
    │   ──────┬─────  
    │         ╰─────── `query` redefined here
 ───╯
 Error: type extension for undefined type `C`
-    ╭─[0063_extension_orphan.graphql:10:14]
+    ╭─[ 0063_extension_orphan.graphql:10:14 ]
     │
  10 │ extend union C = String
     │              ┬  
     │              ╰── extension here
 ────╯
 Error: type extension for undefined type `D`
-    ╭─[0063_extension_orphan.graphql:11:18]
+    ╭─[ 0063_extension_orphan.graphql:11:18 ]
     │
  11 │ extend interface D {
     │                  ┬  
     │                  ╰── extension here
 ────╯
 Error: type extension for undefined type `E`
-    ╭─[0063_extension_orphan.graphql:14:14]
+    ╭─[ 0063_extension_orphan.graphql:14:14 ]
     │
  14 │ extend input E {
     │              ┬  
     │              ╰── extension here
 ────╯
 Error: type extension for undefined type `F`
-    ╭─[0063_extension_orphan.graphql:17:13]
+    ╭─[ 0063_extension_orphan.graphql:17:13 ]
     │
  17 │ extend enum F {
     │             ┬  

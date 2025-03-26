@@ -1,5 +1,5 @@
 Error: the directive `@foo` is defined multiple times in the schema
-    ╭─[0029_directive_definitions_with_duplicate_names.graphql:11:12]
+    ╭─[ 0029_directive_definitions_with_duplicate_names.graphql:11:12 ]
     │
  10 │ directive @foo on SCHEMA
     │            ─┬─  

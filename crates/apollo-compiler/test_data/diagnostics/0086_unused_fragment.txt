@@ -1,5 +1,5 @@
 Error: fragment `nameFragment` must be used in an operation
-    ╭─[0086_unused_fragment.graphql:17:1]
+    ╭─[ 0086_unused_fragment.graphql:17:1 ]
     │
  17 │ ╭─▶ fragment nameFragment on Product {
     ┆ ┆   

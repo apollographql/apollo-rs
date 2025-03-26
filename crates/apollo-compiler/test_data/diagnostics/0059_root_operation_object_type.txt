@@ -1,5 +1,5 @@
 Error: `SomeInterface` field must return an object type
-   ╭─[0059_root_operation_object_type.graphql:2:12]
+   ╭─[ 0059_root_operation_object_type.graphql:2:12 ]
    │
  2 │     query: SomeInterface
    │            ──────┬──────  

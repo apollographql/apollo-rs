@@ -1,5 +1,5 @@
 Error: interface `Image` declares that it implements `Resource`, but to do so it must also implement `Node`
-    ╭─[0026_interface_definition_with_missing_implemetns_interface.graphql:15:1]
+    ╭─[ 0026_interface_definition_with_missing_implemetns_interface.graphql:15:1 ]
     │
   9 │     interface Resource implements Node {
     │                                   ──┬─  

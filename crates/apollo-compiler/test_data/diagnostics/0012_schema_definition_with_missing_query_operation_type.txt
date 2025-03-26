@@ -1,5 +1,5 @@
 Error: missing query root operation type in schema definition
-   ╭─[0012_schema_definition_with_missing_query_operation_type.graphql:1:1]
+   ╭─[ 0012_schema_definition_with_missing_query_operation_type.graphql:1:1 ]
    │
  1 │ ╭─▶ schema {
    ┆ ┆   

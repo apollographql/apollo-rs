@@ -328,7 +328,7 @@ type TestObject {
     let actual = err.to_string();
     let expected = expect_test::expect![[r#"
         Error: cannot find fragment `q` in this document
-           ╭─[query.graphql:4:11]
+           ╭─[ query.graphql:4:11 ]
            │
          4 │     obj { ...q }
            │           ──┬─  

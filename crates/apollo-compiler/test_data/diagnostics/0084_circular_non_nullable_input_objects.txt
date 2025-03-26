@@ -1,5 +1,5 @@
 Error: `First` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:6:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:6:1 ]
     │
   6 │ ╭─▶ input First {
   7 │ │     second: Second!
@@ -23,7 +23,7 @@ Error: `First` input object cannot reference itself
     │             ╰──────── `fourth` circularly references `First` here
 ────╯
 Error: `Second` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:11:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:11:1 ]
     │
   7 │       second: Second!
     │       ───────┬───────  
@@ -47,7 +47,7 @@ Error: `Second` input object cannot reference itself
     │             ╰──────── `fourth` references `first` here...
 ────╯
 Error: `Third` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:16:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:16:1 ]
     │
   7 │       second: Second!
     │       ───────┬───────  
@@ -71,7 +71,7 @@ Error: `Third` input object cannot reference itself
     │             ╰──────── `fourth` references `first` here...
 ────╯
 Error: `Fourth` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:21:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:21:1 ]
     │
   7 │       second: Second!
     │       ───────┬───────  

@@ -1,5 +1,5 @@
 Error: expected value of type String, found an integer
-    ╭─[0102_invalid_string_values.graphql:71:31]
+    ╭─[ 0102_invalid_string_values.graphql:71:31 ]
     │
   8 │   stringArgField(stringArg: String): String
     │                             ───┬──  
@@ -10,7 +10,7 @@ Error: expected value of type String, found an integer
     │                               ╰── provided value is an integer
 ────╯
 Error: expected value of type String, found a float
-    ╭─[0102_invalid_string_values.graphql:77:31]
+    ╭─[ 0102_invalid_string_values.graphql:77:31 ]
     │
   8 │   stringArgField(stringArg: String): String
     │                             ───┬──  
@@ -21,7 +21,7 @@ Error: expected value of type String, found a float
     │                                ╰─── provided value is a float
 ────╯
 Error: expected value of type String, found a boolean
-    ╭─[0102_invalid_string_values.graphql:83:31]
+    ╭─[ 0102_invalid_string_values.graphql:83:31 ]
     │
   8 │   stringArgField(stringArg: String): String
     │                             ───┬──  
@@ -32,7 +32,7 @@ Error: expected value of type String, found a boolean
     │                                 ╰─── provided value is a boolean
 ────╯
 Error: expected value of type String, found an enum
-    ╭─[0102_invalid_string_values.graphql:89:31]
+    ╭─[ 0102_invalid_string_values.graphql:89:31 ]
     │
   8 │   stringArgField(stringArg: String): String
     │                             ───┬──  
@@ -43,7 +43,7 @@ Error: expected value of type String, found an enum
     │                                ╰─── provided value is an enum
 ────╯
 Error: expected value of type Int, found a string
-    ╭─[0102_invalid_string_values.graphql:95:25]
+    ╭─[ 0102_invalid_string_values.graphql:95:25 ]
     │
   6 │   intArgField(intArg: Int): String
     │                       ─┬─  
@@ -54,14 +54,14 @@ Error: expected value of type Int, found a string
     │                          ╰─── provided value is a string
 ────╯
 Error: int cannot represent non 32-bit signed integer value
-     ╭─[0102_invalid_string_values.graphql:101:25]
+     ╭─[ 0102_invalid_string_values.graphql:101:25 ]
      │
  101 │     intArgField(intArg: 829384293849283498239482938)
      │                         ─────────────┬─────────────  
      │                                      ╰─────────────── cannot be coerced to a 32-bit integer
 ─────╯
 Error: expected value of type Int, found an enum
-     ╭─[0102_invalid_string_values.graphql:107:25]
+     ╭─[ 0102_invalid_string_values.graphql:107:25 ]
      │
    6 │   intArgField(intArg: Int): String
      │                       ─┬─  
@@ -72,7 +72,7 @@ Error: expected value of type Int, found an enum
      │                          ╰─── provided value is an enum
 ─────╯
 Error: expected value of type Int, found a float
-     ╭─[0102_invalid_string_values.graphql:113:25]
+     ╭─[ 0102_invalid_string_values.graphql:113:25 ]
      │
    6 │   intArgField(intArg: Int): String
      │                       ─┬─  
@@ -83,7 +83,7 @@ Error: expected value of type Int, found a float
      │                          ╰─── provided value is a float
 ─────╯
 Error: expected value of type Int, found a float
-     ╭─[0102_invalid_string_values.graphql:119:25]
+     ╭─[ 0102_invalid_string_values.graphql:119:25 ]
      │
    6 │   intArgField(intArg: Int): String
      │                       ─┬─  
@@ -94,7 +94,7 @@ Error: expected value of type Int, found a float
      │                           ╰──── provided value is a float
 ─────╯
 Error: expected value of type Float, found a string
-     ╭─[0102_invalid_string_values.graphql:125:29]
+     ╭─[ 0102_invalid_string_values.graphql:125:29 ]
      │
   11 │   floatArgField(floatArg: Float): String
      │                           ──┬──  
@@ -105,7 +105,7 @@ Error: expected value of type Float, found a string
      │                                ╰───── provided value is a string
 ─────╯
 Error: expected value of type Float, found a boolean
-     ╭─[0102_invalid_string_values.graphql:131:29]
+     ╭─[ 0102_invalid_string_values.graphql:131:29 ]
      │
   11 │   floatArgField(floatArg: Float): String
      │                           ──┬──  
@@ -116,7 +116,7 @@ Error: expected value of type Float, found a boolean
      │                               ╰─── provided value is a boolean
 ─────╯
 Error: expected value of type Float, found an enum
-     ╭─[0102_invalid_string_values.graphql:137:29]
+     ╭─[ 0102_invalid_string_values.graphql:137:29 ]
      │
   11 │   floatArgField(floatArg: Float): String
      │                           ──┬──  
@@ -127,7 +127,7 @@ Error: expected value of type Float, found an enum
      │                              ╰─── provided value is an enum
 ─────╯
 Error: expected value of type Boolean, found an integer
-     ╭─[0102_invalid_string_values.graphql:143:33]
+     ╭─[ 0102_invalid_string_values.graphql:143:33 ]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
      │                               ───┬───  
@@ -138,7 +138,7 @@ Error: expected value of type Boolean, found an integer
      │                                 ╰── provided value is an integer
 ─────╯
 Error: expected value of type Boolean, found a float
-     ╭─[0102_invalid_string_values.graphql:149:33]
+     ╭─[ 0102_invalid_string_values.graphql:149:33 ]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
      │                               ───┬───  
@@ -149,7 +149,7 @@ Error: expected value of type Boolean, found a float
      │                                  ╰─── provided value is a float
 ─────╯
 Error: expected value of type Boolean, found a string
-     ╭─[0102_invalid_string_values.graphql:155:33]
+     ╭─[ 0102_invalid_string_values.graphql:155:33 ]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
      │                               ───┬───  
@@ -160,7 +160,7 @@ Error: expected value of type Boolean, found a string
      │                                    ╰──── provided value is a string
 ─────╯
 Error: expected value of type Boolean, found an enum
-     ╭─[0102_invalid_string_values.graphql:161:33]
+     ╭─[ 0102_invalid_string_values.graphql:161:33 ]
      │
    9 │   booleanArgField(booleanArg: Boolean): String
      │                               ───┬───  
@@ -171,7 +171,7 @@ Error: expected value of type Boolean, found an enum
      │                                   ╰─── provided value is an enum
 ─────╯
 Error: expected value of type ID, found a float
-     ╭─[0102_invalid_string_values.graphql:167:23]
+     ╭─[ 0102_invalid_string_values.graphql:167:23 ]
      │
   12 │   idArgField(idArg: ID): String
      │                     ─┬  
@@ -182,7 +182,7 @@ Error: expected value of type ID, found a float
      │                        ╰─── provided value is a float
 ─────╯
 Error: expected value of type ID, found a boolean
-     ╭─[0102_invalid_string_values.graphql:173:23]
+     ╭─[ 0102_invalid_string_values.graphql:173:23 ]
      │
   12 │   idArgField(idArg: ID): String
      │                     ─┬  
@@ -193,7 +193,7 @@ Error: expected value of type ID, found a boolean
      │                         ╰─── provided value is a boolean
 ─────╯
 Error: expected value of type ID, found an enum
-     ╭─[0102_invalid_string_values.graphql:179:23]
+     ╭─[ 0102_invalid_string_values.graphql:179:23 ]
      │
   12 │   idArgField(idArg: ID): String
      │                     ─┬  
@@ -204,7 +204,7 @@ Error: expected value of type ID, found an enum
      │                           ╰────── provided value is an enum
 ─────╯
 Error: expected value of type DogCommand, found an integer
-     ╭─[0102_invalid_string_values.graphql:186:33]
+     ╭─[ 0102_invalid_string_values.graphql:186:33 ]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
      │                               ─────┬────  
@@ -215,7 +215,7 @@ Error: expected value of type DogCommand, found an integer
      │                                 ╰── provided value is an integer
 ─────╯
 Error: expected value of type DogCommand, found a float
-     ╭─[0102_invalid_string_values.graphql:192:33]
+     ╭─[ 0102_invalid_string_values.graphql:192:33 ]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
      │                               ─────┬────  
@@ -226,7 +226,7 @@ Error: expected value of type DogCommand, found a float
      │                                  ╰─── provided value is a float
 ─────╯
 Error: expected value of type DogCommand, found a string
-     ╭─[0102_invalid_string_values.graphql:198:33]
+     ╭─[ 0102_invalid_string_values.graphql:198:33 ]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
      │                               ─────┬────  
@@ -237,7 +237,7 @@ Error: expected value of type DogCommand, found a string
      │                                   ╰──── provided value is a string
 ─────╯
 Error: expected value of type DogCommand, found a boolean
-     ╭─[0102_invalid_string_values.graphql:204:33]
+     ╭─[ 0102_invalid_string_values.graphql:204:33 ]
      │
   47 │   doesKnowCommand(dogCommand: DogCommand): Boolean
      │                               ─────┬────  
@@ -248,7 +248,7 @@ Error: expected value of type DogCommand, found a boolean
      │                                   ╰─── provided value is a boolean
 ─────╯
 Error: value `JUGGLE` does not exist on `DogCommand`
-     ╭─[0102_invalid_string_values.graphql:210:33]
+     ╭─[ 0102_invalid_string_values.graphql:210:33 ]
      │
   40 │ ╭─▶ enum DogCommand {
      ┆ ┆   
@@ -261,7 +261,7 @@ Error: value `JUGGLE` does not exist on `DogCommand`
      │                                        ╰──── value does not exist on `DogCommand` enum
 ─────╯
 Error: value `sit` does not exist on `DogCommand`
-     ╭─[0102_invalid_string_values.graphql:216:33]
+     ╭─[ 0102_invalid_string_values.graphql:216:33 ]
      │
   40 │ ╭─▶ enum DogCommand {
      ┆ ┆   
@@ -274,7 +274,7 @@ Error: value `sit` does not exist on `DogCommand`
      │                                      ╰─── value does not exist on `DogCommand` enum
 ─────╯
 Error: expected value of type String, found an integer
-     ╭─[0102_invalid_string_values.graphql:222:47]
+     ╭─[ 0102_invalid_string_values.graphql:222:47 ]
      │
   13 │   stringListArgField(stringListArg: [String]): String
      │                                     ────┬───  
@@ -285,7 +285,7 @@ Error: expected value of type String, found an integer
      │                                               ╰── provided value is an integer
 ─────╯
 Error: expected value of type [String], found an integer
-     ╭─[0102_invalid_string_values.graphql:228:39]
+     ╭─[ 0102_invalid_string_values.graphql:228:39 ]
      │
   13 │   stringListArgField(stringListArg: [String]): String
      │                                     ────┬───  
@@ -296,7 +296,7 @@ Error: expected value of type [String], found an integer
      │                                       ╰── provided value is an integer
 ─────╯
 Error: expected value of type Int!, found a string
-     ╭─[0102_invalid_string_values.graphql:235:24]
+     ╭─[ 0102_invalid_string_values.graphql:235:24 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                                  ──┬─  
@@ -307,7 +307,7 @@ Error: expected value of type Int!, found a string
      │                          ╰──── provided value is a string
 ─────╯
 Error: expected value of type Int!, found a string
-     ╭─[0102_invalid_string_values.graphql:235:37]
+     ╭─[ 0102_invalid_string_values.graphql:235:37 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                      ──┬─  
@@ -318,7 +318,7 @@ Error: expected value of type Int!, found a string
      │                                       ╰──── provided value is a string
 ─────╯
 Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provided
-     ╭─[0102_invalid_string_values.graphql:241:5]
+     ╭─[ 0102_invalid_string_values.graphql:241:5 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                            ─────┬────  
@@ -329,7 +329,7 @@ Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provid
      │                 ╰────────────── missing value for argument `req2`
 ─────╯
 Error: expected value of type Int!, found a string
-     ╭─[0102_invalid_string_values.graphql:241:24]
+     ╭─[ 0102_invalid_string_values.graphql:241:24 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                      ──┬─  
@@ -340,7 +340,7 @@ Error: expected value of type Int!, found a string
      │                          ╰──── provided value is a string
 ─────╯
 Error: the required argument `ComplicatedArgs.multipleReqs(req1:)` is not provided
-     ╭─[0102_invalid_string_values.graphql:247:5]
+     ╭─[ 0102_invalid_string_values.graphql:247:5 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                ─────┬────  
@@ -351,7 +351,7 @@ Error: the required argument `ComplicatedArgs.multipleReqs(req1:)` is not provid
      │                 ╰───────────── missing value for argument `req1`
 ─────╯
 Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provided
-     ╭─[0102_invalid_string_values.graphql:247:5]
+     ╭─[ 0102_invalid_string_values.graphql:247:5 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                            ─────┬────  
@@ -362,7 +362,7 @@ Error: the required argument `ComplicatedArgs.multipleReqs(req2:)` is not provid
      │                 ╰───────────── missing value for argument `req2`
 ─────╯
 Error: expected value of type Int!, found null
-     ╭─[0102_invalid_string_values.graphql:247:24]
+     ╭─[ 0102_invalid_string_values.graphql:247:24 ]
      │
   16 │   multipleReqs(req1: Int!, req2: Int!): String
      │                      ──┬─  
@@ -373,7 +373,7 @@ Error: expected value of type Int!, found null
      │                          ╰─── provided value is null
 ─────╯
 Error: the required field `ComplexInput.requiredField` is not provided
-     ╭─[0102_invalid_string_values.graphql:254:33]
+     ╭─[ 0102_invalid_string_values.graphql:254:33 ]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
@@ -384,7 +384,7 @@ Error: the required field `ComplexInput.requiredField` is not provided
      │                                        ╰───────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type String, found an integer
-     ╭─[0102_invalid_string_values.graphql:261:32]
+     ╭─[ 0102_invalid_string_values.graphql:261:32 ]
      │
   37 │   stringListField: [String]
      │                    ────┬───  
@@ -395,7 +395,7 @@ Error: expected value of type String, found an integer
      │                                ╰── provided value is an integer
 ─────╯
 Error: expected value of type Boolean!, found null
-     ╭─[0102_invalid_string_values.graphql:271:21]
+     ╭─[ 0102_invalid_string_values.graphql:271:21 ]
      │
   33 │   nonNullField: Boolean! = false
      │                 ────┬───  
@@ -406,7 +406,7 @@ Error: expected value of type Boolean!, found null
      │                       ╰─── provided value is null
 ─────╯
 Error: field `invalidField` does not exist on `ComplexInput`
-     ╭─[0102_invalid_string_values.graphql:280:21]
+     ╭─[ 0102_invalid_string_values.graphql:280:21 ]
      │
   31 │ ╭─▶ input ComplexInput {
      ┆ ┆   
@@ -419,33 +419,33 @@ Error: field `invalidField` does not exist on `ComplexInput`
      │                            ╰───── value does not exist on `ComplexInput` input object
 ─────╯
 Error: expected value of type Boolean!, found a string
-     ╭─[0102_invalid_string_values.graphql:287:20]
+     ╭─[ 0102_invalid_string_values.graphql:287:20 ]
      │
  287 │   dog @include(if: "yes") {
      │                    ──┬──  
      │                      ╰──── provided value is a string
      │
-     ├─[built_in.graphql:146:7]
+     ├─[ built_in.graphql:146:7 ]
      │
  146 │   if: Boolean!
      │       ────┬───  
      │           ╰───── expected type declared here as Boolean!
 ─────╯
 Error: expected value of type Boolean!, found an enum
-     ╭─[0102_invalid_string_values.graphql:288:20]
+     ╭─[ 0102_invalid_string_values.graphql:288:20 ]
      │
  288 │     name @skip(if: ENUM)
      │                    ──┬─  
      │                      ╰─── provided value is an enum
      │
-     ├─[built_in.graphql:140:7]
+     ├─[ built_in.graphql:140:7 ]
      │
  140 │   if: Boolean!
      │       ────┬───  
      │           ╰───── expected type declared here as Boolean!
 ─────╯
 Error: expected value of type Int!, found null
-     ╭─[0102_invalid_string_values.graphql:294:14]
+     ╭─[ 0102_invalid_string_values.graphql:294:14 ]
      │
  294 │   $a: Int! = null,
      │       ──┬─   ──┬─  
@@ -454,7 +454,7 @@ Error: expected value of type Int!, found null
      │                ╰─── provided value is null
 ─────╯
 Error: expected value of type String!, found null
-     ╭─[0102_invalid_string_values.graphql:295:17]
+     ╭─[ 0102_invalid_string_values.graphql:295:17 ]
      │
  295 │   $b: String! = null,
      │       ───┬───   ──┬─  
@@ -463,7 +463,7 @@ Error: expected value of type String!, found null
      │                   ╰─── provided value is null
 ─────╯
 Error: the required field `ComplexInput.requiredField` is not provided
-     ╭─[0102_invalid_string_values.graphql:296:22]
+     ╭─[ 0102_invalid_string_values.graphql:296:22 ]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
@@ -474,7 +474,7 @@ Error: the required field `ComplexInput.requiredField` is not provided
      │                                         ╰───────────────────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type Boolean!, found null
-     ╭─[0102_invalid_string_values.graphql:296:39]
+     ╭─[ 0102_invalid_string_values.graphql:296:39 ]
      │
   32 │   requiredField: Boolean!
      │                  ────┬───  
@@ -485,7 +485,7 @@ Error: expected value of type Boolean!, found null
      │                                         ╰─── provided value is null
 ─────╯
 Error: expected value of type Int, found a string
-     ╭─[0102_invalid_string_values.graphql:306:13]
+     ╭─[ 0102_invalid_string_values.graphql:306:13 ]
      │
  306 │   $a: Int = "one",
      │       ─┬─   ──┬──  
@@ -494,7 +494,7 @@ Error: expected value of type Int, found a string
      │               ╰──── provided value is a string
 ─────╯
 Error: expected value of type String, found an integer
-     ╭─[0102_invalid_string_values.graphql:307:16]
+     ╭─[ 0102_invalid_string_values.graphql:307:16 ]
      │
  307 │   $b: String = 4,
      │       ───┬──   ┬  
@@ -503,7 +503,7 @@ Error: expected value of type String, found an integer
      │                ╰── provided value is an integer
 ─────╯
 Error: expected value of type ComplexInput, found a string
-     ╭─[0102_invalid_string_values.graphql:308:22]
+     ╭─[ 0102_invalid_string_values.graphql:308:22 ]
      │
  308 │   $c: ComplexInput = "NotVeryComplex"
      │       ──────┬─────   ────────┬───────  
@@ -512,7 +512,7 @@ Error: expected value of type ComplexInput, found a string
      │                              ╰───────── provided value is a string
 ─────╯
 Error: expected value of type Boolean!, found an integer
-     ╭─[0102_invalid_string_values.graphql:319:39]
+     ╭─[ 0102_invalid_string_values.graphql:319:39 ]
      │
   32 │   requiredField: Boolean!
      │                  ────┬───  
@@ -523,7 +523,7 @@ Error: expected value of type Boolean!, found an integer
      │                                        ╰─── provided value is an integer
 ─────╯
 Error: expected value of type Int, found a string
-     ╭─[0102_invalid_string_values.graphql:319:54]
+     ╭─[ 0102_invalid_string_values.graphql:319:54 ]
      │
   34 │   intField: Int
      │             ─┬─  
@@ -534,7 +534,7 @@ Error: expected value of type Int, found a string
      │                                                        ╰──── provided value is a string
 ─────╯
 Error: the required field `ComplexInput.requiredField` is not provided
-     ╭─[0102_invalid_string_values.graphql:327:22]
+     ╭─[ 0102_invalid_string_values.graphql:327:22 ]
      │
   32 │   requiredField: Boolean!
      │   ───────────┬───────────  
@@ -545,7 +545,7 @@ Error: the required field `ComplexInput.requiredField` is not provided
      │                            ╰──────── missing value for field `requiredField`
 ─────╯
 Error: expected value of type String, found an integer
-     ╭─[0102_invalid_string_values.graphql:336:26]
+     ╭─[ 0102_invalid_string_values.graphql:336:26 ]
      │
  336 │   $a: [String] = ["one", 2]
      │       ────┬───           ┬  

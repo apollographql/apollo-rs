@@ -1,5 +1,5 @@
 Error: `WEEKDAY` has no enum values
-   ╭─[0116_enum_definition_with_missing_values.graphql:6:1]
+   ╭─[ 0116_enum_definition_with_missing_values.graphql:6:1 ]
    │
  6 │ enum WEEKDAY
    │ ──────┬─────  

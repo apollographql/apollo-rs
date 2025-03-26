@@ -256,7 +256,7 @@ fn same_aliases_with_different_field_targets() {
     "#,
         expect![[r#"
             Error: cannot select different fields into the same alias `fido`
-               ╭─[query.graphql:3:3]
+               ╭─[ query.graphql:3:3 ]
                │
              2 │   fido: name
                │   ─────┬────  
@@ -302,7 +302,7 @@ fn alias_masking_direct_field_access() {
     "#,
         expect![[r#"
             Error: cannot select different fields into the same alias `name`
-               ╭─[query.graphql:3:3]
+               ╭─[ query.graphql:3:3 ]
                │
              2 │   name: nickname
                │   ───────┬──────  
@@ -330,7 +330,7 @@ fn different_args_second_adds_argument() {
     "#,
         expect![[r#"
             Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
-               ╭─[query.graphql:3:3]
+               ╭─[ query.graphql:3:3 ]
                │
              2 │   doesKnowCommand
                │   ───────┬───────  
@@ -358,7 +358,7 @@ fn different_args_second_missess_argument() {
     "#,
         expect![[r#"
             Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
-               ╭─[query.graphql:3:3]
+               ╭─[ query.graphql:3:3 ]
                │
              2 │   doesKnowCommand(dogCommand: SIT)
                │   ────────────────┬───────────────  
@@ -386,7 +386,7 @@ fn conflicting_arg_values() {
     "#,
         expect![[r#"
             Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
-               ╭─[query.graphql:3:3]
+               ╭─[ query.graphql:3:3 ]
                │
              2 │   doesKnowCommand(dogCommand: SIT)
                │   ────────────────┬───────────────  
@@ -414,7 +414,7 @@ fn conflicting_arg_names() {
     "#,
         expect![[r#"
             Error: operation must not provide conflicting field arguments for the same name `isAtLocation`
-               ╭─[query.graphql:3:3]
+               ╭─[ query.graphql:3:3 ]
                │
              2 │   isAtLocation(x: 0)
                │   ─────────┬────────  
@@ -547,7 +547,7 @@ mod field_conflicts {
     "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `x`
-                    ╭─[query.graphql:11:3]
+                    ╭─[ query.graphql:11:3 ]
                     │
                   8 │   x: a
                     │   ──┬─  
@@ -591,7 +591,7 @@ mod field_conflicts {
     "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `x`
-                    ╭─[query.graphql:17:3]
+                    ╭─[ query.graphql:17:3 ]
                     │
                  17 │   x: a
                     │   ──┬─  
@@ -604,7 +604,7 @@ mod field_conflicts {
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
                 Error: cannot select different fields into the same alias `x`
-                    ╭─[query.graphql:17:3]
+                    ╭─[ query.graphql:17:3 ]
                     │
                  13 │     x: c
                     │     ──┬─  
@@ -617,7 +617,7 @@ mod field_conflicts {
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
                 Error: cannot select different fields into the same alias `x`
-                    ╭─[query.graphql:20:3]
+                    ╭─[ query.graphql:20:3 ]
                     │
                  17 │   x: a
                     │   ──┬─  
@@ -630,7 +630,7 @@ mod field_conflicts {
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
                 Error: cannot select different fields into the same alias `x`
-                    ╭─[query.graphql:20:3]
+                    ╭─[ query.graphql:20:3 ]
                     │
                  13 │     x: c
                     │     ──┬─  
@@ -661,7 +661,7 @@ mod field_conflicts {
     "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `x`
-                   ╭─[query.graphql:6:5]
+                   ╭─[ query.graphql:6:5 ]
                    │
                  3 │     x: a
                    │     ──┬─  
@@ -694,7 +694,7 @@ mod field_conflicts {
     "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `x`
-                   ╭─[query.graphql:7:5]
+                   ╭─[ query.graphql:7:5 ]
                    │
                  3 │     x: a
                    │     ──┬─  
@@ -707,7 +707,7 @@ mod field_conflicts {
                    │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ───╯
                 Error: cannot select different fields into the same alias `y`
-                   ╭─[query.graphql:8:5]
+                   ╭─[ query.graphql:8:5 ]
                    │
                  4 │     y: c
                    │     ──┬─  
@@ -742,7 +742,7 @@ mod field_conflicts {
     "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `x`
-                   ╭─[query.graphql:9:7]
+                   ╭─[ query.graphql:9:7 ]
                    │
                  4 │       x: a
                    │       ──┬─  
@@ -787,7 +787,7 @@ mod field_conflicts {
     "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `y`
-                    ╭─[query.graphql:14:3]
+                    ╭─[ query.graphql:14:3 ]
                     │
                  14 │   y: c
                     │   ──┬─  
@@ -800,7 +800,7 @@ mod field_conflicts {
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
                 Error: cannot select different fields into the same alias `x`
-                    ╭─[query.graphql:21:3]
+                    ╭─[ query.graphql:21:3 ]
                     │
                  10 │   x: a
                     │   ──┬─  
@@ -932,7 +932,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `scalar`
-                   ╭─[query.graphql:7:7]
+                   ╭─[ query.graphql:7:7 ]
                    │
                  4 │       scalar
                    │       ───┬──  
@@ -985,7 +985,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `scalar`
-                   ╭─[query.graphql:7:7]
+                   ╭─[ query.graphql:7:7 ]
                    │
                  4 │       scalar
                    │       ───┬──  
@@ -1048,13 +1048,13 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: type `SomeBox` does not have a field `scalar`
-                    ╭─[query.graphql:38:3]
+                    ╭─[ query.graphql:38:3 ]
                     │
                  38 │   scalar
                     │   ───┬──  
                     │      ╰──── field `scalar` selected here
                     │
-                    ├─[schema.graphql:1:11]
+                    ├─[ schema.graphql:1:11 ]
                     │
                   1 │ interface SomeBox {
                     │           ───┬───  
@@ -1083,7 +1083,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `scalar`
-                   ╭─[query.graphql:7:7]
+                   ╭─[ query.graphql:7:7 ]
                    │
                  4 │       scalar
                    │       ───┬──  
@@ -1118,7 +1118,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `box`
-                    ╭─[query.graphql:9:7]
+                    ╭─[ query.graphql:9:7 ]
                     │
                   4 │ ╭───▶       box: listStringBox {
                     ┆ ┆     
@@ -1154,7 +1154,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `box`
-                    ╭─[query.graphql:9:7]
+                    ╭─[ query.graphql:9:7 ]
                     │
                   4 │   ╭─▶       box: stringBox {
                     ┆   ┆   
@@ -1194,7 +1194,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: cannot select different fields into the same alias `val`
-                   ╭─[query.graphql:6:9]
+                   ╭─[ query.graphql:6:9 ]
                    │
                  5 │         val: scalar
                    │         ─────┬─────  
@@ -1230,7 +1230,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `scalar`
-                    ╭─[query.graphql:10:9]
+                    ╭─[ query.graphql:10:9 ]
                     │
                   5 │         scalar
                     │         ───┬──  
@@ -1305,7 +1305,7 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: operation must not select different types using the same name `id`
-                    ╭─[query.graphql:15:7]
+                    ╭─[ query.graphql:15:7 ]
                     │
                   6 │         id: name
                     │         ────┬───  
@@ -1316,7 +1316,7 @@ mod return_types {
                     │        ╰── `id` is selected from `Node.id: ID` here
                 ────╯
                 Error: cannot select different fields into the same alias `id`
-                    ╭─[query.graphql:15:7]
+                    ╭─[ query.graphql:15:7 ]
                     │
                   6 │         id: name
                     │         ────┬───  
@@ -1349,14 +1349,14 @@ mod return_types {
         "#,
             expect![[r#"
                 Error: syntax error: expected definition
-                   ╭─[query.graphql:1:3]
+                   ╭─[ query.graphql:1:3 ]
                    │
                  1 │   someBox {
                    │   ───┬───  
                    │      ╰───── expected definition
                 ───╯
                 Error: type condition `UnknownType` of inline fragment is not a type defined in the schema
-                   ╭─[query.graphql:2:11]
+                   ╭─[ query.graphql:2:11 ]
                    │
                  2 │     ...on UnknownType {
                    │           ─────┬─────  
@@ -1365,7 +1365,7 @@ mod return_types {
                    │ Note: path to the inline fragment: `query → ...`
                 ───╯
                 Error: inline fragment with type condition `NonNullStringBox2` cannot be applied to `Query`
-                    ╭─[query.graphql:5:5]
+                    ╭─[ query.graphql:5:5 ]
                     │
                   5 │ ╭─▶     ...on NonNullStringBox2 {
                     ┆ ┆   
@@ -1373,7 +1373,7 @@ mod return_types {
                     │ │           
                     │ ╰─────────── inline fragment cannot be applied
                     │
-                    ├─[schema.graphql:57:1]
+                    ├─[ schema.graphql:57:1 ]
                     │
                  57 │ ╭─▶ type Query {
                     ┆ ┆   
@@ -1382,7 +1382,7 @@ mod return_types {
                     │ ╰─────── type condition `NonNullStringBox2` is not assignable to this type
                 ────╯
                 Error: syntax error: expected a StringValue, Name or OperationDefinition
-                   ╭─[query.graphql:9:1]
+                   ╭─[ query.graphql:9:1 ]
                    │
                  9 │ }
                    │ ┬  

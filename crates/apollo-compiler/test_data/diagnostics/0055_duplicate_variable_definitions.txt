@@ -1,5 +1,5 @@
 Error: the variable `$atOtherHomes` is declared multiple times
-   ╭─[0055_duplicate_variable_definitions.graphql:1:49]
+   ╭─[ 0055_duplicate_variable_definitions.graphql:1:49 ]
    │
  1 │ query houseTrainedQuery($atOtherHomes: Boolean, $atOtherHomes: Boolean) {
    │                         ───────────┬──────────  ───────────┬──────────  
