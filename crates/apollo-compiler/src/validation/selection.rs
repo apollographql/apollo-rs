@@ -557,7 +557,7 @@ pub(crate) fn validate_selection_set(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     for selection in &selection_set.selections {
         match selection {

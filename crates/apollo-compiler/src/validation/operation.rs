@@ -82,7 +82,7 @@ pub(crate) fn validate_operation(
         document,
         against_type,
         &operation.selection_set,
-        context.operation_context(&operation.variables),
+        &mut context.operation_context(&operation.variables),
     );
 }
 

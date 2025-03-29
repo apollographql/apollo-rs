@@ -21,7 +21,8 @@ autotests = false # Most tests/*.rs files are modules of tests/main.rs
 apollo-parser = { path = "../apollo-parser", version = "0.7.7" }
 ariadne = { version = "0.4.1", features = ["auto-color"] }
 indexmap = "2.0.0"
-rowan = "0.15.5"
+# 0.5.16 has MSRV of 1.77.0, and we want to support 1.76.0
+rowan = ">=0.15.5, <0.15.16"
 serde = { version = "1.0", features = ["derive"] }
 serde_json_bytes = { version = "0.2.2", features = ["preserve_order"] }
 thiserror = "1.0.31"
@@ -33,6 +34,8 @@ uuid = { version = "1.6", features = ["serde", "v4", "js"] }
 [dev-dependencies]
 anyhow = "1.0"
 criterion = "0.5.1"
+# criterion pulls in half ^2.2, but 2.5.0 has MSRV of 1.81.0, and we want to support 1.76.0
+half = ">=2.2.0, <2.5.0"
 expect-test = "1.4"
 notify = "6.0.0"
 pretty_assertions = "1.3.0"

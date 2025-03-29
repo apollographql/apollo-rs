@@ -60,6 +60,6 @@ pub(crate) fn validate_field_set(
         document,
         Some((schema, &field_set.selection_set.ty)),
         &field_set.selection_set,
-        context.operation_context(&[]),
+        &mut context.operation_context(&[]),
     )
 }

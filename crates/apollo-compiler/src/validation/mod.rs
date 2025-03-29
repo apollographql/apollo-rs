@@ -42,6 +42,7 @@ use crate::NodeLocation;
 use crate::SourceMap;
 use indexmap::IndexSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
@@ -162,18 +163,20 @@ impl<'a> ExecutableValidationContext<'a> {
         OperationValidationContext {
             executable: self,
             variables,
+            validated_fragments: HashSet::default(),
         }
     }
 }
 
 /// Shared context when validating things inside an operation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub(crate) struct OperationValidationContext<'a> {
     /// Parent context. Using a reference so the `OnceLock` is shared between all operation
     /// contexts.
     executable: &'a ExecutableValidationContext<'a>,
     /// The variables defined for this operation.
-    pub variables: &'a [Node<VariableDefinition>],
+    pub(crate) variables: &'a [Node<VariableDefinition>],
+    pub(crate) validated_fragments: HashSet<Name>,
 }
 
 impl<'a> OperationValidationContext<'a> {

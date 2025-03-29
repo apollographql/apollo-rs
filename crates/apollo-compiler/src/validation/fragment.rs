@@ -55,7 +55,7 @@ fn validate_fragment_spread_type(
     against_type: &NamedType,
     type_condition: &NamedType,
     selection: &executable::Selection,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     // Another diagnostic will be raised if the type condition was wrong.
     // We reduce noise by silencing other issues with the fragment.
@@ -111,7 +111,7 @@ pub(crate) fn validate_inline_fragment(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     inline: &Node<executable::InlineFragment>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -164,7 +164,7 @@ pub(crate) fn validate_fragment_spread(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     spread: &Node<executable::FragmentSpread>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -187,7 +187,12 @@ pub(crate) fn validate_fragment_spread(
                     context,
                 );
             }
-            validate_fragment_definition(diagnostics, document, def, context);
+            let new = context
+                .validated_fragments
+                .insert(spread.fragment_name.clone());
+            if new {
+                validate_fragment_definition(diagnostics, document, def, context);
+            }
         }
         None => {
             diagnostics.push(
@@ -204,7 +209,7 @@ pub(crate) fn validate_fragment_definition(
     diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     fragment: &Node<executable::Fragment>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -258,18 +263,25 @@ pub(crate) fn validate_fragment_cycles(
 ) {
     /// If a fragment spread is recursive, returns a vec containing the spread that refers back to
     /// the original fragment, and a trace of each fragment spread back to the original fragment.
-    fn detect_fragment_cycles(
-        document: &ExecutableDocument,
-        selection_set: &executable::SelectionSet,
-        visited: &mut RecursionGuard<'_>,
+    fn detect_fragment_cycles<'doc>(
+        document: &'doc ExecutableDocument,
+        selection_set: &'doc executable::SelectionSet,
+        path_from_root: &mut RecursionGuard<'_>,
+        seen: &mut HashSet<&'doc Name>,
     ) -> Result<(), CycleError<executable::FragmentSpread>> {
         for selection in &selection_set.selections {
             match selection {
                 executable::Selection::FragmentSpread(spread) => {
-                    if visited.contains(&spread.fragment_name) {
-                        if visited.first() == Some(&spread.fragment_name) {
+                    if path_from_root.contains(&spread.fragment_name) {
+                        if path_from_root.first() == Some(&spread.fragment_name) {
                             return Err(CycleError::Recursed(vec![spread.clone()]));
                         }
+                        continue;
+                    }
+
+                    let new = seen.insert(&spread.fragment_name);
+                    if !new {
+                        // We already recursively traversed that fragment and didn’t find a cycle then
                         continue;
                     }
 
@@ -277,16 +289,17 @@ pub(crate) fn validate_fragment_cycles(
                         detect_fragment_cycles(
                             document,
                             &fragment.selection_set,
-                            &mut visited.push(&fragment.name)?,
+                            &mut path_from_root.push(&fragment.name)?,
+                            seen,
                         )
                         .map_err(|error| error.trace(spread))?;
                     }
                 }
                 executable::Selection::InlineFragment(inline) => {
-                    detect_fragment_cycles(document, &inline.selection_set, visited)?;
+                    detect_fragment_cycles(document, &inline.selection_set, path_from_root, seen)?;
                 }
                 executable::Selection::Field(field) => {
-                    detect_fragment_cycles(document, &field.selection_set, visited)?;
+                    detect_fragment_cycles(document, &field.selection_set, path_from_root, seen)?;
                 }
             }
         }
@@ -296,7 +309,12 @@ pub(crate) fn validate_fragment_cycles(
 
     let mut visited = RecursionStack::with_root(def.name.clone()).with_limit(100);
 
-    match detect_fragment_cycles(document, &def.selection_set, &mut visited.guard()) {
+    match detect_fragment_cycles(
+        document,
+        &def.selection_set,
+        &mut visited.guard(),
+        &mut HashSet::default(),
+    ) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
             let head_location = NodeLocation::recompose(def.location(), def.name.location());
