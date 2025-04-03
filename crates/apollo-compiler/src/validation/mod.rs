@@ -340,6 +340,9 @@ impl DiagnosticData {
                 ExecutableBuildError::SubscriptionUsesIntrospection { .. } => {
                     "SubscriptionUsesIntrospection"
                 }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    "SubscriptionUsesConditionalSelection"
+                }
                 ExecutableBuildError::ConflictingFieldType(_) => "ConflictingFieldType",
                 ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
                 ExecutableBuildError::ConflictingFieldArgument(_) => "ConflictingFieldArgument",
@@ -586,6 +589,18 @@ impl DiagnosticData {
                     } else {
                         Some("Anonymous Subscription must not select an introspection top level field."
                             .to_string())
+                    }
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(
+                            r#"Subscription "{name}" can not specify @skip or @include on root fields."#
+                        ))
+                    } else {
+                        Some(
+                            "Anonymous Subscription can not specify @skip or @include on root fields."
+                                .to_string(),
+                        )
                     }
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
@@ -839,6 +854,12 @@ impl ToCliReport for DiagnosticData {
                     report.with_label_opt(
                         self.location,
                         format_args!("{field} is an introspection field"),
+                    );
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { field, .. } => {
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("{field} specifies @skip or @include condition"),
                     );
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {

@@ -46,6 +46,27 @@ pub(crate) fn validate_subscription(
                 },
             );
         }
+
+        // first rule validates that we only have single selection
+        let has_conditional_field = fields
+            .iter()
+            .find(|field| {
+                field
+                    .field
+                    .directives
+                    .iter()
+                    .any(|d| matches!(d.name.as_str(), "skip" | "include"))
+            })
+            .map(|field| field.field);
+        if let Some(conditional_field) = has_conditional_field {
+            diagnostics.push(
+                conditional_field.location(),
+                executable::BuildError::SubscriptionUsesConditionalSelection {
+                    name: operation.name.clone(),
+                    field: conditional_field.name.clone(),
+                },
+            );
+        }
     }
 }
 

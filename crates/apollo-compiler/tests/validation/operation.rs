@@ -218,3 +218,99 @@ type Product {
         "{errors}"
     );
 }
+
+#[test]
+fn it_validates_subscription_cannot_specify_multiple_fields() {
+    let input = r#"
+subscription MultipleSubs {
+  ticker1
+  ticker2
+}
+
+type Query {
+  hello: String
+}
+
+type Subscription {
+  ticker1: String
+  ticker2: String
+}
+"#;
+
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
+        .unwrap_err()
+        .to_string();
+    assert!(
+        errors.contains("subscription `MultipleSubs` can only have one root field"),
+        "{errors}"
+    );
+    assert!(
+        errors.contains("There are 2 root fields: ticker1, ticker2. This is not allowed."),
+        "{errors}"
+    );
+}
+
+#[test]
+fn it_validates_subscription_cannot_select_introspection_fields() {
+    let input = r#"
+subscription IntrospectionSub {
+  __typename
+}
+
+type Query {
+  hello: String
+}
+
+type Subscription {
+  ticker: String
+}
+"#;
+
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
+        .unwrap_err()
+        .to_string();
+    assert!(
+        errors.contains(
+            "subscription `IntrospectionSub` can not have an introspection field as a root field"
+        ),
+        "{errors}"
+    );
+    assert!(
+        errors.contains("__typename is an introspection field"),
+        "{errors}"
+    );
+}
+
+#[test]
+fn it_validates_subscription_cannot_select_conditional_fields() {
+    let input = r#"
+subscription ConditionalSub($condition: Boolean = true) {
+  ticker @include(if: $condition)
+}
+
+type Query {
+  hello: String
+}
+
+type Subscription {
+  ticker: String
+}
+"#;
+
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
+        .unwrap_err()
+        .to_string();
+    assert!(
+        errors.contains(
+            "subscription `ConditionalSub` can not specify @skip or @include on root fields"
+        ),
+        "{errors}"
+    );
+    assert!(
+        errors.contains("ticker specifies @skip or @include condition"),
+        "{errors}"
+    );
+}
