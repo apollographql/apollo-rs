@@ -111,7 +111,7 @@ pub fn partial_execute(
         });
     let mut errors = Vec::new();
     let path = None;
-    let data = match execute_selection_set(
+    let data = execute_selection_set(
         schema,
         document,
         variable_values,
@@ -121,9 +121,12 @@ pub fn partial_execute(
         root_operation_object_type_def,
         initial_value,
         &operation.selection_set.selections,
-    ) {
-        Ok(map) => Some(map),
-        Err(PropagateNull) => None,
-    };
+    )
+    // What `.ok()` below converts to `None` is a field error on a non-null field
+    // propagated all the way to the root, so that the response JSON should contain `"data": null`.
+    //
+    // No-op to witness the error type:
+    .inspect_err(|_: &PropagateNull| {})
+    .ok();
     Ok(ExecutionResponse { data, errors })
 }
