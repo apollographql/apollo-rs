@@ -266,6 +266,14 @@ pub(crate) enum BuildError {
         /// Name of the introspection field
         field: Name,
     },
+    #[error(
+        "{} can not specify @skip or @include on root fields",
+        subscription_name_or_anonymous(name)
+    )]
+    SubscriptionUsesConditionalSelection {
+        /// Name of the operation
+        name: Option<Name>,
+    },
 
     #[error("{0}")]
     ConflictingFieldType(Box<ConflictingFieldType>),

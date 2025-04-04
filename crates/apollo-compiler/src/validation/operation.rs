@@ -13,6 +13,7 @@ pub(crate) fn validate_subscription(
         let fields = super::selection::expand_selections(
             &document.fragments,
             std::iter::once(&operation.selection_set),
+            Some((operation, diagnostics)),
         );
 
         if fields.len() > 1 {
