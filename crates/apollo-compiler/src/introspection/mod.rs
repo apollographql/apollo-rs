@@ -122,7 +122,11 @@ pub fn partial_execute(
         initial_value,
         &operation.selection_set.selections,
     )
-    .inspect_err(|_: &PropagateNull| {}) // propagated null is represented as `None` here
+    // What `.ok()` below converts to `None` is a field error on a non-null field
+    // propagated all the way to the root, so that the response JSON should contain `"data": null`.
+    //
+    // No-op to witness the error type:
+    .inspect_err(|_: &PropagateNull| {})
     .ok();
     Ok(ExecutionResponse { data, errors })
 }
