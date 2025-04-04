@@ -48,22 +48,19 @@ pub(crate) fn validate_subscription(
         }
 
         // first rule validates that we only have single selection
-        let has_conditional_field = fields
-            .iter()
-            .find(|field| {
-                field
-                    .field
-                    .directives
+        let has_conditional_selection =
+            operation.selection_set.selections.iter().find(|selection| {
+                selection
+                    .directives()
                     .iter()
                     .any(|d| matches!(d.name.as_str(), "skip" | "include"))
-            })
-            .map(|field| field.field);
-        if let Some(conditional_field) = has_conditional_field {
+            });
+        if let Some(conditional_selection) = has_conditional_selection {
             diagnostics.push(
-                conditional_field.location(),
+                operation.location(),
                 executable::BuildError::SubscriptionUsesConditionalSelection {
                     name: operation.name.clone(),
-                    field: conditional_field.name.clone(),
+                    selection: conditional_selection.clone(),
                 },
             );
         }

@@ -273,8 +273,8 @@ pub(crate) enum BuildError {
     SubscriptionUsesConditionalSelection {
         /// Name of the operation
         name: Option<Name>,
-        /// Field name that specify @skip or @include directives.
-        field: Name,
+        /// Selection that specify @skip or @include directives.
+        selection: Selection,
     },
 
     #[error("{0}")]
