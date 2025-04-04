@@ -320,9 +320,7 @@ impl DiagnosticData {
             Details::ExecutableBuildError(error) => Some(match error {
                 ExecutableBuildError::UndefinedField { .. } => "UndefinedField",
                 ExecutableBuildError::TypeSystemDefinition { .. } => "TypeSystemDefinition",
-                ExecutableBuildError::AmbiguousAnonymousOperation => {
-                    "AmbiguousAnonymousOperation"
-                }
+                ExecutableBuildError::AmbiguousAnonymousOperation => "AmbiguousAnonymousOperation",
                 ExecutableBuildError::OperationNameCollision { .. } => "OperationNameCollision",
                 ExecutableBuildError::FragmentNameCollision { .. } => "FragmentNameCollision",
                 ExecutableBuildError::UndefinedRootOperation { .. } => "UndefinedRootOperation",
