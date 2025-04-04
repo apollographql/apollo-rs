@@ -291,7 +291,7 @@ impl DiagnosticData {
                     OutputType { .. } => "OutputType",
                     InputType { .. } => "InputType",
                     VariableInputType { .. } => "VariableInputType",
-                    QueryRootOperationType { .. } => "QueryRootOperationType",
+                    QueryRootOperationType => "QueryRootOperationType",
                     UnusedVariable { .. } => "UnusedVariable",
                     RootOperationObjectType { .. } => "RootOperationObjectType",
                     UnionMemberObjectType { .. } => "UnionMemberObjectType",
@@ -320,9 +320,7 @@ impl DiagnosticData {
             Details::ExecutableBuildError(error) => Some(match error {
                 ExecutableBuildError::UndefinedField { .. } => "UndefinedField",
                 ExecutableBuildError::TypeSystemDefinition { .. } => "TypeSystemDefinition",
-                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
-                    "AmbiguousAnonymousOperation"
-                }
+                ExecutableBuildError::AmbiguousAnonymousOperation => "AmbiguousAnonymousOperation",
                 ExecutableBuildError::OperationNameCollision { .. } => "OperationNameCollision",
                 ExecutableBuildError::FragmentNameCollision { .. } => "FragmentNameCollision",
                 ExecutableBuildError::UndefinedRootOperation { .. } => "UndefinedRootOperation",
@@ -419,7 +417,7 @@ impl DiagnosticData {
                     VariableInputType { name, ty, .. } => Some(format!(
                         r#"Variable "${name}" cannot be non-input type "{ty}"."#
                     )),
-                    QueryRootOperationType { .. } => None,
+                    QueryRootOperationType => None,
                     UnusedVariable { name } => {
                         Some(format!(r#"Variable "${name}" is never used."#))
                     }
@@ -681,10 +679,10 @@ impl ToCliReport for DiagnosticData {
                     report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                     report.with_help("remove or rename one of the definitions, or use `extend`");
                 }
-                SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
+                SchemaBuildError::BuiltInScalarTypeRedefinition => {
                     report.with_label_opt(self.location, "remove this scalar definition");
                 }
-                SchemaBuildError::OrphanSchemaExtension { .. } => {
+                SchemaBuildError::OrphanSchemaExtension => {
                     report.with_label_opt(self.location, "extension here")
                 }
                 SchemaBuildError::OrphanTypeExtension { .. } => {
@@ -761,7 +759,7 @@ impl ToCliReport for DiagnosticData {
                     self.location,
                     "remove this definition, or use `parse_mixed()`",
                 ),
-                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
+                ExecutableBuildError::AmbiguousAnonymousOperation => {
                     report.with_label_opt(self.location, "provide a name for this definition");
                     report.with_help(
                         "GraphQL requires operations to be named if the document has more than one",
