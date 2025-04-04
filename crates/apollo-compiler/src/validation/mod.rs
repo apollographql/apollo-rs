@@ -854,13 +854,8 @@ impl ToCliReport for DiagnosticData {
                         format_args!("{field} is an introspection field"),
                     );
                 }
-                ExecutableBuildError::SubscriptionUsesConditionalSelection {
-                    selection, ..
-                } => {
-                    report.with_label_opt(
-                        self.location,
-                        format_args!("{selection} specifies @skip or @include condition"),
-                    );
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    report.with_label_opt(self.location, "conditional directive used here");
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
                     let ConflictingFieldType {

@@ -1,10 +1,8 @@
 Error: subscription `ConditionalInlineSub` can not specify @skip or @include on root fields
-   ╭─[ 0122_conditional_subscriptions_with_named_fragment.graphql:1:1 ]
+   ╭─[ 0122_conditional_subscriptions_with_named_fragment.graphql:2:23 ]
    │
- 1 │ ╭─▶ subscription ConditionalInlineSub($condition: Boolean = true) {
-   ┆ ┆   
- 3 │ ├─▶ }
-   │ │       
-   │ ╰─────── ...mySubscription @include(if: $condition) specifies @skip or @include condition
+ 2 │     ...mySubscription @include(if: $condition)
+   │                       ────────────┬───────────  
+   │                                   ╰───────────── conditional directive used here
 ───╯
 

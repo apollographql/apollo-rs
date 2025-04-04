@@ -13,6 +13,7 @@ pub(crate) fn validate_subscription(
         let fields = super::selection::expand_selections(
             &document.fragments,
             std::iter::once(&operation.selection_set),
+            Some((operation, diagnostics)),
         );
 
         if fields.len() > 1 {
@@ -43,24 +44,6 @@ pub(crate) fn validate_subscription(
                 executable::BuildError::SubscriptionUsesIntrospection {
                     name: operation.name.clone(),
                     field: field.name.clone(),
-                },
-            );
-        }
-
-        // first rule validates that we only have single selection
-        let has_conditional_selection =
-            operation.selection_set.selections.iter().find(|selection| {
-                selection
-                    .directives()
-                    .iter()
-                    .any(|d| matches!(d.name.as_str(), "skip" | "include"))
-            });
-        if let Some(conditional_selection) = has_conditional_selection {
-            diagnostics.push(
-                operation.location(),
-                executable::BuildError::SubscriptionUsesConditionalSelection {
-                    name: operation.name.clone(),
-                    selection: conditional_selection.clone(),
                 },
             );
         }
