@@ -80,7 +80,14 @@ pub(crate) fn validate_variable_definitions(
     }
 }
 
-/// Named fragments are "deduplicated": only visited once even if spread multiple times
+/// Call a function for every selection that is reachable from the given selection set.
+///
+/// This includes fields, fragment spreads, and inline fragments. For fragments, both the spread
+/// and the fragment's nested selections are reported. For fields, nested selections are also
+/// reported.
+///
+/// Named fragments are "deduplicated": only visited once even if spread multiple times *in
+/// different locations*. This is only appropriate for certain kinds of validations, so reuser beware.
 fn walk_selections_with_deduped_fragments<'doc>(
     document: &'doc ExecutableDocument,
     selections: &'doc executable::SelectionSet,

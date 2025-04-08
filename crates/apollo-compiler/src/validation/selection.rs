@@ -64,10 +64,9 @@ impl<'a> FieldSelection<'a> {
 }
 
 /// Expand one or more selection sets to a list of all fields selected.
-pub(crate) fn expand_selections<'doc>(
+fn expand_selections<'doc>(
     fragments: &'doc IndexMap<Name, Node<executable::Fragment>>,
     selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
-    mut for_subscription_top_level: Option<(&executable::Operation, &mut DiagnosticList)>,
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
     let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.collect();
@@ -75,20 +74,6 @@ pub(crate) fn expand_selections<'doc>(
 
     while let Some(next_set) = queue.pop_front() {
         for selection in &next_set.selections {
-            if let Some((operation, diagnostics)) = &mut for_subscription_top_level {
-                if let Some(conditional_directive) = selection
-                    .directives()
-                    .iter()
-                    .find(|d| matches!(d.name.as_str(), "skip" | "include"))
-                {
-                    diagnostics.push(
-                        conditional_directive.location(),
-                        executable::BuildError::SubscriptionUsesConditionalSelection {
-                            name: operation.name.clone(),
-                        },
-                    );
-                }
-            }
             match selection {
                 executable::Selection::Field(field) => {
                     selections.push(FieldSelection::new(&next_set.ty, field))
@@ -535,11 +520,8 @@ impl<'alloc, 's, 'doc> FieldsInSetCanMerge<'alloc, 's, 'doc> {
         &self,
         selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
     ) -> &'alloc [FieldSelection<'doc>] {
-        self.alloc.alloc(expand_selections(
-            &self.document.fragments,
-            selection_sets,
-            None,
-        ))
+        self.alloc
+            .alloc(expand_selections(&self.document.fragments, selection_sets))
     }
 
     pub(crate) fn validate_operation(

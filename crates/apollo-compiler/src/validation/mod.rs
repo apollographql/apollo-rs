@@ -1,11 +1,6 @@
 //! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
 //! and other kinds of errors.
 
-use crate::coordinate::SchemaCoordinate;
-#[cfg(doc)]
-use crate::ExecutableDocument;
-use crate::Schema;
-
 pub(crate) mod argument;
 pub(crate) mod diagnostics;
 pub(crate) mod directive;
@@ -26,6 +21,7 @@ pub(crate) mod variable;
 use crate::collections::HashMap;
 use crate::collections::HashSet;
 use crate::collections::IndexSet;
+use crate::coordinate::SchemaCoordinate;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;
@@ -41,6 +37,7 @@ use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
 use crate::Node;
+use crate::Schema;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
