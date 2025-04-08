@@ -1,6 +1,8 @@
 use apollo_compiler::parser::Parser;
 use expect_test::expect;
 
+/// Build a chain of `size` fragments where each fragment recurses into a field and applies the
+/// next fragment in the chain.
 fn build_fragment_chain(size: usize) -> String {
     let mut query = r#"
       query Introspection{
@@ -30,6 +32,39 @@ fn build_fragment_chain(size: usize) -> String {
             ofType {{
               name
             }}
+          }}"
+    ));
+
+    query
+}
+
+/// Build a chain of `size` fragments where each fragment applies the next fragment in the chain,
+/// without going into nested fields.
+fn build_flat_fragment_chain(size: usize) -> String {
+    let mut query = r#"
+      query Introspection{
+        __schema {
+          types {
+            ...typeFragment1
+          }
+        }
+      }
+    "#
+    .to_string();
+
+    for i in 1..size {
+        query.push_str(&format!(
+            "
+          fragment typeFragment{i} on __Type {{
+            ...typeFragment{}
+          }}",
+            i + 1
+        ));
+    }
+    query.push_str(&format!(
+        "
+          fragment typeFragment{size} on __Type {{
+            name
           }}"
     ));
 
@@ -103,10 +138,40 @@ fn build_nested_selection(depth: usize) -> String {
 }
 
 #[test]
-fn long_fragment_chains_do_not_overflow_stack() {
+fn long_nested_fragment_chains_do_not_overflow_stack() {
     // Build a query that applies 1K fragments
     // Validating it would take a lot of recursion and blow the stack
     let query = build_fragment_chain(1_000);
+
+    let errors = Parser::new()
+        .parse_mixed_validate(
+            format!(
+                "type Query {{ a: Int }}
+            {query}"
+            ),
+            "overflow.graphql",
+        )
+        .expect_err("must have recursion errors");
+
+    let expected = expect_test::expect![[r#"
+        Error: too much recursion
+        Error: too much recursion
+        Error: `typeFragment1` contains too much nesting
+            ╭─[ overflow.graphql:11:11 ]
+            │
+         11 │           fragment typeFragment1 on __Type {
+            │           ───────────┬──────────  
+            │                      ╰──────────── references a very long chain of fragments in its definition
+        ────╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn long_flat_fragment_chains_do_not_overflow_stack() {
+    // Build a query that applies 1K fragments
+    // Validating it would take a lot of recursion and blow the stack
+    let query = build_flat_fragment_chain(1_000);
 
     let errors = Parser::new()
         .parse_mixed_validate(
@@ -127,6 +192,59 @@ fn long_fragment_chains_do_not_overflow_stack() {
             │           ───────────┬──────────  
             │                      ╰──────────── references a very long chain of fragments in its definition
         ────╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn long_flat_fragment_chains_do_not_overflow_stack_in_subscriptions() {
+    // Build a subscription that applies 1K fragments
+    // Validating it would take a lot of recursion and blow the stack
+    let size = 10_000;
+    let mut query = r#"
+      subscription {
+        ...subscriptionFragment1
+      }
+    "#
+    .to_string();
+
+    for i in 1..size {
+        query.push_str(&format!(
+            "
+          fragment subscriptionFragment{i} on Subscription {{
+            ...subscriptionFragment{}
+          }}",
+            i + 1
+        ));
+    }
+    query.push_str(&format!(
+        "
+          fragment subscriptionFragment{size} on Subscription {{
+            a
+          }}"
+    ));
+
+    let errors = Parser::new()
+        .parse_mixed_validate(
+            format!(
+                "
+            type Query {{ notUsed: Int }}
+            type Subscription {{ a: Int }}
+            {query}"
+            ),
+            "overflow.graphql",
+        )
+        .expect_err("must have recursion errors");
+
+    let expected = expect_test::expect![[r#"
+        Error: too much recursion
+        Error: `subscriptionFragment1` contains too much nesting
+           ╭─[ overflow.graphql:9:11 ]
+           │
+         9 │           fragment subscriptionFragment1 on Subscription {
+           │           ───────────────┬──────────────  
+           │                          ╰──────────────── references a very long chain of fragments in its definition
+        ───╯
     "#]];
     expected.assert_eq(&errors.to_string());
 }
