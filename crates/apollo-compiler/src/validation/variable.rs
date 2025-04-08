@@ -4,6 +4,8 @@ use crate::collections::HashSet;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::value::value_of_correct_type;
+use crate::validation::DepthCounter;
+use crate::validation::DepthGuard;
 use crate::validation::DiagnosticList;
 use crate::validation::RecursionLimitError;
 use crate::validation::SourceSpan;
@@ -97,13 +99,14 @@ fn walk_selections_with_deduped_fragments<'doc>(
         document: &'doc ExecutableDocument,
         selection_set: &'doc executable::SelectionSet,
         seen: &mut HashSet<&'doc Name>,
+        mut guard: DepthGuard<'_>,
         f: &mut dyn FnMut(&'doc executable::Selection),
     ) -> Result<(), RecursionLimitError> {
         for selection in &selection_set.selections {
             f(selection);
             match selection {
                 executable::Selection::Field(field) => {
-                    walk_selections_inner(document, &field.selection_set, seen, f)?;
+                    walk_selections_inner(document, &field.selection_set, seen, guard.increment()?, f)?;
                 }
                 executable::Selection::FragmentSpread(fragment) => {
                     let new = seen.insert(&fragment.fragment_name);
@@ -118,19 +121,25 @@ fn walk_selections_with_deduped_fragments<'doc>(
                             document,
                             &fragment_definition.selection_set,
                             seen,
+                            guard.increment()?,
                             f,
                         )?;
                     }
                 }
                 executable::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(document, &fragment.selection_set, seen, f)?;
+                    walk_selections_inner(document, &fragment.selection_set, seen, guard.increment()?, f)?;
                 }
             }
         }
         Ok(())
     }
 
-    walk_selections_inner(document, selections, &mut HashSet::default(), &mut f)
+    // This has a much higher limit than comparable recursive walks, like the one in
+    // `validate_fragment_cycles`, despite doing similar work. This is because this limit
+    // was introduced later and should not break (reasonable) existing queries that are
+    // under that pre-existing limit. Luckily the existing limit was very conservative.
+    let mut depth = DepthCounter::new().with_limit(500);
+    walk_selections_inner(document, selections, &mut HashSet::default(), depth.guard(), &mut f)
 }
 
 fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &Name> + '_ {
