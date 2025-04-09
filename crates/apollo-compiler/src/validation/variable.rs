@@ -106,7 +106,13 @@ fn walk_selections_with_deduped_fragments<'doc>(
             f(selection);
             match selection {
                 executable::Selection::Field(field) => {
-                    walk_selections_inner(document, &field.selection_set, seen, guard.increment()?, f)?;
+                    walk_selections_inner(
+                        document,
+                        &field.selection_set,
+                        seen,
+                        guard.increment()?,
+                        f,
+                    )?;
                 }
                 executable::Selection::FragmentSpread(fragment) => {
                     let new = seen.insert(&fragment.fragment_name);
@@ -127,7 +133,13 @@ fn walk_selections_with_deduped_fragments<'doc>(
                     }
                 }
                 executable::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(document, &fragment.selection_set, seen, guard.increment()?, f)?;
+                    walk_selections_inner(
+                        document,
+                        &fragment.selection_set,
+                        seen,
+                        guard.increment()?,
+                        f,
+                    )?;
                 }
             }
         }
@@ -139,7 +151,13 @@ fn walk_selections_with_deduped_fragments<'doc>(
     // was introduced later and should not break (reasonable) existing queries that are
     // under that pre-existing limit. Luckily the existing limit was very conservative.
     let mut depth = DepthCounter::new().with_limit(500);
-    walk_selections_inner(document, selections, &mut HashSet::default(), depth.guard(), &mut f)
+    walk_selections_inner(
+        document,
+        selections,
+        &mut HashSet::default(),
+        depth.guard(),
+        &mut f,
+    )
 }
 
 fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = &Name> + '_ {
