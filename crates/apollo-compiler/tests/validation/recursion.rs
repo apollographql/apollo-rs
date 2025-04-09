@@ -169,9 +169,9 @@ fn long_nested_fragment_chains_do_not_overflow_stack() {
 
 #[test]
 fn long_flat_fragment_chains_do_not_overflow_stack() {
-    // Build a query that applies 1K fragments
+    // Build a query that applies 10K fragments
     // Validating it would take a lot of recursion and blow the stack
-    let query = build_flat_fragment_chain(1_000);
+    let query = build_flat_fragment_chain(10_000);
 
     let errors = Parser::new()
         .parse_mixed_validate(
@@ -198,7 +198,7 @@ fn long_flat_fragment_chains_do_not_overflow_stack() {
 
 #[test]
 fn long_flat_fragment_chains_do_not_overflow_stack_in_subscriptions() {
-    // Build a subscription that applies 1K fragments
+    // Build a subscription that applies 10K fragments
     // Validating it would take a lot of recursion and blow the stack
     let size = 10_000;
     let mut query = r#"
