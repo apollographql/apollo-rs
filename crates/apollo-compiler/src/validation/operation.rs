@@ -54,7 +54,13 @@ fn walk_selections<'doc>(
                     }
                 }
                 executable::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(document, &fragment.selection_set, seen, guard.increment()?, f)?;
+                    walk_selections_inner(
+                        document,
+                        &fragment.selection_set,
+                        seen,
+                        guard.increment()?,
+                        f,
+                    )?;
                 }
             }
         }
@@ -67,7 +73,13 @@ fn walk_selections<'doc>(
     // under that pre-existing limit. Luckily the existing limit was very conservative.
     let mut depth = DepthCounter::new().with_limit(500);
 
-    walk_selections_inner(document, selections, &mut HashSet::default(), depth.guard(), &mut f)
+    walk_selections_inner(
+        document,
+        selections,
+        &mut HashSet::default(),
+        depth.guard(),
+        &mut f,
+    )
 }
 
 pub(crate) fn validate_subscription(

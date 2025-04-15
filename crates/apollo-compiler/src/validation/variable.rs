@@ -90,7 +90,7 @@ pub(crate) fn validate_variable_definitions(
 ///
 /// Named fragments are "deduplicated": only visited once even if spread multiple times *in
 /// different locations*. This is only appropriate for certain kinds of validations, so reuser beware.
-fn walk_selections_with_deduped_fragments<'doc>(
+pub(super) fn walk_selections_with_deduped_fragments<'doc>(
     document: &'doc ExecutableDocument,
     selections: &'doc executable::SelectionSet,
     mut f: impl FnMut(&'doc executable::Selection),
