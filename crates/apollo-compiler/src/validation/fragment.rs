@@ -378,9 +378,9 @@ pub(crate) fn validate_fragment_type_condition(
     }
 }
 
-fn collect_used_fragments<'doc>(
-    document: &'doc ExecutableDocument,
-) -> Result<HashSet<&'doc Name>, RecursionLimitError> {
+fn collect_used_fragments(
+    document: &ExecutableDocument,
+) -> Result<HashSet<&Name>, RecursionLimitError> {
     let mut names = HashSet::default();
     for operation in document.operations.iter() {
         walk_selections_with_deduped_fragments(document, &operation.selection_set, |selection| {
