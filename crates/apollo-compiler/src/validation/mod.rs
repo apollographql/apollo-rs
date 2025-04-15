@@ -1119,12 +1119,12 @@ impl DepthCounter {
 
 /// Track call depth in a recursive function.
 ///
-/// Pass the result of `guard.increment(name)` to recursive calls. When a guard is dropped,
+/// Pass the result of `guard.increment()` to recursive calls. When a guard is dropped,
 /// its value is decremented.
 struct DepthGuard<'a>(&'a mut DepthCounter);
 
 impl DepthGuard<'_> {
-    /// Mark that we saw a name. If there are too many names, return an error.
+    /// Mark that we are recursing. If we reached the limit, return an error.
     fn increment(&mut self) -> Result<DepthGuard<'_>, RecursionLimitError> {
         self.0.value += 1;
         self.0.high = self.0.high.max(self.0.value);
