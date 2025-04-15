@@ -238,6 +238,7 @@ fn long_flat_fragment_chains_do_not_overflow_stack_in_subscriptions() {
 
     let expected = expect_test::expect![[r#"
         Error: too much recursion
+        Error: too much recursion
         Error: `subscriptionFragment1` contains too much nesting
            ╭─[ overflow.graphql:9:11 ]
            │
