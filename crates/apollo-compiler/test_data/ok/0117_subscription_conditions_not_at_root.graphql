@@ -1,0 +1,21 @@
+subscription ConditionalSub($includeContent: Boolean = true, $small: Boolean = true) {
+    messages {
+        username
+        text @include(if: $includeContent)
+        avatar @skip(if: $small)
+    }
+}
+
+type Query {
+    hello: String
+}
+
+type Message {
+    username: String
+    text: String
+    avatar: String
+}
+
+type Subscription {
+    messages: Message
+}

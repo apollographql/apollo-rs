@@ -1,11 +1,6 @@
 //! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
 //! and other kinds of errors.
 
-use crate::coordinate::SchemaCoordinate;
-#[cfg(doc)]
-use crate::ExecutableDocument;
-use crate::Schema;
-
 pub(crate) mod argument;
 pub(crate) mod diagnostics;
 pub(crate) mod directive;
@@ -26,6 +21,7 @@ pub(crate) mod variable;
 use crate::collections::HashMap;
 use crate::collections::HashSet;
 use crate::collections::IndexSet;
+use crate::coordinate::SchemaCoordinate;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;
@@ -41,6 +37,7 @@ use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
 use crate::Node;
+use crate::Schema;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
@@ -338,6 +335,9 @@ impl DiagnosticData {
                 ExecutableBuildError::SubscriptionUsesIntrospection { .. } => {
                     "SubscriptionUsesIntrospection"
                 }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    "SubscriptionUsesConditionalSelection"
+                }
                 ExecutableBuildError::ConflictingFieldType(_) => "ConflictingFieldType",
                 ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
                 ExecutableBuildError::ConflictingFieldArgument(_) => "ConflictingFieldArgument",
@@ -584,6 +584,18 @@ impl DiagnosticData {
                     } else {
                         Some("Anonymous Subscription must not select an introspection top level field."
                             .to_string())
+                    }
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(
+                            r#"Subscription "{name}" can not specify @skip or @include on root fields."#
+                        ))
+                    } else {
+                        Some(
+                            "Anonymous Subscription can not specify @skip or @include on root fields."
+                                .to_string(),
+                        )
                     }
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
@@ -838,6 +850,9 @@ impl ToCliReport for DiagnosticData {
                         self.location,
                         format_args!("{field} is an introspection field"),
                     );
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    report.with_label_opt(self.location, "conditional directive used here");
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
                     let ConflictingFieldType {

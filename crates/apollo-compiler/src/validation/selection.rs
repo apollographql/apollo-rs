@@ -64,7 +64,7 @@ impl<'a> FieldSelection<'a> {
 }
 
 /// Expand one or more selection sets to a list of all fields selected.
-pub(crate) fn expand_selections<'doc>(
+fn expand_selections<'doc>(
     fragments: &'doc IndexMap<Name, Node<executable::Fragment>>,
     selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
 ) -> Vec<FieldSelection<'doc>> {
