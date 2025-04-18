@@ -553,7 +553,7 @@ impl DirectiveList {
     /// Returns an iterator of mutable directives with the given name.
     ///
     /// This method is best for repeatable directives.
-    /// See also [`get_mut`][Self::get_mut] for non-repeatable directives.
+    /// See also [`get`][Self::get] for non-repeatable directives.
     pub fn get_all_mut<'def: 'name, 'name>(
         &'def mut self,
         name: &'name str,
@@ -567,14 +567,6 @@ impl DirectiveList {
     /// See also [`get_all`][Self::get_all] for repeatable directives.
     pub fn get(&self, name: &str) -> Option<&Node<Directive>> {
         self.get_all(name).next()
-    }
-
-    /// Returns the first mutable directive with the given name, if any.
-    ///
-    /// This method is best for non-repeatable directives.
-    /// See also [`get_all_mut`][Self::get_all_mut] for repeatable directives.
-    pub fn get_mut(&mut self, name: &str) -> Option<&mut Node<Directive>> {
-        self.get_all_mut(name).next()
     }
 
     /// Returns whether there is a directive with the given name
@@ -735,7 +727,7 @@ impl Argument {
     ) -> Option<&'doc mut Node<Value>> {
         arguments
             .iter_mut()
-            .find_map(|arg| (arg.name == name).then_some(&mut arg.value))
+            .find_map(|arg| (arg.name == name).then_some(&mut arg.make_mut().value))
     }
 }
 

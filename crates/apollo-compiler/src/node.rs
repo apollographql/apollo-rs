@@ -144,12 +144,6 @@ impl<T: ?Sized> std::ops::Deref for Node<T> {
     }
 }
 
-impl<T: Clone> std::ops::DerefMut for Node<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.make_mut()
-    }
-}
-
 impl<T: ?Sized> Clone for Node<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
