@@ -1089,6 +1089,60 @@ const DEFAULT_RECURSION_LIMIT: usize = 32;
 #[non_exhaustive]
 struct RecursionLimitError {}
 
+/// Track recursion depth to prevent stack overflow.
+#[derive(Debug)]
+struct DepthCounter {
+    value: usize,
+    high: usize,
+    limit: usize,
+}
+
+impl DepthCounter {
+    fn new() -> Self {
+        Self {
+            value: 0,
+            high: 0,
+            limit: DEFAULT_RECURSION_LIMIT,
+        }
+    }
+
+    fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
+    }
+
+    /// Return the actual API for tracking recursive uses.
+    pub(crate) fn guard(&mut self) -> DepthGuard<'_> {
+        DepthGuard(self)
+    }
+}
+
+/// Track call depth in a recursive function.
+///
+/// Pass the result of `guard.increment()` to recursive calls. When a guard is dropped,
+/// its value is decremented.
+struct DepthGuard<'a>(&'a mut DepthCounter);
+
+impl DepthGuard<'_> {
+    /// Mark that we are recursing. If we reached the limit, return an error.
+    fn increment(&mut self) -> Result<DepthGuard<'_>, RecursionLimitError> {
+        self.0.value += 1;
+        self.0.high = self.0.high.max(self.0.value);
+        if self.0.value > self.0.limit {
+            Err(RecursionLimitError {})
+        } else {
+            Ok(DepthGuard(self.0))
+        }
+    }
+}
+
+impl Drop for DepthGuard<'_> {
+    fn drop(&mut self) {
+        // This may already be 0 if it's the original `counter.guard()` result, but that's fine
+        self.0.value = self.0.value.saturating_sub(1);
+    }
+}
+
 /// Track used names in a recursive function.
 #[derive(Debug)]
 struct RecursionStack {

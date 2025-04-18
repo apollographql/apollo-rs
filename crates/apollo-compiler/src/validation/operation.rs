@@ -1,6 +1,8 @@
 use crate::collections::HashSet;
 use crate::executable;
 use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::DepthCounter;
+use crate::validation::DepthGuard;
 use crate::validation::DiagnosticList;
 use crate::validation::ExecutableValidationContext;
 use crate::validation::RecursionLimitError;
@@ -23,6 +25,7 @@ fn walk_selections<'doc>(
         document: &'doc ExecutableDocument,
         selection_set: &'doc executable::SelectionSet,
         seen: &mut HashSet<&'doc Name>,
+        mut guard: DepthGuard<'_>,
         f: &mut dyn FnMut(&'doc executable::Selection),
     ) -> Result<(), RecursionLimitError> {
         for selection in &selection_set.selections {
@@ -45,19 +48,38 @@ fn walk_selections<'doc>(
                             document,
                             &fragment_definition.selection_set,
                             seen,
+                            guard.increment()?,
                             f,
                         )?;
                     }
                 }
                 executable::Selection::InlineFragment(fragment) => {
-                    walk_selections_inner(document, &fragment.selection_set, seen, f)?;
+                    walk_selections_inner(
+                        document,
+                        &fragment.selection_set,
+                        seen,
+                        guard.increment()?,
+                        f,
+                    )?;
                 }
             }
         }
         Ok(())
     }
 
-    walk_selections_inner(document, selections, &mut HashSet::default(), &mut f)
+    // This has a much higher limit than comparable recursive walks, like the one in
+    // `validate_fragment_cycles`, despite doing similar work. This is because this limit
+    // was introduced later and should not break (reasonable) existing queries that are
+    // under that pre-existing limit. Luckily the existing limit was very conservative.
+    let mut depth = DepthCounter::new().with_limit(500);
+
+    walk_selections_inner(
+        document,
+        selections,
+        &mut HashSet::default(),
+        depth.guard(),
+        &mut f,
+    )
 }
 
 pub(crate) fn validate_subscription(
