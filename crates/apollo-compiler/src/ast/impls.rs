@@ -468,6 +468,13 @@ impl DirectiveDefinition {
         self.arguments.iter().find(|argument| argument.name == name)
     }
 
+    /// Returns the definition of an argument by a given name.
+    pub fn argument_by_name_mut(&mut self, name: &str) -> Option<&mut Node<InputValueDefinition>> {
+        self.arguments
+            .iter_mut()
+            .find(|argument| argument.name == name)
+    }
+
     serialize_method!();
 }
 
@@ -543,12 +550,31 @@ impl DirectiveList {
         self.0.iter().filter(move |dir| dir.name == name)
     }
 
+    /// Returns an iterator of mutable directives with the given name.
+    ///
+    /// This method is best for repeatable directives.
+    /// See also [`get_mut`][Self::get_mut] for non-repeatable directives.
+    pub fn get_all_mut<'def: 'name, 'name>(
+        &'def mut self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def mut Node<Directive>> + 'name {
+        self.0.iter_mut().filter(move |dir| dir.name == name)
+    }
+
     /// Returns the first directive with the given name, if any.
     ///
     /// This method is best for non-repeatable directives.
     /// See also [`get_all`][Self::get_all] for repeatable directives.
     pub fn get(&self, name: &str) -> Option<&Node<Directive>> {
         self.get_all(name).next()
+    }
+
+    /// Returns the first mutable directive with the given name, if any.
+    ///
+    /// This method is best for non-repeatable directives.
+    /// See also [`get_all_mut`][Self::get_all_mut] for repeatable directives.
+    pub fn get_mut(&mut self, name: &str) -> Option<&mut Node<Directive>> {
+        self.get_all_mut(name).next()
     }
 
     /// Returns whether there is a directive with the given name
@@ -661,6 +687,16 @@ impl Directive {
         Argument::specified_argument_by_name(&self.arguments, name)
     }
 
+    /// Returns the value of the argument named `name`, as specified in the directive application.
+    ///
+    /// Returns `None` if the directive application does not specify this argument.
+    ///
+    /// If the directive definition makes this argument nullable or defines a default value,
+    /// consider using [`argument_by_name`][Self::argument_by_name] instead.
+    pub fn specified_argument_by_name_mut(&mut self, name: &str) -> Option<&mut Node<Value>> {
+        Argument::specified_argument_by_name_mut(&mut self.arguments, name)
+    }
+
     serialize_method!();
 }
 
@@ -691,6 +727,15 @@ impl Argument {
         arguments
             .iter()
             .find_map(|arg| (arg.name == name).then_some(&arg.value))
+    }
+
+    pub(crate) fn specified_argument_by_name_mut<'doc>(
+        arguments: &'doc mut [Node<Self>],
+        name: &str,
+    ) -> Option<&'doc mut Node<Value>> {
+        arguments
+            .iter_mut()
+            .find_map(|arg| (arg.name == name).then_some(&mut arg.value))
     }
 }
 
