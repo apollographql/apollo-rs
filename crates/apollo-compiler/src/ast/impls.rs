@@ -680,6 +680,8 @@ impl Directive {
     }
 
     /// Returns the value of the argument named `name`, as specified in the directive application.
+    /// If there are other [`Node`] pointers to the same argument, this method will clone the
+    /// argument using [`Node::make_mut`].
     ///
     /// Returns `None` if the directive application does not specify this argument.
     ///
