@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.28.0](https://crates.io/crates/apollo-compiler/1.28.0) - 2025-04-23
+# [1.28.0](https://crates.io/crates/apollo-compiler/1.28.0) - 2025-04-24
 
 ## Features
 
