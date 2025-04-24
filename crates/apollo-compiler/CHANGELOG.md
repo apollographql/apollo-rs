@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Reject `@skip`/`@include` on subscription root fields - [DerekKuc] [SimonSapin] and [goto-bus-stop], [pull/963]**
+- **Reject `@skip`/`@include` on subscription root fields - [dariuszkuc] [SimonSapin] and [goto-bus-stop], [pull/963]**
 
   This implements a [GraphQL spec RFC](https://github.com/graphql/graphql-spec/pull/860), rejecting
   subscriptions in validation that can be invalid during execution.
@@ -59,7 +59,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   significantly improves validation performance on documents with thousands of fragment definitions.
 
 [lrlna]: https://github.com/lrlna
-[DerekKuc]: https://github.com/DerekKuc
+[dariuszkuc]: https://github.com/dariuszkuc
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [SimonSapin]: https://github.com/SimonSapin
 [tninesling]: https://github.com/tninesling
