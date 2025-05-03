@@ -30,14 +30,14 @@ triomphe = "0.1.13"
 typed-arena = "2.0"
 
 [dev-dependencies]
-anyhow = "1.0"
-criterion = "0.5.1"
-expect-test = "1.4"
-notify = "8.0.0"
-pretty_assertions = "1.3.0"
-serde_json = "1.0"
-serial_test = "3.0.0"
-unindent = "0.2.3"
+anyhow = "=1.0.98"
+criterion = "=0.5.1"
+expect-test = "=1.5.1"
+notify = "=8.0.0"
+pretty_assertions = "=1.3.0"
+serde_json = "=1.0.140"
+serial_test = "=3.0.0"
+unindent = "=0.2.3"
 
 [[bench]]
 name = "multi-source"
