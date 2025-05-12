@@ -195,7 +195,7 @@ impl<'a> Cursor<'a> {
                         }
                         c => {
                             return Err(Error::with_loc(
-                                format!("Unexpected character \"{}\"", c),
+                                format!(r#"Unexpected character "{c}""#),
                                 self.current_str().to_string(),
                                 token.index,
                             ));

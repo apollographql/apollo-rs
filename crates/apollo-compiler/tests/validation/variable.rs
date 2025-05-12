@@ -256,9 +256,8 @@ fn variables_in_const_contexts() {
     mutate_dir_arg(&mut variable_def.directives[0]);
 
     assert!(
-        !doc.to_string().contains("\"x\""),
-        "Did not replace all string values with variables:\n{}",
-        doc
+        !doc.to_string().contains(r#""x""#),
+        "Did not replace all string values with variables:\n{doc}",
     );
     let errors = doc.validate(&schema).unwrap_err().errors;
     let expected = expect_test::expect![[r#"
@@ -353,9 +352,8 @@ fn variables_in_const_contexts() {
     mutate_string_value(&mut items[0]);
 
     assert!(
-        !schema.to_string().contains("\"x\""),
-        "Did not replace all string values with variables:\n{}",
-        schema
+        !schema.to_string().contains(r#""x""#),
+        "Did not replace all string values with variables:\n{schema}",
     );
     let errors = schema.validate().unwrap_err().errors;
     let expected = expect_test::expect![[r#"
