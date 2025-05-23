@@ -1,0 +1,8 @@
+Error: subscription `ConditionalSub` can not specify @skip or @include on root fields
+   ╭─[ 0120_conditional_subscriptions.graphql:2:12 ]
+   │
+ 2 │     ticker @include(if: $condition)
+   │            ────────────┬───────────  
+   │                        ╰───────────── conditional directive used here
+───╯
+

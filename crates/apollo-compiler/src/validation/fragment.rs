@@ -7,10 +7,12 @@ use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::variable::walk_selections_with_deduped_fragments;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
 use crate::validation::RecursionGuard;
+use crate::validation::RecursionLimitError;
 use crate::validation::RecursionStack;
 use crate::validation::SourceSpan;
 use crate::ExecutableDocument;
@@ -376,49 +378,40 @@ pub(crate) fn validate_fragment_type_condition(
     }
 }
 
-pub(crate) fn validate_fragment_used(
-    diagnostics: &mut DiagnosticList,
+fn collect_used_fragments(
     document: &ExecutableDocument,
-    fragment: &Node<executable::Fragment>,
-) {
-    let fragment_name = &fragment.name;
-
-    let mut all_selections = document
-        .operations
-        .iter()
-        .map(|operation| &operation.selection_set)
-        .chain(
-            document
-                .fragments
-                .values()
-                .map(|fragment| &fragment.selection_set),
-        )
-        .flat_map(|set| &set.selections);
-
-    let is_used = all_selections.any(|sel| selection_uses_fragment(sel, fragment_name));
-
-    // Fragments must be used within the schema
-    //
-    // Returns Unused Fragment error.
-    if !is_used {
-        diagnostics.push(
-            fragment.location(),
-            DiagnosticData::UnusedFragment {
-                name: fragment_name.clone(),
-            },
-        )
+) -> Result<HashSet<&Name>, RecursionLimitError> {
+    let mut names = HashSet::default();
+    for operation in document.operations.iter() {
+        walk_selections_with_deduped_fragments(document, &operation.selection_set, |selection| {
+            if let executable::Selection::FragmentSpread(spread) = selection {
+                names.insert(&spread.fragment_name);
+            }
+        })?;
     }
+    Ok(names)
 }
 
-fn selection_uses_fragment(sel: &executable::Selection, name: &str) -> bool {
-    let sub_selections = match sel {
-        executable::Selection::FragmentSpread(fragment) => return fragment.fragment_name == name,
-        executable::Selection::Field(field) => &field.selection_set,
-        executable::Selection::InlineFragment(inline) => &inline.selection_set,
+pub(crate) fn validate_fragments_used(
+    diagnostics: &mut DiagnosticList,
+    document: &ExecutableDocument,
+) {
+    let Ok(used_fragments) = collect_used_fragments(document) else {
+        diagnostics.push(None, super::Details::RecursionLimitError);
+        return;
     };
 
-    sub_selections
-        .selections
-        .iter()
-        .any(|sel| selection_uses_fragment(sel, name))
+    for fragment in document.fragments.values() {
+        // Fragments must be used within the schema
+        //
+        // Returns Unused Fragment error.
+        if !used_fragments.contains(&fragment.name) {
+            diagnostics.push(
+                fragment.location(),
+                DiagnosticData::UnusedFragment {
+                    name: fragment.name.clone(),
+                },
+            )
+        }
+    }
 }

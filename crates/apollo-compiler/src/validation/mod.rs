@@ -1,11 +1,6 @@
 //! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
 //! and other kinds of errors.
 
-use crate::coordinate::SchemaCoordinate;
-#[cfg(doc)]
-use crate::ExecutableDocument;
-use crate::Schema;
-
 pub(crate) mod argument;
 pub(crate) mod diagnostics;
 pub(crate) mod directive;
@@ -26,6 +21,7 @@ pub(crate) mod variable;
 use crate::collections::HashMap;
 use crate::collections::HashSet;
 use crate::collections::IndexSet;
+use crate::coordinate::SchemaCoordinate;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;
@@ -41,6 +37,7 @@ use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
 use crate::Node;
+use crate::Schema;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
@@ -291,7 +288,7 @@ impl DiagnosticData {
                     OutputType { .. } => "OutputType",
                     InputType { .. } => "InputType",
                     VariableInputType { .. } => "VariableInputType",
-                    QueryRootOperationType { .. } => "QueryRootOperationType",
+                    QueryRootOperationType => "QueryRootOperationType",
                     UnusedVariable { .. } => "UnusedVariable",
                     RootOperationObjectType { .. } => "RootOperationObjectType",
                     UnionMemberObjectType { .. } => "UnionMemberObjectType",
@@ -320,9 +317,7 @@ impl DiagnosticData {
             Details::ExecutableBuildError(error) => Some(match error {
                 ExecutableBuildError::UndefinedField { .. } => "UndefinedField",
                 ExecutableBuildError::TypeSystemDefinition { .. } => "TypeSystemDefinition",
-                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
-                    "AmbiguousAnonymousOperation"
-                }
+                ExecutableBuildError::AmbiguousAnonymousOperation => "AmbiguousAnonymousOperation",
                 ExecutableBuildError::OperationNameCollision { .. } => "OperationNameCollision",
                 ExecutableBuildError::FragmentNameCollision { .. } => "FragmentNameCollision",
                 ExecutableBuildError::UndefinedRootOperation { .. } => "UndefinedRootOperation",
@@ -339,6 +334,9 @@ impl DiagnosticData {
                 }
                 ExecutableBuildError::SubscriptionUsesIntrospection { .. } => {
                     "SubscriptionUsesIntrospection"
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    "SubscriptionUsesConditionalSelection"
                 }
                 ExecutableBuildError::ConflictingFieldType(_) => "ConflictingFieldType",
                 ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
@@ -419,7 +417,7 @@ impl DiagnosticData {
                     VariableInputType { name, ty, .. } => Some(format!(
                         r#"Variable "${name}" cannot be non-input type "{ty}"."#
                     )),
-                    QueryRootOperationType { .. } => None,
+                    QueryRootOperationType => None,
                     UnusedVariable { name } => {
                         Some(format!(r#"Variable "${name}" is never used."#))
                     }
@@ -588,6 +586,18 @@ impl DiagnosticData {
                             .to_string())
                     }
                 }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(
+                            r#"Subscription "{name}" can not specify @skip or @include on root fields."#
+                        ))
+                    } else {
+                        Some(
+                            "Anonymous Subscription can not specify @skip or @include on root fields."
+                                .to_string(),
+                        )
+                    }
+                }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
                     let ConflictingFieldType {
                         alias,
@@ -681,10 +691,10 @@ impl ToCliReport for DiagnosticData {
                     report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                     report.with_help("remove or rename one of the definitions, or use `extend`");
                 }
-                SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
+                SchemaBuildError::BuiltInScalarTypeRedefinition => {
                     report.with_label_opt(self.location, "remove this scalar definition");
                 }
-                SchemaBuildError::OrphanSchemaExtension { .. } => {
+                SchemaBuildError::OrphanSchemaExtension => {
                     report.with_label_opt(self.location, "extension here")
                 }
                 SchemaBuildError::OrphanTypeExtension { .. } => {
@@ -761,7 +771,7 @@ impl ToCliReport for DiagnosticData {
                     self.location,
                     "remove this definition, or use `parse_mixed()`",
                 ),
-                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
+                ExecutableBuildError::AmbiguousAnonymousOperation => {
                     report.with_label_opt(self.location, "provide a name for this definition");
                     report.with_help(
                         "GraphQL requires operations to be named if the document has more than one",
@@ -840,6 +850,9 @@ impl ToCliReport for DiagnosticData {
                         self.location,
                         format_args!("{field} is an introspection field"),
                     );
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    report.with_label_opt(self.location, "conditional directive used here");
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
                     let ConflictingFieldType {
@@ -1075,6 +1088,60 @@ const DEFAULT_RECURSION_LIMIT: usize = 32;
 #[error("Recursion limit reached")]
 #[non_exhaustive]
 struct RecursionLimitError {}
+
+/// Track recursion depth to prevent stack overflow.
+#[derive(Debug)]
+struct DepthCounter {
+    value: usize,
+    high: usize,
+    limit: usize,
+}
+
+impl DepthCounter {
+    fn new() -> Self {
+        Self {
+            value: 0,
+            high: 0,
+            limit: DEFAULT_RECURSION_LIMIT,
+        }
+    }
+
+    fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
+    }
+
+    /// Return the actual API for tracking recursive uses.
+    pub(crate) fn guard(&mut self) -> DepthGuard<'_> {
+        DepthGuard(self)
+    }
+}
+
+/// Track call depth in a recursive function.
+///
+/// Pass the result of `guard.increment()` to recursive calls. When a guard is dropped,
+/// its value is decremented.
+struct DepthGuard<'a>(&'a mut DepthCounter);
+
+impl DepthGuard<'_> {
+    /// Mark that we are recursing. If we reached the limit, return an error.
+    fn increment(&mut self) -> Result<DepthGuard<'_>, RecursionLimitError> {
+        self.0.value += 1;
+        self.0.high = self.0.high.max(self.0.value);
+        if self.0.value > self.0.limit {
+            Err(RecursionLimitError {})
+        } else {
+            Ok(DepthGuard(self.0))
+        }
+    }
+}
+
+impl Drop for DepthGuard<'_> {
+    fn drop(&mut self) {
+        // This may already be 0 if it's the original `counter.guard()` result, but that's fine
+        self.0.value = self.0.value.saturating_sub(1);
+    }
+}
 
 /// Track used names in a recursive function.
 #[derive(Debug)]

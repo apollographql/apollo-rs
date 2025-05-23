@@ -1,0 +1,15 @@
+subscription ConditionalInlineSub($condition: Boolean = true) {
+  ...mySubscription @include(if: $condition)
+}
+
+fragment mySubscription on Subscription {
+  ticker
+}
+
+type Query {
+  hello: String
+}
+
+type Subscription {
+  ticker: String
+}

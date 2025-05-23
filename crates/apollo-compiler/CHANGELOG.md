@@ -17,25 +17,56 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.2x.x] (unreleased) - 2025-mm-dd
+# [1.28.0](https://crates.io/crates/apollo-compiler/1.28.0) - 2025-04-24
+
+## Features
+
+- **Reject `@skip`/`@include` on subscription root fields - [dariuszkuc] [SimonSapin] and [goto-bus-stop], [pull/963]**
+
+  This implements a [GraphQL spec RFC](https://github.com/graphql/graphql-spec/pull/860), rejecting
+  subscriptions in validation that can be invalid during execution.
+
+- **New shorthand methods for mutable directive argument access - [tninesling], [pull/967]**
+
+  Introduces new methods:
+  - `DirectiveList::get_all_mut`
+  - `DirectiveList::argument_by_name_mut`
+  - `DirectiveList::specified_argument_by_name_mut`
+
 ## Fixes
 
 - **Update `ariadne` trait implementations - [lrlna], [pull/960]**
-`ariadne@0.5.1` release changed their type signature for `ariadne::Cache` trait, which required an update to `apollo-compiler`'s implementation of `ariadne::Cache<FileId>`. 
 
-This release also had a slight change to path formatting, so if you had any snapshots in your tests, you can expect a change from this:
-```
-Error: `typeFragment1` contains too much nesting
-    ╭─[overflow.graphql:11:11]
-```
+  `ariadne@0.5.1` release changed their type signature for `ariadne::Cache` trait, which required an
+  update to `apollo-compiler`'s implementation of `ariadne::Cache<FileId>`. 
 
-to this (notice the extra white space around the file path):
-```
-Error: `typeFragment1` contains too much nesting
-    ╭─[ overflow.graphql:11:11 ]
-```
+  This release also had a slight change to path formatting, so if you had any snapshots in your
+  tests, you can expect a change from this:
+  ```
+  Error: `typeFragment1` contains too much nesting
+      ╭─[overflow.graphql:11:11]
+  ```
+
+  to this (notice the extra white space around the file path):
+  ```
+  Error: `typeFragment1` contains too much nesting
+      ╭─[ overflow.graphql:11:11 ]
+  ```
+
+- **Harden stack overflow protection - [goto-bus-stop], [pull/966]**
+
+  Closes a theoretical gap in stack overflow protection when processing long fragment chains, and
+  significantly improves validation performance on documents with thousands of fragment definitions.
 
 [lrlna]: https://github.com/lrlna
+[dariuszkuc]: https://github.com/dariuszkuc
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[tninesling]: https://github.com/tninesling
+[pull/960]: https://github.com/apollographql/apollo-rs/pull/960
+[pull/963]: https://github.com/apollographql/apollo-rs/pull/963
+[pull/966]: https://github.com/apollographql/apollo-rs/pull/966
+[pull/967]: https://github.com/apollographql/apollo-rs/pull/967
 
 # [1.27.0](https://crates.io/crates/apollo-compiler/1.26.0) - 2025-03-04
 

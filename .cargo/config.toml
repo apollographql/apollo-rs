@@ -4,3 +4,8 @@ xtask = "run --package xtask --"
 # circle seems to install cargo packages via ssh:// rather than https://
 [net]
 git-fetch-with-cli = true
+
+# WebAssembly support per https://docs.rs/getrandom/0.3.3/getrandom/#opt-in-backends
+# See examples/validation-wasm-demo/Cargo.toml
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
