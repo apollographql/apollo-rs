@@ -3,9 +3,8 @@ use apollo_smith::Document;
 use apollo_smith::DocumentBuilder;
 use arbitrary::Result;
 use arbitrary::Unstructured;
-use rand::distributions::Alphanumeric;
+use rand::distr::Alphanumeric;
 use rand::rngs::StdRng;
-use rand::thread_rng;
 use rand::Rng;
 use rand::SeedableRng;
 use std::fs;
@@ -27,7 +26,7 @@ pub fn generate_valid_operation(schema_path: &str, seed_arg: Option<String>) -> 
 
     let seed: u64 = match seed_arg {
         Some(s) => s.parse().unwrap(),
-        None => thread_rng().gen(),
+        None => rand::rng().random(),
     };
 
     println!("generating from seed: {seed}");
