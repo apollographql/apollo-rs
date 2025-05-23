@@ -19,7 +19,7 @@ fn parse_query(query: &str) {
                 .expect("the node SelectionSet is not optional in the spec; qed");
             for selection in selection_set.selections() {
                 if let cst::Selection::Field(field) = selection {
-                    black_box(field.selection_set());
+                    std::hint::black_box(field.selection_set());
                 }
             }
         }
@@ -40,7 +40,7 @@ fn bench_query_lexer(c: &mut Criterion) {
             let lexer = Lexer::new(query);
 
             for token_res in lexer {
-                black_box(token_res.unwrap());
+                std::hint::black_box(token_res.unwrap());
             }
         })
     });

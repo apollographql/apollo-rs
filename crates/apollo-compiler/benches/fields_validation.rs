@@ -11,7 +11,7 @@ fn bench_many_same_field(c: &mut Criterion) {
         b.iter(|| {
             let doc =
                 ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
-            black_box(doc);
+            std::hint::black_box(doc);
         });
     });
 }
@@ -31,7 +31,7 @@ fn bench_many_same_nested_field(c: &mut Criterion) {
         b.iter(|| {
             let doc =
                 ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
-            black_box(doc);
+            std::hint::black_box(doc);
         });
     });
 }
@@ -51,7 +51,7 @@ fn bench_many_arguments(c: &mut Criterion) {
         b.iter(|| {
             // Will return errors but that's cool
             let doc = ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql");
-            _ = black_box(doc);
+            _ = std::hint::black_box(doc);
         });
     });
 }
@@ -109,7 +109,7 @@ fn bench_many_types(c: &mut Criterion) {
         b.iter(|| {
             let doc =
                 ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
-            black_box(doc);
+            std::hint::black_box(doc);
         });
     });
 }
