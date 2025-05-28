@@ -6,13 +6,13 @@ use criterion::*;
 fn parse_ast(schema: &str, query: &str) {
     let schema = Document::parse(schema, "schema.graphql").unwrap();
     let doc = Document::parse(query, "query.graphql").unwrap();
-    black_box((schema, doc));
+    std::hint::black_box((schema, doc));
 }
 
 fn parse_and_validate(schema: &str, query: &str) {
     let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
     let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
-    black_box((schema, doc));
+    std::hint::black_box((schema, doc));
 }
 
 fn bench_simple_query(c: &mut Criterion) {

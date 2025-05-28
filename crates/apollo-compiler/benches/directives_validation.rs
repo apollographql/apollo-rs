@@ -14,7 +14,7 @@ fn bench_many_identical_directives(c: &mut Criterion) {
     c.bench_function("many_same_directive", move |b| {
         b.iter(|| {
             let result = Schema::parse_and_validate(&schema, "schema.graphqls").unwrap();
-            black_box(result);
+            std::hint::black_box(result);
         });
     });
 }
@@ -42,7 +42,7 @@ fn bench_many_identical_directives_query(c: &mut Criterion) {
         b.iter(|| {
             let result =
                 ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
-            black_box(result);
+            std::hint::black_box(result);
         });
     });
 }
@@ -69,7 +69,7 @@ fn bench_many_invalid_directives_query(c: &mut Criterion) {
         b.iter(|| {
             let result = ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql")
                 .expect_err("should have produced diagnostics");
-            black_box(result);
+            std::hint::black_box(result);
         });
     });
 }
