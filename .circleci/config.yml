@@ -12,7 +12,7 @@ orbs:
 executors:
   linux: &linux
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:current
     resource_class: medium+
   macos: &macos
     macos:
@@ -91,6 +91,15 @@ jobs:
       - run:
           name: Run cargo +nightly fmt check
           command: cargo +nightly fmt --all -- --check
+      - run:
+          name: Install cargo-semver-check
+          command: >
+            curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
+            cargo binstall cargo-semver-checks
+      - run:
+          name: Run cargo-semver-check
+          command: cargo semver-checks --exclude validation-wasm-demo
+
 
   wasm:
     parameters:
