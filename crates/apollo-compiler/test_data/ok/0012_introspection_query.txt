@@ -78,6 +78,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "IntrospectionQuery": 0..271 @14 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "IntrospectionQuery",
@@ -418,6 +419,7 @@ ExecutableDocument {
     },
     fragments: {
         "FullType": 272..723 @14 Fragment {
+            description: None,
             name: "FullType",
             directives: [],
             selection_set: SelectionSet {
@@ -924,6 +926,7 @@ ExecutableDocument {
             },
         },
         "InputValue": 724..821 @14 Fragment {
+            description: None,
             name: "InputValue",
             directives: [],
             selection_set: SelectionSet {
@@ -1026,6 +1029,7 @@ ExecutableDocument {
             },
         },
         "TypeRef": 822..1265 @14 Fragment {
+            description: None,
             name: "TypeRef",
             directives: [],
             selection_set: SelectionSet {

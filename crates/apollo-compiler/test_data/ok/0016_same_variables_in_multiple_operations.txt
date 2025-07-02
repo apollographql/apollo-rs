@@ -146,12 +146,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "A": 0..61 @18 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "A",
                 ),
                 variables: [
                     8..30 @18 VariableDefinition {
+                        description: None,
                         name: "atOtherHomes",
                         ty: 23..30 @18 Named(
                             "Boolean",
@@ -174,12 +176,14 @@ ExecutableDocument {
                 },
             },
             "B": 63..124 @18 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "B",
                 ),
                 variables: [
                     71..93 @18 VariableDefinition {
+                        description: None,
                         name: "atOtherHomes",
                         ty: 86..93 @18 Named(
                             "Boolean",
@@ -205,6 +209,7 @@ ExecutableDocument {
     },
     fragments: {
         "HouseTrainedFragment": 126..228 @18 Fragment {
+            description: None,
             name: "HouseTrainedFragment",
             directives: [],
             selection_set: SelectionSet {

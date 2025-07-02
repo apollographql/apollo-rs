@@ -39,7 +39,7 @@ Definition =
   | InputObjectTypeExtension
 
 OperationDefinition =
-  OperationType Name? VariableDefinitions? Directives? SelectionSet
+  Description? OperationType Name? VariableDefinitions? Directives? SelectionSet
   | SelectionSet
 
 OperationType =
@@ -74,7 +74,7 @@ InlineFragment =
   '...' TypeCondition? Directives? SelectionSet
 
 FragmentDefinition =
-  'fragment' FragmentName TypeCondition Directives? SelectionSet
+  Description? 'fragment' FragmentName TypeCondition Directives? SelectionSet
 
 FragmentName =
   Name
@@ -127,7 +127,7 @@ VariableDefinitions =
   '(' VariableDefinition* ')'
 
 VariableDefinition =
-  Variable ':' Type DefaultValue? Directives?
+  Description? Variable ':' Type DefaultValue? Directives?
 
 Variable =
   '$' Name

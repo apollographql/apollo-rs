@@ -160,12 +160,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "nullableStringArg": 0..296 @34 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "nullableStringArg",
                 ),
                 variables: [
                     24..48 @34 VariableDefinition {
+                        description: None,
                         name: "nonNullableVar",
                         ty: 41..48 @34 NonNullNamed(
                             "String",
@@ -174,6 +176,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     50..78 @34 VariableDefinition {
+                        description: None,
                         name: "nonNullableList",
                         ty: 68..78 @34 NonNullList(
                             NonNullNamed(
@@ -184,6 +187,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     80..111 @34 VariableDefinition {
+                        description: None,
                         name: "nonNullableListList",
                         ty: 102..111 @34 List(
                             NonNullList(

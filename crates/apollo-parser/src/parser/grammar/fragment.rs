@@ -1,3 +1,4 @@
+use crate::parser::grammar::description;
 use crate::parser::grammar::directive;
 use crate::parser::grammar::name;
 use crate::parser::grammar::selection;
@@ -15,6 +16,11 @@ use crate::T;
 ///     **fragment** FragmentName TypeCondition Directives? SelectionSet
 pub(crate) fn fragment_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
     p.bump(SyntaxKind::fragment_KW);
 
     fragment_name(p);
