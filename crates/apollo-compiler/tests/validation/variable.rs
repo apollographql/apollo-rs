@@ -257,8 +257,7 @@ fn variables_in_const_contexts() {
 
     assert!(
         !doc.to_string().contains("\"x\""),
-        "Did not replace all string values with variables:\n{}",
-        doc
+        "Did not replace all string values with variables:\n{doc}",
     );
     let errors = doc.validate(&schema).unwrap_err().errors;
     let expected = expect_test::expect![[r#"
@@ -354,8 +353,7 @@ fn variables_in_const_contexts() {
 
     assert!(
         !schema.to_string().contains("\"x\""),
-        "Did not replace all string values with variables:\n{}",
-        schema
+        "Did not replace all string values with variables:\n{schema}",
     );
     let errors = schema.validate().unwrap_err().errors;
     let expected = expect_test::expect![[r#"
