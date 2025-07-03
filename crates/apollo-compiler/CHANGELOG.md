@@ -1153,12 +1153,6 @@ that provides structural sharing and copy-on-write semantics.
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/642]: https://github.com/apollographql/apollo-rs/pull/642
 
-# [0.12.0] (unreleased) - 2023-mm-dd
-
-## BREAKING
-
-- (TODO: write this)
-
 # [0.11.1](https://crates.io/crates/apollo-compiler/0.11.1) - 2023-08-24
 
 ## Features
