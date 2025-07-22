@@ -4,7 +4,7 @@ version: 2.1
 # Rust Orb: https://github.com/CircleCI-Public/rust-orb
 # Github Orb: https://github.com/CircleCI-Public/github-cli-orb
 orbs:
-  rust: circleci/rust@1.7.0
+  rust: circleci/rust@1.8.0
   gh: circleci/github-cli@2.7.0
 
 # We run jobs on the following platforms: linux, macos and windows.
