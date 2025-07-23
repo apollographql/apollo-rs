@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::schema;
+use crate::schema::SchemaElement;
 use crate::schema::UnionType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;

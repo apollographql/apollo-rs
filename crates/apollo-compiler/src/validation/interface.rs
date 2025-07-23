@@ -5,6 +5,7 @@ use crate::schema::validation::BuiltInScalars;
 use crate::schema::ComponentName;
 use crate::schema::InterfaceType;
 use crate::schema::Name;
+use crate::schema::SchemaElement;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;

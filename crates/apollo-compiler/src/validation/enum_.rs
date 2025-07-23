@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::schema::EnumType;
+use crate::schema::SchemaElement;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
 use crate::Node;
