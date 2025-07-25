@@ -13,7 +13,7 @@ pub(crate) trait Resolver {
     ///
     /// That name expected to be that of an object type defined in the schema.
     /// This is called when the schema indicates an abstract (interface or union) type.
-    fn type_name(&self) -> &'static str;
+    fn type_name(&self) -> &str;
 
     /// Resolves a field of this object with the given arguments
     ///

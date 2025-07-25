@@ -110,7 +110,7 @@ fn deprecation_reason<'a>(
 }
 
 impl Resolver for IntrospectionRootResolver<'_> {
-    fn type_name(&self) -> &'static str {
+    fn type_name(&self) -> &str {
         unreachable!()
     }
 
