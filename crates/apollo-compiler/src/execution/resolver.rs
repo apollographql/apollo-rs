@@ -110,7 +110,7 @@ pub(crate) enum ResolvedValue<'a> {
     Object(Box<ObjectValue<'a>>),
 
     /// Expected for GraphQL list types
-    List(Box<dyn Iterator<Item = ResolvedValue<'a>> + 'a>),
+    List(Box<dyn Iterator<Item = Result<ResolvedValue<'a>, ResolverError>> + 'a>),
 }
 
 impl<'a> ResolvedValue<'a> {
@@ -143,7 +143,7 @@ impl<'a> ResolvedValue<'a> {
         I: IntoIterator<Item = Self>,
         I::IntoIter: 'a,
     {
-        Self::List(Box::new(iter.into_iter()))
+        Self::List(Box::new(iter.into_iter().map(Ok)))
     }
 }
 

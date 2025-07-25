@@ -60,11 +60,20 @@ pub(crate) fn complete_value<'a, 'b>(
             }
             Type::List(inner_ty) | Type::NonNullList(inner_ty) => {
                 let mut completed_list = Vec::with_capacity(iter.size_hint().0);
-                for (index, inner_resolved) in iter.enumerate() {
+                for (index, inner_result) in iter.enumerate() {
                     let inner_path = LinkedPathElement {
                         element: ResponseDataPathSegment::ListIndex(index),
                         next: path,
                     };
+                    let inner_resolved = inner_result.map_err(|err| {
+                        errors.push(GraphQLError::field_error(
+                            format!("resolver error: {}", err.message),
+                            Some(&inner_path),
+                            fields[0].name.location(),
+                            &document.sources,
+                        ));
+                        PropagateNull
+                    })?;
                     let inner_result = complete_value(
                         schema,
                         document,
@@ -220,4 +229,86 @@ pub(crate) fn complete_value<'a, 'b>(
             .flat_map(|field| &field.selection_set.selections),
     )
     .map(JsonValue::Object)
+}
+
+#[test]
+fn test_error_path() {
+    use super::resolver;
+
+    let sdl = "type Query { f: [Int] }";
+    let query = "{ f }";
+
+    struct Query;
+
+    impl resolver::Resolver for Query {
+        fn type_name(&self) -> &str {
+            "Query"
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            field_name: &'a str,
+            _arguments: &'a JsonMap,
+        ) -> Result<ResolvedValue<'a>, resolver::ResolverError> {
+            match field_name {
+                "f" => Ok(ResolvedValue::List(Box::new(
+                    [
+                        Ok(ResolvedValue::leaf(42)),
+                        Err(resolver::ResolverError {
+                            message: "!".into(),
+                        }),
+                    ]
+                    .into_iter(),
+                ))),
+                _ => Err(resolver::ResolverError::unknown_field(field_name, self)),
+            }
+        }
+    }
+
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+    let operation = document.operations.get(None).unwrap();
+    let variable_values = JsonMap::new();
+    let variable_values =
+        crate::request::coerce_variable_values(&schema, operation, &variable_values).unwrap();
+    let root_operation_object_type_def = schema.get_object("Query").unwrap();
+    let mut errors = Vec::new();
+    let path = None;
+    let initial_value = Query;
+    let data = execute_selection_set(
+        &schema,
+        &document,
+        &variable_values,
+        &mut errors,
+        path,
+        ExecutionMode::Normal,
+        root_operation_object_type_def,
+        &initial_value,
+        &operation.selection_set.selections,
+    )
+    .ok();
+    let response = crate::response::ExecutionResponse { data, errors };
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "errors": [
+            {
+              "message": "resolver error: !",
+              "locations": [
+                {
+                  "line": 1,
+                  "column": 3
+                }
+              ],
+              "path": [
+                "f",
+                1
+              ]
+            }
+          ],
+          "data": {
+            "f": null
+          }
+        }"#]]
+    .assert_eq(&response);
 }
