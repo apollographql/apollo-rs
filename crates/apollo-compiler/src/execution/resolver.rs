@@ -20,14 +20,14 @@ pub(crate) trait ObjectValue {
         &'a self,
         field_name: &'a str,
         arguments: &'a JsonMap,
-    ) -> Result<ResolvedValue<'a>, ResolverError>;
+    ) -> Result<ResolvedValue<'a>, ResolveError>;
 }
 
-pub(crate) struct ResolverError {
+pub(crate) struct ResolveError {
     pub(crate) message: String,
 }
 
-impl ResolverError {
+impl ResolveError {
     pub(crate) fn unknown_field(field_name: &str, object: &dyn ObjectValue) -> Self {
         Self {
             message: format!(
@@ -50,7 +50,7 @@ pub(crate) enum ResolvedValue<'a> {
     Object(Box<dyn ObjectValue + 'a>),
 
     /// Expected for GraphQL list types
-    List(Box<dyn Iterator<Item = Result<ResolvedValue<'a>, ResolverError>> + 'a>),
+    List(Box<dyn Iterator<Item = Result<ResolvedValue<'a>, ResolveError>> + 'a>),
 }
 
 impl<'a> ResolvedValue<'a> {

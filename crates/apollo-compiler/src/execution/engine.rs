@@ -6,8 +6,8 @@ use crate::executable::Field;
 use crate::executable::Selection;
 use crate::execution::input_coercion::coerce_argument_values;
 use crate::execution::resolver::ObjectValue;
+use crate::execution::resolver::ResolveError;
 use crate::execution::resolver::ResolvedValue;
-use crate::execution::resolver::ResolverError;
 use crate::execution::result_coercion::complete_value;
 use crate::introspection::resolvers::MaybeLazy;
 use crate::introspection::resolvers::SchemaWithImplementersMap;
@@ -260,7 +260,7 @@ fn execute_field<'a>(
     };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields),
-        Err(ResolverError { message }) => {
+        Err(ResolveError { message }) => {
             ctx.errors.push(GraphQLError::field_error(
                 format!("resolver error: {message}"),
                 path,

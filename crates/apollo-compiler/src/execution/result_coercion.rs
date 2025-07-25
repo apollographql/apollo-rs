@@ -241,18 +241,18 @@ fn test_error_path() {
             &'a self,
             field_name: &'a str,
             _arguments: &'a JsonMap,
-        ) -> Result<ResolvedValue<'a>, resolver::ResolverError> {
+        ) -> Result<ResolvedValue<'a>, resolver::ResolveError> {
             match field_name {
                 "f" => Ok(ResolvedValue::List(Box::new(
                     [
                         Ok(ResolvedValue::leaf(42)),
-                        Err(resolver::ResolverError {
+                        Err(resolver::ResolveError {
                             message: "!".into(),
                         }),
                     ]
                     .into_iter(),
                 ))),
-                _ => Err(resolver::ResolverError::unknown_field(field_name, self)),
+                _ => Err(resolver::ResolveError::unknown_field(field_name, self)),
             }
         }
     }
