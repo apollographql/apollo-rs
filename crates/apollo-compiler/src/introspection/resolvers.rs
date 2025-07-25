@@ -9,16 +9,41 @@ use crate::schema::Name;
 use crate::Node;
 use crate::Schema;
 use std::borrow::Cow;
+use std::cell::OnceCell;
 
 #[derive(Clone, Copy)]
 pub(crate) struct SchemaWithImplementersMap<'a> {
     pub(crate) schema: &'a Schema,
-    pub(crate) implementers_map: &'a HashMap<Name, Implementers>,
+    pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
+}
+
+pub(crate) enum MaybeLazy<'a, T> {
+    Eager(&'a T),
+    #[cfg_attr(not(test), allow(unused))] // will be used in upcoming public API for execution
+    Lazy(&'a OnceCell<T>),
+}
+
+impl<'a, T> Clone for MaybeLazy<'a, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, T> Copy for MaybeLazy<'a, T> {}
+
+impl<'a, T> MaybeLazy<'a, T> {
+    pub(crate) fn get_or_init(&self, init: impl FnOnce() -> T) -> &'a T {
+        match self {
+            MaybeLazy::Eager(value) => value,
+            MaybeLazy::Lazy(cell) => cell.get_or_init(init),
+        }
+    }
 }
 
 impl<'a> SchemaWithImplementersMap<'a> {
     fn implementers_of(&self, interface_name: &str) -> impl Iterator<Item = &'a Name> {
         self.implementers_map
+            .get_or_init(|| self.schema.implementers_map())
             .get(interface_name)
             .into_iter()
             .flat_map(|implementers| &implementers.objects)
@@ -32,8 +57,6 @@ impl<'a> std::ops::Deref for SchemaWithImplementersMap<'a> {
         &self.schema
     }
 }
-
-pub(crate) struct IntrospectionRootResolver<'a>(pub(crate) SchemaWithImplementersMap<'a>);
 
 struct TypeDefResolver<'a> {
     schema: SchemaWithImplementersMap<'a>,
@@ -67,7 +90,10 @@ struct InputValueResolver<'a> {
     def: &'a schema::InputValueDefinition,
 }
 
-fn type_def(schema: SchemaWithImplementersMap<'_>, name: impl AsRef<str>) -> ResolvedValue<'_> {
+pub(crate) fn type_def(
+    schema: SchemaWithImplementersMap<'_>,
+    name: impl AsRef<str>,
+) -> ResolvedValue<'_> {
     ResolvedValue::opt_object(
         schema
             .types
@@ -107,33 +133,6 @@ fn deprecation_reason<'a>(
             .and_then(|directive| directive.argument_by_name("reason", schema.schema).ok())
             .and_then(|arg| arg.as_str()),
     )
-}
-
-impl ObjectValue for IntrospectionRootResolver<'_> {
-    fn type_name(&self) -> &str {
-        unreachable!()
-    }
-
-    fn resolve_field<'a>(
-        &'a self,
-        field_name: &'a str,
-        arguments: &'a JsonMap,
-    ) -> Result<ResolvedValue<'a>, ResolverError> {
-        match field_name {
-            "__schema" => Ok(ResolvedValue::object(self.0)),
-            "__type" => {
-                let name = arguments["name"].as_str().unwrap();
-                Ok(type_def(self.0, name))
-            }
-            // "__typename" is handled in `execute_selection_set` without calling here.
-            // Other fields are skipped in `skip_field` below.
-            _ => unreachable!(),
-        }
-    }
-
-    fn skip_field(&self, field_name: &str) -> bool {
-        !matches!(field_name, "__schema" | "__type" | "__typename")
-    }
 }
 
 impl ObjectValue for SchemaWithImplementersMap<'_> {

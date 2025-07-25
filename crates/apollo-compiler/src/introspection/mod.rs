@@ -12,6 +12,7 @@ use crate::execution::engine::execute_selection_set;
 use crate::execution::engine::ExecutionContext;
 use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::PropagateNull;
+use crate::introspection::resolvers::MaybeLazy;
 #[cfg(doc)]
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
@@ -24,7 +25,7 @@ use crate::Name;
 use crate::Schema;
 
 mod max_depth;
-mod resolvers;
+pub(crate) mod resolvers;
 
 /// Check that the nesting level of some list fields does not exceed a fixed depth limit.
 ///
@@ -105,11 +106,7 @@ pub fn partial_execute(
         });
     };
 
-    let initial_value =
-        &resolvers::IntrospectionRootResolver(resolvers::SchemaWithImplementersMap {
-            schema,
-            implementers_map,
-        });
+    let implementers_map = MaybeLazy::Eager(implementers_map);
     let mut errors = Vec::new();
     let path = None;
     let mut context = ExecutionContext {
@@ -117,13 +114,14 @@ pub fn partial_execute(
         document,
         variable_values,
         errors: &mut errors,
+        implementers_map,
     };
     let data = execute_selection_set(
         &mut context,
         path,
         ExecutionMode::Normal,
         root_operation_object_type_def,
-        initial_value,
+        None,
         &operation.selection_set.selections,
     )
     // What `.ok()` below converts to `None` is a field error on a non-null field

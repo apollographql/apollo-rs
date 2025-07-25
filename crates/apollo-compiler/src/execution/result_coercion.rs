@@ -210,7 +210,7 @@ pub(crate) fn complete_value<'a>(
         path,
         mode,
         object_type,
-        &*resolved_obj,
+        Some(&*resolved_obj),
         fields
             .iter()
             .flat_map(|field| &field.selection_set.selections),
@@ -221,9 +221,11 @@ pub(crate) fn complete_value<'a>(
 #[test]
 fn test_error_path() {
     use super::resolver;
+    use crate::introspection::resolvers::MaybeLazy;
     use crate::response::JsonMap;
     use crate::ExecutableDocument;
     use crate::Schema;
+    use std::cell::OnceCell;
 
     let sdl = "type Query { f: [Int] }";
     let query = "{ f }";
@@ -265,18 +267,20 @@ fn test_error_path() {
     let mut errors = Vec::new();
     let path = None;
     let initial_value = InitialValue;
+    let implementers_map = OnceCell::new();
     let mut context = ExecutionContext {
         schema: &schema,
         document: &document,
         variable_values: &variable_values,
         errors: &mut errors,
+        implementers_map: MaybeLazy::Lazy(&implementers_map),
     };
     let data = execute_selection_set(
         &mut context,
         path,
         ExecutionMode::Normal,
         root_operation_object_type_def,
-        &initial_value,
+        Some(&initial_value),
         &operation.selection_set.selections,
     )
     .ok();

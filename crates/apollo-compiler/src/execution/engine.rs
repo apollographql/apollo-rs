@@ -1,12 +1,16 @@
 use crate::ast::Value;
+use crate::collections::HashMap;
 use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::executable::Field;
 use crate::executable::Selection;
 use crate::execution::input_coercion::coerce_argument_values;
 use crate::execution::resolver::ObjectValue;
+use crate::execution::resolver::ResolvedValue;
 use crate::execution::resolver::ResolverError;
 use crate::execution::result_coercion::complete_value;
+use crate::introspection::resolvers::MaybeLazy;
+use crate::introspection::resolvers::SchemaWithImplementersMap;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::response::GraphQLError;
@@ -15,6 +19,7 @@ use crate::response::JsonValue;
 use crate::response::ResponseDataPathSegment;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
+use crate::schema::Implementers;
 use crate::schema::ObjectType;
 use crate::schema::Type;
 use crate::validation::SuspectedValidationBug;
@@ -26,7 +31,7 @@ use crate::Schema;
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum ExecutionMode {
-    /// Allowed to resolve fields in any order, including in parellel
+    /// Allowed to resolve fields in any order, including in parallel
     Normal,
     /// Top-level fields of a mutation operation must be executed in order
     #[allow(unused)]
@@ -51,22 +56,24 @@ pub(crate) struct ExecutionContext<'a> {
     pub(crate) document: &'a Valid<ExecutableDocument>,
     pub(crate) variable_values: &'a Valid<JsonMap>,
     pub(crate) errors: &'a mut Vec<GraphQLError>,
+    pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
 }
 
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
+///
+/// `object_value: None` is a special case for top-level of `introspection::partial_execute`
 pub(crate) fn execute_selection_set<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: &dyn ObjectValue,
+    object_value: Option<&dyn ObjectValue>,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
     let mut grouped_field_set = IndexMap::default();
     collect_fields(
         ctx,
         object_type,
-        object_value,
         selections,
         &mut HashSet::default(),
         &mut grouped_field_set,
@@ -90,23 +97,21 @@ pub(crate) fn execute_selection_set<'a>(
             // but it being undefined would make the request invalid, right?
             continue;
         };
-        let value = if field_name == "__typename" {
-            JsonValue::from(object_type.name.as_str())
-        } else {
-            let field_path = LinkedPathElement {
-                element: ResponseDataPathSegment::Field(response_key.clone()),
-                next: path,
-            };
-            execute_field(
-                ctx,
-                Some(&field_path),
-                mode,
-                object_value,
-                field_def,
-                fields,
-            )?
+        let field_path = LinkedPathElement {
+            element: ResponseDataPathSegment::Field(response_key.clone()),
+            next: path,
         };
-        response_map.insert(response_key.as_str(), value);
+        if let Some(value) = execute_field(
+            ctx,
+            Some(&field_path),
+            mode,
+            object_type,
+            object_value,
+            field_def,
+            fields,
+        )? {
+            response_map.insert(response_key.as_str(), value);
+        }
     }
     Ok(response_map)
 }
@@ -115,7 +120,6 @@ pub(crate) fn execute_selection_set<'a>(
 fn collect_fields<'a>(
     ctx: &mut ExecutionContext<'a>,
     object_type: &ObjectType,
-    object_value: &dyn ObjectValue,
     selections: impl IntoIterator<Item = &'a Selection>,
     visited_fragments: &mut HashSet<&'a Name>,
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
@@ -127,14 +131,10 @@ fn collect_fields<'a>(
             continue;
         }
         match selection {
-            Selection::Field(field) => {
-                if !object_value.skip_field(&field.name) {
-                    grouped_fields
-                        .entry(field.response_key())
-                        .or_default()
-                        .push(field.as_ref())
-                }
-            }
+            Selection::Field(field) => grouped_fields
+                .entry(field.response_key())
+                .or_default()
+                .push(field.as_ref()),
             Selection::FragmentSpread(spread) => {
                 let new = visited_fragments.insert(&spread.fragment_name);
                 if !new {
@@ -149,7 +149,6 @@ fn collect_fields<'a>(
                 collect_fields(
                     ctx,
                     object_type,
-                    object_value,
                     &fragment.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
@@ -164,7 +163,6 @@ fn collect_fields<'a>(
                 collect_fields(
                     ctx,
                     object_type,
-                    object_value,
                     &inline.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
@@ -209,20 +207,57 @@ fn eval_if_arg(
 }
 
 /// <https://spec.graphql.org/October2021/#ExecuteField()>
+///
+/// `object_value: None` is a special case for top-level of `introspection::partial_execute`
+///
+/// Return `Ok(None)` for silently skipping that field.
 fn execute_field<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
-    object_value: &dyn ObjectValue,
+    object_type: &ObjectType,
+    object_value: Option<&dyn ObjectValue>,
     field_def: &FieldDefinition,
     fields: &[&'a Field],
-) -> Result<JsonValue, PropagateNull> {
+) -> Result<Option<JsonValue>, PropagateNull> {
     let field = fields[0];
     let argument_values = match coerce_argument_values(ctx, path, field_def, field) {
         Ok(argument_values) => argument_values,
-        Err(PropagateNull) => return try_nullify(&field_def.ty, Err(PropagateNull)),
+        Err(PropagateNull) if field_def.ty.is_non_null() => return Err(PropagateNull),
+        Err(PropagateNull) => return Ok(Some(JsonValue::Null)),
     };
-    let resolved_result = object_value.resolve_field(&field.name, &argument_values);
+    let is_field_of_root_query = || {
+        ctx.schema
+            .schema_definition
+            .query
+            .as_ref()
+            .is_some_and(|q| q.name == object_type.name)
+    };
+    let resolved_result = match field.name.as_str() {
+        "__typename" => Ok(ResolvedValue::leaf(object_type.name.as_str())),
+        "__schema" if is_field_of_root_query() => {
+            let schema = SchemaWithImplementersMap {
+                schema: ctx.schema,
+                implementers_map: ctx.implementers_map,
+            };
+            Ok(ResolvedValue::object(schema))
+        }
+        "__type" if is_field_of_root_query() => {
+            let schema = SchemaWithImplementersMap {
+                schema: ctx.schema,
+                implementers_map: ctx.implementers_map,
+            };
+            let name = argument_values["name"].as_str().unwrap();
+            Ok(crate::introspection::resolvers::type_def(schema, name))
+        }
+        _ => {
+            if let Some(obj) = object_value {
+                obj.resolve_field(&field.name, &argument_values)
+            } else {
+                return Ok(None);
+            }
+        }
+    };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields),
         Err(ResolverError { message }) => {
@@ -235,7 +270,7 @@ fn execute_field<'a>(
             Err(PropagateNull)
         }
     };
-    try_nullify(&field_def.ty, completed_result)
+    try_nullify(&field_def.ty, completed_result).map(Some)
 }
 
 /// Try to insert a propagated null if possible, or keep propagating it.

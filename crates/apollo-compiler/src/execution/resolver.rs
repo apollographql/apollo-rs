@@ -9,23 +9,18 @@ pub(crate) trait ObjectValue {
     /// This is called when the schema indicates an abstract (interface or union) type.
     fn type_name(&self) -> &str;
 
-    /// Resolves a field of this object with the given arguments
+    /// Resolves a concrete field of this object with the given arguments
     ///
     /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
+    ///
+    /// This is _not_ called for [introspection](https://spec.graphql.org/draft/#sec-Introspection)
+    /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     fn resolve_field<'a>(
         &'a self,
         field_name: &'a str,
         arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolverError>;
-
-    /// Returns true if this field should be skipped,
-    /// as if the corresponding selection has `@skip(if: true)`.
-    ///
-    /// This is used to exclude root concrete fields in [crate::introspection::partial_execute].
-    fn skip_field(&self, _field_name: &str) -> bool {
-        false
-    }
 }
 
 pub(crate) struct ResolverError {
@@ -69,12 +64,12 @@ impl<'a> ResolvedValue<'a> {
         Self::Leaf(json.into())
     }
 
-    /// Construct an object resolved value from the resolver for that object
+    /// Construct an object resolved value
     pub(crate) fn object(resolver: impl ObjectValue + 'a) -> Self {
         Self::Object(Box::new(resolver))
     }
 
-    /// Construct an object resolved value or null, from an optional resolver
+    /// Construct an object resolved value or null
     pub(crate) fn opt_object(opt_resolver: Option<impl ObjectValue + 'a>) -> Self {
         match opt_resolver {
             Some(resolver) => Self::Object(Box::new(resolver)),
@@ -83,6 +78,9 @@ impl<'a> ResolvedValue<'a> {
     }
 
     /// Construct a list resolved value from an iterator
+    ///
+    /// If errors can happen during iteration,
+    /// construct the [`ResolvedValue::List`] enum variant directly instead.
     pub(crate) fn list<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = Self>,
