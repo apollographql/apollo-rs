@@ -56,7 +56,7 @@ pub(crate) fn execute_selection_set<'a>(
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: &ObjectValue<'_>,
+    object_value: &dyn ObjectValue,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
     let mut grouped_field_set = IndexMap::default();
@@ -120,7 +120,7 @@ fn collect_fields<'a>(
     document: &'a ExecutableDocument,
     variable_values: &Valid<JsonMap>,
     object_type: &ObjectType,
-    object_value: &ObjectValue<'_>,
+    object_value: &dyn ObjectValue,
     selections: impl IntoIterator<Item = &'a Selection>,
     visited_fragments: &mut HashSet<&'a Name>,
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
@@ -226,7 +226,7 @@ fn execute_field(
     errors: &mut Vec<GraphQLError>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
-    object_value: &ObjectValue<'_>,
+    object_value: &dyn ObjectValue,
     field_def: &FieldDefinition,
     fields: &[&Field],
 ) -> Result<JsonValue, PropagateNull> {

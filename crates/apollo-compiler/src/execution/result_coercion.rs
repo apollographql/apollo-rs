@@ -238,9 +238,9 @@ fn test_error_path() {
     let sdl = "type Query { f: [Int] }";
     let query = "{ f }";
 
-    struct Query;
+    struct InitialValue;
 
-    impl resolver::Resolver for Query {
+    impl resolver::ObjectValue for InitialValue {
         fn type_name(&self) -> &str {
             "Query"
         }
@@ -274,7 +274,7 @@ fn test_error_path() {
     let root_operation_object_type_def = schema.get_object("Query").unwrap();
     let mut errors = Vec::new();
     let path = None;
-    let initial_value = Query;
+    let initial_value = InitialValue;
     let data = execute_selection_set(
         &schema,
         &document,

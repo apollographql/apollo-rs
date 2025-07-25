@@ -1,6 +1,6 @@
 use crate::collections::HashMap;
+use crate::execution::resolver::ObjectValue;
 use crate::execution::resolver::ResolvedValue;
-use crate::execution::resolver::Resolver;
 use crate::execution::resolver::ResolverError;
 use crate::response::JsonMap;
 use crate::schema;
@@ -109,7 +109,7 @@ fn deprecation_reason<'a>(
     )
 }
 
-impl Resolver for IntrospectionRootResolver<'_> {
+impl ObjectValue for IntrospectionRootResolver<'_> {
     fn type_name(&self) -> &str {
         unreachable!()
     }
@@ -136,7 +136,7 @@ impl Resolver for IntrospectionRootResolver<'_> {
     }
 }
 
-impl Resolver for SchemaWithImplementersMap<'_> {
+impl ObjectValue for SchemaWithImplementersMap<'_> {
     fn type_name(&self) -> &str {
         "__Schema"
     }
@@ -170,7 +170,7 @@ impl Resolver for SchemaWithImplementersMap<'_> {
     }
 }
 
-impl Resolver for TypeDefResolver<'_> {
+impl ObjectValue for TypeDefResolver<'_> {
     fn type_name(&self) -> &str {
         "__Type"
     }
@@ -330,7 +330,7 @@ impl Resolver for TypeDefResolver<'_> {
 }
 
 /// Only used for non-null and list types
-impl Resolver for TypeResolver<'_> {
+impl ObjectValue for TypeResolver<'_> {
     fn type_name(&self) -> &str {
         "__Type"
     }
@@ -368,7 +368,7 @@ impl Resolver for TypeResolver<'_> {
     }
 }
 
-impl Resolver for DirectiveResolver<'_> {
+impl ObjectValue for DirectiveResolver<'_> {
     fn type_name(&self) -> &str {
         "__Directive"
     }
@@ -413,7 +413,7 @@ impl Resolver for DirectiveResolver<'_> {
     }
 }
 
-impl Resolver for FieldResolver<'_> {
+impl ObjectValue for FieldResolver<'_> {
     fn type_name(&self) -> &str {
         "__Field"
     }
@@ -459,7 +459,7 @@ impl Resolver for FieldResolver<'_> {
     }
 }
 
-impl Resolver for EnumValueResolver<'_> {
+impl ObjectValue for EnumValueResolver<'_> {
     fn type_name(&self) -> &str {
         "__EnumValue"
     }
@@ -484,7 +484,7 @@ impl Resolver for EnumValueResolver<'_> {
     }
 }
 
-impl Resolver for InputValueResolver<'_> {
+impl ObjectValue for InputValueResolver<'_> {
     fn type_name(&self) -> &str {
         "__InputValue"
     }

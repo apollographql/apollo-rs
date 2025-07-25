@@ -1,14 +1,8 @@
 use crate::response::JsonMap;
 use serde_json_bytes::Value as JsonValue;
 
-/// A GraphQL object whose fields can be resolved during execution
-pub(crate) type ObjectValue<'a> = dyn Resolver + 'a;
-
-/// Abstraction for implementing field resolvers. Used through [`ObjectValue`].
-///
-/// Use the [`impl_resolver!`][crate::impl_resolver] macro to implement this trait
-/// with reduced boilerplate
-pub(crate) trait Resolver {
+/// A concrete GraphQL object whose fields can be resolved during execution.
+pub(crate) trait ObjectValue {
     /// Returns the name of the concrete object type this resolver represents
     ///
     /// That name expected to be that of an object type defined in the schema.
@@ -17,7 +11,7 @@ pub(crate) trait Resolver {
 
     /// Resolves a field of this object with the given arguments
     ///
-    /// The resolved is expected to match the type of the corresponding field definition
+    /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
     fn resolve_field<'a>(
         &'a self,
@@ -39,7 +33,7 @@ pub(crate) struct ResolverError {
 }
 
 impl ResolverError {
-    pub(crate) fn unknown_field(field_name: &str, object: &ObjectValue) -> Self {
+    pub(crate) fn unknown_field(field_name: &str, object: &dyn ObjectValue) -> Self {
         Self {
             message: format!(
                 "unexpected field name: {field_name} in type {}",
@@ -58,7 +52,7 @@ pub(crate) enum ResolvedValue<'a> {
     Leaf(JsonValue),
 
     /// Expected where the GraphQL type is an object, interface, or union type
-    Object(Box<ObjectValue<'a>>),
+    Object(Box<dyn ObjectValue + 'a>),
 
     /// Expected for GraphQL list types
     List(Box<dyn Iterator<Item = Result<ResolvedValue<'a>, ResolverError>> + 'a>),
@@ -76,12 +70,12 @@ impl<'a> ResolvedValue<'a> {
     }
 
     /// Construct an object resolved value from the resolver for that object
-    pub(crate) fn object(resolver: impl Resolver + 'a) -> Self {
+    pub(crate) fn object(resolver: impl ObjectValue + 'a) -> Self {
         Self::Object(Box::new(resolver))
     }
 
     /// Construct an object resolved value or null, from an optional resolver
-    pub(crate) fn opt_object(opt_resolver: Option<impl Resolver + 'a>) -> Self {
+    pub(crate) fn opt_object(opt_resolver: Option<impl ObjectValue + 'a>) -> Self {
         match opt_resolver {
             Some(resolver) => Self::Object(Box::new(resolver)),
             None => Self::null(),
