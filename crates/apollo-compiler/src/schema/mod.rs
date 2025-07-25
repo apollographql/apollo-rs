@@ -864,6 +864,19 @@ impl ExtendedType {
     serialize_method!();
 }
 
+impl IterOrigins for ExtendedType {
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        match self {
+            Self::Scalar(ty) => Box::new(ty.iter_origins()) as Box<dyn Iterator<Item = _>>,
+            Self::Object(ty) => Box::new(ty.iter_origins()),
+            Self::Interface(ty) => Box::new(ty.iter_origins()),
+            Self::Union(ty) => Box::new(ty.iter_origins()),
+            Self::Enum(ty) => Box::new(ty.iter_origins()),
+            Self::InputObject(ty) => Box::new(ty.iter_origins()),
+        }
+    }
+}
+
 impl ScalarType {
     /// Collect scalar type extensions that contribute any component
     ///
