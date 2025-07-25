@@ -46,13 +46,16 @@ pub(crate) struct LinkedPathElement<'a> {
     pub(crate) next: LinkedPath<'a>,
 }
 
+pub(crate) struct ExecutionContext<'a> {
+    pub(crate) schema: &'a Valid<Schema>,
+    pub(crate) document: &'a Valid<ExecutableDocument>,
+    pub(crate) variable_values: &'a Valid<JsonMap>,
+    pub(crate) errors: &'a mut Vec<GraphQLError>,
+}
+
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
-#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 pub(crate) fn execute_selection_set<'a>(
-    schema: &Valid<Schema>,
-    document: &'a Valid<ExecutableDocument>,
-    variable_values: &Valid<JsonMap>,
-    errors: &mut Vec<GraphQLError>,
+    ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
@@ -61,9 +64,7 @@ pub(crate) fn execute_selection_set<'a>(
 ) -> Result<JsonMap, PropagateNull> {
     let mut grouped_field_set = IndexMap::default();
     collect_fields(
-        schema,
-        document,
-        variable_values,
+        ctx,
         object_type,
         object_value,
         selections,
@@ -83,7 +84,7 @@ pub(crate) fn execute_selection_set<'a>(
     for (&response_key, fields) in &grouped_field_set {
         // Indexing should not panic: `collect_fields` only creates a `Vec` to push to it
         let field_name = &fields[0].name;
-        let Ok(field_def) = schema.type_field(&object_type.name, field_name) else {
+        let Ok(field_def) = ctx.schema.type_field(&object_type.name, field_name) else {
             // TODO: Return a `validation_bug`` field error here?
             // The spec specifically has a “If fieldType is defined” condition,
             // but it being undefined would make the request invalid, right?
@@ -97,10 +98,7 @@ pub(crate) fn execute_selection_set<'a>(
                 next: path,
             };
             execute_field(
-                schema,
-                document,
-                variable_values,
-                errors,
+                ctx,
                 Some(&field_path),
                 mode,
                 object_value,
@@ -114,11 +112,8 @@ pub(crate) fn execute_selection_set<'a>(
 }
 
 /// <https://spec.graphql.org/October2021/#CollectFields()>
-#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 fn collect_fields<'a>(
-    schema: &Schema,
-    document: &'a ExecutableDocument,
-    variable_values: &Valid<JsonMap>,
+    ctx: &mut ExecutionContext<'a>,
     object_type: &ObjectType,
     object_value: &dyn ObjectValue,
     selections: impl IntoIterator<Item = &'a Selection>,
@@ -126,8 +121,8 @@ fn collect_fields<'a>(
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
 ) {
     for selection in selections {
-        if eval_if_arg(selection, "skip", variable_values).unwrap_or(false)
-            || !eval_if_arg(selection, "include", variable_values).unwrap_or(true)
+        if eval_if_arg(selection, "skip", ctx.variable_values).unwrap_or(false)
+            || !eval_if_arg(selection, "include", ctx.variable_values).unwrap_or(true)
         {
             continue;
         }
@@ -145,16 +140,14 @@ fn collect_fields<'a>(
                 if !new {
                     continue;
                 }
-                let Some(fragment) = document.fragments.get(&spread.fragment_name) else {
+                let Some(fragment) = ctx.document.fragments.get(&spread.fragment_name) else {
                     continue;
                 };
-                if !does_fragment_type_apply(schema, object_type, fragment.type_condition()) {
+                if !does_fragment_type_apply(ctx.schema, object_type, fragment.type_condition()) {
                     continue;
                 }
                 collect_fields(
-                    schema,
-                    document,
-                    variable_values,
+                    ctx,
                     object_type,
                     object_value,
                     &fragment.selection_set.selections,
@@ -164,14 +157,12 @@ fn collect_fields<'a>(
             }
             Selection::InlineFragment(inline) => {
                 if let Some(condition) = &inline.type_condition {
-                    if !does_fragment_type_apply(schema, object_type, condition) {
+                    if !does_fragment_type_apply(ctx.schema, object_type, condition) {
                         continue;
                     }
                 }
                 collect_fields(
-                    schema,
-                    document,
-                    variable_values,
+                    ctx,
                     object_type,
                     object_value,
                     &inline.selection_set.selections,
@@ -218,50 +209,28 @@ fn eval_if_arg(
 }
 
 /// <https://spec.graphql.org/October2021/#ExecuteField()>
-#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
-fn execute_field(
-    schema: &Valid<Schema>,
-    document: &Valid<ExecutableDocument>,
-    variable_values: &Valid<JsonMap>,
-    errors: &mut Vec<GraphQLError>,
+fn execute_field<'a>(
+    ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_value: &dyn ObjectValue,
     field_def: &FieldDefinition,
-    fields: &[&Field],
+    fields: &[&'a Field],
 ) -> Result<JsonValue, PropagateNull> {
     let field = fields[0];
-    let argument_values = match coerce_argument_values(
-        schema,
-        document,
-        variable_values,
-        errors,
-        path,
-        field_def,
-        field,
-    ) {
+    let argument_values = match coerce_argument_values(ctx, path, field_def, field) {
         Ok(argument_values) => argument_values,
         Err(PropagateNull) => return try_nullify(&field_def.ty, Err(PropagateNull)),
     };
     let resolved_result = object_value.resolve_field(&field.name, &argument_values);
     let completed_result = match resolved_result {
-        Ok(resolved) => complete_value(
-            schema,
-            document,
-            variable_values,
-            errors,
-            path,
-            mode,
-            field.ty(),
-            resolved,
-            fields,
-        ),
+        Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields),
         Err(ResolverError { message }) => {
-            errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::field_error(
                 format!("resolver error: {message}"),
                 path,
                 field.name.location(),
-                &document.sources,
+                &ctx.document.sources,
             ));
             Err(PropagateNull)
         }

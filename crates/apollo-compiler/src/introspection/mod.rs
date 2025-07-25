@@ -9,6 +9,7 @@ use crate::executable::Operation;
 #[cfg(doc)]
 use crate::executable::OperationMap;
 use crate::execution::engine::execute_selection_set;
+use crate::execution::engine::ExecutionContext;
 use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::PropagateNull;
 #[cfg(doc)]
@@ -111,11 +112,14 @@ pub fn partial_execute(
         });
     let mut errors = Vec::new();
     let path = None;
-    let data = execute_selection_set(
+    let mut context = ExecutionContext {
         schema,
         document,
         variable_values,
-        &mut errors,
+        errors: &mut errors,
+    };
+    let data = execute_selection_set(
+        &mut context,
         path,
         ExecutionMode::Normal,
         root_operation_object_type_def,

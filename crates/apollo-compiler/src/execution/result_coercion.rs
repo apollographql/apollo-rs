@@ -1,46 +1,39 @@
 use crate::executable::Field;
 use crate::execution::engine::execute_selection_set;
 use crate::execution::engine::try_nullify;
+use crate::execution::engine::ExecutionContext;
 use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::LinkedPathElement;
 use crate::execution::engine::PropagateNull;
 use crate::execution::resolver::ResolvedValue;
 use crate::response::GraphQLError;
-use crate::response::JsonMap;
 use crate::response::JsonValue;
 use crate::response::ResponseDataPathSegment;
 use crate::schema::ExtendedType;
 use crate::schema::Type;
 use crate::validation::SuspectedValidationBug;
-use crate::validation::Valid;
-use crate::ExecutableDocument;
-use crate::Schema;
 
 /// <https://spec.graphql.org/October2021/#CompleteValue()>
 ///
 /// Returns `Err` for a field error being propagated upwards to find a nullable place
-#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
-pub(crate) fn complete_value<'a, 'b>(
-    schema: &'a Valid<Schema>,
-    document: &'a Valid<ExecutableDocument>,
-    variable_values: &'a Valid<JsonMap>,
-    errors: &'b mut Vec<GraphQLError>,
-    path: LinkedPath<'b>,
+pub(crate) fn complete_value<'a>(
+    ctx: &mut ExecutionContext<'a>,
+    path: LinkedPath<'_>,
     mode: ExecutionMode,
     ty: &'a Type,
-    resolved: ResolvedValue<'a>,
-    fields: &'a [&'a Field],
+    resolved: ResolvedValue<'_>,
+    fields: &[&'a Field],
 ) -> Result<JsonValue, PropagateNull> {
     let location = fields[0].name.location();
     macro_rules! field_error {
         ($($arg: tt)+) => {
             {
-                errors.push(GraphQLError::field_error(
+                ctx.errors.push(GraphQLError::field_error(
                     format!($($arg)+),
                     path,
                     location,
-                    &document.sources
+                    &ctx.document.sources
                 ));
                 return Err(PropagateNull);
             }
@@ -66,19 +59,16 @@ pub(crate) fn complete_value<'a, 'b>(
                         next: path,
                     };
                     let inner_resolved = inner_result.map_err(|err| {
-                        errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::field_error(
                             format!("resolver error: {}", err.message),
                             Some(&inner_path),
                             fields[0].name.location(),
-                            &document.sources,
+                            &ctx.document.sources,
                         ));
                         PropagateNull
                     })?;
                     let inner_result = complete_value(
-                        schema,
-                        document,
-                        variable_values,
-                        errors,
+                        ctx,
                         Some(&inner_path),
                         mode,
                         inner_ty,
@@ -102,23 +92,23 @@ pub(crate) fn complete_value<'a, 'b>(
         }
         Type::Named(name) | Type::NonNullNamed(name) => name,
     };
-    let Some(ty_def) = schema.types.get(ty_name) else {
-        errors.push(
+    let Some(ty_def) = ctx.schema.types.get(ty_name) else {
+        ctx.errors.push(
             SuspectedValidationBug {
                 message: format!("Undefined type {ty_name}"),
                 location,
             }
-            .into_field_error(&document.sources, path),
+            .into_field_error(&ctx.document.sources, path),
         );
         return Err(PropagateNull);
     };
     if let ExtendedType::InputObject(_) = ty_def {
-        errors.push(
+        ctx.errors.push(
             SuspectedValidationBug {
                 message: format!("Field with input object type {ty_name}"),
                 location,
             }
-            .into_field_error(&document.sources, path),
+            .into_field_error(&ctx.document.sources, path),
         );
         return Err(PropagateNull);
     }
@@ -201,7 +191,7 @@ pub(crate) fn complete_value<'a, 'b>(
         }
         ExtendedType::Interface(_) | ExtendedType::Union(_) => {
             let object_type_name = resolved_obj.type_name();
-            if let Some(def) = schema.get_object(object_type_name) {
+            if let Some(def) = ctx.schema.get_object(object_type_name) {
                 def
             } else {
                 field_error!(
@@ -216,10 +206,7 @@ pub(crate) fn complete_value<'a, 'b>(
         }
     };
     execute_selection_set(
-        schema,
-        document,
-        variable_values,
-        errors,
+        ctx,
         path,
         mode,
         object_type,
@@ -234,6 +221,9 @@ pub(crate) fn complete_value<'a, 'b>(
 #[test]
 fn test_error_path() {
     use super::resolver;
+    use crate::response::JsonMap;
+    use crate::ExecutableDocument;
+    use crate::Schema;
 
     let sdl = "type Query { f: [Int] }";
     let query = "{ f }";
@@ -275,11 +265,14 @@ fn test_error_path() {
     let mut errors = Vec::new();
     let path = None;
     let initial_value = InitialValue;
+    let mut context = ExecutionContext {
+        schema: &schema,
+        document: &document,
+        variable_values: &variable_values,
+        errors: &mut errors,
+    };
     let data = execute_selection_set(
-        &schema,
-        &document,
-        &variable_values,
-        &mut errors,
+        &mut context,
         path,
         ExecutionMode::Normal,
         root_operation_object_type_def,
