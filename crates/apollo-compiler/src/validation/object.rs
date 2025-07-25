@@ -1,7 +1,6 @@
 use crate::ast;
 use crate::schema::validation::BuiltInScalars;
 use crate::schema::ObjectType;
-use crate::schema::SchemaElement;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;

@@ -645,69 +645,13 @@ impl Schema {
     serialize_method!();
 }
 
+/// Trait for any schema element that can provide an iterator over its origins.
 pub trait IterOrigins {
-    /// Efficient accessor to the `origins` of schema elements.
+    /// Accessor to the `origins` of schema elements.
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
     fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin>;
-}
-
-// Note: `SchemaElement` trait was meant for `ExtendedType`, since it can't implement `HasOrigins`
-// due to different ExtendedType's variants that can't return the same impl type. Thus,
-// `SchemaElement` trait's methods often return `IndexSet`, rather than iterator.
-pub trait SchemaElement {
-    /// Returns true in the first tuple element if `self` has a definition (= non-extension).
-    /// Returns a set of extension IDs in the second tuple element, if `self` has any.
-    ///
-    /// The order of the returned set is unspecified but deterministic
-    /// for a given apollo-compiler version.
-    fn definition_and_extensions(&self) -> (bool, IndexSet<&ExtensionId>);
-
-    fn has_non_extension_elements(&self) -> bool {
-        self.definition_and_extensions().0
-    }
-
-    fn has_extension_elements(&self) -> bool {
-        !self.definition_and_extensions().1.is_empty()
-    }
-
-    /// Collect `schema` extensions that contribute any component
-    ///
-    /// The order of the returned set is unspecified but deterministic
-    /// for a given apollo-compiler version.
-    fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.definition_and_extensions().1
-    }
-}
-
-/// Blanket implement `SchemaElement` for any type that implements `IterOrigins`.
-impl<T: IterOrigins> SchemaElement for T {
-    fn has_non_extension_elements(&self) -> bool {
-        self.iter_origins()
-            .any(|origin| origin.extension_id().is_none())
-    }
-
-    fn has_extension_elements(&self) -> bool {
-        self.iter_origins()
-            .any(|origin| origin.extension_id().is_some())
-    }
-
-    fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
-    }
-
-    fn definition_and_extensions(&self) -> (bool, IndexSet<&ExtensionId>) {
-        let mut extensions = IndexSet::default();
-        let mut has_definition = false;
-        for origin in self.iter_origins() {
-            if let Some(extension_id) = origin.extension_id() {
-                extensions.insert(extension_id);
-            } else {
-                has_definition = true;
-            }
-        }
-        (has_definition, extensions)
-    }
 }
 
 impl SchemaDefinition {
@@ -721,6 +665,16 @@ impl SchemaDefinition {
         ]
         .into_iter()
         .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
+    }
+
+    /// Collect `schema` extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
     }
 }
 
@@ -910,30 +864,17 @@ impl ExtendedType {
     serialize_method!();
 }
 
-impl SchemaElement for ExtendedType {
-    fn definition_and_extensions(&self) -> (bool, IndexSet<&ExtensionId>) {
-        let origins: IndexSet<_> = match self {
-            Self::Scalar(ty) => ty.iter_origins().collect(),
-            Self::Object(ty) => ty.iter_origins().collect(),
-            Self::Interface(ty) => ty.iter_origins().collect(),
-            Self::Union(ty) => ty.iter_origins().collect(),
-            Self::Enum(ty) => ty.iter_origins().collect(),
-            Self::InputObject(ty) => ty.iter_origins().collect(),
-        };
-        let mut extensions = IndexSet::default();
-        let mut has_definition = false;
-        for origin in origins {
-            if let Some(extension_id) = origin.extension_id() {
-                extensions.insert(extension_id);
-            } else {
-                has_definition = true;
-            }
-        }
-        (has_definition, extensions)
-    }
-}
-
 impl ScalarType {
+    /// Collect scalar type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
@@ -944,6 +885,16 @@ impl IterOrigins for ScalarType {
 }
 
 impl ObjectType {
+    /// Collect object type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
@@ -962,6 +913,16 @@ impl IterOrigins for ObjectType {
 }
 
 impl InterfaceType {
+    /// Collect interface type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
@@ -980,6 +941,16 @@ impl IterOrigins for InterfaceType {
 }
 
 impl UnionType {
+    /// Collect union type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
@@ -993,6 +964,16 @@ impl IterOrigins for UnionType {
 }
 
 impl EnumType {
+    /// Collect enum type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
@@ -1006,6 +987,16 @@ impl IterOrigins for EnumType {
 }
 
 impl InputObjectType {
+    /// Collect input object type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 

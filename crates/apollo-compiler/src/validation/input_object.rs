@@ -2,7 +2,6 @@ use crate::ast;
 use crate::collections::HashMap;
 use crate::schema::validation::BuiltInScalars;
 use crate::schema::InputObjectType;
-use crate::schema::SchemaElement;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
