@@ -1,3 +1,4 @@
+use crate::executable;
 use crate::response::JsonMap;
 use serde_json_bytes::Value as JsonValue;
 
@@ -18,7 +19,7 @@ pub(crate) trait ObjectValue {
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError>;
 }
@@ -28,10 +29,11 @@ pub(crate) struct ResolveError {
 }
 
 impl ResolveError {
-    pub(crate) fn unknown_field(field_name: &str, object: &dyn ObjectValue) -> Self {
+    pub(crate) fn unknown_field(field: &executable::Field, object: &dyn ObjectValue) -> Self {
         Self {
             message: format!(
-                "unexpected field name: {field_name} in type {}",
+                "unexpected field name: {} in type {}",
+                field.name,
                 object.type_name()
             ),
         }

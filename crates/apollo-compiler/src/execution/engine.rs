@@ -252,7 +252,7 @@ fn execute_field<'a>(
         }
         _ => {
             if let Some(obj) = object_value {
-                obj.resolve_field(&field.name, &argument_values)
+                obj.resolve_field(field, &argument_values)
             } else {
                 return Ok(None);
             }

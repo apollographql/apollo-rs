@@ -1,4 +1,5 @@
 use crate::collections::HashMap;
+use crate::executable;
 use crate::execution::resolver::ObjectValue;
 use crate::execution::resolver::ResolveError;
 use crate::execution::resolver::ResolvedValue;
@@ -142,10 +143,10 @@ impl ObjectValue for SchemaWithImplementersMap<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         _arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "description" => Ok(ResolvedValue::leaf(
                 self.schema_definition.description.as_deref(),
             )),
@@ -164,7 +165,7 @@ impl ObjectValue for SchemaWithImplementersMap<'_> {
             "queryType" => Ok(type_def_opt(*self, &self.schema_definition.query)),
             "mutationType" => Ok(type_def_opt(*self, &self.schema_definition.mutation)),
             "subscriptionType" => Ok(type_def_opt(*self, &self.schema_definition.subscription)),
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }
@@ -176,10 +177,10 @@ impl ObjectValue for TypeDefResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "kind" => Ok(ResolvedValue::leaf(match self.def {
                 schema::ExtendedType::Scalar(_) => "SCALAR",
                 schema::ExtendedType::Object(_) => "OBJECT",
@@ -323,7 +324,7 @@ impl ObjectValue for TypeDefResolver<'_> {
                         .and_then(|arg| arg.as_str()),
                 ))
             }
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }
@@ -336,10 +337,10 @@ impl ObjectValue for TypeResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         _arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "kind" => Ok(ResolvedValue::leaf(match &*self.ty {
                 schema::Type::Named(_) => unreachable!(),
                 schema::Type::List(_) => "LIST",
@@ -362,7 +363,7 @@ impl ObjectValue for TypeResolver<'_> {
             "enumValues" => Ok(ResolvedValue::null()),
             "inputFields" => Ok(ResolvedValue::null()),
             "specifiedByURL" => Ok(ResolvedValue::null()),
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }
@@ -374,10 +375,10 @@ impl ObjectValue for DirectiveResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "args" => {
@@ -407,7 +408,7 @@ impl ObjectValue for DirectiveResolver<'_> {
                     .map(|loc| ResolvedValue::leaf(loc.name())),
             )),
             "isRepeatable" => Ok(ResolvedValue::leaf(self.def.repeatable)),
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }
@@ -419,10 +420,10 @@ impl ObjectValue for FieldResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "args" => {
@@ -453,7 +454,7 @@ impl ObjectValue for FieldResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }
@@ -465,10 +466,10 @@ impl ObjectValue for EnumValueResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         _arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "name" => Ok(ResolvedValue::leaf(self.def.value.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "isDeprecated" => Ok(ResolvedValue::leaf(
@@ -478,7 +479,7 @@ impl ObjectValue for EnumValueResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }
@@ -490,10 +491,10 @@ impl ObjectValue for InputValueResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field_name: &'a str,
+        field: &'a executable::Field,
         _arguments: &'a JsonMap,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field_name {
+        match field.name.as_str() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "type" => Ok(ty(self.schema, &self.def.ty)),
@@ -510,7 +511,7 @@ impl ObjectValue for InputValueResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(ResolveError::unknown_field(field_name, self)),
+            _ => Err(ResolveError::unknown_field(field, self)),
         }
     }
 }

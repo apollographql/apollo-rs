@@ -221,6 +221,7 @@ pub(crate) fn complete_value<'a>(
 #[test]
 fn test_error_path() {
     use super::resolver;
+    use crate::executable;
     use crate::introspection::resolvers::MaybeLazy;
     use crate::response::JsonMap;
     use crate::ExecutableDocument;
@@ -239,10 +240,10 @@ fn test_error_path() {
 
         fn resolve_field<'a>(
             &'a self,
-            field_name: &'a str,
+            field: &'a executable::Field,
             _arguments: &'a JsonMap,
         ) -> Result<ResolvedValue<'a>, resolver::ResolveError> {
-            match field_name {
+            match field.name.as_str() {
                 "f" => Ok(ResolvedValue::List(Box::new(
                     [
                         Ok(ResolvedValue::leaf(42)),
@@ -252,7 +253,7 @@ fn test_error_path() {
                     ]
                     .into_iter(),
                 ))),
-                _ => Err(resolver::ResolveError::unknown_field(field_name, self)),
+                _ => Err(resolver::ResolveError::unknown_field(field, self)),
             }
         }
     }
