@@ -645,15 +645,6 @@ impl Schema {
     serialize_method!();
 }
 
-/// Trait for any schema element that can provide an iterator over its origins.
-pub trait IterOrigins {
-    /// Accessor to the `origins` of schema elements.
-    ///
-    /// The order of the returned set is unspecified but deterministic
-    /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin>;
-}
-
 impl SchemaDefinition {
     pub fn iter_root_operations(
         &self,
@@ -667,6 +658,19 @@ impl SchemaDefinition {
         .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
     }
 
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.query.iter().map(|name| &name.origin))
+            .chain(self.mutation.iter().map(|name| &name.origin))
+            .chain(self.subscription.iter().map(|name| &name.origin))
+    }
+
     /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -675,17 +679,6 @@ impl SchemaDefinition {
         self.iter_origins()
             .filter_map(|origin| origin.extension_id())
             .collect()
-    }
-}
-
-impl IterOrigins for SchemaDefinition {
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
-        self.directives
-            .iter()
-            .map(|dir| &dir.origin)
-            .chain(self.query.iter().map(|name| &name.origin))
-            .chain(self.mutation.iter().map(|name| &name.origin))
-            .chain(self.subscription.iter().map(|name| &name.origin))
     }
 }
 
@@ -861,10 +854,10 @@ impl ExtendedType {
         }
     }
 
-    serialize_method!();
-}
-
-impl IterOrigins for ExtendedType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
     fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         match self {
             Self::Scalar(ty) => Box::new(ty.iter_origins()) as Box<dyn Iterator<Item = _>>,
@@ -875,9 +868,29 @@ impl IterOrigins for ExtendedType {
             Self::InputObject(ty) => Box::new(ty.iter_origins()),
         }
     }
+
+    /// Collect `schema` extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
+    serialize_method!();
 }
 
 impl ScalarType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives.iter().map(|dir| &dir.origin)
+    }
+
     /// Collect scalar type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -891,13 +904,23 @@ impl ScalarType {
     serialize_method!();
 }
 
-impl IterOrigins for ScalarType {
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
-        self.directives.iter().map(|dir| &dir.origin)
-    }
-}
-
 impl ObjectType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(
+                self.implements_interfaces
+                    .iter()
+                    .map(|component| &component.origin),
+            )
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect object type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -911,7 +934,11 @@ impl ObjectType {
     serialize_method!();
 }
 
-impl IterOrigins for ObjectType {
+impl InterfaceType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
     fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
@@ -923,9 +950,7 @@ impl IterOrigins for ObjectType {
             )
             .chain(self.fields.values().map(|field| &field.origin))
     }
-}
 
-impl InterfaceType {
     /// Collect interface type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -939,21 +964,18 @@ impl InterfaceType {
     serialize_method!();
 }
 
-impl IterOrigins for InterfaceType {
+impl UnionType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
     fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
-            .chain(
-                self.implements_interfaces
-                    .iter()
-                    .map(|component| &component.origin),
-            )
-            .chain(self.fields.values().map(|field| &field.origin))
+            .chain(self.members.iter().map(|component| &component.origin))
     }
-}
 
-impl UnionType {
     /// Collect union type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -967,16 +989,18 @@ impl UnionType {
     serialize_method!();
 }
 
-impl IterOrigins for UnionType {
+impl EnumType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
     fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
-            .chain(self.members.iter().map(|component| &component.origin))
+            .chain(self.values.values().map(|value| &value.origin))
     }
-}
 
-impl EnumType {
     /// Collect enum type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -990,16 +1014,18 @@ impl EnumType {
     serialize_method!();
 }
 
-impl IterOrigins for EnumType {
+impl InputObjectType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
     fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
-            .chain(self.values.values().map(|value| &value.origin))
+            .chain(self.fields.values().map(|field| &field.origin))
     }
-}
 
-impl InputObjectType {
     /// Collect input object type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -1011,15 +1037,6 @@ impl InputObjectType {
     }
 
     serialize_method!();
-}
-
-impl IterOrigins for InputObjectType {
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
-        self.directives
-            .iter()
-            .map(|dir| &dir.origin)
-            .chain(self.fields.values().map(|field| &field.origin))
-    }
 }
 
 impl DirectiveList {
