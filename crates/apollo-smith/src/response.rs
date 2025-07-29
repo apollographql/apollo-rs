@@ -18,6 +18,9 @@ const TYPENAME: &str = "__typename";
 
 pub type Generator = Box<dyn Fn(&mut Unstructured) -> Result<Value>>;
 
+/// Builds a GraphQL response which matches the shape of a given executable GraphQL document.
+///
+/// Documentation of the response format can be found in the [GraphQL spec](https://spec.graphql.org/draft/#sec-Execution-Result).
 pub struct ResponseBuilder<'a, 'doc, 'schema> {
     u: &'a mut Unstructured<'a>,
     doc: &'doc Valid<ExecutableDocument>,
