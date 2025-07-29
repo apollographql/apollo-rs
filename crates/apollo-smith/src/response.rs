@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use apollo_compiler::executable::Selection;
 use apollo_compiler::executable::SelectionSet;
 use apollo_compiler::schema::ExtendedType;
@@ -13,6 +11,7 @@ use serde_json_bytes::json;
 use serde_json_bytes::serde_json::Number;
 use serde_json_bytes::Map;
 use serde_json_bytes::Value;
+use std::collections::HashMap;
 
 const TYPENAME: &str = "__typename";
 
