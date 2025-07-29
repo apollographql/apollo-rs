@@ -20,7 +20,7 @@ fn parse_schema(schema: &str) {
                 .fields_definition()
                 .expect("the node FieldsDefinition is not optional in the spec; qed");
             for field in fields.field_definitions() {
-                black_box(field.ty());
+                std::hint::black_box(field.ty());
             }
         }
     }
@@ -42,7 +42,7 @@ fn bench_supergraph_lexer(c: &mut Criterion) {
             let lexer = Lexer::new(schema);
 
             for token_res in lexer {
-                black_box(token_res.unwrap());
+                std::hint::black_box(token_res.unwrap());
             }
         })
     });

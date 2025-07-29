@@ -83,8 +83,8 @@ fn diff(left: impl Debug, left_label: &'static str, right: impl Debug, right_lab
     println!(
         "{}",
         similar_asserts::SimpleDiff::from_str(
-            &format!("{:#?}", left),
-            &format!("{:#?}", right),
+            &format!("{left:#?}"),
+            &format!("{right:#?}"),
             left_label,
             right_label
         )
