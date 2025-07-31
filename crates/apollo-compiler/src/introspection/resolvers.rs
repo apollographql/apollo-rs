@@ -95,7 +95,7 @@ pub(crate) fn type_def(
     schema: SchemaWithImplementersMap<'_>,
     name: impl AsRef<str>,
 ) -> ResolvedValue<'_> {
-    ResolvedValue::opt_object(
+    ResolvedValue::nullable_object(
         schema
             .types
             .get_key_value(name.as_ref())

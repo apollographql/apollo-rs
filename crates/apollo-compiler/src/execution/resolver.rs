@@ -72,7 +72,7 @@ impl<'a> ResolvedValue<'a> {
     }
 
     /// Construct an object resolved value or null
-    pub(crate) fn opt_object(opt_resolver: Option<impl ObjectValue + 'a>) -> Self {
+    pub(crate) fn nullable_object(opt_resolver: Option<impl ObjectValue + 'a>) -> Self {
         match opt_resolver {
             Some(resolver) => Self::Object(Box::new(resolver)),
             None => Self::null(),
