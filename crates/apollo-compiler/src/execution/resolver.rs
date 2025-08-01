@@ -4,7 +4,7 @@ use serde_json_bytes::Value as JsonValue;
 
 /// A concrete GraphQL object whose fields can be resolved during execution.
 pub(crate) trait ObjectValue {
-    /// Returns the name of the concrete object type this resolver represents
+    /// Returns the name of the concrete object type
     ///
     /// That name expected to be that of an object type defined in the schema.
     /// This is called when the schema indicates an abstract (interface or union) type.
@@ -71,14 +71,14 @@ impl<'a> ResolvedValue<'a> {
     }
 
     /// Construct an object resolved value
-    pub(crate) fn object(resolver: impl ObjectValue + 'a) -> Self {
-        Self::Object(Box::new(resolver))
+    pub(crate) fn object(object: impl ObjectValue + 'a) -> Self {
+        Self::Object(Box::new(object))
     }
 
     /// Construct an object resolved value or null
-    pub(crate) fn nullable_object(opt_resolver: Option<impl ObjectValue + 'a>) -> Self {
-        match opt_resolver {
-            Some(resolver) => Self::Object(Box::new(resolver)),
+    pub(crate) fn nullable_object(opt_object: Option<impl ObjectValue + 'a>) -> Self {
+        match opt_object {
+            Some(object) => Self::Object(Box::new(object)),
             None => Self::null(),
         }
     }
