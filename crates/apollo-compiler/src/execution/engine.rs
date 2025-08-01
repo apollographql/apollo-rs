@@ -80,11 +80,11 @@ pub(crate) fn execute_selection_set<'a>(
     );
 
     match mode {
-        ExecutionMode::Normal => {}
-        ExecutionMode::Sequential => {
-            // If we want parallelism, use `futures::future::join_all` (async)
+        ExecutionMode::Normal => {
+            // If we want parallelism, use `StreamExt::buffer_unordered` (async)
             // or Rayon’s `par_iter` (sync) here.
         }
+        ExecutionMode::Sequential => {}
     }
 
     let mut response_map = JsonMap::with_capacity(grouped_field_set.len());
@@ -247,13 +247,22 @@ fn execute_field<'a>(
                 schema: ctx.schema,
                 implementers_map: ctx.implementers_map,
             };
-            let name = argument_values["name"].as_str().unwrap();
-            Ok(crate::introspection::resolvers::type_def(schema, name))
+            if let Some(name) = argument_values.get("name").and_then(|v| v.as_str()) {
+                Ok(crate::introspection::resolvers::type_def(schema, name))
+            } else {
+                // This should never happen: `coerce_argument_values()` returns a map that conforms
+                // to the `__type(name: String!): __Type` definition
+                // Still, in case of a bug prefer returning an error than panicking
+                Err(ResolveError {
+                    message: "expected string argument `name`".into(),
+                })
+            }
         }
         _ => {
             if let Some(obj) = object_value {
                 obj.resolve_field(field, &argument_values)
             } else {
+                // Skip non-introspection root fields for `introspection::partial_execute`
                 return Ok(None);
             }
         }
