@@ -10,7 +10,11 @@ pub(crate) trait ObjectValue {
     /// This is called when the schema indicates an abstract (interface or union) type.
     fn type_name(&self) -> &str;
 
-    /// Resolves a concrete field of this object with the given arguments
+    /// Resolves a concrete field of this object
+    ///
+    /// `arguments` is the result of
+    /// [`CoerceArgumentValues()`](https://spec.graphql.org/draft/#sec-Coercing-Field-Arguments`):
+    /// when `resolve_field` is called its structure matches the argument definitions in the schema.
     ///
     /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
