@@ -1,8 +1,8 @@
 use crate::collections::HashMap;
 use crate::executable;
-use crate::execution::resolver::ObjectValue;
-use crate::execution::resolver::ResolveError;
-use crate::execution::resolver::ResolvedValue;
+use crate::resolvers::ObjectValue;
+use crate::resolvers::ResolveError;
+use crate::resolvers::ResolvedValue;
 use crate::response::JsonMap;
 use crate::schema;
 use crate::schema::Implementers;

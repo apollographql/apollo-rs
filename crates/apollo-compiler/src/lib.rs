@@ -15,6 +15,7 @@ mod name;
 mod node;
 pub mod parser;
 pub mod request;
+mod resolvers;
 pub mod response;
 pub mod schema;
 pub mod validation;

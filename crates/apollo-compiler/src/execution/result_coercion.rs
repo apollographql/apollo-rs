@@ -6,7 +6,7 @@ use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::LinkedPathElement;
 use crate::execution::engine::PropagateNull;
-use crate::execution::resolver::ResolvedValue;
+use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
 use crate::response::JsonValue;
 use crate::response::ResponseDataPathSegment;
@@ -220,9 +220,9 @@ pub(crate) fn complete_value<'a>(
 
 #[test]
 fn test_error_path() {
-    use super::resolver;
     use crate::executable;
     use crate::introspection::resolvers::MaybeLazy;
+    use crate::resolvers;
     use crate::response::JsonMap;
     use crate::ExecutableDocument;
     use crate::Schema;
@@ -233,7 +233,7 @@ fn test_error_path() {
 
     struct InitialValue;
 
-    impl resolver::ObjectValue for InitialValue {
+    impl resolvers::ObjectValue for InitialValue {
         fn type_name(&self) -> &str {
             "Query"
         }
@@ -242,18 +242,18 @@ fn test_error_path() {
             &'a self,
             field: &'a executable::Field,
             _arguments: &'a JsonMap,
-        ) -> Result<ResolvedValue<'a>, resolver::ResolveError> {
+        ) -> Result<ResolvedValue<'a>, resolvers::ResolveError> {
             match field.name.as_str() {
                 "f" => Ok(ResolvedValue::List(Box::new(
                     [
                         Ok(ResolvedValue::leaf(42)),
-                        Err(resolver::ResolveError {
+                        Err(resolvers::ResolveError {
                             message: "!".into(),
                         }),
                     ]
                     .into_iter(),
                 ))),
-                _ => Err(resolver::ResolveError::unknown_field(field, self)),
+                _ => Err(resolvers::ResolveError::unknown_field(field, self)),
             }
         }
     }
