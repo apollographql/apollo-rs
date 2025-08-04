@@ -658,29 +658,26 @@ impl SchemaDefinition {
         .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
     }
 
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.query.iter().map(|name| &name.origin))
+            .chain(self.mutation.iter().map(|name| &name.origin))
+            .chain(self.subscription.iter().map(|name| &name.origin))
+    }
+
     /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.query
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .chain(
-                self.mutation
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .chain(
-                self.subscription
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 }
@@ -857,18 +854,50 @@ impl ExtendedType {
         }
     }
 
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        match self {
+            Self::Scalar(ty) => Box::new(ty.iter_origins()) as Box<dyn Iterator<Item = _>>,
+            Self::Object(ty) => Box::new(ty.iter_origins()),
+            Self::Interface(ty) => Box::new(ty.iter_origins()),
+            Self::Union(ty) => Box::new(ty.iter_origins()),
+            Self::Enum(ty) => Box::new(ty.iter_origins()),
+            Self::InputObject(ty) => Box::new(ty.iter_origins()),
+        }
+    }
+
+    /// Collect `schema` extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
 impl ScalarType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives.iter().map(|dir| &dir.origin)
+    }
+
     /// Collect scalar type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -876,24 +905,29 @@ impl ScalarType {
 }
 
 impl ObjectType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(
+                self.implements_interfaces
+                    .iter()
+                    .map(|component| &component.origin),
+            )
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect object type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.implements_interfaces
-                    .iter()
-                    .flat_map(|component| component.origin.extension_id()),
-            )
-            .chain(
-                self.fields
-                    .values()
-                    .flat_map(|field| field.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -901,24 +935,29 @@ impl ObjectType {
 }
 
 impl InterfaceType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(
+                self.implements_interfaces
+                    .iter()
+                    .map(|component| &component.origin),
+            )
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect interface type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.implements_interfaces
-                    .iter()
-                    .flat_map(|component| component.origin.extension_id()),
-            )
-            .chain(
-                self.fields
-                    .values()
-                    .flat_map(|field| field.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -926,19 +965,24 @@ impl InterfaceType {
 }
 
 impl UnionType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.members.iter().map(|component| &component.origin))
+    }
+
     /// Collect union type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.members
-                    .iter()
-                    .flat_map(|component| component.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -946,19 +990,24 @@ impl UnionType {
 }
 
 impl EnumType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.values.values().map(|value| &value.origin))
+    }
+
     /// Collect enum type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.values
-                    .values()
-                    .flat_map(|value| value.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -966,19 +1015,24 @@ impl EnumType {
 }
 
 impl InputObjectType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect input object type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.fields
-                    .values()
-                    .flat_map(|field| field.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
