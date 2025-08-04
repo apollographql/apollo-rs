@@ -3,7 +3,7 @@ use crate::response::JsonMap;
 use serde_json_bytes::Value as JsonValue;
 
 /// A concrete GraphQL object whose fields can be resolved during execution.
-pub(crate) trait ObjectValue {
+pub trait ObjectValue {
     /// Returns the name of the concrete object type
     ///
     /// That name expected to be that of an object type defined in the schema.
@@ -28,12 +28,12 @@ pub(crate) trait ObjectValue {
     ) -> Result<ResolvedValue<'a>, ResolveError>;
 }
 
-pub(crate) struct ResolveError {
-    pub(crate) message: String,
+pub struct ResolveError {
+    pub message: String,
 }
 
 impl ResolveError {
-    pub(crate) fn unknown_field(field: &executable::Field, object: &dyn ObjectValue) -> Self {
+    pub fn unknown_field(field: &executable::Field, object: &dyn ObjectValue) -> Self {
         Self {
             message: format!(
                 "unexpected field name: {} in type {}",
@@ -45,7 +45,7 @@ impl ResolveError {
 }
 
 /// The value of a resolved field
-pub(crate) enum ResolvedValue<'a> {
+pub enum ResolvedValue<'a> {
     /// * JSON null represents GraphQL null
     /// * A GraphQL enum value is represented as a JSON string
     /// * GraphQL built-in scalars are coerced according to their respective *Result Coercion* spec
@@ -61,22 +61,22 @@ pub(crate) enum ResolvedValue<'a> {
 
 impl<'a> ResolvedValue<'a> {
     /// Construct a null leaf resolved value
-    pub(crate) fn null() -> Self {
+    pub fn null() -> Self {
         Self::Leaf(JsonValue::Null)
     }
 
     /// Construct a leaf resolved value from something that is convertible to JSON
-    pub(crate) fn leaf(json: impl Into<JsonValue>) -> Self {
+    pub fn leaf(json: impl Into<JsonValue>) -> Self {
         Self::Leaf(json.into())
     }
 
     /// Construct an object resolved value
-    pub(crate) fn object(object: impl ObjectValue + 'a) -> Self {
+    pub fn object(object: impl ObjectValue + 'a) -> Self {
         Self::Object(Box::new(object))
     }
 
     /// Construct an object resolved value or null
-    pub(crate) fn nullable_object(opt_object: Option<impl ObjectValue + 'a>) -> Self {
+    pub fn nullable_object(opt_object: Option<impl ObjectValue + 'a>) -> Self {
         match opt_object {
             Some(object) => Self::Object(Box::new(object)),
             None => Self::null(),
@@ -87,7 +87,7 @@ impl<'a> ResolvedValue<'a> {
     ///
     /// If errors can happen during iteration,
     /// construct the [`ResolvedValue::List`] enum variant directly instead.
-    pub(crate) fn list<I>(iter: I) -> Self
+    pub fn list<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = Self>,
         I::IntoIter: 'a,
