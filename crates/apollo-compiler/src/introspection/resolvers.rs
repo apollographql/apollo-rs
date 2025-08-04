@@ -165,7 +165,7 @@ impl ObjectValue for SchemaWithImplementersMap<'_> {
             "queryType" => Ok(type_def_opt(*self, &self.schema_definition.query)),
             "mutationType" => Ok(type_def_opt(*self, &self.schema_definition.mutation)),
             "subscriptionType" => Ok(type_def_opt(*self, &self.schema_definition.subscription)),
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }
@@ -324,7 +324,7 @@ impl ObjectValue for TypeDefResolver<'_> {
                         .and_then(|arg| arg.as_str()),
                 ))
             }
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }
@@ -363,7 +363,7 @@ impl ObjectValue for TypeResolver<'_> {
             "enumValues" => Ok(ResolvedValue::null()),
             "inputFields" => Ok(ResolvedValue::null()),
             "specifiedByURL" => Ok(ResolvedValue::null()),
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }
@@ -408,7 +408,7 @@ impl ObjectValue for DirectiveResolver<'_> {
                     .map(|loc| ResolvedValue::leaf(loc.name())),
             )),
             "isRepeatable" => Ok(ResolvedValue::leaf(self.def.repeatable)),
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }
@@ -454,7 +454,7 @@ impl ObjectValue for FieldResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }
@@ -479,7 +479,7 @@ impl ObjectValue for EnumValueResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }
@@ -511,7 +511,7 @@ impl ObjectValue for InputValueResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(ResolveError::unknown_field(field, self)),
+            _ => Err(self.unknown_field_error(field)),
         }
     }
 }

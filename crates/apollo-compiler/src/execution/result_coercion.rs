@@ -253,7 +253,7 @@ fn test_error_path() {
                     ]
                     .into_iter(),
                 ))),
-                _ => Err(resolvers::ResolveError::unknown_field(field, self)),
+                _ => Err(self.unknown_field_error(field)),
             }
         }
     }
