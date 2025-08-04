@@ -97,14 +97,14 @@ fn coerce_variable_value(
     };
     let Some(ty_def) = schema.types.get(ty_name) else {
         Err(SuspectedValidationBug {
-            message: format!("Undefined type {ty_name} for {description}"),
+            message: format!("undefined type {ty_name} for {description}"),
             location: ty_name.location(),
         })?
     };
     match ty_def {
         ExtendedType::Object(_) | ExtendedType::Interface(_) | ExtendedType::Union(_) => {
             Err(SuspectedValidationBug {
-                message: format!("Non-input type {ty_name} for {description}."),
+                message: format!("non-input type {ty_name} for {description}."),
                 location: ty_name.location(),
             })?
         }
@@ -200,7 +200,7 @@ fn coerce_variable_value(
         }
     }
     Err(InputCoercionError::ValueError {
-        message: format!("Could not coerce {description}: {value} to type {ty_name}"),
+        message: format!("could not coerce {description}: {value} to type {ty_name}"),
         location: None,
     })
 }
@@ -215,7 +215,7 @@ fn graphql_value_to_json(
             // TODO: separate `ContValue` enum without this variant?
             Err(InputCoercionError::SuspectedValidationBug(
                 SuspectedValidationBug {
-                    message: format!("Variable in default value of {description}."),
+                    message: format!("variable in default value of {description}."),
                     location: value.location(),
                 },
             ))
@@ -226,13 +226,13 @@ fn graphql_value_to_json(
         // Rely on `serde_json::Number`’s own parser to use whatever precision it supports
         Value::Int(i) => Ok(JsonValue::Number(i.as_str().parse().map_err(|_| {
             InputCoercionError::ValueError {
-                message: format!("IntValue overflow in {description}"),
+                message: format!("int value overflow in {description}"),
                 location: value.location(),
             }
         })?)),
         Value::Float(f) => Ok(JsonValue::Number(f.as_str().parse().map_err(|_| {
             InputCoercionError::ValueError {
-                message: format!("FloatValue overflow in {description}"),
+                message: format!("float value overflow in {description}"),
                 location: value.location(),
             }
         })?)),
@@ -377,7 +377,7 @@ fn coerce_argument_value(
     let Some(ty_def) = ctx.schema.types.get(ty_name) else {
         ctx.errors.push(
             SuspectedValidationBug {
-                message: format!("Undefined type {ty_name} for {description}"),
+                message: format!("undefined type {ty_name} for {description}"),
                 location: value.location(),
             }
             .into_field_error(&ctx.document.sources, path),
@@ -393,7 +393,7 @@ fn coerce_argument_value(
                     .find(|(key, _value)| !ty_def.fields.contains_key(key))
                 {
                     ctx.errors.push(GraphQLError::field_error(
-                        format!("Input object has key {key} not in type {ty_name}",),
+                        format!("input object has key {key} not in type {ty_name}",),
                         path,
                         value.location(),
                         &ctx.document.sources,
@@ -451,7 +451,7 @@ fn coerce_argument_value(
         }
     }
     ctx.errors.push(GraphQLError::field_error(
-        format!("Could not coerce {description}: {value} to type {ty_name}"),
+        format!("could not coerce {description}: {value} to type {ty_name}"),
         path,
         value.location(),
         &ctx.document.sources,
