@@ -6,6 +6,8 @@ use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::LinkedPathElement;
 use crate::execution::engine::PropagateNull;
+use crate::resolvers::ObjectValue;
+use crate::resolvers::ResolveError;
 use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
 use crate::response::JsonValue;
@@ -13,6 +15,11 @@ use crate::response::ResponseDataPathSegment;
 use crate::schema::ExtendedType;
 use crate::schema::Type;
 use crate::validation::SuspectedValidationBug;
+
+enum LeafOrObject<'a> {
+    Leaf(JsonValue),
+    Object(Box<dyn ObjectValue + 'a>),
+}
 
 /// <https://spec.graphql.org/October2021/#CompleteValue()>
 ///
@@ -39,53 +46,19 @@ pub(crate) fn complete_value<'a>(
             }
         };
     }
-    if let ResolvedValue::Leaf(JsonValue::Null) = resolved {
-        if ty.is_non_null() {
-            field_error!("Non-null type {ty} resolved to null")
-        } else {
-            return Ok(JsonValue::Null);
-        }
-    }
-    if let ResolvedValue::List(iter) = resolved {
-        match ty {
-            Type::Named(_) | Type::NonNullNamed(_) => {
-                field_error!("Non-list type {ty} resolved to a list")
-            }
-            Type::List(inner_ty) | Type::NonNullList(inner_ty) => {
-                let mut completed_list = Vec::with_capacity(iter.size_hint().0);
-                for (index, inner_result) in iter.enumerate() {
-                    let inner_path = LinkedPathElement {
-                        element: ResponseDataPathSegment::ListIndex(index),
-                        next: path,
-                    };
-                    let inner_resolved = inner_result.map_err(|err| {
-                        ctx.errors.push(GraphQLError::field_error(
-                            format!("resolver error: {}", err.message),
-                            Some(&inner_path),
-                            fields[0].name.location(),
-                            &ctx.document.sources,
-                        ));
-                        PropagateNull
-                    })?;
-                    let inner_result = complete_value(
-                        ctx,
-                        Some(&inner_path),
-                        mode,
-                        inner_ty,
-                        inner_resolved,
-                        fields,
-                    );
-                    // On field error, try to nullify that item
-                    match try_nullify(inner_ty, inner_result) {
-                        Ok(inner_value) => completed_list.push(inner_value),
-                        // If the item is non-null, try to nullify the list
-                        Err(PropagateNull) => return try_nullify(ty, Err(PropagateNull)),
-                    }
-                }
-                return Ok(completed_list.into());
+    let resolved = match resolved {
+        ResolvedValue::Leaf(JsonValue::Null) => {
+            if ty.is_non_null() {
+                field_error!("Non-null type {ty} resolved to null")
+            } else {
+                return Ok(JsonValue::Null);
             }
         }
-    }
+        ResolvedValue::List(iter) => return complete_list_value(ctx, path, mode, ty, fields, iter),
+        ResolvedValue::Leaf(leaf) => LeafOrObject::Leaf(leaf),
+        ResolvedValue::Object(obj) => LeafOrObject::Object(obj),
+    };
+
     let ty_name = match ty {
         Type::List(_) | Type::NonNullList(_) => {
             field_error!("List type {ty} resolved to an object")
@@ -113,73 +86,10 @@ pub(crate) fn complete_value<'a>(
         return Err(PropagateNull);
     }
     let resolved_obj = match resolved {
-        ResolvedValue::List(_) => unreachable!(), // early return above
-        ResolvedValue::Leaf(json_value) => {
-            match ty_def {
-                ExtendedType::InputObject(_) => unreachable!(), // early return above
-                ExtendedType::Object(_) | ExtendedType::Interface(_) | ExtendedType::Union(_) => {
-                    field_error!(
-                        "Resolver returned a leaf value \
-                         but expected an object for type {ty_name}"
-                    )
-                }
-                ExtendedType::Enum(enum_def) => {
-                    // https://spec.graphql.org/October2021/#sec-Enums.Result-Coercion
-                    if !json_value
-                        .as_str()
-                        .is_some_and(|str| enum_def.values.contains_key(str))
-                    {
-                        field_error!("Resolver returned {json_value}, expected enum {ty_name}")
-                    }
-                }
-                ExtendedType::Scalar(_) => match ty_name.as_str() {
-                    "Int" => {
-                        // https://spec.graphql.org/October2021/#sec-Int.Result-Coercion
-                        // > GraphQL services may coerce non-integer internal values to integers
-                        // > when reasonable without losing information
-                        //
-                        // We choose not to, to keep with Rust’s strong typing
-                        if let Some(int) = json_value.as_i64() {
-                            if i32::try_from(int).is_err() {
-                                field_error!("Resolver returned {json_value} which overflows Int")
-                            }
-                        } else {
-                            field_error!("Resolver returned {json_value}, expected Int")
-                        }
-                    }
-                    "Float" => {
-                        // https://spec.graphql.org/October2021/#sec-Float.Result-Coercion
-                        if !json_value.is_f64() {
-                            field_error!("Resolver returned {json_value}, expected Float")
-                        }
-                    }
-                    "String" => {
-                        // https://spec.graphql.org/October2021/#sec-String.Result-Coercion
-                        if !json_value.is_string() {
-                            field_error!("Resolver returned {json_value}, expected String")
-                        }
-                    }
-                    "Boolean" => {
-                        // https://spec.graphql.org/October2021/#sec-Boolean.Result-Coercion
-                        if !json_value.is_boolean() {
-                            field_error!("Resolver returned {json_value}, expected Boolean")
-                        }
-                    }
-                    "ID" => {
-                        // https://spec.graphql.org/October2021/#sec-ID.Result-Coercion
-                        if !(json_value.is_string() || json_value.is_i64()) {
-                            field_error!("Resolver returned {json_value}, expected ID")
-                        }
-                    }
-                    _ => {
-                        // Custom scalar: accept any JSON value (including an array or object,
-                        // despite this being a "leaf" as far as GraphQL resolution is concerned)
-                    }
-                },
-            };
-            return Ok(json_value);
+        LeafOrObject::Leaf(json_value) => {
+            return complete_leaf_value(ctx, path, ty_name, ty_def, json_value, fields);
         }
-        ResolvedValue::Object(resolved_obj) => resolved_obj,
+        LeafOrObject::Object(resolved_obj) => resolved_obj,
     };
     let object_type = match ty_def {
         ExtendedType::InputObject(_) => unreachable!(), // early return above
@@ -216,6 +126,147 @@ pub(crate) fn complete_value<'a>(
             .flat_map(|field| &field.selection_set.selections),
     )
     .map(JsonValue::Object)
+}
+
+fn complete_list_value<'a, 'b>(
+    ctx: &mut ExecutionContext<'a>,
+    path: LinkedPath<'_>,
+    mode: ExecutionMode,
+    ty: &'a Type,
+    fields: &[&'a Field],
+    iter: impl Iterator<Item = Result<ResolvedValue<'b>, ResolveError>>,
+) -> Result<JsonValue, PropagateNull> {
+    let inner_ty = match ty {
+        Type::Named(_) | Type::NonNullNamed(_) => {
+            let location = fields[0].name.location();
+            ctx.errors.push(GraphQLError::field_error(
+                format!("Non-list type {ty} resolved to a list"),
+                path,
+                location,
+                &ctx.document.sources,
+            ));
+            return Err(PropagateNull);
+        }
+        Type::List(inner_ty) | Type::NonNullList(inner_ty) => inner_ty,
+    };
+    let mut completed_list = Vec::with_capacity(iter.size_hint().0);
+    for (index, inner_result) in iter.enumerate() {
+        let inner_path = LinkedPathElement {
+            element: ResponseDataPathSegment::ListIndex(index),
+            next: path,
+        };
+        let inner_resolved = inner_result.map_err(|err| {
+            ctx.errors.push(GraphQLError::field_error(
+                format!("resolver error: {}", err.message),
+                Some(&inner_path),
+                fields[0].name.location(),
+                &ctx.document.sources,
+            ));
+            PropagateNull
+        })?;
+        let inner_result = complete_value(
+            ctx,
+            Some(&inner_path),
+            mode,
+            inner_ty,
+            inner_resolved,
+            fields,
+        );
+        // On field error, try to nullify that item
+        match try_nullify(inner_ty, inner_result) {
+            Ok(inner_value) => completed_list.push(inner_value),
+            // If the item is non-null, try to nullify the list
+            Err(PropagateNull) => return try_nullify(ty, Err(PropagateNull)),
+        }
+    }
+    Ok(completed_list.into())
+}
+
+fn complete_leaf_value(
+    ctx: &mut ExecutionContext<'_>,
+    path: LinkedPath<'_>,
+    ty_name: &crate::Name,
+    ty_def: &ExtendedType,
+    json_value: JsonValue,
+    fields: &[&Field],
+) -> Result<JsonValue, PropagateNull> {
+    let location = fields[0].name.location();
+    macro_rules! field_error {
+        ($($arg: tt)+) => {
+            {
+                ctx.errors.push(GraphQLError::field_error(
+                    format!($($arg)+),
+                    path,
+                    location,
+                    &ctx.document.sources
+                ));
+                return Err(PropagateNull);
+            }
+        };
+    }
+    match ty_def {
+        ExtendedType::InputObject(_) => unreachable!(), // early return above
+        ExtendedType::Object(_) | ExtendedType::Interface(_) | ExtendedType::Union(_) => {
+            field_error!(
+                "Resolver returned a leaf value \
+                         but expected an object for type {ty_name}"
+            )
+        }
+        ExtendedType::Enum(enum_def) => {
+            // https://spec.graphql.org/October2021/#sec-Enums.Result-Coercion
+            if !json_value
+                .as_str()
+                .is_some_and(|str| enum_def.values.contains_key(str))
+            {
+                field_error!("Resolver returned {json_value}, expected enum {ty_name}")
+            }
+        }
+        ExtendedType::Scalar(_) => match ty_name.as_str() {
+            "Int" => {
+                // https://spec.graphql.org/October2021/#sec-Int.Result-Coercion
+                // > GraphQL services may coerce non-integer internal values to integers
+                // > when reasonable without losing information
+                //
+                // We choose not to, to keep with Rust’s strong typing
+                if let Some(int) = json_value.as_i64() {
+                    if i32::try_from(int).is_err() {
+                        field_error!("Resolver returned {json_value} which overflows Int")
+                    }
+                } else {
+                    field_error!("Resolver returned {json_value}, expected Int")
+                }
+            }
+            "Float" => {
+                // https://spec.graphql.org/October2021/#sec-Float.Result-Coercion
+                if !json_value.is_f64() {
+                    field_error!("Resolver returned {json_value}, expected Float")
+                }
+            }
+            "String" => {
+                // https://spec.graphql.org/October2021/#sec-String.Result-Coercion
+                if !json_value.is_string() {
+                    field_error!("Resolver returned {json_value}, expected String")
+                }
+            }
+            "Boolean" => {
+                // https://spec.graphql.org/October2021/#sec-Boolean.Result-Coercion
+                if !json_value.is_boolean() {
+                    field_error!("Resolver returned {json_value}, expected Boolean")
+                }
+            }
+            "ID" => {
+                // https://spec.graphql.org/October2021/#sec-ID.Result-Coercion
+                if !(json_value.is_string() || json_value.is_i64()) {
+                    field_error!("Resolver returned {json_value}, expected ID")
+                }
+            }
+            _ => {
+                // Custom scalar: accept any JSON value (including an array or object,
+                // despite this being a "leaf" as far as GraphQL resolution is concerned)
+            }
+        },
+    };
+    Ok(json_value)
 }
 
 #[test]
