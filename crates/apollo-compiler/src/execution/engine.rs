@@ -10,7 +10,8 @@ use crate::introspection::resolvers::MaybeLazy;
 use crate::introspection::resolvers::SchemaWithImplementersMap;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
-use crate::resolvers::ObjectValue;
+use crate::resolvers::MaybeAsync;
+use crate::resolvers::MaybeAsyncObject;
 use crate::resolvers::ResolveError;
 use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
@@ -62,12 +63,12 @@ pub(crate) struct ExecutionContext<'a> {
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
 ///
 /// `object_value: None` is a special case for top-level of `introspection::partial_execute`
-pub(crate) fn execute_selection_set<'a>(
+pub(crate) async fn execute_selection_set<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: Option<&dyn ObjectValue>,
+    object_value: Option<MaybeAsyncObject<'_>>,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
     let mut grouped_field_set = IndexMap::default();
@@ -109,7 +110,9 @@ pub(crate) fn execute_selection_set<'a>(
             object_value,
             field_def,
             fields,
-        )? {
+        )
+        .await?
+        {
             response_map.insert(response_key.as_str(), value);
         }
     }
@@ -211,12 +214,12 @@ fn eval_if_arg(
 /// `object_value: None` is a special case for top-level of `introspection::partial_execute`
 ///
 /// Return `Ok(None)` for silently skipping that field.
-fn execute_field<'a>(
+async fn execute_field<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: Option<&dyn ObjectValue>,
+    object_value: Option<MaybeAsyncObject<'_>>,
     field_def: &FieldDefinition,
     fields: &[&'a Field],
 ) -> Result<Option<JsonValue>, PropagateNull> {
@@ -234,13 +237,15 @@ fn execute_field<'a>(
             .is_some_and(|q| q.name == object_type.name)
     };
     let resolved_result = match field.name.as_str() {
-        "__typename" => Ok(ResolvedValue::leaf(object_type.name.as_str())),
+        "__typename" => Ok(MaybeAsync::Sync(ResolvedValue::leaf(
+            object_type.name.as_str(),
+        ))),
         "__schema" if is_field_of_root_query() => {
             let schema = SchemaWithImplementersMap {
                 schema: ctx.schema,
                 implementers_map: ctx.implementers_map,
             };
-            Ok(ResolvedValue::object(schema))
+            Ok(MaybeAsync::Sync(ResolvedValue::object(schema)))
         }
         "__type" if is_field_of_root_query() => {
             let schema = SchemaWithImplementersMap {
@@ -248,7 +253,9 @@ fn execute_field<'a>(
                 implementers_map: ctx.implementers_map,
             };
             if let Some(name) = argument_values.get("name").and_then(|v| v.as_str()) {
-                Ok(crate::introspection::resolvers::type_def(schema, name))
+                Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
+                    schema, name,
+                )))
             } else {
                 // This should never happen: `coerce_argument_values()` returns a map that conforms
                 // to the `__type(name: String!): __Type` definition
@@ -259,16 +266,23 @@ fn execute_field<'a>(
             }
         }
         _ => {
-            if let Some(obj) = object_value {
-                obj.resolve_field(field, &argument_values)
-            } else {
-                // Skip non-introspection root fields for `introspection::partial_execute`
-                return Ok(None);
+            match object_value {
+                Some(MaybeAsync::Async(obj)) => obj
+                    .resolve_field(field, &argument_values)
+                    .await
+                    .map(MaybeAsync::Async),
+                Some(MaybeAsync::Sync(obj)) => obj
+                    .resolve_field(field, &argument_values)
+                    .map(MaybeAsync::Sync),
+                None => {
+                    // Skip non-introspection root fields for `introspection::partial_execute`
+                    return Ok(None);
+                }
             }
         }
     };
     let completed_result = match resolved_result {
-        Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields),
+        Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
         Err(ResolveError { message }) => {
             ctx.errors.push(GraphQLError::field_error(
                 format!("resolver error: {message}"),

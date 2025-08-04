@@ -23,6 +23,7 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
+use futures::FutureExt as _;
 
 mod max_depth;
 pub(crate) mod resolvers;
@@ -116,19 +117,23 @@ pub fn partial_execute(
         errors: &mut errors,
         implementers_map,
     };
-    let data = execute_selection_set(
+    let future = execute_selection_set(
         &mut context,
         path,
         ExecutionMode::Normal,
         root_operation_object_type_def,
         None,
         &operation.selection_set.selections,
-    )
-    // What `.ok()` below converts to `None` is a field error on a non-null field
-    // propagated all the way to the root, so that the response JSON should contain `"data": null`.
-    //
-    // No-op to witness the error type:
-    .inspect_err(|_: &PropagateNull| {})
-    .ok();
+    );
+    let result = future
+        .now_or_never()
+        .expect("expected async fn with sync resolvers to never be pending");
+    let data = result
+        // What `.ok()` below converts to `None` is a field error on a non-null field
+        // propagated all the way to the root, so that the response JSON should contain `"data": null`.
+        //
+        // No-op to witness the error type:
+        .inspect_err(|_: &PropagateNull| {})
+        .ok();
     Ok(ExecutionResponse { data, errors })
 }

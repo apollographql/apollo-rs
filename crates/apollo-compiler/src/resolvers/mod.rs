@@ -4,6 +4,17 @@ use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use serde_json_bytes::Value as JsonValue;
 
+#[derive(Clone, Copy)]
+pub(crate) enum MaybeAsync<A, S> {
+    #[allow(unused)] // yet
+    Async(A),
+    Sync(S),
+}
+
+pub(crate) type MaybeAsyncObject<'a> = MaybeAsync<&'a dyn AsyncObjectValue, &'a dyn ObjectValue>;
+
+pub(crate) type MaybeAsyncResolved<'a> = MaybeAsync<AsyncResolvedValue<'a>, ResolvedValue<'a>>;
+
 /// A concrete GraphQL object whose fields can be resolved during execution.
 pub trait ObjectValue {
     /// Returns the name of the concrete object type
@@ -57,10 +68,19 @@ pub trait AsyncObjectValue {
         &'a self,
         field: &'a executable::Field,
         arguments: &'a JsonMap,
-    ) -> BoxFuture<'a, Result<ResolvedValue<'a>, ResolveError>>;
+    ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, ResolveError>>;
 
     fn unknown_field_error(&self, field: &executable::Field) -> ResolveError {
         ResolveError::unknown_field(field, self.type_name())
+    }
+}
+
+impl MaybeAsync<Box<dyn AsyncObjectValue + '_>, Box<dyn ObjectValue + '_>> {
+    pub(crate) fn type_name(&self) -> &str {
+        match self {
+            MaybeAsync::Async(obj) => obj.type_name(),
+            MaybeAsync::Sync(obj) => obj.type_name(),
+        }
     }
 }
 

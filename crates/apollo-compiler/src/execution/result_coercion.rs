@@ -6,6 +6,10 @@ use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::LinkedPath;
 use crate::execution::engine::LinkedPathElement;
 use crate::execution::engine::PropagateNull;
+use crate::resolvers::AsyncObjectValue;
+use crate::resolvers::AsyncResolvedValue;
+use crate::resolvers::MaybeAsync;
+use crate::resolvers::MaybeAsyncResolved;
 use crate::resolvers::ObjectValue;
 use crate::resolvers::ResolveError;
 use crate::resolvers::ResolvedValue;
@@ -15,21 +19,25 @@ use crate::response::ResponseDataPathSegment;
 use crate::schema::ExtendedType;
 use crate::schema::Type;
 use crate::validation::SuspectedValidationBug;
+use futures::Stream;
+use futures::StreamExt as _;
+use std::pin::pin;
+use std::pin::Pin;
 
 enum LeafOrObject<'a> {
     Leaf(JsonValue),
-    Object(Box<dyn ObjectValue + 'a>),
+    Object(MaybeAsync<Box<dyn AsyncObjectValue + 'a>, Box<dyn ObjectValue + 'a>>),
 }
 
 /// <https://spec.graphql.org/October2021/#CompleteValue()>
 ///
 /// Returns `Err` for a field error being propagated upwards to find a nullable place
-pub(crate) fn complete_value<'a>(
+pub(crate) async fn complete_value<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     ty: &'a Type,
-    resolved: ResolvedValue<'_>,
+    resolved: MaybeAsyncResolved<'_>,
     fields: &[&'a Field],
 ) -> Result<JsonValue, PropagateNull> {
     let location = fields[0].name.location();
@@ -47,16 +55,29 @@ pub(crate) fn complete_value<'a>(
         };
     }
     let resolved = match resolved {
-        ResolvedValue::Leaf(JsonValue::Null) => {
+        MaybeAsync::Async(AsyncResolvedValue::Leaf(JsonValue::Null))
+        | MaybeAsync::Sync(ResolvedValue::Leaf(JsonValue::Null)) => {
             if ty.is_non_null() {
                 field_error!("Non-null type {ty} resolved to null")
             } else {
                 return Ok(JsonValue::Null);
             }
         }
-        ResolvedValue::List(iter) => return complete_list_value(ctx, path, mode, ty, fields, iter),
-        ResolvedValue::Leaf(leaf) => LeafOrObject::Leaf(leaf),
-        ResolvedValue::Object(obj) => LeafOrObject::Object(obj),
+        MaybeAsync::Async(AsyncResolvedValue::List(stream)) => {
+            let stream = pin!(stream.map(|result| result.map(MaybeAsync::Async)));
+            return Box::pin(complete_list_value(ctx, path, mode, ty, fields, stream)).await;
+        }
+        MaybeAsync::Sync(ResolvedValue::List(iter)) => {
+            let stream = futures::stream::iter(iter);
+            let stream = pin!(stream.map(|result| result.map(MaybeAsync::Sync)));
+            return Box::pin(complete_list_value(ctx, path, mode, ty, fields, stream)).await;
+        }
+        MaybeAsync::Async(AsyncResolvedValue::Leaf(leaf))
+        | MaybeAsync::Sync(ResolvedValue::Leaf(leaf)) => LeafOrObject::Leaf(leaf),
+        MaybeAsync::Async(AsyncResolvedValue::Object(obj)) => {
+            LeafOrObject::Object(MaybeAsync::Async(obj))
+        }
+        MaybeAsync::Sync(ResolvedValue::Object(obj)) => LeafOrObject::Object(MaybeAsync::Sync(obj)),
     };
 
     let ty_name = match ty {
@@ -115,26 +136,31 @@ pub(crate) fn complete_value<'a>(
             def
         }
     };
-    execute_selection_set(
+    let resolved_obj = match &resolved_obj {
+        MaybeAsync::Async(obj) => MaybeAsync::Async(&**obj),
+        MaybeAsync::Sync(obj) => MaybeAsync::Sync(&**obj),
+    };
+    Box::pin(execute_selection_set(
         ctx,
         path,
         mode,
         object_type,
-        Some(&*resolved_obj),
+        Some(resolved_obj),
         fields
             .iter()
             .flat_map(|field| &field.selection_set.selections),
-    )
+    ))
+    .await
     .map(JsonValue::Object)
 }
 
-fn complete_list_value<'a, 'b>(
+async fn complete_list_value<'a, 'b>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     ty: &'a Type,
     fields: &[&'a Field],
-    iter: impl Iterator<Item = Result<ResolvedValue<'b>, ResolveError>>,
+    stream: Pin<&mut dyn Stream<Item = Result<MaybeAsyncResolved<'b>, ResolveError>>>,
 ) -> Result<JsonValue, PropagateNull> {
     let inner_ty = match ty {
         Type::Named(_) | Type::NonNullNamed(_) => {
@@ -149,8 +175,9 @@ fn complete_list_value<'a, 'b>(
         }
         Type::List(inner_ty) | Type::NonNullList(inner_ty) => inner_ty,
     };
-    let mut completed_list = Vec::with_capacity(iter.size_hint().0);
-    for (index, inner_result) in iter.enumerate() {
+    let mut completed_list = Vec::with_capacity(stream.size_hint().0);
+    let mut stream = stream.enumerate();
+    while let Some((index, inner_result)) = stream.next().await {
         let inner_path = LinkedPathElement {
             element: ResponseDataPathSegment::ListIndex(index),
             next: path,
@@ -171,7 +198,8 @@ fn complete_list_value<'a, 'b>(
             inner_ty,
             inner_resolved,
             fields,
-        );
+        )
+        .await;
         // On field error, try to nullify that item
         match try_nullify(inner_ty, inner_result) {
             Ok(inner_value) => completed_list.push(inner_value),
@@ -327,15 +355,15 @@ fn test_error_path() {
         errors: &mut errors,
         implementers_map: MaybeLazy::Lazy(&implementers_map),
     };
-    let data = execute_selection_set(
+    let future = execute_selection_set(
         &mut context,
         path,
         ExecutionMode::Normal,
         root_operation_object_type_def,
-        Some(&initial_value),
+        Some(MaybeAsync::Sync(&initial_value)),
         &operation.selection_set.selections,
-    )
-    .ok();
+    );
+    let data = futures::FutureExt::now_or_never(future).unwrap().ok();
     let response = crate::response::ExecutionResponse { data, errors };
     let response = serde_json::to_string_pretty(&response).unwrap();
     expect_test::expect![[r#"
