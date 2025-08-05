@@ -198,6 +198,9 @@ pub enum AsyncResolvedValue<'a> {
 }
 
 impl<'a> Execution<'a> {
+    /// Create a new builder for configuring GraphQL execution
+    ///
+    /// See [module-level documentation][self].
     pub fn new(schema: &'a Valid<Schema>, document: &'a Valid<ExecutableDocument>) -> Self {
         Self {
             schema,
@@ -209,6 +212,9 @@ impl<'a> Execution<'a> {
         }
     }
 
+    /// Sets the operation to execute.
+    ///
+    /// Mutually exclusive with [`operation_name`][Self::operation_name].
     pub fn operation(mut self, operation: &'a Operation) -> Self {
         assert!(
             self.operation.is_none(),
@@ -218,6 +224,13 @@ impl<'a> Execution<'a> {
         self
     }
 
+    /// Sets the operation to execute.
+    ///
+    /// Mutually exclusive with [`operation`][Self::operation].
+    ///
+    /// If neither is called or if `None` is passed here,
+    /// the document is expected to contain exactly one operation.
+    /// See [`document.operations.get()``][executable::OperationMap::get].
     pub fn operation_name(mut self, operation_name: Option<&str>) -> Result<Self, RequestError> {
         assert!(
             self.operation.is_none(),
@@ -227,6 +240,10 @@ impl<'a> Execution<'a> {
         Ok(self)
     }
 
+    /// Provide a pre-computed result of [`Schema::implementers_map`].
+    ///
+    /// If not provided here, it will be computed lazily on demand
+    /// and cache for the duration of execution.
     pub fn implementers_map(mut self, implementers_map: &'a HashMap<Name, Implementers>) -> Self {
         assert!(
             self.implementers_map.is_none(),
@@ -236,6 +253,12 @@ impl<'a> Execution<'a> {
         self
     }
 
+    /// Provide values of the request’s variables,
+    /// having already gone through [`coerce_variable_values`].
+    ///
+    /// Mutually exclusive with [`raw_variable_values`][Self::raw_variable_values].
+    ///
+    /// If neither is used, an empty map is assumed.
     pub fn coerced_variable_values(mut self, variable_values: &'a Valid<JsonMap>) -> Self {
         assert!(
             self.variable_values.is_none(),
@@ -245,6 +268,11 @@ impl<'a> Execution<'a> {
         self
     }
 
+    /// Provide values of the request’s variables.
+    ///
+    /// Mutually exclusive with [`coerced_variable_values`][Self::coerced_variable_values].
+    ///
+    /// If neither is used, an empty map is assumed.
     pub fn raw_variable_values(mut self, variable_values: &'a JsonMap) -> Self {
         assert!(
             self.variable_values.is_none(),
@@ -254,6 +282,18 @@ impl<'a> Execution<'a> {
         self
     }
 
+    /// By default, schema introspection is _disabled_ per the [recommendation] to do so in production:
+    /// the meta-field `__schema` and `__type` return a field error.
+    /// (`__typename` is not affected is is always available.)
+    ///
+    /// Setting this configuration to `true` makes execution
+    /// generate the appropriate response data for those fields.
+    ///
+    /// [`ObjectValue::resolve_field`] or [`AsyncObjectValue::resolve_field`] is never called
+    /// for meta-fields `__typename`, `__schema`, or `__type`.
+    /// They are always handled implicitly.
+    ///
+    /// [recommendation]: https://www.apollographql.com/blog/why-you-should-disable-graphql-introspection-in-production/
     pub fn enable_schema_introspection(mut self, enable_schema_introspection: bool) -> Self {
         assert!(
             self.enable_schema_introspection.is_none(),
@@ -263,10 +303,12 @@ impl<'a> Execution<'a> {
         self
     }
 
+    /// Perform execation with synchronous resolvers
     pub fn execute_sync(
         &self,
         initial_value: &dyn ObjectValue,
     ) -> Result<ExecutionResponse, RequestError> {
+        // To avoid code duplication, we call the same `async fn`s here as in `execute_async`.
         let future = self.execute_common(MaybeAsync::Sync(initial_value));
 
         // An `async fn` returns a future whose `poll` method returns:
@@ -277,12 +319,14 @@ impl<'a> Execution<'a> {
         // When we use `MaybeAsync::Sync`, there are no manually-written implementations
         // of the `Future` trait involved at all, only `async fn`s that call each other.
         // Therefore we expect `Poll::Pending` to never be generated.
-        // Instead futures should resolve immediately and `now_or_never` should never return `None`.
+        // Instead all futures should be immediately ready,
+        // and this `expect` should therefore never panic.
         future
             .now_or_never()
             .expect("expected async fn with sync resolvers to never be pending")
     }
 
+    /// Perform execation with asynchronous resolvers
     pub async fn execute_async(
         &self,
         initial_value: &dyn AsyncObjectValue,
@@ -371,6 +415,7 @@ impl<'a> Execution<'a> {
 impl<'a> ResolveInfo<'a> {
     // https://github.com/graphql/graphql-js/blob/v16.11.0/src/type/definition.ts#L980-L991
 
+    /// The schema originally passed to [`Execution::new`]
     pub fn schema(&self) -> &'a Valid<Schema> {
         self.schema
     }
@@ -382,18 +427,25 @@ impl<'a> ResolveInfo<'a> {
         }
     }
 
+    /// The executable document originally passed to [`Execution::new`]
     pub fn document(&self) -> &'a Valid<ExecutableDocument> {
         self.document
     }
 
+    /// The name of the field being resolved
     pub fn field_name(&self) -> &'a str {
         &self.fields[0].name
     }
 
+    /// The field definition in the schema
     pub fn field_defintion(&self) -> &'a schema::FieldDefinition {
         &self.fields[0].definition
     }
 
+    /// The field selections being resolved.
+    ///
+    /// There is always at least one, but there may be more in case of
+    /// [field merging](https://spec.graphql.org/draft/#sec-Field-Selection-Merging).
     pub fn field_selections(&self) -> &'a [&'a executable::Field] {
         self.fields
     }
