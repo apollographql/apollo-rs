@@ -27,7 +27,12 @@ pub struct Execution<'a> {
     operation: Option<&'a Operation>,
     implementers_map: Option<&'a HashMap<Name, Implementers>>,
     variable_values: Option<VariableValues<'a>>,
+    enable_schema_introspection: Option<bool>,
 }
+
+/// Default to disabled:
+/// https://www.apollographql.com/blog/why-you-should-disable-graphql-introspection-in-production/
+const DEFAULT_ENABLE_SCHEMA_INTROSPECTION: bool = false;
 
 enum VariableValues<'a> {
     Raw(&'a JsonMap),
@@ -146,6 +151,7 @@ impl<'a> Execution<'a> {
             operation: None,
             implementers_map: None,
             variable_values: None,
+            enable_schema_introspection: None,
         }
     }
 
@@ -191,6 +197,15 @@ impl<'a> Execution<'a> {
             "variable values already provided"
         );
         self.variable_values = Some(VariableValues::Raw(variable_values));
+        self
+    }
+
+    pub fn enable_schema_introspection(mut self, enable_schema_introspection: bool) -> Self {
+        assert!(
+            self.enable_schema_introspection.is_none(),
+            "schema introspection already configured"
+        );
+        self.enable_schema_introspection = Some(enable_schema_introspection);
         self
     }
 
@@ -268,6 +283,9 @@ impl<'a> Execution<'a> {
             }
             Some(map) => MaybeLazy::Eager(map),
         };
+        let enable_schema_introspection = self
+            .enable_schema_introspection
+            .unwrap_or(DEFAULT_ENABLE_SCHEMA_INTROSPECTION);
         let mut errors = Vec::new();
         let mut context = ExecutionContext {
             schema: self.schema,
@@ -275,6 +293,7 @@ impl<'a> Execution<'a> {
             variable_values,
             errors: &mut errors,
             implementers_map,
+            enable_schema_introspection,
         };
         let mode = match operation.operation_type {
             executable::OperationType::Query | executable::OperationType::Subscription => {

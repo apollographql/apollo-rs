@@ -12,6 +12,7 @@ use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::resolvers::MaybeAsync;
 use crate::resolvers::MaybeAsyncObject;
+use crate::resolvers::MaybeAsyncResolved;
 use crate::resolvers::ResolveError;
 use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
@@ -57,6 +58,7 @@ pub(crate) struct ExecutionContext<'a> {
     pub(crate) variable_values: &'a Valid<JsonMap>,
     pub(crate) errors: &'a mut Vec<GraphQLError>,
     pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
+    pub(crate) enable_schema_introspection: bool,
 }
 
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
@@ -239,31 +241,8 @@ async fn execute_field<'a>(
         "__typename" => Ok(MaybeAsync::Sync(ResolvedValue::leaf(
             object_type.name.as_str(),
         ))),
-        "__schema" if is_field_of_root_query() => {
-            let schema = SchemaWithImplementersMap {
-                schema: ctx.schema,
-                implementers_map: ctx.implementers_map,
-            };
-            Ok(MaybeAsync::Sync(ResolvedValue::object(schema)))
-        }
-        "__type" if is_field_of_root_query() => {
-            let schema = SchemaWithImplementersMap {
-                schema: ctx.schema,
-                implementers_map: ctx.implementers_map,
-            };
-            if let Some(name) = argument_values.get("name").and_then(|v| v.as_str()) {
-                Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
-                    schema, name,
-                )))
-            } else {
-                // This should never happen: `coerce_argument_values()` returns a map that conforms
-                // to the `__type(name: String!): __Type` definition
-                // Still, in case of a bug prefer returning an error than panicking
-                Err(ResolveError {
-                    message: "expected string argument `name`".into(),
-                })
-            }
-        }
+        "__schema" if is_field_of_root_query() => resolve_schema_meta_field(ctx),
+        "__type" if is_field_of_root_query() => resolve_type_meta_field(ctx, &argument_values),
         _ => {
             match object_value {
                 Some(MaybeAsync::Async(obj)) => obj
@@ -293,6 +272,49 @@ async fn execute_field<'a>(
         }
     };
     try_nullify(&field_def.ty, completed_result).map(Some)
+}
+
+fn resolve_schema_meta_field<'a>(
+    ctx: &ExecutionContext<'a>,
+) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
+    let schema = resolve_schema_introspection_field(ctx)?;
+    Ok(MaybeAsync::Sync(ResolvedValue::object(schema)))
+}
+
+fn resolve_type_meta_field<'a>(
+    ctx: &ExecutionContext<'a>,
+    argument_values: &JsonMap,
+) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
+    let schema = resolve_schema_introspection_field(ctx)?;
+    if let Some(name) = argument_values.get("name").and_then(|v| v.as_str()) {
+        Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
+            schema, name,
+        )))
+    } else {
+        // This should never happen: `coerce_argument_values()` returns a map that conforms
+        // to the `__type(name: String!): __Type` definition
+        // Still, in case of a bug prefer returning an error than panicking
+        Err(ResolveError {
+            message: "expected string argument `name`".into(),
+        })
+    }
+}
+
+fn resolve_schema_introspection_field<'a>(
+    ctx: &ExecutionContext<'a>,
+) -> Result<SchemaWithImplementersMap<'a>, ResolveError> {
+    if ctx.enable_schema_introspection {
+        Ok(SchemaWithImplementersMap {
+            schema: ctx.schema,
+            implementers_map: ctx.implementers_map,
+        })
+    } else {
+        // Disabled by default in the `apollo_compiler::resolvers::Excecution` builder,
+        // use `.enable_schema_introspection(true)` to enable
+        Err(ResolveError {
+            message: "schema introspection is disabled".into(),
+        })
+    }
 }
 
 /// Try to insert a propagated null if possible, or keep propagating it.

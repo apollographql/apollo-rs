@@ -97,5 +97,6 @@ pub fn partial_execute(
         .implementers_map(implementers_map)
         .operation(operation)
         .coerced_variable_values(variable_values)
+        .enable_schema_introspection(true)
         .execute_sync_common(None)
 }
