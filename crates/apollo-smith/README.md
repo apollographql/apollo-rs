@@ -18,6 +18,7 @@
  </div>
 
 ## About
+
 The goal of `apollo-smith` is to generate valid GraphQL documents by sampling
 from all available possibilities of [GraphQL grammar].
 
@@ -113,10 +114,41 @@ pub fn generate_valid_operation(input: &[u8]) -> Result<String> {
 }
 ```
 
+## Generating responses using `apollo-smith` with `apollo-compiler`
+
+If you have a GraphQL operation in the form of an `ExecutableDocument` and its
+accompanying `Schema`, you can generate a response matching the shape of the
+operation with `apollo_smith::ResponseBuilder`.
+
+```rust
+
+use apollo_compiler::validation::Valid;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
+use apollo_smith::ResponseBuilder;
+use arbitrary::Result;
+use arbitrary::Unstructured;
+use rand::Rng;
+use serde_json_bytes::Value;
+
+pub fn generate_valid_response(
+    doc: &Valid<ExecutableDocument>,
+    schema: &Valid<Schema>,
+) -> Result<Value> {
+    let mut buf = [0u8; 2048];
+    rand::rng().fill(&mut buf);
+    let mut u = Unstructured::new(&buf);
+
+    ResponseBuilder::new(&mut u, doc, schema).build()
+}
+```
+
 ## Limitations
+
 - Recursive object type not yet supported (example : `myType { inner: myType }`)
 
 ## License
+
 Licensed under either of
 
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
