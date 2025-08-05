@@ -303,9 +303,7 @@ fn complete_leaf_value(
 
 #[test]
 fn test_error_path() {
-    use crate::executable;
     use crate::resolvers;
-    use crate::response::JsonMap;
     use crate::ExecutableDocument;
     use crate::Schema;
 
@@ -321,10 +319,9 @@ fn test_error_path() {
 
         fn resolve_field<'a>(
             &'a self,
-            field: &'a executable::Field,
-            _arguments: &'a JsonMap,
+            info: &resolvers::ResolveInfo<'a>,
         ) -> Result<ResolvedValue<'a>, resolvers::ResolveError> {
-            match field.name.as_str() {
+            match info.field_name() {
                 "f" => Ok(ResolvedValue::List(Box::new(
                     [
                         Ok(ResolvedValue::leaf(42)),
@@ -334,7 +331,7 @@ fn test_error_path() {
                     ]
                     .into_iter(),
                 ))),
-                _ => Err(self.unknown_field_error(field)),
+                _ => Err(self.unknown_field_error(info)),
             }
         }
     }

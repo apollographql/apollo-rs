@@ -5,7 +5,6 @@
 //! The main entry point is [`partial_execute`].
 
 use crate::collections::HashMap;
-use crate::executable;
 use crate::executable::Operation;
 #[cfg(doc)]
 use crate::executable::OperationMap;
@@ -15,6 +14,7 @@ use crate::request::RequestError;
 use crate::resolvers::Execution;
 use crate::resolvers::ObjectValue;
 use crate::resolvers::ResolveError;
+use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
@@ -108,8 +108,7 @@ pub fn partial_execute(
 
         fn resolve_field<'a>(
             &'a self,
-            _field: &'a executable::Field,
-            _arguments: &'a JsonMap,
+            _info: &ResolveInfo<'a>,
         ) -> Result<ResolvedValue<'a>, ResolveError> {
             // Introspection meta-fields are handled separately
             // so this is only called for concrete fields of the root query type

@@ -1,7 +1,7 @@
 use crate::collections::HashMap;
-use crate::executable;
 use crate::resolvers::ObjectValue;
 use crate::resolvers::ResolveError;
+use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::JsonMap;
 use crate::schema;
@@ -142,10 +142,9 @@ impl ObjectValue for SchemaWithImplementersMap<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        _arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "description" => Ok(ResolvedValue::leaf(
                 self.schema_definition.description.as_deref(),
             )),
@@ -164,7 +163,7 @@ impl ObjectValue for SchemaWithImplementersMap<'_> {
             "queryType" => Ok(type_def_opt(*self, &self.schema_definition.query)),
             "mutationType" => Ok(type_def_opt(*self, &self.schema_definition.mutation)),
             "subscriptionType" => Ok(type_def_opt(*self, &self.schema_definition.subscription)),
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }
@@ -176,10 +175,9 @@ impl ObjectValue for TypeDefResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "kind" => Ok(ResolvedValue::leaf(match self.def {
                 schema::ExtendedType::Scalar(_) => "SCALAR",
                 schema::ExtendedType::Object(_) => "OBJECT",
@@ -193,31 +191,28 @@ impl ObjectValue for TypeDefResolver<'_> {
                 self.def.description().map(|desc| desc.as_str()),
             )),
             "fields" => {
-                let args = arguments;
-                {
-                    let fields = match self.def {
-                        schema::ExtendedType::Object(def) => &def.fields,
-                        schema::ExtendedType::Interface(def) => &def.fields,
-                        schema::ExtendedType::Scalar(_)
-                        | schema::ExtendedType::Union(_)
-                        | schema::ExtendedType::Enum(_)
-                        | schema::ExtendedType::InputObject(_) => return Ok(ResolvedValue::null()),
-                    };
-                    let include_deprecated = include_deprecated(args);
-                    Ok(ResolvedValue::list(
-                        fields
-                            .values()
-                            .filter(move |def| {
-                                include_deprecated || def.directives.get("deprecated").is_none()
+                let fields = match self.def {
+                    schema::ExtendedType::Object(def) => &def.fields,
+                    schema::ExtendedType::Interface(def) => &def.fields,
+                    schema::ExtendedType::Scalar(_)
+                    | schema::ExtendedType::Union(_)
+                    | schema::ExtendedType::Enum(_)
+                    | schema::ExtendedType::InputObject(_) => return Ok(ResolvedValue::null()),
+                };
+                let include_deprecated = include_deprecated(info.arguments());
+                Ok(ResolvedValue::list(
+                    fields
+                        .values()
+                        .filter(move |def| {
+                            include_deprecated || def.directives.get("deprecated").is_none()
+                        })
+                        .map(|def| {
+                            ResolvedValue::object(FieldResolver {
+                                schema: self.schema,
+                                def,
                             })
-                            .map(|def| {
-                                ResolvedValue::object(FieldResolver {
-                                    schema: self.schema,
-                                    def,
-                                })
-                            }),
-                    ))
-                }
+                        }),
+                ))
             }
             "interfaces" => {
                 let implements_interfaces = match self.def {
@@ -268,48 +263,42 @@ impl ObjectValue for TypeDefResolver<'_> {
                 }
             }
             "enumValues" => {
-                let args = arguments;
-                {
-                    let schema::ExtendedType::Enum(def) = self.def else {
-                        return Ok(ResolvedValue::null());
-                    };
-                    let include_deprecated = include_deprecated(args);
-                    Ok(ResolvedValue::list(
-                        def.values
-                            .values()
-                            .filter(move |def| {
-                                include_deprecated || def.directives.get("deprecated").is_none()
+                let schema::ExtendedType::Enum(def) = self.def else {
+                    return Ok(ResolvedValue::null());
+                };
+                let include_deprecated = include_deprecated(info.arguments());
+                Ok(ResolvedValue::list(
+                    def.values
+                        .values()
+                        .filter(move |def| {
+                            include_deprecated || def.directives.get("deprecated").is_none()
+                        })
+                        .map(|def| {
+                            ResolvedValue::object(EnumValueResolver {
+                                schema: self.schema,
+                                def,
                             })
-                            .map(|def| {
-                                ResolvedValue::object(EnumValueResolver {
-                                    schema: self.schema,
-                                    def,
-                                })
-                            }),
-                    ))
-                }
+                        }),
+                ))
             }
             "inputFields" => {
-                let args = arguments;
-                {
-                    let schema::ExtendedType::InputObject(def) = self.def else {
-                        return Ok(ResolvedValue::null());
-                    };
-                    let include_deprecated = include_deprecated(args);
-                    Ok(ResolvedValue::list(
-                        def.fields
-                            .values()
-                            .filter(move |def| {
-                                include_deprecated || def.directives.get("deprecated").is_none()
+                let schema::ExtendedType::InputObject(def) = self.def else {
+                    return Ok(ResolvedValue::null());
+                };
+                let include_deprecated = include_deprecated(info.arguments());
+                Ok(ResolvedValue::list(
+                    def.fields
+                        .values()
+                        .filter(move |def| {
+                            include_deprecated || def.directives.get("deprecated").is_none()
+                        })
+                        .map(|def| {
+                            ResolvedValue::object(InputValueResolver {
+                                schema: self.schema,
+                                def,
                             })
-                            .map(|def| {
-                                ResolvedValue::object(InputValueResolver {
-                                    schema: self.schema,
-                                    def,
-                                })
-                            }),
-                    ))
-                }
+                        }),
+                ))
             }
             "ofType" => Ok(ResolvedValue::null()),
             "specifiedByURL" => {
@@ -323,7 +312,7 @@ impl ObjectValue for TypeDefResolver<'_> {
                         .and_then(|arg| arg.as_str()),
                 ))
             }
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }
@@ -336,10 +325,9 @@ impl ObjectValue for TypeResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        _arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "kind" => Ok(ResolvedValue::leaf(match &*self.ty {
                 schema::Type::Named(_) => unreachable!(),
                 schema::Type::List(_) => "LIST",
@@ -362,7 +350,7 @@ impl ObjectValue for TypeResolver<'_> {
             "enumValues" => Ok(ResolvedValue::null()),
             "inputFields" => Ok(ResolvedValue::null()),
             "specifiedByURL" => Ok(ResolvedValue::null()),
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }
@@ -374,31 +362,27 @@ impl ObjectValue for DirectiveResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "args" => {
-                let args = arguments;
-                {
-                    let include_deprecated = include_deprecated(args);
-                    Ok(ResolvedValue::list(
-                        self.def
-                            .arguments
-                            .iter()
-                            .filter(move |def| {
-                                include_deprecated || def.directives.get("deprecated").is_none()
+                let include_deprecated = include_deprecated(info.arguments());
+                Ok(ResolvedValue::list(
+                    self.def
+                        .arguments
+                        .iter()
+                        .filter(move |def| {
+                            include_deprecated || def.directives.get("deprecated").is_none()
+                        })
+                        .map(|def| {
+                            ResolvedValue::object(InputValueResolver {
+                                schema: self.schema,
+                                def,
                             })
-                            .map(|def| {
-                                ResolvedValue::object(InputValueResolver {
-                                    schema: self.schema,
-                                    def,
-                                })
-                            }),
-                    ))
-                }
+                        }),
+                ))
             }
             "locations" => Ok(ResolvedValue::list(
                 self.def
@@ -407,7 +391,7 @@ impl ObjectValue for DirectiveResolver<'_> {
                     .map(|loc| ResolvedValue::leaf(loc.name())),
             )),
             "isRepeatable" => Ok(ResolvedValue::leaf(self.def.repeatable)),
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }
@@ -419,31 +403,27 @@ impl ObjectValue for FieldResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "args" => {
-                let args = arguments;
-                {
-                    let include_deprecated = include_deprecated(args);
-                    Ok(ResolvedValue::list(
-                        self.def
-                            .arguments
-                            .iter()
-                            .filter(move |def| {
-                                include_deprecated || def.directives.get("deprecated").is_none()
+                let include_deprecated = include_deprecated(info.arguments());
+                Ok(ResolvedValue::list(
+                    self.def
+                        .arguments
+                        .iter()
+                        .filter(move |def| {
+                            include_deprecated || def.directives.get("deprecated").is_none()
+                        })
+                        .map(|def| {
+                            ResolvedValue::object(InputValueResolver {
+                                schema: self.schema,
+                                def,
                             })
-                            .map(|def| {
-                                ResolvedValue::object(InputValueResolver {
-                                    schema: self.schema,
-                                    def,
-                                })
-                            }),
-                    ))
-                }
+                        }),
+                ))
             }
             "type" => Ok(ty(self.schema, &self.def.ty)),
             "isDeprecated" => Ok(ResolvedValue::leaf(
@@ -453,7 +433,7 @@ impl ObjectValue for FieldResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }
@@ -465,10 +445,9 @@ impl ObjectValue for EnumValueResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        _arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.value.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "isDeprecated" => Ok(ResolvedValue::leaf(
@@ -478,7 +457,7 @@ impl ObjectValue for EnumValueResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }
@@ -490,10 +469,9 @@ impl ObjectValue for InputValueResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        _arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
-        match field.name.as_str() {
+        match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
             "type" => Ok(ty(self.schema, &self.def.ty)),
@@ -510,7 +488,7 @@ impl ObjectValue for InputValueResolver<'_> {
                 &self.schema,
                 self.def.directives.get("deprecated"),
             )),
-            _ => Err(self.unknown_field_error(field)),
+            _ => Err(self.unknown_field_error(info)),
         }
     }
 }

@@ -13,6 +13,7 @@ use crate::request::RequestError;
 use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
 use crate::response::JsonValue;
+use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
@@ -51,6 +52,12 @@ pub(crate) type MaybeAsyncObject<'a> = MaybeAsync<&'a dyn AsyncObjectValue, &'a 
 
 pub(crate) type MaybeAsyncResolved<'a> = MaybeAsync<AsyncResolvedValue<'a>, ResolvedValue<'a>>;
 
+/// Information passed to resolvers
+pub struct ResolveInfo<'a> {
+    pub(crate) fields: &'a [&'a executable::Field],
+    pub(crate) arguments: &'a JsonMap,
+}
+
 pub struct ResolveError {
     pub message: String,
 }
@@ -65,10 +72,6 @@ pub trait ObjectValue {
 
     /// Resolves a concrete field of this object
     ///
-    /// `arguments` is the result of
-    /// [`CoerceArgumentValues()`](https://spec.graphql.org/draft/#sec-Coercing-Field-Arguments`):
-    /// when `resolve_field` is called its structure matches the argument definitions in the schema.
-    ///
     /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
     ///
@@ -76,12 +79,11 @@ pub trait ObjectValue {
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError>;
 
-    fn unknown_field_error(&self, field: &executable::Field) -> ResolveError {
-        ResolveError::unknown_field(field, self.type_name())
+    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ResolveError {
+        ResolveError::unknown_field(info.field_name(), self.type_name())
     }
 }
 
@@ -95,10 +97,6 @@ pub trait AsyncObjectValue {
 
     /// Resolves a concrete field of this object
     ///
-    /// `arguments` is the result of
-    /// [`CoerceArgumentValues()`](https://spec.graphql.org/draft/#sec-Coercing-Field-Arguments`):
-    /// when `resolve_field` is called its structure matches the argument definitions in the schema.
-    ///
     /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
     ///
@@ -106,12 +104,11 @@ pub trait AsyncObjectValue {
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     fn resolve_field<'a>(
         &'a self,
-        field: &'a executable::Field,
-        arguments: &'a JsonMap,
+        info: &ResolveInfo<'a>,
     ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, ResolveError>>;
 
-    fn unknown_field_error(&self, field: &executable::Field) -> ResolveError {
-        ResolveError::unknown_field(field, self.type_name())
+    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ResolveError {
+        ResolveError::unknown_field(info.field_name(), self.type_name())
     }
 }
 
@@ -338,6 +335,29 @@ impl<'a> Execution<'a> {
     }
 }
 
+impl<'a> ResolveInfo<'a> {
+    // https://github.com/graphql/graphql-js/blob/v16.11.0/src/type/definition.ts#L980-L991
+
+    pub fn field_name(&self) -> &'a str {
+        &self.fields[0].name
+    }
+
+    pub fn field_defintion(&self) -> &'a schema::FieldDefinition {
+        &self.fields[0].definition
+    }
+
+    pub fn field_selections(&self) -> &'a [&'a executable::Field] {
+        self.fields
+    }
+
+    /// The arguments passed to this field, after
+    /// [`CoerceArgumentValues()`](https://spec.graphql.org/draft/#sec-Coercing-Field-Arguments`):
+    /// this matches the argument definitions in the schema.
+    pub fn arguments(&self) -> &'a JsonMap {
+        self.arguments
+    }
+}
+
 impl<'a> ResolvedValue<'a> {
     /// Construct a null leaf resolved value
     pub fn null() -> Self {
@@ -422,9 +442,9 @@ impl MaybeAsync<Box<dyn AsyncObjectValue + '_>, Box<dyn ObjectValue + '_>> {
 }
 
 impl ResolveError {
-    fn unknown_field(field: &executable::Field, type_name: &str) -> Self {
+    fn unknown_field(field_name: &str, type_name: &str) -> Self {
         Self {
-            message: format!("unexpected field name: {} in type {type_name}", field.name),
+            message: format!("unexpected field name: {field_name} in type {type_name}"),
         }
     }
 }

@@ -14,6 +14,7 @@ use crate::resolvers::MaybeAsync;
 use crate::resolvers::MaybeAsyncObject;
 use crate::resolvers::MaybeAsyncResolved;
 use crate::resolvers::ResolveError;
+use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
 use crate::response::JsonMap;
@@ -243,15 +244,16 @@ async fn execute_field<'a>(
         ))),
         "__schema" if is_field_of_root_query() => resolve_schema_meta_field(ctx),
         "__type" if is_field_of_root_query() => resolve_type_meta_field(ctx, &argument_values),
-        _ => match object_value {
-            MaybeAsync::Async(obj) => obj
-                .resolve_field(field, &argument_values)
-                .await
-                .map(MaybeAsync::Async),
-            MaybeAsync::Sync(obj) => obj
-                .resolve_field(field, &argument_values)
-                .map(MaybeAsync::Sync),
-        },
+        _ => {
+            let info = ResolveInfo {
+                fields,
+                arguments: &argument_values,
+            };
+            match object_value {
+                MaybeAsync::Async(obj) => obj.resolve_field(&info).await.map(MaybeAsync::Async),
+                MaybeAsync::Sync(obj) => obj.resolve_field(&info).map(MaybeAsync::Sync),
+            }
+        }
     };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
