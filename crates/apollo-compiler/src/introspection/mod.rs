@@ -1,5 +1,5 @@
-//! [Execution](https://spec.graphql.org/draft/#sec-Execution) engine
-//! for the [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+//! Partial execition of the
+//! [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
 //! portion of a query
 //!
 //! The main entry point is [`partial_execute`].

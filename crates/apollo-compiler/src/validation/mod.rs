@@ -29,6 +29,8 @@ use crate::executable::BuildError as ExecutableBuildError;
 use crate::executable::ConflictingFieldArgument;
 use crate::executable::ConflictingFieldName;
 use crate::executable::ConflictingFieldType;
+#[cfg(doc)]
+use crate::executable::ExecutableDocument;
 use crate::executable::VariableDefinition;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;

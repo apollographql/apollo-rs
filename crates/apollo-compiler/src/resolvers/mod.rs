@@ -1,3 +1,6 @@
+//! GraphQL [execution](https://spec.graphql.org/draft/#sec-Execution)
+//! based on callbacks resolving one field at a time.
+
 use crate::collections::HashMap;
 use crate::executable;
 use crate::executable::Operation;
@@ -28,6 +31,9 @@ mod execution;
 pub(crate) mod input_coercion;
 mod result_coercion;
 
+/// Builder for configuring GraphQL execution
+///
+/// See [module-level documentation][self].
 pub struct Execution<'a> {
     schema: &'a Valid<Schema>,
     document: &'a Valid<ExecutableDocument>,
@@ -56,7 +62,7 @@ pub(crate) type MaybeAsyncObject<'a> = MaybeAsync<&'a dyn AsyncObjectValue, &'a 
 
 pub(crate) type MaybeAsyncResolved<'a> = MaybeAsync<AsyncResolvedValue<'a>, ResolvedValue<'a>>;
 
-/// Information passed to resolvers
+/// Information passed to [`ObjectValue::resolve_field`] or [`AsyncObjectValue::resolve_field`].
 pub struct ResolveInfo<'a> {
     pub(crate) schema: &'a Valid<Schema>,
     pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
@@ -65,6 +71,7 @@ pub struct ResolveInfo<'a> {
     pub(crate) arguments: &'a JsonMap,
 }
 
+/// The error type returned by [`ObjectValue::resolve_field`] or [`AsyncObjectValue::resolve_field`].
 pub struct ResolveError {
     pub message: String,
 }
@@ -74,7 +81,6 @@ pub trait ObjectValue {
     /// Returns the name of the concrete object type
     ///
     /// That name expected to be that of an object type defined in the schema.
-    /// This is called when the schema indicates an abstract (interface or union) type.
     fn type_name(&self) -> &str;
 
     /// Resolves a concrete field of this object
@@ -99,7 +105,6 @@ pub trait AsyncObjectValue {
     /// Returns the name of the concrete object type
     ///
     /// That name expected to be that of an object type defined in the schema.
-    /// This is called when the schema indicates an abstract (interface or union) type.
     fn type_name(&self) -> &str;
 
     /// Resolves a concrete field of this object
@@ -119,7 +124,7 @@ pub trait AsyncObjectValue {
     }
 }
 
-/// The value of a resolved field
+/// The successful return type of [`ObjectValue::resolve_field`].
 pub enum ResolvedValue<'a> {
     /// * JSON null represents GraphQL null
     /// * A GraphQL enum value is represented as a JSON string
@@ -145,7 +150,7 @@ pub enum ResolvedValue<'a> {
     SkipForPartialExcecution,
 }
 
-/// The value of an asynchronously-resolved field
+/// The successful return type of [`AsyncObjectValue::resolve_field`].
 pub enum AsyncResolvedValue<'a> {
     /// * JSON null represents GraphQL null
     /// * A GraphQL enum value is represented as a JSON string
