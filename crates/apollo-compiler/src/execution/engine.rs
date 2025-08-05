@@ -6,8 +6,7 @@ use crate::executable::Field;
 use crate::executable::Selection;
 use crate::execution::input_coercion::coerce_argument_values;
 use crate::execution::result_coercion::complete_value;
-use crate::introspection::resolvers::MaybeLazy;
-use crate::introspection::resolvers::SchemaWithImplementersMap;
+use crate::introspection::resolvers::SchemaMetaField;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::resolvers::MaybeAsync;
@@ -30,6 +29,7 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
+use std::cell::OnceCell;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
 #[derive(Debug, Copy, Clone)]
@@ -61,6 +61,19 @@ pub(crate) struct ExecutionContext<'a> {
     pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
     pub(crate) enable_schema_introspection: bool,
 }
+
+pub(crate) enum MaybeLazy<'a, T> {
+    Eager(&'a T),
+    Lazy(&'a OnceCell<T>),
+}
+
+impl<'a, T> Clone for MaybeLazy<'a, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, T> Copy for MaybeLazy<'a, T> {}
 
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
 ///
@@ -238,22 +251,23 @@ async fn execute_field<'a>(
             .as_ref()
             .is_some_and(|q| q.name == object_type.name)
     };
+    let info = ResolveInfo {
+        schema: ctx.schema,
+        implementers_map: ctx.implementers_map,
+        document: ctx.document,
+        fields,
+        arguments: &argument_values,
+    };
     let resolved_result = match field.name.as_str() {
         "__typename" => Ok(MaybeAsync::Sync(ResolvedValue::leaf(
             object_type.name.as_str(),
         ))),
         "__schema" if is_field_of_root_query() => resolve_schema_meta_field(ctx),
-        "__type" if is_field_of_root_query() => resolve_type_meta_field(ctx, &argument_values),
-        _ => {
-            let info = ResolveInfo {
-                fields,
-                arguments: &argument_values,
-            };
-            match object_value {
-                MaybeAsync::Async(obj) => obj.resolve_field(&info).await.map(MaybeAsync::Async),
-                MaybeAsync::Sync(obj) => obj.resolve_field(&info).map(MaybeAsync::Sync),
-            }
-        }
+        "__type" if is_field_of_root_query() => resolve_type_meta_field(ctx, &info),
+        _ => match object_value {
+            MaybeAsync::Async(obj) => obj.resolve_field(&info).await.map(MaybeAsync::Async),
+            MaybeAsync::Sync(obj) => obj.resolve_field(&info).map(MaybeAsync::Sync),
+        },
     };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
@@ -273,18 +287,18 @@ async fn execute_field<'a>(
 fn resolve_schema_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
 ) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
-    let schema = resolve_schema_introspection_field(ctx)?;
-    Ok(MaybeAsync::Sync(ResolvedValue::object(schema)))
+    check_schema_introspection_enabled(ctx)?;
+    Ok(MaybeAsync::Sync(ResolvedValue::object(SchemaMetaField)))
 }
 
 fn resolve_type_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
-    argument_values: &JsonMap,
+    info: &ResolveInfo<'a>,
 ) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
-    let schema = resolve_schema_introspection_field(ctx)?;
-    if let Some(name) = argument_values.get("name").and_then(|v| v.as_str()) {
+    check_schema_introspection_enabled(ctx)?;
+    if let Some(name) = info.arguments().get("name").and_then(|v| v.as_str()) {
         Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
-            schema, name,
+            info, name,
         )))
     } else {
         // This should never happen: `coerce_argument_values()` returns a map that conforms
@@ -296,14 +310,9 @@ fn resolve_type_meta_field<'a>(
     }
 }
 
-fn resolve_schema_introspection_field<'a>(
-    ctx: &ExecutionContext<'a>,
-) -> Result<SchemaWithImplementersMap<'a>, ResolveError> {
+fn check_schema_introspection_enabled<'a>(ctx: &ExecutionContext<'a>) -> Result<(), ResolveError> {
     if ctx.enable_schema_introspection {
-        Ok(SchemaWithImplementersMap {
-            schema: ctx.schema,
-            implementers_map: ctx.implementers_map,
-        })
+        Ok(())
     } else {
         // Disabled by default in the `apollo_compiler::resolvers::Excecution` builder,
         // use `.enable_schema_introspection(true)` to enable

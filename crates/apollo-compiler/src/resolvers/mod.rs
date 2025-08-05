@@ -4,10 +4,10 @@ use crate::executable::Operation;
 use crate::execution::engine::execute_selection_set;
 use crate::execution::engine::ExecutionContext;
 use crate::execution::engine::ExecutionMode;
+use crate::execution::engine::MaybeLazy;
 use crate::execution::engine::PropagateNull;
 #[cfg(doc)]
 use crate::introspection;
-use crate::introspection::resolvers::MaybeLazy;
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
 use crate::response::ExecutionResponse;
@@ -54,6 +54,9 @@ pub(crate) type MaybeAsyncResolved<'a> = MaybeAsync<AsyncResolvedValue<'a>, Reso
 
 /// Information passed to resolvers
 pub struct ResolveInfo<'a> {
+    pub(crate) schema: &'a Valid<Schema>,
+    pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
+    pub(crate) document: &'a Valid<ExecutableDocument>,
     pub(crate) fields: &'a [&'a executable::Field],
     pub(crate) arguments: &'a JsonMap,
 }
@@ -337,6 +340,21 @@ impl<'a> Execution<'a> {
 
 impl<'a> ResolveInfo<'a> {
     // https://github.com/graphql/graphql-js/blob/v16.11.0/src/type/definition.ts#L980-L991
+
+    pub fn schema(&self) -> &'a Valid<Schema> {
+        self.schema
+    }
+
+    pub fn implementers_map(&self) -> &'a HashMap<Name, Implementers> {
+        match self.implementers_map {
+            MaybeLazy::Eager(map) => map,
+            MaybeLazy::Lazy(cell) => cell.get_or_init(|| self.schema.implementers_map()),
+        }
+    }
+
+    pub fn document(&self) -> &'a Valid<ExecutableDocument> {
+        self.document
+    }
 
     pub fn field_name(&self) -> &'a str {
         &self.fields[0].name
