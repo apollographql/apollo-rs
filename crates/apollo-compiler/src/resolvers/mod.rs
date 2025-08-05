@@ -1,15 +1,15 @@
 use crate::collections::HashMap;
 use crate::executable;
 use crate::executable::Operation;
-use crate::execution::engine::execute_selection_set;
-use crate::execution::engine::ExecutionContext;
-use crate::execution::engine::ExecutionMode;
-use crate::execution::engine::MaybeLazy;
-use crate::execution::engine::PropagateNull;
 #[cfg(doc)]
 use crate::introspection;
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
+use crate::resolvers::execution::execute_selection_set;
+use crate::resolvers::execution::ExecutionContext;
+use crate::resolvers::execution::ExecutionMode;
+use crate::resolvers::execution::MaybeLazy;
+use crate::resolvers::execution::PropagateNull;
 use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
 use crate::response::JsonValue;
@@ -23,6 +23,10 @@ use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::FutureExt as _;
 use std::cell::OnceCell;
+
+mod execution;
+pub(crate) mod input_coercion;
+mod result_coercion;
 
 pub struct Execution<'a> {
     schema: &'a Valid<Schema>,

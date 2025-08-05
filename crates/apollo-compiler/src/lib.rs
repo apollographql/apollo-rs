@@ -8,8 +8,6 @@ pub mod collections;
 pub mod coordinate;
 pub mod diagnostic;
 pub mod executable;
-#[macro_use]
-mod execution;
 pub mod introspection;
 mod name;
 mod node;

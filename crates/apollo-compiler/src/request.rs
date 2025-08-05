@@ -3,11 +3,11 @@
 //! This exists primarily to support [`introspection::partial_execute`].
 
 use crate::executable::Operation;
-use crate::execution::input_coercion::InputCoercionError;
 #[cfg(doc)]
 use crate::introspection;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::resolvers::input_coercion::InputCoercionError;
 use crate::response::GraphQLError;
 use crate::response::JsonMap;
 use crate::validation::SuspectedValidationBug;
@@ -27,7 +27,7 @@ pub fn coerce_variable_values(
     operation: &Operation,
     values: &JsonMap,
 ) -> Result<Valid<JsonMap>, RequestError> {
-    Ok(crate::execution::input_coercion::coerce_variable_values(
+    Ok(crate::resolvers::input_coercion::coerce_variable_values(
         schema, operation, values,
     )?)
 }
