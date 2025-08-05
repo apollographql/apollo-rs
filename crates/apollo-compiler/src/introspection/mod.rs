@@ -108,7 +108,7 @@ pub fn partial_execute(
 
         fn resolve_field<'a>(
             &'a self,
-            _info: &ResolveInfo<'a>,
+            _info: &'a ResolveInfo<'a>,
         ) -> Result<ResolvedValue<'a>, ResolveError> {
             // Introspection meta-fields are handled separately
             // so this is only called for concrete fields of the root query type

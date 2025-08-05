@@ -1,5 +1,26 @@
 //! GraphQL [execution](https://spec.graphql.org/draft/#sec-Execution)
 //! based on callbacks resolving one field at a time.
+//!
+//! Start with [`Execution::new`],
+//! then use builder-pattern methods to configure,
+//! then use either the [`execute_sync`][Execution::execute_sync]
+//! or [`execute_async`][Execution::execute_async] method.
+//! They take an initial object value
+//! (implementing the [`ObjectValue`] or [`AsyncObjectValue`] trait respectively)
+//! that represents an instance of the root operation type (such as `Query`).
+//! Trait methods are called as needed to resolve object fields,
+//! which may in turn return more objects.
+//!
+//! How to implement the trait is up to the user:
+//! there could be a separate Rust struct per GraphQL object type,
+//! or a single Rust enum with a variants per GraphQL object type,
+//! or some other strategy.
+//!
+//! # Example
+//!
+//! ```
+#![doc = include_str!("../../examples/async_resolvers.rs")]
+//! ```
 
 use crate::collections::HashMap;
 use crate::executable;
@@ -25,7 +46,7 @@ use crate::Schema;
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::FutureExt as _;
-use std::cell::OnceCell;
+use std::sync::OnceLock;
 
 mod execution;
 pub(crate) mod input_coercion;
@@ -92,7 +113,7 @@ pub trait ObjectValue {
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError>;
 
     fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ResolveError {
@@ -101,7 +122,7 @@ pub trait ObjectValue {
 }
 
 /// A concrete GraphQL object whose fields can be resolved asynchronously during execution.
-pub trait AsyncObjectValue {
+pub trait AsyncObjectValue: Send {
     /// Returns the name of the concrete object type
     ///
     /// That name expected to be that of an object type defined in the schema.
@@ -116,7 +137,7 @@ pub trait AsyncObjectValue {
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, ResolveError>>;
 
     fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ResolveError {
@@ -300,11 +321,11 @@ impl<'a> Execution<'a> {
             }
             Some(VariableValues::Coerced(v)) => v,
         };
-        let cell;
+        let lock;
         let implementers_map = match self.implementers_map {
             None => {
-                cell = OnceCell::new();
-                MaybeLazy::Lazy(&cell)
+                lock = OnceLock::new();
+                MaybeLazy::Lazy(&lock)
             }
             Some(map) => MaybeLazy::Eager(map),
         };

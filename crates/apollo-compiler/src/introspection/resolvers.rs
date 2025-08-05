@@ -35,7 +35,7 @@ struct InputValueResolver<'a> {
     def: &'a schema::InputValueDefinition,
 }
 
-pub(crate) fn type_def<'a>(info: &ResolveInfo<'a>, name: &str) -> ResolvedValue<'a> {
+pub(crate) fn type_def<'a>(info: &'a ResolveInfo<'a>, name: &str) -> ResolvedValue<'a> {
     ResolvedValue::nullable_object(
         info.schema()
             .types
@@ -44,7 +44,7 @@ pub(crate) fn type_def<'a>(info: &ResolveInfo<'a>, name: &str) -> ResolvedValue<
     )
 }
 
-fn type_def_opt<'a>(info: &ResolveInfo<'a>, name: &Option<ComponentName>) -> ResolvedValue<'a> {
+fn type_def_opt<'a>(info: &'a ResolveInfo<'a>, name: &Option<ComponentName>) -> ResolvedValue<'a> {
     if let Some(name) = name {
         type_def(info, name)
     } else {
@@ -52,7 +52,7 @@ fn type_def_opt<'a>(info: &ResolveInfo<'a>, name: &Option<ComponentName>) -> Res
     }
 }
 
-fn ty<'a>(info: &ResolveInfo<'a>, ty: &'a schema::Type) -> ResolvedValue<'a> {
+fn ty<'a>(info: &'a ResolveInfo<'a>, ty: &'a schema::Type) -> ResolvedValue<'a> {
     if let schema::Type::Named(name) = ty {
         type_def(info, name)
     } else {
@@ -63,7 +63,7 @@ fn ty<'a>(info: &ResolveInfo<'a>, ty: &'a schema::Type) -> ResolvedValue<'a> {
 }
 
 fn deprecation_reason<'a>(
-    info: &ResolveInfo<'a>,
+    info: &'a ResolveInfo<'a>,
     opt_directive: Option<&Node<schema::Directive>>,
 ) -> ResolvedValue<'a> {
     ResolvedValue::leaf(
@@ -80,7 +80,7 @@ impl ObjectValue for SchemaMetaField {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         let schema_def = &info.schema().schema_definition;
         match info.field_name() {
@@ -112,7 +112,7 @@ impl ObjectValue for TypeDefResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         let schema = info.schema();
         macro_rules! types {
@@ -237,7 +237,7 @@ impl ObjectValue for TypeResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         match info.field_name() {
             "kind" => Ok(ResolvedValue::leaf(match &*self.ty {
@@ -273,7 +273,7 @@ impl ObjectValue for DirectiveResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
@@ -309,7 +309,7 @@ impl ObjectValue for FieldResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
@@ -346,7 +346,7 @@ impl ObjectValue for EnumValueResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.value.as_str())),
@@ -370,7 +370,7 @@ impl ObjectValue for InputValueResolver<'_> {
 
     fn resolve_field<'a>(
         &'a self,
-        info: &ResolveInfo<'a>,
+        info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, ResolveError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),

@@ -29,7 +29,7 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
-use std::cell::OnceCell;
+use std::sync::OnceLock;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
 #[derive(Debug, Copy, Clone)]
@@ -64,7 +64,7 @@ pub(crate) struct ExecutionContext<'a> {
 
 pub(crate) enum MaybeLazy<'a, T> {
     Eager(&'a T),
-    Lazy(&'a OnceCell<T>),
+    Lazy(&'a OnceLock<T>),
 }
 
 impl<'a, T> Clone for MaybeLazy<'a, T> {
@@ -293,7 +293,7 @@ fn resolve_schema_meta_field<'a>(
 
 fn resolve_type_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
-    info: &ResolveInfo<'a>,
+    info: &'a ResolveInfo<'a>,
 ) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
     check_schema_introspection_enabled(ctx)?;
     if let Some(name) = info.arguments().get("name").and_then(|v| v.as_str()) {
