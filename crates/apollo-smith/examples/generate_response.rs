@@ -1,5 +1,3 @@
-use std::fs;
-
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
@@ -8,6 +6,7 @@ use arbitrary::Result;
 use arbitrary::Unstructured;
 use rand::Rng;
 use serde_json_bytes::Value;
+use std::fs;
 
 pub fn generate_valid_response(
     doc: &Valid<ExecutableDocument>,
@@ -42,6 +41,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|e| format!("Failed to parse document: {}", e))?;
 
     let response = generate_valid_response(&doc, &schema)?;
-    println!("Generated response: {}", response);
+    println!("Generated response: {response}");
     Ok(())
 }

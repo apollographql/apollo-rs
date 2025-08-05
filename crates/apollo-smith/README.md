@@ -121,7 +121,6 @@ accompanying `Schema`, you can generate a response matching the shape of the
 operation with `apollo_smith::ResponseBuilder`.
 
 ```rust
-
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
