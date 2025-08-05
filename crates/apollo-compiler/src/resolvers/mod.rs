@@ -5,6 +5,8 @@ use crate::execution::engine::execute_selection_set;
 use crate::execution::engine::ExecutionContext;
 use crate::execution::engine::ExecutionMode;
 use crate::execution::engine::PropagateNull;
+#[cfg(doc)]
+use crate::introspection;
 use crate::introspection::resolvers::MaybeLazy;
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
@@ -126,6 +128,17 @@ pub enum ResolvedValue<'a> {
 
     /// Expected for GraphQL list types
     List(Box<dyn Iterator<Item = Result<Self, ResolveError>> + 'a>),
+
+    /// Skip this field as if the selection had `@skip(if: true)`:
+    /// do not insert null nor emit an error.
+    ///
+    /// This causes the eventual response data to be incomplete.
+    /// This can be useful to have some fields executed with per-field resolvers by this API
+    /// and other fields with some other execution model such as Apollo Federation,
+    /// with the two response `data` maps merged before sending the response.
+    ///
+    /// This is used by [`introspection::partial_execute`].
+    SkipForPartialExcecution,
 }
 
 /// The value of an asynchronously-resolved field
@@ -141,6 +154,17 @@ pub enum AsyncResolvedValue<'a> {
 
     /// Expected for GraphQL list types
     List(BoxStream<'a, Result<Self, ResolveError>>),
+
+    /// Skip this field as if the selection had `@skip(if: true)`:
+    /// do not insert null nor emit an error.
+    ///
+    /// This causes the eventual response data to be incomplete.
+    /// This can be useful to have some fields executed with per-field resolvers by this API
+    /// and other fields with some other execution model such as Apollo Federation,
+    /// with the two response `data` maps merged before sending the response.
+    ///
+    /// This is used by [`introspection::partial_execute`].
+    SkipForPartialExcecution,
 }
 
 impl<'a> Execution<'a> {
@@ -213,14 +237,7 @@ impl<'a> Execution<'a> {
         &self,
         initial_value: &dyn ObjectValue,
     ) -> Result<ExecutionResponse, RequestError> {
-        self.execute_sync_common(Some(initial_value))
-    }
-
-    pub fn execute_sync_common(
-        &self,
-        initial_value: Option<&dyn ObjectValue>,
-    ) -> Result<ExecutionResponse, RequestError> {
-        let future = self.execute_common(initial_value.map(MaybeAsync::Sync));
+        let future = self.execute_common(MaybeAsync::Sync(initial_value));
 
         // An `async fn` returns a future whose `poll` method returns:
         //
@@ -240,13 +257,12 @@ impl<'a> Execution<'a> {
         &self,
         initial_value: &dyn AsyncObjectValue,
     ) -> Result<ExecutionResponse, RequestError> {
-        self.execute_common(Some(MaybeAsync::Async(initial_value)))
-            .await
+        self.execute_common(MaybeAsync::Async(initial_value)).await
     }
 
     async fn execute_common(
         &self,
-        initial_value: Option<MaybeAsyncObject<'_>>,
+        initial_value: MaybeAsyncObject<'_>,
     ) -> Result<ExecutionResponse, RequestError> {
         let operation = if let Some(op) = self.operation {
             op

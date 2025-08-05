@@ -5,6 +5,7 @@
 //! The main entry point is [`partial_execute`].
 
 use crate::collections::HashMap;
+use crate::executable;
 use crate::executable::Operation;
 #[cfg(doc)]
 use crate::executable::OperationMap;
@@ -12,6 +13,9 @@ use crate::executable::OperationMap;
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
 use crate::resolvers::Execution;
+use crate::resolvers::ObjectValue;
+use crate::resolvers::ResolveError;
+use crate::resolvers::ResolvedValue;
 use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
 use crate::schema::Implementers;
@@ -93,10 +97,33 @@ pub fn partial_execute(
     operation: &Operation,
     variable_values: &Valid<JsonMap>,
 ) -> Result<ExecutionResponse, RequestError> {
+    struct InitialValue<'a> {
+        type_name: &'a str,
+    }
+
+    impl ObjectValue for InitialValue<'_> {
+        fn type_name(&self) -> &str {
+            self.type_name
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            _field: &'a executable::Field,
+            _arguments: &'a JsonMap,
+        ) -> Result<ResolvedValue<'a>, ResolveError> {
+            // Introspection meta-fields are handled separately
+            // so this is only called for concrete fields of the root query type
+            Ok(ResolvedValue::SkipForPartialExcecution)
+        }
+    }
+
+    let initial_value = InitialValue {
+        type_name: operation.object_type(),
+    };
     Execution::new(schema, document)
         .implementers_map(implementers_map)
         .operation(operation)
         .coerced_variable_values(variable_values)
         .enable_schema_introspection(true)
-        .execute_sync_common(None)
+        .execute_sync(&initial_value)
 }

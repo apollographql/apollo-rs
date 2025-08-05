@@ -69,7 +69,7 @@ pub(crate) async fn execute_selection_set<'a>(
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: Option<MaybeAsyncObject<'_>>,
+    object_value: MaybeAsyncObject<'_>,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
     let mut grouped_field_set = IndexMap::default();
@@ -220,7 +220,7 @@ async fn execute_field<'a>(
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: Option<MaybeAsyncObject<'_>>,
+    object_value: MaybeAsyncObject<'_>,
     field_def: &FieldDefinition,
     fields: &[&'a Field],
 ) -> Result<Option<JsonValue>, PropagateNull> {
@@ -243,21 +243,15 @@ async fn execute_field<'a>(
         ))),
         "__schema" if is_field_of_root_query() => resolve_schema_meta_field(ctx),
         "__type" if is_field_of_root_query() => resolve_type_meta_field(ctx, &argument_values),
-        _ => {
-            match object_value {
-                Some(MaybeAsync::Async(obj)) => obj
-                    .resolve_field(field, &argument_values)
-                    .await
-                    .map(MaybeAsync::Async),
-                Some(MaybeAsync::Sync(obj)) => obj
-                    .resolve_field(field, &argument_values)
-                    .map(MaybeAsync::Sync),
-                None => {
-                    // Skip non-introspection root fields for `introspection::partial_execute`
-                    return Ok(None);
-                }
-            }
-        }
+        _ => match object_value {
+            MaybeAsync::Async(obj) => obj
+                .resolve_field(field, &argument_values)
+                .await
+                .map(MaybeAsync::Async),
+            MaybeAsync::Sync(obj) => obj
+                .resolve_field(field, &argument_values)
+                .map(MaybeAsync::Sync),
+        },
     };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
@@ -271,7 +265,7 @@ async fn execute_field<'a>(
             Err(PropagateNull)
         }
     };
-    try_nullify(&field_def.ty, completed_result).map(Some)
+    try_nullify(&field_def.ty, completed_result)
 }
 
 fn resolve_schema_meta_field<'a>(
@@ -322,15 +316,15 @@ fn resolve_schema_introspection_field<'a>(
 /// <https://spec.graphql.org/October2021/#sec-Handling-Field-Errors>
 pub(crate) fn try_nullify(
     ty: &Type,
-    result: Result<JsonValue, PropagateNull>,
-) -> Result<JsonValue, PropagateNull> {
+    result: Result<Option<JsonValue>, PropagateNull>,
+) -> Result<Option<JsonValue>, PropagateNull> {
     match result {
         Ok(json) => Ok(json),
         Err(PropagateNull) => {
             if ty.is_non_null() {
                 Err(PropagateNull)
             } else {
-                Ok(JsonValue::Null)
+                Ok(Some(JsonValue::Null))
             }
         }
     }

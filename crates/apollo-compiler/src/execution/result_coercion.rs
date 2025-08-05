@@ -39,7 +39,7 @@ pub(crate) async fn complete_value<'a>(
     ty: &'a Type,
     resolved: MaybeAsyncResolved<'_>,
     fields: &[&'a Field],
-) -> Result<JsonValue, PropagateNull> {
+) -> Result<Option<JsonValue>, PropagateNull> {
     let location = fields[0].name.location();
     macro_rules! field_error {
         ($($arg: tt)+) => {
@@ -55,12 +55,15 @@ pub(crate) async fn complete_value<'a>(
         };
     }
     let resolved = match resolved {
+        MaybeAsync::Async(AsyncResolvedValue::SkipForPartialExcecution)
+        | MaybeAsync::Sync(ResolvedValue::SkipForPartialExcecution) => return Ok(None),
+
         MaybeAsync::Async(AsyncResolvedValue::Leaf(JsonValue::Null))
         | MaybeAsync::Sync(ResolvedValue::Leaf(JsonValue::Null)) => {
             if ty.is_non_null() {
                 field_error!("Non-null type {ty} resolved to null")
             } else {
-                return Ok(JsonValue::Null);
+                return Ok(Some(JsonValue::Null));
             }
         }
         MaybeAsync::Async(AsyncResolvedValue::List(stream)) => {
@@ -145,13 +148,13 @@ pub(crate) async fn complete_value<'a>(
         path,
         mode,
         object_type,
-        Some(resolved_obj),
+        resolved_obj,
         fields
             .iter()
             .flat_map(|field| &field.selection_set.selections),
     ))
     .await
-    .map(JsonValue::Object)
+    .map(|map| Some(JsonValue::Object(map)))
 }
 
 async fn complete_list_value<'a, 'b>(
@@ -161,7 +164,7 @@ async fn complete_list_value<'a, 'b>(
     ty: &'a Type,
     fields: &[&'a Field],
     stream: Pin<&mut dyn Stream<Item = Result<MaybeAsyncResolved<'b>, ResolveError>>>,
-) -> Result<JsonValue, PropagateNull> {
+) -> Result<Option<JsonValue>, PropagateNull> {
     let inner_ty = match ty {
         Type::Named(_) | Type::NonNullNamed(_) => {
             let location = fields[0].name.location();
@@ -202,12 +205,13 @@ async fn complete_list_value<'a, 'b>(
         .await;
         // On field error, try to nullify that item
         match try_nullify(inner_ty, inner_result) {
-            Ok(inner_value) => completed_list.push(inner_value),
+            Ok(None) => {}
+            Ok(Some(inner_value)) => completed_list.push(inner_value),
             // If the item is non-null, try to nullify the list
             Err(PropagateNull) => return try_nullify(ty, Err(PropagateNull)),
         }
     }
-    Ok(completed_list.into())
+    Ok(Some(completed_list.into()))
 }
 
 fn complete_leaf_value(
@@ -217,7 +221,7 @@ fn complete_leaf_value(
     ty_def: &ExtendedType,
     json_value: JsonValue,
     fields: &[&Field],
-) -> Result<JsonValue, PropagateNull> {
+) -> Result<Option<JsonValue>, PropagateNull> {
     let location = fields[0].name.location();
     macro_rules! field_error {
         ($($arg: tt)+) => {
@@ -294,7 +298,7 @@ fn complete_leaf_value(
             }
         },
     };
-    Ok(json_value)
+    Ok(Some(json_value))
 }
 
 #[test]
