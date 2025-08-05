@@ -8,14 +8,10 @@ use crate::collections::HashMap;
 use crate::executable::Operation;
 #[cfg(doc)]
 use crate::executable::OperationMap;
-use crate::execution::engine::execute_selection_set;
-use crate::execution::engine::ExecutionContext;
-use crate::execution::engine::ExecutionMode;
-use crate::execution::engine::PropagateNull;
-use crate::introspection::resolvers::MaybeLazy;
 #[cfg(doc)]
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
+use crate::resolvers::Execution;
 use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
 use crate::schema::Implementers;
@@ -23,7 +19,6 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
-use futures::FutureExt as _;
 
 mod max_depth;
 pub(crate) mod resolvers;
@@ -98,42 +93,9 @@ pub fn partial_execute(
     operation: &Operation,
     variable_values: &Valid<JsonMap>,
 ) -> Result<ExecutionResponse, RequestError> {
-    let object_type_name = operation.object_type();
-    let Some(root_operation_object_type_def) = schema.get_object(object_type_name) else {
-        return Err(RequestError {
-            message: "Undefined root operation type".to_owned(),
-            location: object_type_name.location(),
-            is_suspected_validation_bug: true,
-        });
-    };
-
-    let implementers_map = MaybeLazy::Eager(implementers_map);
-    let mut errors = Vec::new();
-    let path = None;
-    let mut context = ExecutionContext {
-        schema,
-        document,
-        variable_values,
-        errors: &mut errors,
-        implementers_map,
-    };
-    let future = execute_selection_set(
-        &mut context,
-        path,
-        ExecutionMode::Normal,
-        root_operation_object_type_def,
-        None,
-        &operation.selection_set.selections,
-    );
-    let result = future
-        .now_or_never()
-        .expect("expected async fn with sync resolvers to never be pending");
-    let data = result
-        // What `.ok()` below converts to `None` is a field error on a non-null field
-        // propagated all the way to the root, so that the response JSON should contain `"data": null`.
-        //
-        // No-op to witness the error type:
-        .inspect_err(|_: &PropagateNull| {})
-        .ok();
-    Ok(ExecutionResponse { data, errors })
+    Execution::new(schema, document)
+        .implementers_map(implementers_map)
+        .operation(operation)
+        .coerced_variable_values(variable_values)
+        .execute_sync_common(None)
 }

@@ -1,12 +1,41 @@
+use crate::collections::HashMap;
 use crate::executable;
+use crate::executable::Operation;
+use crate::execution::engine::execute_selection_set;
+use crate::execution::engine::ExecutionContext;
+use crate::execution::engine::ExecutionMode;
+use crate::execution::engine::PropagateNull;
+use crate::introspection::resolvers::MaybeLazy;
+use crate::request::coerce_variable_values;
+use crate::request::RequestError;
+use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
+use crate::response::JsonValue;
+use crate::schema::Implementers;
+use crate::validation::Valid;
+use crate::ExecutableDocument;
+use crate::Name;
+use crate::Schema;
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
-use serde_json_bytes::Value as JsonValue;
+use futures::FutureExt as _;
+use std::cell::OnceCell;
+
+pub struct Execution<'a> {
+    schema: &'a Valid<Schema>,
+    document: &'a Valid<ExecutableDocument>,
+    operation: Option<&'a Operation>,
+    implementers_map: Option<&'a HashMap<Name, Implementers>>,
+    variable_values: Option<VariableValues<'a>>,
+}
+
+enum VariableValues<'a> {
+    Raw(&'a JsonMap),
+    Coerced(&'a Valid<JsonMap>),
+}
 
 #[derive(Clone, Copy)]
 pub(crate) enum MaybeAsync<A, S> {
-    #[allow(unused)] // yet
     Async(A),
     Sync(S),
 }
@@ -14,6 +43,10 @@ pub(crate) enum MaybeAsync<A, S> {
 pub(crate) type MaybeAsyncObject<'a> = MaybeAsync<&'a dyn AsyncObjectValue, &'a dyn ObjectValue>;
 
 pub(crate) type MaybeAsyncResolved<'a> = MaybeAsync<AsyncResolvedValue<'a>, ResolvedValue<'a>>;
+
+pub struct ResolveError {
+    pub message: String,
+}
 
 /// A concrete GraphQL object whose fields can be resolved during execution.
 pub trait ObjectValue {
@@ -75,27 +108,6 @@ pub trait AsyncObjectValue {
     }
 }
 
-impl MaybeAsync<Box<dyn AsyncObjectValue + '_>, Box<dyn ObjectValue + '_>> {
-    pub(crate) fn type_name(&self) -> &str {
-        match self {
-            MaybeAsync::Async(obj) => obj.type_name(),
-            MaybeAsync::Sync(obj) => obj.type_name(),
-        }
-    }
-}
-
-pub struct ResolveError {
-    pub message: String,
-}
-
-impl ResolveError {
-    fn unknown_field(field: &executable::Field, type_name: &str) -> Self {
-        Self {
-            message: format!("unexpected field name: {} in type {type_name}", field.name),
-        }
-    }
-}
-
 /// The value of a resolved field
 pub enum ResolvedValue<'a> {
     /// * JSON null represents GraphQL null
@@ -124,6 +136,171 @@ pub enum AsyncResolvedValue<'a> {
 
     /// Expected for GraphQL list types
     List(BoxStream<'a, Result<Self, ResolveError>>),
+}
+
+impl<'a> Execution<'a> {
+    pub fn new(schema: &'a Valid<Schema>, document: &'a Valid<ExecutableDocument>) -> Self {
+        Self {
+            schema,
+            document,
+            operation: None,
+            implementers_map: None,
+            variable_values: None,
+        }
+    }
+
+    pub fn operation(mut self, operation: &'a Operation) -> Self {
+        assert!(
+            self.operation.is_none(),
+            "operation to execute already provided"
+        );
+        self.operation = Some(operation);
+        self
+    }
+
+    pub fn operation_name(mut self, operation_name: Option<&str>) -> Result<Self, RequestError> {
+        assert!(
+            self.operation.is_none(),
+            "operation to execute already provided"
+        );
+        self.operation = Some(self.document.operations.get(operation_name)?);
+        Ok(self)
+    }
+
+    pub fn implementers_map(mut self, implementers_map: &'a HashMap<Name, Implementers>) -> Self {
+        assert!(
+            self.implementers_map.is_none(),
+            "implementers map already provided"
+        );
+        self.implementers_map = Some(implementers_map);
+        self
+    }
+
+    pub fn coerced_variable_values(mut self, variable_values: &'a Valid<JsonMap>) -> Self {
+        assert!(
+            self.variable_values.is_none(),
+            "variable values already provided"
+        );
+        self.variable_values = Some(VariableValues::Coerced(variable_values));
+        self
+    }
+
+    pub fn raw_variable_values(mut self, variable_values: &'a JsonMap) -> Self {
+        assert!(
+            self.variable_values.is_none(),
+            "variable values already provided"
+        );
+        self.variable_values = Some(VariableValues::Raw(variable_values));
+        self
+    }
+
+    pub fn execute_sync(
+        &self,
+        initial_value: &dyn ObjectValue,
+    ) -> Result<ExecutionResponse, RequestError> {
+        self.execute_sync_common(Some(initial_value))
+    }
+
+    pub fn execute_sync_common(
+        &self,
+        initial_value: Option<&dyn ObjectValue>,
+    ) -> Result<ExecutionResponse, RequestError> {
+        let future = self.execute_common(initial_value.map(MaybeAsync::Sync));
+
+        // An `async fn` returns a future whose `poll` method returns:
+        //
+        // * `Poll::Ready(R)` when the function returns
+        // * `Poll::Pending` when it `.await`s an inner future that returns `Poll::Pending`
+        //
+        // When we use `MaybeAsync::Sync`, there are no manually-written implementations
+        // of the `Future` trait involved at all, only `async fn`s that call each other.
+        // Therefore we expect `Poll::Pending` to never be generated.
+        // Instead futures should resolve immediately and `now_or_never` should never return `None`.
+        future
+            .now_or_never()
+            .expect("expected async fn with sync resolvers to never be pending")
+    }
+
+    pub async fn execute_async(
+        &self,
+        initial_value: &dyn AsyncObjectValue,
+    ) -> Result<ExecutionResponse, RequestError> {
+        self.execute_common(Some(MaybeAsync::Async(initial_value)))
+            .await
+    }
+
+    async fn execute_common(
+        &self,
+        initial_value: Option<MaybeAsyncObject<'_>>,
+    ) -> Result<ExecutionResponse, RequestError> {
+        let operation = if let Some(op) = self.operation {
+            op
+        } else {
+            self.document.operations.get(None)?
+        };
+
+        let object_type_name = operation.object_type();
+        let Some(root_operation_object_type_def) = self.schema.get_object(object_type_name) else {
+            return Err(RequestError {
+                message: "Undefined root operation type".to_owned(),
+                location: object_type_name.location(),
+                is_suspected_validation_bug: true,
+            });
+        };
+
+        let map;
+        let variable_values = match self.variable_values {
+            None => {
+                map = Valid::assume_valid(JsonMap::new());
+                &map
+            }
+            Some(VariableValues::Raw(v)) => {
+                map = coerce_variable_values(self.schema, operation, v)?;
+                &map
+            }
+            Some(VariableValues::Coerced(v)) => v,
+        };
+        let cell;
+        let implementers_map = match self.implementers_map {
+            None => {
+                cell = OnceCell::new();
+                MaybeLazy::Lazy(&cell)
+            }
+            Some(map) => MaybeLazy::Eager(map),
+        };
+        let mut errors = Vec::new();
+        let mut context = ExecutionContext {
+            schema: self.schema,
+            document: self.document,
+            variable_values,
+            errors: &mut errors,
+            implementers_map,
+        };
+        let mode = match operation.operation_type {
+            executable::OperationType::Query | executable::OperationType::Subscription => {
+                ExecutionMode::Normal
+            }
+            executable::OperationType::Mutation => ExecutionMode::Sequential,
+        };
+        let result = execute_selection_set(
+            &mut context,
+            None,
+            mode,
+            root_operation_object_type_def,
+            initial_value,
+            &operation.selection_set.selections,
+        )
+        .await;
+        let data = result
+            // If `Result::ok` converts an error to `None` that’s a field error on a non-null,
+            // field propagated all the way to the root,
+            // so that the JSON response should contain `"data": null`.
+            //
+            // No-op to witness the error type:
+            .inspect_err(|_: &PropagateNull| {})
+            .ok();
+        Ok(ExecutionResponse { data, errors })
+    }
 }
 
 impl<'a> ResolvedValue<'a> {
@@ -197,5 +374,22 @@ impl<'a> AsyncResolvedValue<'a> {
         I::IntoIter: 'a + Send,
     {
         Self::List(Box::pin(futures::stream::iter(iter.into_iter().map(Ok))))
+    }
+}
+
+impl MaybeAsync<Box<dyn AsyncObjectValue + '_>, Box<dyn ObjectValue + '_>> {
+    pub(crate) fn type_name(&self) -> &str {
+        match self {
+            MaybeAsync::Async(obj) => obj.type_name(),
+            MaybeAsync::Sync(obj) => obj.type_name(),
+        }
+    }
+}
+
+impl ResolveError {
+    fn unknown_field(field: &executable::Field, type_name: &str) -> Self {
+        Self {
+            message: format!("unexpected field name: {} in type {type_name}", field.name),
+        }
     }
 }

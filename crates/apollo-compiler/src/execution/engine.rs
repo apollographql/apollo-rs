@@ -35,7 +35,6 @@ pub(crate) enum ExecutionMode {
     /// Allowed to resolve fields in any order, including in parallel
     Normal,
     /// Top-level fields of a mutation operation must be executed in order
-    #[allow(unused)]
     Sequential,
 }
 

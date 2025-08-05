@@ -20,7 +20,6 @@ pub(crate) struct SchemaWithImplementersMap<'a> {
 
 pub(crate) enum MaybeLazy<'a, T> {
     Eager(&'a T),
-    #[cfg_attr(not(test), allow(unused))] // will be used in upcoming public API for execution
     Lazy(&'a OnceCell<T>),
 }
 

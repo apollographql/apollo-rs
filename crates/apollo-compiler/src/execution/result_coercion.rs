@@ -300,12 +300,10 @@ fn complete_leaf_value(
 #[test]
 fn test_error_path() {
     use crate::executable;
-    use crate::introspection::resolvers::MaybeLazy;
     use crate::resolvers;
     use crate::response::JsonMap;
     use crate::ExecutableDocument;
     use crate::Schema;
-    use std::cell::OnceCell;
 
     let sdl = "type Query { f: [Int] }";
     let query = "{ f }";
@@ -339,32 +337,9 @@ fn test_error_path() {
 
     let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
     let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
-    let operation = document.operations.get(None).unwrap();
-    let variable_values = JsonMap::new();
-    let variable_values =
-        crate::request::coerce_variable_values(&schema, operation, &variable_values).unwrap();
-    let root_operation_object_type_def = schema.get_object("Query").unwrap();
-    let mut errors = Vec::new();
-    let path = None;
-    let initial_value = InitialValue;
-    let implementers_map = OnceCell::new();
-    let mut context = ExecutionContext {
-        schema: &schema,
-        document: &document,
-        variable_values: &variable_values,
-        errors: &mut errors,
-        implementers_map: MaybeLazy::Lazy(&implementers_map),
-    };
-    let future = execute_selection_set(
-        &mut context,
-        path,
-        ExecutionMode::Normal,
-        root_operation_object_type_def,
-        Some(MaybeAsync::Sync(&initial_value)),
-        &operation.selection_set.selections,
-    );
-    let data = futures::FutureExt::now_or_never(future).unwrap().ok();
-    let response = crate::response::ExecutionResponse { data, errors };
+    let response = resolvers::Execution::new(&schema, &document)
+        .execute_sync(&InitialValue)
+        .unwrap();
     let response = serde_json::to_string_pretty(&response).unwrap();
     expect_test::expect![[r#"
         {
