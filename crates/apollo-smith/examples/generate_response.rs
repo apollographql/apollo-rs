@@ -28,17 +28,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err("Provide a schema path".into());
     };
     let schema = fs::read_to_string(schema_path.clone())
-        .map_err(|e| format!("Failed to read schema file: {}", e))?;
+        .map_err(|e| format!("Failed to read schema file: {e}"))?;
     let schema = Schema::parse_and_validate(&schema, &schema_path)
-        .map_err(|e| format!("Failed to parse schema: {}", e))?;
+        .map_err(|e| format!("Failed to parse schema: {e}"))?;
 
     let Some(doc_path) = args.next() else {
         return Err("Provide a document path".into());
     };
     let doc = fs::read_to_string(doc_path.clone())
-        .map_err(|e| format!("Failed to read document file: {}", e))?;
+        .map_err(|e| format!("Failed to read document file: {e}"))?;
     let doc = ExecutableDocument::parse_and_validate(&schema, &doc, &doc_path)
-        .map_err(|e| format!("Failed to parse document: {}", e))?;
+        .map_err(|e| format!("Failed to parse document: {e}"))?;
 
     let response = generate_valid_response(&doc, &schema)?;
     println!("Generated response: {response}");
