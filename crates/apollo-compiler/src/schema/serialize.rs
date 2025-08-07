@@ -44,7 +44,19 @@ impl Node<SchemaDefinition> {
             subscription,
         } = &**self;
         let extensions = self.extensions();
-        let implict = description.is_none()
+        let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
+            self.iter_root_operations()
+                .filter(|(_, op)| op.origin.extension_id() == ext)
+                .map(|(ty, op)| (ty, op.name.clone()).into())
+                .collect()
+        };
+        let orphan_extensions = root_ops(None).is_empty();
+        let implicit = if orphan_extensions {
+            // The schema definition's root operations are all in extensions. That means the orphan
+            // extension was enabled and the schema definition was implicit.
+            true
+        } else {
+            description.is_none()
             && directives.is_empty()
             && extensions.is_empty()
             && [
@@ -54,7 +66,7 @@ impl Node<SchemaDefinition> {
             ]
             .into_iter()
             .all(|(root_operation, operation_type)| {
-                // If there were no explict `schema` definition,
+                // If there were no explicit `schema` definition,
                 // what implicit root operation would we get for this operation type?
                 let default_type_name = operation_type.default_type_name();
                 let has_object = types
@@ -71,14 +83,9 @@ impl Node<SchemaDefinition> {
             // This can be removed after that validation rule is ported to high-level `Schema`.
             && [query, mutation, subscription]
                 .into_iter()
-                .any(|op| op.is_some());
-        let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
-            self.iter_root_operations()
-                .filter(|(_, op)| op.origin.extension_id() == ext)
-                .map(|(ty, op)| (ty, op.name.clone()).into())
-                .collect()
+                .any(|op| op.is_some())
         };
-        if implict {
+        if implicit {
             None
         } else {
             Some(ast::Definition::SchemaDefinition(self.same_location(

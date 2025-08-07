@@ -34,6 +34,21 @@ fn test_orphan_extensions() {
     schema2.validate().unwrap();
 }
 
+fn validate_schema(schema: Schema) {
+    let validated_schema = schema.validate().unwrap();
+
+    // Test the `Schema::to_string()` with orphan extensions by parsing and validating the printed
+    // schema.
+    let printed_schema = validated_schema.to_string();
+    Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(printed_schema, "printed_schema.graphql")
+        .build()
+        .unwrap()
+        .validate()
+        .unwrap();
+}
+
 #[test]
 fn test_orphan_extensions_schema_with_default_query_name() {
     let input = r#"
@@ -47,7 +62,7 @@ fn test_orphan_extensions_schema_with_default_query_name() {
         .build()
         .unwrap();
 
-    schema.validate().unwrap();
+    validate_schema(schema);
 }
 
 #[test]
@@ -67,7 +82,7 @@ fn test_orphan_extensions_schema_def_with_extensions() {
         .build()
         .unwrap();
 
-    schema.validate().unwrap();
+    validate_schema(schema);
 }
 
 #[test]
@@ -108,7 +123,7 @@ fn test_orphan_schema_extension_with_root_type_disables_implicit_root_types() {
         .unwrap();
 
     assert!(schema.schema_definition.mutation.is_none());
-    schema.validate().unwrap();
+    validate_schema(schema);
 }
 
 #[test]
@@ -126,7 +141,25 @@ fn test_orphan_schema_extension_without_root_type_enables_implicit_root_types() 
         .unwrap();
 
     assert!(schema.schema_definition.query.is_some());
-    schema.validate().unwrap();
+    validate_schema(schema);
+}
+
+#[test]
+fn test_orphan_schema_extension_with_directive_application() {
+    let input = r#"
+        directive @something on SCHEMA
+        extend schema @something { query: Query }
+        type Query { field: Int }
+    "#;
+
+    let schema = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap();
+
+    assert!(schema.schema_definition.query.is_some());
+    validate_schema(schema);
 }
 
 #[test]
