@@ -1,5 +1,5 @@
-use crate::resolvers::ObjectValue;
 use crate::resolvers::FieldError;
+use crate::resolvers::ObjectValue;
 use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::JsonMap;
