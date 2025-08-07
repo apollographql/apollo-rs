@@ -3,6 +3,11 @@ use apollo_compiler::ast::InputValueDefinition;
 use apollo_compiler::introspection;
 use apollo_compiler::name;
 use apollo_compiler::request::coerce_variable_values;
+use apollo_compiler::resolvers::Execution;
+use apollo_compiler::resolvers::FieldError;
+use apollo_compiler::resolvers::ObjectValue;
+use apollo_compiler::resolvers::ResolveInfo;
+use apollo_compiler::resolvers::ResolvedValue;
 use apollo_compiler::response::JsonMap;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ty;
@@ -225,4 +230,94 @@ fn built_in_scalars() {
     assert!(valid_after_mutation.types.contains_key("Float"));
     assert!(valid_after_mutation.types.contains_key("String"));
     assert!(valid_after_mutation.types.contains_key("Boolean"));
+}
+
+/// Both introspection and other concrete fields with custom resolvers
+#[test]
+fn mixed() {
+    let sdl = r#"
+      type Query {
+        f: Int 
+      }
+    "#;
+    let query = r#"
+      {
+        f
+        Query: __type(name: "Query") {
+          fields {
+            name
+          }
+        }
+      }
+    "#;
+
+    struct InitialValue;
+
+    impl ObjectValue for InitialValue {
+        fn type_name(&self) -> &str {
+            "Query"
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            info: &ResolveInfo<'a>,
+        ) -> Result<ResolvedValue<'a>, FieldError> {
+            match info.field_name() {
+                "f" => Ok(ResolvedValue::leaf(42)),
+                _ => Err(self.unknown_field_error(info)),
+            }
+        }
+    }
+
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+
+    // Default config disables schema introspection
+    let response = Execution::new(&schema, &document)
+        .execute_sync(&InitialValue)
+        .unwrap();
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "errors": [
+            {
+              "message": "resolver error: schema introspection is disabled",
+              "locations": [
+                {
+                  "line": 4,
+                  "column": 16
+                }
+              ],
+              "path": [
+                "Query"
+              ]
+            }
+          ],
+          "data": {
+            "f": 42,
+            "Query": null
+          }
+        }"#]]
+    .assert_eq(&response);
+
+    // But it can be enabled
+    let response = Execution::new(&schema, &document)
+        .enable_schema_introspection(true)
+        .execute_sync(&InitialValue)
+        .unwrap();
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "data": {
+            "f": 42,
+            "Query": {
+              "fields": [
+                {
+                  "name": "f"
+                }
+              ]
+            }
+          }
+        }"#]]
+    .assert_eq(&response);
 }
