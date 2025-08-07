@@ -114,11 +114,26 @@ pub trait ObjectValue {
     ///
     /// This is _not_ called for [introspection](https://spec.graphql.org/draft/#sec-Introspection)
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
+    ///
+    /// A typical implementation might look like:
+    ///
+    /// ```ignore
+    /// match info.field_name() {
+    ///     "field1" => Ok(ResolvedValue::leaf(self.resolve_field1())),
+    ///     "field2" => Ok(ResolvedValue::list(self.resolve_field2())),
+    ///     _ => Err(self.unknown_field_error(info)),
+    /// }
+    /// ```
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
     ) -> Result<ResolvedValue<'a>, FieldError>;
 
+    /// Generate a resolve error for `resolve_field` to return in case of an unexpected field name.
+    ///
+    /// In many cases this should never happen,
+    /// such as when writing resolvers for a fixed, known schema.
+    /// Still, this method generates a GraphQL field error without Rust panick in case of a bug.
     fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> FieldError {
         FieldError::unknown_field(info.field_name(), self.type_name())
     }
@@ -138,11 +153,28 @@ pub trait AsyncObjectValue: Send {
     ///
     /// This is _not_ called for [introspection](https://spec.graphql.org/draft/#sec-Introspection)
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
+    ///
+    /// A typical implementation might look like:
+    ///
+    /// ```ignore
+    /// Box::pin(async move {
+    ///     match info.field_name() {
+    ///         "field1" => Ok(AsyncResolvedValue::leaf(self.resolve_field1().await)),
+    ///         "field2" => Ok(AsyncResolvedValue::list(self.resolve_field2().await)),
+    ///         _ => Err(self.unknown_field_error(info)),
+    ///     }
+    /// })
+    /// ```
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
     ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, FieldError>>;
 
+    /// Generate a resolve error for `resolve_field` to return in case of an unexpected field name.
+    ///
+    /// In many cases this should never happen,
+    /// such as when writing resolvers for a fixed, known schema.
+    /// Still, this method generates a GraphQL field error without Rust panick in case of a bug.
     fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> FieldError {
         FieldError::unknown_field(info.field_name(), self.type_name())
     }
