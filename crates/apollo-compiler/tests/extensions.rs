@@ -1,11 +1,30 @@
 use apollo_compiler::Schema;
 
+fn validate_schema(schema: Schema) {
+    let validated_schema = schema.validate().unwrap();
+
+    // Test the `Schema::to_string()` with orphan extensions by parsing and validating the printed
+    // schema.
+    let printed_schema = validated_schema.to_string();
+    Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(printed_schema, "printed_schema.graphql")
+        .build()
+        .unwrap()
+        .validate()
+        .unwrap();
+}
+
 #[test]
 fn test_orphan_extensions() {
     let input = r#"
         extend schema @dir { query: Q }
         extend type Obj @dir { foo: String }
-        directive @dir on SCHEMA | OBJECT
+        extend interface I @dir { foo: String }
+        extend union U @dir = Obj
+        extend enum E @dir { FOO, BAR }
+        extend input Input @dir { bar: String }
+        directive @dir on SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT
         type Q { x: Int }
     "#;
 
@@ -31,22 +50,7 @@ fn test_orphan_extensions() {
         .unwrap();
     assert!(schema2.schema_definition.directives.has("dir"));
     assert!(schema2.types["Obj"].directives().has("dir"));
-    schema2.validate().unwrap();
-}
-
-fn validate_schema(schema: Schema) {
-    let validated_schema = schema.validate().unwrap();
-
-    // Test the `Schema::to_string()` with orphan extensions by parsing and validating the printed
-    // schema.
-    let printed_schema = validated_schema.to_string();
-    Schema::builder()
-        .adopt_orphan_extensions()
-        .parse(printed_schema, "printed_schema.graphql")
-        .build()
-        .unwrap()
-        .validate()
-        .unwrap();
+    validate_schema(schema2);
 }
 
 #[test]
