@@ -92,8 +92,11 @@ pub struct ResolveInfo<'a> {
     pub(crate) arguments: &'a JsonMap,
 }
 
-/// The error type returned by [`ObjectValue::resolve_field`] or [`AsyncObjectValue::resolve_field`].
-pub struct ResolveError {
+/// An error returned by [`ObjectValue::resolve_field`] or [`AsyncObjectValue::resolve_field`],
+/// which will become a [field error](https://spec.graphql.org/draft/#sec-Errors.Field-Errors)
+/// (a.k.a. execution error) in the GraphQL response,
+/// with path and locations filled in.
+pub struct FieldError {
     pub message: String,
 }
 
@@ -114,10 +117,10 @@ pub trait ObjectValue {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError>;
+    ) -> Result<ResolvedValue<'a>, FieldError>;
 
-    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ResolveError {
-        ResolveError::unknown_field(info.field_name(), self.type_name())
+    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> FieldError {
+        FieldError::unknown_field(info.field_name(), self.type_name())
     }
 }
 
@@ -138,10 +141,10 @@ pub trait AsyncObjectValue: Send {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, ResolveError>>;
+    ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, FieldError>>;
 
-    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ResolveError {
-        ResolveError::unknown_field(info.field_name(), self.type_name())
+    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> FieldError {
+        FieldError::unknown_field(info.field_name(), self.type_name())
     }
 }
 
@@ -157,7 +160,7 @@ pub enum ResolvedValue<'a> {
     Object(Box<dyn ObjectValue + 'a>),
 
     /// Expected for GraphQL list types
-    List(Box<dyn Iterator<Item = Result<Self, ResolveError>> + 'a>),
+    List(Box<dyn Iterator<Item = Result<Self, FieldError>> + 'a>),
 
     /// Skip this field as if the selection had `@skip(if: true)`:
     /// do not insert null nor emit an error.
@@ -183,7 +186,7 @@ pub enum AsyncResolvedValue<'a> {
     Object(Box<dyn AsyncObjectValue + 'a>),
 
     /// Expected for GraphQL list types
-    List(BoxStream<'a, Result<Self, ResolveError>>),
+    List(BoxStream<'a, Result<Self, FieldError>>),
 
     /// Skip this field as if the selection had `@skip(if: true)`:
     /// do not insert null nor emit an error.
@@ -541,7 +544,7 @@ impl MaybeAsync<Box<dyn AsyncObjectValue + '_>, Box<dyn ObjectValue + '_>> {
     }
 }
 
-impl ResolveError {
+impl FieldError {
     fn unknown_field(field_name: &str, type_name: &str) -> Self {
         Self {
             message: format!("unexpected field name: {field_name} in type {type_name}"),

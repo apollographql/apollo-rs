@@ -1,7 +1,7 @@
 use apollo_compiler::resolvers::AsyncObjectValue;
 use apollo_compiler::resolvers::AsyncResolvedValue;
 use apollo_compiler::resolvers::Execution;
-use apollo_compiler::resolvers::ResolveError;
+use apollo_compiler::resolvers::FieldError;
 use apollo_compiler::resolvers::ResolveInfo;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
@@ -25,7 +25,7 @@ async fn async_resolvers_example() {
         fn resolve_field<'a>(
             &'a self,
             info: &'a ResolveInfo<'a>,
-        ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, ResolveError>> {
+        ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, FieldError>> {
             Box::pin(async move {
                 match info.field_name() {
                     "field1" => Ok(AsyncResolvedValue::leaf(self.resolve_field1().await)),

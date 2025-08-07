@@ -12,8 +12,8 @@ use crate::executable::OperationMap;
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
 use crate::resolvers::Execution;
+use crate::resolvers::FieldError;
 use crate::resolvers::ObjectValue;
-use crate::resolvers::ResolveError;
 use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::ExecutionResponse;
@@ -109,7 +109,7 @@ pub fn partial_execute(
         fn resolve_field<'a>(
             &'a self,
             _info: &'a ResolveInfo<'a>,
-        ) -> Result<ResolvedValue<'a>, ResolveError> {
+        ) -> Result<ResolvedValue<'a>, FieldError> {
             // Introspection meta-fields are handled separately
             // so this is only called for concrete fields of the root query type
             Ok(ResolvedValue::SkipForPartialExecution)

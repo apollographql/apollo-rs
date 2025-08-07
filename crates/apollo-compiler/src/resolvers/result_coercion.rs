@@ -8,10 +8,10 @@ use crate::resolvers::execution::LinkedPathElement;
 use crate::resolvers::execution::PropagateNull;
 use crate::resolvers::AsyncObjectValue;
 use crate::resolvers::AsyncResolvedValue;
+use crate::resolvers::FieldError;
 use crate::resolvers::MaybeAsync;
 use crate::resolvers::MaybeAsyncResolved;
 use crate::resolvers::ObjectValue;
-use crate::resolvers::ResolveError;
 use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
 use crate::response::JsonValue;
@@ -179,7 +179,7 @@ async fn complete_list_value<'a, 'b>(
     mode: ExecutionMode,
     ty: &'a Type,
     fields: &[&'a Field],
-    stream: Pin<&mut dyn Stream<Item = Result<MaybeAsyncResolved<'b>, ResolveError>>>,
+    stream: Pin<&mut dyn Stream<Item = Result<MaybeAsyncResolved<'b>, FieldError>>>,
 ) -> Result<Option<JsonValue>, PropagateNull> {
     let inner_ty = match ty {
         Type::Named(_) | Type::NonNullNamed(_) => {
@@ -333,12 +333,12 @@ fn test_error_path() {
         fn resolve_field<'a>(
             &'a self,
             info: &resolvers::ResolveInfo<'a>,
-        ) -> Result<ResolvedValue<'a>, resolvers::ResolveError> {
+        ) -> Result<ResolvedValue<'a>, resolvers::FieldError> {
             match info.field_name() {
                 "f" => Ok(ResolvedValue::List(Box::new(
                     [
                         Ok(ResolvedValue::leaf(42)),
-                        Err(resolvers::ResolveError {
+                        Err(resolvers::FieldError {
                             message: "!".into(),
                         }),
                     ]

@@ -12,7 +12,7 @@ use crate::resolvers::result_coercion::complete_value;
 use crate::resolvers::MaybeAsync;
 use crate::resolvers::MaybeAsyncObject;
 use crate::resolvers::MaybeAsyncResolved;
-use crate::resolvers::ResolveError;
+use crate::resolvers::FieldError;
 use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
@@ -271,7 +271,7 @@ async fn execute_field<'a>(
     };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
-        Err(ResolveError { message }) => {
+        Err(FieldError { message }) => {
             ctx.errors.push(GraphQLError::field_error(
                 format!("resolver error: {message}"),
                 path,
@@ -286,7 +286,7 @@ async fn execute_field<'a>(
 
 fn resolve_schema_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
-) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
+) -> Result<MaybeAsyncResolved<'a>, FieldError> {
     check_schema_introspection_enabled(ctx)?;
     Ok(MaybeAsync::Sync(ResolvedValue::object(SchemaMetaField)))
 }
@@ -294,7 +294,7 @@ fn resolve_schema_meta_field<'a>(
 fn resolve_type_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
     info: &'a ResolveInfo<'a>,
-) -> Result<MaybeAsyncResolved<'a>, ResolveError> {
+) -> Result<MaybeAsyncResolved<'a>, FieldError> {
     check_schema_introspection_enabled(ctx)?;
     if let Some(name) = info.arguments().get("name").and_then(|v| v.as_str()) {
         Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
@@ -304,19 +304,19 @@ fn resolve_type_meta_field<'a>(
         // This should never happen: `coerce_argument_values()` returns a map that conforms
         // to the `__type(name: String!): __Type` definition
         // Still, in case of a bug prefer returning an error than panicking
-        Err(ResolveError {
+        Err(FieldError {
             message: "expected string argument `name`".into(),
         })
     }
 }
 
-fn check_schema_introspection_enabled<'a>(ctx: &ExecutionContext<'a>) -> Result<(), ResolveError> {
+fn check_schema_introspection_enabled<'a>(ctx: &ExecutionContext<'a>) -> Result<(), FieldError> {
     if ctx.enable_schema_introspection {
         Ok(())
     } else {
         // Disabled by default in the `apollo_compiler::resolvers::Excecution` builder,
         // use `.enable_schema_introspection(true)` to enable
-        Err(ResolveError {
+        Err(FieldError {
             message: "schema introspection is disabled".into(),
         })
     }

@@ -1,5 +1,5 @@
 use crate::resolvers::ObjectValue;
-use crate::resolvers::ResolveError;
+use crate::resolvers::FieldError;
 use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::JsonMap;
@@ -81,7 +81,7 @@ impl ObjectValue for SchemaMetaField {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         let schema_def = &info.schema().schema_definition;
         match info.field_name() {
             "description" => Ok(ResolvedValue::leaf(schema_def.description.as_deref())),
@@ -113,7 +113,7 @@ impl ObjectValue for TypeDefResolver<'_> {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         let schema = info.schema();
         macro_rules! types {
             ($names:expr) => {
@@ -238,7 +238,7 @@ impl ObjectValue for TypeResolver<'_> {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         match info.field_name() {
             "kind" => Ok(ResolvedValue::leaf(match &*self.ty {
                 schema::Type::Named(_) => unreachable!(),
@@ -274,7 +274,7 @@ impl ObjectValue for DirectiveResolver<'_> {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
@@ -310,7 +310,7 @@ impl ObjectValue for FieldResolver<'_> {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
@@ -347,7 +347,7 @@ impl ObjectValue for EnumValueResolver<'_> {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.value.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
@@ -371,7 +371,7 @@ impl ObjectValue for InputValueResolver<'_> {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, ResolveError> {
+    ) -> Result<ResolvedValue<'a>, FieldError> {
         match info.field_name() {
             "name" => Ok(ResolvedValue::leaf(self.def.name.as_str())),
             "description" => Ok(ResolvedValue::leaf(self.def.description.as_deref())),
