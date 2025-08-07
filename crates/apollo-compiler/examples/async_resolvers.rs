@@ -42,7 +42,7 @@ async fn async_resolvers_example() {
             "string".into()
         }
 
-        async fn resolve_field2(&self) -> [AsyncResolvedValue; 4] {
+        async fn resolve_field2(&self) -> [AsyncResolvedValue<'_>; 4] {
             // very await
             [7, 42, 0, 0].map(AsyncResolvedValue::leaf)
         }
