@@ -55,8 +55,8 @@ pub(crate) async fn complete_value<'a>(
         };
     }
     let resolved = match resolved {
-        MaybeAsync::Async(AsyncResolvedValue::SkipForPartialExcecution)
-        | MaybeAsync::Sync(ResolvedValue::SkipForPartialExcecution) => return Ok(None),
+        MaybeAsync::Async(AsyncResolvedValue::SkipForPartialExecution)
+        | MaybeAsync::Sync(ResolvedValue::SkipForPartialExecution) => return Ok(None),
 
         MaybeAsync::Async(AsyncResolvedValue::Leaf(JsonValue::Null))
         | MaybeAsync::Sync(ResolvedValue::Leaf(JsonValue::Null)) => {

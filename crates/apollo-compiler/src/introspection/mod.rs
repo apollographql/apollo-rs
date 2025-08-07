@@ -112,7 +112,7 @@ pub fn partial_execute(
         ) -> Result<ResolvedValue<'a>, ResolveError> {
             // Introspection meta-fields are handled separately
             // so this is only called for concrete fields of the root query type
-            Ok(ResolvedValue::SkipForPartialExcecution)
+            Ok(ResolvedValue::SkipForPartialExecution)
         }
     }
 

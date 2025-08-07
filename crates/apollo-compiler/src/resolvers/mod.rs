@@ -163,12 +163,12 @@ pub enum ResolvedValue<'a> {
     /// do not insert null nor emit an error.
     ///
     /// This causes the eventual response data to be incomplete.
-    /// This can be useful to have some fields executed with per-field resolvers by this API
+    /// It can be useful to have some fields executed with per-field resolvers by this API
     /// and other fields with some other execution model such as Apollo Federation,
     /// with the two response `data` maps merged before sending the response.
     ///
     /// This is used by [`introspection::partial_execute`].
-    SkipForPartialExcecution,
+    SkipForPartialExecution,
 }
 
 /// The successful return type of [`AsyncObjectValue::resolve_field`].
@@ -194,7 +194,7 @@ pub enum AsyncResolvedValue<'a> {
     /// with the two response `data` maps merged before sending the response.
     ///
     /// This is used by [`introspection::partial_execute`].
-    SkipForPartialExcecution,
+    SkipForPartialExecution,
 }
 
 impl<'a> Execution<'a> {
@@ -243,7 +243,7 @@ impl<'a> Execution<'a> {
     /// Provide a pre-computed result of [`Schema::implementers_map`].
     ///
     /// If not provided here, it will be computed lazily on demand
-    /// and cache for the duration of execution.
+    /// and cached for the duration of execution.
     pub fn implementers_map(mut self, implementers_map: &'a HashMap<Name, Implementers>) -> Self {
         assert!(
             self.implementers_map.is_none(),
@@ -284,7 +284,7 @@ impl<'a> Execution<'a> {
 
     /// By default, schema introspection is _disabled_ per the [recommendation] to do so in production:
     /// the meta-field `__schema` and `__type` return a field error.
-    /// (`__typename` is not affected is is always available.)
+    /// (`__typename` is not affected, as it is always available.)
     ///
     /// Setting this configuration to `true` makes execution
     /// generate the appropriate response data for those fields.
@@ -303,7 +303,7 @@ impl<'a> Execution<'a> {
         self
     }
 
-    /// Perform execation with synchronous resolvers
+    /// Perform execution with synchronous resolvers
     pub fn execute_sync(
         &self,
         initial_value: &dyn ObjectValue,
@@ -326,7 +326,7 @@ impl<'a> Execution<'a> {
             .expect("expected async fn with sync resolvers to never be pending")
     }
 
-    /// Perform execation with asynchronous resolvers
+    /// Perform execution with asynchronous resolvers
     pub async fn execute_async(
         &self,
         initial_value: &dyn AsyncObjectValue,
@@ -438,7 +438,7 @@ impl<'a> ResolveInfo<'a> {
     }
 
     /// The field definition in the schema
-    pub fn field_defintion(&self) -> &'a schema::FieldDefinition {
+    pub fn field_definition(&self) -> &'a schema::FieldDefinition {
         &self.fields[0].definition
     }
 
