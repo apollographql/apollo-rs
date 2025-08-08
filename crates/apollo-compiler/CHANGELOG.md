@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2025-mm-dd
+
+## Features
+
+- **Add public API for resolver-based execution - [SimonSapin], [pull/983]**
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/983]: https://github.com/apollographql/apollo-rs/pull/983
+
+
 # [1.28.0](https://crates.io/crates/apollo-compiler/1.28.0) - 2025-04-24
 
 ## Features

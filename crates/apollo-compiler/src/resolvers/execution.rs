@@ -4,15 +4,17 @@ use crate::collections::HashSet;
 use crate::collections::IndexMap;
 use crate::executable::Field;
 use crate::executable::Selection;
-use crate::execution::input_coercion::coerce_argument_values;
-use crate::execution::resolver::ObjectValue;
-use crate::execution::resolver::ResolveError;
-use crate::execution::resolver::ResolvedValue;
-use crate::execution::result_coercion::complete_value;
-use crate::introspection::resolvers::MaybeLazy;
-use crate::introspection::resolvers::SchemaWithImplementersMap;
+use crate::introspection::resolvers::SchemaMetaField;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::resolvers::input_coercion::coerce_argument_values;
+use crate::resolvers::result_coercion::complete_value;
+use crate::resolvers::FieldError;
+use crate::resolvers::MaybeAsync;
+use crate::resolvers::MaybeAsyncObject;
+use crate::resolvers::MaybeAsyncResolved;
+use crate::resolvers::ResolveInfo;
+use crate::resolvers::ResolvedValue;
 use crate::response::GraphQLError;
 use crate::response::JsonMap;
 use crate::response::JsonValue;
@@ -27,6 +29,7 @@ use crate::validation::Valid;
 use crate::ExecutableDocument;
 use crate::Name;
 use crate::Schema;
+use std::sync::OnceLock;
 
 /// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
 #[derive(Debug, Copy, Clone)]
@@ -34,7 +37,6 @@ pub(crate) enum ExecutionMode {
     /// Allowed to resolve fields in any order, including in parallel
     Normal,
     /// Top-level fields of a mutation operation must be executed in order
-    #[allow(unused)]
     Sequential,
 }
 
@@ -57,17 +59,31 @@ pub(crate) struct ExecutionContext<'a> {
     pub(crate) variable_values: &'a Valid<JsonMap>,
     pub(crate) errors: &'a mut Vec<GraphQLError>,
     pub(crate) implementers_map: MaybeLazy<'a, HashMap<Name, Implementers>>,
+    pub(crate) enable_schema_introspection: bool,
 }
+
+pub(crate) enum MaybeLazy<'a, T> {
+    Eager(&'a T),
+    Lazy(&'a OnceLock<T>),
+}
+
+impl<'a, T> Clone for MaybeLazy<'a, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<'a, T> Copy for MaybeLazy<'a, T> {}
 
 /// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
 ///
 /// `object_value: None` is a special case for top-level of `introspection::partial_execute`
-pub(crate) fn execute_selection_set<'a>(
+pub(crate) async fn execute_selection_set<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: Option<&dyn ObjectValue>,
+    object_value: MaybeAsyncObject<'_>,
     selections: impl IntoIterator<Item = &'a Selection>,
 ) -> Result<JsonMap, PropagateNull> {
     let mut grouped_field_set = IndexMap::default();
@@ -109,7 +125,9 @@ pub(crate) fn execute_selection_set<'a>(
             object_value,
             field_def,
             fields,
-        )? {
+        )
+        .await?
+        {
             response_map.insert(response_key.as_str(), value);
         }
     }
@@ -211,12 +229,12 @@ fn eval_if_arg(
 /// `object_value: None` is a special case for top-level of `introspection::partial_execute`
 ///
 /// Return `Ok(None)` for silently skipping that field.
-fn execute_field<'a>(
+async fn execute_field<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
     mode: ExecutionMode,
     object_type: &ObjectType,
-    object_value: Option<&dyn ObjectValue>,
+    object_value: MaybeAsyncObject<'_>,
     field_def: &FieldDefinition,
     fields: &[&'a Field],
 ) -> Result<Option<JsonValue>, PropagateNull> {
@@ -233,43 +251,27 @@ fn execute_field<'a>(
             .as_ref()
             .is_some_and(|q| q.name == object_type.name)
     };
+    let info = ResolveInfo {
+        schema: ctx.schema,
+        implementers_map: ctx.implementers_map,
+        document: ctx.document,
+        fields,
+        arguments: &argument_values,
+    };
     let resolved_result = match field.name.as_str() {
-        "__typename" => Ok(ResolvedValue::leaf(object_type.name.as_str())),
-        "__schema" if is_field_of_root_query() => {
-            let schema = SchemaWithImplementersMap {
-                schema: ctx.schema,
-                implementers_map: ctx.implementers_map,
-            };
-            Ok(ResolvedValue::object(schema))
-        }
-        "__type" if is_field_of_root_query() => {
-            let schema = SchemaWithImplementersMap {
-                schema: ctx.schema,
-                implementers_map: ctx.implementers_map,
-            };
-            if let Some(name) = argument_values.get("name").and_then(|v| v.as_str()) {
-                Ok(crate::introspection::resolvers::type_def(schema, name))
-            } else {
-                // This should never happen: `coerce_argument_values()` returns a map that conforms
-                // to the `__type(name: String!): __Type` definition
-                // Still, in case of a bug prefer returning an error than panicking
-                Err(ResolveError {
-                    message: "expected string argument `name`".into(),
-                })
-            }
-        }
-        _ => {
-            if let Some(obj) = object_value {
-                obj.resolve_field(field, &argument_values)
-            } else {
-                // Skip non-introspection root fields for `introspection::partial_execute`
-                return Ok(None);
-            }
-        }
+        "__typename" => Ok(MaybeAsync::Sync(ResolvedValue::leaf(
+            object_type.name.as_str(),
+        ))),
+        "__schema" if is_field_of_root_query() => resolve_schema_meta_field(ctx),
+        "__type" if is_field_of_root_query() => resolve_type_meta_field(ctx, &info),
+        _ => match object_value {
+            MaybeAsync::Async(obj) => obj.resolve_field(&info).await.map(MaybeAsync::Async),
+            MaybeAsync::Sync(obj) => obj.resolve_field(&info).map(MaybeAsync::Sync),
+        },
     };
     let completed_result = match resolved_result {
-        Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields),
-        Err(ResolveError { message }) => {
+        Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
+        Err(FieldError { message }) => {
             ctx.errors.push(GraphQLError::field_error(
                 format!("resolver error: {message}"),
                 path,
@@ -279,7 +281,45 @@ fn execute_field<'a>(
             Err(PropagateNull)
         }
     };
-    try_nullify(&field_def.ty, completed_result).map(Some)
+    try_nullify(&field_def.ty, completed_result)
+}
+
+fn resolve_schema_meta_field<'a>(
+    ctx: &ExecutionContext<'a>,
+) -> Result<MaybeAsyncResolved<'a>, FieldError> {
+    check_schema_introspection_enabled(ctx)?;
+    Ok(MaybeAsync::Sync(ResolvedValue::object(SchemaMetaField)))
+}
+
+fn resolve_type_meta_field<'a>(
+    ctx: &ExecutionContext<'a>,
+    info: &'a ResolveInfo<'a>,
+) -> Result<MaybeAsyncResolved<'a>, FieldError> {
+    check_schema_introspection_enabled(ctx)?;
+    if let Some(name) = info.arguments().get("name").and_then(|v| v.as_str()) {
+        Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
+            info, name,
+        )))
+    } else {
+        // This should never happen: `coerce_argument_values()` returns a map that conforms
+        // to the `__type(name: String!): __Type` definition
+        // Still, in case of a bug prefer returning an error than panicking
+        Err(FieldError {
+            message: "expected string argument `name`".into(),
+        })
+    }
+}
+
+fn check_schema_introspection_enabled<'a>(ctx: &ExecutionContext<'a>) -> Result<(), FieldError> {
+    if ctx.enable_schema_introspection {
+        Ok(())
+    } else {
+        // Disabled by default in the `apollo_compiler::resolvers::Excecution` builder,
+        // use `.enable_schema_introspection(true)` to enable
+        Err(FieldError {
+            message: "schema introspection is disabled".into(),
+        })
+    }
 }
 
 /// Try to insert a propagated null if possible, or keep propagating it.
@@ -287,15 +327,15 @@ fn execute_field<'a>(
 /// <https://spec.graphql.org/October2021/#sec-Handling-Field-Errors>
 pub(crate) fn try_nullify(
     ty: &Type,
-    result: Result<JsonValue, PropagateNull>,
-) -> Result<JsonValue, PropagateNull> {
+    result: Result<Option<JsonValue>, PropagateNull>,
+) -> Result<Option<JsonValue>, PropagateNull> {
     match result {
         Ok(json) => Ok(json),
         Err(PropagateNull) => {
             if ty.is_non_null() {
                 Err(PropagateNull)
             } else {
-                Ok(JsonValue::Null)
+                Ok(Some(JsonValue::Null))
             }
         }
     }
