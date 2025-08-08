@@ -66,7 +66,12 @@ impl FindRecursiveDirective<'_> {
 
         let type_name = input_value.ty.inner_named_type();
         if let Some(type_def) = self.schema.types.get(type_name) {
-            self.type_definition(seen, type_def)?;
+            if seen.contains(type_def.name()) {
+                // input type was already processed
+                return Ok(());
+            }
+            let mut new_guard = seen.push(type_def.name())?;
+            self.type_definition(&mut new_guard, type_def)?;
         }
 
         Ok(())

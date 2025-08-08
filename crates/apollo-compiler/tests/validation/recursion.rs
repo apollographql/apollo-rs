@@ -1,5 +1,6 @@
 use apollo_compiler::parser::Parser;
 use expect_test::expect;
+use apollo_compiler::{ExecutableDocument, Schema};
 
 /// Build a chain of `size` fragments where each fragment recurses into a field and applies the
 /// next fragment in the chain.
@@ -346,4 +347,30 @@ type Query {
         Error: too much recursion
     "#]]
     .assert_eq(&errors.to_string());
+}
+
+
+#[test]
+fn handles_directive_with_nested_input_types() {
+    let schema = r#"
+directive @custom(input: NestedInput) on OBJECT | INTERFACE
+
+input NestedInput {
+    name: String
+    nested: NestedInput
+}
+
+type Query {
+  foo: String
+}
+"#;
+
+    let input_executable = r#"
+query {
+    foo
+}
+"#;
+
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql").unwrap();
 }
