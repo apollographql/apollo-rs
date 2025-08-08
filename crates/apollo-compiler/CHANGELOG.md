@@ -17,14 +17,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2025-mm-dd
+# [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
 
 ## Features
 
+- **Add `iter_origin()` methods to schema elements - [duckki], [pull/978]**
 - **Add public API for resolver-based execution - [SimonSapin], [pull/983]**
 
+## Fixes
+
+- **Fix serialization in non-standard orphan extensions mode - [duckki], [pull/984]**
+
+[duckki]: https://github.com/duckki
 [SimonSapin]: https://github.com/SimonSapin
+[pull/978]: https://github.com/apollographql/apollo-rs/pull/978
 [pull/983]: https://github.com/apollographql/apollo-rs/pull/983
+[pull/984]: https://github.com/apollographql/apollo-rs/pull/984
 
 
 # [1.28.0](https://crates.io/crates/apollo-compiler/1.28.0) - 2025-04-24
