@@ -70,8 +70,12 @@ impl FindRecursiveDirective<'_> {
                 // input type was already processed
                 return Ok(());
             }
-            let mut new_guard = seen.push(type_def.name())?;
-            self.type_definition(&mut new_guard, type_def)?;
+            if !type_def.is_built_in() {
+                let mut new_guard = seen.push(type_def.name())?;
+                self.type_definition(&mut new_guard, type_def)?;
+            } else {
+                self.type_definition(seen, type_def)?;
+            }
         }
 
         Ok(())
