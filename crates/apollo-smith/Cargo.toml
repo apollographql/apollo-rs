@@ -1,6 +1,6 @@
 [package]
 name = "apollo-smith"
-version = "0.15.0" # When bumping, also update README.md
+version = "0.15.1" # When bumping, also update README.md
 edition = "2021"
 authors = ["Benjamin Coenen <benjamin.coenen@apollographql.com>"]
 license = "MIT OR Apache-2.0"
