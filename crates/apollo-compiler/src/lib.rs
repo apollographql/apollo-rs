@@ -8,13 +8,12 @@ pub mod collections;
 pub mod coordinate;
 pub mod diagnostic;
 pub mod executable;
-#[macro_use]
-mod execution;
 pub mod introspection;
 mod name;
 mod node;
 pub mod parser;
 pub mod request;
+pub mod resolvers;
 pub mod response;
 pub mod schema;
 pub mod validation;
