@@ -1,6 +1,7 @@
 use apollo_compiler::parser::Parser;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use expect_test::expect;
-use apollo_compiler::{ExecutableDocument, Schema};
 
 /// Build a chain of `size` fragments where each fragment recurses into a field and applies the
 /// next fragment in the chain.
@@ -348,7 +349,6 @@ type Query {
     "#]]
     .assert_eq(&errors.to_string());
 }
-
 
 #[test]
 fn handles_directive_with_nested_input_types() {
