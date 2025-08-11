@@ -22,32 +22,57 @@ struct FindRecursiveDirective<'s> {
 impl FindRecursiveDirective<'_> {
     fn type_definition(
         &self,
-        seen: &mut RecursionGuard<'_>,
+        directive_guard: &mut RecursionGuard<'_>,
+        type_guard: &mut RecursionGuard<'_>,
         def: &schema::ExtendedType,
     ) -> Result<(), CycleError<ast::Directive>> {
         match def {
             schema::ExtendedType::Scalar(scalar_type_definition) => {
-                self.directives(seen, &scalar_type_definition.directives)?;
+                self.directives(
+                    directive_guard,
+                    type_guard,
+                    &scalar_type_definition.directives,
+                )?;
             }
             schema::ExtendedType::Object(object_type_definition) => {
-                self.directives(seen, &object_type_definition.directives)?;
+                self.directives(
+                    directive_guard,
+                    type_guard,
+                    &object_type_definition.directives,
+                )?;
             }
             schema::ExtendedType::Interface(interface_type_definition) => {
-                self.directives(seen, &interface_type_definition.directives)?;
+                self.directives(
+                    directive_guard,
+                    type_guard,
+                    &interface_type_definition.directives,
+                )?;
             }
             schema::ExtendedType::Union(union_type_definition) => {
-                self.directives(seen, &union_type_definition.directives)?;
+                self.directives(
+                    directive_guard,
+                    type_guard,
+                    &union_type_definition.directives,
+                )?;
             }
             schema::ExtendedType::Enum(enum_type_definition) => {
-                self.directives(seen, &enum_type_definition.directives)?;
+                self.directives(
+                    directive_guard,
+                    type_guard,
+                    &enum_type_definition.directives,
+                )?;
                 for enum_value in enum_type_definition.values.values() {
-                    self.enum_value(seen, enum_value)?;
+                    self.enum_value(directive_guard, type_guard, enum_value)?;
                 }
             }
             schema::ExtendedType::InputObject(input_type_definition) => {
-                self.directives(seen, &input_type_definition.directives)?;
+                self.directives(
+                    directive_guard,
+                    type_guard,
+                    &input_type_definition.directives,
+                )?;
                 for input_value in input_type_definition.fields.values() {
-                    self.input_value(seen, input_value)?;
+                    self.input_value(directive_guard, type_guard, input_value)?;
                 }
             }
         }
@@ -57,24 +82,25 @@ impl FindRecursiveDirective<'_> {
 
     fn input_value(
         &self,
-        seen: &mut RecursionGuard<'_>,
+        directive_guard: &mut RecursionGuard<'_>,
+        type_guard: &mut RecursionGuard<'_>,
         input_value: &Node<ast::InputValueDefinition>,
     ) -> Result<(), CycleError<ast::Directive>> {
         for directive in &input_value.directives {
-            self.directive(seen, directive)?;
+            self.directive(directive_guard, type_guard, directive)?;
         }
 
         let type_name = input_value.ty.inner_named_type();
         if let Some(type_def) = self.schema.types.get(type_name) {
-            if seen.contains(type_def.name()) {
+            if type_guard.contains(type_def.name()) {
                 // input type was already processed
                 return Ok(());
             }
             if !type_def.is_built_in() {
-                let mut new_guard = seen.push(type_def.name())?;
-                self.type_definition(&mut new_guard, type_def)?;
+                let mut new_type_guard = type_guard.push(type_def.name())?;
+                self.type_definition(directive_guard, &mut new_type_guard, type_def)?;
             } else {
-                self.type_definition(seen, type_def)?;
+                self.type_definition(directive_guard, type_guard, type_def)?;
             }
         }
 
@@ -83,11 +109,12 @@ impl FindRecursiveDirective<'_> {
 
     fn enum_value(
         &self,
-        seen: &mut RecursionGuard<'_>,
+        directive_guard: &mut RecursionGuard<'_>,
+        type_guard: &mut RecursionGuard<'_>,
         enum_value: &Node<ast::EnumValueDefinition>,
     ) -> Result<(), CycleError<ast::Directive>> {
         for directive in &enum_value.directives {
-            self.directive(seen, directive)?;
+            self.directive(directive_guard, type_guard, directive)?;
         }
 
         Ok(())
@@ -95,26 +122,29 @@ impl FindRecursiveDirective<'_> {
 
     fn directives(
         &self,
-        seen: &mut RecursionGuard<'_>,
+        directive_guard: &mut RecursionGuard<'_>,
+        type_guard: &mut RecursionGuard<'_>,
         directives: &[schema::Component<ast::Directive>],
     ) -> Result<(), CycleError<ast::Directive>> {
         for directive in directives {
-            self.directive(seen, directive)?;
+            self.directive(directive_guard, type_guard, directive)?;
         }
         Ok(())
     }
 
     fn directive(
         &self,
-        seen: &mut RecursionGuard<'_>,
+        directive_guard: &mut RecursionGuard<'_>,
+        type_guard: &mut RecursionGuard<'_>,
         directive: &Node<ast::Directive>,
     ) -> Result<(), CycleError<ast::Directive>> {
-        if !seen.contains(&directive.name) {
+        if !directive_guard.contains(&directive.name) {
             if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
-                self.directive_definition(seen.push(&directive.name)?, def)
+                let mut new_directive_guard = directive_guard.push(&directive.name)?;
+                self.directive_definition(&mut new_directive_guard, type_guard, def)
                     .map_err(|error| error.trace(directive))?;
             }
-        } else if seen.first() == Some(&directive.name) {
+        } else if directive_guard.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
             // This prevents raising confusing errors when a directive `@b` which is not
             // self-referential uses a directive `@a` that *is*. The error with `@a` should
@@ -127,11 +157,12 @@ impl FindRecursiveDirective<'_> {
 
     fn directive_definition(
         &self,
-        mut seen: RecursionGuard<'_>,
+        directive_guard: &mut RecursionGuard<'_>,
+        type_guard: &mut RecursionGuard<'_>,
         def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), CycleError<ast::Directive>> {
         for input_value in &def.arguments {
-            self.input_value(&mut seen, input_value)?;
+            self.input_value(directive_guard, type_guard, input_value)?;
         }
 
         Ok(())
@@ -141,9 +172,15 @@ impl FindRecursiveDirective<'_> {
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), CycleError<ast::Directive>> {
-        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone());
-        FindRecursiveDirective { schema }
-            .directive_definition(recursion_stack.guard(), directive_def)
+        let mut directive_stack = RecursionStack::with_root(directive_def.name.clone());
+        let mut directive_guard = directive_stack.guard();
+        let mut type_stack = RecursionStack::new();
+        let mut type_guard = type_stack.guard();
+        FindRecursiveDirective { schema }.directive_definition(
+            &mut directive_guard,
+            &mut type_guard,
+            directive_def,
+        )
     }
 }
 
