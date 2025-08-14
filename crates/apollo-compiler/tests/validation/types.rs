@@ -3,9 +3,10 @@
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
-use expect_test::Expect;
+use expect_test::{expect, Expect};
 use std::sync::OnceLock;
 use unindent::unindent;
+use apollo_compiler::schema::SchemaBuilder;
 
 const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
   interface Mammal {
@@ -2015,4 +2016,33 @@ mod variable_default_values {
             "#]],
         );
     }
+}
+
+#[test]
+fn handles_built_in_type_redefinition() {
+    let schema = r#"
+scalar String
+
+type Query {
+  foo: String
+}
+"#;
+
+    let errors = Schema::parse_and_validate(schema, "schema.graphql")
+        .expect_err("invalid schema")
+        .errors;
+    let expected = expect![[r#"
+        Error: built-in scalar definitions must be omitted
+           ╭─[ schema.graphql:2:1 ]
+           │
+         2 │ scalar String
+           │ ──────┬──────  
+           │       ╰──────── remove this scalar definition
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+
+    let builder = SchemaBuilder::new()
+        .allow_builtin_redefinitions();
+    let _ = builder.parse(schema, "schema.graphql").build().expect("schema parsed successfully");
 }

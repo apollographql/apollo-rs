@@ -7,6 +7,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
+    allow_builtin_redefinitions: bool,
     pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
@@ -33,6 +34,7 @@ impl SchemaBuilder {
         BUILT_IN.get_or_init(|| {
             let mut builder = SchemaBuilder {
                 adopt_orphan_extensions: false,
+                allow_builtin_redefinitions: false,
                 schema: Schema {
                     sources: Default::default(),
                     schema_definition: Node::new(SchemaDefinition {
@@ -73,6 +75,12 @@ impl SchemaBuilder {
     /// accepted as if extending an empty definition instead of being rejected as errors.
     pub fn adopt_orphan_extensions(mut self) -> Self {
         self.adopt_orphan_extensions = true;
+        self
+    }
+
+    /// Configure the builder to allow SDL to contain scalar built-in types definitions.
+    pub fn allow_builtin_redefinitions(mut self) -> Self {
+        self.allow_builtin_redefinitions = true;
         self
     }
 
@@ -125,10 +133,14 @@ impl SchemaBuilder {
                         Entry::Occupied(entry) => {
                             let previous = entry.get();
                             if $is_scalar && previous.is_built_in() {
-                                self.errors.push(
-                                    $def.location(),
-                                    BuildError::BuiltInScalarTypeRedefinition,
-                                )
+                                if self.allow_builtin_redefinitions {
+                                    continue;
+                                } else {
+                                    self.errors.push(
+                                        $def.location(),
+                                        BuildError::BuiltInScalarTypeRedefinition,
+                                    )
+                                }
                             } else {
                                 self.errors.push(
                                     $def.name.location(),
@@ -264,6 +276,7 @@ impl SchemaBuilder {
     pub(crate) fn build_inner(self) -> (Schema, DiagnosticList) {
         let SchemaBuilder {
             adopt_orphan_extensions,
+            allow_builtin_redefinitions: _allow_builtin_redefinitions,
             mut schema,
             schema_definition,
             orphan_type_extensions,
