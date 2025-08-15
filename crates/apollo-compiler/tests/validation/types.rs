@@ -2043,7 +2043,7 @@ type Query {
     "#]];
     expected.assert_eq(&errors.to_string());
 
-    let builder = SchemaBuilder::new().allow_builtin_redefinitions();
+    let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
     let _ = builder
         .parse(schema, "schema.graphql")
         .build()
