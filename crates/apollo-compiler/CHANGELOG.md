@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Adds `allow_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in
+- **Adds `ignore_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in
   scalar definitions - [dariuszkuc], [pull/990]**
 
 
