@@ -662,7 +662,7 @@ impl SchemaDefinition {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
@@ -858,7 +858,7 @@ impl ExtendedType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         match self {
             Self::Scalar(ty) => Box::new(ty.iter_origins()) as Box<dyn Iterator<Item = _>>,
             Self::Object(ty) => Box::new(ty.iter_origins()),
@@ -887,7 +887,7 @@ impl ScalarType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives.iter().map(|dir| &dir.origin)
     }
 
@@ -909,7 +909,7 @@ impl ObjectType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
@@ -939,7 +939,7 @@ impl InterfaceType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
@@ -969,7 +969,7 @@ impl UnionType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
@@ -994,7 +994,7 @@ impl EnumType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
@@ -1019,7 +1019,7 @@ impl InputObjectType {
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
         self.directives
             .iter()
             .map(|dir| &dir.origin)
