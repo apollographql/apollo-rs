@@ -7,7 +7,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
-    allow_builtin_redefinitions: bool,
+    ignore_builtin_redefinitions: bool,
     pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
@@ -34,7 +34,7 @@ impl SchemaBuilder {
         BUILT_IN.get_or_init(|| {
             let mut builder = SchemaBuilder {
                 adopt_orphan_extensions: false,
-                allow_builtin_redefinitions: false,
+                ignore_builtin_redefinitions: false,
                 schema: Schema {
                     sources: Default::default(),
                     schema_definition: Node::new(SchemaDefinition {
@@ -78,9 +78,11 @@ impl SchemaBuilder {
         self
     }
 
-    /// Configure the builder to allow SDL to contain scalar built-in types definitions.
-    pub fn allow_builtin_redefinitions(mut self) -> Self {
-        self.allow_builtin_redefinitions = true;
+    /// Configure the builder to allow SDL to contain scalar built-in types re-definitions.
+    /// Re-definitions are going to be effectively ignored and compiler will continue to use
+    /// built-in GraphQL spec definitions.
+    pub fn ignore_builtin_redefinitions(mut self) -> Self {
+        self.ignore_builtin_redefinitions = true;
         self
     }
 
@@ -133,7 +135,7 @@ impl SchemaBuilder {
                         Entry::Occupied(entry) => {
                             let previous = entry.get();
                             if $is_scalar && previous.is_built_in() {
-                                if self.allow_builtin_redefinitions {
+                                if self.ignore_builtin_redefinitions {
                                     continue;
                                 } else {
                                     self.errors.push(
@@ -276,7 +278,7 @@ impl SchemaBuilder {
     pub(crate) fn build_inner(self) -> (Schema, DiagnosticList) {
         let SchemaBuilder {
             adopt_orphan_extensions,
-            allow_builtin_redefinitions: _allow_builtin_redefinitions,
+            ignore_builtin_redefinitions: _allow_builtin_redefinitions,
             mut schema,
             schema_definition,
             orphan_type_extensions,
