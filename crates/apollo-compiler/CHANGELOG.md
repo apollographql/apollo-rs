@@ -22,7 +22,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Features
 
 - **Adds `allow_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in
-  scalar definitions- [dariuszkuc], [pull/990]**
+  scalar definitions - [dariuszkuc], [pull/990]**
 
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
