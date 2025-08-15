@@ -16,6 +16,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation-->
+# [1.29.1](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-15
+
+## Fixes
+- **Fix `iter_origin()` to be a pub method- [duckki], [pull/989]**
+
+[duckki]: https://github.com/duckki
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
 
