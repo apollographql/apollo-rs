@@ -17,13 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2025-mm-dd
+# [1.30.0] (unreleased) - 2025-08-dd
 
 ## Features
 
 - **Adds `ignore_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in
   scalar definitions - [dariuszkuc], [pull/990]**
 
+## Fixes
+
+- **Fix possible stack overflow in validation of directive definition arguments with nested types - [dariuszkuc], [pull/987]**
+- **Fix `iter_origin()` to be a pub method- [duckki], [pull/989]**
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
 
