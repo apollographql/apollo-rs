@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
+- **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993]**
 - **Fix possible stack overflow in validation of directive definition arguments with nested types - [dariuszkuc], [pull/987]**
 - **Fix `iter_origin()` to be a pub method- [duckki], [pull/989]**
 
