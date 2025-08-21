@@ -285,7 +285,9 @@ impl SchemaBuilder {
             mut errors,
         } = self;
         schema.sources = errors.sources.clone();
-        // https://github.com/apollographql/apollo-rs/pull/678
+
+        // process orphan type extensions (https://github.com/apollographql/apollo-rs/pull/678) first,
+        // so they can be reflected on the implicit schema definition below
         if adopt_orphan_extensions {
             for (type_name, extensions) in orphan_type_extensions {
                 let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
@@ -300,6 +302,7 @@ impl SchemaBuilder {
                 }
             }
         }
+
         match schema_definition {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
