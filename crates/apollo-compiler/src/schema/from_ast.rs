@@ -285,6 +285,21 @@ impl SchemaBuilder {
             mut errors,
         } = self;
         schema.sources = errors.sources.clone();
+        // https://github.com/apollographql/apollo-rs/pull/678
+        if adopt_orphan_extensions {
+            for (type_name, extensions) in orphan_type_extensions {
+                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
+                let previous = schema.types.insert(type_name, type_def);
+                assert!(previous.is_none());
+            }
+        } else {
+            for extensions in orphan_type_extensions.values() {
+                for ext in extensions {
+                    let name = ext.name().unwrap().clone();
+                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
+                }
+            }
+        }
         match schema_definition {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
@@ -320,21 +335,6 @@ impl SchemaBuilder {
                             errors.push(ext.location(), BuildError::OrphanSchemaExtension)
                         }
                     }
-                }
-            }
-        }
-        // https://github.com/apollographql/apollo-rs/pull/678
-        if adopt_orphan_extensions {
-            for (type_name, extensions) in orphan_type_extensions {
-                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
-                let previous = schema.types.insert(type_name, type_def);
-                assert!(previous.is_none());
-            }
-        } else {
-            for extensions in orphan_type_extensions.values() {
-                for ext in extensions {
-                    let name = ext.name().unwrap().clone();
-                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
                 }
             }
         }
