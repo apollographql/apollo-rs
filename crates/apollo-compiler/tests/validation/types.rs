@@ -2020,7 +2020,7 @@ mod variable_default_values {
 }
 
 #[test]
-fn handles_built_in_type_redefinition() {
+fn handles_built_in_scalar_redefinition() {
     let schema = r#"
 scalar String
 
@@ -2040,6 +2040,51 @@ type Query {
            │ ──────┬──────  
            │       ╰──────── remove this scalar definition
         ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+
+    let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
+    let _ = builder
+        .parse(schema, "schema.graphql")
+        .build()
+        .expect("schema parsed successfully");
+}
+
+#[test]
+fn handles_built_in_type_redefinition() {
+    let schema = r#"
+type __Directive {
+  name: String!
+  description: String!
+  isRepeatable: String!
+  args: __InputValue
+  locations: String!
+}
+
+type Query {
+  foo: String
+}
+"#;
+
+    let errors = Schema::parse_and_validate(schema, "schema.graphql")
+        .expect_err("invalid schema")
+        .errors;
+    let expected = expect![[r#"
+        Error: the type `__Directive` is defined multiple times in the schema
+            ╭─[ built_in.graphql:87:6 ]
+            │
+         87 │ type __Directive {
+            │      ─────┬─────  
+            │           ╰─────── previous definition of `__Directive` here
+            │
+            ├─[ schema.graphql:2:6 ]
+            │
+          2 │ type __Directive {
+            │      ─────┬─────  
+            │           ╰─────── `__Directive` redefined here
+            │ 
+            │ Help: remove or rename one of the definitions, or use `extend`
+        ────╯
     "#]];
     expected.assert_eq(&errors.to_string());
 

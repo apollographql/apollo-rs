@@ -134,15 +134,15 @@ impl SchemaBuilder {
                         }
                         Entry::Occupied(entry) => {
                             let previous = entry.get();
+                            if self.ignore_builtin_redefinitions && previous.is_built_in() {
+                                continue;
+                            }
+
                             if $is_scalar && previous.is_built_in() {
-                                if self.ignore_builtin_redefinitions {
-                                    continue;
-                                } else {
-                                    self.errors.push(
-                                        $def.location(),
-                                        BuildError::BuiltInScalarTypeRedefinition,
-                                    )
-                                }
+                                self.errors.push(
+                                    $def.location(),
+                                    BuildError::BuiltInScalarTypeRedefinition,
+                                )
                             } else {
                                 self.errors.push(
                                     $def.name.location(),
