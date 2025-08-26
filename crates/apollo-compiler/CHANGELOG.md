@@ -21,6 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Update `ignore_builtin_redefinitions` option to allow SDL to contain built-in meta type definitions - [dariuszkuc], [pull/994]**
 - **Adds `ignore_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in
   scalar definitions - [dariuszkuc], [pull/990]**
 
