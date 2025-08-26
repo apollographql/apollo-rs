@@ -21,15 +21,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Update `ignore_builtin_redefinitions` option to allow SDL to contain built-in meta type definitions - [dariuszkuc], [pull/994]**
-- **Adds `ignore_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in
-  scalar definitions - [dariuszkuc], [pull/990]**
+- **Adds `ignore_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in type
+  definitions - [dariuszkuc], [pull/990] and [pull/994]**
 
 ## Fixes
 
-- **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993]**
-- **Fix possible stack overflow in validation of directive definition arguments with nested types - [dariuszkuc], [pull/987]**
-- **Fix `iter_origin()` to be a pub method- [duckki], [pull/989]**
+- **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993](#993)**
+- **Fix possible stack overflow in validation of directive definition arguments with nested types - [dariuszkuc], [pull/987](#987)**
+- **Fix `iter_origin()` to be a pub method- [duckki], [pull/989](#989)**
+
+[pull/994]: https://github.com/apollographql/apollo-rs/pull/994
+[pull/993]: https://github.com/apollographql/apollo-rs/pull/993
+[pull/990]: https://github.com/apollographql/apollo-rs/pull/990
+[pull/989]: https://github.com/apollographql/apollo-rs/pull/989
+[pull/987]: https://github.com/apollographql/apollo-rs/pull/987
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
 
