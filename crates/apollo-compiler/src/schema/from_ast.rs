@@ -78,7 +78,7 @@ impl SchemaBuilder {
         self
     }
 
-    /// Configure the builder to allow SDL to contain scalar built-in types re-definitions.
+    /// Configure the builder to allow SDL to contain built-in type re-definitions.
     /// Re-definitions are going to be effectively ignored and compiler will continue to use
     /// built-in GraphQL spec definitions.
     pub fn ignore_builtin_redefinitions(mut self) -> Self {
