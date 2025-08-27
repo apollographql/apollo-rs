@@ -17,7 +17,7 @@ fn handles_built_in_scalar_redefinition() {
   "#;
 
     let errors = Schema::parse_and_validate(schema, "schema.graphql")
-        .expect_err("valid schema")
+        .expect_err("should be invalid schema")
         .errors;
     let expected = expect![[r#"
         Error: built-in scalar definitions must be omitted
@@ -137,7 +137,7 @@ fn handles_built_in_type_redefinition() {
      "#;
 
     let errors = Schema::parse_and_validate(schema, "schema.graphql")
-        .expect_err("valid schema")
+        .expect_err("should be invalid schema")
         .errors;
     let expected = expect![[r#"
         Error: the type `__Directive` is defined multiple times in the schema
