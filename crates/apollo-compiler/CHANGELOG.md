@@ -17,24 +17,84 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.30.0] (unreleased) - 2025-08-dd
+# [1.30.0] (unreleased) - 2025-08-27
 
 ## Features
 
-- **Adds `ignore_builtin_redefinitions` option to `SchemaBuilder` to allow SDL to contain built-in type
-  definitions - [dariuszkuc], [pull/990] and [pull/994]**
+- **Add `ignore_builtin_redefinitions` method to `SchemaBuilder`- [dariuszkuc], [pull/990] and [pull/994]**
+
+  This allows input SDL to contain built-in types.
+
+  The following SDL will result in a validation error, for example:
+  ```rust
+      let schema = r#"
+      type __Directive {
+        name: String!
+        description: String!
+        isRepeatable: String!
+        args: __InputValue
+        locations: String!
+      }
+      type Query {
+        foo: String
+      }
+      "#;
+
+    let valid = Schema::parse_and_validate(schema, "schema.graphql")?
+  ```
+  Error:
+  ```shell
+    Error: the type `__Directive` is defined multiple times in the schema
+      ╭─[ built_in.graphql:87:6 ]
+      │
+    87 │ type __Directive {
+      │      ─────┬─────  
+      │           ╰─────── previous definition of `__Directive` here
+      │
+      ├─[ schema.graphql:2:6 ]
+      │
+    2 │ type __Directive {
+      │      ─────┬─────  
+      │           ╰─────── `__Directive` redefined here
+      │ 
+      │ Help: remove or rename one of the definitions, or use `extend`
+  ────╯
+  ```
+
+  Using the `ignore_builtin_redefinitions` method, however, successfully passes validation given the same schema:
+  ```rust
+    let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
+    let _ = builder
+        .parse(schema, "schema.graphql")
+        .build()
+        .expect("schema parsed successfully");
+  ```
 
 ## Fixes
 
 - **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993](#993)**
-- **Fix possible stack overflow in validation of directive definition arguments with nested types - [dariuszkuc], [pull/987](#987)**
-- **Fix `iter_origin()` to be a pub method- [duckki], [pull/989](#989)**
+  `SchemaBuilder`'s `adopt_orphan_extensions` method allows users to define type
+  extensions without an existing type definition. But before this fix, orphan
+  `RootTypeOperation` extensions would result in an invalid schema despite
+  `adopt_orphan_extensions` being enabled. Using this method now generates a
+  valid schema for all lone extensions.   
 
+- **Fix directive definition validation with nested types arguments - [dariuszkuc], [pull/987](#987)**
+  Directive definition recursion validation was previously only checking for
+  recursion chains with directive names, but not for recursion with the
+  definition's arguments nested types, which also can cause a stack overflow.
+
+- **Fix `iter_origins()` to be a pub method - [duckki], [pull/989](#989)**
+  Previously added `::iter_origins()` methods on Schema and Type Definitions was not made `pub`.
+
+[dariuszkuc]: https://github.com/dariuszkuc
+[duckki]: https://github.com/duckki 
 [pull/994]: https://github.com/apollographql/apollo-rs/pull/994
 [pull/993]: https://github.com/apollographql/apollo-rs/pull/993
 [pull/990]: https://github.com/apollographql/apollo-rs/pull/990
 [pull/989]: https://github.com/apollographql/apollo-rs/pull/989
 [pull/987]: https://github.com/apollographql/apollo-rs/pull/987
+
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
 
