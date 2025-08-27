@@ -73,6 +73,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 
 - **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993](#993)**
+  
   `SchemaBuilder`'s `adopt_orphan_extensions` method allows users to define type
   extensions without an existing type definition. But before this fix, orphan
   `RootTypeOperation` extensions would result in an invalid schema despite
@@ -80,6 +81,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   valid schema for all lone extensions.   
 
 - **Fix directive definition validation with nested types arguments - [dariuszkuc], [pull/987](#987)**
+  
   Directive definition with nested argument types resulted in a stack overflow, for example
   ```graphql
     directive @custom(input: NestedInput) on OBJECT | INTERFACE
