@@ -61,7 +61,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ────╯
   ```
 
-  Using the `ignore_builtin_redefinitions` method, however, successfully passes validation given the same schema:
+  However, when using the `ignore_builtin_redefinitions` method, this successfully passes validation given the same schema:
   ```rust
     let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
     let _ = builder
@@ -80,9 +80,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   valid schema for all lone extensions.   
 
 - **Fix directive definition validation with nested types arguments - [dariuszkuc], [pull/987](#987)**
-  Directive definition recursion validation was previously only checking for
-  recursion chains with directive names, but not for recursion with the
-  definition's arguments nested types, which also can cause a stack overflow.
+  Directive definition with nested argument types resulted in a stack overflow, for example
+  ```graphql
+    directive @custom(input: NestedInput) on OBJECT | INTERFACE
+
+    input NestedInput {
+      name: String
+      nested: NestedInput
+    }
+    
+    type Query @custom(input: {name: "hello", nested: {name: "hello"}}) {
+      foo: String
+    }
+    
+    query myQuery {
+      foo
+    }
+  ```
+  This fix ensures the above example is possible and does not result in a validation error.
 
 - **Fix `iter_origins()` to be a pub method - [duckki], [pull/989](#989)**
   Previously added `::iter_origins()` methods on Schema and Type Definitions was not made `pub`.
