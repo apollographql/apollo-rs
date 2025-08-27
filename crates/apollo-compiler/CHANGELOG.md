@@ -102,6 +102,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This fix ensures the above example is possible and does not result in a validation error.
 
 - **Fix `iter_origins()` to be a pub method - [duckki], [pull/989](#989)**
+  
   Previously added `::iter_origins()` methods on Schema and Type Definitions was not made `pub`.
 
 [dariuszkuc]: https://github.com/dariuszkuc
