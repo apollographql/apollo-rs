@@ -1,10 +1,8 @@
 //! Ported from graphql-js, 2023-11-16
 //! https://github.com/graphql/graphql-js/blob/0b7590f0a2b65e6210da2e49be0d8e6c27781af2/src/validation/__tests__/ValuesOfCorrectTypeRule-test.ts
-use apollo_compiler::schema::SchemaBuilder;
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
-use expect_test::expect;
 use expect_test::Expect;
 use std::sync::OnceLock;
 use unindent::unindent;
@@ -2017,80 +2015,4 @@ mod variable_default_values {
             "#]],
         );
     }
-}
-
-#[test]
-fn handles_built_in_scalar_redefinition() {
-    let schema = r#"
-scalar String
-
-type Query {
-  foo: String
-}
-"#;
-
-    let errors = Schema::parse_and_validate(schema, "schema.graphql")
-        .expect_err("invalid schema")
-        .errors;
-    let expected = expect![[r#"
-        Error: built-in scalar definitions must be omitted
-           ╭─[ schema.graphql:2:1 ]
-           │
-         2 │ scalar String
-           │ ──────┬──────  
-           │       ╰──────── remove this scalar definition
-        ───╯
-    "#]];
-    expected.assert_eq(&errors.to_string());
-
-    let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
-    let _ = builder
-        .parse(schema, "schema.graphql")
-        .build()
-        .expect("schema parsed successfully");
-}
-
-#[test]
-fn handles_built_in_type_redefinition() {
-    let schema = r#"
-type __Directive {
-  name: String!
-  description: String!
-  isRepeatable: String!
-  args: __InputValue
-  locations: String!
-}
-
-type Query {
-  foo: String
-}
-"#;
-
-    let errors = Schema::parse_and_validate(schema, "schema.graphql")
-        .expect_err("invalid schema")
-        .errors;
-    let expected = expect![[r#"
-        Error: the type `__Directive` is defined multiple times in the schema
-            ╭─[ built_in.graphql:87:6 ]
-            │
-         87 │ type __Directive {
-            │      ─────┬─────  
-            │           ╰─────── previous definition of `__Directive` here
-            │
-            ├─[ schema.graphql:2:6 ]
-            │
-          2 │ type __Directive {
-            │      ─────┬─────  
-            │           ╰─────── `__Directive` redefined here
-            │ 
-            │ Help: remove or rename one of the definitions, or use `extend`
-        ────╯
-    "#]];
-    expected.assert_eq(&errors.to_string());
-
-    let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
-    let _ = builder
-        .parse(schema, "schema.graphql")
-        .build()
-        .expect("schema parsed successfully");
 }
