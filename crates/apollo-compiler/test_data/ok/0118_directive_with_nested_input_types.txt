@@ -1,0 +1,204 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        47: SourceFile {
+            path: "0118_directive_with_nested_input_types.graphql",
+            source_text: "directive @custom(input: NestedInput) on OBJECT | INTERFACE\n\ninput NestedInput {\n  name: String\n  nested: NestedInput\n}\n\ntype Query @custom(input: {name: \"hello\", nested: {name: \"hello\"}}) {\n  foo: String\n}\n\nquery myQuery{\n  foo\n}",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+        "custom": 0..59 @47 DirectiveDefinition {
+            description: None,
+            name: "custom",
+            arguments: [
+                18..36 @47 InputValueDefinition {
+                    description: None,
+                    name: "input",
+                    ty: 25..36 @47 Named(
+                        "NestedInput",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            repeatable: false,
+            locations: [
+                "OBJECT",
+                "INTERFACE",
+            ],
+        },
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "NestedInput": InputObject(
+            61..119 @47 InputObjectType {
+                description: None,
+                name: "NestedInput",
+                directives: [],
+                fields: {
+                    "name": Component {
+                        origin: Definition,
+                        node: 83..95 @47 InputValueDefinition {
+                            description: None,
+                            name: "name",
+                            ty: 89..95 @47 Named(
+                                "String",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                    "nested": Component {
+                        origin: Definition,
+                        node: 98..117 @47 InputValueDefinition {
+                            description: None,
+                            name: "nested",
+                            ty: 106..117 @47 Named(
+                                "NestedInput",
+                            ),
+                            default_value: None,
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            121..206 @47 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [
+                    Component {
+                        origin: Definition,
+                        node: 132..188 @47 Directive {
+                            name: "custom",
+                            arguments: [
+                                140..187 @47 Argument {
+                                    name: "input",
+                                    value: 147..187 @47 Object(
+                                        [
+                                            (
+                                                "name",
+                                                154..161 @47 String(
+                                                    "hello",
+                                                ),
+                                            ),
+                                            (
+                                                "nested",
+                                                171..186 @47 Object(
+                                                    [
+                                                        (
+                                                            "name",
+                                                            178..185 @47 String(
+                                                                "hello",
+                                                            ),
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+                fields: {
+                    "foo": Component {
+                        origin: Definition,
+                        node: 193..204 @47 FieldDefinition {
+                            description: None,
+                            name: "foo",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        47: SourceFile {
+            path: "0118_directive_with_nested_input_types.graphql",
+            source_text: "directive @custom(input: NestedInput) on OBJECT | INTERFACE\n\ninput NestedInput {\n  name: String\n  nested: NestedInput\n}\n\ntype Query @custom(input: {name: \"hello\", nested: {name: \"hello\"}}) {\n  foo: String\n}\n\nquery myQuery{\n  foo\n}",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "myQuery": 208..230 @47 Operation {
+                operation_type: Query,
+                name: Some(
+                    "myQuery",
+                ),
+                variables: [],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Query",
+                    selections: [
+                        Field(
+                            225..228 @47 Field {
+                                definition: 193..204 @47 FieldDefinition {
+                                    description: None,
+                                    name: "foo",
+                                    arguments: [],
+                                    ty: Named(
+                                        "String",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "foo",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "String",
+                                    selections: [],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+        },
+    },
+    fragments: {},
+}
