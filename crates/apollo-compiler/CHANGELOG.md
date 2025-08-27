@@ -27,7 +27,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   The following SDL will result in a validation error, for example:
   ```rust
-      let schema = r#"
+    let schema = r#"
       type __Directive {
         name: String!
         description: String!
@@ -47,7 +47,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     Error: the type `__Directive` is defined multiple times in the schema
       ╭─[ built_in.graphql:87:6 ]
       │
-    87 │ type __Directive {
+  87 │ type __Directive {
       │      ─────┬─────  
       │           ╰─────── previous definition of `__Directive` here
       │
