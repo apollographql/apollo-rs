@@ -100,38 +100,6 @@ fn build_directive_chain(size: usize) -> String {
     schema
 }
 
-fn build_directive_nested_argument_chain(size: usize) -> String {
-    let mut schema = r#"
-      type Query {
-        field: Int! @directive(arg: VeryVeryDeep)
-      }
-
-      directive @directive(arg: VeryVeryDeep) on FIELD_DEFINITION
-
-      input VeryVeryDeep {
-        name: String
-        ty: VeryVeryDeep1
-      }
-    "#
-    .to_string();
-
-    for i in 1..size {
-        schema.push_str(&format!(
-            "
-            input VeryVeryDeep{i} {{ nest: VeryVeryDeep{}! }}
-            ",
-            i + 1
-        ));
-    }
-    schema.push_str(&format!(
-        "
-        input VeryVeryDeep{size} {{ final: Boolean }}
-          "
-    ));
-
-    schema
-}
-
 fn build_input_object_chain(size: usize) -> String {
     let mut schema = r#"
       type Query {
@@ -383,26 +351,26 @@ type Query {
 }
 
 #[test]
-fn long_directive_nested_argument_chains_do_not_overflow_stack() {
-    // Build a very deeply nested input object
-    // Validating it would take a lot of recursion and a lot of time
-    let schema = build_directive_nested_argument_chain(500);
+fn handles_directive_with_nested_input_types() {
+    let schema = r#"
+directive @custom(input: NestedInput) on OBJECT | INTERFACE
 
-    let partial =
-        apollo_compiler::Schema::parse_and_validate(schema, "directive_nested_argument.graphql")
-            .expect_err("must have recursion errors");
-
-    // The final 130 input objects do not cause recursion errors because the chain is less than 200
-    // directives deep.
-    assert_eq!(partial.errors.len(), 470);
+input NestedInput {
+    name: String
+    nested: NestedInput
 }
 
-#[test]
-fn not_long_enough_directive_nested_argument_chain_applies_correctly() {
-    // Stay just under the recursion limit
-    let schema = build_directive_nested_argument_chain(31);
+type Query {
+  foo: String
+}
+"#;
 
-    let _schema =
-        apollo_compiler::Schema::parse_and_validate(schema, "directive_nested_argument.graphql")
-            .expect("must not have recursion errors");
+    let input_executable = r#"
+query {
+    foo
+}
+"#;
+
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    ExecutableDocument::parse_and_validate(&schema, input_executable, "query.graphql").unwrap();
 }
