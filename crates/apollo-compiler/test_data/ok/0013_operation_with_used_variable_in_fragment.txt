@@ -210,12 +210,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "ExampleQuery": 0..81 @15 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "ExampleQuery",
                 ),
                 variables: [
                     19..33 @15 VariableDefinition {
+                        description: None,
                         name: "variable",
                         ty: 30..33 @15 Named(
                             "Int",
@@ -294,6 +296,7 @@ ExecutableDocument {
     },
     fragments: {
         "subFrag": 83..163 @15 Fragment {
+            description: None,
             name: "subFrag",
             directives: [],
             selection_set: SelectionSet {
