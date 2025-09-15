@@ -140,7 +140,7 @@ fn bench_many_extensions(c: &mut Criterion) {
         b.iter(|| {
             let doc =
                 ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
-            black_box(doc);
+            std::hint::black_box(doc);
         });
     });
 }
