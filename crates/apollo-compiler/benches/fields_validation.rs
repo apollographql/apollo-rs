@@ -114,11 +114,43 @@ fn bench_many_types(c: &mut Criterion) {
     });
 }
 
+fn bench_many_extensions(c: &mut Criterion) {
+    let num_extensions = 10_000;
+    let mut schema = String::new();
+    schema.push_str("type Query { a: A }\n");
+    for i in 1..=num_extensions {
+        schema.push_str(&format!("interface I{i} {{ f{i}: String }}\n"));
+    }
+    schema.push_str("type A { f0: String }\n");
+    for i in 1..=num_extensions {
+        schema.push_str(&format!(
+            "extend type A implements I{i} {{ f{i}: String }}\n"
+        ));
+    }
+    let schema = Schema::parse_and_validate(&schema, "schema.graphql").unwrap();
+
+    let mut query = String::new();
+    query.push_str("{ a { ");
+    for i in 1..=num_extensions {
+        query.push_str(&format!("f{i} "));
+    }
+    query.push_str("} }");
+
+    c.bench_function("many_extensions", move |b| {
+        b.iter(|| {
+            let doc =
+                ExecutableDocument::parse_and_validate(&schema, &query, "query.graphql").unwrap();
+            std::hint::black_box(doc);
+        });
+    });
+}
+
 criterion_group!(
     fields,
     bench_many_same_field,
     bench_many_same_nested_field,
     bench_many_arguments,
     bench_many_types,
+    bench_many_extensions,
 );
 criterion_main!(fields);
