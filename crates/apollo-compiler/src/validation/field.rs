@@ -33,10 +33,18 @@ pub(crate) fn validate_field(
 
     super::argument::validate_arguments(diagnostics, &field.arguments);
 
-    // Return early if we don't know the type--this can happen if we are nested deeply
-    // inside a selection set that has a wrong field, or if we are validating a standalone
-    // operation without a schema.
+    // If we don't know the type (no schema, or invalid parent), we cannot perform
+    // type-aware checks for this field. However, for standalone executable validation
+    // we still want to traverse into the nested selection set so that validations
+    // that do not require a schema (like missing fragment detection) can run.
     let Some((schema, against_type)) = against_type else {
+        super::selection::validate_selection_set(
+            diagnostics,
+            document,
+            None,
+            &field.selection_set,
+            context,
+        );
         return;
     };
 
