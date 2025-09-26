@@ -119,8 +119,10 @@ fn coerce_variable_value(
                 }
             }
             "Float" => {
-                // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
-                if value.is_f64() {
+                // https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
+                // Accept any JSON number (`int` or `float`) that coerces to a finite f64,
+                // rejecting special values (NaN, +∞, -∞) as required by the GraphQL spec.
+                if value.as_f64().is_some_and(f64::is_finite) {
                     return Ok(value.clone());
                 }
             }
