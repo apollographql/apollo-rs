@@ -140,15 +140,18 @@ impl DocumentBuilder<'_> {
 
         let arbitrary_idx: usize = self.u.arbitrary::<usize>()?;
 
-        let mut query = (arbitrary_idx % 2 == 0)
+        let mut query = arbitrary_idx
+            .is_multiple_of(2)
             .then(|| self.u.choose(&named_types))
             .transpose()?
             .cloned();
-        let mut mutation = (arbitrary_idx % 3 == 0)
+        let mut mutation = arbitrary_idx
+            .is_multiple_of(3)
             .then(|| self.u.choose(&named_types))
             .transpose()?
             .cloned();
-        let mut subscription = (arbitrary_idx % 5 == 0)
+        let mut subscription = arbitrary_idx
+            .is_multiple_of(5)
             .then(|| self.u.choose(&named_types))
             .transpose()?
             .cloned();
