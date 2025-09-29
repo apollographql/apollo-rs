@@ -339,8 +339,13 @@ fn test_graphql_float_variable_coercion() {
         &parsed_schema,
         "mutation MyCarInsertMutation($car: CarInput!){ insertACar(car:$car) { id kilometers } }",
         "MyCarInsertMutation",
-    ).unwrap();
-    let operation = executable_mutation.operations.get(Some("MyCarInsertMutation")).unwrap();
+    )
+    .unwrap();
+
+    let operation = executable_mutation
+        .operations
+        .get(Some("MyCarInsertMutation"))
+        .unwrap();
 
     let kilometers_value = 3000;
 
@@ -360,5 +365,9 @@ fn test_graphql_float_variable_coercion() {
         .get("car")
         .and_then(|value| value.as_object())
         .expect("coerced `car` object");
-    assert_eq!(car.get("kilometers").unwrap(), kilometers_value, "kilometers should be present and a valid amount.");
+    assert_eq!(
+        car.get("kilometers").unwrap(),
+        kilometers_value,
+        "kilometers should be present and a valid amount."
+    );
 }
