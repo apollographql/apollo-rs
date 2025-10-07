@@ -1,6 +1,5 @@
 mod field_merging;
 mod ignore_builtin_redefinition;
-mod input_coercion;
 mod interface;
 mod object;
 mod operation;
