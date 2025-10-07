@@ -1,3 +1,6 @@
+use apollo_compiler::request::coerce_variable_values;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 
 #[test]
 fn test_graphql_float_variable_coercion() {
@@ -17,7 +20,7 @@ fn test_graphql_float_variable_coercion() {
         "mutation MyCarInsertMutation($car: CarInput!){ insertACar(car:$car) { id kilometers } }",
         "MyCarInsertMutation",
     )
-        .unwrap();
+    .unwrap();
 
     let operation = executable_mutation
         .operations
