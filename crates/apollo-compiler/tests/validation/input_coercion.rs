@@ -9,8 +9,7 @@ fn test_graphql_float_variable_coercion() {
       type Car { id: ID! kilometers: Float! }
       input CarInput { kilometers: Float! }
       type Query { getCarById(id: ID!): Car }
-      type Mutation { insertACar(car: CarInput!): Car!
-      }
+      type Mutation { insertACar(car: CarInput!): Car! }
     "#;
 
     let parsed_schema = Schema::parse_and_validate(sdl, "sdl").unwrap();
