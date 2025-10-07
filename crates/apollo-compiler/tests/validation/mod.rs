@@ -352,3 +352,33 @@ type TestObject {
         }"#]];
     expected.assert_eq(&actual);
 }
+
+#[test]
+fn missing_fragment_in_standalone_validation() {
+    let input = r#"
+        query {
+            company {
+                user {
+                  ...UserFragment
+                }
+
+                ...CompanyFragment
+            }
+        }
+
+        fragment UserFragment on User {
+            id
+            name
+        }
+    "#;
+
+    let doc = ast::Document::parse(input, "query.graphql").unwrap();
+    let diagnostics = doc
+        .validate_standalone_executable()
+        .expect_err("should report missing fragment error");
+    let errors = diagnostics.to_string();
+    assert!(
+        errors.contains("cannot find fragment `CompanyFragment` in this document"),
+        "{errors}"
+    );
+}
