@@ -1,0 +1,14 @@
+"Get all our time machine models."
+{
+  timeMachines {
+    model
+  }
+}
+
+type TimeMachine {
+  id: ID!
+  model: String
+}
+type Query {
+  timeMachines: [TimeMachine]
+}
