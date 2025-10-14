@@ -1,0 +1,3 @@
+"Operation with description - now supported in September 2025 spec"
+query TestQuery { field }
+

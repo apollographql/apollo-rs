@@ -1,0 +1,22 @@
+- DOCUMENT@0..95
+    - OPERATION_DEFINITION@0..93
+        - DESCRIPTION@0..67
+            - STRING_VALUE@0..67
+                - STRING@0..67 "\"Operation with description - now supported in September 2025 spec\""
+        - WHITESPACE@67..68 "\n"
+        - OPERATION_TYPE@68..73
+            - query_KW@68..73 "query"
+        - WHITESPACE@73..74 " "
+        - NAME@74..83
+            - IDENT@74..83 "TestQuery"
+        - WHITESPACE@83..84 " "
+        - SELECTION_SET@84..93
+            - L_CURLY@84..85 "{"
+            - WHITESPACE@85..86 " "
+            - FIELD@86..91
+                - NAME@86..91
+                    - IDENT@86..91 "field"
+            - WHITESPACE@91..92 " "
+            - R_CURLY@92..93 "}"
+    - WHITESPACE@93..95 "\n\n"
+recursion limit: 500, high: 1

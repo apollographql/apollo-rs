@@ -165,6 +165,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "myQuery": 193..216 @48 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "myQuery",

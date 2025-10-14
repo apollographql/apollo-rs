@@ -252,6 +252,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "getProduct": 0..68 @12 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "getProduct",

@@ -162,6 +162,7 @@ ExecutableDocument {
     operations: OperationMap {
         anonymous: Some(
             173..292 @29 Operation {
+                description: None,
                 operation_type: Query,
                 name: None,
                 variables: [],

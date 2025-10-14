@@ -172,12 +172,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "Q": 207..263 @43 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "Q",
                 ),
                 variables: [
                     216..224 @43 VariableDefinition {
+                        description: None,
                         name: "a",
                         ty: 220..224 @43 NonNullNamed(
                             "Int",
@@ -186,6 +188,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     226..237 @43 VariableDefinition {
+                        description: None,
                         name: "f",
                         ty: 230..237 @43 Named(
                             "Boolean",
@@ -241,12 +244,14 @@ ExecutableDocument {
                 },
             },
             "M": 264..305 @43 Operation {
+                description: None,
                 operation_type: Mutation,
                 name: Some(
                     "M",
                 ),
                 variables: [
                     276..284 @43 VariableDefinition {
+                        description: None,
                         name: "b",
                         ty: 280..284 @43 NonNullNamed(
                             "Int",
@@ -296,12 +301,14 @@ ExecutableDocument {
                 },
             },
             "S": 306..351 @43 Operation {
+                description: None,
                 operation_type: Subscription,
                 name: Some(
                     "S",
                 ),
                 variables: [
                     322..330 @43 VariableDefinition {
+                        description: None,
                         name: "c",
                         ty: 326..330 @43 NonNullNamed(
                             "Int",
@@ -354,6 +361,7 @@ ExecutableDocument {
     },
     fragments: {
         "f": 353..392 @43 Fragment {
+            description: None,
             name: "f",
             directives: [
                 373..382 @43 Directive {
