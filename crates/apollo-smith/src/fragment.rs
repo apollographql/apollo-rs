@@ -25,6 +25,7 @@ pub struct FragmentDef {
 impl From<FragmentDef> for ast::Definition {
     fn from(x: FragmentDef) -> Self {
         ast::FragmentDefinition {
+            description: None,
             name: x.name.into(),
             type_condition: x.type_condition.name.into(),
             directives: Directive::to_ast(x.directives),

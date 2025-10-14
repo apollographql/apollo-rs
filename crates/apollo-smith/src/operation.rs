@@ -28,6 +28,7 @@ pub struct OperationDef {
 impl From<OperationDef> for ast::Definition {
     fn from(x: OperationDef) -> Self {
         ast::OperationDefinition {
+            description: None,
             operation_type: x.operation_type.into(),
             name: x.name.map(Into::into),
             directives: Directive::to_ast(x.directives),

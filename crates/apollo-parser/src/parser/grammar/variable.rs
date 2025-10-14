@@ -26,11 +26,8 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     }
 
     // Continue parsing while we see descriptions or variables
-    loop {
-        match p.peek() {
-            Some(TokenKind::StringValue | T![$]) => variable_definition(p),
-            _ => break,
-        }
+    while let Some(TokenKind::StringValue | T![$]) = p.peek() {
+        variable_definition(p);
     }
 
     p.expect(T![')'], S![')']);

@@ -27,6 +27,7 @@ pub struct VariableDef {
 impl From<VariableDef> for ast::VariableDefinition {
     fn from(x: VariableDef) -> Self {
         Self {
+            description: None,
             name: x.name.into(),
             ty: Node::new(x.ty.into()),
             default_value: x.default_value.map(|x| Node::new(x.into())),
