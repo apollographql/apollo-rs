@@ -1,14 +1,11 @@
 //! This is a generated file, please do not edit manually. Changes can be
 //! made in codegeneration that lives in `xtask` top-level dir.
 
-use crate::cst::support;
-use crate::cst::CstChildren;
-use crate::cst::CstNode;
-use crate::SyntaxKind;
-use crate::SyntaxKind::*;
-use crate::SyntaxNode;
-use crate::SyntaxToken;
-use crate::S;
+use crate::{
+    cst::{support, CstChildren, CstNode},
+    SyntaxKind::{self, *},
+    SyntaxNode, SyntaxToken, S,
+};
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Name {
     pub(crate) syntax: SyntaxNode,
@@ -32,6 +29,9 @@ pub struct OperationDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl OperationDefinition {
+    pub fn description(&self) -> Option<Description> {
+        support::child(&self.syntax)
+    }
     pub fn operation_type(&self) -> Option<OperationType> {
         support::child(&self.syntax)
     }
@@ -53,6 +53,9 @@ pub struct FragmentDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl FragmentDefinition {
+    pub fn description(&self) -> Option<Description> {
+        support::child(&self.syntax)
+    }
     pub fn fragment_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![fragment])
     }
@@ -406,6 +409,15 @@ impl InputObjectTypeExtension {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Description {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Description {
+    pub fn string_value(&self) -> Option<StringValue> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OperationType {
     pub(crate) syntax: SyntaxNode,
 }
@@ -700,6 +712,9 @@ pub struct VariableDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl VariableDefinition {
+    pub fn description(&self) -> Option<Description> {
+        support::child(&self.syntax)
+    }
     pub fn variable(&self) -> Option<Variable> {
         support::child(&self.syntax)
     }
@@ -770,15 +785,6 @@ impl Directive {
         support::child(&self.syntax)
     }
     pub fn arguments(&self) -> Option<Arguments> {
-        support::child(&self.syntax)
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Description {
-    pub(crate) syntax: SyntaxNode,
-}
-impl Description {
-    pub fn string_value(&self) -> Option<StringValue> {
         support::child(&self.syntax)
     }
 }
@@ -1351,6 +1357,21 @@ impl CstNode for InputObjectTypeExtension {
         &self.syntax
     }
 }
+impl CstNode for Description {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == DESCRIPTION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+}
 impl CstNode for OperationType {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OPERATION_TYPE
@@ -1759,21 +1780,6 @@ impl CstNode for NonNullType {
 impl CstNode for Directive {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DIRECTIVE
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-}
-impl CstNode for Description {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == DESCRIPTION
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
