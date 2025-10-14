@@ -1,3 +1,4 @@
+use crate::parser::grammar::description;
 use crate::parser::grammar::directive;
 use crate::parser::grammar::name;
 use crate::parser::grammar::selection;
@@ -9,12 +10,18 @@ use crate::TokenKind;
 use crate::S;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#FragmentDefinition
+/// See: https://spec.graphql.org/September2025/#sec-Language.Fragments
 ///
 /// *FragmentDefinition*:
-///     **fragment** FragmentName TypeCondition Directives? SelectionSet
+///     Description? **fragment** FragmentName TypeCondition Directives? SelectionSet
 pub(crate) fn fragment_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
+
+    // Check for optional description
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
     p.bump(SyntaxKind::fragment_KW);
 
     fragment_name(p);
@@ -30,7 +37,7 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#FragmentName
+/// See: https://spec.graphql.org/September2025/#sec-Language.Fragments
 ///
 /// *FragmentName*:
 ///     Name *but not* **on**
@@ -47,7 +54,7 @@ pub(crate) fn fragment_name(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#TypeCondition
+/// See: https://spec.graphql.org/September2025/#sec-Language.Fragments
 ///
 /// *TypeCondition*:
 ///     **on** NamedType
@@ -71,7 +78,7 @@ pub(crate) fn type_condition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#InlineFragment
+/// See: https://spec.graphql.org/September2025/#sec-Language.Fragments
 ///
 /// *InlineFragment*:
 ///     **...** TypeCondition? Directives? SelectionSet
@@ -93,7 +100,7 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#FragmentSpread
+/// See: https://spec.graphql.org/September2025/#sec-Language.Fragments
 ///
 /// *FragmentSpread*:
 ///     **...** FragmentName Directives?

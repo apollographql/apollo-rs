@@ -1,3 +1,4 @@
+use crate::parser::grammar::description;
 use crate::parser::grammar::directive;
 use crate::parser::grammar::name;
 use crate::parser::grammar::ty;
@@ -9,7 +10,7 @@ use crate::TokenKind;
 use crate::S;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#VariableDefinitions
+/// See: https://spec.graphql.org/September2025/#sec-Language.Variables
 ///
 /// *VariableDefinitions*:
 ///     **(** VariableDefinition* **)**
@@ -17,22 +18,36 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
     p.bump(S!['(']);
 
-    if let Some(T![$]) = p.peek() {
+    // Variable definitions can start with a description (string) or $ (variable)
+    if let Some(TokenKind::StringValue | T![$]) = p.peek() {
         variable_definition(p);
     } else {
         p.err("expected a Variable Definition")
     }
-    p.peek_while_kind(T![$], variable_definition);
+
+    // Continue parsing while we see descriptions or variables
+    loop {
+        match p.peek() {
+            Some(TokenKind::StringValue | T![$]) => variable_definition(p),
+            _ => break,
+        }
+    }
 
     p.expect(T![')'], S![')']);
 }
 
-/// See: https://spec.graphql.org/October2021/#VariableDefinition
+/// See: https://spec.graphql.org/September2025/#sec-Language.Variables
 ///
 /// *VariableDefinition*:
-///     Variable **:** Type DefaultValue? Directives[Const]?
+///     Description? Variable **:** Type DefaultValue? Directives[Const]?
 pub(crate) fn variable_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
+
+    // Check for optional description
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
     variable(p);
 
     if let Some(T![:]) = p.peek() {
@@ -53,7 +68,7 @@ pub(crate) fn variable_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#Variable
+/// See: https://spec.graphql.org/September2025/#sec-Language.Variables
 ///
 /// *Variable*:
 ///     **$** Name
