@@ -20,6 +20,7 @@ Schema {
         ),
         mutation: None,
         subscription: None,
+        definition_origin: None,
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -73,6 +74,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Opts": InputObject(
@@ -98,6 +102,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Query": Object(
@@ -132,6 +139,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },

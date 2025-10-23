@@ -252,6 +252,7 @@ fn test_invalid_synthetic_node() {
             )]
             .into_iter()
             .collect(),
+            definition_origin: Default::default(),
         }
         .into(),
     );

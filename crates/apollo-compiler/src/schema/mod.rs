@@ -142,6 +142,10 @@ pub struct SchemaDefinition {
 
     /// Name of the object type for the `subscription` root operation
     pub subscription: Option<ComponentName>,
+
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 /// The list of [_Directives_](https://spec.graphql.org/draft/#Directives)
@@ -176,6 +180,9 @@ pub struct ScalarType {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 /// The definition of an [object type](https://spec.graphql.org/draft/#sec-Objects),
@@ -192,6 +199,9 @@ pub struct ObjectType {
     /// When looking up a definition,
     /// consider using [`Schema::type_field`] instead to include meta-fields.
     pub fields: IndexMap<Name, Component<FieldDefinition>>,
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -207,6 +217,9 @@ pub struct InterfaceType {
     /// When looking up a definition,
     /// consider using [`Schema::type_field`] instead to include meta-fields.
     pub fields: IndexMap<Name, Component<FieldDefinition>>,
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 /// The definition of an [union type](https://spec.graphql.org/draft/#sec-Unions),
@@ -221,6 +234,9 @@ pub struct UnionType {
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
     pub members: IndexSet<ComponentName>,
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 /// The definition of an [enum type](https://spec.graphql.org/draft/#sec-Enums),
@@ -231,6 +247,9 @@ pub struct EnumType {
     pub name: Name,
     pub directives: DirectiveList,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 /// The definition of an [input object type](https://spec.graphql.org/draft/#sec-Input-Objects),
@@ -241,6 +260,9 @@ pub struct InputObjectType {
     pub name: Name,
     pub directives: DirectiveList,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
+    /// Non-extension definition origin, if exists.
+    /// - We hold the origin here, so its reference can be returned from `iter_origins()`.
+    pub definition_origin: Option<ComponentOrigin>,
 }
 
 /// The names of all types that implement a given interface.
@@ -669,6 +691,7 @@ impl SchemaDefinition {
             .chain(self.query.iter().map(|name| &name.origin))
             .chain(self.mutation.iter().map(|name| &name.origin))
             .chain(self.subscription.iter().map(|name| &name.origin))
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect `schema` extensions that contribute any component
@@ -888,7 +911,10 @@ impl ScalarType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
-        self.directives.iter().map(|dir| &dir.origin)
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect scalar type extensions that contribute any component
@@ -919,6 +945,7 @@ impl ObjectType {
                     .map(|component| &component.origin),
             )
             .chain(self.fields.values().map(|field| &field.origin))
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect object type extensions that contribute any component
@@ -949,6 +976,7 @@ impl InterfaceType {
                     .map(|component| &component.origin),
             )
             .chain(self.fields.values().map(|field| &field.origin))
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect interface type extensions that contribute any component
@@ -974,6 +1002,7 @@ impl UnionType {
             .iter()
             .map(|dir| &dir.origin)
             .chain(self.members.iter().map(|component| &component.origin))
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect union type extensions that contribute any component
@@ -999,6 +1028,7 @@ impl EnumType {
             .iter()
             .map(|dir| &dir.origin)
             .chain(self.values.values().map(|value| &value.origin))
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect enum type extensions that contribute any component
@@ -1024,6 +1054,7 @@ impl InputObjectType {
             .iter()
             .map(|dir| &dir.origin)
             .chain(self.fields.values().map(|field| &field.origin))
+            .chain(self.definition_origin.iter())
     }
 
     /// Collect input object type extensions that contribute any component

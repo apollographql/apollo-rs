@@ -20,6 +20,7 @@ Schema {
         ),
         mutation: None,
         subscription: None,
+        definition_origin: None,
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -65,6 +66,9 @@ Schema {
                         },
                     },
                 ],
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Object": Object(
@@ -110,6 +114,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Intf": Interface(
@@ -150,6 +157,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Input": InputObject(
@@ -189,6 +199,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Enum": Enum(
@@ -220,6 +233,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Query": Object(
@@ -242,6 +258,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },

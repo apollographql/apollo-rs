@@ -54,6 +54,9 @@ Schema {
             },
         ),
         subscription: None,
+        definition_origin: Some(
+            Definition,
+        ),
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -250,6 +253,9 @@ Schema {
                         name: "SMSAccount",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Amazon": Object(
@@ -272,6 +278,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Body": Union(
@@ -289,6 +298,9 @@ Schema {
                         name: "Text",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Book": Object(
@@ -769,6 +781,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Brand": Union(
@@ -786,6 +801,9 @@ Schema {
                         name: "Amazon",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Car": Object(
@@ -958,6 +976,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Error": Object(
@@ -992,6 +1013,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Furniture": Object(
@@ -1346,6 +1370,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Ikea": Object(
@@ -1368,6 +1395,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Image": Object(
@@ -1407,6 +1437,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "ImageAttributes": Object(
@@ -1429,6 +1462,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "join__FieldSet": Scalar(
@@ -1451,6 +1487,9 @@ Schema {
                         },
                     },
                 ],
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "join__Graph": Enum(
@@ -1616,6 +1655,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "KeyValue": Object(
@@ -1650,6 +1692,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Library": Object(
@@ -1807,6 +1852,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "MetadataOrError": Union(
@@ -1824,6 +1872,9 @@ Schema {
                         name: "Error",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Mutation": Object(
@@ -1988,6 +2039,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Name": Object(
@@ -2022,6 +2076,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "NamedObject": Interface(
@@ -2044,6 +2101,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "PasswordAccount": Object(
@@ -2113,6 +2173,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Product": Interface(
@@ -2209,6 +2272,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "ProductDetails": Interface(
@@ -2231,6 +2297,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "ProductDetailsBook": Object(
@@ -2270,6 +2339,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "ProductDetailsFurniture": Object(
@@ -2309,6 +2381,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Query": Object(
@@ -2683,6 +2758,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Review": Object(
@@ -2870,6 +2948,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "SMSAccount": Object(
@@ -2939,6 +3020,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Text": Object(
@@ -2978,6 +3062,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "TextAttributes": Object(
@@ -3012,6 +3099,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Thing": Union(
@@ -3029,6 +3119,9 @@ Schema {
                         name: "Ikea",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "UpdateReviewInput": InputObject(
@@ -3062,6 +3155,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "User": Object(
@@ -3501,6 +3597,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "UserMetadata": Object(
@@ -3547,6 +3646,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Van": Object(
@@ -3719,6 +3821,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Vehicle": Interface(
@@ -3777,6 +3882,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },

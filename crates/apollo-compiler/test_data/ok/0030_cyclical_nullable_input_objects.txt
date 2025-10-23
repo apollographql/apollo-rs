@@ -20,6 +20,7 @@ Schema {
         ),
         mutation: None,
         subscription: None,
+        definition_origin: None,
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -81,6 +82,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "First": InputObject(
@@ -114,6 +118,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Second": InputObject(
@@ -149,6 +156,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Third": InputObject(
@@ -182,6 +192,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Fourth": InputObject(
@@ -203,6 +216,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },

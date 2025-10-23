@@ -20,6 +20,7 @@ Schema {
         ),
         mutation: None,
         subscription: None,
+        definition_origin: None,
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -81,6 +82,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Review": Object(
@@ -103,6 +107,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Message": Object(
@@ -147,6 +154,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Product": Object(
@@ -191,6 +201,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },
