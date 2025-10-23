@@ -42,6 +42,7 @@ impl Node<SchemaDefinition> {
             query,
             mutation,
             subscription,
+            definition_origin: _,
         } = &**self;
         let extensions = self.extensions();
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {

@@ -20,6 +20,7 @@ Schema {
         ),
         mutation: None,
         subscription: None,
+        definition_origin: None,
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -60,6 +61,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Dog": Object(
@@ -99,6 +103,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Cat": Object(
@@ -138,6 +145,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "CatOrDog": Union(
@@ -155,6 +165,9 @@ Schema {
                         name: "Dog",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Human": Object(
@@ -179,6 +192,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "DogOrHuman": Union(
@@ -196,6 +212,9 @@ Schema {
                         name: "Human",
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Node": Interface(
@@ -218,6 +237,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Resource": Interface(
@@ -257,6 +279,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "ConcreteResource": Object(
@@ -300,6 +325,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Query": Object(
@@ -334,6 +362,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },

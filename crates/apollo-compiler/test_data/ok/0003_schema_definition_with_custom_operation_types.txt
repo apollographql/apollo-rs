@@ -30,6 +30,9 @@ Schema {
                 name: "customPetSubscription",
             },
         ),
+        definition_origin: Some(
+            Definition,
+        ),
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -72,6 +75,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "customPetQuery": Object(
@@ -106,6 +112,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "customPetSubscription": Object(
@@ -128,6 +137,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "customPetMutation": Object(
@@ -169,6 +181,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
         "Result": Object(
@@ -191,6 +206,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },

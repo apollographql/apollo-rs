@@ -1,3 +1,4 @@
+use apollo_compiler::schema::ComponentOrigin;
 use apollo_compiler::Schema;
 
 fn validate_schema(schema: Schema) {
@@ -200,4 +201,218 @@ fn test_extend_implicit_schema() {
 
     let schema = Schema::parse_and_validate(input, "schema.graphql").unwrap();
     assert!(schema.schema_definition.directives.has("dir"));
+}
+
+mod test_origins {
+    use super::*;
+
+    fn parse_with_orphan_extensions(input: &str) -> Schema {
+        Schema::builder()
+            .adopt_orphan_extensions()
+            .parse(input, "schema.graphql")
+            .build()
+            .expect("building schema")
+    }
+
+    fn format_origins<'a>(origins: impl Iterator<Item = &'a ComponentOrigin>) -> String {
+        let mut formatted = origins
+            .map(|origin| match origin {
+                ComponentOrigin::Definition => "Definition".to_string(),
+                ComponentOrigin::Extension(_id) => "Extension".to_string(),
+            })
+            .collect::<Vec<_>>();
+        formatted.sort();
+        formatted.join(", ")
+    }
+
+    #[test]
+    fn test_origins_schema_empty_definition() {
+        let input = r#"
+        schema # empty schema definition
+        type Query { test: Int }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let def = schema.schema_definition;
+        assert_eq!(format_origins(def.iter_origins()), "Definition");
+    }
+
+    #[test]
+    fn test_origins_schema_empty_definition_and_extension() {
+        let input = r#"
+        schema # empty schema definition
+        extend schema @dir
+        directive @dir on SCHEMA
+        type Query { test: Int }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let def = schema.schema_definition;
+        assert_eq!(format_origins(def.iter_origins()), "Definition, Extension");
+    }
+
+    #[test]
+    fn test_origins_object_definition() {
+        let input = r#"
+        type T { field: Int }
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition, Definition");
+    }
+
+    #[test]
+    fn test_origins_object_empty_definition() {
+        let input = r#"
+        type T # empty object type definition
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition");
+    }
+
+    #[test]
+    fn test_origins_object_orphan_extension() {
+        let input = r#"
+        extend type T { field: Int }
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Extension");
+    }
+
+    #[test]
+    fn test_origins_object_empty_orphan_extension() {
+        let input = r#"
+        extend type T @dir # empty object type extension
+        directive @dir on OBJECT
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Extension");
+    }
+
+    #[test]
+    fn test_origins_object_definition_with_extension() {
+        let input = r#"
+        type T { field1: Int }
+        extend type T { field2: Int }
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(
+            format_origins(t.iter_origins()),
+            "Definition, Definition, Extension"
+        );
+    }
+
+    #[test]
+    fn test_origins_object_empty_definition_with_extension() {
+        let input = r#"
+        type T # empty object type definition
+        extend type T { field: Int }
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition, Extension");
+    }
+
+    #[test]
+    fn test_origins_interface_empty_definition() {
+        let input = r#"
+        interface T # empty interface type definition
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition");
+    }
+
+    #[test]
+    fn test_origins_scalar_definition() {
+        let input = r#"
+        scalar T
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition");
+    }
+
+    #[test]
+    fn test_origins_scalar_extension() {
+        let input = r#"
+        extend scalar T @dir
+        directive @dir on SCALAR
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Extension");
+    }
+
+    #[test]
+    fn test_origins_scalar_definition_with_extension() {
+        let input = r#"
+        scalar T
+        extend scalar T @dir
+        directive @dir on SCALAR
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition, Extension");
+    }
+
+    #[test]
+    fn test_origins_union_empty_definition() {
+        let input = r#"
+        union T # empty union type definition
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition");
+    }
+
+    #[test]
+    fn test_origins_enum_empty_definition() {
+        let input = r#"
+        enum T # empty enum type definition
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition");
+    }
+
+    #[test]
+    fn test_origins_input_object_empty_definition() {
+        let input = r#"
+        input T # empty input object type definition
+        type Query { test: T }
+    "#;
+
+        let schema = parse_with_orphan_extensions(input);
+        let t = schema.types.get("T").unwrap();
+        assert_eq!(format_origins(t.iter_origins()), "Definition");
+    }
 }

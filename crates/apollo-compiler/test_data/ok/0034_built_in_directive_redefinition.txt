@@ -35,6 +35,9 @@ Schema {
         ),
         mutation: None,
         subscription: None,
+        definition_origin: Some(
+            Definition,
+        ),
     },
     directive_definitions: {
         "skip": built_in_directive!("skip"),
@@ -100,6 +103,9 @@ Schema {
                         },
                     },
                 },
+                definition_origin: Some(
+                    Definition,
+                ),
             },
         ),
     },
