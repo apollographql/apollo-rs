@@ -169,7 +169,10 @@ impl<'a, 'doc, 'schema> ResponseBuilder<'a, 'doc, 'schema> {
                     Ok(Value::Number(random_int.into()))
                 } else if scalar.name == "Float" {
                     let random_float = self.u.arbitrary::<f64>()?;
-                    Ok(Value::Number(Number::from_f64(random_float).unwrap()))
+                    let Some(random_number) = Number::from_f64(random_float) else {
+                        return Err(arbitrary::Error::IncorrectFormat);
+                    };
+                    Ok(Value::Number(random_number))
                 } else if scalar.name == "String" {
                     let random_string = self.u.arbitrary::<String>()?;
                     Ok(Value::String(random_string.into()))
