@@ -518,7 +518,7 @@ mod tests {
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
-            &doc.operations.anonymous.as_ref().unwrap(),
+            doc.operations.anonymous.as_ref().unwrap(),
             variables.as_object().unwrap(),
         )
         .unwrap();
@@ -530,7 +530,7 @@ mod tests {
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
-            &doc.operations.anonymous.as_ref().unwrap(),
+            doc.operations.anonymous.as_ref().unwrap(),
             variables.as_object().unwrap(),
         )
         .unwrap_err();
@@ -542,7 +542,7 @@ mod tests {
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
-            &doc.operations.anonymous.as_ref().unwrap(),
+            doc.operations.anonymous.as_ref().unwrap(),
             variables.as_object().unwrap(),
         )
         .unwrap();
@@ -554,7 +554,7 @@ mod tests {
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
-            &doc.operations.anonymous.as_ref().unwrap(),
+            doc.operations.anonymous.as_ref().unwrap(),
             variables.as_object().unwrap(),
         )
         .unwrap_err();
@@ -567,7 +567,7 @@ mod tests {
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
-            &doc.operations.anonymous.as_ref().unwrap(),
+            doc.operations.anonymous.as_ref().unwrap(),
             variables.as_object().unwrap(),
         )
         .unwrap_err();
@@ -579,7 +579,7 @@ mod tests {
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
-            &doc.operations.anonymous.as_ref().unwrap(),
+            doc.operations.anonymous.as_ref().unwrap(),
             variables.as_object().unwrap(),
         )
         .unwrap_err();
