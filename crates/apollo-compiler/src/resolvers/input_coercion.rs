@@ -120,13 +120,7 @@ fn coerce_variable_value(
             }
             "Float" => {
                 // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
-                let val_as_float = value.as_f64().or_else(|| {
-                    value
-                        .is_string()
-                        .then(|| value.as_str().and_then(|s| s.parse::<f64>().ok()))
-                        .flatten()
-                });
-                if val_as_float.is_some_and(|v| v.abs() < i64::MAX as f64) {
+                if value.as_f64().is_some_and(|v| v.abs() < i64::MAX as f64) {
                     return Ok(value.clone());
                 }
             }
@@ -537,33 +531,8 @@ mod tests {
     }
 
     #[test]
-    fn coerces_numeric_string_to_float() {
+    fn fails_to_numeric_string_to_float() {
         let variables = serde_json_bytes::json!({ "bar": "14" });
-        let (schema, doc) = schema_and_doc_with_float_arg();
-        let _ = coerce_variable_values(
-            &schema,
-            doc.operations.anonymous.as_ref().unwrap(),
-            variables.as_object().unwrap(),
-        )
-        .unwrap();
-    }
-
-    #[test]
-    fn fails_to_coerce_string_to_float() {
-        let variables = serde_json_bytes::json!({ "bar": "baz" });
-        let (schema, doc) = schema_and_doc_with_float_arg();
-        let _ = coerce_variable_values(
-            &schema,
-            doc.operations.anonymous.as_ref().unwrap(),
-            variables.as_object().unwrap(),
-        )
-        .unwrap_err();
-    }
-
-    #[test]
-    fn fails_to_coerce_numeric_string_to_float_outside_precision_bound() {
-        let variables =
-            serde_json_bytes::json!({ "bar": "170141183460469231731687303715884105727" });
         let (schema, doc) = schema_and_doc_with_float_arg();
         let _ = coerce_variable_values(
             &schema,
