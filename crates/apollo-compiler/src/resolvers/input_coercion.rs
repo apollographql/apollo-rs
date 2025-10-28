@@ -18,6 +18,9 @@ use crate::validation::Valid;
 use crate::Node;
 use crate::Schema;
 
+/// The maximum integer safely representable as an IEEE 754 double-precision float.
+const MAX_SAFE_INT: i64 = (1_i64 << 53) - 1;
+
 #[derive(Debug, Clone)]
 pub(crate) enum InputCoercionError {
     SuspectedValidationBug(SuspectedValidationBug),
@@ -120,7 +123,11 @@ fn coerce_variable_value(
             }
             "Float" => {
                 // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
-                if value.as_f64().is_some_and(|v| v.abs() < i64::MAX as f64) {
+                if value.is_f64()
+                    || value
+                        .as_f64()
+                        .is_some_and(|f| f.abs() < MAX_SAFE_INT as f64)
+                {
                     return Ok(value.clone());
                 }
             }
@@ -482,7 +489,7 @@ impl InputCoercionError {
 
 #[cfg(test)]
 mod tests {
-    use super::coerce_variable_values;
+    use super::*;
     use crate::validation::Valid;
     use crate::ExecutableDocument;
     use crate::Schema;
@@ -507,9 +514,26 @@ mod tests {
     }
 
     #[test]
+    fn coerces_float_to_float() {
+        let float_beyond_integer_max = (MAX_SAFE_INT as f64) + 0.5;
+        let variables = serde_json_bytes::json!({ "bar": float_beyond_integer_max });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // When a float greater than MAX_SAFE_INT is provided, it should be accepted as a float.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap();
+    }
+
+    #[test]
     fn coerces_int_to_float() {
         let variables = serde_json_bytes::json!({ "bar": 14 });
         let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // When an integer within the safe bounds is provided, it should be accepted as a float.
         let _ = coerce_variable_values(
             &schema,
             doc.operations.anonymous.as_ref().unwrap(),
@@ -520,8 +544,10 @@ mod tests {
 
     #[test]
     fn fails_to_coerce_int_to_float_beyond_precision_bound() {
-        let variables = serde_json_bytes::json!({ "bar": 1e100 });
+        let variables = serde_json_bytes::json!({ "bar": i64::MAX });
         let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // When an integer cannot be finitely represented as a float, it should be rejected.
         let _ = coerce_variable_values(
             &schema,
             doc.operations.anonymous.as_ref().unwrap(),
@@ -534,6 +560,22 @@ mod tests {
     fn fails_to_numeric_string_to_float() {
         let variables = serde_json_bytes::json!({ "bar": "14" });
         let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // Strings (even numeric ones) should not be coerced to Float in input positions.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+    }
+
+    #[test]
+    fn fails_to_coerce_inf_to_float() {
+        let variables = serde_json_bytes::json!({ "bar": f64::INFINITY });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // Infinity should not be accepted as a Float input value.
         let _ = coerce_variable_values(
             &schema,
             doc.operations.anonymous.as_ref().unwrap(),
@@ -546,6 +588,8 @@ mod tests {
     fn fails_to_coerce_nan_to_float() {
         let variables = serde_json_bytes::json!({ "bar": f64::NAN });
         let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // NaN should not be accepted as a Float input value.
         let _ = coerce_variable_values(
             &schema,
             doc.operations.anonymous.as_ref().unwrap(),
