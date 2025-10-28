@@ -120,7 +120,7 @@ fn coerce_variable_value(
             }
             "Float" => {
                 // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
-                if value.is_f64() {
+                if value.as_f64().is_some_and(|v| v.abs() < i64::MAX as f64) {
                     return Ok(value.clone());
                 }
             }
@@ -477,5 +477,81 @@ impl InputCoercionError {
                 GraphQLError::field_error(message, path, location, sources)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::validation::Valid;
+    use crate::ExecutableDocument;
+    use crate::Schema;
+
+    use super::coerce_variable_values;
+
+    fn schema_and_doc_with_float_arg() -> (Valid<Schema>, Valid<ExecutableDocument>) {
+        let schema = Schema::parse_and_validate(
+            r#"
+                type Query {
+                    foo(bar: Float!): Float!
+                }
+            "#,
+            "sdl",
+        )
+        .unwrap();
+        let doc = ExecutableDocument::parse_and_validate(
+            &schema,
+            "query ($bar: Float!) { foo(bar: $bar) }",
+            "op.graphql",
+        )
+        .unwrap();
+        (schema, doc)
+    }
+
+    #[test]
+    fn coercible_int() {
+        let variables = serde_json_bytes::json!({ "bar": 14 });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+        let _ = coerce_variable_values(
+            &schema,
+            &doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn non_coercible_string() {
+        let variables = serde_json_bytes::json!({ "bar": "baz" });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+        let _ = coerce_variable_values(
+            &schema,
+            &doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+    }
+
+    #[test]
+    fn non_coercible_nan() {
+        let variables = serde_json_bytes::json!({ "bar": f64::NAN });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+        let _ = coerce_variable_values(
+            &schema,
+            &doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+    }
+
+    #[test]
+    fn non_coercible_i64_beyond_precision_boundary() {
+        let variables = serde_json_bytes::json!({ "bar": 1e100 });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+        let _ = coerce_variable_values(
+            &schema,
+            &doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
     }
 }
