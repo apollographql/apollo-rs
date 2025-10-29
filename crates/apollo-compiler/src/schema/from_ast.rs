@@ -268,6 +268,10 @@ impl SchemaBuilder {
         }
     }
 
+    pub fn iter_orphan_extension_types(&self) -> impl Iterator<Item = &Name> {
+        self.orphan_type_extensions.keys()
+    }
+
     /// Returns the schema built from all added documents
     #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn build(self) -> Result<Schema, WithErrors<Schema>> {
