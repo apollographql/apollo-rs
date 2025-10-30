@@ -70,6 +70,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
         .expect("schema parsed successfully");
   ```
 
+- **Allow coercing Int variables to Float - [tninesling], [pull/1011]**
+
+  The GraphQL spec allows coercing Int values to Float in input positions (see
+  [input coercion]). There are a couple things to note about this.
+
+  - Strings are not allowed to be coerced in this position, even if they are
+    numeric.
+  - Ints can only be converted to Float when they are "representable by finite
+    IEEE 754" floating point numbers.
+
+  Since an IEEE 754 floating point double (f64) has 53 bits of precision, it can
+  safely represent up to the value 2^53 - 1 as a finite value. Beyond that, the
+  round trip from integer to float and back will lose information. This is
+  represented with a new `MAX_SAFE_INT` constant which is often included in
+  other languages like JavaScript's `Number.MAX_SAFE_INT`. When, we encounter an
+  Int variable in a Float position, we ensure that its value is finitely
+  representable.
+
+  There is some nuance in that the spec does not say all floats have to be
+  within this range. So, this implementation allows explicitly passed floats
+  which are greater than that bound, only applying the integer conversion limit
+  when coercing a value.
+
 ## Fixes
 
 - **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993](#993)**
@@ -106,12 +129,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Previously added `::iter_origins()` methods on Schema and Type Definitions was not made `pub`.
 
 [dariuszkuc]: https://github.com/dariuszkuc
-[duckki]: https://github.com/duckki 
+[duckki]: https://github.com/duckki
+[tninesling]: https://github.com/tninesling
+[input coercion]: https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
 [pull/994]: https://github.com/apollographql/apollo-rs/pull/994
 [pull/993]: https://github.com/apollographql/apollo-rs/pull/993
 [pull/990]: https://github.com/apollographql/apollo-rs/pull/990
 [pull/989]: https://github.com/apollographql/apollo-rs/pull/989
 [pull/987]: https://github.com/apollographql/apollo-rs/pull/987
+[pull/1011]: https://github.com/apollographql/apollo-rs/pull/1011
 
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
