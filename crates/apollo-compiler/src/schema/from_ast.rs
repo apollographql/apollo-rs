@@ -43,6 +43,7 @@ impl SchemaBuilder {
                         query: None,
                         mutation: None,
                         subscription: None,
+                        definition_origin: None,
                     }),
                     directive_definitions: IndexMap::with_hasher(Default::default()),
                     types: IndexMap::with_hasher(Default::default()),
@@ -408,6 +409,7 @@ fn adopt_type_extensions(
             description: Default::default(),
             name,
             directives: Default::default(),
+            definition_origin: None,
         }
         ast::Definition::ObjectTypeExtension => "an object type" ObjectType {
             description: Default::default(),
@@ -415,6 +417,7 @@ fn adopt_type_extensions(
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: Default::default(),
+            definition_origin: None,
         }
         ast::Definition::InterfaceTypeExtension => "an interface type" InterfaceType {
             description: Default::default(),
@@ -422,24 +425,28 @@ fn adopt_type_extensions(
             implements_interfaces: Default::default(),
             directives: Default::default(),
             fields: Default::default(),
+            definition_origin: None,
         }
         ast::Definition::UnionTypeExtension => "a union type" UnionType {
             description: Default::default(),
             name,
             directives: Default::default(),
             members: Default::default(),
+            definition_origin: None,
         }
         ast::Definition::EnumTypeExtension => "an enum type" EnumType {
             description: Default::default(),
             name,
             directives: Default::default(),
             values: Default::default(),
+            definition_origin: None,
         }
         ast::Definition::InputObjectTypeExtension => "an input object type" InputObjectType {
             description: Default::default(),
             name,
             directives: Default::default(),
             fields: Default::default(),
+            definition_origin: None,
         }
     }
 }
@@ -460,6 +467,7 @@ impl SchemaDefinition {
             query: None,
             mutation: None,
             subscription: None,
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         root.add_root_operations(
             errors,
@@ -524,6 +532,7 @@ impl ScalarType {
                 .iter()
                 .map(|d| d.to_component(ComponentOrigin::Definition))
                 .collect(),
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         for def in &extensions {
             if let ast::Definition::ScalarTypeExtension(ext) = def {
@@ -592,6 +601,7 @@ impl ObjectType {
                     )
                 },
             ),
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         for def in &extensions {
             if let ast::Definition::ObjectTypeExtension(ext) = def {
@@ -692,6 +702,7 @@ impl InterfaceType {
                     )
                 },
             ),
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         for def in &extensions {
             if let ast::Definition::InterfaceTypeExtension(ext) = def {
@@ -777,6 +788,7 @@ impl UnionType {
                     )
                 },
             ),
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         for def in &extensions {
             if let ast::Definition::UnionTypeExtension(ext) = def {
@@ -848,6 +860,7 @@ impl EnumType {
                     )
                 },
             ),
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         for def in &extensions {
             if let ast::Definition::EnumTypeExtension(ext) = def {
@@ -917,6 +930,7 @@ impl InputObjectType {
                     )
                 },
             ),
+            definition_origin: Some(ComponentOrigin::Definition),
         };
         for def in &extensions {
             if let ast::Definition::InputObjectTypeExtension(ext) = def {
