@@ -1,18 +1,24 @@
 Error: type `Image` does not satisfy interface `Resource`: missing field `width`
     ╭─[ 0025_interface_definition_with_missing_transitive_fields.graphql:14:1 ]
     │
- 11 │       width: Int
-    │       ─────┬────  
-    │            ╰────── `Resource.width` originally defined here
-    │ 
  14 │ ╭─▶ interface Image implements Resource & Node {
-    │ │                              ────┬───  
-    │ │                                  ╰───── implementation of interface Resource declared here
     ┆ ┆   
  17 │ ├─▶ }
     │ │      
     │ ╰────── add `width` field to this type
-    │     
-    │     Help: An object or interface must declare all fields required by the interfaces it implements
+    │
+    ├─[ 0025_interface_definition_with_missing_transitive_fields.graphql:14:1 ]
+    │
+ 14 │ interface Image implements Resource & Node {
+    │                            ────┬───  
+    │                                ╰───── implementation of interface Resource declared here
+    │
+    ├─[ 0025_interface_definition_with_missing_transitive_fields.graphql:14:1 ]
+    │
+ 11 │   width: Int
+    │   ─────┬────  
+    │        ╰────── `Resource.width` originally defined here
+    │ 
+    │ Help: An object or interface must declare all fields required by the interfaces it implements
 ────╯
 

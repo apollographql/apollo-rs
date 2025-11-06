@@ -332,12 +332,15 @@ fn different_args_second_adds_argument() {
             Error: operation must not provide conflicting field arguments for the same name `doesKnowCommand`
                ╭─[ query.graphql:3:3 ]
                │
-             2 │   doesKnowCommand
-               │   ───────┬───────  
-               │          ╰───────── but argument `dogCommand` is not provided here
              3 │   doesKnowCommand(dogCommand: HEEL)
                │   ────────────────┬────────────────  
                │                   ╰────────────────── `doesKnowCommand` is selected with argument `dogCommand` here
+               │
+               ├─[ query.graphql:3:3 ]
+               │
+             2 │   doesKnowCommand
+               │   ───────┬───────  
+               │          ╰───────── but argument `dogCommand` is not provided here
                │ 
                │ Help: The same name cannot be selected multiple times with different arguments, because it's not clear which set of arguments should be used to fill the response. If you intend to use diverging arguments, consider adding an alias to differentiate
             ───╯
@@ -593,13 +596,15 @@ mod field_conflicts {
                 Error: cannot select different fields into the same alias `x`
                     ╭─[ query.graphql:17:3 ]
                     │
-                 17 │   x: a
-                    │   ──┬─  
-                    │     ╰─── `x` is selected from `Type.a` here
-                    │ 
                  20 │   x: b
                     │   ──┬─  
                     │     ╰─── `x` is selected from `Type.b` here
+                    │
+                    ├─[ query.graphql:17:3 ]
+                    │
+                 17 │   x: a
+                    │   ──┬─  
+                    │     ╰─── `x` is selected from `Type.a` here
                     │ 
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯
@@ -789,13 +794,15 @@ mod field_conflicts {
                 Error: cannot select different fields into the same alias `y`
                     ╭─[ query.graphql:14:3 ]
                     │
-                 14 │   y: c
-                    │   ──┬─  
-                    │     ╰─── `y` is selected from `T.c` here
-                    │ 
                  17 │   y: d
                     │   ──┬─  
                     │     ╰─── `y` is selected from `T.d` here
+                    │
+                    ├─[ query.graphql:14:3 ]
+                    │
+                 14 │   y: c
+                    │   ──┬─  
+                    │     ╰─── `y` is selected from `T.c` here
                     │ 
                     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
                 ────╯

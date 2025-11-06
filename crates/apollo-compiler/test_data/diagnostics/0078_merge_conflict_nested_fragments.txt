@@ -1,13 +1,15 @@
 Error: cannot select different fields into the same alias `y`
     ╭─[ 0078_merge_conflict_nested_fragments.graphql:25:3 ]
     │
- 25 │   y: c
-    │   ──┬─  
-    │     ╰─── `y` is selected from `T.c` here
-    │ 
  28 │   y: d
     │   ──┬─  
     │     ╰─── `y` is selected from `T.d` here
+    │
+    ├─[ 0078_merge_conflict_nested_fragments.graphql:25:3 ]
+    │
+ 25 │   y: c
+    │   ──┬─  
+    │     ╰─── `y` is selected from `T.c` here
     │ 
     │ Help: Both fields may be present on the schema type, so it's not clear which one should be used to fill the response
 ────╯

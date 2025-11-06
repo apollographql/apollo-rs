@@ -1,12 +1,15 @@
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[ 0080_directive_is_unique_with_extensions.graphql:2:24 ]
    │
- 2 │ extend type TestObject @nonRepeatable
-   │                        ───────┬──────  
-   │                               ╰──────── directive `@nonRepeatable` called again here
  3 │ type TestObject @nonRepeatable {
    │                 ───────┬──────  
    │                        ╰──────── directive `@nonRepeatable` first called here
+   │
+   ├─[ 0080_directive_is_unique_with_extensions.graphql:2:24 ]
+   │
+ 2 │ extend type TestObject @nonRepeatable
+   │                        ───────┬──────  
+   │                               ╰──────── directive `@nonRepeatable` called again here
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[ 0080_directive_is_unique_with_extensions.graphql:6:24 ]

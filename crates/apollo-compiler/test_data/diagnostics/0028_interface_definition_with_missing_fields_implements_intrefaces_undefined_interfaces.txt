@@ -14,19 +14,25 @@ Error: interface `Image` declares that it implements `Resource`, but to do so it
 Error: type `Image` does not satisfy interface `Resource`: missing field `width`
     ╭─[ 0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:1 ]
     │
- 11 │       width: Int
-    │       ─────┬────  
-    │            ╰────── `Resource.width` originally defined here
-    │ 
  14 │ ╭─▶ interface Image implements Resource & Url{
-    │ │                              ────┬───  
-    │ │                                  ╰───── implementation of interface Resource declared here
     ┆ ┆   
  17 │ ├─▶ }
     │ │      
     │ ╰────── add `width` field to this type
-    │     
-    │     Help: An object or interface must declare all fields required by the interfaces it implements
+    │
+    ├─[ 0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:1 ]
+    │
+ 14 │ interface Image implements Resource & Url{
+    │                            ────┬───  
+    │                                ╰───── implementation of interface Resource declared here
+    │
+    ├─[ 0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:1 ]
+    │
+ 11 │   width: Int
+    │   ─────┬────  
+    │        ╰────── `Resource.width` originally defined here
+    │ 
+    │ Help: An object or interface must declare all fields required by the interfaces it implements
 ────╯
 Error: cannot find type `Url` in this document
     ╭─[ 0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:39 ]
