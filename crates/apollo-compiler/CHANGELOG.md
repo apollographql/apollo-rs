@@ -17,7 +17,76 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.30.0] (unreleased) - 2025-08-27
+# [1.31.0](https://crates.io/crates/apollo-compiler/1.31.0) - 2025-11-10
+
+## Features
+
+- **Allow coercing Int variables to Float - [tninesling], [pull/1011]**
+
+  The GraphQL spec allows coercing Int values to Float in input positions (see
+  [input coercion]). There are a couple things to note about this.
+
+  - Strings are not allowed to be coerced in this position, even if they are
+    numeric.
+  - Ints can only be converted to Float when they are "representable by finite
+    IEEE 754" floating point numbers.
+
+  Since an IEEE 754 floating point double (f64) has 53 bits of precision, it can
+  safely represent up to the value 2^53 - 1 as a finite value. Beyond that, the
+  round trip from integer to float and back will lose information. This is
+  represented with a new `MAX_SAFE_INT` constant which is often included in
+  other languages like JavaScript's `Number.MAX_SAFE_INT`. When, we encounter an
+  Int variable in a Float position, we ensure that its value is finitely
+  representable.
+
+  There is some nuance in that the spec does not say all floats have to be
+  within this range. So, this implementation allows explicitly passed floats
+  which are greater than that bound, only applying the integer conversion limit
+  when coercing a value.
+
+## Fixes
+
+- **Validate missing fragments when parsing standalone executable documents - [Abdel-Monaam-Aouini], [pull/1003]**
+
+  When validating standalone executable documents, the use of undefined fragment
+  definitions will return a validation error. Previously, executable documents
+  like the following would pass validation without errors, despite
+  `CompanyFragment` being undefined.
+
+  ```graphql
+  query {
+    company {
+      user {
+        ...UserFragment
+      }
+      ...CompanyFragment
+    }
+  }
+  fragment UserFragment on User {
+    id
+    name
+  }
+  ```
+
+## Maintenance
+
+- **Add benchmark for parsing and validation when a type has many extensions  [tninesling], [pull/1011]**
+
+  Introduces a new benchmark for query parsing and validation when a type has
+  many extensions. We made an update in `apollo-compiler@1.28.0` to expose
+  `.iter_origins()` for AST nodes, and we reimplemented `.extensions()` in
+  terms of `.iter_origins()`. We were concerned that this may have caused a
+  performance regression in parsing, but running this new benchmark against
+  `main` with `1.28.0` as the base indicates no change in performance.
+
+[Abdel-Monaam-Aouini]: https://github.com/Abdel-Monaam-Aouini
+[tninesling]: https://github.com/tninesling
+[input coercion]: https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
+[pull/1000]: https://github.com/apollographql/apollo-rs/pull/1000
+[pull/1003]: https://github.com/apollographql/apollo-rs/pull/1003
+[pull/1011]: https://github.com/apollographql/apollo-rs/pull/1011
+
+# [1.30.0](https://crates.io/crates/apollo-compiler/1.30.0) - 2025-08-27
 
 ## Features
 
@@ -70,28 +139,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
         .expect("schema parsed successfully");
   ```
 
-- **Allow coercing Int variables to Float - [tninesling], [pull/1011]**
-
-  The GraphQL spec allows coercing Int values to Float in input positions (see
-  [input coercion]). There are a couple things to note about this.
-
-  - Strings are not allowed to be coerced in this position, even if they are
-    numeric.
-  - Ints can only be converted to Float when they are "representable by finite
-    IEEE 754" floating point numbers.
-
-  Since an IEEE 754 floating point double (f64) has 53 bits of precision, it can
-  safely represent up to the value 2^53 - 1 as a finite value. Beyond that, the
-  round trip from integer to float and back will lose information. This is
-  represented with a new `MAX_SAFE_INT` constant which is often included in
-  other languages like JavaScript's `Number.MAX_SAFE_INT`. When, we encounter an
-  Int variable in a Float position, we ensure that its value is finitely
-  representable.
-
-  There is some nuance in that the spec does not say all floats have to be
-  within this range. So, this implementation allows explicitly passed floats
-  which are greater than that bound, only applying the integer conversion limit
-  when coercing a value.
 
 ## Fixes
 
@@ -130,14 +177,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 [dariuszkuc]: https://github.com/dariuszkuc
 [duckki]: https://github.com/duckki
-[tninesling]: https://github.com/tninesling
-[input coercion]: https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
 [pull/994]: https://github.com/apollographql/apollo-rs/pull/994
 [pull/993]: https://github.com/apollographql/apollo-rs/pull/993
 [pull/990]: https://github.com/apollographql/apollo-rs/pull/990
 [pull/989]: https://github.com/apollographql/apollo-rs/pull/989
 [pull/987]: https://github.com/apollographql/apollo-rs/pull/987
-[pull/1011]: https://github.com/apollographql/apollo-rs/pull/1011
 
 
 # [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
