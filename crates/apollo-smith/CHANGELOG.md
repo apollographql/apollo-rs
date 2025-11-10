@@ -39,7 +39,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/1001]: https://github.com/apollographql/apollo-rs/pull/1001
 
-- **bump minimum arbitrary version - [goto-bus-stop], [pull/1001]**
+- **bump minimum arbitrary version - [goto-bus-stop], [pull/1007]**
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/1007]: https://github.com/apollographql/apollo-rs/pull/1007
