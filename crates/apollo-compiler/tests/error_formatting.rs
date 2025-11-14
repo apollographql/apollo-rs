@@ -1,6 +1,12 @@
-//! Tests for handling multibyte UTF-8 characters in GraphQL schemas and documents.
-//! This ensures the ariadne error reporting library correctly handles Japanese, Chinese,
-//! Korean, and other multibyte characters without panicking.
+//! Regression tests for ariadne error formatting with multibyte UTF-8 characters.
+//!
+//! These tests ensure that the ariadne error reporting library correctly formats
+//! errors when multibyte characters (Japanese, Chinese, Korean, emoji, etc.) are
+//! present in the source code, without panicking or producing garbled output.
+//!
+//! Note: Correctness of parsing multibyte characters is tested in the lexer,
+//! parser, and compiler test suites. These tests specifically focus on error
+//! formatting and display.
 
 use apollo_compiler::parser::Parser;
 

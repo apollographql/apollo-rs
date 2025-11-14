@@ -63,9 +63,6 @@ harness = false
 [[test]]
 name = "main"
 
-[[test]]
-name = "multibyte_characters"
-
 # These need to run in a process where no other test runs concurrently
 [[test]]
 name = "snapshot_tests"
