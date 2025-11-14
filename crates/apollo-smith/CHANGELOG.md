@@ -18,6 +18,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.15.2](https://crates.io/crates/apollo-smith/0.15.2) - 2025-11-10
+
+## Fixes
+- **Return arbitrary::Error::IncorrectFormat for unsupported floats- [tninesling], [pull/1005]**
+  When generating floats for GraphQL documents, we were naively unwrapping the
+  conversion from `f64` to `serde_json::Number`. This would panic when
+  `arbitrary` returned `f64::INFINITY` of `f64::NAN` because the `Number`
+  conversion only works when its input is finite. In this case, the underlying
+  bytes used to generate the value are considered to be in an invalid format.
+  So, we return `arbitrary::Error::IncorrectFormat` to tell fuzzers to use a
+  different seed in the future.
+
+[tninesling]: https://github.com/tninesling
+[pull/1005]: https://github.com/apollographql/apollo-rs/pull/1005
+
+## Maintenance
+- **Apply new clippy rules from Rust 1.90 - [goto-bus-stop], [pull/1001]**
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/1001]: https://github.com/apollographql/apollo-rs/pull/1001
+
+- **bump minimum arbitrary version - [goto-bus-stop], [pull/1007]**
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/1007]: https://github.com/apollographql/apollo-rs/pull/1007
 
 # [0.15.1](https://crates.io/crates/apollo-smith/0.15.1) - 2025-08-08
 
