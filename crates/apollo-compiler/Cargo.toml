@@ -20,7 +20,7 @@ autotests = false # Most tests/*.rs files are modules of tests/main.rs
 [dependencies]
 ahash = "0.8.11"
 apollo-parser = { path = "../apollo-parser", version = "0.8.0" }
-ariadne = { version = "0.5.1", features = ["auto-color"] }
+ariadne = { version = "0.6.0", features = ["auto-color"] }
 futures = "0.3"
 indexmap = "2.0.0"
 rowan = "0.16.0"

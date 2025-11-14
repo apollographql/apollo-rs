@@ -1,15 +1,17 @@
 Error: interface `Query` declares that it implements `Image`, but to do so it must also implement `Resource`
     ╭─[ 0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:1:1 ]
     │
+ 19 │ interface Image implements Resource {
+    │                            ────┬───  
+    │                                ╰───── implementation of Resource declared by Image here
+    │
+    ├─[ 0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:1:1 ]
+    │
   1 │ ╭─▶ type Query implements Image {
     ┆ ┆   
   7 │ ├─▶ }
     │ │       
     │ ╰─────── Resource must also be implemented here
-    │ 
- 19 │     interface Image implements Resource {
-    │                                ────┬───  
-    │                                    ╰───── implementation of Resource declared by Image here
 ────╯
 Error: interface `Image` declares that it implements `Resource`, but to do so it must also implement `Node`
     ╭─[ 0035_object_type_definition_with_missing_implements_interfaces_definition.graphql:19:1 ]

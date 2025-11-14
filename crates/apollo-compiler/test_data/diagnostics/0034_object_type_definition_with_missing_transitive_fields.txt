@@ -2,34 +2,42 @@ Error: type `Query` does not satisfy interface `Node`: missing field `id`
    ╭─[ 0034_object_type_definition_with_missing_transitive_fields.graphql:1:1 ]
    │
  1 │ ╭─▶ type Query implements Node & Resource {
-   │ │                         ──┬─  
-   │ │                           ╰─── implementation of interface Node declared here
    ┆ ┆   
  3 │ ├─▶ }
    │ │       
    │ ╰─────── add `id` field to this type
+   │
+   ├─[ 0034_object_type_definition_with_missing_transitive_fields.graphql:1:1 ]
+   │
+ 1 │ type Query implements Node & Resource {
+   │                       ──┬─  
+   │                         ╰─── implementation of interface Node declared here
    │ 
- 6 │       id: ID!
-   │       ───┬───  
-   │          ╰───── `Node.id` originally defined here
-   │     
-   │     Help: An object or interface must declare all fields required by the interfaces it implements
+ 6 │   id: ID!
+   │   ───┬───  
+   │      ╰───── `Node.id` originally defined here
+   │ 
+   │ Help: An object or interface must declare all fields required by the interfaces it implements
 ───╯
 Error: type `Query` does not satisfy interface `Resource`: missing field `width`
     ╭─[ 0034_object_type_definition_with_missing_transitive_fields.graphql:1:1 ]
     │
   1 │ ╭─▶ type Query implements Node & Resource {
-    │ │                                ────┬───  
-    │ │                                    ╰───── implementation of interface Resource declared here
     ┆ ┆   
   3 │ ├─▶ }
     │ │       
     │ ╰─────── add `width` field to this type
+    │
+    ├─[ 0034_object_type_definition_with_missing_transitive_fields.graphql:1:1 ]
+    │
+  1 │ type Query implements Node & Resource {
+    │                              ────┬───  
+    │                                  ╰───── implementation of interface Resource declared here
     │ 
- 10 │       width: Int
-    │       ─────┬────  
-    │            ╰────── `Resource.width` originally defined here
-    │     
-    │     Help: An object or interface must declare all fields required by the interfaces it implements
+ 10 │   width: Int
+    │   ─────┬────  
+    │        ╰────── `Resource.width` originally defined here
+    │ 
+    │ Help: An object or interface must declare all fields required by the interfaces it implements
 ────╯
 
