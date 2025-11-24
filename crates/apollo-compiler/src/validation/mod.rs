@@ -1,11 +1,6 @@
 //! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
 //! and other kinds of errors.
 
-use crate::coordinate::SchemaCoordinate;
-#[cfg(doc)]
-use crate::ExecutableDocument;
-use crate::Schema;
-
 pub(crate) mod argument;
 pub(crate) mod diagnostics;
 pub(crate) mod directive;
@@ -24,7 +19,9 @@ pub(crate) mod value;
 pub(crate) mod variable;
 
 use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::collections::IndexSet;
+use crate::coordinate::SchemaCoordinate;
 use crate::diagnostic::CliReport;
 use crate::diagnostic::Diagnostic;
 use crate::diagnostic::ToCliReport;
@@ -32,15 +29,17 @@ use crate::executable::BuildError as ExecutableBuildError;
 use crate::executable::ConflictingFieldArgument;
 use crate::executable::ConflictingFieldName;
 use crate::executable::ConflictingFieldType;
+#[cfg(doc)]
+use crate::executable::ExecutableDocument;
 use crate::executable::VariableDefinition;
-use crate::execution::GraphQLError;
-use crate::execution::Response;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::response::GraphQLError;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
 use crate::Name;
 use crate::Node;
+use crate::Schema;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
@@ -54,7 +53,7 @@ use std::sync::OnceLock;
 /// * [`Schema::validate`]
 /// * [`ExecutableDocument::parse_and_validate`]
 /// * [`ExecutableDocument::validate`]
-/// * [`coerce_variable_values`][crate::execution::coerce_variable_values]
+/// * [`coerce_variable_values`][crate::request::coerce_variable_values]
 ///
 /// … or by explicitly skipping it with [`Valid::assume_valid`].
 ///
@@ -132,7 +131,7 @@ pub(crate) struct ExecutableValidationContext<'a> {
 }
 
 impl<'a> ExecutableValidationContext<'a> {
-    pub fn new(schema: Option<&'a Schema>) -> Self {
+    pub(crate) fn new(schema: Option<&'a Schema>) -> Self {
         Self {
             schema,
             implementers_map: Default::default(),
@@ -140,12 +139,12 @@ impl<'a> ExecutableValidationContext<'a> {
     }
 
     /// Returns the schema to validate against, if any.
-    pub fn schema(&self) -> Option<&'a Schema> {
+    pub(crate) fn schema(&self) -> Option<&'a Schema> {
         self.schema
     }
 
     /// Returns a cached reference to the implementers map.
-    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+    pub(crate) fn implementers_map(&self) -> &HashMap<Name, Implementers> {
         self.implementers_map.get_or_init(|| {
             self.schema
                 .map(|schema| schema.implementers_map())
@@ -154,34 +153,36 @@ impl<'a> ExecutableValidationContext<'a> {
     }
 
     /// Returns a context for operation validation.
-    pub fn operation_context<'o>(
+    pub(crate) fn operation_context<'o>(
         &'o self,
         variables: &'o [Node<VariableDefinition>],
     ) -> OperationValidationContext<'o> {
         OperationValidationContext {
             executable: self,
             variables,
+            validated_fragments: HashSet::default(),
         }
     }
 }
 
 /// Shared context when validating things inside an operation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub(crate) struct OperationValidationContext<'a> {
     /// Parent context. Using a reference so the `OnceLock` is shared between all operation
     /// contexts.
     executable: &'a ExecutableValidationContext<'a>,
     /// The variables defined for this operation.
-    pub variables: &'a [Node<VariableDefinition>],
+    pub(crate) variables: &'a [Node<VariableDefinition>],
+    pub(crate) validated_fragments: HashSet<Name>,
 }
 
 impl<'a> OperationValidationContext<'a> {
-    pub fn schema(&self) -> Option<&'a Schema> {
+    pub(crate) fn schema(&self) -> Option<&'a Schema> {
         self.executable.schema
     }
 
     /// Returns a cached reference to the implementers map.
-    pub fn implementers_map(&self) -> &HashMap<Name, Implementers> {
+    pub(crate) fn implementers_map(&self) -> &HashMap<Name, Implementers> {
         self.executable.implementers_map()
     }
 }
@@ -225,28 +226,9 @@ impl<T> fmt::Display for WithErrors<T> {
 /// which populates [`extensions`][GraphQLError::extensions]
 /// with a `"APOLLO_SUSPECTED_VALIDATION_BUG": true` entry.
 #[derive(Debug, Clone)]
-pub struct SuspectedValidationBug {
+pub(crate) struct SuspectedValidationBug {
     pub message: String,
     pub location: Option<SourceSpan>,
-}
-
-impl SuspectedValidationBug {
-    /// Convert into a JSON-serializable error as represented in a GraphQL response
-    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
-        let Self { message, location } = self;
-        let mut err = GraphQLError::new(message, location, sources);
-        err.extensions
-            .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
-        err
-    }
-
-    /// Convert into a response with this error as a [request error]
-    /// that prevented execution from starting.
-    ///
-    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-    pub fn into_response(self, sources: &SourceMap) -> Response {
-        Response::from_request_error(self.into_graphql_error(sources))
-    }
 }
 
 /// A collection of diagnostics returned by some validation method
@@ -308,7 +290,7 @@ impl DiagnosticData {
                     OutputType { .. } => "OutputType",
                     InputType { .. } => "InputType",
                     VariableInputType { .. } => "VariableInputType",
-                    QueryRootOperationType { .. } => "QueryRootOperationType",
+                    QueryRootOperationType => "QueryRootOperationType",
                     UnusedVariable { .. } => "UnusedVariable",
                     RootOperationObjectType { .. } => "RootOperationObjectType",
                     UnionMemberObjectType { .. } => "UnionMemberObjectType",
@@ -331,14 +313,13 @@ impl DiagnosticData {
                     EmptyValueSet { .. } => "EmptyValueSet",
                     EmptyMemberSet { .. } => "EmptyMemberSet",
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
+                    ReservedName { .. } => "ReservedName",
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
                 ExecutableBuildError::UndefinedField { .. } => "UndefinedField",
                 ExecutableBuildError::TypeSystemDefinition { .. } => "TypeSystemDefinition",
-                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
-                    "AmbiguousAnonymousOperation"
-                }
+                ExecutableBuildError::AmbiguousAnonymousOperation => "AmbiguousAnonymousOperation",
                 ExecutableBuildError::OperationNameCollision { .. } => "OperationNameCollision",
                 ExecutableBuildError::FragmentNameCollision { .. } => "FragmentNameCollision",
                 ExecutableBuildError::UndefinedRootOperation { .. } => "UndefinedRootOperation",
@@ -355,6 +336,9 @@ impl DiagnosticData {
                 }
                 ExecutableBuildError::SubscriptionUsesIntrospection { .. } => {
                     "SubscriptionUsesIntrospection"
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    "SubscriptionUsesConditionalSelection"
                 }
                 ExecutableBuildError::ConflictingFieldType(_) => "ConflictingFieldType",
                 ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
@@ -397,7 +381,7 @@ impl DiagnosticData {
                     UndefinedEnumValue {
                         value, definition, ..
                     } => Some(format!(
-                        r#"Value "{value} does not exist in "{definition}" enum."#
+                        r#"Value "{value}" does not exist in "{definition}" enum."#
                     )),
                     UndefinedInputValue {
                         value, definition, ..
@@ -435,7 +419,7 @@ impl DiagnosticData {
                     VariableInputType { name, ty, .. } => Some(format!(
                         r#"Variable "${name}" cannot be non-input type "{ty}"."#
                     )),
-                    QueryRootOperationType { .. } => None,
+                    QueryRootOperationType => None,
                     UnusedVariable { name } => {
                         Some(format!(r#"Variable "${name}" is never used."#))
                     }
@@ -527,6 +511,7 @@ impl DiagnosticData {
                     EmptyValueSet { .. } => None,
                     EmptyMemberSet { .. } => None,
                     EmptyInputValueSet { .. } => None,
+                    ReservedName { .. } => None,
                 }
             }
             Details::ExecutableBuildError(error) => match error {
@@ -601,6 +586,18 @@ impl DiagnosticData {
                     } else {
                         Some("Anonymous Subscription must not select an introspection top level field."
                             .to_string())
+                    }
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { name, .. } => {
+                    if let Some(name) = name {
+                        Some(format!(
+                            r#"Subscription "{name}" can not specify @skip or @include on root fields."#
+                        ))
+                    } else {
+                        Some(
+                            "Anonymous Subscription can not specify @skip or @include on root fields."
+                                .to_string(),
+                        )
                     }
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
@@ -696,10 +693,10 @@ impl ToCliReport for DiagnosticData {
                     report.with_label_opt(self.location, format_args!("`{name}` redefined here"));
                     report.with_help("remove or rename one of the definitions, or use `extend`");
                 }
-                SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
+                SchemaBuildError::BuiltInScalarTypeRedefinition => {
                     report.with_label_opt(self.location, "remove this scalar definition");
                 }
-                SchemaBuildError::OrphanSchemaExtension { .. } => {
+                SchemaBuildError::OrphanSchemaExtension => {
                     report.with_label_opt(self.location, "extension here")
                 }
                 SchemaBuildError::OrphanTypeExtension { .. } => {
@@ -776,7 +773,7 @@ impl ToCliReport for DiagnosticData {
                     self.location,
                     "remove this definition, or use `parse_mixed()`",
                 ),
-                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
+                ExecutableBuildError::AmbiguousAnonymousOperation => {
                     report.with_label_opt(self.location, "provide a name for this definition");
                     report.with_help(
                         "GraphQL requires operations to be named if the document has more than one",
@@ -855,6 +852,9 @@ impl ToCliReport for DiagnosticData {
                         self.location,
                         format_args!("{field} is an introspection field"),
                     );
+                }
+                ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
+                    report.with_label_opt(self.location, "conditional directive used here");
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
                     let ConflictingFieldType {
@@ -1046,7 +1046,7 @@ impl DiagnosticList {
     }
 }
 
-/// Use Debug formatting to output with colors: `format!("{diagnostics:?}")`
+/// Use Display formatting to output without colors: `format!("{diagnostics}")`
 impl fmt::Display for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
@@ -1056,7 +1056,7 @@ impl fmt::Display for DiagnosticList {
     }
 }
 
-/// Use Display formatting to output without colors: `format!("{diagnostics}")`
+/// Use Debug formatting to output with colors: `format!("{diagnostics:?}")`
 impl fmt::Debug for DiagnosticList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for diagnostic in self.iter() {
@@ -1090,6 +1090,60 @@ const DEFAULT_RECURSION_LIMIT: usize = 32;
 #[error("Recursion limit reached")]
 #[non_exhaustive]
 struct RecursionLimitError {}
+
+/// Track recursion depth to prevent stack overflow.
+#[derive(Debug)]
+struct DepthCounter {
+    value: usize,
+    high: usize,
+    limit: usize,
+}
+
+impl DepthCounter {
+    fn new() -> Self {
+        Self {
+            value: 0,
+            high: 0,
+            limit: DEFAULT_RECURSION_LIMIT,
+        }
+    }
+
+    fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
+    }
+
+    /// Return the actual API for tracking recursive uses.
+    pub(crate) fn guard(&mut self) -> DepthGuard<'_> {
+        DepthGuard(self)
+    }
+}
+
+/// Track call depth in a recursive function.
+///
+/// Pass the result of `guard.increment()` to recursive calls. When a guard is dropped,
+/// its value is decremented.
+struct DepthGuard<'a>(&'a mut DepthCounter);
+
+impl DepthGuard<'_> {
+    /// Mark that we are recursing. If we reached the limit, return an error.
+    fn increment(&mut self) -> Result<DepthGuard<'_>, RecursionLimitError> {
+        self.0.value += 1;
+        self.0.high = self.0.high.max(self.0.value);
+        if self.0.value > self.0.limit {
+            Err(RecursionLimitError {})
+        } else {
+            Ok(DepthGuard(self.0))
+        }
+    }
+}
+
+impl Drop for DepthGuard<'_> {
+    fn drop(&mut self) {
+        // This may already be 0 if it's the original `counter.guard()` result, but that's fine
+        self.0.value = self.0.value.saturating_sub(1);
+    }
+}
 
 /// Track used names in a recursive function.
 #[derive(Debug)]

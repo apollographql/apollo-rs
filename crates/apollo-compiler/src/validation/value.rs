@@ -143,18 +143,6 @@ pub(crate) fn value_of_correct_type(
                         // TODO(@goto-bus-stop) This should use the is_assignable_to check
                         if var_def.ty.inner_named_type() != ty.inner_named_type() {
                             unsupported_type(diagnostics, arg_value, ty);
-                        } else if let Some(default_value) = &var_def.default_value {
-                            if var_def.ty.is_non_null() && default_value.is_null() {
-                                unsupported_type(diagnostics, default_value, &var_def.ty)
-                            } else {
-                                value_of_correct_type(
-                                    diagnostics,
-                                    schema,
-                                    &var_def.ty,
-                                    default_value,
-                                    var_defs,
-                                )
-                            }
                         }
                     }
                     _ => unsupported_type(diagnostics, arg_value, ty),

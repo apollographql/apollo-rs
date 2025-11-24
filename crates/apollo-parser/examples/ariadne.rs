@@ -31,7 +31,7 @@ fn parse_schema() -> cst::Document {
         // slice can have many errors.
         let start = err.index();
         let end = start + err.data().len();
-        Report::build(ReportKind::Error, file_name, start)
+        Report::build(ReportKind::Error, (file_name, start..end))
             .with_message(err.message())
             .with_label(Label::new((file_name, start..end)).with_message(err.message()))
             .finish()

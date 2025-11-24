@@ -37,10 +37,8 @@ Schema {
         "__Directive": built_in_type!("__Directive"),
         "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
         "Int": built_in_type!("Int"),
-        "Float": built_in_type!("Float"),
         "String": built_in_type!("String"),
         "Boolean": built_in_type!("Boolean"),
-        "ID": built_in_type!("ID"),
         "Product": Object(
             0..65 @30 ObjectType {
                 description: None,
@@ -208,7 +206,7 @@ ExecutableDocument {
                                             [
                                                 (
                                                     "prop",
-                                                    219..241 @30 List(
+                                                    225..241 @30 List(
                                                         [
                                                             226..229 @30 List(
                                                                 [

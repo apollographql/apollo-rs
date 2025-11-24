@@ -1,7 +1,16 @@
-use apollo_compiler::execution::coerce_variable_values;
-use apollo_compiler::execution::JsonMap;
-use apollo_compiler::execution::Response;
-use apollo_compiler::execution::SchemaIntrospectionQuery;
+use apollo_compiler::ast::FieldDefinition;
+use apollo_compiler::ast::InputValueDefinition;
+use apollo_compiler::introspection;
+use apollo_compiler::name;
+use apollo_compiler::request::coerce_variable_values;
+use apollo_compiler::resolvers::Execution;
+use apollo_compiler::resolvers::FieldError;
+use apollo_compiler::resolvers::ObjectValue;
+use apollo_compiler::resolvers::ResolveInfo;
+use apollo_compiler::resolvers::ResolvedValue;
+use apollo_compiler::response::JsonMap;
+use apollo_compiler::schema::ExtendedType;
+use apollo_compiler::ty;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use expect_test::expect;
@@ -10,17 +19,42 @@ use expect_test::expect_file;
 #[test]
 fn test() {
     let schema = r#"
-        type Query implements I {
+        "The schema"
+        schema {
+            query: TheQuery
+        }
+
+        """
+        Root query type
+        """
+        type TheQuery implements I {
             id: ID!
-            int: Int! @deprecated(reason: "…")
-            url: Url
+            ints: [[Int!]]! @deprecated(reason: "…")
+            url(arg: In = { b: 4, a: 2 }): Url
+            union: U @deprecated(reason: null)
         }
 
         interface I {
             id: ID!
         }
 
+        input In {
+            a: Int! @deprecated(reason: null)
+            b: Int @deprecated
+        }
+
         scalar Url @specifiedBy(url: "https://url.spec.whatwg.org/")
+
+        union U = TheQuery | T
+
+        type T {
+            enum: E @deprecated
+        }
+
+        enum E { 
+            NEW
+            OLD @deprecated
+        }
     "#;
     let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
 
@@ -29,26 +63,14 @@ fn test() {
             ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
         let operation = document.operations.get(None).unwrap();
         let variables = coerce_variable_values(&schema, operation, &variables).unwrap();
-        let response = SchemaIntrospectionQuery::split_and_execute(
+        let response = introspection::partial_execute(
             &schema,
+            &schema.implementers_map(),
             &document,
             operation,
             &variables,
-            |non_introspection_document| Response {
-                errors: Default::default(),
-                data: apollo_compiler::execution::ResponseData::Object(Default::default()),
-                extensions: [(
-                    "NON_INTROSPECTION".into(),
-                    non_introspection_document
-                        .serialize()
-                        .no_indent()
-                        .to_string()
-                        .into(),
-                )]
-                .into_iter()
-                .collect(),
-            },
-        );
+        )
+        .unwrap();
         serde_json::to_string_pretty(&response).unwrap()
     };
 
@@ -77,7 +99,7 @@ fn test() {
             "I": {
               "possibleTypes": [
                 {
-                  "name": "Query",
+                  "name": "TheQuery",
                   "fields": [
                     {
                       "name": "id"
@@ -103,18 +125,22 @@ fn test() {
             "I": {
               "possibleTypes": [
                 {
-                  "name": "Query",
+                  "name": "TheQuery",
                   "verboseFields": [
                     {
                       "name": "id",
                       "deprecationReason": null
                     },
                     {
-                      "name": "int",
+                      "name": "ints",
                       "deprecationReason": "…"
                     },
                     {
                       "name": "url",
+                      "deprecationReason": null
+                    },
+                    {
+                      "name": "union",
                       "deprecationReason": null
                     }
                   ]
@@ -133,4 +159,165 @@ fn test() {
         Default::default(),
     );
     expect_file!("../test_data/introspection/response_full.json").assert_eq(&response);
+}
+
+#[test]
+fn built_in_scalars() {
+    // Initially a `Schema` contains all built-in types
+    let schema = Schema::new();
+    assert!(schema.types.contains_key("ID"));
+    assert!(schema.types.contains_key("Int"));
+    assert!(schema.types.contains_key("Float"));
+    assert!(schema.types.contains_key("String"));
+    assert!(schema.types.contains_key("Boolean"));
+
+    // Same when parsing
+    let input = r"
+      type Query { some: Thing }
+      scalar Thing
+    ";
+    let schema = Schema::parse(input, "").unwrap();
+    assert!(schema.types.contains_key("ID"));
+    assert!(schema.types.contains_key("Int"));
+    assert!(schema.types.contains_key("Float"));
+    assert!(schema.types.contains_key("String"));
+    assert!(schema.types.contains_key("Boolean"));
+
+    // https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars
+    // > When returning the set of types from the `__Schema` introspection type,
+    // > all referenced built-in scalars must be included.
+    // > If a built-in scalar type is not referenced anywhere in a schema
+    // > (there is no field, argument, or input field of that type) then it must not be included.
+    //
+    // We reflect this behavior in the Rust API for `Valid<Schema>`:
+    // validation removes unused definitions
+    let valid_schema = schema.validate().unwrap();
+    assert!(!valid_schema.types.contains_key("ID"));
+    assert!(!valid_schema.types.contains_key("Int"));
+    assert!(!valid_schema.types.contains_key("Float"));
+    // String and Boolean are still used in built-in directives and schema-introspection types
+    assert!(valid_schema.types.contains_key("String"));
+    assert!(valid_schema.types.contains_key("Boolean"));
+
+    // The `Valid<_>` wrapper makes its contents immutable, but it can be unwraped
+    let mut mutable_again = valid_schema.into_inner();
+    let ExtendedType::Object(query) = &mut mutable_again.types["Query"] else {
+        panic!("expected object")
+    };
+    query.make_mut().fields.insert(
+        name!(sensor),
+        FieldDefinition {
+            description: None,
+            name: name!(sensor),
+            arguments: vec![InputValueDefinition {
+                description: None,
+                name: name!(sensorId),
+                ty: ty!(ID).into(),
+                default_value: None,
+                directives: Default::default(),
+            }
+            .into()],
+            ty: ty!(Float),
+            directives: Default::default(),
+        }
+        .into(),
+    );
+    let valid_after_mutation = mutable_again.validate().unwrap();
+
+    // Validation also adds/restores definitions as needed:
+    assert!(valid_after_mutation.types.contains_key("ID"));
+    assert!(!valid_after_mutation.types.contains_key("Int"));
+    assert!(valid_after_mutation.types.contains_key("Float"));
+    assert!(valid_after_mutation.types.contains_key("String"));
+    assert!(valid_after_mutation.types.contains_key("Boolean"));
+}
+
+/// Both introspection and other concrete fields with custom resolvers
+#[test]
+fn mixed() {
+    let sdl = r#"
+      type Query {
+        f: Int 
+      }
+    "#;
+    let query = r#"
+      {
+        f
+        Query: __type(name: "Query") {
+          fields {
+            name
+          }
+        }
+      }
+    "#;
+
+    struct InitialValue;
+
+    impl ObjectValue for InitialValue {
+        fn type_name(&self) -> &str {
+            "Query"
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            info: &ResolveInfo<'a>,
+        ) -> Result<ResolvedValue<'a>, FieldError> {
+            match info.field_name() {
+                "f" => Ok(ResolvedValue::leaf(42)),
+                _ => Err(self.unknown_field_error(info)),
+            }
+        }
+    }
+
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+
+    // Default config disables schema introspection
+    let response = Execution::new(&schema, &document)
+        .execute_sync(&InitialValue)
+        .unwrap();
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "errors": [
+            {
+              "message": "resolver error: schema introspection is disabled",
+              "locations": [
+                {
+                  "line": 4,
+                  "column": 16
+                }
+              ],
+              "path": [
+                "Query"
+              ]
+            }
+          ],
+          "data": {
+            "f": 42,
+            "Query": null
+          }
+        }"#]]
+    .assert_eq(&response);
+
+    // But it can be enabled
+    let response = Execution::new(&schema, &document)
+        .enable_schema_introspection(true)
+        .execute_sync(&InitialValue)
+        .unwrap();
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "data": {
+            "f": 42,
+            "Query": {
+              "fields": [
+                {
+                  "name": "f"
+                }
+              ]
+            }
+          }
+        }"#]]
+    .assert_eq(&response);
 }

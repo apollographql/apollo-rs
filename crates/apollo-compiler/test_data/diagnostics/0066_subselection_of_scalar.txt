@@ -1,5 +1,5 @@
 Error: field selection of scalar type `URL` must not have subselections
-   ╭─[0066_subselection_of_scalar.graphql:2:3]
+   ╭─[ 0066_subselection_of_scalar.graphql:2:3 ]
    │
  2 │   url1 { name }
    │   ──────┬──────  
@@ -8,7 +8,7 @@ Error: field selection of scalar type `URL` must not have subselections
    │ Note: path to the field: `query SelectionOfScalar → url1`
 ───╯
 Error: field selection of scalar type `URL` must not have subselections
-   ╭─[0066_subselection_of_scalar.graphql:3:3]
+   ╭─[ 0066_subselection_of_scalar.graphql:3:3 ]
    │
  3 │   url2 { name }
    │   ──────┬──────  
@@ -17,7 +17,7 @@ Error: field selection of scalar type `URL` must not have subselections
    │ Note: path to the field: `query SelectionOfScalar → url2`
 ───╯
 Error: field selection of scalar type `URL` must not have subselections
-   ╭─[0066_subselection_of_scalar.graphql:4:3]
+   ╭─[ 0066_subselection_of_scalar.graphql:4:3 ]
    │
  4 │   url3 { name }
    │   ──────┬──────  
@@ -26,7 +26,7 @@ Error: field selection of scalar type `URL` must not have subselections
    │ Note: path to the field: `query SelectionOfScalar → url3`
 ───╯
 Error: field selection of scalar type `URL` must not have subselections
-   ╭─[0066_subselection_of_scalar.graphql:5:3]
+   ╭─[ 0066_subselection_of_scalar.graphql:5:3 ]
    │
  5 │   url4 { name }
    │   ──────┬──────  
@@ -35,7 +35,7 @@ Error: field selection of scalar type `URL` must not have subselections
    │ Note: path to the field: `query SelectionOfScalar → url4`
 ───╯
 Error: field selection of scalar type `URL` must not have subselections
-   ╭─[0066_subselection_of_scalar.graphql:6:3]
+   ╭─[ 0066_subselection_of_scalar.graphql:6:3 ]
    │
  6 │   url5 { name }
    │   ──────┬──────  
@@ -44,7 +44,7 @@ Error: field selection of scalar type `URL` must not have subselections
    │ Note: path to the field: `query SelectionOfScalar → url5`
 ───╯
 Error: field selection of scalar type `URL` must not have subselections
-   ╭─[0066_subselection_of_scalar.graphql:7:3]
+   ╭─[ 0066_subselection_of_scalar.graphql:7:3 ]
    │
  7 │   url6 { name }
    │   ──────┬──────  

@@ -1,101 +1,113 @@
 Error: fragment `catInDogFragmentInvalid` with type condition `Dog` cannot be applied to `Human`
-    ╭─[0090_fragment_spread_impossible.graphql:39:9]
+    ╭─[ 0090_fragment_spread_impossible.graphql:39:9 ]
     │
- 25 │   ╭─▶ type Human implements Sentient {
-    ┆   ┆   
- 28 │   ├─▶ }
-    │   │       
-    │   ╰─────── type condition `Dog` is not assignable to this type
+ 39 │             ...catInDogFragmentInvalid
+    │             ─────────────┬────────────  
+    │                          ╰────────────── fragment `catInDogFragmentInvalid` cannot be applied
     │ 
- 39 │               ...catInDogFragmentInvalid
-    │               ─────────────┬────────────  
-    │                            ╰────────────── fragment `catInDogFragmentInvalid` cannot be applied
-    │ 
- 47 │ ╭───▶ fragment catInDogFragmentInvalid on Dog {
-    ┆ ┆     
- 51 │ ├───▶ }
-    │ │         
-    │ ╰───────── fragment declared with type condition `Dog` here
+ 47 │ ╭─▶ fragment catInDogFragmentInvalid on Dog {
+    ┆ ┆   
+ 51 │ ├─▶ }
+    │ │       
+    │ ╰─────── fragment declared with type condition `Dog` here
+    │
+    ├─[ 0090_fragment_spread_impossible.graphql:39:9 ]
+    │
+ 25 │ ╭─▶ type Human implements Sentient {
+    ┆ ┆   
+ 28 │ ├─▶ }
+    │ │       
+    │ ╰─────── type condition `Dog` is not assignable to this type
 ────╯
 Error: fragment `nonIntersectingInterfaces` with type condition `Pet` cannot be applied to `Human`
-    ╭─[0090_fragment_spread_impossible.graphql:42:9]
+    ╭─[ 0090_fragment_spread_impossible.graphql:42:9 ]
     │
- 25 │   ╭─▶ type Human implements Sentient {
-    ┆   ┆   
- 28 │   ├─▶ }
-    │   │       
-    │   ╰─────── type condition `Pet` is not assignable to this type
+ 42 │             ...nonIntersectingInterfaces
+    │             ──────────────┬─────────────  
+    │                           ╰─────────────── fragment `nonIntersectingInterfaces` cannot be applied
     │ 
- 42 │               ...nonIntersectingInterfaces
-    │               ──────────────┬─────────────  
-    │                             ╰─────────────── fragment `nonIntersectingInterfaces` cannot be applied
-    │ 
- 65 │ ╭───▶ fragment nonIntersectingInterfaces on Pet {
-    ┆ ┆     
- 67 │ ├───▶ }
-    │ │         
-    │ ╰───────── fragment declared with type condition `Pet` here
+ 65 │ ╭─▶ fragment nonIntersectingInterfaces on Pet {
+    ┆ ┆   
+ 67 │ ├─▶ }
+    │ │       
+    │ ╰─────── fragment declared with type condition `Pet` here
+    │
+    ├─[ 0090_fragment_spread_impossible.graphql:42:9 ]
+    │
+ 25 │ ╭─▶ type Human implements Sentient {
+    ┆ ┆   
+ 28 │ ├─▶ }
+    │ │       
+    │ ╰─────── type condition `Pet` is not assignable to this type
 ────╯
 Error: inline fragment with type condition `Cat` cannot be applied to `Dog`
-    ╭─[0090_fragment_spread_impossible.graphql:48:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:48:3 ]
     │
- 13 │ ╭───▶ type Dog implements Pet {
-    ┆ ┆     
- 16 │ ├───▶ }
+ 48 │ ╭─▶   ... on Cat {
+    ┆ ┆   
+ 50 │ ├─▶   }
     │ │         
-    │ ╰───────── type condition `Cat` is not assignable to this type
-    │ 
- 48 │   ╭─▶   ... on Cat {
-    ┆   ┆   
- 50 │   ├─▶   }
-    │   │         
-    │   ╰───────── inline fragment cannot be applied
+    │ ╰───────── inline fragment cannot be applied
+    │
+    ├─[ 0090_fragment_spread_impossible.graphql:48:3 ]
+    │
+ 13 │ ╭─▶ type Dog implements Pet {
+    ┆ ┆   
+ 16 │ ├─▶ }
+    │ │       
+    │ ╰─────── type condition `Cat` is not assignable to this type
 ────╯
 Error: inline fragment with type condition `Dog` cannot be applied to `Sentient`
-    ╭─[0090_fragment_spread_impossible.graphql:54:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:54:3 ]
     │
-  5 │ ╭───▶ interface Sentient {
-    ┆ ┆     
-  7 │ ├───▶ }
+ 54 │ ╭─▶   ... on Dog {
+    ┆ ┆   
+ 56 │ ├─▶   }
     │ │         
-    │ ╰───────── type condition `Dog` is not assignable to this type
-    │ 
- 54 │   ╭─▶   ... on Dog {
-    ┆   ┆   
- 56 │   ├─▶   }
-    │   │         
-    │   ╰───────── inline fragment cannot be applied
+    │ ╰───────── inline fragment cannot be applied
+    │
+    ├─[ 0090_fragment_spread_impossible.graphql:54:3 ]
+    │
+  5 │ ╭─▶ interface Sentient {
+    ┆ ┆   
+  7 │ ├─▶ }
+    │ │       
+    │ ╰─────── type condition `Dog` is not assignable to this type
 ────╯
 Error: inline fragment with type condition `Cat` cannot be applied to `HumanOrAlien`
-    ╭─[0090_fragment_spread_impossible.graphql:60:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:60:3 ]
     │
- 35 │     union HumanOrAlien = Human | Alien
-    │     ─────────────────┬────────────────  
-    │                      ╰────────────────── type condition `Cat` is not assignable to this type
-    │ 
  60 │ ╭─▶   ... on Cat {
     ┆ ┆   
  62 │ ├─▶   }
     │ │         
     │ ╰───────── inline fragment cannot be applied
+    │
+    ├─[ 0090_fragment_spread_impossible.graphql:60:3 ]
+    │
+ 35 │ union HumanOrAlien = Human | Alien
+    │ ─────────────────┬────────────────  
+    │                  ╰────────────────── type condition `Cat` is not assignable to this type
 ────╯
 Error: fragment `sentientFragment2` with type condition `Sentient` cannot be applied to `Pet`
-    ╭─[0090_fragment_spread_impossible.graphql:66:3]
+    ╭─[ 0090_fragment_spread_impossible.graphql:66:3 ]
     │
-  9 │   ╭─▶ interface Pet {
-    ┆   ┆   
- 11 │   ├─▶ }
-    │   │       
-    │   ╰─────── type condition `Sentient` is not assignable to this type
+ 66 │       ...sentientFragment2
+    │       ──────────┬─────────  
+    │                 ╰─────────── fragment `sentientFragment2` cannot be applied
     │ 
- 66 │         ...sentientFragment2
-    │         ──────────┬─────────  
-    │                   ╰─────────── fragment `sentientFragment2` cannot be applied
-    │ 
- 69 │ ╭───▶ fragment sentientFragment2 on Sentient {
-    ┆ ┆     
- 71 │ ├───▶ }
-    │ │         
-    │ ╰───────── fragment declared with type condition `Sentient` here
+ 69 │ ╭─▶ fragment sentientFragment2 on Sentient {
+    ┆ ┆   
+ 71 │ ├─▶ }
+    │ │       
+    │ ╰─────── fragment declared with type condition `Sentient` here
+    │
+    ├─[ 0090_fragment_spread_impossible.graphql:66:3 ]
+    │
+  9 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 11 │ ├─▶ }
+    │ │       
+    │ ╰─────── type condition `Sentient` is not assignable to this type
 ────╯
 

@@ -1,5 +1,5 @@
 Error: union member `ThisIsAScalar` must be an object type
-   ╭─[0100_union_extensions.graphql:8:30]
+   ╭─[ 0100_union_extensions.graphql:8:30 ]
    │
  8 │ extend union NonObjectType = ThisIsAScalar
    │                              ──────┬──────  
@@ -8,7 +8,7 @@ Error: union member `ThisIsAScalar` must be an object type
    │ Help: Union members must be object types.
 ───╯
 Error: duplicate definitions for the `WithFieldA` member of union type `DuplicateMembers`
-    ╭─[0100_union_extensions.graphql:12:33]
+    ╭─[ 0100_union_extensions.graphql:12:33 ]
     │
  11 │ union DuplicateMembers = WithFieldA
     │                          ─────┬────  
@@ -18,7 +18,7 @@ Error: duplicate definitions for the `WithFieldA` member of union type `Duplicat
     │                                      ╰────── `WithFieldA` redefined here
 ────╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
-    ╭─[0100_union_extensions.graphql:17:33]
+    ╭─[ 0100_union_extensions.graphql:17:33 ]
     │
  16 │ union DuplicateDirective @nonRepeatable = WithFieldA
     │                          ───────┬──────  

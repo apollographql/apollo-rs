@@ -1,5 +1,5 @@
 Error: the type `Query` is defined multiple times in the schema
-   ╭─[0032_duplicate_object_type_definition.graphql:5:6]
+   ╭─[ 0032_duplicate_object_type_definition.graphql:5:6 ]
    │
  1 │ type Query {
    │      ──┬──  

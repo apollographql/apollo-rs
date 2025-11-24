@@ -35,7 +35,7 @@ impl From<VariableDef> for ast::VariableDefinition {
     }
 }
 
-impl<'a> DocumentBuilder<'a> {
+impl DocumentBuilder<'_> {
     /// Create an arbitrary list of `VariableDef`
     pub fn variable_definitions(&mut self) -> ArbitraryResult<Vec<VariableDef>> {
         (0..self.u.int_in_range(0..=7usize)?)

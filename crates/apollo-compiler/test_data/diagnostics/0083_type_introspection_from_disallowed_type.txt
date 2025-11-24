@@ -1,5 +1,5 @@
 Error: type `Product` does not have a field `__type`
-    ╭─[0083_type_introspection_from_disallowed_type.graphql:4:5]
+    ╭─[ 0083_type_introspection_from_disallowed_type.graphql:4:5 ]
     │
   4 │     __type(name: "User") {
     │     ───┬──  

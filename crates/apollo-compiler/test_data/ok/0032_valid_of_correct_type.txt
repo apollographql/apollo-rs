@@ -3214,7 +3214,7 @@ ExecutableDocument {
                                                             [
                                                                 (
                                                                     "requiredField",
-                                                                    4175..4194 @33 Boolean(
+                                                                    4190..4194 @33 Boolean(
                                                                         true,
                                                                     ),
                                                                 ),
@@ -3294,7 +3294,7 @@ ExecutableDocument {
                                                             [
                                                                 (
                                                                     "requiredField",
-                                                                    4304..4324 @33 Boolean(
+                                                                    4319..4324 @33 Boolean(
                                                                         false,
                                                                     ),
                                                                 ),
@@ -3374,13 +3374,13 @@ ExecutableDocument {
                                                             [
                                                                 (
                                                                     "requiredField",
-                                                                    4428..4447 @33 Boolean(
+                                                                    4443..4447 @33 Boolean(
                                                                         true,
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "intField",
-                                                                    4449..4460 @33 Int(
+                                                                    4459..4460 @33 Int(
                                                                         4,
                                                                     ),
                                                                 ),
@@ -3460,31 +3460,31 @@ ExecutableDocument {
                                                             [
                                                                 (
                                                                     "requiredField",
-                                                                    4550..4569 @33 Boolean(
+                                                                    4565..4569 @33 Boolean(
                                                                         true,
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "intField",
-                                                                    4577..4588 @33 Int(
+                                                                    4587..4588 @33 Int(
                                                                         4,
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "stringField",
-                                                                    4596..4614 @33 String(
+                                                                    4609..4614 @33 String(
                                                                         "foo",
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "booleanField",
-                                                                    4622..4641 @33 Boolean(
+                                                                    4636..4641 @33 Boolean(
                                                                         false,
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "stringListField",
-                                                                    4649..4680 @33 List(
+                                                                    4666..4680 @33 List(
                                                                         [
                                                                             4667..4672 @33 String(
                                                                                 "one",
@@ -3571,7 +3571,7 @@ ExecutableDocument {
                                                             [
                                                                 (
                                                                     "stringListField",
-                                                                    4800..4831 @33 List(
+                                                                    4817..4831 @33 List(
                                                                         [
                                                                             4818..4823 @33 String(
                                                                                 "one",
@@ -3584,25 +3584,25 @@ ExecutableDocument {
                                                                 ),
                                                                 (
                                                                     "booleanField",
-                                                                    4839..4858 @33 Boolean(
+                                                                    4853..4858 @33 Boolean(
                                                                         false,
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "requiredField",
-                                                                    4866..4885 @33 Boolean(
+                                                                    4881..4885 @33 Boolean(
                                                                         true,
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "stringField",
-                                                                    4893..4911 @33 String(
+                                                                    4906..4911 @33 String(
                                                                         "foo",
                                                                     ),
                                                                 ),
                                                                 (
                                                                     "intField",
-                                                                    4919..4930 @33 Int(
+                                                                    4929..4930 @33 Int(
                                                                         4,
                                                                     ),
                                                                 ),
@@ -3817,13 +3817,13 @@ ExecutableDocument {
                                 [
                                     (
                                         "requiredField",
-                                        5175..5194 @33 Boolean(
+                                        5190..5194 @33 Boolean(
                                             true,
                                         ),
                                     ),
                                     (
                                         "intField",
-                                        5196..5207 @33 Int(
+                                        5206..5207 @33 Int(
                                             3,
                                         ),
                                     ),
@@ -4012,13 +4012,13 @@ ExecutableDocument {
                                 [
                                     (
                                         "requiredField",
-                                        5439..5458 @33 Boolean(
+                                        5454..5458 @33 Boolean(
                                             true,
                                         ),
                                     ),
                                     (
                                         "intField",
-                                        5460..5474 @33 Null,
+                                        5470..5474 @33 Null,
                                     ),
                                 ],
                             ),
@@ -4605,7 +4605,7 @@ ExecutableDocument {
                                                             [
                                                                 (
                                                                     "as",
-                                                                    6246..6256 @33 String(
+                                                                    6250..6256 @33 String(
                                                                         "@key",
                                                                     ),
                                                                 ),

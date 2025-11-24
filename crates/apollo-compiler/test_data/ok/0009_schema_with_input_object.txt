@@ -40,7 +40,6 @@ Schema {
         "Float": built_in_type!("Float"),
         "String": built_in_type!("String"),
         "Boolean": built_in_type!("Boolean"),
-        "ID": built_in_type!("ID"),
         "Query": Object(
             0..44 @11 ObjectType {
                 description: None,

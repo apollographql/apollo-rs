@@ -7,7 +7,8 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
-    schema: Schema,
+    ignore_builtin_redefinitions: bool,
+    pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
     pub(crate) errors: DiagnosticList,
@@ -28,43 +29,45 @@ impl Default for SchemaBuilder {
 }
 
 impl SchemaBuilder {
+    pub(crate) fn built_in() -> &'static Self {
+        static BUILT_IN: std::sync::OnceLock<SchemaBuilder> = std::sync::OnceLock::new();
+        BUILT_IN.get_or_init(|| {
+            let mut builder = SchemaBuilder {
+                adopt_orphan_extensions: false,
+                ignore_builtin_redefinitions: false,
+                schema: Schema {
+                    sources: Default::default(),
+                    schema_definition: Node::new(SchemaDefinition {
+                        description: None,
+                        directives: DirectiveList::default(),
+                        query: None,
+                        mutation: None,
+                        subscription: None,
+                    }),
+                    directive_definitions: IndexMap::with_hasher(Default::default()),
+                    types: IndexMap::with_hasher(Default::default()),
+                },
+                schema_definition: SchemaDefinitionStatus::NoneSoFar {
+                    orphan_extensions: Vec::new(),
+                },
+                orphan_type_extensions: IndexMap::with_hasher(Default::default()),
+                errors: DiagnosticList::new(Default::default()),
+            };
+            let input = include_str!("../built_in_types.graphql").to_owned();
+            let path = "built_in.graphql";
+            let id = FileId::BUILT_IN;
+            let ast = ast::Document::parser().parse_ast_inner(input, path, id, &mut builder.errors);
+            let executable_definitions_are_errors = true;
+            builder.add_ast_document(&ast, executable_definitions_are_errors);
+            assert!(builder.errors.is_empty());
+            builder
+        })
+    }
+
     /// Returns a new schema builder initialized with built-in directives, built-in scalars,
     /// and introspection types
     pub fn new() -> Self {
-        static BUILT_IN_TYPES: std::sync::OnceLock<SchemaBuilder> = std::sync::OnceLock::new();
-        BUILT_IN_TYPES
-            .get_or_init(|| {
-                let mut builder = SchemaBuilder {
-                    adopt_orphan_extensions: false,
-                    schema: Schema {
-                        sources: Default::default(),
-                        schema_definition: Node::new(SchemaDefinition {
-                            description: None,
-                            directives: DirectiveList::default(),
-                            query: None,
-                            mutation: None,
-                            subscription: None,
-                        }),
-                        directive_definitions: IndexMap::with_hasher(Default::default()),
-                        types: IndexMap::with_hasher(Default::default()),
-                    },
-                    schema_definition: SchemaDefinitionStatus::NoneSoFar {
-                        orphan_extensions: Vec::new(),
-                    },
-                    orphan_type_extensions: IndexMap::with_hasher(Default::default()),
-                    errors: DiagnosticList::new(Default::default()),
-                };
-                let input = include_str!("../built_in_types.graphql").to_owned();
-                let path = "built_in.graphql";
-                let id = FileId::BUILT_IN;
-                let ast =
-                    ast::Document::parser().parse_ast_inner(input, path, id, &mut builder.errors);
-                let executable_definitions_are_errors = true;
-                builder.add_ast_document(&ast, executable_definitions_are_errors);
-                assert!(builder.errors.is_empty());
-                builder
-            })
-            .clone()
+        Self::built_in().clone()
     }
 
     /// Configure the builder so that “orphan” schema extensions and type extensions
@@ -72,6 +75,14 @@ impl SchemaBuilder {
     /// accepted as if extending an empty definition instead of being rejected as errors.
     pub fn adopt_orphan_extensions(mut self) -> Self {
         self.adopt_orphan_extensions = true;
+        self
+    }
+
+    /// Configure the builder to allow SDL to contain built-in type re-definitions.
+    /// Re-definitions are going to be effectively ignored and compiler will continue to use
+    /// built-in GraphQL spec definitions.
+    pub fn ignore_builtin_redefinitions(mut self) -> Self {
+        self.ignore_builtin_redefinitions = true;
         self
     }
 
@@ -123,6 +134,10 @@ impl SchemaBuilder {
                         }
                         Entry::Occupied(entry) => {
                             let previous = entry.get();
+                            if self.ignore_builtin_redefinitions && previous.is_built_in() {
+                                continue;
+                            }
+
                             if $is_scalar && previous.is_built_in() {
                                 self.errors.push(
                                     $def.location(),
@@ -253,7 +268,12 @@ impl SchemaBuilder {
         }
     }
 
+    pub fn iter_orphan_extension_types(&self) -> impl Iterator<Item = &Name> {
+        self.orphan_type_extensions.keys()
+    }
+
     /// Returns the schema built from all added documents
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn build(self) -> Result<Schema, WithErrors<Schema>> {
         let (schema, errors) = self.build_inner();
         errors.into_result_with(schema)
@@ -262,12 +282,31 @@ impl SchemaBuilder {
     pub(crate) fn build_inner(self) -> (Schema, DiagnosticList) {
         let SchemaBuilder {
             adopt_orphan_extensions,
+            ignore_builtin_redefinitions: _allow_builtin_redefinitions,
             mut schema,
             schema_definition,
             orphan_type_extensions,
             mut errors,
         } = self;
         schema.sources = errors.sources.clone();
+
+        // process orphan type extensions (https://github.com/apollographql/apollo-rs/pull/678) first,
+        // so they can be reflected on the implicit schema definition below
+        if adopt_orphan_extensions {
+            for (type_name, extensions) in orphan_type_extensions {
+                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
+                let previous = schema.types.insert(type_name, type_def);
+                assert!(previous.is_none());
+            }
+        } else {
+            for extensions in orphan_type_extensions.values() {
+                for ext in extensions {
+                    let name = ext.name().unwrap().clone();
+                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
+                }
+            }
+        }
+
         match schema_definition {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
@@ -303,21 +342,6 @@ impl SchemaBuilder {
                             errors.push(ext.location(), BuildError::OrphanSchemaExtension)
                         }
                     }
-                }
-            }
-        }
-        // https://github.com/apollographql/apollo-rs/pull/678
-        if adopt_orphan_extensions {
-            for (type_name, extensions) in orphan_type_extensions {
-                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
-                let previous = schema.types.insert(type_name, type_def);
-                assert!(previous.is_none());
-            }
-        } else {
-            for extensions in orphan_type_extensions.values() {
-                for ext in extensions {
-                    let name = ext.name().unwrap().clone();
-                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
                 }
             }
         }

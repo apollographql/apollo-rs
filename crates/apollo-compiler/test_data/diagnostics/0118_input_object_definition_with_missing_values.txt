@@ -1,5 +1,5 @@
 Error: `In` has no input values
-   ╭─[0118_input_object_definition_with_missing_values.graphql:6:1]
+   ╭─[ 0118_input_object_definition_with_missing_values.graphql:6:1 ]
    │
  6 │ input In
    │ ────┬───  

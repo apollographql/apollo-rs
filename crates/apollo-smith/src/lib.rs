@@ -13,6 +13,7 @@ pub(crate) mod interface;
 pub(crate) mod name;
 pub(crate) mod object;
 pub(crate) mod operation;
+pub(crate) mod response;
 pub(crate) mod scalar;
 pub(crate) mod schema;
 pub(crate) mod selection_set;
@@ -22,7 +23,6 @@ pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
 
-use arbitrary::Unstructured;
 use indexmap::IndexMap;
 use std::fmt::Debug;
 
@@ -39,6 +39,7 @@ pub enum FromError {
 }
 
 pub use arbitrary::Result;
+pub use arbitrary::Unstructured;
 use argument::Argument;
 pub use directive::DirectiveDef;
 pub use document::Document;
@@ -50,8 +51,11 @@ pub use interface::InterfaceTypeDef;
 use name::Name;
 pub use object::ObjectTypeDef;
 pub use operation::OperationDef;
+pub use response::Generator;
+pub use response::ResponseBuilder;
 pub use scalar::ScalarTypeDef;
 pub use schema::SchemaDef;
+pub use serde_json_bytes::Value;
 use ty::Ty;
 pub use union::UnionTypeDef;
 
@@ -94,7 +98,7 @@ pub struct DocumentBuilder<'a> {
     pub(crate) chosen_aliases: IndexMap<Name, Name>,
 }
 
-impl<'a> Debug for DocumentBuilder<'a> {
+impl Debug for DocumentBuilder<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DocumentBuilder")
             .field("input_object_type_defs", &self.input_object_type_defs)

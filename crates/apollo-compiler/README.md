@@ -25,8 +25,10 @@
   created or modified programatically,
   and serialized.
 * Validation of schemas and executable documents, as defined [in the GraphQL specification][val].
+* Execution of the [schema introspection][introsp] portion of queries.
 
 [val]: https://spec.graphql.org/October2021/#sec-Validation
+[introsp]: https://spec.graphql.org/October2021/#sec-Introspection
 
 ## Getting started
 Add the dependency to start using `apollo-compiler`:
@@ -38,9 +40,8 @@ Or add this to your `Cargo.toml` for a manual installation:
 
 ```toml
 # Just an example, change to the necessary package version.
-# Using an exact dependency is recommended for beta versions
 [dependencies]
-apollo-compiler = "=1.0.0-beta.22"
+apollo-compiler = "1.31.0"
 ```
 
 ## Rust versions
@@ -53,39 +54,19 @@ Older version may or may not be compatible.
 You can get started with `apollo-compiler`:
 ```rust
 use apollo_compiler::Schema;
+use apollo_compiler::ExecutableDocument;
 
-let input = r#"
-  interface Pet {
-    name: String
-  }
-
-  type Dog implements Pet {
-    name: String
-    nickname: String
-    barkVolume: Int
-  }
-
-  type Cat implements Pet {
-    name: String
-    nickname: String
-    meowVolume: Int
-  }
-
-  union CatOrDog = Cat | Dog
-
-  type Human {
-    name: String
-    pets: [Pet]
-  }
-
+let sdl = r#"
   type Query {
-    human: Human
+    field: Int
   }
 "#;
+let query = "{ field }";
 
 /// In case of validation errors, the panic message will be nicely formatted
 /// to point at relevant parts of the source file(s)
-let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
+let schema = Schema::parse_and_validate(sdl, "sdl.graphql").unwrap();
+let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
 ```
 
 ### Examples
@@ -147,31 +128,22 @@ use apollo_compiler::{Schema, ExecutableDocument, Node, executable};
 let schema_input = r#"
 type Query {
   topProducts: Product
-  name: String
-  size: Int
 }
 
 type Product {
   inStock: Boolean @join__field(graph: INVENTORY)
   name: String @join__field(graph: PRODUCTS)
-  price: Int
-  shippingEstimate: Int
-  upc: String!
-  weight: Int
 }
 
 enum join__Graph {
   INVENTORY,
   PRODUCTS,
 }
-scalar join__FieldSet
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+directive @join__field(graph: join__Graph) on FIELD_DEFINITION
 "#;
 let query_input = r#"
 query getProduct {
-  size
   topProducts {
-    name
     inStock
   }
 }
@@ -206,63 +178,11 @@ assert_eq!(in_stock_directive, ["join__field"]);
 
 #### Printing diagnostics for a faulty GraphQL document
 ```rust
-let input = r#"
-query {
-  cat {
-    name
-  }
-}
+use apollo_compiler::parser::Parser;
 
-query getPet {
-  cat {
-    owner {
-      name
-    }
-  }
-}
+let input = "{ ... }";
 
-query getPet {
-  cat {
-    treat
-  }
-}
-
-subscription sub {
-  newMessage {
-    body
-    sender
-  }
-  disallowedSecondRootField
-}
-
-type Query {
-  cat: Pet
-}
-
-type Subscription {
-  newMessage: Result
-}
-
-interface Pet {
-  name: String
-}
-
-type Dog implements Pet {
-  name: String
-  nickname: String
-  barkVolume: Int
-}
-
-type Cat implements Pet {
-  name: String
-  nickname: String
-  meowVolume: Int
-}
-
-union CatOrDog = Cat | Dog
-"#;
-
-if let Err(diagnostics) = apollo_compiler::parse_mixed_validate(input, "document.graphql") {
+if let Err(diagnostics) = Parser::new().parse_mixed_validate(input, "document.graphql") {
     println!("{diagnostics}")
 }
 ```

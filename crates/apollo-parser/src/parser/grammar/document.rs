@@ -21,6 +21,10 @@ use std::ops::ControlFlow;
 pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 
+    if let None | Some(TokenKind::Eof) = p.peek() {
+        p.err("Unexpected <EOF>.");
+    }
+
     p.peek_while(|p, kind| {
         assert_eq!(
             p.recursion_limit.current, 0,

@@ -14,5 +14,5 @@ fuzz_target!(|data: &str| {
         );
     }
 
-    debug!("{:?}", coord);
+    debug!("{coord:?}");
 });

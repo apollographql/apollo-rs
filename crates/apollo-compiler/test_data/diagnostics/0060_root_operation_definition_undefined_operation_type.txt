@@ -1,5 +1,5 @@
 Error: cannot find type `SomeQuery` in this document
-   ╭─[0060_root_operation_definition_undefined_operation_type.graphql:2:12]
+   ╭─[ 0060_root_operation_definition_undefined_operation_type.graphql:2:12 ]
    │
  2 │     query: SomeQuery
    │            ────┬────  

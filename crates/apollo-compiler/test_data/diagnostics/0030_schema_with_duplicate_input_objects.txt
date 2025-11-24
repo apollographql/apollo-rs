@@ -1,5 +1,5 @@
 Error: the type `Point2D` is defined multiple times in the schema
-    ╭─[0030_schema_with_duplicate_input_objects.graphql:13:7]
+    ╭─[ 0030_schema_with_duplicate_input_objects.graphql:13:7 ]
     │
   8 │ input Point2D {
     │       ───┬───  

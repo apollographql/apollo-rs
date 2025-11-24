@@ -1,0 +1,302 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        46: SourceFile {
+            path: "0117_subscription_conditions_not_at_root.graphql",
+            source_text: "subscription ConditionalSub($includeContent: Boolean = true, $small: Boolean = true) {\n    messages {\n        username\n        text @include(if: $includeContent)\n        avatar @skip(if: $small)\n    }\n}\n\ntype Query {\n    hello: String\n}\n\ntype Message {\n    username: String\n    text: String\n    avatar: String\n}\n\ntype Subscription {\n    messages: Message\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Subscription",
+            },
+        ),
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "Query": Object(
+            204..236 @46 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "hello": Component {
+                        origin: Definition,
+                        node: 221..234 @46 FieldDefinition {
+                            description: None,
+                            name: "hello",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Message": Object(
+            238..311 @46 ObjectType {
+                description: None,
+                name: "Message",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "username": Component {
+                        origin: Definition,
+                        node: 257..273 @46 FieldDefinition {
+                            description: None,
+                            name: "username",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "text": Component {
+                        origin: Definition,
+                        node: 278..290 @46 FieldDefinition {
+                            description: None,
+                            name: "text",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                    "avatar": Component {
+                        origin: Definition,
+                        node: 295..309 @46 FieldDefinition {
+                            description: None,
+                            name: "avatar",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Subscription": Object(
+            313..356 @46 ObjectType {
+                description: None,
+                name: "Subscription",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "messages": Component {
+                        origin: Definition,
+                        node: 337..354 @46 FieldDefinition {
+                            description: None,
+                            name: "messages",
+                            arguments: [],
+                            ty: Named(
+                                "Message",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        46: SourceFile {
+            path: "0117_subscription_conditions_not_at_root.graphql",
+            source_text: "subscription ConditionalSub($includeContent: Boolean = true, $small: Boolean = true) {\n    messages {\n        username\n        text @include(if: $includeContent)\n        avatar @skip(if: $small)\n    }\n}\n\ntype Query {\n    hello: String\n}\n\ntype Message {\n    username: String\n    text: String\n    avatar: String\n}\n\ntype Subscription {\n    messages: Message\n}\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "ConditionalSub": 0..202 @46 Operation {
+                operation_type: Subscription,
+                name: Some(
+                    "ConditionalSub",
+                ),
+                variables: [
+                    28..59 @46 VariableDefinition {
+                        name: "includeContent",
+                        ty: 45..52 @46 Named(
+                            "Boolean",
+                        ),
+                        default_value: Some(
+                            55..59 @46 Boolean(
+                                true,
+                            ),
+                        ),
+                        directives: [],
+                    },
+                    61..83 @46 VariableDefinition {
+                        name: "small",
+                        ty: 69..76 @46 Named(
+                            "Boolean",
+                        ),
+                        default_value: Some(
+                            79..83 @46 Boolean(
+                                true,
+                            ),
+                        ),
+                        directives: [],
+                    },
+                ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Subscription",
+                    selections: [
+                        Field(
+                            91..200 @46 Field {
+                                definition: 337..354 @46 FieldDefinition {
+                                    description: None,
+                                    name: "messages",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Message",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "messages",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Message",
+                                    selections: [
+                                        Field(
+                                            110..118 @46 Field {
+                                                definition: 257..273 @46 FieldDefinition {
+                                                    description: None,
+                                                    name: "username",
+                                                    arguments: [],
+                                                    ty: Named(
+                                                        "String",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "username",
+                                                arguments: [],
+                                                directives: [],
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                        Field(
+                                            127..161 @46 Field {
+                                                definition: 278..290 @46 FieldDefinition {
+                                                    description: None,
+                                                    name: "text",
+                                                    arguments: [],
+                                                    ty: Named(
+                                                        "String",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "text",
+                                                arguments: [],
+                                                directives: [
+                                                    132..161 @46 Directive {
+                                                        name: "include",
+                                                        arguments: [
+                                                            141..160 @46 Argument {
+                                                                name: "if",
+                                                                value: 145..160 @46 Variable(
+                                                                    "includeContent",
+                                                                ),
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                        Field(
+                                            170..194 @46 Field {
+                                                definition: 295..309 @46 FieldDefinition {
+                                                    description: None,
+                                                    name: "avatar",
+                                                    arguments: [],
+                                                    ty: Named(
+                                                        "String",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
+                                                name: "avatar",
+                                                arguments: [],
+                                                directives: [
+                                                    177..194 @46 Directive {
+                                                        name: "skip",
+                                                        arguments: [
+                                                            183..193 @46 Argument {
+                                                                name: "if",
+                                                                value: 187..193 @46 Variable(
+                                                                    "small",
+                                                                ),
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                                selection_set: SelectionSet {
+                                                    ty: "String",
+                                                    selections: [],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+        },
+    },
+    fragments: {},
+}

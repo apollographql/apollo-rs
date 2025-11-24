@@ -1,17 +1,20 @@
 Error: interface `A` declares that it implements `B`, but to do so it must also implement `A`
-   ╭─[0091_recursive_interface_definition.graphql:1:1]
+   ╭─[ 0091_recursive_interface_definition.graphql:1:1 ]
+   │
+ 4 │ interface B implements A {
+   │                        ┬  
+   │                        ╰── implementation of A declared by B here
+   │
+   ├─[ 0091_recursive_interface_definition.graphql:1:1 ]
    │
  1 │ ╭─▶ interface A implements B {
    ┆ ┆   
  3 │ ├─▶ }
    │ │       
    │ ╰─────── A must also be implemented here
- 4 │     interface B implements A {
-   │                            ┬  
-   │                            ╰── implementation of A declared by B here
 ───╯
 Error: interface `B` declares that it implements `A`, but to do so it must also implement `B`
-   ╭─[0091_recursive_interface_definition.graphql:4:1]
+   ╭─[ 0091_recursive_interface_definition.graphql:4:1 ]
    │
  1 │     interface A implements B {
    │                            ┬  

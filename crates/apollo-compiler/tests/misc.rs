@@ -1,7 +1,7 @@
 use apollo_compiler::ast::Document;
 use apollo_compiler::executable::Selection;
 use apollo_compiler::name;
-use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::parser::Parser;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
@@ -66,7 +66,9 @@ type User {
     scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     "#;
 
-    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
+    let (_schema, doc) = Parser::new()
+        .parse_mixed_validate(input, "document.graphql")
+        .unwrap();
 
     let operation_names: Vec<_> = doc.operations.named.keys().map(|n| n.as_str()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
@@ -105,7 +107,9 @@ type Query {
 }
 "#;
 
-    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
+    let (_schema, doc) = Parser::new()
+        .parse_mixed_validate(input, "document.graphql")
+        .unwrap();
 
     let op = doc.operations.get(Some("ExampleQuery")).unwrap();
     let field_names: Vec<&str> = op.selection_set.fields().map(|f| f.name.as_str()).collect();
@@ -152,7 +156,9 @@ type Concrete implements Interface {
 union Union = Concrete
 "#;
 
-    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
+    let (_schema, doc) = Parser::new()
+        .parse_mixed_validate(input, "document.graphql")
+        .unwrap();
 
     let op = doc.operations.get(Some("ExampleQuery")).unwrap();
     let fields: Vec<_> = op.selection_set.fields().collect();
@@ -244,7 +250,9 @@ enum join__Graph {
 }
 "#;
 
-    let (_schema, doc) = parse_mixed_validate(input, "document.graphql").unwrap();
+    let (_schema, doc) = Parser::new()
+        .parse_mixed_validate(input, "document.graphql")
+        .unwrap();
 
     // Get the types of the two top level fields - topProducts and size
     let get_product_op = doc.operations.get(Some("getProduct")).unwrap();
@@ -407,7 +415,9 @@ type Result {
 }
 "#;
 
-    let (_schema, _doc) = parse_mixed_validate(input, "document.graphql").unwrap();
+    let (_schema, _doc) = Parser::new()
+        .parse_mixed_validate(input, "document.graphql")
+        .unwrap();
 }
 
 #[test]

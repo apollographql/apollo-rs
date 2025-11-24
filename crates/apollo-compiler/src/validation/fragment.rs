@@ -1,15 +1,18 @@
 use crate::ast;
 use crate::ast::NamedType;
 use crate::collections::HashMap;
+use crate::collections::HashSet;
 use crate::collections::IndexSet;
 use crate::executable;
 use crate::schema;
 use crate::schema::Implementers;
 use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::variable::walk_selections_with_deduped_fragments;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
 use crate::validation::RecursionGuard;
+use crate::validation::RecursionLimitError;
 use crate::validation::RecursionStack;
 use crate::validation::SourceSpan;
 use crate::ExecutableDocument;
@@ -55,7 +58,7 @@ fn validate_fragment_spread_type(
     against_type: &NamedType,
     type_condition: &NamedType,
     selection: &executable::Selection,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     // Treat a spread that's just literally on the parent type as always valid:
     // by spec text, it shouldn't be, but graphql-{js,java,go} and others all do this.
@@ -118,7 +121,7 @@ pub(crate) fn validate_inline_fragment(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &ast::NamedType)>,
     inline: &Node<executable::InlineFragment>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -171,7 +174,7 @@ pub(crate) fn validate_fragment_spread(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     spread: &Node<executable::FragmentSpread>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -194,7 +197,12 @@ pub(crate) fn validate_fragment_spread(
                     context,
                 );
             }
-            validate_fragment_definition(diagnostics, document, def, context);
+            let new = context
+                .validated_fragments
+                .insert(spread.fragment_name.clone());
+            if new {
+                validate_fragment_definition(diagnostics, document, def, context);
+            }
         }
         None => {
             diagnostics.push(
@@ -211,7 +219,7 @@ pub(crate) fn validate_fragment_definition(
     diagnostics: &mut DiagnosticList,
     document: &ExecutableDocument,
     fragment: &Node<executable::Fragment>,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     super::directive::validate_directives(
         diagnostics,
@@ -265,18 +273,25 @@ pub(crate) fn validate_fragment_cycles(
 ) {
     /// If a fragment spread is recursive, returns a vec containing the spread that refers back to
     /// the original fragment, and a trace of each fragment spread back to the original fragment.
-    fn detect_fragment_cycles(
-        document: &ExecutableDocument,
-        selection_set: &executable::SelectionSet,
-        visited: &mut RecursionGuard<'_>,
+    fn detect_fragment_cycles<'doc>(
+        document: &'doc ExecutableDocument,
+        selection_set: &'doc executable::SelectionSet,
+        path_from_root: &mut RecursionGuard<'_>,
+        seen: &mut HashSet<&'doc Name>,
     ) -> Result<(), CycleError<executable::FragmentSpread>> {
         for selection in &selection_set.selections {
             match selection {
                 executable::Selection::FragmentSpread(spread) => {
-                    if visited.contains(&spread.fragment_name) {
-                        if visited.first() == Some(&spread.fragment_name) {
+                    if path_from_root.contains(&spread.fragment_name) {
+                        if path_from_root.first() == Some(&spread.fragment_name) {
                             return Err(CycleError::Recursed(vec![spread.clone()]));
                         }
+                        continue;
+                    }
+
+                    let new = seen.insert(&spread.fragment_name);
+                    if !new {
+                        // We already recursively traversed that fragment and didn’t find a cycle then
                         continue;
                     }
 
@@ -284,16 +299,17 @@ pub(crate) fn validate_fragment_cycles(
                         detect_fragment_cycles(
                             document,
                             &fragment.selection_set,
-                            &mut visited.push(&fragment.name)?,
+                            &mut path_from_root.push(&fragment.name)?,
+                            seen,
                         )
                         .map_err(|error| error.trace(spread))?;
                     }
                 }
                 executable::Selection::InlineFragment(inline) => {
-                    detect_fragment_cycles(document, &inline.selection_set, visited)?;
+                    detect_fragment_cycles(document, &inline.selection_set, path_from_root, seen)?;
                 }
                 executable::Selection::Field(field) => {
-                    detect_fragment_cycles(document, &field.selection_set, visited)?;
+                    detect_fragment_cycles(document, &field.selection_set, path_from_root, seen)?;
                 }
             }
         }
@@ -303,7 +319,12 @@ pub(crate) fn validate_fragment_cycles(
 
     let mut visited = RecursionStack::with_root(def.name.clone()).with_limit(100);
 
-    match detect_fragment_cycles(document, &def.selection_set, &mut visited.guard()) {
+    match detect_fragment_cycles(
+        document,
+        &def.selection_set,
+        &mut visited.guard(),
+        &mut HashSet::default(),
+    ) {
         Ok(_) => {}
         Err(CycleError::Recursed(trace)) => {
             let head_location = SourceSpan::recompose(def.location(), def.name.location());
@@ -339,17 +360,12 @@ pub(crate) fn validate_fragment_type_condition(
     fragment_location: Option<SourceSpan>,
 ) {
     let type_def = schema.types.get(type_cond);
-    let is_composite = type_def
-        .as_ref()
-        // .map_or(false, |ty| ty.is_composite_definition());
-        .map_or(false, |ty| {
-            matches!(
-                ty,
-                schema::ExtendedType::Object(_)
-                    | schema::ExtendedType::Interface(_)
-                    | schema::ExtendedType::Union(_)
-            )
-        });
+    let is_composite = matches!(
+        type_def,
+        Some(schema::ExtendedType::Object(_))
+            | Some(schema::ExtendedType::Interface(_))
+            | Some(schema::ExtendedType::Union(_))
+    );
 
     if !is_composite {
         diagnostics.push(
@@ -362,49 +378,40 @@ pub(crate) fn validate_fragment_type_condition(
     }
 }
 
-pub(crate) fn validate_fragment_used(
-    diagnostics: &mut DiagnosticList,
+fn collect_used_fragments(
     document: &ExecutableDocument,
-    fragment: &Node<executable::Fragment>,
-) {
-    let fragment_name = &fragment.name;
-
-    let mut all_selections = document
-        .operations
-        .iter()
-        .map(|operation| &operation.selection_set)
-        .chain(
-            document
-                .fragments
-                .values()
-                .map(|fragment| &fragment.selection_set),
-        )
-        .flat_map(|set| &set.selections);
-
-    let is_used = all_selections.any(|sel| selection_uses_fragment(sel, fragment_name));
-
-    // Fragments must be used within the schema
-    //
-    // Returns Unused Fragment error.
-    if !is_used {
-        diagnostics.push(
-            fragment.location(),
-            DiagnosticData::UnusedFragment {
-                name: fragment_name.clone(),
-            },
-        )
+) -> Result<HashSet<&Name>, RecursionLimitError> {
+    let mut names = HashSet::default();
+    for operation in document.operations.iter() {
+        walk_selections_with_deduped_fragments(document, &operation.selection_set, |selection| {
+            if let executable::Selection::FragmentSpread(spread) = selection {
+                names.insert(&spread.fragment_name);
+            }
+        })?;
     }
+    Ok(names)
 }
 
-fn selection_uses_fragment(sel: &executable::Selection, name: &str) -> bool {
-    let sub_selections = match sel {
-        executable::Selection::FragmentSpread(fragment) => return fragment.fragment_name == name,
-        executable::Selection::Field(field) => &field.selection_set,
-        executable::Selection::InlineFragment(inline) => &inline.selection_set,
+pub(crate) fn validate_fragments_used(
+    diagnostics: &mut DiagnosticList,
+    document: &ExecutableDocument,
+) {
+    let Ok(used_fragments) = collect_used_fragments(document) else {
+        diagnostics.push(None, super::Details::RecursionLimitError);
+        return;
     };
 
-    sub_selections
-        .selections
-        .iter()
-        .any(|sel| selection_uses_fragment(sel, name))
+    for fragment in document.fragments.values() {
+        // Fragments must be used within the schema
+        //
+        // Returns Unused Fragment error.
+        if !used_fragments.contains(&fragment.name) {
+            diagnostics.push(
+                fragment.location(),
+                DiagnosticData::UnusedFragment {
+                    name: fragment.name.clone(),
+                },
+            )
+        }
+    }
 }

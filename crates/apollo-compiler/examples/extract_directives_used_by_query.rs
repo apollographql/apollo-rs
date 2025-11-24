@@ -5,12 +5,18 @@ use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Node;
 use apollo_compiler::Schema;
 
-fn get_directives_used_in_query(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
+fn get_field_directives(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
     // seed the stack with top-level fields
     let mut stack: Vec<_> = doc
         .operations
         .iter()
         .flat_map(|op| op.selection_set.fields())
+        .chain(
+            // in case the query has fragments
+            doc.fragments
+                .iter()
+                .flat_map(|(_, fragment)| fragment.selection_set.fields()),
+        )
         .collect();
 
     let mut directives = vec![];
@@ -55,7 +61,7 @@ fn main() {
 
     let schema = Schema::parse_and_validate(schema_src, "not-used-here.graphql").unwrap();
 
-    let query_src0 = r#"query {
+    let query_src = r#"query {
           directivesQuery {
             test {
               test {
@@ -65,32 +71,45 @@ fn main() {
           }
         }
         "#;
-    let query0 =
-        ExecutableDocument::parse_and_validate(&schema, query_src0, "not-used-here.graphql")
-            .unwrap();
+    let query = ExecutableDocument::parse_and_validate(&schema, query_src, "not-used-here.graphql")
+        .unwrap();
 
-    let directives = get_directives_used_in_query(&query0);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 4);
 
-    let query_src1 = r#"query {
+    let query_src = r#"query {
           directivesQuery {
             test
           }
         }
         "#;
-    let query1 = ExecutableDocument::parse(&schema, query_src1, "not-used-here.graphql").unwrap();
+    let query = ExecutableDocument::parse(&schema, query_src, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&query1);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 2);
 
-    let query_src2 = r#"query {
+    let query_src = r#"query {
           noDirectivesQuery {
             test
           }
         }
         "#;
-    let query2 = ExecutableDocument::parse(&schema, query_src2, "not-used-here.graphql").unwrap();
+    let query = ExecutableDocument::parse(&schema, query_src, "not-used-here.graphql").unwrap();
 
-    let directives = get_directives_used_in_query(&query2);
+    let directives = get_field_directives(&query);
     assert_eq!(directives.len(), 0);
+
+    let query_src = r#"query {
+          directivesQuery {
+            ... testFragment
+          }
+        }
+        fragment testFragment on Test {
+          test
+        }
+        "#;
+    let query = ExecutableDocument::parse(&schema, query_src, "not-used-here.graphql").unwrap();
+
+    let directives = get_field_directives(&query);
+    assert_eq!(directives.len(), 2);
 }

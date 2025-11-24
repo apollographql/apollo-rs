@@ -67,12 +67,12 @@
 //!     }
 //! }
 //! ```
-use crate::execution::GraphQLError;
 use crate::parser::FileId;
 use crate::parser::LineColumn;
 use crate::parser::SourceFile;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::response::GraphQLError;
 #[cfg(doc)]
 use crate::ExecutableDocument;
 #[cfg(doc)]
@@ -204,17 +204,17 @@ impl<'s> CliReport<'s> {
         main_location: Option<SourceSpan>,
         color: Color,
     ) -> Self {
-        let (file_id, range) = main_location
+        let span = main_location
             .and_then(to_span)
             .unwrap_or((FileId::NONE, 0..0));
-        let report = ariadne::Report::build(ReportKind::Error, file_id, range.start);
+        let report = ariadne::Report::build(ReportKind::Error, span);
         let enable_color = match color {
             Color::Never => false,
             // Rely on ariadne's `auto-color` feature, which uses `concolor` to enable colors
             // only if stderr is a terminal.
             Color::StderrIsTerminal => true,
         };
-        let config = ariadne::Config::default()
+        let config = ariadne::Config::new()
             .with_index_type(ariadne::IndexType::Byte)
             .with_color(enable_color);
         Self {
@@ -283,7 +283,7 @@ struct Cache<'a>(&'a SourceMap);
 impl ariadne::Cache<FileId> for Cache<'_> {
     type Storage = String;
 
-    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
+    fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, impl fmt::Debug> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -296,28 +296,29 @@ impl ariadne::Cache<FileId> for Cache<'_> {
             static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
             Ok(EMPTY.get_or_init(|| ariadne::Source::from(String::new())))
         } else {
-            Err(Box::new(NotFound(*file_id)))
+            Err(NotFound(*file_id))
         }
     }
 
-    fn display<'a>(&self, file_id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
+    fn display<'a>(&self, file_id: &'a FileId) -> Option<impl fmt::Display + 'a> {
+        enum Path {
+            SourceFile(Arc<SourceFile>),
+            NoSourceFile,
+        }
+        impl fmt::Display for Path {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    Path::SourceFile(source_file) => source_file.path().display().fmt(f),
+                    Path::NoSourceFile => f.write_str("(no source file)"),
+                }
+            }
+        }
+
         if *file_id != FileId::NONE {
-            struct Path(Arc<SourceFile>);
-            impl fmt::Display for Path {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.0.path().display().fmt(f)
-                }
-            }
             let source_file = self.0.get(file_id)?;
-            Some(Box::new(Path(source_file.clone())))
+            Some(Path::SourceFile(source_file.clone()))
         } else {
-            struct NoSourceFile;
-            impl fmt::Display for NoSourceFile {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    f.write_str("(no source file)")
-                }
-            }
-            Some(Box::new(NoSourceFile))
+            Some(Path::NoSourceFile)
         }
     }
 }

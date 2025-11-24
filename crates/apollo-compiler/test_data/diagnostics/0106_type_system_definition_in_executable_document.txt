@@ -1,5 +1,5 @@
 Error: an executable document must not contain an object type definition
-   ╭─[0106_type_system_definition_in_executable_document.graphql:1:1]
+   ╭─[ 0106_type_system_definition_in_executable_document.graphql:1:1 ]
    │
  1 │ ╭─▶ type Query {
    ┆ ┆   

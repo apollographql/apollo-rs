@@ -37,10 +37,8 @@ Schema {
         "__Directive": built_in_type!("__Directive"),
         "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
         "Int": built_in_type!("Int"),
-        "Float": built_in_type!("Float"),
         "String": built_in_type!("String"),
         "Boolean": built_in_type!("Boolean"),
-        "ID": built_in_type!("ID"),
         "Query": Object(
             298..337 @34 ObjectType {
                 description: None,

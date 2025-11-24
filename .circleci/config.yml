@@ -4,9 +4,8 @@ version: 2.1
 # Rust Orb: https://github.com/CircleCI-Public/rust-orb
 # Github Orb: https://github.com/CircleCI-Public/github-cli-orb
 orbs:
-  rust: circleci/rust@1.6.1
-  gh: circleci/github-cli@2.4.0
-  secops: apollo/circleci-secops-orb@2.0.7
+  rust: circleci/rust@1.8.0
+  gh: circleci/github-cli@2.7.2
 
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
@@ -65,28 +64,13 @@ workflows:
           matrix:
             parameters:
               platform: [linux]
-  security-scans:
-    jobs:
-      - secops/gitleaks:
-          context:
-            - platform-docker-ro
-            - github-orb
-            - secops-oidc
-          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
-          git-revision: << pipeline.git.revision >>
-      - secops/semgrep:
-          context:
-            - secops-oidc
-            - github-orb
-          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
 
 # Details of the three jobs: lint, test and wasm
 jobs:
   lint:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
         default: stable
       platform:
         type: executor
@@ -111,8 +95,7 @@ jobs:
   wasm:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
         default: stable
       platform:
         type: executor
@@ -123,14 +106,16 @@ jobs:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       - run:
-          name: Build to wasm target
-          command: rustup target add wasm32-unknown-unknown && cargo build --package apollo-parser --package apollo-compiler --target wasm32-unknown-unknown
+          name: Install wasm-pack
+          command: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run:
+          name: Build wasm demo
+          command: wasm-pack build --target web examples/validation-wasm-demo
 
   test:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
         default: stable
       platform:
         type: executor
@@ -169,8 +154,7 @@ commands:
       platform:
         type: executor
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
     steps:
       - when:
           condition:
@@ -204,8 +188,7 @@ commands:
   install_rust_toolchain:
     parameters:
       rust_channel:
-        type: enum
-        enum: ["stable", "nightly"]
+        type: string
       platform:
         type: executor
     steps:
@@ -240,3 +223,7 @@ commands:
                   [net]
                   git-fetch-with-cli = true
                   "@
+            # Remove this step when https://github.com/rust-fuzz/libfuzzer/issues/126 is fixed on crates.io
+            - run:
+                name: Downgrade libfuzzer-sys for https://github.com/rust-fuzz/libfuzzer/issues/126
+                command: cargo update -p libfuzzer-sys --precise 0.4.7

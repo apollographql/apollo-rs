@@ -1,5 +1,5 @@
 Error: built-in scalar definitions must be omitted
-   ╭─[0016_schema_with_built_in_scalar_definition.graphql:5:1]
+   ╭─[ 0016_schema_with_built_in_scalar_definition.graphql:5:1 ]
    │
  5 │ scalar Int
    │ ─────┬────  

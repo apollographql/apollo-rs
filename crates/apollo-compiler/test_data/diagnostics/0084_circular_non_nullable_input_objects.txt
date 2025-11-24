@@ -1,96 +1,115 @@
 Error: `First` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:6:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:6:1 ]
     │
   6 │ ╭─▶ input First {
-  7 │ │     second: Second!
-    │ │     ───────┬───────  
-    │ │            ╰───────── `First` references `second` here...
     ┆ ┆   
   9 │ ├─▶ }
     │ │       
     │ ╰─────── cyclical input object definition
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:6:1 ]
+    │
+  7 │   second: Second!
+    │   ───────┬───────  
+    │          ╰───────── `First` references `second` here...
     │ 
- 12 │       third: Third!
-    │       ──────┬──────  
-    │             ╰──────── `second` references `third` here...
+ 12 │   third: Third!
+    │   ──────┬──────  
+    │         ╰──────── `second` references `third` here...
     │ 
- 17 │       fourth: Fourth!
-    │       ───────┬───────  
-    │              ╰───────── `third` references `fourth` here...
+ 17 │   fourth: Fourth!
+    │   ───────┬───────  
+    │          ╰───────── `third` references `fourth` here...
     │ 
- 22 │       first: First!
-    │       ──────┬──────  
-    │             ╰──────── `fourth` circularly references `First` here
+ 22 │   first: First!
+    │   ──────┬──────  
+    │         ╰──────── `fourth` circularly references `First` here
 ────╯
 Error: `Second` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:11:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:11:1 ]
     │
-  7 │       second: Second!
-    │       ───────┬───────  
-    │              ╰───────── `first` circularly references `Second` here
-    │ 
  11 │ ╭─▶ input Second {
- 12 │ │     third: Third!
-    │ │     ──────┬──────  
-    │ │           ╰──────── `Second` references `third` here...
     ┆ ┆   
  14 │ ├─▶ }
     │ │       
     │ ╰─────── cyclical input object definition
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:11:1 ]
+    │
+ 12 │   third: Third!
+    │   ──────┬──────  
+    │         ╰──────── `Second` references `third` here...
     │ 
- 17 │       fourth: Fourth!
-    │       ───────┬───────  
-    │              ╰───────── `third` references `fourth` here...
+ 17 │   fourth: Fourth!
+    │   ───────┬───────  
+    │          ╰───────── `third` references `fourth` here...
     │ 
- 22 │       first: First!
-    │       ──────┬──────  
-    │             ╰──────── `fourth` references `first` here...
+ 22 │   first: First!
+    │   ──────┬──────  
+    │         ╰──────── `fourth` references `first` here...
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:11:1 ]
+    │
+  7 │   second: Second!
+    │   ───────┬───────  
+    │          ╰───────── `first` circularly references `Second` here
 ────╯
 Error: `Third` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:16:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:16:1 ]
     │
-  7 │       second: Second!
-    │       ───────┬───────  
-    │              ╰───────── `first` references `second` here...
-    │ 
- 12 │       third: Third!
-    │       ──────┬──────  
-    │             ╰──────── `second` circularly references `Third` here
-    │ 
  16 │ ╭─▶ input Third {
- 17 │ │     fourth: Fourth!
-    │ │     ───────┬───────  
-    │ │            ╰───────── `Third` references `fourth` here...
     ┆ ┆   
  19 │ ├─▶ }
     │ │       
     │ ╰─────── cyclical input object definition
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:16:1 ]
+    │
+ 17 │   fourth: Fourth!
+    │   ───────┬───────  
+    │          ╰───────── `Third` references `fourth` here...
     │ 
- 22 │       first: First!
-    │       ──────┬──────  
-    │             ╰──────── `fourth` references `first` here...
+ 22 │   first: First!
+    │   ──────┬──────  
+    │         ╰──────── `fourth` references `first` here...
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:16:1 ]
+    │
+  7 │   second: Second!
+    │   ───────┬───────  
+    │          ╰───────── `first` references `second` here...
+    │ 
+ 12 │   third: Third!
+    │   ──────┬──────  
+    │         ╰──────── `second` circularly references `Third` here
 ────╯
 Error: `Fourth` input object cannot reference itself
-    ╭─[0084_circular_non_nullable_input_objects.graphql:21:1]
+    ╭─[ 0084_circular_non_nullable_input_objects.graphql:21:1 ]
     │
-  7 │       second: Second!
-    │       ───────┬───────  
-    │              ╰───────── `first` references `second` here...
-    │ 
- 12 │       third: Third!
-    │       ──────┬──────  
-    │             ╰──────── `second` references `third` here...
-    │ 
- 17 │       fourth: Fourth!
-    │       ───────┬───────  
-    │              ╰───────── `third` circularly references `Fourth` here
-    │ 
  21 │ ╭─▶ input Fourth {
- 22 │ │     first: First!
-    │ │     ──────┬──────  
-    │ │           ╰──────── `Fourth` references `first` here...
+    ┆ ┆   
  23 │ ├─▶ }
     │ │      
     │ ╰────── cyclical input object definition
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:21:1 ]
+    │
+ 22 │   first: First!
+    │   ──────┬──────  
+    │         ╰──────── `Fourth` references `first` here...
+    │
+    ├─[ 0084_circular_non_nullable_input_objects.graphql:21:1 ]
+    │
+  7 │   second: Second!
+    │   ───────┬───────  
+    │          ╰───────── `first` references `second` here...
+    │ 
+ 12 │   third: Third!
+    │   ──────┬──────  
+    │         ╰──────── `second` references `third` here...
+    │ 
+ 17 │   fourth: Fourth!
+    │   ───────┬───────  
+    │          ╰───────── `third` circularly references `Fourth` here
 ────╯
 

@@ -1,17 +1,8 @@
 use crate::ast;
 use crate::schema::EnumType;
-use crate::schema::ExtendedType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
 use crate::Node;
-
-pub(crate) fn validate_enum_definitions(diagnostics: &mut DiagnosticList, schema: &crate::Schema) {
-    for ty in schema.types.values() {
-        if let ExtendedType::Enum(enum_) = ty {
-            validate_enum_definition(diagnostics, schema, enum_);
-        }
-    }
-}
 
 pub(crate) fn validate_enum_definition(
     diagnostics: &mut DiagnosticList,
@@ -54,6 +45,11 @@ pub(crate) fn validate_enum_value(
     schema: &crate::Schema,
     enum_val: &Node<ast::EnumValueDefinition>,
 ) {
+    crate::schema::validation::validate_type_system_name(
+        diagnostics,
+        &enum_val.value,
+        "an enum value",
+    );
     super::directive::validate_directives(
         diagnostics,
         Some(schema),

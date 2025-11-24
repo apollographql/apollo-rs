@@ -1,5 +1,5 @@
 Error: duplicate definitions for the `name` field of interface type `NamedEntity`
-   ╭─[0024_interface_definition_with_duplicate_fields.graphql:7:3]
+   ╭─[ 0024_interface_definition_with_duplicate_fields.graphql:7:3 ]
    │
  6 │   name: String
    │   ──┬─  

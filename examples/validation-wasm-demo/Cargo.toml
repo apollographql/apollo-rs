@@ -1,0 +1,14 @@
+[package]
+name = "validation-wasm-demo"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+apollo-compiler.path = "../../crates/apollo-compiler"
+# https://docs.rs/getrandom/0.3.3/getrandom/index.html#webassembly-support
+# Works together with the rustflags configuration in `.cargo/config.toml`
+getrandom = { version = "0.3", features = ["wasm_js"] }
+wasm-bindgen = "0.2.100"

@@ -1,8 +1,8 @@
 use crate::ast;
 use crate::collections::IndexSet;
 use crate::parser::SourceSpan;
+use crate::schema::validation::BuiltInScalars;
 use crate::schema::ComponentName;
-use crate::schema::ExtendedType;
 use crate::schema::InterfaceType;
 use crate::schema::Name;
 use crate::validation::diagnostics::DiagnosticData;
@@ -10,20 +10,10 @@ use crate::validation::field::validate_field_definitions;
 use crate::validation::DiagnosticList;
 use crate::Node;
 
-pub(crate) fn validate_interface_definitions(
-    diagnostics: &mut DiagnosticList,
-    schema: &crate::Schema,
-) {
-    for ty in schema.types.values() {
-        if let ExtendedType::Interface(interface) = ty {
-            validate_interface_definition(diagnostics, schema, interface);
-        }
-    }
-}
-
 pub(crate) fn validate_interface_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     interface: &Node<InterfaceType>,
 ) {
     super::directive::validate_directives(
@@ -62,7 +52,7 @@ pub(crate) fn validate_interface_definition(
     }
 
     // Interface Type field validation.
-    validate_field_definitions(diagnostics, schema, &interface.fields);
+    validate_field_definitions(diagnostics, schema, built_in_scalars, &interface.fields);
 
     // validate there is at least one field on the type
     // https://spec.graphql.org/draft/#sel-HAHbnBFBABABxB4a

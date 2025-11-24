@@ -1,5 +1,5 @@
 Error: union member `Pet` must be an object type
-    ╭─[0044_union_member_not_of_object_type.graphql:17:24]
+    ╭─[ 0044_union_member_not_of_object_type.graphql:17:24 ]
     │
  17 │ union CatOrDog = Cat | Pet
     │                        ─┬─  

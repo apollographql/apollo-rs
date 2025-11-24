@@ -47,7 +47,7 @@ macro_rules! name {
     }};
 }
 
-/// A GraphQL identifier
+/// A GraphQL [_Name_](https://spec.graphql.org/draft/#Name) identifier
 ///
 /// Like [`Node`][crate::Node], this string type has cheap `Clone`
 /// and carries an optional source location.
@@ -112,7 +112,7 @@ impl Name {
         Ok(Self::new_static_unchecked(value))
     }
 
-    /// Create a new `Name` without validity checking.
+    /// Create a new `Name` without [validity checking][Self::is_valid_syntax].
     ///
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
@@ -120,7 +120,7 @@ impl Name {
         Self::from_arc_unchecked(value.into())
     }
 
-    /// Create a new `Name` from an `Arc`, without validity checking.
+    /// Create a new `Name` from an `Arc`, without [validity checking][Self::is_valid_syntax].
     ///
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
@@ -138,7 +138,8 @@ impl Name {
         }
     }
 
-    /// Create a new `Name` from a string with static lifetime, without validity checking.
+    /// Create a new `Name` from a string with static lifetime,
+    /// without [validity checking][Self::is_valid_syntax].
     ///
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
@@ -207,7 +208,7 @@ impl Name {
     /// If this `Name` was created with [`new_static`][Self::new_static]
     /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
     ///
-    /// Exactly one of this method or [`to_cloned_arc`][Self::to_cloned_arc] returns `Some`.
+    /// Returns `Some` if and only if [`to_cloned_arc`][Self::to_cloned_arc] returns `None`.
     pub fn as_static_str(&self) -> Option<&'static str> {
         if self.tagged_file_id.tag() == TAG_STATIC {
             let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
@@ -240,15 +241,14 @@ impl Name {
 
     /// If this `Name` contains an `Arc<str>`, return a clone of it (reference count increment)
     ///
-    /// Exactly one of this method or [`as_static_str`][Self::as_static_str] returns `Some`.
+    /// Returns `Some` if and only if [`as_static_str`][Self::as_static_str] returns `None`.
     pub fn to_cloned_arc(&self) -> Option<Arc<str>> {
         self.as_arc()
             .map(|manually_drop| Arc::clone(&manually_drop))
     }
 
-    /// Returns whether the given string is a valid GraphQL name.
-    ///
-    /// <https://spec.graphql.org/October2021/#Name>
+    /// Returns whether the given string is a valid
+    /// GraphQL [_Name_](https://spec.graphql.org/October2021/#Name).
     pub const fn is_valid_syntax(value: &str) -> bool {
         let bytes = value.as_bytes();
         let Some(&first) = bytes.first() else {
@@ -452,7 +452,7 @@ impl<'de> serde::Deserialize<'de> for Name {
     {
         const EXPECTING: &str = "a string in GraphQL Name syntax";
         struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
+        impl serde::de::Visitor<'_> for Visitor {
             type Value = Name;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

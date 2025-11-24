@@ -3,24 +3,26 @@ use crate::ast::Value;
 use crate::collections::HashMap;
 use crate::executable::Field;
 use crate::executable::Operation;
-use crate::execution::engine::LinkedPath;
-use crate::execution::engine::PropagateNull;
-use crate::execution::GraphQLError;
-use crate::execution::JsonMap;
-use crate::execution::JsonValue;
-use crate::execution::Response;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
+use crate::resolvers::execution::ExecutionContext;
+use crate::resolvers::execution::LinkedPath;
+use crate::resolvers::execution::PropagateNull;
+use crate::response::GraphQLError;
+use crate::response::JsonMap;
+use crate::response::JsonValue;
 use crate::schema::ExtendedType;
 use crate::schema::FieldDefinition;
 use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
-use crate::ExecutableDocument;
 use crate::Node;
 use crate::Schema;
 
+/// The maximum integer safely representable as an IEEE 754 double-precision float.
+const MAX_SAFE_INT: i64 = (1_i64 << 53) - 1;
+
 #[derive(Debug, Clone)]
-pub enum InputCoercionError {
+pub(crate) enum InputCoercionError {
     SuspectedValidationBug(SuspectedValidationBug),
     // TODO: split into more structured variants?
     ValueError {
@@ -29,13 +31,8 @@ pub enum InputCoercionError {
     },
 }
 
-/// Coerce the values of variables from a GraphQL request to the types expected by the operation.
-///
-/// If type coercion fails, a request error is returned and the request must not be executed.
-///
-/// This is [CoerceVariableValues()](https://spec.graphql.org/October2021/#CoerceVariableValues())
-/// in the GraphQL specification.
-pub fn coerce_variable_values(
+// Documented in `src/request.rs`
+pub(crate) fn coerce_variable_values(
     schema: &Valid<Schema>,
     operation: &Operation,
     values: &JsonMap,
@@ -44,11 +41,16 @@ pub fn coerce_variable_values(
     for variable_def in &operation.variables {
         let name = variable_def.name.as_str();
         if let Some((key, value)) = values.get_key_value(name) {
-            let value =
-                coerce_variable_value(schema, "variable", "", "", name, &variable_def.ty, value)?;
+            let value = coerce_variable_value(
+                schema,
+                &format_args!("variable {name}"),
+                &variable_def.ty,
+                value,
+            )?;
             coerced_values.insert(key.clone(), value);
         } else if let Some(default) = &variable_def.default_value {
-            let value = graphql_value_to_json("variable default value", "", "", name, default)?;
+            let value =
+                graphql_value_to_json(&format_args!("default value of variable {name}"), default)?;
             coerced_values.insert(name, value);
         } else if variable_def.ty.is_non_null() {
             return Err(InputCoercionError::ValueError {
@@ -66,20 +68,16 @@ pub fn coerce_variable_values(
     Ok(Valid(coerced_values))
 }
 
-#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 fn coerce_variable_value(
     schema: &Valid<Schema>,
-    kind: &str,
-    parent: &str,
-    sep: &str,
-    name: &str,
+    description: &std::fmt::Arguments<'_>,
     ty: &Type,
     value: &JsonValue,
 ) -> Result<JsonValue, InputCoercionError> {
     if value.is_null() {
         if ty.is_non_null() {
             return Err(InputCoercionError::ValueError {
-                message: format!("null value for {kind} {parent}{sep}{name} of non-null type {ty}"),
+                message: format!("null value for {description} of non-null type {ty}"),
                 location: None,
             });
         } else {
@@ -95,21 +93,21 @@ fn coerce_variable_value(
                 // If not an array, treat the value as an array of size one:
                 .unwrap_or(std::slice::from_ref(value))
                 .iter()
-                .map(|item| coerce_variable_value(schema, kind, parent, sep, name, inner, item))
+                .map(|item| coerce_variable_value(schema, description, inner, item))
                 .collect();
         }
         Type::Named(ty_name) | Type::NonNullNamed(ty_name) => ty_name,
     };
     let Some(ty_def) = schema.types.get(ty_name) else {
         Err(SuspectedValidationBug {
-            message: format!("Undefined type {ty_name} for {kind} {parent}{sep}{name}"),
+            message: format!("undefined type {ty_name} for {description}"),
             location: ty_name.location(),
         })?
     };
     match ty_def {
         ExtendedType::Object(_) | ExtendedType::Interface(_) | ExtendedType::Union(_) => {
             Err(SuspectedValidationBug {
-                message: format!("Non-input type {ty_name} for {kind} {parent}{sep}{name}."),
+                message: format!("non-input type {ty_name} for {description}."),
                 location: ty_name.location(),
             })?
         }
@@ -125,7 +123,11 @@ fn coerce_variable_value(
             }
             "Float" => {
                 // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
-                if value.is_f64() {
+                if value.is_f64()
+                    || value
+                        .as_f64()
+                        .is_some_and(|f| f.abs() < MAX_SAFE_INT as f64)
+                {
                     return Ok(value.clone());
                 }
             }
@@ -181,19 +183,13 @@ fn coerce_variable_value(
                     if let Some(field_value) = object.get_mut(field_name.as_str()) {
                         *field_value = coerce_variable_value(
                             schema,
-                            "input field",
-                            ty_name,
-                            ".",
-                            field_name,
+                            &format_args!("input field {ty_name}.{field_name}"),
                             &field_def.ty,
                             field_value,
                         )?
                     } else if let Some(default) = &field_def.default_value {
                         let default = graphql_value_to_json(
-                            "input field",
-                            ty_name,
-                            ".",
-                            field_name,
+                            &format_args!("input field {ty_name}.{field_name}"),
                             default,
                         )?;
                         object.insert(field_name.as_str(), default);
@@ -211,16 +207,13 @@ fn coerce_variable_value(
         }
     }
     Err(InputCoercionError::ValueError {
-        message: format!("Could not coerce {kind} {parent}{sep}{name}: {value} to type {ty_name}"),
+        message: format!("could not coerce {description}: {value} to type {ty_name}"),
         location: None,
     })
 }
 
 fn graphql_value_to_json(
-    kind: &str,
-    parent: &str,
-    sep: &str,
-    name: &str,
+    description: &std::fmt::Arguments<'_>,
     value: &Node<Value>,
 ) -> Result<JsonValue, InputCoercionError> {
     match value.as_ref() {
@@ -229,7 +222,7 @@ fn graphql_value_to_json(
             // TODO: separate `ContValue` enum without this variant?
             Err(InputCoercionError::SuspectedValidationBug(
                 SuspectedValidationBug {
-                    message: format!("Variable in default value of {kind} {parent}{sep}{name}."),
+                    message: format!("variable in default value of {description}."),
                     location: value.location(),
                 },
             ))
@@ -240,38 +233,30 @@ fn graphql_value_to_json(
         // Rely on `serde_json::Number`’s own parser to use whatever precision it supports
         Value::Int(i) => Ok(JsonValue::Number(i.as_str().parse().map_err(|_| {
             InputCoercionError::ValueError {
-                message: format!("IntValue overflow in {kind} {parent}{sep}{name}"),
+                message: format!("int value overflow in {description}"),
                 location: value.location(),
             }
         })?)),
         Value::Float(f) => Ok(JsonValue::Number(f.as_str().parse().map_err(|_| {
             InputCoercionError::ValueError {
-                message: format!("FloatValue overflow in {kind} {parent}{sep}{name}"),
+                message: format!("float value overflow in {description}"),
                 location: value.location(),
             }
         })?)),
         Value::List(value) => value
             .iter()
-            .map(|value| graphql_value_to_json(kind, parent, sep, name, value))
+            .map(|value| graphql_value_to_json(description, value))
             .collect(),
         Value::Object(value) => value
             .iter()
-            .map(|(key, value)| {
-                Ok((
-                    key.as_str(),
-                    graphql_value_to_json(kind, parent, sep, name, value)?,
-                ))
-            })
+            .map(|(key, value)| Ok((key.as_str(), graphql_value_to_json(description, value)?)))
             .collect(),
     }
 }
 
 /// <https://spec.graphql.org/October2021/#sec-Coercing-Field-Arguments>
 pub(crate) fn coerce_argument_values(
-    schema: &Schema,
-    document: &Valid<ExecutableDocument>,
-    variable_values: &Valid<JsonMap>,
-    errors: &mut Vec<GraphQLError>,
+    ctx: &mut ExecutionContext<'_>,
     path: LinkedPath<'_>,
     field_def: &FieldDefinition,
     field: &Field,
@@ -281,13 +266,13 @@ pub(crate) fn coerce_argument_values(
         let arg_name = &arg_def.name;
         if let Some(arg) = field.arguments.iter().find(|arg| arg.name == *arg_name) {
             if let Value::Variable(var_name) = arg.value.as_ref() {
-                if let Some(var_value) = variable_values.get(var_name.as_str()) {
+                if let Some(var_value) = ctx.variable_values.get(var_name.as_str()) {
                     if var_value.is_null() && arg_def.ty.is_non_null() {
-                        errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::field_error(
                             format!("null value for non-nullable argument {arg_name}"),
                             path,
                             arg_def.location(),
-                            &document.sources,
+                            &ctx.document.sources,
                         ));
                         return Err(PropagateNull);
                     } else {
@@ -296,24 +281,18 @@ pub(crate) fn coerce_argument_values(
                     }
                 }
             } else if arg.value.is_null() && arg_def.ty.is_non_null() {
-                errors.push(GraphQLError::field_error(
+                ctx.errors.push(GraphQLError::field_error(
                     format!("null value for non-nullable argument {arg_name}"),
                     path,
                     arg_def.location(),
-                    &document.sources,
+                    &ctx.document.sources,
                 ));
                 return Err(PropagateNull);
             } else {
                 let coerced_value = coerce_argument_value(
-                    schema,
-                    document,
-                    variable_values,
-                    errors,
+                    ctx,
                     path,
-                    "argument",
-                    "",
-                    "",
-                    arg_name,
+                    &format_args!("argument {arg_name}"),
                     &arg_def.ty,
                     &arg.value,
                 )?;
@@ -322,20 +301,21 @@ pub(crate) fn coerce_argument_values(
             }
         }
         if let Some(default) = &arg_def.default_value {
-            let value =
-                graphql_value_to_json("argument", "", "", arg_name, default).map_err(|err| {
-                    errors.push(err.into_field_error(path, &document.sources));
+            let value = graphql_value_to_json(&format_args!("argument {arg_name}"), default)
+                .map_err(|err| {
+                    ctx.errors
+                        .push(err.into_field_error(path, &ctx.document.sources));
                     PropagateNull
                 })?;
             coerced_values.insert(arg_def.name.as_str(), value);
             continue;
         }
         if arg_def.ty.is_non_null() {
-            errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::field_error(
                 format!("missing value for required argument {arg_name}"),
                 path,
                 arg_def.location(),
-                &document.sources,
+                &ctx.document.sources,
             ));
             return Err(PropagateNull);
         }
@@ -343,27 +323,20 @@ pub(crate) fn coerce_argument_values(
     Ok(coerced_values)
 }
 
-#[allow(clippy::too_many_arguments)] // yes it’s not a nice API but it’s internal
 fn coerce_argument_value(
-    schema: &Schema,
-    document: &Valid<ExecutableDocument>,
-    variable_values: &Valid<JsonMap>,
-    errors: &mut Vec<GraphQLError>,
+    ctx: &mut ExecutionContext<'_>,
     path: LinkedPath<'_>,
-    kind: &str,
-    parent: &str,
-    sep: &str,
-    name: &str,
+    description: &std::fmt::Arguments<'_>,
     ty: &Type,
     value: &Node<Value>,
 ) -> Result<JsonValue, PropagateNull> {
     if value.is_null() {
         if ty.is_non_null() {
-            errors.push(GraphQLError::field_error(
-                format!("null value for non-null {kind} {parent}{sep}{name}"),
+            ctx.errors.push(GraphQLError::field_error(
+                format!("null value for non-null {description}"),
                 path,
                 value.location(),
-                &document.sources,
+                &ctx.document.sources,
             ));
             return Err(PropagateNull);
         } else {
@@ -371,24 +344,24 @@ fn coerce_argument_value(
         }
     }
     if let Some(var_name) = value.as_variable() {
-        if let Some(var_value) = variable_values.get(var_name.as_str()) {
+        if let Some(var_value) = ctx.variable_values.get(var_name.as_str()) {
             if var_value.is_null() && ty.is_non_null() {
-                errors.push(GraphQLError::field_error(
-                    format!("null variable value for non-null {kind} {parent}{sep}{name}"),
+                ctx.errors.push(GraphQLError::field_error(
+                    format!("null variable value for non-null {description}"),
                     path,
                     value.location(),
-                    &document.sources,
+                    &ctx.document.sources,
                 ));
                 return Err(PropagateNull);
             } else {
                 return Ok(var_value.clone());
             }
         } else if ty.is_non_null() {
-            errors.push(GraphQLError::field_error(
-                format!("missing variable for non-null {kind} {parent}{sep}{name}"),
+            ctx.errors.push(GraphQLError::field_error(
+                format!("missing variable for non-null {description}"),
                 path,
                 value.location(),
-                &document.sources,
+                &ctx.document.sources,
             ));
             return Err(PropagateNull);
         } else {
@@ -403,32 +376,18 @@ fn coerce_argument_value(
                 // If not an array, treat the value as an array of size one:
                 .unwrap_or(std::slice::from_ref(value))
                 .iter()
-                .map(|item| {
-                    coerce_argument_value(
-                        schema,
-                        document,
-                        variable_values,
-                        errors,
-                        path,
-                        kind,
-                        parent,
-                        sep,
-                        name,
-                        inner_ty,
-                        item,
-                    )
-                })
+                .map(|item| coerce_argument_value(ctx, path, description, inner_ty, item))
                 .collect();
         }
         Type::Named(ty_name) | Type::NonNullNamed(ty_name) => ty_name,
     };
-    let Some(ty_def) = schema.types.get(ty_name) else {
-        errors.push(
+    let Some(ty_def) = ctx.schema.types.get(ty_name) else {
+        ctx.errors.push(
             SuspectedValidationBug {
-                message: format!("Undefined type {ty_name} for {kind} {parent}{sep}{name}"),
+                message: format!("undefined type {ty_name} for {description}"),
                 location: value.location(),
             }
-            .into_field_error(&document.sources, path),
+            .into_field_error(&ctx.document.sources, path),
         );
         return Err(PropagateNull);
     };
@@ -440,11 +399,11 @@ fn coerce_argument_value(
                     .iter()
                     .find(|(key, _value)| !ty_def.fields.contains_key(key))
                 {
-                    errors.push(GraphQLError::field_error(
-                        format!("Input object has key {key} not in type {ty_name}",),
+                    ctx.errors.push(GraphQLError::field_error(
+                        format!("input object has key {key} not in type {ty_name}",),
                         path,
                         value.location(),
-                        &document.sources,
+                        &ctx.document.sources,
                     ));
                     return Err(PropagateNull);
                 }
@@ -454,35 +413,32 @@ fn coerce_argument_value(
                 for (field_name, field_def) in &ty_def.fields {
                     if let Some(field_value) = object.get(field_name) {
                         let coerced_value = coerce_argument_value(
-                            schema,
-                            document,
-                            variable_values,
-                            errors,
+                            ctx,
                             path,
-                            "input field",
-                            ty_name,
-                            ".",
-                            field_name,
+                            &format_args!("input field {ty_name}.{field_name}"),
                             &field_def.ty,
                             field_value,
                         )?;
                         coerced_object.insert(field_name.as_str(), coerced_value);
                     } else if let Some(default) = &field_def.default_value {
-                        let default =
-                            graphql_value_to_json("input field", ty_name, ".", field_name, default)
-                                .map_err(|err| {
-                                    errors.push(err.into_field_error(path, &document.sources));
-                                    PropagateNull
-                                })?;
+                        let default = graphql_value_to_json(
+                            &format_args!("input field {ty_name}.{field_name}"),
+                            default,
+                        )
+                        .map_err(|err| {
+                            ctx.errors
+                                .push(err.into_field_error(path, &ctx.document.sources));
+                            PropagateNull
+                        })?;
                         coerced_object.insert(field_name.as_str(), default);
                     } else if field_def.ty.is_non_null() {
-                        errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::field_error(
                             format!(
                                 "Missing value for non-null input object field {ty_name}.{field_name}"
                             ),
                             path,
                             value.location(),
-                            &document.sources,
+                            &ctx.document.sources,
                         ));
                         return Err(PropagateNull);
                     } else {
@@ -494,17 +450,18 @@ fn coerce_argument_value(
         }
         _ => {
             // For scalar and enums, rely and validation and just convert between Rust types
-            return graphql_value_to_json(kind, parent, sep, name, value).map_err(|err| {
-                errors.push(err.into_field_error(path, &document.sources));
+            return graphql_value_to_json(description, value).map_err(|err| {
+                ctx.errors
+                    .push(err.into_field_error(path, &ctx.document.sources));
                 PropagateNull
             });
         }
     }
-    errors.push(GraphQLError::field_error(
-        format!("Could not coerce {kind} {parent}{sep}{name}: {value} to type {ty_name}"),
+    ctx.errors.push(GraphQLError::field_error(
+        format!("could not coerce {description}: {value} to type {ty_name}"),
         path,
         value.location(),
-        &document.sources,
+        &ctx.document.sources,
     ));
     Err(PropagateNull)
 }
@@ -516,22 +473,6 @@ impl From<SuspectedValidationBug> for InputCoercionError {
 }
 
 impl InputCoercionError {
-    /// Convert into a JSON-serializable error as represented in a GraphQL response
-    pub fn into_graphql_error(self, sources: &SourceMap) -> GraphQLError {
-        match self {
-            Self::SuspectedValidationBug(s) => s.into_graphql_error(sources),
-            Self::ValueError { message, location } => GraphQLError::new(message, location, sources),
-        }
-    }
-
-    /// Convert into a response with this error as a [request error]
-    /// that prevented execution from starting.
-    ///
-    /// [request error]: https://spec.graphql.org/October2021/#sec-Errors.Request-errors
-    pub fn into_response(self, sources: &SourceMap) -> Response {
-        Response::from_request_error(self.into_graphql_error(sources))
-    }
-
     pub(crate) fn into_field_error(
         self,
         path: LinkedPath<'_>,
@@ -543,5 +484,117 @@ impl InputCoercionError {
                 GraphQLError::field_error(message, path, location, sources)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::validation::Valid;
+    use crate::ExecutableDocument;
+    use crate::Schema;
+
+    fn schema_and_doc_with_float_arg() -> (Valid<Schema>, Valid<ExecutableDocument>) {
+        let schema = Schema::parse_and_validate(
+            r#"
+                type Query {
+                    foo(bar: Float!): Float!
+                }
+            "#,
+            "sdl",
+        )
+        .unwrap();
+        let doc = ExecutableDocument::parse_and_validate(
+            &schema,
+            "query ($bar: Float!) { foo(bar: $bar) }",
+            "op.graphql",
+        )
+        .unwrap();
+        (schema, doc)
+    }
+
+    #[test]
+    fn coerces_float_to_float() {
+        let float_beyond_integer_max = (MAX_SAFE_INT as f64) + 0.5;
+        let variables = serde_json_bytes::json!({ "bar": float_beyond_integer_max });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // When a float greater than MAX_SAFE_INT is provided, it should be accepted as a float.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn coerces_int_to_float() {
+        let variables = serde_json_bytes::json!({ "bar": 14 });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // When an integer within the safe bounds is provided, it should be accepted as a float.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn fails_to_coerce_int_to_float_beyond_precision_bound() {
+        let variables = serde_json_bytes::json!({ "bar": i64::MAX });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // When an integer cannot be finitely represented as a float, it should be rejected.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+    }
+
+    #[test]
+    fn fails_to_numeric_string_to_float() {
+        let variables = serde_json_bytes::json!({ "bar": "14" });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // Strings (even numeric ones) should not be coerced to Float in input positions.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+    }
+
+    #[test]
+    fn fails_to_coerce_inf_to_float() {
+        let variables = serde_json_bytes::json!({ "bar": f64::INFINITY });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // Infinity should not be accepted as a Float input value.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+    }
+
+    #[test]
+    fn fails_to_coerce_nan_to_float() {
+        let variables = serde_json_bytes::json!({ "bar": f64::NAN });
+        let (schema, doc) = schema_and_doc_with_float_arg();
+
+        // NaN should not be accepted as a Float input value.
+        let _ = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
     }
 }

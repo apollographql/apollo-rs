@@ -36,7 +36,7 @@ pub(crate) struct FieldSelection<'a> {
     pub field: &'a Node<executable::Field>,
 }
 
-impl<'a> Hash for FieldSelection<'a> {
+impl Hash for FieldSelection<'_> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         state.write_u64(self.hash)
     }
@@ -55,7 +55,7 @@ impl<'a> FieldSelection<'a> {
         }
     }
 
-    pub fn coordinate(&self) -> TypeAttributeCoordinate {
+    pub(crate) fn coordinate(&self) -> TypeAttributeCoordinate {
         TypeAttributeCoordinate {
             ty: self.parent_type.clone(),
             attribute: self.field.name.clone(),
@@ -64,7 +64,7 @@ impl<'a> FieldSelection<'a> {
 }
 
 /// Expand one or more selection sets to a list of all fields selected.
-pub(crate) fn expand_selections<'doc>(
+fn expand_selections<'doc>(
     fragments: &'doc IndexMap<Name, Node<executable::Fragment>>,
     selection_sets: impl Iterator<Item = &'doc executable::SelectionSet>,
 ) -> Vec<FieldSelection<'doc>> {
@@ -581,7 +581,7 @@ pub(crate) fn validate_selection_set(
     document: &ExecutableDocument,
     against_type: Option<(&crate::Schema, &NamedType)>,
     selection_set: &SelectionSet,
-    context: OperationValidationContext<'_>,
+    context: &mut OperationValidationContext<'_>,
 ) {
     for selection in &selection_set.selections {
         match selection {

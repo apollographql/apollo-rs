@@ -1,6 +1,6 @@
 use crate::ast;
 use crate::collections::HashMap;
-use crate::schema::ExtendedType;
+use crate::schema::validation::BuiltInScalars;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
@@ -65,20 +65,10 @@ impl FindRecursiveInputValue<'_> {
     }
 }
 
-pub(crate) fn validate_input_object_definitions(
-    diagnostics: &mut DiagnosticList,
-    schema: &crate::Schema,
-) {
-    for ty in schema.types.values() {
-        if let ExtendedType::InputObject(input_object) = ty {
-            validate_input_object_definition(diagnostics, schema, input_object);
-        }
-    }
-}
-
 pub(crate) fn validate_input_object_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     input_object: &Node<InputObjectType>,
 ) {
     super::directive::validate_directives(
@@ -121,8 +111,10 @@ pub(crate) fn validate_input_object_definition(
     validate_input_value_definitions(
         diagnostics,
         schema,
+        built_in_scalars,
         &fields,
         ast::DirectiveLocation::InputFieldDefinition,
+        "an input object field",
     );
 
     // validate there is at least one input value on the input object type
@@ -146,10 +138,18 @@ pub(crate) fn validate_input_object_definition(
 pub(crate) fn validate_argument_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) {
-    validate_input_value_definitions(diagnostics, schema, input_values, directive_location);
+    validate_input_value_definitions(
+        diagnostics,
+        schema,
+        built_in_scalars,
+        input_values,
+        directive_location,
+        "an argument",
+    );
 
     let mut seen: HashMap<Name, &Node<ast::InputValueDefinition>> = HashMap::default();
     for input_value in input_values {
@@ -175,10 +175,17 @@ pub(crate) fn validate_argument_definitions(
 pub(crate) fn validate_input_value_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
+    built_in_scalars: &mut BuiltInScalars,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
+    describe: &'static str,
 ) {
     for input_value in input_values {
+        crate::schema::validation::validate_type_system_name(
+            diagnostics,
+            &input_value.name,
+            describe,
+        );
         super::directive::validate_directives(
             diagnostics,
             Some(schema),
@@ -188,7 +195,9 @@ pub(crate) fn validate_input_value_definitions(
         );
         // Input values must only contain input types.
         let loc = input_value.location();
-        if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
+        let named_type = input_value.ty.inner_named_type();
+        let is_built_in = built_in_scalars.record_type_ref(schema, named_type);
+        if let Some(field_ty) = schema.types.get(named_type) {
             if !field_ty.is_input_type() {
                 diagnostics.push(
                     loc,
@@ -199,8 +208,16 @@ pub(crate) fn validate_input_value_definitions(
                     },
                 );
             }
+            // TODO: Validate default values in apollo-compiler 2.0
+            // https://github.com/apollographql/apollo-rs/issues/928
+            //
+            // if let Some(default) = &input_value.default_value {
+            //     let var_defs = &[];
+            //     value_of_correct_type(diagnostics, schema, &input_value.ty, default, var_defs);
+            // }
+        } else if is_built_in {
+            // `validate_schema()` will insert the missing definition
         } else {
-            let named_type = input_value.ty.inner_named_type();
             let loc = named_type.location();
             diagnostics.push(
                 loc,

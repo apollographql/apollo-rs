@@ -1,0 +1,20 @@
+directive @__Prime on SCHEMA
+
+schema @__Prime {
+  query: __MyQuery
+}
+
+type __MyQuery {
+  __secretField(__heatedArgument: __In): Int
+}
+
+input __In {
+  __amount: __BigInt
+}
+
+scalar __BigInt
+
+enum __Maybe {
+  __Yes
+  __No
+}

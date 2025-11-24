@@ -1,6 +1,6 @@
 [package]
 name = "apollo-compiler"
-version = "1.0.0-beta.22" # When bumping, also update README.md
+version = "1.31.0" # When bumping, also update README.md
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
@@ -20,23 +20,21 @@ autotests = false # Most tests/*.rs files are modules of tests/main.rs
 [dependencies]
 ahash = "0.8.11"
 apollo-parser = { path = "../apollo-parser", version = "0.8.0" }
-ariadne = { version = "0.4.1", features = ["auto-color"] }
+ariadne = { version = "0.6.0", features = ["auto-color"] }
+futures = "0.3"
 indexmap = "2.0.0"
-rowan = "0.15.5"
+rowan = "0.16.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json_bytes = { version = "0.2.2", features = ["preserve_order"] }
-thiserror = "1.0.31"
+thiserror = "2.0.0"
 triomphe = "0.1.13"
 typed-arena = "2.0"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-uuid = { version = "1.6", features = ["serde", "v4", "js"] }
-
 [dev-dependencies]
 anyhow = "1.0"
-criterion = "0.5.1"
+criterion = "0.7.0"
 expect-test = "1.4"
-notify = "6.0.0"
+notify = "8.0.0"
 pretty_assertions = "1.3.0"
 serde_json = "1.0"
 serial_test = "3.0.0"
@@ -45,6 +43,11 @@ unindent = "0.2.3"
 [[bench]]
 name = "multi-source"
 path = "benches/multi_source.rs"
+harness = false
+
+[[bench]]
+name = "directives-validation"
+path = "benches/directives_validation.rs"
 harness = false
 
 [[bench]]

@@ -1,2 +1,9 @@
 Error: missing query root operation type in schema definition
+Error: syntax error: Unexpected <EOF>.
+   ╭─[ 0018_schema_with_specified_scalar_missing_values.graphql:1:54 ]
+   │
+ 1 │ # Placeholder for removed test, to avoid renumbering
+   │                                                      │ 
+   │                                                      ╰─ Unexpected <EOF>.
+───╯
 

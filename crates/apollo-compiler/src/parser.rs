@@ -1,4 +1,15 @@
-//! APIs related to parsing `&str` inputs as GraphQL syntax
+//! APIs related to parsing `&str` inputs as GraphQL syntax.
+//!
+//! This module typically does not need to be imported directly.
+//! If the default parser configuration is adequate, use constructors such as:
+//!
+//! * [`ast::Document::parse`]
+//! * [`Schema::parse`]
+//! * [`Schema::parse_and_validate`]
+//! * [`ExecutableDocument::parse`]
+//! * [`ExecutableDocument::parse_and_validate`]
+//!
+//! If not, create a [`Parser`] and use its builder methods to change configuration.
 
 use crate::ast;
 use crate::ast::from_cst::Convert;
@@ -84,26 +95,20 @@ impl std::fmt::Debug for LineColumn {
     }
 }
 
-/// Parse a schema and executable document from the given source text
-/// containing a mixture of type system definitions and executable definitions.
-/// and validate them.
-/// This is mostly useful for unit tests.
-///
-/// `path` is the filesystem path (or arbitrary string) used in diagnostics
-/// to identify this source file to users.
-pub fn parse_mixed_validate(
-    source_text: impl Into<String>,
-    path: impl AsRef<Path>,
-) -> Result<(Valid<Schema>, Valid<ExecutableDocument>), DiagnosticList> {
-    Parser::new().parse_mixed_validate(source_text, path)
-}
-
 impl Parser {
+    /// Create a `Parser` with default configuration.
+    /// Use other methods to change the configuration.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Configure the recursion to use while parsing.
+    /// Configure the recursion limit to use while parsing.
+    ///
+    /// This protects against stack overflow.
+    /// If unset, use [`apollo-parser`][apollo_parser]’s default limit.
+    /// The exact meaning is unspecified,
+    /// but for GraphQL constructs like selection sets whose syntax can be nested,
+    /// the nesting level encountered during parsing counts towards this limit.
     pub fn recursion_limit(mut self, value: usize) -> Self {
         self.recursion_limit = Some(value);
         self
@@ -208,6 +213,7 @@ impl Parser {
     ///
     /// To have multiple files contribute to a schema,
     /// use [`Schema::builder`] and [`Parser::parse_into_schema_builder`].
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_schema(
         &mut self,
         source_text: impl Into<String>,
@@ -241,6 +247,7 @@ impl Parser {
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_executable(
         &mut self,
         schema: &Valid<Schema>,
@@ -280,14 +287,14 @@ impl Parser {
         let executable_definitions_are_errors = false;
         let type_system_definitions_are_errors = false;
         builder.add_ast_document_not_adding_sources(&ast, executable_definitions_are_errors);
-        let (schema, mut errors) = builder.build_inner();
+        let (mut schema, mut errors) = builder.build_inner();
         let executable = crate::executable::from_ast::document_from_ast(
             Some(&schema),
             &ast,
             &mut errors,
             type_system_definitions_are_errors,
         );
-        crate::schema::validation::validate_schema(&mut errors, &schema);
+        crate::schema::validation::validate_schema(&mut errors, &mut schema);
         crate::executable::validation::validate_executable_document(
             &mut errors,
             &schema,
@@ -298,7 +305,10 @@ impl Parser {
             .map(|()| (Valid(schema), Valid(executable)))
     }
 
-    /// Parse the given source text as a selection set with optional outer brackets.
+    /// Parse the given source text (e.g. `field_1 field_2 { field_2_1 }`
+    /// as a selection set with optional outer brackets.
+    ///
+    /// This is the syntax of the string argument to some Apollo Federation directives.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -349,7 +359,7 @@ impl Parser {
         (field_set, errors)
     }
 
-    /// Parse the given source text as a reference to a type.
+    /// Parse the given source text (e.g. `[Foo!]!`) as a reference to a GraphQL type.
     ///
     /// `path` is the filesystem path (or arbitrary string) used in diagnostics
     /// to identify this source file to users.
@@ -385,7 +395,7 @@ impl Parser {
     /// How many tokens were created during the last call to a `parse_*` method.
     ///
     /// Collecting this on a corpus of documents can help decide
-    /// how to set [`recursion_limit`][Self::token_limit].
+    /// how to set [`token_limit`][Self::token_limit].
     pub fn tokens_reached(&self) -> usize {
         self.tokens_reached
     }
@@ -410,12 +420,24 @@ impl SourceFile {
         })
     }
 
-    pub(crate) fn get_line_column(&self, index: usize) -> Option<LineColumn> {
-        let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(index)?;
+    /// Get [`LineColumn`] for the given 0-indexed UTF-8 byte `offset` from the start of the file.
+    ///
+    /// Returns None if the offset is out of bounds.
+    pub fn get_line_column(&self, offset: usize) -> Option<LineColumn> {
+        let (_, zero_indexed_line, zero_indexed_column) = self.ariadne().get_byte_line(offset)?;
         Some(LineColumn {
             line: zero_indexed_line + 1,
             column: zero_indexed_column + 1,
         })
+    }
+
+    /// Get starting and ending [`LineColumn`]s for the given `range` 0-indexed UTF-8 byte offsets.
+    ///
+    /// Returns `None` if either offset is out of bounds.
+    pub fn get_line_column_range(&self, range: Range<usize>) -> Option<Range<LineColumn>> {
+        let start = self.get_line_column(range.start)?;
+        let end = self.get_line_column(range.end)?;
+        Some(start..end)
     }
 }
 
@@ -588,9 +610,7 @@ impl SourceSpan {
     /// inclusive.
     pub fn line_column_range(&self, sources: &SourceMap) -> Option<Range<LineColumn>> {
         let source = sources.get(&self.file_id)?;
-        let start = source.get_line_column(self.offset())?;
-        let end = source.get_line_column(self.end_offset())?;
-        Some(Range { start, end })
+        source.get_line_column_range(self.offset()..self.end_offset())
     }
 }
 

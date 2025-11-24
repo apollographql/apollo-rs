@@ -1,4 +1,65 @@
-//! High-level representation of a GraphQL schema
+//! High-level representation of a GraphQL type system document a.k.a. schema.
+//!
+//! Compared to an [`ast::Document`] which follows closely the structure of GraphQL syntax,
+//! a [`Schema`] is organized for semantics first:
+//!
+//! * Wherever something is meant to have a unique name (for example fields of a given object type),
+//!   a collection is stored as [`IndexMap<Name, _>`] instead of [`Vec<_>`]
+//!   in order to facilitate lookup by name while preserving source ordering.
+//!
+//! * Everything from [type system extensions] is stored
+//!   together with corresponding “main” definitions,
+//!   while still preserving extension origins with [`Component<_>`].
+//!   so that most consumers don’t need to care about extensions at all,
+//!   (For example, some directives can be applied to an object type extensions to affect
+//!   fields defined in the same extension but not other fields of the object type.)
+//!   See [`Component`].
+//!
+//! [type system extensions]: https://spec.graphql.org/draft/#sec-Type-System-Extensions
+//!
+//! In some cases like [`SchemaDefinition`], this module and the [`ast`] module
+//! define different Rust types with the same names.
+//! In other cases like [`Directive`] there is no data structure difference needed,
+//! so this module reuses and publicly re-exports some Rust types from the [`ast`] module.
+//!
+//! ## “Build” errors
+//!
+//! As a result of how `Schema` is structured,
+//! not all AST documents (even if filtering out executable definitions) can be fully represented:
+//! creating a `Schema` can cause errors (on top of any potential syntax error)
+//! for cases like name collisions.
+//!
+//! When such errors (or in [`Schema::parse`], syntax errors) happen,
+//! a partial schema is returned together with a list of diagnostics.
+//!
+//! ## Structural sharing and mutation
+//!
+//! Many parts of a `Schema` are reference-counted with [`Node`] (like in AST) or [`Component`].
+//! This allows sharing nodes between documents without cloning entire subtrees.
+//! To modify a node or component,
+//! the [`make_mut`][Node::make_mut] method provides copy-on-write semantics.
+//!
+//! ## Validation
+//!
+//! The [Type System] section of the GraphQL specification defines validation rules
+//! beyond syntax errors and errors detected while constructing a `Schema`.
+//! The [`validate`][Schema::validate] method returns either:
+//!
+//! * An immutable [`Valid<Schema>`] type wrapper, or
+//! * The schema together with a list of diagnostics
+//!
+//! If there is no mutation needed between parsing and validation,
+//! [`Schema::parse_and_validate`] does both in one step.
+//!
+//! [Type System]: https://spec.graphql.org/draft/#sec-Type-System
+//!
+//! ## Serialization
+//!
+//! [`Schema`] and other types types implement [`Display`][std::fmt::Display]
+//! and [`ToString`] by serializing to GraphQL syntax with a default configuration.
+//! [`serialize`][Schema::serialize] methods return a builder
+//! that has chaining methods for setting serialization configuration,
+//! and also implements `Display` and `ToString`.
 
 use crate::ast;
 use crate::collections::HashMap;
@@ -37,7 +98,7 @@ pub use crate::ast::NamedType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
 
-/// High-level representation of a GraphQL schema
+/// High-level representation of a GraphQL type system document a.k.a. schema.
 #[derive(Clone)]
 pub struct Schema {
     /// Source files, if any, that were parsed to contribute to this schema.
@@ -51,12 +112,23 @@ pub struct Schema {
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
 
-    /// Definitions and extensions of built-in scalars, introspection types,
-    /// and explicit types
+    /// Definitions and extensions of all types relevant to a schema:
+    ///
+    /// * Explict types in parsed input files or added programatically.
+    ///
+    /// * [Schema-introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+    ///   types such as `__Schema`, `__Field`, etc.
+    ///
+    /// * When a `Schema` is initially created or parsed,
+    ///   all [Built-in scalars](https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars).
+    ///   After validation, the Rust `types` map in a `Valid<Schema>` only contains
+    ///   built-in scalar definitions for scalars that are used in the schema.
+    ///   We reflect in this Rust API the behavior of `__Schema.types` in GraphQL introspection.
     pub types: IndexMap<NamedType, ExtendedType>,
 }
 
-/// The `schema` definition and its extensions, defining root operations
+/// The [`schema` definition](https://spec.graphql.org/draft/#sec-Schema) and its extensions,
+/// defining root operations
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
     pub description: Option<Node<str>>,
@@ -72,6 +144,15 @@ pub struct SchemaDefinition {
     pub subscription: Option<ComponentName>,
 }
 
+/// The list of [_Directives_](https://spec.graphql.org/draft/#Directives)
+/// of a GraphQL type or `schema`, each either from the “main” definition or from an extension.
+///
+/// Like [`ast::DirectiveList`] (a different Rust type with the same name),
+/// except items are [`Component`]s instead of just [`Node`]s in order to track extension origin.
+///
+/// Confusingly, [`ast::DirectiveList`] is also used in other parts of a [`Schema`],
+/// for example for the directives applied to a field definition.
+/// (The field definition as a whole is already a [`Component`] to keep track of its origin.)
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
 pub struct DirectiveList(pub Vec<Component<Directive>>);
 
@@ -88,6 +169,8 @@ pub enum ExtendedType {
     InputObject(Node<InputObjectType>),
 }
 
+/// The definition of a [scalar type](https://spec.graphql.org/draft/#sec-Scalars),
+/// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
     pub description: Option<Node<str>>,
@@ -95,6 +178,8 @@ pub struct ScalarType {
     pub directives: DirectiveList,
 }
 
+/// The definition of an [object type](https://spec.graphql.org/draft/#sec-Objects),
+/// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
     pub description: Option<Node<str>>,
@@ -124,6 +209,8 @@ pub struct InterfaceType {
     pub fields: IndexMap<Name, Component<FieldDefinition>>,
 }
 
+/// The definition of an [union type](https://spec.graphql.org/draft/#sec-Unions),
+/// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
     pub description: Option<Node<str>>,
@@ -136,6 +223,8 @@ pub struct UnionType {
     pub members: IndexSet<ComponentName>,
 }
 
+/// The definition of an [enum type](https://spec.graphql.org/draft/#sec-Enums),
+/// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
     pub description: Option<Node<str>>,
@@ -144,6 +233,8 @@ pub struct EnumType {
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
 
+/// The definition of an [input object type](https://spec.graphql.org/draft/#sec-Input-Objects),
+/// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
     pub description: Option<Node<str>>,
@@ -152,7 +243,8 @@ pub struct InputObjectType {
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
-/// A collection of type names that implement an interface.
+/// The names of all types that implement a given interface.
+/// Returned by [`Schema::implementers_map`].
 ///
 /// Concrete object types and derived interfaces can be accessed separately.
 ///
@@ -177,9 +269,9 @@ pub struct InputObjectType {
 /// ```
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Implementers {
-    /// Names of the concrete types that implement an interface.
+    /// Names of the concrete object types that implement an interface.
     pub objects: IndexSet<Name>,
-    /// Names of the interfaces that implement an interface.
+    /// Names of the interface types that implement an interface.
     pub interfaces: IndexSet<Name>,
 }
 
@@ -293,7 +385,7 @@ pub(crate) enum BuildError {
     },
 }
 
-/// Could not find the requested field definition
+/// Error type of [`Schema::type_field`]: could not find the requested field definition
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FieldLookupError<'schema> {
     NoSuchType,
@@ -314,6 +406,7 @@ impl Schema {
     ///
     /// Create a [`Parser`] to use different parser configuration.
     /// Use [`builder()`][Self::builder] to build a schema from multiple parsed files.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse(
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
@@ -323,14 +416,15 @@ impl Schema {
 
     /// [`parse`][Self::parse] then [`validate`][Self::validate],
     /// to get a `Valid<Schema>` when mutating it isn’t needed.
+    #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn parse_and_validate(
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
     ) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut builder = Schema::builder();
         Parser::default().parse_into_schema_builder(source_text, path, &mut builder);
-        let (schema, mut errors) = builder.build_inner();
-        validation::validate_schema(&mut errors, &schema);
+        let (mut schema, mut errors) = builder.build_inner();
+        validation::validate_schema(&mut errors, &mut schema);
         errors.into_valid_result(schema)
     }
 
@@ -346,9 +440,10 @@ impl Schema {
         SchemaBuilder::new()
     }
 
-    pub fn validate(self) -> Result<Valid<Self>, WithErrors<Self>> {
+    #[allow(clippy::result_large_err)] // Typically not called very often
+    pub fn validate(mut self) -> Result<Valid<Self>, WithErrors<Self>> {
         let mut errors = DiagnosticList::new(self.sources.clone());
-        validation::validate_schema(&mut errors, &self);
+        validation::validate_schema(&mut errors, &mut self);
         errors.into_valid_result(self)
     }
 
@@ -563,29 +658,26 @@ impl SchemaDefinition {
         .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
     }
 
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.query.iter().map(|name| &name.origin))
+            .chain(self.mutation.iter().map(|name| &name.origin))
+            .chain(self.subscription.iter().map(|name| &name.origin))
+    }
+
     /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.query
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .chain(
-                self.mutation
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .chain(
-                self.subscription
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 }
@@ -651,6 +743,54 @@ impl ExtendedType {
         matches!(self, Self::InputObject(_))
     }
 
+    pub fn as_scalar(&self) -> Option<&ScalarType> {
+        if let Self::Scalar(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_object(&self) -> Option<&ObjectType> {
+        if let Self::Object(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_interface(&self) -> Option<&InterfaceType> {
+        if let Self::Interface(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_union(&self) -> Option<&UnionType> {
+        if let Self::Union(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_enum(&self) -> Option<&EnumType> {
+        if let Self::Enum(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_input_object(&self) -> Option<&InputObjectType> {
+        if let Self::InputObject(def) = self {
+            Some(def)
+        } else {
+            None
+        }
+    }
+
     /// Returns wether this type is a leaf type: scalar or enum.
     ///
     /// Field selections must have sub-selections if and only if
@@ -714,18 +854,50 @@ impl ExtendedType {
         }
     }
 
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        match self {
+            Self::Scalar(ty) => Box::new(ty.iter_origins()) as Box<dyn Iterator<Item = _>>,
+            Self::Object(ty) => Box::new(ty.iter_origins()),
+            Self::Interface(ty) => Box::new(ty.iter_origins()),
+            Self::Union(ty) => Box::new(ty.iter_origins()),
+            Self::Enum(ty) => Box::new(ty.iter_origins()),
+            Self::InputObject(ty) => Box::new(ty.iter_origins()),
+        }
+    }
+
+    /// Collect `schema` extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
+            .collect()
+    }
+
     serialize_method!();
 }
 
 impl ScalarType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives.iter().map(|dir| &dir.origin)
+    }
+
     /// Collect scalar type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -733,24 +905,29 @@ impl ScalarType {
 }
 
 impl ObjectType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(
+                self.implements_interfaces
+                    .iter()
+                    .map(|component| &component.origin),
+            )
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect object type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.implements_interfaces
-                    .iter()
-                    .flat_map(|component| component.origin.extension_id()),
-            )
-            .chain(
-                self.fields
-                    .values()
-                    .flat_map(|field| field.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -758,24 +935,29 @@ impl ObjectType {
 }
 
 impl InterfaceType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(
+                self.implements_interfaces
+                    .iter()
+                    .map(|component| &component.origin),
+            )
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect interface type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.implements_interfaces
-                    .iter()
-                    .flat_map(|component| component.origin.extension_id()),
-            )
-            .chain(
-                self.fields
-                    .values()
-                    .flat_map(|field| field.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -783,19 +965,24 @@ impl InterfaceType {
 }
 
 impl UnionType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.members.iter().map(|component| &component.origin))
+    }
+
     /// Collect union type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.members
-                    .iter()
-                    .flat_map(|component| component.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -803,19 +990,24 @@ impl UnionType {
 }
 
 impl EnumType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.values.values().map(|value| &value.origin))
+    }
+
     /// Collect enum type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.values
-                    .values()
-                    .flat_map(|value| value.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -823,19 +1015,24 @@ impl EnumType {
 }
 
 impl InputObjectType {
+    /// Iterate over the `origins` of all components
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+        self.directives
+            .iter()
+            .map(|dir| &dir.origin)
+            .chain(self.fields.values().map(|field| &field.origin))
+    }
+
     /// Collect input object type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.fields
-                    .values()
-                    .flat_map(|field| field.origin.extension_id()),
-            )
+        self.iter_origins()
+            .filter_map(|origin| origin.extension_id())
             .collect()
     }
 
@@ -873,6 +1070,11 @@ impl DirectiveList {
 
     pub(crate) fn iter_ast(&self) -> impl Iterator<Item = &Node<ast::Directive>> {
         self.0.iter().map(|component| &component.node)
+    }
+
+    /// Accepts either [`Component<Directive>`], [`Node<Directive>`], or [`Directive`].
+    pub fn push(&mut self, directive: impl Into<Component<Directive>>) {
+        self.0.push(directive.into());
     }
 
     serialize_method!();

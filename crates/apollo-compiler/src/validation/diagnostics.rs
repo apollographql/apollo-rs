@@ -288,6 +288,10 @@ pub(crate) enum DiagnosticData {
         type_location: Option<SourceSpan>,
         extensions_locations: Vec<Option<SourceSpan>>,
     },
+    #[error(
+        "{describe} cannot be named `{name}` as names starting with two underscores are reserved"
+    )]
+    ReservedName { name: Name, describe: &'static str },
 }
 
 impl DiagnosticData {
@@ -713,6 +717,9 @@ impl DiagnosticData {
                     extensions_locations,
                     "input values",
                 );
+            }
+            DiagnosticData::ReservedName { name, .. } => {
+                report.with_label_opt(name.location(), "Pick a different name here");
             }
         }
     }

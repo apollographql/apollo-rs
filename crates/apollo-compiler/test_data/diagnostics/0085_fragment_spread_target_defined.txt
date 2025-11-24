@@ -1,5 +1,5 @@
 Error: cannot find fragment `undefinedFragment` in this document
-    ╭─[0085_fragment_spread_target_defined.graphql:10:5]
+    ╭─[ 0085_fragment_spread_target_defined.graphql:10:5 ]
     │
  10 │     ...undefinedFragment
     │     ──────────┬─────────  

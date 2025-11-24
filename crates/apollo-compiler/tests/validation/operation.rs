@@ -1,4 +1,4 @@
-use apollo_compiler::parse_mixed_validate;
+use apollo_compiler::parser::Parser;
 
 #[test]
 fn it_fails_validation_with_missing_ident() {
@@ -32,7 +32,8 @@ type Cat {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(
@@ -83,7 +84,8 @@ type Cat implements Pet {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(
@@ -131,7 +133,9 @@ type Cat implements Pet {
 }
 "#;
 
-    let (_schema, _executable) = parse_mixed_validate(input, "schema.graphql").unwrap();
+    let (_schema, _executable) = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
+        .unwrap();
 }
 
 #[test]
@@ -167,7 +171,8 @@ type Cat implements Pet {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(
@@ -200,7 +205,8 @@ type Product {
 }
 "#;
 
-    let errors = parse_mixed_validate(input, "schema.graphql")
+    let errors = Parser::new()
+        .parse_mixed_validate(input, "schema.graphql")
         .unwrap_err()
         .to_string();
     assert!(

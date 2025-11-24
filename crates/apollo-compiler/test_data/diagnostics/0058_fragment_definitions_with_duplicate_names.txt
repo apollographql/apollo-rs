@@ -1,5 +1,5 @@
 Error: the fragment `petFragment` is defined multiple times in the document
-    ╭─[0058_fragment_definitions_with_duplicate_names.graphql:22:10]
+    ╭─[ 0058_fragment_definitions_with_duplicate_names.graphql:22:10 ]
     │
  17 │ fragment petFragment on Pet {
     │          ─────┬─────  

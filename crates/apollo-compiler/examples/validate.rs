@@ -1,3 +1,4 @@
+use apollo_compiler::parser::Parser;
 use std::io::Read;
 use std::process::ExitCode;
 
@@ -19,7 +20,7 @@ fn main() -> ExitCode {
         ),
     };
 
-    match apollo_compiler::parse_mixed_validate(source, filename) {
+    match Parser::new().parse_mixed_validate(source, filename) {
         Ok((_schema, _executable)) => ExitCode::SUCCESS,
         Err(errors) => {
             eprintln!("{errors:?}");
