@@ -258,6 +258,62 @@ impl Parser {
         errors.into_result_with(document)
     }
 
+    /// Parse the given source text as an additional input to an executable document builder.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// This can be used to build an executable document from multiple source files.
+    ///
+    /// # Arguments
+    ///
+    /// * `schema` - Optional schema for type checking. If provided, operations and fragments
+    ///   will be validated against the schema while building.
+    /// * `source_text` - The GraphQL source text to parse
+    /// * `path` - Path used in diagnostics to identify this source file
+    /// * `builder` - The builder to add parsed definitions to
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use apollo_compiler::{Schema, ExecutableDocument};
+    /// use apollo_compiler::parser::Parser;
+    /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
+    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+    ///
+    /// let mut builder = ExecutableDocument::builder(Some(&schema));
+    /// let mut parser = Parser::new();
+    ///
+    /// parser.parse_into_executable_builder(
+    ///     Some(&schema),
+    ///     "query GetUser { user { id } }",
+    ///     "query1.graphql",
+    ///     &mut builder,
+    /// );
+    /// parser.parse_into_executable_builder(
+    ///     Some(&schema),
+    ///     "query GetPost { post { title } }",
+    ///     "query2.graphql",
+    ///     &mut builder,
+    /// );
+    ///
+    /// let document = builder.build().unwrap();
+    /// ```
+    ///
+    /// Errors (if any) are recorded in the builder and returned by
+    /// [`ExecutableDocumentBuilder::build`].
+    pub fn parse_into_executable_builder(
+        &mut self,
+        _schema: Option<&Valid<Schema>>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+        builder: &mut executable::ExecutableDocumentBuilder,
+    ) {
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut builder.errors);
+        let type_system_definitions_are_errors = true;
+        builder.add_ast_document(&ast, type_system_definitions_are_errors);
+    }
+
     pub(crate) fn parse_executable_inner(
         &mut self,
         schema: &Valid<Schema>,

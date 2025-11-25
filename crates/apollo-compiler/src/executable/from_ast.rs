@@ -1,9 +1,239 @@
 use super::*;
 use crate::ty;
+use crate::validation::WithErrors;
+use std::sync::Arc;
 
 pub(crate) struct BuildErrors<'a> {
     pub(crate) errors: &'a mut DiagnosticList,
     pub(crate) path: SelectionPath,
+}
+
+/// A builder for constructing an [`ExecutableDocument`] from multiple AST documents.
+///
+/// This builder allows you to parse and combine executable definitions (operations and fragments)
+/// from multiple source files into a single [`ExecutableDocument`].
+///
+/// # Example
+///
+/// ```rust
+/// use apollo_compiler::{Schema, ExecutableDocument};
+/// use apollo_compiler::parser::Parser;
+/// # let schema_src = "type Query { user: User } type User { id: ID }";
+/// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+///
+/// // Create a builder
+/// let mut builder = ExecutableDocument::builder(Some(&schema));
+///
+/// // Add operations from multiple files
+/// Parser::new().parse_into_executable_builder(
+///     Some(&schema),
+///     "query GetUser { user { id } }",
+///     "query1.graphql",
+///     &mut builder,
+/// );
+///
+/// // Build the final document
+/// let document = builder.build().unwrap();
+/// ```
+#[derive(Clone)]
+pub struct ExecutableDocumentBuilder {
+    /// The executable document being built
+    pub(crate) document: ExecutableDocument,
+    /// Optional schema for type checking during build
+    schema: Option<Schema>,
+    /// Accumulated diagnostics
+    pub(crate) errors: DiagnosticList,
+    /// Track if we've seen multiple anonymous operations
+    multiple_anonymous: bool,
+}
+
+impl Default for ExecutableDocumentBuilder {
+    fn default() -> Self {
+        Self::new(None)
+    }
+}
+
+impl ExecutableDocumentBuilder {
+    /// Creates a new [`ExecutableDocumentBuilder`].
+    ///
+    /// # Arguments
+    ///
+    /// * `schema` - Optional schema for type checking. If provided, the builder will validate
+    ///   operations and fragments against the schema while building.
+    pub fn new(schema: Option<&Schema>) -> Self {
+        Self {
+            document: ExecutableDocument::new(),
+            schema: schema.cloned(),
+            errors: DiagnosticList::new(Default::default()),
+            multiple_anonymous: false,
+        }
+    }
+
+    /// Adds an AST document to the executable document being built.
+    ///
+    /// # Arguments
+    ///
+    /// * `document` - The AST document to add
+    /// * `type_system_definitions_are_errors` - If true, type system definitions (types, directives, etc.)
+    ///   in the document will be reported as errors
+    pub fn add_ast_document(
+        &mut self,
+        document: &ast::Document,
+        type_system_definitions_are_errors: bool,
+    ) {
+        Arc::make_mut(&mut self.errors.sources)
+            .extend(document.sources.iter().map(|(k, v)| (*k, v.clone())));
+        self.add_ast_document_not_adding_sources(document, type_system_definitions_are_errors);
+    }
+
+    pub(crate) fn add_ast_document_not_adding_sources(
+        &mut self,
+        document: &ast::Document,
+        type_system_definitions_are_errors: bool,
+    ) {
+        let schema = self.schema.as_ref();
+        let mut errors = BuildErrors {
+            errors: &mut self.errors,
+            path: SelectionPath {
+                nested_fields: Vec::new(),
+                // overwritten:
+                root: ExecutableDefinitionName::AnonymousOperation(ast::OperationType::Query),
+            },
+        };
+
+        for definition in &document.definitions {
+            debug_assert!(errors.path.nested_fields.is_empty());
+            match definition {
+                ast::Definition::OperationDefinition(operation) => {
+                    if let Some(name) = &operation.name {
+                        // Named operation
+                        if let Some(anonymous) = &self.document.operations.anonymous {
+                            errors.errors.push(
+                                anonymous.location(),
+                                BuildError::AmbiguousAnonymousOperation,
+                            )
+                        }
+                        if let Entry::Vacant(entry) =
+                            self.document.operations.named.entry(name.clone())
+                        {
+                            errors.path.root = ExecutableDefinitionName::NamedOperation(
+                                operation.operation_type,
+                                name.clone(),
+                            );
+                            if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
+                                entry.insert(operation.same_location(op));
+                            } else {
+                                errors.errors.push(
+                                    operation.location(),
+                                    BuildError::UndefinedRootOperation {
+                                        operation_type: operation.operation_type.name(),
+                                    },
+                                )
+                            }
+                        } else {
+                            let (key, _) = self
+                                .document
+                                .operations
+                                .named
+                                .get_key_value(name)
+                                .unwrap();
+                            errors.errors.push(
+                                name.location(),
+                                BuildError::OperationNameCollision {
+                                    name_at_previous_location: key.clone(),
+                                },
+                            );
+                        }
+                    } else {
+                        // Anonymous operation
+                        if let Some(previous) = &self.document.operations.anonymous {
+                            if !self.multiple_anonymous {
+                                self.multiple_anonymous = true;
+                                errors.errors.push(
+                                    previous.location(),
+                                    BuildError::AmbiguousAnonymousOperation,
+                                )
+                            }
+                            errors.errors.push(
+                                operation.location(),
+                                BuildError::AmbiguousAnonymousOperation,
+                            )
+                        } else if !self.document.operations.named.is_empty() {
+                            errors.errors.push(
+                                operation.location(),
+                                BuildError::AmbiguousAnonymousOperation,
+                            )
+                        } else {
+                            errors.path.root = ExecutableDefinitionName::AnonymousOperation(
+                                operation.operation_type,
+                            );
+                            if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
+                                self.document.operations.anonymous =
+                                    Some(operation.same_location(op));
+                            } else {
+                                errors.errors.push(
+                                    operation.location(),
+                                    BuildError::UndefinedRootOperation {
+                                        operation_type: operation.operation_type.name(),
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+                ast::Definition::FragmentDefinition(fragment) => {
+                    if let Entry::Vacant(entry) =
+                        self.document.fragments.entry(fragment.name.clone())
+                    {
+                        errors.path.root =
+                            ExecutableDefinitionName::Fragment(fragment.name.clone());
+                        if let Some(node) = Fragment::from_ast(schema, &mut errors, fragment) {
+                            entry.insert(fragment.same_location(node));
+                        }
+                    } else {
+                        let (key, _) = self
+                            .document
+                            .fragments
+                            .get_key_value(&fragment.name)
+                            .unwrap();
+                        errors.errors.push(
+                            fragment.name.location(),
+                            BuildError::FragmentNameCollision {
+                                name_at_previous_location: key.clone(),
+                            },
+                        )
+                    }
+                }
+                _ => {
+                    if type_system_definitions_are_errors {
+                        errors.errors.push(
+                            definition.location(),
+                            BuildError::TypeSystemDefinition {
+                                name: definition.name().cloned(),
+                                describe: definition.describe(),
+                            },
+                        )
+                    }
+                }
+            }
+        }
+
+        // Merge sources into the document
+        Arc::make_mut(&mut self.document.sources)
+            .extend(document.sources.iter().map(|(k, v)| (*k, v.clone())));
+    }
+
+    /// Returns the executable document built from all added AST documents.
+    #[allow(clippy::result_large_err)] // Typically not called very often
+    pub fn build(self) -> Result<ExecutableDocument, WithErrors<ExecutableDocument>> {
+        let (document, errors) = self.build_inner();
+        errors.into_result_with(document)
+    }
+
+    pub(crate) fn build_inner(mut self) -> (ExecutableDocument, DiagnosticList) {
+        self.document.sources = self.errors.sources.clone();
+        (self.document, self.errors)
+    }
 }
 
 pub(crate) fn document_from_ast(
@@ -12,116 +242,23 @@ pub(crate) fn document_from_ast(
     errors: &mut DiagnosticList,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
-    let mut operations = OperationMap::default();
-    let mut multiple_anonymous = false;
-    let mut fragments = IndexMap::with_hasher(Default::default());
-    let mut errors = BuildErrors {
-        errors,
-        path: SelectionPath {
-            nested_fields: Vec::new(),
-            // overwritten:
-            root: ExecutableDefinitionName::AnonymousOperation(ast::OperationType::Query),
-        },
+    // Use the builder internally but maintain the same API
+    let mut builder = ExecutableDocumentBuilder {
+        document: ExecutableDocument::new(),
+        schema: schema.cloned(),
+        errors: std::mem::replace(errors, DiagnosticList::new(Default::default())),
+        multiple_anonymous: false,
     };
-    for definition in &document.definitions {
-        debug_assert!(errors.path.nested_fields.is_empty());
-        match definition {
-            ast::Definition::OperationDefinition(operation) => {
-                if let Some(name) = &operation.name {
-                    if let Some(anonymous) = &operations.anonymous {
-                        errors.errors.push(
-                            anonymous.location(),
-                            BuildError::AmbiguousAnonymousOperation,
-                        )
-                    }
-                    if let Entry::Vacant(entry) = operations.named.entry(name.clone()) {
-                        errors.path.root = ExecutableDefinitionName::NamedOperation(
-                            operation.operation_type,
-                            name.clone(),
-                        );
-                        if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
-                            entry.insert(operation.same_location(op));
-                        } else {
-                            errors.errors.push(
-                                operation.location(),
-                                BuildError::UndefinedRootOperation {
-                                    operation_type: operation.operation_type.name(),
-                                },
-                            )
-                        }
-                    } else {
-                        let (key, _) = operations.named.get_key_value(name).unwrap();
-                        errors.errors.push(
-                            name.location(),
-                            BuildError::OperationNameCollision {
-                                name_at_previous_location: key.clone(),
-                            },
-                        );
-                    }
-                } else if let Some(previous) = &operations.anonymous {
-                    if !multiple_anonymous {
-                        multiple_anonymous = true;
-                        errors
-                            .errors
-                            .push(previous.location(), BuildError::AmbiguousAnonymousOperation)
-                    }
-                    errors.errors.push(
-                        operation.location(),
-                        BuildError::AmbiguousAnonymousOperation,
-                    )
-                } else if !operations.named.is_empty() {
-                    errors.errors.push(
-                        operation.location(),
-                        BuildError::AmbiguousAnonymousOperation,
-                    )
-                } else {
-                    errors.path.root =
-                        ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
-                    if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
-                        operations.anonymous = Some(operation.same_location(op));
-                    } else {
-                        errors.errors.push(
-                            operation.location(),
-                            BuildError::UndefinedRootOperation {
-                                operation_type: operation.operation_type.name(),
-                            },
-                        )
-                    }
-                }
-            }
-            ast::Definition::FragmentDefinition(fragment) => {
-                if let Entry::Vacant(entry) = fragments.entry(fragment.name.clone()) {
-                    errors.path.root = ExecutableDefinitionName::Fragment(fragment.name.clone());
-                    if let Some(node) = Fragment::from_ast(schema, &mut errors, fragment) {
-                        entry.insert(fragment.same_location(node));
-                    }
-                } else {
-                    let (key, _) = fragments.get_key_value(&fragment.name).unwrap();
-                    errors.errors.push(
-                        fragment.name.location(),
-                        BuildError::FragmentNameCollision {
-                            name_at_previous_location: key.clone(),
-                        },
-                    )
-                }
-            }
-            _ => {
-                if type_system_definitions_are_errors {
-                    errors.errors.push(
-                        definition.location(),
-                        BuildError::TypeSystemDefinition {
-                            name: definition.name().cloned(),
-                            describe: definition.describe(),
-                        },
-                    )
-                }
-            }
-        }
-    }
+
+    builder.add_ast_document_not_adding_sources(document, type_system_definitions_are_errors);
+
+    let (doc, new_errors) = builder.build_inner();
+    *errors = new_errors;
+
     ExecutableDocument {
         sources: document.sources.clone(),
-        operations,
-        fragments,
+        operations: doc.operations,
+        fragments: doc.fragments,
     }
 }
 
