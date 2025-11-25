@@ -302,3 +302,271 @@ fn iter_all_fields() {
         ["f1", "inner", "f2", "f3"]
     );
 }
+
+// ExecutableDocumentBuilder tests
+
+#[test]
+fn builder_from_multiple_files() {
+    let schema_src = r#"
+        type Query {
+            user: User
+            post: Post
+        }
+        type User { id: ID! name: String }
+        type Post { id: ID! title: String }
+    "#;
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let query1 = "query GetUser { user { id name } }";
+    let query2 = "query GetPost { post { id title } }";
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query1,
+        "query1.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query2,
+        "query2.graphql",
+        &mut builder,
+    );
+
+    let doc = builder.build().unwrap();
+
+    assert_eq!(doc.operations.named.len(), 2);
+    assert!(doc.operations.named.contains_key("GetUser"));
+    assert!(doc.operations.named.contains_key("GetPost"));
+}
+
+#[test]
+fn builder_with_fragments_from_multiple_files() {
+    let schema_src = r#"
+        type Query { user: User }
+        type User { id: ID! name: String email: String }
+    "#;
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let query = r#"
+        query GetUser { user { ...UserFields } }
+    "#;
+    let fragment = r#"
+        fragment UserFields on User { id name email }
+    "#;
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query,
+        "query.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        fragment,
+        "fragment.graphql",
+        &mut builder,
+    );
+
+    let doc = builder.build().unwrap();
+
+    assert_eq!(doc.operations.named.len(), 1);
+    assert_eq!(doc.fragments.len(), 1);
+    assert!(doc.operations.named.contains_key("GetUser"));
+    assert!(doc.fragments.contains_key("UserFields"));
+}
+
+#[test]
+fn builder_detects_operation_name_collision() {
+    let schema_src = "type Query { field: String }";
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let query1 = "query GetData { field }";
+    let query2 = "query GetData { field }";
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query1,
+        "query1.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query2,
+        "query2.graphql",
+        &mut builder,
+    );
+
+    let result = builder.build();
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let error_messages: Vec<String> = err.errors.iter().map(|e| e.error.to_string()).collect();
+
+    assert!(error_messages
+        .iter()
+        .any(|msg| msg.contains("GetData") && msg.contains("multiple times")));
+}
+
+#[test]
+fn builder_detects_fragment_name_collision() {
+    let schema_src = "type Query { user: User } type User { id: ID }";
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let fragment1 = "fragment UserData on User { id }";
+    let fragment2 = "fragment UserData on User { id }";
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        fragment1,
+        "fragment1.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        fragment2,
+        "fragment2.graphql",
+        &mut builder,
+    );
+
+    let result = builder.build();
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let error_messages: Vec<String> = err.errors.iter().map(|e| e.error.to_string()).collect();
+
+    assert!(error_messages
+        .iter()
+        .any(|msg| msg.contains("UserData") && msg.contains("multiple times")));
+}
+
+#[test]
+fn builder_without_schema() {
+    let query1 = "query GetData { field }";
+    let query2 = "query GetMore { other }";
+
+    let mut builder = ExecutableDocument::builder(None);
+    Parser::new().parse_into_executable_builder(None, query1, "query1.graphql", &mut builder);
+    Parser::new().parse_into_executable_builder(None, query2, "query2.graphql", &mut builder);
+
+    let doc = builder.build().unwrap();
+
+    assert_eq!(doc.operations.named.len(), 2);
+    assert!(doc.operations.named.contains_key("GetData"));
+    assert!(doc.operations.named.contains_key("GetMore"));
+}
+
+#[test]
+fn builder_preserves_source_information() {
+    let schema_src = "type Query { field: String }";
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let query1 = "query Q1 { field }";
+    let query2 = "query Q2 { field }";
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query1,
+        "query1.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query2,
+        "query2.graphql",
+        &mut builder,
+    );
+
+    let doc = builder.build().unwrap();
+
+    // Verify that source information is tracked
+    assert_eq!(doc.sources.len(), 2);
+    assert_eq!(doc.sources[0].path(), "query1.graphql");
+    assert_eq!(doc.sources[1].path(), "query2.graphql");
+}
+
+#[test]
+fn builder_handles_anonymous_and_named_operations() {
+    let schema_src = "type Query { field: String }";
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let anonymous = "{ field }";
+    let named = "query GetData { field }";
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        anonymous,
+        "anonymous.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        named,
+        "named.graphql",
+        &mut builder,
+    );
+
+    let result = builder.build();
+    // Should error because mixing anonymous and named operations is ambiguous
+    assert!(result.is_err());
+}
+
+#[test]
+fn builder_with_multiple_fragments_used_in_query() {
+    let schema_src = r#"
+        type Query { user: User }
+        type User {
+            id: ID!
+            profile: Profile
+            settings: Settings
+        }
+        type Profile { name: String bio: String }
+        type Settings { theme: String notifications: Boolean }
+    "#;
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let query = r#"
+        query GetUser {
+            user {
+                id
+                ...ProfileFields
+                ...SettingsFields
+            }
+        }
+    "#;
+    let profile_fragment = "fragment ProfileFields on Profile { name bio }";
+    let settings_fragment = "fragment SettingsFields on Settings { theme notifications }";
+
+    let mut builder = ExecutableDocument::builder(Some(&schema));
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        query,
+        "query.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        profile_fragment,
+        "profile.graphql",
+        &mut builder,
+    );
+    Parser::new().parse_into_executable_builder(
+        Some(&schema),
+        settings_fragment,
+        "settings.graphql",
+        &mut builder,
+    );
+
+    let doc = builder.build().unwrap();
+
+    assert_eq!(doc.operations.named.len(), 1);
+    assert_eq!(doc.fragments.len(), 2);
+    assert!(doc.fragments.contains_key("ProfileFields"));
+    assert!(doc.fragments.contains_key("SettingsFields"));
+}

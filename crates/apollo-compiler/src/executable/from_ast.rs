@@ -131,12 +131,8 @@ impl ExecutableDocumentBuilder {
                                 )
                             }
                         } else {
-                            let (key, _) = self
-                                .document
-                                .operations
-                                .named
-                                .get_key_value(name)
-                                .unwrap();
+                            let (key, _) =
+                                self.document.operations.named.get_key_value(name).unwrap();
                             errors.errors.push(
                                 name.location(),
                                 BuildError::OperationNameCollision {
