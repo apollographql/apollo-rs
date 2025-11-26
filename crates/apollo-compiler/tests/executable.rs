@@ -1,3 +1,4 @@
+use apollo_compiler::diagnostic::ToCliReport;
 use apollo_compiler::parser::Parser;
 use apollo_compiler::validation::DiagnosticList;
 use apollo_compiler::ExecutableDocument;
@@ -519,4 +520,91 @@ fn builder_with_multiple_fragments_used_in_query() {
     assert_eq!(doc.fragments.len(), 2);
     assert!(doc.fragments.contains_key("ProfileFields"));
     assert!(doc.fragments.contains_key("SettingsFields"));
+}
+
+#[test]
+fn builder_accumulates_diagnostics_from_multiple_sources() {
+    let schema_src = r#"
+        type Query { user: User }
+        type User { id: ID! name: String }
+    "#;
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let query1 = r#"
+        query GetUser {
+            user {
+                id
+                nonexistentField
+            }
+        }
+    "#;
+
+    let query2 = r#"
+    query GetUserProfile {
+      user {
+        id
+        anotherUndefinedField
+        }
+      }
+      "#;
+
+    let fragment1 = "fragment UserFields on User { id name }";
+    let fragment2 = "fragment UserFields on User { id }";
+    let fragment3 = "fragment UserName on User { name }";
+
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
+
+    Parser::new().parse_into_executable_builder(query1, "query1.graphql", &mut builder);
+    Parser::new().parse_into_executable_builder(query2, "query2.graphql", &mut builder);
+    Parser::new().parse_into_executable_builder(fragment1, "fragment1.graphql", &mut builder);
+    Parser::new().parse_into_executable_builder(fragment2, "fragment2.graphql", &mut builder);
+    Parser::new().parse_into_executable_builder(fragment3, "fragment3.graphql", &mut builder);
+
+    let doc = builder.build();
+
+    // Verify we collected multiple errors from different sources
+    assert!(!errors.is_empty(), "Expected errors from multiple sources");
+    assert!(
+        errors.len() >= 3,
+        "Expected at least 3 errors (2 undefined fields + 1 fragment collision), got {}",
+        errors.len()
+    );
+
+    let error_messages: Vec<String> = errors.iter().map(|e| e.error.to_string()).collect();
+
+    assert_eq!(error_messages.len(), 3);
+    assert_eq!(
+        error_messages[0],
+        "type `User` does not have a field `nonexistentField`"
+    );
+    assert_eq!(
+        error_messages[1],
+        "type `User` does not have a field `anotherUndefinedField`"
+    );
+    assert_eq!(
+        error_messages[2],
+        "the fragment `UserFields` is defined multiple times in the document"
+    );
+
+    assert_eq!(doc.operations.named.len(), 2);
+    assert!(doc.operations.named.contains_key("GetUser"));
+    assert!(doc.operations.named.contains_key("GetUserProfile"));
+
+    // Only 2 fragments should be present (UserFields once, UserName once)
+    // The duplicate UserFields from fragment2 should not overwrite fragment1
+    assert_eq!(doc.fragments.len(), 2, "Expected 2 unique fragments");
+    assert!(doc.fragments.contains_key("UserFields"));
+    assert!(doc.fragments.contains_key("UserName"));
+
+    // Verify source tracking is correct - we should have diagnostics from multiple files
+    let diagnostic_sources: std::collections::HashSet<_> = errors
+        .iter()
+        .filter_map(|e| e.error.location().map(|loc| loc.file_id()))
+        .collect();
+
+    assert!(
+        diagnostic_sources.len() == 3,
+        "Errors should come from 3 different source files"
+    );
 }
