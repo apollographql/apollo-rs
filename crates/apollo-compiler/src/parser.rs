@@ -309,7 +309,7 @@ impl Parser {
         path: impl AsRef<Path>,
         builder: &mut executable::ExecutableDocumentBuilder,
     ) {
-        let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut builder.errors);
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), builder.errors);
         let type_system_definitions_are_errors = true;
         builder.add_ast_document(&ast, type_system_definitions_are_errors);
     }

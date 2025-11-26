@@ -124,7 +124,7 @@ impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
         type_system_definitions_are_errors: bool,
     ) {
         let mut errors = BuildErrors {
-            errors: &mut self.errors,
+            errors: self.errors,
             path: SelectionPath {
                 nested_fields: Vec::new(),
                 // overwritten:
