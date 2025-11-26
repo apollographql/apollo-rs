@@ -1,6 +1,5 @@
 use super::*;
 use crate::ty;
-use crate::validation::WithErrors;
 use std::sync::Arc;
 
 pub(crate) struct BuildErrors<'a> {
@@ -18,11 +17,13 @@ pub(crate) struct BuildErrors<'a> {
 /// ```rust
 /// use apollo_compiler::{Schema, ExecutableDocument};
 /// use apollo_compiler::parser::Parser;
+/// use apollo_compiler::validation::DiagnosticList;
 /// # let schema_src = "type Query { user: User } type User { id: ID }";
 /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
 ///
 /// // Create a builder
-/// let mut builder = ExecutableDocument::builder(Some(&schema));
+/// let mut errors = DiagnosticList::new(Default::default());
+/// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
 ///
 /// // Add operations from multiple files
 /// Parser::new().parse_into_executable_builder(
@@ -33,38 +34,34 @@ pub(crate) struct BuildErrors<'a> {
 /// );
 ///
 /// // Build the final document
-/// let document = builder.build().unwrap();
+/// let document = builder.build();
+/// // Check for errors
+/// assert!(errors.is_empty());
 /// ```
-#[derive(Clone)]
-pub struct ExecutableDocumentBuilder<'schema> {
+pub struct ExecutableDocumentBuilder<'schema, 'errors> {
     /// The executable document being built
     pub(crate) document: ExecutableDocument,
     /// Optional schema for type checking during build
     schema: Option<&'schema Schema>,
     /// Accumulated diagnostics
-    pub(crate) errors: DiagnosticList,
+    pub(crate) errors: &'errors mut DiagnosticList,
     /// Track if we've seen multiple anonymous operations
     multiple_anonymous: bool,
 }
 
-impl Default for ExecutableDocumentBuilder<'_> {
-    fn default() -> Self {
-        Self::new(None)
-    }
-}
-
-impl<'schema> ExecutableDocumentBuilder<'schema> {
+impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
     /// Creates a new [`ExecutableDocumentBuilder`].
     ///
     /// # Arguments
     ///
     /// * `schema` - Optional schema for type checking. If provided, the builder will validate
     ///   operations and fragments against the schema while building.
-    pub fn new(schema: Option<&'schema Schema>) -> Self {
+    /// * `errors` - Mutable reference to a DiagnosticList where errors will be accumulated
+    pub fn new(schema: Option<&'schema Schema>, errors: &'errors mut DiagnosticList) -> Self {
         Self {
             document: ExecutableDocument::new(),
             schema,
-            errors: DiagnosticList::new(Default::default()),
+            errors,
             multiple_anonymous: false,
         }
     }
@@ -213,15 +210,13 @@ impl<'schema> ExecutableDocumentBuilder<'schema> {
     }
 
     /// Returns the executable document built from all added AST documents.
-    #[allow(clippy::result_large_err)] // Typically not called very often
-    pub fn build(self) -> Result<ExecutableDocument, WithErrors<ExecutableDocument>> {
-        let (document, errors) = self.build_inner();
-        errors.into_result_with(document)
+    pub fn build(self) -> ExecutableDocument {
+        self.build_inner()
     }
 
-    pub(crate) fn build_inner(mut self) -> (ExecutableDocument, DiagnosticList) {
+    pub(crate) fn build_inner(mut self) -> ExecutableDocument {
         self.document.sources = self.errors.sources.clone();
-        (self.document, self.errors)
+        self.document
     }
 }
 
@@ -231,17 +226,11 @@ pub(crate) fn document_from_ast(
     errors: &mut DiagnosticList,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
-    let mut builder = ExecutableDocumentBuilder {
-        document: ExecutableDocument::new(),
-        schema,
-        errors: std::mem::replace(errors, DiagnosticList::new(Default::default())),
-        multiple_anonymous: false,
-    };
+    let mut builder = ExecutableDocumentBuilder::new(schema, errors);
 
     builder.add_ast_document_not_adding_sources(document, type_system_definitions_are_errors);
 
-    let (doc, new_errors) = builder.build_inner();
-    *errors = new_errors;
+    let doc = builder.build_inner();
 
     ExecutableDocument {
         sources: document.sources.clone(),

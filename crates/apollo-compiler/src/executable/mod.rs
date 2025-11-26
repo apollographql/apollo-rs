@@ -358,16 +358,19 @@ impl ExecutableDocument {
     ///
     /// * `schema` - Optional schema for type checking. If provided, the builder will validate
     ///   operations and fragments against the schema while building.
+    /// * `errors` - Mutable reference to a DiagnosticList where errors will be accumulated
     ///
     /// # Example
     ///
     /// ```rust
     /// use apollo_compiler::{Schema, ExecutableDocument};
     /// use apollo_compiler::parser::Parser;
+    /// use apollo_compiler::validation::DiagnosticList;
     /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
     /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
     ///
-    /// let mut builder = ExecutableDocument::builder(Some(&schema));
+    /// let mut errors = DiagnosticList::new(Default::default());
+    /// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     ///
     /// Parser::new().parse_into_executable_builder(
     ///     Some(&schema),
@@ -382,10 +385,15 @@ impl ExecutableDocument {
     ///     &mut builder,
     /// );
     ///
-    /// let document = builder.build().unwrap();
+    /// let document = builder.build();
+    /// // Check for errors
+    /// assert!(errors.is_empty());
     /// ```
-    pub fn builder(schema: Option<&Valid<Schema>>) -> from_ast::ExecutableDocumentBuilder<'_> {
-        from_ast::ExecutableDocumentBuilder::new(schema.map(|s| s.as_ref()))
+    pub fn builder<'schema, 'errors>(
+        schema: Option<&'schema Valid<Schema>>,
+        errors: &'errors mut DiagnosticList,
+    ) -> from_ast::ExecutableDocumentBuilder<'schema, 'errors> {
+        from_ast::ExecutableDocumentBuilder::new(schema.map(|s| s.as_ref()), errors)
     }
 
     /// Parse an executable document with the default configuration.

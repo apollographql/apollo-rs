@@ -1,4 +1,5 @@
 use apollo_compiler::parser::Parser;
+use apollo_compiler::validation::DiagnosticList;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 
@@ -320,7 +321,8 @@ fn builder_from_multiple_files() {
     let query1 = "query GetUser { user { id name } }";
     let query2 = "query GetPost { post { id title } }";
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         query1,
@@ -334,7 +336,8 @@ fn builder_from_multiple_files() {
         &mut builder,
     );
 
-    let doc = builder.build().unwrap();
+    let doc = builder.build();
+    assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 2);
     assert!(doc.operations.named.contains_key("GetUser"));
@@ -356,7 +359,8 @@ fn builder_with_fragments_from_multiple_files() {
         fragment UserFields on User { id name email }
     "#;
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         query,
@@ -370,7 +374,8 @@ fn builder_with_fragments_from_multiple_files() {
         &mut builder,
     );
 
-    let doc = builder.build().unwrap();
+    let doc = builder.build();
+    assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 1);
     assert_eq!(doc.fragments.len(), 1);
@@ -386,7 +391,8 @@ fn builder_detects_operation_name_collision() {
     let query1 = "query GetData { field }";
     let query2 = "query GetData { field }";
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         query1,
@@ -400,11 +406,10 @@ fn builder_detects_operation_name_collision() {
         &mut builder,
     );
 
-    let result = builder.build();
-    assert!(result.is_err());
+    let _doc = builder.build();
+    assert!(!errors.is_empty(), "Expected errors for operation name collision");
 
-    let err = result.unwrap_err();
-    let error_messages: Vec<String> = err.errors.iter().map(|e| e.error.to_string()).collect();
+    let error_messages: Vec<String> = errors.iter().map(|e| e.error.to_string()).collect();
 
     assert!(error_messages
         .iter()
@@ -419,7 +424,8 @@ fn builder_detects_fragment_name_collision() {
     let fragment1 = "fragment UserData on User { id }";
     let fragment2 = "fragment UserData on User { id }";
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         fragment1,
@@ -433,11 +439,10 @@ fn builder_detects_fragment_name_collision() {
         &mut builder,
     );
 
-    let result = builder.build();
-    assert!(result.is_err());
+    let _doc = builder.build();
+    assert!(!errors.is_empty(), "Expected errors for fragment name collision");
 
-    let err = result.unwrap_err();
-    let error_messages: Vec<String> = err.errors.iter().map(|e| e.error.to_string()).collect();
+    let error_messages: Vec<String> = errors.iter().map(|e| e.error.to_string()).collect();
 
     assert!(error_messages
         .iter()
@@ -449,11 +454,13 @@ fn builder_without_schema() {
     let query1 = "query GetData { field }";
     let query2 = "query GetMore { other }";
 
-    let mut builder = ExecutableDocument::builder(None);
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(None, &mut errors);
     Parser::new().parse_into_executable_builder(None, query1, "query1.graphql", &mut builder);
     Parser::new().parse_into_executable_builder(None, query2, "query2.graphql", &mut builder);
 
-    let doc = builder.build().unwrap();
+    let doc = builder.build();
+    assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 2);
     assert!(doc.operations.named.contains_key("GetData"));
@@ -468,7 +475,8 @@ fn builder_preserves_source_information() {
     let query1 = "query Q1 { field }";
     let query2 = "query Q2 { field }";
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         query1,
@@ -482,7 +490,8 @@ fn builder_preserves_source_information() {
         &mut builder,
     );
 
-    let doc = builder.build().unwrap();
+    let doc = builder.build();
+    assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     // Verify that source information is tracked
     assert_eq!(doc.sources.len(), 2);
@@ -498,7 +507,8 @@ fn builder_handles_anonymous_and_named_operations() {
     let anonymous = "{ field }";
     let named = "query GetData { field }";
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         anonymous,
@@ -512,9 +522,9 @@ fn builder_handles_anonymous_and_named_operations() {
         &mut builder,
     );
 
-    let result = builder.build();
+    let _doc = builder.build();
     // Should error because mixing anonymous and named operations is ambiguous
-    assert!(result.is_err());
+    assert!(!errors.is_empty(), "Expected errors for mixing anonymous and named operations");
 }
 
 #[test]
@@ -543,7 +553,8 @@ fn builder_with_multiple_fragments_used_in_query() {
     let profile_fragment = "fragment ProfileFields on Profile { name bio }";
     let settings_fragment = "fragment SettingsFields on Settings { theme notifications }";
 
-    let mut builder = ExecutableDocument::builder(Some(&schema));
+    let mut errors = DiagnosticList::new(Default::default());
+    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     Parser::new().parse_into_executable_builder(
         Some(&schema),
         query,
@@ -563,7 +574,8 @@ fn builder_with_multiple_fragments_used_in_query() {
         &mut builder,
     );
 
-    let doc = builder.build().unwrap();
+    let doc = builder.build();
+    assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 1);
     assert_eq!(doc.fragments.len(), 2);

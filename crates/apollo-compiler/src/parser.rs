@@ -278,10 +278,12 @@ impl Parser {
     /// ```rust
     /// use apollo_compiler::{Schema, ExecutableDocument};
     /// use apollo_compiler::parser::Parser;
+    /// use apollo_compiler::validation::DiagnosticList;
     /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
     /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
     ///
-    /// let mut builder = ExecutableDocument::builder(Some(&schema));
+    /// let mut errors = DiagnosticList::new(Default::default());
+    /// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     /// let mut parser = Parser::new();
     ///
     /// parser.parse_into_executable_builder(
@@ -297,7 +299,8 @@ impl Parser {
     ///     &mut builder,
     /// );
     ///
-    /// let document = builder.build().unwrap();
+    /// let document = builder.build();
+    /// assert!(errors.is_empty());
     /// ```
     ///
     /// Errors (if any) are recorded in the builder and returned by
