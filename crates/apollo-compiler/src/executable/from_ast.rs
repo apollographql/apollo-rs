@@ -1,46 +1,198 @@
 use super::*;
 use crate::ty;
+use std::sync::Arc;
 
 pub(crate) struct BuildErrors<'a> {
     pub(crate) errors: &'a mut DiagnosticList,
     pub(crate) path: SelectionPath,
 }
 
-pub(crate) fn document_from_ast(
-    schema: Option<&Schema>,
-    document: &ast::Document,
-    errors: &mut DiagnosticList,
-    type_system_definitions_are_errors: bool,
-) -> ExecutableDocument {
-    let mut operations = OperationMap::default();
-    let mut multiple_anonymous = false;
-    let mut fragments = IndexMap::with_hasher(Default::default());
-    let mut errors = BuildErrors {
-        errors,
-        path: SelectionPath {
-            nested_fields: Vec::new(),
-            // overwritten:
-            root: ExecutableDefinitionName::AnonymousOperation(ast::OperationType::Query),
-        },
-    };
-    for definition in &document.definitions {
-        debug_assert!(errors.path.nested_fields.is_empty());
-        match definition {
-            ast::Definition::OperationDefinition(operation) => {
-                if let Some(name) = &operation.name {
-                    if let Some(anonymous) = &operations.anonymous {
+/// A builder for constructing an [`ExecutableDocument`] from multiple AST documents.
+///
+/// This builder allows you to parse and combine executable definitions (operations and fragments)
+/// from multiple source files into a single [`ExecutableDocument`].
+///
+/// # Example
+///
+/// ```rust
+/// use apollo_compiler::{Schema, ExecutableDocument};
+/// use apollo_compiler::parser::Parser;
+/// use apollo_compiler::validation::DiagnosticList;
+/// # let schema_src = "type Query { user: User } type User { id: ID }";
+/// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+///
+/// // Create a builder
+/// let mut errors = DiagnosticList::new(Default::default());
+/// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
+///
+/// // Add operations from multiple files
+/// Parser::new().parse_into_executable_builder(
+///     "query GetUser { user { id } }",
+///     "query1.graphql",
+///     &mut builder,
+/// );
+///
+/// // Build the final document
+/// let document = builder.build();
+/// // Check for errors
+/// assert!(errors.is_empty());
+/// ```
+pub struct ExecutableDocumentBuilder<'schema, 'errors> {
+    /// The executable document being built
+    pub(crate) document: ExecutableDocument,
+    /// Optional schema for type checking during build
+    schema: Option<&'schema Schema>,
+    /// Accumulated diagnostics
+    pub(crate) errors: &'errors mut DiagnosticList,
+    /// Track if we've seen multiple anonymous operations
+    multiple_anonymous: bool,
+}
+
+impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
+    /// Creates a new [`ExecutableDocumentBuilder`].
+    ///
+    /// # Arguments
+    ///
+    /// * `schema` - Optional schema for type checking. If provided, the builder will validate
+    ///   operations and fragments against the schema while building.
+    /// * `errors` - Mutable reference to a DiagnosticList where errors will be accumulated
+    pub fn new(schema: Option<&'schema Schema>, errors: &'errors mut DiagnosticList) -> Self {
+        Self {
+            document: ExecutableDocument::new(),
+            schema,
+            errors,
+            multiple_anonymous: false,
+        }
+    }
+
+    /// Parses a GraphQL executable document from source text and adds it to the builder.
+    ///
+    /// This is a convenience method that creates a parser and calls
+    /// [`Parser::parse_into_executable_builder`](crate::parser::Parser::parse_into_executable_builder).
+    ///
+    /// # Arguments
+    ///
+    /// * `source_text` - The GraphQL source text to parse
+    /// * `path` - The filesystem path (or arbitrary string) used in diagnostics to identify this source file
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use apollo_compiler::{Schema, ExecutableDocument};
+    /// use apollo_compiler::validation::DiagnosticList;
+    /// # let schema_src = "type Query { user: User } type User { id: ID }";
+    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+    ///
+    /// let mut errors = DiagnosticList::new(Default::default());
+    /// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+    ///     .parse("query GetUser { user { id } }", "query1.graphql")
+    ///     .parse("query GetMore { user { id } }", "query2.graphql")
+    ///     .build();
+    ///
+    /// assert!(errors.is_empty());
+    /// assert_eq!(doc.operations.named.len(), 2);
+    /// ```
+    pub fn parse(
+        mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<std::path::Path>,
+    ) -> Self {
+        Parser::new().parse_into_executable_builder(source_text, path, &mut self);
+        self
+    }
+
+    /// Adds an AST document to the executable document being built.
+    ///
+    /// # Arguments
+    ///
+    /// * `document` - The AST document to add
+    /// * `type_system_definitions_are_errors` - If true, type system definitions (types, directives, etc.)
+    ///   in the document will be reported as errors
+    pub fn add_ast_document(
+        &mut self,
+        document: &ast::Document,
+        type_system_definitions_are_errors: bool,
+    ) {
+        Arc::make_mut(&mut self.errors.sources)
+            .extend(document.sources.iter().map(|(k, v)| (*k, v.clone())));
+        self.add_ast_document_not_adding_sources(document, type_system_definitions_are_errors);
+    }
+
+    pub(crate) fn add_ast_document_not_adding_sources(
+        &mut self,
+        document: &ast::Document,
+        type_system_definitions_are_errors: bool,
+    ) {
+        let mut errors = BuildErrors {
+            errors: self.errors,
+            path: SelectionPath {
+                nested_fields: Vec::new(),
+                // overwritten:
+                root: ExecutableDefinitionName::AnonymousOperation(ast::OperationType::Query),
+            },
+        };
+
+        for definition in &document.definitions {
+            debug_assert!(errors.path.nested_fields.is_empty());
+            match definition {
+                ast::Definition::OperationDefinition(operation) => {
+                    if let Some(name) = &operation.name {
+                        if let Some(anonymous) = &self.document.operations.anonymous {
+                            errors.errors.push(
+                                anonymous.location(),
+                                BuildError::AmbiguousAnonymousOperation,
+                            )
+                        }
+                        if let Entry::Vacant(entry) =
+                            self.document.operations.named.entry(name.clone())
+                        {
+                            errors.path.root = ExecutableDefinitionName::NamedOperation(
+                                operation.operation_type,
+                                name.clone(),
+                            );
+                            if let Some(op) =
+                                Operation::from_ast(self.schema, &mut errors, operation)
+                            {
+                                entry.insert(operation.same_location(op));
+                            } else {
+                                errors.errors.push(
+                                    operation.location(),
+                                    BuildError::UndefinedRootOperation {
+                                        operation_type: operation.operation_type.name(),
+                                    },
+                                )
+                            }
+                        } else {
+                            let (key, _) =
+                                self.document.operations.named.get_key_value(name).unwrap();
+                            errors.errors.push(
+                                name.location(),
+                                BuildError::OperationNameCollision {
+                                    name_at_previous_location: key.clone(),
+                                },
+                            );
+                        }
+                    } else if let Some(previous) = &self.document.operations.anonymous {
+                        if !self.multiple_anonymous {
+                            self.multiple_anonymous = true;
+                            errors
+                                .errors
+                                .push(previous.location(), BuildError::AmbiguousAnonymousOperation)
+                        }
                         errors.errors.push(
-                            anonymous.location(),
+                            operation.location(),
                             BuildError::AmbiguousAnonymousOperation,
                         )
-                    }
-                    if let Entry::Vacant(entry) = operations.named.entry(name.clone()) {
-                        errors.path.root = ExecutableDefinitionName::NamedOperation(
-                            operation.operation_type,
-                            name.clone(),
-                        );
-                        if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
-                            entry.insert(operation.same_location(op));
+                    } else if !self.document.operations.named.is_empty() {
+                        errors.errors.push(
+                            operation.location(),
+                            BuildError::AmbiguousAnonymousOperation,
+                        )
+                    } else {
+                        errors.path.root =
+                            ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
+                        if let Some(op) = Operation::from_ast(self.schema, &mut errors, operation) {
+                            self.document.operations.anonymous = Some(operation.same_location(op));
                         } else {
                             errors.errors.push(
                                 operation.location(),
@@ -49,79 +201,76 @@ pub(crate) fn document_from_ast(
                                 },
                             )
                         }
+                    }
+                }
+                ast::Definition::FragmentDefinition(fragment) => {
+                    if let Entry::Vacant(entry) =
+                        self.document.fragments.entry(fragment.name.clone())
+                    {
+                        errors.path.root =
+                            ExecutableDefinitionName::Fragment(fragment.name.clone());
+                        if let Some(node) = Fragment::from_ast(self.schema, &mut errors, fragment) {
+                            entry.insert(fragment.same_location(node));
+                        }
                     } else {
-                        let (key, _) = operations.named.get_key_value(name).unwrap();
+                        let (key, _) = self
+                            .document
+                            .fragments
+                            .get_key_value(&fragment.name)
+                            .unwrap();
                         errors.errors.push(
-                            name.location(),
-                            BuildError::OperationNameCollision {
+                            fragment.name.location(),
+                            BuildError::FragmentNameCollision {
                                 name_at_previous_location: key.clone(),
                             },
-                        );
+                        )
                     }
-                } else if let Some(previous) = &operations.anonymous {
-                    if !multiple_anonymous {
-                        multiple_anonymous = true;
-                        errors
-                            .errors
-                            .push(previous.location(), BuildError::AmbiguousAnonymousOperation)
-                    }
-                    errors.errors.push(
-                        operation.location(),
-                        BuildError::AmbiguousAnonymousOperation,
-                    )
-                } else if !operations.named.is_empty() {
-                    errors.errors.push(
-                        operation.location(),
-                        BuildError::AmbiguousAnonymousOperation,
-                    )
-                } else {
-                    errors.path.root =
-                        ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
-                    if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
-                        operations.anonymous = Some(operation.same_location(op));
-                    } else {
+                }
+                _ => {
+                    if type_system_definitions_are_errors {
                         errors.errors.push(
-                            operation.location(),
-                            BuildError::UndefinedRootOperation {
-                                operation_type: operation.operation_type.name(),
+                            definition.location(),
+                            BuildError::TypeSystemDefinition {
+                                name: definition.name().cloned(),
+                                describe: definition.describe(),
                             },
                         )
                     }
                 }
             }
-            ast::Definition::FragmentDefinition(fragment) => {
-                if let Entry::Vacant(entry) = fragments.entry(fragment.name.clone()) {
-                    errors.path.root = ExecutableDefinitionName::Fragment(fragment.name.clone());
-                    if let Some(node) = Fragment::from_ast(schema, &mut errors, fragment) {
-                        entry.insert(fragment.same_location(node));
-                    }
-                } else {
-                    let (key, _) = fragments.get_key_value(&fragment.name).unwrap();
-                    errors.errors.push(
-                        fragment.name.location(),
-                        BuildError::FragmentNameCollision {
-                            name_at_previous_location: key.clone(),
-                        },
-                    )
-                }
-            }
-            _ => {
-                if type_system_definitions_are_errors {
-                    errors.errors.push(
-                        definition.location(),
-                        BuildError::TypeSystemDefinition {
-                            name: definition.name().cloned(),
-                            describe: definition.describe(),
-                        },
-                    )
-                }
-            }
         }
+
+        Arc::make_mut(&mut self.document.sources)
+            .extend(document.sources.iter().map(|(k, v)| (*k, v.clone())));
     }
+
+    /// Returns the executable document built from all added AST documents.
+    pub fn build(self) -> ExecutableDocument {
+        self.build_inner()
+    }
+
+    pub(crate) fn build_inner(mut self) -> ExecutableDocument {
+        self.document.sources = self.errors.sources.clone();
+        self.document
+    }
+}
+
+pub(crate) fn document_from_ast(
+    schema: Option<&Schema>,
+    document: &ast::Document,
+    errors: &mut DiagnosticList,
+    type_system_definitions_are_errors: bool,
+) -> ExecutableDocument {
+    let mut builder = ExecutableDocumentBuilder::new(schema, errors);
+
+    builder.add_ast_document_not_adding_sources(document, type_system_definitions_are_errors);
+
+    let doc = builder.build_inner();
+
     ExecutableDocument {
         sources: document.sources.clone(),
-        operations,
-        fragments,
+        operations: doc.operations,
+        fragments: doc.fragments,
     }
 }
 
@@ -134,7 +283,7 @@ impl Operation {
         let ty = if let Some(s) = schema {
             s.root_operation(ast.operation_type)?.clone()
         } else {
-            // Hack for validate_standalone_excutable
+            // Hack for validate_standalone_executable
             ast.operation_type.default_type_name().clone()
         };
         let mut selection_set = SelectionSet::new(ty);
@@ -252,7 +401,7 @@ impl SelectionSet {
                             )
                         }
                         Err(schema::FieldLookupError::NoSuchType) => {
-                            // `self.ty` is the name of a type not definied in the schema.
+                            // `self.ty` is the name of a type not defined in the schema.
                             // It can come from:
                             // * A root operation type, or a field definition:
                             //   the schema is invalid, no need to record another error here.
