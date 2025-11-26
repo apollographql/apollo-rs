@@ -36,34 +36,34 @@ pub(crate) struct BuildErrors<'a> {
 /// let document = builder.build().unwrap();
 /// ```
 #[derive(Clone)]
-pub struct ExecutableDocumentBuilder {
+pub struct ExecutableDocumentBuilder<'schema> {
     /// The executable document being built
     pub(crate) document: ExecutableDocument,
     /// Optional schema for type checking during build
-    schema: Option<Schema>,
+    schema: Option<&'schema Schema>,
     /// Accumulated diagnostics
     pub(crate) errors: DiagnosticList,
     /// Track if we've seen multiple anonymous operations
     multiple_anonymous: bool,
 }
 
-impl Default for ExecutableDocumentBuilder {
+impl Default for ExecutableDocumentBuilder<'_> {
     fn default() -> Self {
         Self::new(None)
     }
 }
 
-impl ExecutableDocumentBuilder {
+impl<'schema> ExecutableDocumentBuilder<'schema> {
     /// Creates a new [`ExecutableDocumentBuilder`].
     ///
     /// # Arguments
     ///
     /// * `schema` - Optional schema for type checking. If provided, the builder will validate
     ///   operations and fragments against the schema while building.
-    pub fn new(schema: Option<&Schema>) -> Self {
+    pub fn new(schema: Option<&'schema Schema>) -> Self {
         Self {
             document: ExecutableDocument::new(),
-            schema: schema.cloned(),
+            schema,
             errors: DiagnosticList::new(Default::default()),
             multiple_anonymous: false,
         }
@@ -91,7 +91,6 @@ impl ExecutableDocumentBuilder {
         document: &ast::Document,
         type_system_definitions_are_errors: bool,
     ) {
-        let schema = self.schema.as_ref();
         let mut errors = BuildErrors {
             errors: &mut self.errors,
             path: SelectionPath {
@@ -120,7 +119,9 @@ impl ExecutableDocumentBuilder {
                                 operation.operation_type,
                                 name.clone(),
                             );
-                            if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
+                            if let Some(op) =
+                                Operation::from_ast(self.schema, &mut errors, operation)
+                            {
                                 entry.insert(operation.same_location(op));
                             } else {
                                 errors.errors.push(
@@ -163,7 +164,9 @@ impl ExecutableDocumentBuilder {
                             errors.path.root = ExecutableDefinitionName::AnonymousOperation(
                                 operation.operation_type,
                             );
-                            if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
+                            if let Some(op) =
+                                Operation::from_ast(self.schema, &mut errors, operation)
+                            {
                                 self.document.operations.anonymous =
                                     Some(operation.same_location(op));
                             } else {
@@ -183,7 +186,7 @@ impl ExecutableDocumentBuilder {
                     {
                         errors.path.root =
                             ExecutableDefinitionName::Fragment(fragment.name.clone());
-                        if let Some(node) = Fragment::from_ast(schema, &mut errors, fragment) {
+                        if let Some(node) = Fragment::from_ast(self.schema, &mut errors, fragment) {
                             entry.insert(fragment.same_location(node));
                         }
                     } else {
@@ -241,7 +244,7 @@ pub(crate) fn document_from_ast(
     // Use the builder internally but maintain the same API
     let mut builder = ExecutableDocumentBuilder {
         document: ExecutableDocument::new(),
-        schema: schema.cloned(),
+        schema,
         errors: std::mem::replace(errors, DiagnosticList::new(Default::default())),
         multiple_anonymous: false,
     };

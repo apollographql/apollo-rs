@@ -384,7 +384,7 @@ impl ExecutableDocument {
     ///
     /// let document = builder.build().unwrap();
     /// ```
-    pub fn builder(schema: Option<&Valid<Schema>>) -> from_ast::ExecutableDocumentBuilder {
+    pub fn builder(schema: Option<&Valid<Schema>>) -> from_ast::ExecutableDocumentBuilder<'_> {
         from_ast::ExecutableDocumentBuilder::new(schema.map(|s| s.as_ref()))
     }
 
