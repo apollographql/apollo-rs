@@ -65,6 +65,42 @@ impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
         }
     }
 
+    /// Parses a GraphQL executable document from source text and adds it to the builder.
+    ///
+    /// This is a convenience method that creates a parser and calls
+    /// [`Parser::parse_into_executable_builder`](crate::parser::Parser::parse_into_executable_builder).
+    ///
+    /// # Arguments
+    ///
+    /// * `source_text` - The GraphQL source text to parse
+    /// * `path` - The filesystem path (or arbitrary string) used in diagnostics to identify this source file
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use apollo_compiler::{Schema, ExecutableDocument};
+    /// use apollo_compiler::validation::DiagnosticList;
+    /// # let schema_src = "type Query { user: User } type User { id: ID }";
+    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+    ///
+    /// let mut errors = DiagnosticList::new(Default::default());
+    /// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+    ///     .parse("query GetUser { user { id } }", "query1.graphql")
+    ///     .parse("query GetMore { user { id } }", "query2.graphql")
+    ///     .build();
+    ///
+    /// assert!(errors.is_empty());
+    /// assert_eq!(doc.operations.named.len(), 2);
+    /// ```
+    pub fn parse(
+        mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<std::path::Path>,
+    ) -> Self {
+        Parser::new().parse_into_executable_builder(source_text, path, &mut self);
+        self
+    }
+
     /// Adds an AST document to the executable document being built.
     ///
     /// # Arguments

@@ -323,11 +323,11 @@ fn builder_from_multiple_files() {
     let query2 = "query GetPost { post { id title } }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(query1, "query1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(query2, "query2.graphql", &mut builder);
+    let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(query1, "query1.graphql")
+        .parse(query2, "query2.graphql")
+        .build();
 
-    let doc = builder.build();
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 2);
@@ -351,11 +351,11 @@ fn builder_with_fragments_from_multiple_files() {
     "#;
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(query, "query.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(fragment, "fragment.graphql", &mut builder);
+    let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(query, "query.graphql")
+        .parse(fragment, "fragment.graphql")
+        .build();
 
-    let doc = builder.build();
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 1);
@@ -373,11 +373,11 @@ fn builder_detects_operation_name_collision() {
     let query2 = "query GetData { field }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(query1, "query1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(query2, "query2.graphql", &mut builder);
+    let _doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(query1, "query1.graphql")
+        .parse(query2, "query2.graphql")
+        .build();
 
-    let _doc = builder.build();
     assert!(
         !errors.is_empty(),
         "Expected errors for operation name collision"
@@ -399,11 +399,11 @@ fn builder_detects_fragment_name_collision() {
     let fragment2 = "fragment UserData on User { id }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(fragment1, "fragment1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(fragment2, "fragment2.graphql", &mut builder);
+    let _doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(fragment1, "fragment1.graphql")
+        .parse(fragment2, "fragment2.graphql")
+        .build();
 
-    let _doc = builder.build();
     assert!(
         !errors.is_empty(),
         "Expected errors for fragment name collision"
@@ -422,11 +422,11 @@ fn builder_without_schema() {
     let query2 = "query GetMore { other }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(None, &mut errors);
-    Parser::new().parse_into_executable_builder(query1, "query1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(query2, "query2.graphql", &mut builder);
+    let doc = ExecutableDocument::builder(None, &mut errors)
+        .parse(query1, "query1.graphql")
+        .parse(query2, "query2.graphql")
+        .build();
 
-    let doc = builder.build();
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 2);
@@ -443,11 +443,11 @@ fn builder_preserves_source_information() {
     let query2 = "query Q2 { field }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(query1, "query1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(query2, "query2.graphql", &mut builder);
+    let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(query1, "query1.graphql")
+        .parse(query2, "query2.graphql")
+        .build();
 
-    let doc = builder.build();
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     // Verify that source information is tracked
@@ -465,11 +465,11 @@ fn builder_handles_anonymous_and_named_operations() {
     let named = "query GetData { field }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(anonymous, "anonymous.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(named, "named.graphql", &mut builder);
+    let _doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(anonymous, "anonymous.graphql")
+        .parse(named, "named.graphql")
+        .build();
 
-    let _doc = builder.build();
     // Should error because mixing anonymous and named operations is ambiguous
     assert!(
         !errors.is_empty(),
@@ -504,16 +504,12 @@ fn builder_with_multiple_fragments_used_in_query() {
     let settings_fragment = "fragment SettingsFields on Settings { theme notifications }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    Parser::new().parse_into_executable_builder(query, "query.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(profile_fragment, "profile.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(
-        settings_fragment,
-        "settings.graphql",
-        &mut builder,
-    );
+    let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(query, "query.graphql")
+        .parse(profile_fragment, "profile.graphql")
+        .parse(settings_fragment, "settings.graphql")
+        .build();
 
-    let doc = builder.build();
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 1);
@@ -553,15 +549,13 @@ fn builder_accumulates_diagnostics_from_multiple_sources() {
     let fragment3 = "fragment UserName on User { name }";
 
     let mut errors = DiagnosticList::new(Default::default());
-    let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-
-    Parser::new().parse_into_executable_builder(query1, "query1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(query2, "query2.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(fragment1, "fragment1.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(fragment2, "fragment2.graphql", &mut builder);
-    Parser::new().parse_into_executable_builder(fragment3, "fragment3.graphql", &mut builder);
-
-    let doc = builder.build();
+    let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(query1, "query1.graphql")
+        .parse(query2, "query2.graphql")
+        .parse(fragment1, "fragment1.graphql")
+        .parse(fragment2, "fragment2.graphql")
+        .parse(fragment3, "fragment3.graphql")
+        .build();
 
     // Verify we collected multiple errors from different sources
     assert!(!errors.is_empty(), "Expected errors from multiple sources");
