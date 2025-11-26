@@ -287,13 +287,11 @@ impl Parser {
     /// let mut parser = Parser::new();
     ///
     /// parser.parse_into_executable_builder(
-    ///     Some(&schema),
     ///     "query GetUser { user { id } }",
     ///     "query1.graphql",
     ///     &mut builder,
     /// );
     /// parser.parse_into_executable_builder(
-    ///     Some(&schema),
     ///     "query GetPost { post { title } }",
     ///     "query2.graphql",
     ///     &mut builder,
@@ -307,7 +305,6 @@ impl Parser {
     /// [`ExecutableDocumentBuilder::build`].
     pub fn parse_into_executable_builder(
         &mut self,
-        _schema: Option<&Valid<Schema>>,
         source_text: impl Into<String>,
         path: impl AsRef<Path>,
         builder: &mut executable::ExecutableDocumentBuilder,

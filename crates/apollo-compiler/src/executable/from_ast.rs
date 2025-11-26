@@ -27,7 +27,6 @@ pub(crate) struct BuildErrors<'a> {
 ///
 /// // Add operations from multiple files
 /// Parser::new().parse_into_executable_builder(
-///     Some(&schema),
 ///     "query GetUser { user { id } }",
 ///     "query1.graphql",
 ///     &mut builder,

@@ -373,13 +373,11 @@ impl ExecutableDocument {
     /// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
     ///
     /// Parser::new().parse_into_executable_builder(
-    ///     Some(&schema),
     ///     "query GetUser { user { id } }",
     ///     "query1.graphql",
     ///     &mut builder,
     /// );
     /// Parser::new().parse_into_executable_builder(
-    ///     Some(&schema),
     ///     "query GetPost { post { title } }",
     ///     "query2.graphql",
     ///     &mut builder,
