@@ -105,7 +105,6 @@ impl<'schema> ExecutableDocumentBuilder<'schema> {
             match definition {
                 ast::Definition::OperationDefinition(operation) => {
                     if let Some(name) = &operation.name {
-                        // Named operation
                         if let Some(anonymous) = &self.document.operations.anonymous {
                             errors.errors.push(
                                 anonymous.location(),
@@ -141,42 +140,34 @@ impl<'schema> ExecutableDocumentBuilder<'schema> {
                                 },
                             );
                         }
+                    } else if let Some(previous) = &self.document.operations.anonymous {
+                        if !self.multiple_anonymous {
+                            self.multiple_anonymous = true;
+                            errors
+                                .errors
+                                .push(previous.location(), BuildError::AmbiguousAnonymousOperation)
+                        }
+                        errors.errors.push(
+                            operation.location(),
+                            BuildError::AmbiguousAnonymousOperation,
+                        )
+                    } else if !self.document.operations.named.is_empty() {
+                        errors.errors.push(
+                            operation.location(),
+                            BuildError::AmbiguousAnonymousOperation,
+                        )
                     } else {
-                        // Anonymous operation
-                        if let Some(previous) = &self.document.operations.anonymous {
-                            if !self.multiple_anonymous {
-                                self.multiple_anonymous = true;
-                                errors.errors.push(
-                                    previous.location(),
-                                    BuildError::AmbiguousAnonymousOperation,
-                                )
-                            }
-                            errors.errors.push(
-                                operation.location(),
-                                BuildError::AmbiguousAnonymousOperation,
-                            )
-                        } else if !self.document.operations.named.is_empty() {
-                            errors.errors.push(
-                                operation.location(),
-                                BuildError::AmbiguousAnonymousOperation,
-                            )
+                        errors.path.root =
+                            ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
+                        if let Some(op) = Operation::from_ast(self.schema, &mut errors, operation) {
+                            self.document.operations.anonymous = Some(operation.same_location(op));
                         } else {
-                            errors.path.root = ExecutableDefinitionName::AnonymousOperation(
-                                operation.operation_type,
-                            );
-                            if let Some(op) =
-                                Operation::from_ast(self.schema, &mut errors, operation)
-                            {
-                                self.document.operations.anonymous =
-                                    Some(operation.same_location(op));
-                            } else {
-                                errors.errors.push(
-                                    operation.location(),
-                                    BuildError::UndefinedRootOperation {
-                                        operation_type: operation.operation_type.name(),
-                                    },
-                                )
-                            }
+                            errors.errors.push(
+                                operation.location(),
+                                BuildError::UndefinedRootOperation {
+                                    operation_type: operation.operation_type.name(),
+                                },
+                            )
                         }
                     }
                 }
@@ -217,7 +208,6 @@ impl<'schema> ExecutableDocumentBuilder<'schema> {
             }
         }
 
-        // Merge sources into the document
         Arc::make_mut(&mut self.document.sources)
             .extend(document.sources.iter().map(|(k, v)| (*k, v.clone())));
     }
@@ -241,7 +231,6 @@ pub(crate) fn document_from_ast(
     errors: &mut DiagnosticList,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
-    // Use the builder internally but maintain the same API
     let mut builder = ExecutableDocumentBuilder {
         document: ExecutableDocument::new(),
         schema,
@@ -270,7 +259,7 @@ impl Operation {
         let ty = if let Some(s) = schema {
             s.root_operation(ast.operation_type)?.clone()
         } else {
-            // Hack for validate_standalone_excutable
+            // Hack for validate_standalone_executable
             ast.operation_type.default_type_name().clone()
         };
         let mut selection_set = SelectionSet::new(ty);
@@ -388,7 +377,7 @@ impl SelectionSet {
                             )
                         }
                         Err(schema::FieldLookupError::NoSuchType) => {
-                            // `self.ty` is the name of a type not definied in the schema.
+                            // `self.ty` is the name of a type not defined in the schema.
                             // It can come from:
                             // * A root operation type, or a field definition:
                             //   the schema is invalid, no need to record another error here.
