@@ -70,6 +70,7 @@ pub(crate) mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
+pub use self::from_ast::ExecutableDocumentBuilder;
 pub use crate::ast::Argument;
 use crate::ast::ArgumentByNameError;
 pub use crate::ast::Directive;
@@ -346,6 +347,51 @@ impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Returns a new builder for creating an ExecutableDocument from multiple AST documents.
+    ///
+    /// The builder allows you to parse and combine executable definitions (operations and fragments)
+    /// from multiple source files into a single [`ExecutableDocument`].
+    ///
+    /// # Arguments
+    ///
+    /// * `schema` - Optional schema for type checking. If provided, the builder will validate
+    ///   operations and fragments against the schema while building.
+    /// * `errors` - Mutable reference to a DiagnosticList where errors will be accumulated
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use apollo_compiler::{Schema, ExecutableDocument};
+    /// use apollo_compiler::parser::Parser;
+    /// use apollo_compiler::validation::DiagnosticList;
+    /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
+    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+    ///
+    /// let mut errors = DiagnosticList::new(Default::default());
+    /// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
+    ///
+    /// Parser::new().parse_into_executable_builder(
+    ///     "query GetUser { user { id } }",
+    ///     "query1.graphql",
+    ///     &mut builder,
+    /// );
+    /// Parser::new().parse_into_executable_builder(
+    ///     "query GetPost { post { title } }",
+    ///     "query2.graphql",
+    ///     &mut builder,
+    /// );
+    ///
+    /// let document = builder.build();
+    /// // Check for errors
+    /// assert!(errors.is_empty());
+    /// ```
+    pub fn builder<'schema, 'errors>(
+        schema: Option<&'schema Valid<Schema>>,
+        errors: &'errors mut DiagnosticList,
+    ) -> from_ast::ExecutableDocumentBuilder<'schema, 'errors> {
+        from_ast::ExecutableDocumentBuilder::new(schema.map(|s| s.as_ref()), errors)
     }
 
     /// Parse an executable document with the default configuration.
