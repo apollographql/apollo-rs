@@ -171,9 +171,29 @@ impl<T: ToCliReport> ToCliReport for &T {
 type AriadneSpan = (FileId, Range<usize>);
 
 /// Translate a SourceSpan into an ariadne span type.
-fn to_span(location: SourceSpan) -> Option<AriadneSpan> {
-    let start = location.offset();
-    let end = location.end_offset();
+///
+/// When source text is available (looked up from the source map), this function
+/// ensures byte offsets fall on valid UTF-8 character boundaries. This is necessary
+/// because the parser may produce spans that end inside multibyte characters when
+/// there are lexer errors (e.g., unexpected CJK characters in identifiers).
+fn to_span(location: SourceSpan, source_text: Option<&str>) -> Option<AriadneSpan> {
+    let mut start = location.offset();
+    let mut end = location.end_offset();
+
+    // This prevents ariadne from panicking when it tries to slice the source string.
+    if let Some(text) = source_text {
+        // Snap start to a valid char boundary (move backward if needed)
+        while start > 0 && !text.is_char_boundary(start) {
+            start -= 1;
+        }
+        // Snap end to a valid char boundary (move forward if needed)
+        while end < text.len() && !text.is_char_boundary(end) {
+            end += 1;
+        }
+        // Ensure end doesn't exceed the text length
+        end = end.min(text.len());
+    }
+
     Some((location.file_id, start..end))
 }
 
@@ -205,7 +225,10 @@ impl<'s> CliReport<'s> {
         color: Color,
     ) -> Self {
         let span = main_location
-            .and_then(to_span)
+            .and_then(|loc| {
+                let source_text = sources.get(&loc.file_id).map(|s| s.source_text());
+                to_span(loc, source_text)
+            })
             .unwrap_or((FileId::NONE, 0..0));
         let report = ariadne::Report::build(ReportKind::Error, span);
         let enable_color = match color {
@@ -242,7 +265,10 @@ impl<'s> CliReport<'s> {
 
     /// Add a label at a given location. If the location is `None`, the message is discarded.
     pub fn with_label_opt(&mut self, location: Option<SourceSpan>, message: impl ToString) {
-        if let Some(span) = location.and_then(to_span) {
+        if let Some(span) = location.and_then(|loc| {
+            let source_text = self.sources.get(&loc.file_id).map(|s| s.source_text());
+            to_span(loc, source_text)
+        }) {
             self.report.add_label(
                 ariadne::Label::new(span)
                     .with_message(message)
