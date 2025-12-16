@@ -514,7 +514,10 @@ impl<'a> Cursor<'a> {
     fn eof(&mut self, state: State, mut token: Token<'a>) -> Result<Token<'a>, Error> {
         match state {
             State::Start => {
-                token.index += 1;
+                // Report EOF at the end of the input rather than one byte past it.
+                let end = self.source.len();
+                self.offset = end;
+                token.index = end;
                 Ok(token)
             }
             State::StringLiteralStart => {
