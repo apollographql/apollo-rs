@@ -370,12 +370,22 @@ impl<'input> Parser<'input> {
 
     /// Gets the next token from the lexer.
     fn next_token(&mut self) -> Option<Token<'input>> {
-        for res in &mut self.lexer {
+        loop {
+            let res = self.lexer.next()?;
             match res {
                 Err(err) => {
                     if err.is_limit() {
                         self.accept_errors = false;
                     }
+                    // Push any pending ignored tokens before adding error token.
+                    // This ensures proper byte position tracking in the syntax tree.
+                    self.push_ignored();
+                    // Add error token to the syntax tree to preserve byte positions.
+                    // Without this, Rowan loses track of byte offsets when lexer errors
+                    // occur with multi-byte UTF-8 characters, causing spans to be misaligned.
+                    self.builder
+                        .borrow_mut()
+                        .token(SyntaxKind::ERROR, err.data());
                     self.errors.push(err);
                 }
                 Ok(token) => {
@@ -383,8 +393,6 @@ impl<'input> Parser<'input> {
                 }
             }
         }
-
-        None
     }
 
     /// Consume a token from the lexer.
@@ -666,16 +674,16 @@ mod tests {
         let tree = expect![[r##"
             DOCUMENT@0..113
               WHITESPACE@0..13 "\n            "
-              OBJECT_TYPE_DEFINITION@13..76
+              OBJECT_TYPE_DEFINITION@13..113
                 type_KW@13..17 "type"
                 WHITESPACE@17..18 " "
                 NAME@18..23
                   IDENT@18..23 "Query"
                 WHITESPACE@23..24 " "
-                FIELDS_DEFINITION@24..76
+                FIELDS_DEFINITION@24..113
                   L_CURLY@24..25 "{"
                   WHITESPACE@25..42 "\n                "
-                  FIELD_DEFINITION@42..76
+                  FIELD_DEFINITION@42..113
                     NAME@42..47
                       IDENT@42..47 "field"
                     ARGUMENTS_DEFINITION@47..71
@@ -699,8 +707,9 @@ mod tests {
                     NAMED_TYPE@73..76
                       NAME@73..76
                         IDENT@73..76 "Int"
-              WHITESPACE@76..93 "\n                "
-              COMMENT@93..113 "# limit reached here"
+                    WHITESPACE@76..93 "\n                "
+                    COMMENT@93..113 "# limit reached here"
+                    ERROR@113..113 ""
         "##]];
         tree.assert_eq(&format!("{:#?}", cst.document().syntax));
     }
@@ -946,5 +955,100 @@ mod tests {
         let source = r#"{ ..."#;
         let parser = Parser::new(source).token_limit(3);
         let _cst = parser.parse();
+    }
+
+    /// Helper to check all CST nodes/tokens have valid UTF-8 character boundaries.
+    ///
+    /// Before the fix, ERROR tokens from lexer errors were not added to the syntax
+    /// tree, causing Rowan to lose track of byte offsets. This resulted in:
+    /// - ASCII errors: wrong positions but no panic (every byte is a char boundary)
+    /// - Multi-byte errors: wrong positions AND panic (positions inside UTF-8 chars)
+    ///
+    /// After the fix, both cases have correct positions.
+    fn check_char_boundaries(node: &crate::SyntaxNode, source: &str) {
+        let range = node.text_range();
+        let start: usize = range.start().into();
+        let end: usize = range.end().into();
+        assert!(
+            source.is_char_boundary(start),
+            "Node {:?} start {} is not a char boundary",
+            node.kind(),
+            start
+        );
+        assert!(
+            source.is_char_boundary(end),
+            "Node {:?} end {} is not a char boundary",
+            node.kind(),
+            end
+        );
+
+        for child in node.children_with_tokens() {
+            match child {
+                rowan::NodeOrToken::Node(n) => check_char_boundaries(&n, source),
+                rowan::NodeOrToken::Token(t) => {
+                    let range = t.text_range();
+                    let start: usize = range.start().into();
+                    let end: usize = range.end().into();
+                    assert!(
+                        source.is_char_boundary(start),
+                        "Token {:?} start {} is not a char boundary",
+                        t.kind(),
+                        start
+                    );
+                    assert!(
+                        source.is_char_boundary(end),
+                        "Token {:?} end {} is not a char boundary",
+                        t.kind(),
+                        end
+                    );
+                }
+            }
+        }
+    }
+
+    /// ASCII errors never caused panics (every byte is a char boundary),
+    /// but positions are now correct with the fix.
+    #[test]
+    fn lexer_error_ascii_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { field: @#$% }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
+    }
+
+    /// CJK characters (3-byte UTF-8) would panic before the fix because
+    /// wrong positions could land inside multi-byte characters.
+    #[test]
+    fn lexer_error_cjk_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { field: 中文类型 }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
+    }
+
+    /// Mixed ASCII and multi-byte errors are both handled correctly.
+    #[test]
+    fn lexer_error_mixed_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { f1: @#$ f2: 日本語 f3: !!! }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
+    }
+
+    /// Emoji (4-byte UTF-8) characters are handled correctly.
+    #[test]
+    fn lexer_error_emoji_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { field: 🚀🌍 }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
     }
 }

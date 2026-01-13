@@ -562,6 +562,13 @@ impl SourceSpan {
         }
     }
 
+    pub(crate) fn from_range(file_id: FileId, text_range: TextRange) -> Self {
+        Self {
+            file_id,
+            text_range,
+        }
+    }
+
     /// Returns the file ID for this location
     pub fn file_id(&self) -> FileId {
         self.file_id
@@ -589,7 +596,7 @@ impl SourceSpan {
             (None, single @ Some(_)) | (single @ Some(_), None) => single,
             (Some(start), Some(end)) => {
                 if start.file_id != end.file_id {
-                    // Pick one aribtrarily
+                    // Pick one arbitrarily
                     return Some(end);
                 }
                 Some(SourceSpan {

@@ -763,8 +763,11 @@ impl Convert for cst::Name {
     type Target = crate::Name;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let loc = SourceSpan::new(file_id, self.syntax());
         let token = &self.syntax().first_token()?;
+        // Use the token's range, not the node's range. This is important when
+        // lexer errors (e.g., invalid multi-byte characters) create ERROR tokens
+        // that become children of the Name node - we want only the IDENT's span.
+        let loc = SourceSpan::from_range(file_id, token.text_range());
         let str = token.text();
         debug_assert!(crate::Name::is_valid_syntax(str));
         Some(crate::Name::new(str).ok()?.with_location(loc))
