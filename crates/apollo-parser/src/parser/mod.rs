@@ -79,6 +79,14 @@ pub(crate) use token_text::TokenText;
 ///
 /// let document = cst.document();
 /// ```
+/// A pending token to be added to the CST - either ignored (whitespace/comment/comma) or an error.
+#[derive(Debug)]
+enum PendingToken<'input> {
+    Ignored(Token<'input>),
+    /// Error token data (owned because Error is consumed after extracting data)
+    Error(String),
+}
+
 #[derive(Debug)]
 pub struct Parser<'input> {
     lexer: Lexer<'input>,
@@ -86,8 +94,9 @@ pub struct Parser<'input> {
     current_token: Option<Token<'input>>,
     /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
-    /// Ignored tokens that should be added to the tree.
-    ignored: Vec<Token<'input>>,
+    /// Tokens that should be added to the tree, in source order.
+    /// This includes both ignored tokens (whitespace/comments/commas) and error tokens.
+    pending: Vec<PendingToken<'input>>,
     /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
     /// The limit to apply to parsing.
@@ -118,7 +127,7 @@ impl<'input> Parser<'input> {
             lexer,
             current_token: None,
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
-            ignored: vec![],
+            pending: vec![],
             errors: Vec::new(),
             recursion_limit: LimitTracker::new(DEFAULT_RECURSION_LIMIT),
             accept_errors: true,
@@ -227,21 +236,28 @@ impl<'input> Parser<'input> {
         while let Some(TokenKind::Comment | TokenKind::Whitespace | TokenKind::Comma) = self.peek()
         {
             let token = self.pop();
-            self.ignored.push(token);
+            self.pending.push(PendingToken::Ignored(token));
         }
     }
 
-    /// Push skipped ignored tokens to the current node.
+    /// Push pending tokens (ignored + errors) to the current node.
     pub(crate) fn push_ignored(&mut self) {
-        let tokens = std::mem::take(&mut self.ignored);
-        for token in tokens {
-            let syntax_kind = match token.kind {
-                TokenKind::Comment => SyntaxKind::COMMENT,
-                TokenKind::Whitespace => SyntaxKind::WHITESPACE,
-                TokenKind::Comma => SyntaxKind::COMMA,
-                _ => unreachable!(),
-            };
-            self.push_token(syntax_kind, token);
+        let pending = std::mem::take(&mut self.pending);
+        for item in pending {
+            match item {
+                PendingToken::Ignored(token) => {
+                    let syntax_kind = match token.kind {
+                        TokenKind::Comment => SyntaxKind::COMMENT,
+                        TokenKind::Whitespace => SyntaxKind::WHITESPACE,
+                        TokenKind::Comma => SyntaxKind::COMMA,
+                        _ => unreachable!(),
+                    };
+                    self.push_token(syntax_kind, token);
+                }
+                PendingToken::Error(data) => {
+                    self.builder.borrow_mut().token(SyntaxKind::ERROR, &data);
+                }
+            }
         }
     }
 
@@ -369,12 +385,21 @@ impl<'input> Parser<'input> {
     }
 
     /// Gets the next token from the lexer.
+    ///
+    /// When lexer errors occur (e.g., unexpected multibyte characters), this method
+    /// queues their data to be added as ERROR tokens to the CST later. This ensures
+    /// rowan tracks the correct byte positions without "gaps" in the tree.
     fn next_token(&mut self) -> Option<Token<'input>> {
         for res in &mut self.lexer {
             match res {
                 Err(err) => {
                     if err.is_limit() {
                         self.accept_errors = false;
+                    }
+                    // Queue the error data to be added to the CST later.
+                    let data = err.data();
+                    if !data.is_empty() {
+                        self.pending.push(PendingToken::Error(data.to_owned()));
                     }
                     self.errors.push(err);
                 }
@@ -946,5 +971,100 @@ mod tests {
         let source = r#"{ ..."#;
         let parser = Parser::new(source).token_limit(3);
         let _cst = parser.parse();
+    }
+
+    /// Helper to check all CST nodes/tokens have valid UTF-8 character boundaries.
+    ///
+    /// Before the fix, ERROR tokens from lexer errors were not added to the syntax
+    /// tree, causing Rowan to lose track of byte offsets. This resulted in:
+    /// - ASCII errors: wrong positions but no panic (every byte is a char boundary)
+    /// - Multi-byte errors: wrong positions AND panic (positions inside UTF-8 chars)
+    ///
+    /// After the fix, both cases have correct positions.
+    fn check_char_boundaries(node: &crate::SyntaxNode, source: &str) {
+        let range = node.text_range();
+        let start: usize = range.start().into();
+        let end: usize = range.end().into();
+        assert!(
+            source.is_char_boundary(start),
+            "Node {:?} start {} is not a char boundary",
+            node.kind(),
+            start
+        );
+        assert!(
+            source.is_char_boundary(end),
+            "Node {:?} end {} is not a char boundary",
+            node.kind(),
+            end
+        );
+
+        for child in node.children_with_tokens() {
+            match child {
+                rowan::NodeOrToken::Node(n) => check_char_boundaries(&n, source),
+                rowan::NodeOrToken::Token(t) => {
+                    let range = t.text_range();
+                    let start: usize = range.start().into();
+                    let end: usize = range.end().into();
+                    assert!(
+                        source.is_char_boundary(start),
+                        "Token {:?} start {} is not a char boundary",
+                        t.kind(),
+                        start
+                    );
+                    assert!(
+                        source.is_char_boundary(end),
+                        "Token {:?} end {} is not a char boundary",
+                        t.kind(),
+                        end
+                    );
+                }
+            }
+        }
+    }
+
+    /// ASCII errors never caused panics (every byte is a char boundary),
+    /// but positions are now correct with the fix.
+    #[test]
+    fn lexer_error_ascii_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { field: @#$% }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
+    }
+
+    /// CJK characters (3-byte UTF-8) would panic before the fix because
+    /// wrong positions could land inside multi-byte characters.
+    #[test]
+    fn lexer_error_cjk_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { field: 中文类型 }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
+    }
+
+    /// Mixed ASCII and multi-byte errors are both handled correctly.
+    #[test]
+    fn lexer_error_mixed_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { f1: @#$ f2: 日本語 f3: !!! }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
+    }
+
+    /// Emoji (4-byte UTF-8) characters are handled correctly.
+    #[test]
+    fn lexer_error_emoji_preserves_byte_positions() {
+        use crate::cst::CstNode;
+
+        let source = "type Query { field: 🚀🌍 }";
+        let cst = Parser::new(source).parse();
+        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
+        check_char_boundaries(cst.document().syntax(), source);
     }
 }
