@@ -975,12 +975,9 @@ mod tests {
 
     /// Helper to check all CST nodes/tokens have valid UTF-8 character boundaries.
     ///
-    /// Before the fix, ERROR tokens from lexer errors were not added to the syntax
-    /// tree, causing Rowan to lose track of byte offsets. This resulted in:
-    /// - ASCII errors: wrong positions but no panic (every byte is a char boundary)
-    /// - Multi-byte errors: wrong positions AND panic (positions inside UTF-8 chars)
-    ///
-    /// After the fix, both cases have correct positions.
+    /// Prior to #1023, lexing errors were not recorded in the CST, so any tokens
+    /// lexed after the error would have incorrect position information. This could
+    /// even lead to panics if the incorrect positions were not on a char boundary.
     fn check_char_boundaries(node: &crate::SyntaxNode, source: &str) {
         let range = node.text_range();
         let start: usize = range.start().into();
