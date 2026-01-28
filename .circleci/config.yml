@@ -16,8 +16,8 @@ executors:
     resource_class: medium+
   macos: &macos
     macos:
-      xcode: "15.0.0"
-    resource_class: macos.m1.medium.gen1
+      xcode: 16.4.0
+    resource_class: m4pro.medium
   windows: &windows
     machine:
       image: 'windows-server-2019-vs2019:2022.08.1'
