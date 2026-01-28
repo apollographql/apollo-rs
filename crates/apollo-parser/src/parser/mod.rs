@@ -1031,8 +1031,8 @@ mod tests {
         check_char_boundaries(cst.document().syntax(), source);
     }
 
-    /// CJK characters (3-byte UTF-8) would panic before the fix because
-    /// wrong positions could land inside multi-byte characters.
+    /// Unexpected CJK characters (3-byte UTF-8) should not throw off byte
+    /// positions of later tokens.
     #[test]
     fn lexer_error_cjk_preserves_byte_positions() {
         use crate::cst::CstNode;
