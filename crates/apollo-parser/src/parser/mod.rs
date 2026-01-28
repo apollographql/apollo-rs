@@ -1055,7 +1055,8 @@ mod tests {
         check_char_boundaries(cst.document().syntax(), source);
     }
 
-    /// Emoji (4-byte UTF-8) characters are handled correctly.
+    /// Unexpected emoji characters should not throw off byte
+    /// positions of later tokens.
     #[test]
     fn lexer_error_emoji_preserves_byte_positions() {
         use crate::cst::CstNode;
