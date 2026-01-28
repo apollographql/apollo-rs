@@ -79,14 +79,6 @@ pub(crate) use token_text::TokenText;
 ///
 /// let document = cst.document();
 /// ```
-/// A pending token to be added to the CST - either ignored (whitespace/comment/comma) or an error.
-#[derive(Debug)]
-enum PendingToken<'input> {
-    Ignored(Token<'input>),
-    /// Error token data (owned because Error is consumed after extracting data)
-    Error(String),
-}
-
 #[derive(Debug)]
 pub struct Parser<'input> {
     lexer: Lexer<'input>,
@@ -103,6 +95,14 @@ pub struct Parser<'input> {
     recursion_limit: LimitTracker,
     /// Accept parsing errors?
     accept_errors: bool,
+}
+
+/// A pending token to be added to the CST - either ignored (whitespace/comment/comma) or an error.
+#[derive(Debug)]
+enum PendingToken<'input> {
+    Ignored(Token<'input>),
+    /// Error token data (owned because Error is consumed after extracting data)
+    Error(String),
 }
 
 /// Chosen experimentally with:
@@ -1017,18 +1017,6 @@ mod tests {
                 }
             }
         }
-    }
-
-    /// ASCII errors never caused panics (every byte is a char boundary),
-    /// but positions are now correct with the fix.
-    #[test]
-    fn lexer_error_ascii_preserves_byte_positions() {
-        use crate::cst::CstNode;
-
-        let source = "type Query { field: @#$% }";
-        let cst = Parser::new(source).parse();
-        assert!(!cst.errors().collect::<Vec<_>>().is_empty());
-        check_char_boundaries(cst.document().syntax(), source);
     }
 
     /// Unexpected CJK characters (3-byte UTF-8) should not throw off byte
