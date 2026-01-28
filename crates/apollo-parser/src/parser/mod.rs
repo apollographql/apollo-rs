@@ -1043,7 +1043,8 @@ mod tests {
         check_char_boundaries(cst.document().syntax(), source);
     }
 
-    /// Mixed ASCII and multi-byte errors are both handled correctly.
+    /// Mixed ASCII and multi-byte errors should not throw off byte
+    /// positions of later tokens.
     #[test]
     fn lexer_error_mixed_preserves_byte_positions() {
         use crate::cst::CstNode;
