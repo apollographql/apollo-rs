@@ -123,6 +123,7 @@ pub struct FieldSet {
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
+    pub description: Option<Node<str>>,
     pub operation_type: OperationType,
     pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
@@ -134,6 +135,7 @@ pub struct Operation {
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub selection_set: SelectionSet,

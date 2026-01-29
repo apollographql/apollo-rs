@@ -1,3 +1,4 @@
+use crate::parser::grammar::description;
 use crate::parser::grammar::directive;
 use crate::parser::grammar::name;
 use crate::parser::grammar::selection;
@@ -14,10 +15,17 @@ use crate::T;
 ///    OperationType Name? VariableDefinitions? Directives? SelectionSet
 ///    SelectionSet
 pub(crate) fn operation_definition(p: &mut Parser) {
+    let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
+
+    let description_token = p.peek_token()
+        .filter(|token| token.kind() == TokenKind::StringValue)
+        .cloned();
+    if description_token.is_some() {
+        description::description(p);
+    }
+
     match p.peek() {
         Some(TokenKind::Name) => {
-            let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
-
             operation_type(p);
 
             if let Some(TokenKind::Name) = p.peek() {
@@ -38,8 +46,9 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
         }
         Some(T!['{']) => {
-            let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
-
+            if let Some(description_token) = description_token {
+                p.err_at_token(&description_token, "shorthand operation must not have a description");
+            }
             selection::selection_set(p)
         }
         _ => p.err_and_pop("expected an Operation Type or a Selection Set"),

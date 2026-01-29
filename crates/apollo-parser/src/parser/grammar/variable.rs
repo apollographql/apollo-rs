@@ -1,3 +1,4 @@
+use crate::parser::grammar::description;
 use crate::parser::grammar::directive;
 use crate::parser::grammar::name;
 use crate::parser::grammar::ty;
@@ -8,6 +9,7 @@ use crate::SyntaxKind;
 use crate::TokenKind;
 use crate::S;
 use crate::T;
+use std::ops::ControlFlow;
 
 /// See: https://spec.graphql.org/October2021/#VariableDefinitions
 ///
@@ -17,12 +19,18 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
     p.bump(S!['(']);
 
-    if let Some(T![$]) = p.peek() {
+    if let Some(T![$] | TokenKind::StringValue) = p.peek() {
         variable_definition(p);
     } else {
         p.err("expected a Variable Definition")
     }
-    p.peek_while_kind(T![$], variable_definition);
+    p.peek_while(|p, kind| match kind {
+        T![$] | TokenKind::StringValue => {
+            variable_definition(p);
+            ControlFlow::Continue(())
+        }
+        _ => ControlFlow::Break(()),
+    });
 
     p.expect(T![')'], S![')']);
 }
@@ -33,6 +41,11 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
 ///     Variable **:** Type DefaultValue? Directives[Const]?
 pub(crate) fn variable_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
     variable(p);
 
     if let Some(T![:]) = p.peek() {

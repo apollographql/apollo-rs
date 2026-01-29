@@ -135,6 +135,7 @@ ExecutableDocument {
     operations: OperationMap {
         anonymous: Some(
             592..643 @41 Operation {
+                description: None,
                 operation_type: Query,
                 name: None,
                 variables: [],
@@ -178,6 +179,7 @@ ExecutableDocument {
     },
     fragments: {
         "topLevelFragment": 314..446 @41 Fragment {
+            description: None,
             name: "topLevelFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -244,6 +246,7 @@ ExecutableDocument {
             },
         },
         "collidingTopLevelFragment": 447..529 @41 Fragment {
+            description: None,
             name: "collidingTopLevelFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -298,6 +301,7 @@ ExecutableDocument {
             },
         },
         "subselectionFragment": 530..591 @41 Fragment {
+            description: None,
             name: "subselectionFragment",
             directives: [],
             selection_set: SelectionSet {
