@@ -40,12 +40,18 @@ pub(crate) fn document(p: &mut Parser) {
                 }
             }
             TokenKind::Name => {
-                let def = p.peek_data().unwrap();
-                select_definition(def, p);
+                if let Some(def) = p.peek_data() {
+                    select_definition(def, p);
+                } else {
+                    p.err_and_pop("expected a definition after this Name");
+                }
             }
             TokenKind::LCurly => {
-                let def = p.peek_data().unwrap();
-                select_definition(def, p);
+                if let Some(def) = p.peek_data() {
+                    select_definition(def, p);
+                } else {
+                    p.err_and_pop("expected a definition");
+                }
             }
             TokenKind::Eof => return ControlFlow::Break(()),
             _ => p.err_and_pop("expected a StringValue, Name or OperationDefinition"),

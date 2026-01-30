@@ -36,15 +36,17 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
 ///     Name *but not* **on**
 pub(crate) fn fragment_name(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_NAME);
-    match p.peek() {
-        Some(TokenKind::Name) => {
-            if p.peek_data().unwrap() == "on" {
-                return p.err("Fragment Name cannot be 'on'");
+    if let Some(token) = p.peek_token() {
+        if token.kind() == TokenKind::Name {
+            if token.data() != "on" {
+                name::name(p);
+            } else {
+                p.err("Fragment Name cannot be 'on'");
             }
-            name::name(p)
+            return;
         }
-        _ => p.err("expected Fragment Name"),
     }
+    p.err("expected Fragment Name");
 }
 
 /// See: https://spec.graphql.org/October2021/#TypeCondition
@@ -53,21 +55,20 @@ pub(crate) fn fragment_name(p: &mut Parser) {
 ///     **on** NamedType
 pub(crate) fn type_condition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::TYPE_CONDITION);
-    match p.peek() {
-        Some(TokenKind::Name) => {
-            if p.peek_data().unwrap() == "on" {
-                p.bump(SyntaxKind::on_KW);
-            } else {
-                p.err("expected 'on'");
-            }
-
-            if let Some(TokenKind::Name) = p.peek() {
-                ty::named_type(p)
-            } else {
-                p.err("expected a Name in Type Condition")
-            }
+    if let Some(token) = p.peek_token() {
+        if token.kind() == TokenKind::Name && token.data() == "on" {
+            p.bump(SyntaxKind::on_KW);
+        } else {
+            p.err("expected 'on'");
         }
-        _ => p.err("expected Type Condition"),
+
+        if let Some(TokenKind::Name) = p.peek() {
+            ty::named_type(p)
+        } else {
+            p.err("expected a Name in Type Condition")
+        }
+    } else {
+        p.err("expected Type Condition")
     }
 }
 

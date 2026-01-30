@@ -32,8 +32,8 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
         _ => p.err("expected a name"),
     }
 
-    if let Some(TokenKind::Name) = p.peek() {
-        if p.peek_data().unwrap() == "implements" {
+    if let Some(token) = p.peek_token() {
+        if token.kind() == TokenKind::Name && token.data() == "implements" {
             implements_interfaces(p);
         }
     }
@@ -58,7 +58,7 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::type_KW);
 
-    // Use this variable to see if any of ImplementsInterfacs, Directives or
+    // Use this variable to see if any of ImplementsInterfaces, Directives or
     // FieldsDefinitions is provided. If none are present, we push an error.
     let mut meets_requirements = false;
 
