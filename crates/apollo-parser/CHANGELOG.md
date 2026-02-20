@@ -17,6 +17,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.8.5](https://crates.io/crates/apollo-parser/0.8.5) - 2026-02-20
+
+## Fixes
+- **Fix multi-byte character span issue - [DaleSeo], [pull/1023].**
+  The parser previously computed incorrect byte-offset spans when input contained
+  multi-byte UTF-8 characters (CJK, emoji, etc.), which could cause panics or
+  garbled error reports downstream. Fixes [#450].
+
+[DaleSeo]: https://github.com/DaleSeo
+[pull/1023]: https://github.com/apollographql/apollo-rs/pull/1023
+[#450]: https://github.com/apollographql/apollo-rs/issues/450
+
+
 # [0.8.4](https://crates.io/crates/apollo-parser/0.8.4) - 2025-01-16
 
 ## Maintenance
