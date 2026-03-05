@@ -219,6 +219,48 @@ pub(crate) fn value_of_correct_type(
                     );
                 }
 
+                // @oneOf: exactly one non-null field must be provided.
+                // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+                if input_obj.is_one_of() {
+                    if obj.len() != 1 {
+                        diagnostics.push(
+                            arg_value.location(),
+                            DiagnosticData::OneOfInputObjectWrongNumberOfFields {
+                                name: input_obj.name.clone(),
+                                provided: obj.len(),
+                            },
+                        );
+                    } else if let Some((field_name, field_val)) = obj.first() {
+                        if field_val.is_null() {
+                            diagnostics.push(
+                                field_val.location(),
+                                DiagnosticData::OneOfInputObjectNullField {
+                                    name: input_obj.name.clone(),
+                                    field: field_name.clone(),
+                                },
+                            );
+                        } else if let ast::Value::Variable(var_name) = &**field_val {
+                            // The field value is a variable — the variable must be declared
+                            // non-null.  An undefined variable is left to the UndefinedVariable
+                            // rule; we only flag nullable variables that are definitely known.
+                            // https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
+                            if let Some(var_def) = var_defs.iter().find(|v| v.name == *var_name) {
+                                if !var_def.ty.is_non_null() {
+                                    diagnostics.push(
+                                        field_val.location(),
+                                        DiagnosticData::OneOfInputObjectNullableVariable {
+                                            name: input_obj.name.clone(),
+                                            field: field_name.clone(),
+                                            variable: var_name.clone(),
+                                            variable_type: var_def.ty.clone(),
+                                        },
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+
                 input_obj.fields.iter().for_each(|(input_name, f)| {
                     let ty = &f.ty;
                     let is_missing = !obj.iter().any(|(value_name, ..)| input_name == value_name);

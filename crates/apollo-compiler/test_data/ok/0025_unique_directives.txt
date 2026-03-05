@@ -25,6 +25,7 @@ Schema {
         "skip": built_in_directive!("skip"),
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
+        "oneOf": built_in_directive!("oneOf"),
         "specifiedBy": built_in_directive!("specifiedBy"),
         "repeatable": 0..41 @26 DirectiveDefinition {
             description: None,

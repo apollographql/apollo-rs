@@ -32,6 +32,8 @@ type __Type {
   ofType: __Type
   # may be non-null for custom SCALAR, otherwise null.
   specifiedByURL: String
+  # always non-null; true only for @oneOf INPUT_OBJECT types.
+  isOneOf: Boolean!
 }
 
 "An enum describing what kind of type a given `__Type` is."
@@ -153,6 +155,9 @@ directive @deprecated(
   """
   reason: String = "No longer supported"
 ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+
+"Indicates an Input Object is a OneOf Input Object."
+directive @oneOf on INPUT_OBJECT
 
 "Exposes a URL that specifies the behavior of this scalar."
 directive @specifiedBy(
