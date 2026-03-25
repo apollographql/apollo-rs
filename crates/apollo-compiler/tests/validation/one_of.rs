@@ -439,3 +439,124 @@ fn introspection_is_one_of_false_for_regular_input() {
         "regular input object should have isOneOf=false, got: {json}"
     );
 }
+
+// ---------------------------------------------------------------------------
+// Schema extensions — @oneOf must survive and be validated through extensions
+// ---------------------------------------------------------------------------
+
+#[test]
+fn extending_oneof_type_with_nullable_field_is_valid() {
+    // Adding a nullable field to a @oneOf type via extension is valid.
+    Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input Foo @oneOf { a: String }
+        extend input Foo { b: Int }
+        "#,
+        "schema.graphql",
+    )
+    .expect("extending a @oneOf type with a nullable field should be valid");
+}
+
+#[test]
+fn extending_oneof_type_with_nonnull_field_is_invalid() {
+    // Adding a non-null field via extension must be rejected — the @oneOf
+    // constraint on the base type applies to all fields regardless of where
+    // they are introduced.
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input Foo @oneOf { a: String }
+        extend input Foo { b: Int! }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("non-null field added via extension should be invalid");
+    let expected = expect![[r#"
+        Error: `Foo.b` field of a @oneOf input object must be nullable
+           ╭─[ schema.graphql:4:28 ]
+           │
+         4 │         extend input Foo { b: Int! }
+           │                            ───┬───  
+           │                               ╰───── field `Foo.b` defined here
+           │                               │     
+           │                               ╰───── remove the `!` to make this field nullable
+           │ 
+           │ Help: Fields of a @oneOf input object must all be nullable and must not have default values.
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn extending_oneof_type_with_default_value_is_invalid() {
+    // Adding a field with a default value via extension must also be rejected.
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input Foo @oneOf { a: String }
+        extend input Foo { b: Int = 0 }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("field with default added via extension should be invalid");
+    let expected = expect![[r#"
+        Error: `Foo.b` field of a @oneOf input object must not have a default value
+           ╭─[ schema.graphql:4:28 ]
+           │
+         4 │         extend input Foo { b: Int = 0 }
+           │                            ─────┬───┬  
+           │                                 ╰────── remove the default value
+           │                                     │  
+           │                                     ╰── default value for `Foo.b` defined here
+           │ 
+           │ Help: Fields of a @oneOf input object must all be nullable and must not have default values.
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn adding_oneof_via_extension_with_valid_base_type_is_valid() {
+    // A regular input type whose fields are all nullable and have no defaults
+    // can have @oneOf added via extension.
+    Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input Foo { a: String b: Int }
+        extend input Foo @oneOf
+        "#,
+        "schema.graphql",
+    )
+    .expect("adding @oneOf via extension to a compatible input type should be valid");
+}
+
+#[test]
+fn adding_oneof_via_extension_with_nonnull_field_in_base_is_invalid() {
+    // If the base type already has a non-null field, applying @oneOf via
+    // extension must be rejected because the merged type would violate the
+    // @oneOf field-nullability rule.
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input Foo { a: String! b: Int }
+        extend input Foo @oneOf
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("@oneOf extension on type with non-null field should be invalid");
+    let expected = expect![[r#"
+        Error: `Foo.a` field of a @oneOf input object must be nullable
+           ╭─[ schema.graphql:3:21 ]
+           │
+         3 │         input Foo { a: String! b: Int }
+           │                     ─────┬────  
+           │                          ╰────── field `Foo.a` defined here
+           │                          │      
+           │                          ╰────── remove the `!` to make this field nullable
+           │ 
+           │ Help: Fields of a @oneOf input object must all be nullable and must not have default values.
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
