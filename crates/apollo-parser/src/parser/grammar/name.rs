@@ -8,16 +8,15 @@ use crate::S;
 /// *Name*:
 ///     [_A-Za-z][_0-9A-Za-z]
 pub(crate) fn name(p: &mut Parser) {
-    if let Some(token) = p.peek_token() {
-        if token.kind() == TokenKind::Name {
+    match p.peek_token() {
+        Some(token) if token.kind() == TokenKind::Name => {
             let name_data = token.data();
             let _g = p.start_node(SyntaxKind::NAME);
             validate_name(name_data, p);
             p.bump(SyntaxKind::IDENT);
-            return;
         }
+        _ => p.err("expected a Name"),
     }
-    p.err("expected a Name");
 }
 
 pub(crate) fn validate_name(name: &str, p: &mut Parser) {

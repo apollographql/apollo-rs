@@ -36,17 +36,15 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
 ///     Name *but not* **on**
 pub(crate) fn fragment_name(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_NAME);
-    if let Some(token) = p.peek_token() {
-        if token.kind() == TokenKind::Name {
-            if token.data() != "on" {
-                name::name(p);
-            } else {
-                p.err("Fragment Name cannot be 'on'");
-            }
-            return;
+    match p.peek_token() {
+        Some(token) if token.kind() == TokenKind::Name && token.data() == "on" => {
+            p.err("Fragment Name cannot be 'on'");
         }
+        Some(token) if token.kind() == TokenKind::Name => {
+            name::name(p);
+        }
+        _ => p.err("expected Fragment Name"),
     }
-    p.err("expected Fragment Name");
 }
 
 /// See: https://spec.graphql.org/October2021/#TypeCondition
