@@ -1,4 +1,4 @@
-- DOCUMENT@0..53
+- DOCUMENT@0..112
     - OBJECT_TYPE_DEFINITION@0..52
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
@@ -34,6 +34,7 @@
                         - DEFAULT_VALUE@51..52
                             - EQ@51..52 "="
     - WHITESPACE@52..53 " "
+    - ERROR@53..112 "\"https://spec.graphql.org/October2021/#DefaultValue): Url\n}"
 - ERROR@53:112 "unterminated string value" "https://spec.graphql.org/October2021/#DefaultValue): Url
 }
 - ERROR@112:112 "expected a valid Value" EOF

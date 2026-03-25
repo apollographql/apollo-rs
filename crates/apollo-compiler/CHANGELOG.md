@@ -17,6 +17,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.31.1](https://crates.io/crates/apollo-compiler/1.31.1) - 2026-02-20
+
+## Fixes
+- **Correct error report formatting with multi-byte UTF-8 characters - [DaleSeo], [pull/1023].**
+  Picks up the apollo-parser fix for incorrect byte-offset spans, which could
+  cause panics or garbled error labels on schemas/queries containing CJK text or
+  emoji. Fixes [#450].
+
+## Maintenance
+- **Update `ariadne` dependency to 0.6.0 - [pull/1013].**
+
+[DaleSeo]: https://github.com/DaleSeo
+[pull/1023]: https://github.com/apollographql/apollo-rs/pull/1023
+[pull/1013]: https://github.com/apollographql/apollo-rs/pull/1013
+[#450]: https://github.com/apollographql/apollo-rs/issues/450
+
+
 # [1.31.0](https://crates.io/crates/apollo-compiler/1.31.0) - 2025-11-10
 
 ## Features
