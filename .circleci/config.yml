@@ -166,9 +166,6 @@ commands:
             - run:
                 name: Check glibc version
                 command: ldd --version
-            - run:
-                name: Install OpenSSL
-                command: sudo apt-get install -y libssl-dev
 
       - when:
           condition:
@@ -177,9 +174,6 @@ commands:
             - run:
                 name: Skip homebrew update
                 command: echo "HOMEBREW_NO_AUTO_UPDATE=1" >> $BASH_ENV
-            - run:
-                name: Install OpenSSL@1.1
-                command: brew install openssl@1.1
 
       - install_rust_toolchain:
           rust_channel: << parameters.rust_channel >>
