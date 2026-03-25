@@ -141,11 +141,33 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let fields = self.input_values_def()?;
+
+        // Randomly apply @oneOf to this input object (~1-in-5 chance).  When
+        // we do, enforce the spec constraints on every field: all must be
+        // nullable and none may carry a default value.
+        let is_one_of: bool = self.u.int_in_range(0..=4usize).unwrap_or(1) == 0;
+        let mut fields = self.input_values_def()?;
+        if is_one_of {
+            for field in &mut fields {
+                field.ty = field.ty.clone().into_nullable();
+                field.default_value = None;
+            }
+        }
+
+        let mut directives = self.directives(DirectiveLocation::InputObject)?;
+        if is_one_of {
+            directives.insert(
+                Name::new(String::from("oneOf")),
+                Directive {
+                    name: Name::new(String::from("oneOf")),
+                    arguments: Vec::new(),
+                },
+            );
+        }
 
         Ok(InputObjectTypeDef {
             description,
-            directives: self.directives(DirectiveLocation::InputObject)?,
+            directives,
             name,
             extend,
             fields,

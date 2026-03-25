@@ -22,6 +22,7 @@ use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use libfuzzer_sys::fuzz_target;
+use log::debug;
 use std::sync::OnceLock;
 
 const SCHEMA_SDL: &str = r#"
@@ -78,6 +79,9 @@ fn schema() -> &'static Valid<Schema> {
 }
 
 fuzz_target!(|data: &str| {
+    let _ = env_logger::try_init();
+    debug!("{data}");
+
     let schema = schema();
 
     // Parse and validate the fuzz input as an executable document.
