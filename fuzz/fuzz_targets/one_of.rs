@@ -13,8 +13,8 @@
 //! discarding malformed SDL — giving much better coverage of the validation
 //! logic than a plain-text target would.
 #![no_main]
-use apollo_rs_fuzz::generate_valid_document;
 use apollo_compiler::Schema;
+use apollo_rs_fuzz::generate_valid_document;
 use libfuzzer_sys::fuzz_target;
 use log::debug;
 

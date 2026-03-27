@@ -181,7 +181,7 @@ fn invalid_one_of_non_null_field_with_default() {
 fn valid_one_of_single_string_field() {
     let schema = schema_with_one_of();
     ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"{ oneOfField(arg: { stringField: "hello" }) }"#,
         "query.graphql",
     )
@@ -192,7 +192,7 @@ fn valid_one_of_single_string_field() {
 fn valid_one_of_single_int_field() {
     let schema = schema_with_one_of();
     ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"{ oneOfField(arg: { intField: 42 }) }"#,
         "query.graphql",
     )
@@ -207,7 +207,7 @@ fn valid_one_of_single_int_field() {
 fn invalid_one_of_no_fields() {
     let schema = schema_with_one_of();
     let errors = ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"{ oneOfField(arg: {}) }"#,
         "query.graphql",
     )
@@ -232,7 +232,7 @@ fn invalid_one_of_no_fields() {
 fn invalid_one_of_multiple_fields() {
     let schema = schema_with_one_of();
     let errors = ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"{ oneOfField(arg: { stringField: "a", intField: 1 }) }"#,
         "query.graphql",
     )
@@ -257,7 +257,7 @@ fn invalid_one_of_multiple_fields() {
 fn invalid_one_of_null_field() {
     let schema = schema_with_one_of();
     let errors = ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"{ oneOfField(arg: { stringField: null }) }"#,
         "query.graphql",
     )
@@ -295,7 +295,7 @@ fn invalid_one_of_null_field() {
 fn invalid_one_of_nullable_variable() {
     let schema = schema_with_one_of();
     let errors = ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"query Q($var: String) { oneOfField(arg: { stringField: $var }) }"#,
         "query.graphql",
     )
@@ -321,7 +321,7 @@ fn invalid_one_of_nullable_variable() {
 fn valid_one_of_non_null_variable() {
     let schema = schema_with_one_of();
     ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"query Q($var: String!) { oneOfField(arg: { stringField: $var }) }"#,
         "query.graphql",
     )
@@ -334,7 +334,7 @@ fn valid_one_of_non_null_variable() {
 fn invalid_one_of_undefined_variable_no_oneof_error() {
     let schema = schema_with_one_of();
     let errors = ExecutableDocument::parse_and_validate(
-        &schema,
+        schema,
         r#"{ oneOfField(arg: { stringField: $undeclared }) }"#,
         "query.graphql",
     )
@@ -372,13 +372,13 @@ fn introspection_is_one_of_true() {
     }
     "#;
 
-    let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql")
+    let document = ExecutableDocument::parse_and_validate(schema, query, "query.graphql")
         .expect("introspection query should be valid");
 
     let operation = document.operations.get(None).unwrap();
-    let variables = coerce_variable_values(&schema, operation, &JsonMap::default()).unwrap();
+    let variables = coerce_variable_values(schema, operation, &JsonMap::default()).unwrap();
     let response = introspection::partial_execute(
-        &schema,
+        schema,
         &schema.implementers_map(),
         &document,
         operation,
