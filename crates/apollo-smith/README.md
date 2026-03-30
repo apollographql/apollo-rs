@@ -127,7 +127,7 @@ use apollo_compiler::Schema;
 use apollo_smith::ResponseBuilder;
 use arbitrary::Result;
 use arbitrary::Unstructured;
-use rand::Rng;
+use rand::RngExt as _;
 use serde_json_bytes::Value;
 
 pub fn generate_valid_response(

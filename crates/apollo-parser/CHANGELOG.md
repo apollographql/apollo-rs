@@ -16,6 +16,41 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Maintenance
+- **use peek_token() instead of peek_data().unwrap() - [surajk-m], [pull/1028] [pull/900]**
+
+  There were a few places where we called `peek()` to check an upcoming token's
+  kind, and then `peek_data().unwrap()` to check its value. For example, to
+  identify what type of definition is coming up: `type`, `union`, or something
+  else, like in [this code snippet
+  here](https://github.com/apollographql/apollo-rs/blob/6c9adc4c076d23a83de740ac31717ca921ce6161/crates/apollo-parser/src/parser/grammar/object.rs#L27-L33)
+
+  The `unwrap()` call was valid in those cases, but it can be imporved. For it to
+  continue to be valid, the current token **must not** change between those calls,
+  and this is not statically verifiable. A mistake in a refactor could disconnect
+  the `peek()` and `peek_data()` calls and then the unwrap could panic.
+
+  This change replaces these specific uses of `peek_data().unwrap()` with
+  `peek_token()`. 
+
+[surajk-m]: https://github.com/surajk-m
+[pull/1028]: https://github.com/apollographql/apollo-rs/pull/1028
+[pull/900]: https://github.com/apollographql/apollo-rs/pull/900
+
+# [0.8.5](https://crates.io/crates/apollo-parser/0.8.5) - 2026-02-20
+
+## Fixes
+- **Fix multi-byte character span issue - [DaleSeo], [pull/1023].**
+  The parser previously computed incorrect byte-offset spans when input contained
+  multi-byte UTF-8 characters (CJK, emoji, etc.), which could cause panics or
+  garbled error reports downstream. Fixes [#450].
+
+[DaleSeo]: https://github.com/DaleSeo
+[pull/1023]: https://github.com/apollographql/apollo-rs/pull/1023
+[#450]: https://github.com/apollographql/apollo-rs/issues/450
+
 
 # [0.8.4](https://crates.io/crates/apollo-parser/0.8.4) - 2025-01-16
 
