@@ -545,7 +545,7 @@ impl Schema {
         coercer: impl CustomScalarCoercer + 'static,
     ) {
         self.custom_scalar_coercers
-            .insert(Name::new_unchecked(scalar_name.into()), Arc::new(coercer));
+            .insert(Name::new_unchecked(scalar_name), Arc::new(coercer));
     }
 
     /// Returns the custom scalar coercer registered for the given type name, if any.
