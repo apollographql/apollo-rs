@@ -264,43 +264,6 @@ impl Parser {
     /// to identify this source file to users.
     ///
     /// This can be used to build an executable document from multiple source files.
-    ///
-    /// # Arguments
-    ///
-    /// * `schema` - Optional schema for type checking. If provided, operations and fragments
-    ///   will be validated against the schema while building.
-    /// * `source_text` - The GraphQL source text to parse
-    /// * `path` - Path used in diagnostics to identify this source file
-    /// * `builder` - The builder to add parsed definitions to
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use apollo_compiler::{Schema, ExecutableDocument};
-    /// use apollo_compiler::parser::Parser;
-    /// use apollo_compiler::validation::DiagnosticList;
-    /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
-    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
-    ///
-    /// let mut errors = DiagnosticList::new(Default::default());
-    /// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    /// let mut parser = Parser::new();
-    ///
-    /// parser.parse_into_executable_builder(
-    ///     "query GetUser { user { id } }",
-    ///     "query1.graphql",
-    ///     &mut builder,
-    /// );
-    /// parser.parse_into_executable_builder(
-    ///     "query GetPost { post { title } }",
-    ///     "query2.graphql",
-    ///     &mut builder,
-    /// );
-    ///
-    /// let document = builder.build();
-    /// assert!(errors.is_empty());
-    /// ```
-    ///
     /// Errors (if any) are recorded in the builder and returned by
     /// [`ExecutableDocumentBuilder::build`].
     pub fn parse_into_executable_builder(

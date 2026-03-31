@@ -23,19 +23,14 @@ pub(crate) struct BuildErrors<'a> {
 ///
 /// // Create a builder
 /// let mut errors = DiagnosticList::new(Default::default());
-/// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
+/// let mut errors = DiagnosticList::new(Default::default());
+/// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+///     .parse("query GetUser { user { id } }", "query1.graphql")
+///     .parse("query GetMore { user { id } }", "query2.graphql")
+///     .build();
 ///
-/// // Add operations from multiple files
-/// Parser::new().parse_into_executable_builder(
-///     "query GetUser { user { id } }",
-///     "query1.graphql",
-///     &mut builder,
-/// );
-///
-/// // Build the final document
-/// let document = builder.build();
-/// // Check for errors
 /// assert!(errors.is_empty());
+/// assert_eq!(doc.operations.named.len(), 2);
 /// ```
 pub struct ExecutableDocumentBuilder<'schema, 'errors> {
     /// The executable document being built
@@ -50,12 +45,6 @@ pub struct ExecutableDocumentBuilder<'schema, 'errors> {
 
 impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
     /// Creates a new [`ExecutableDocumentBuilder`].
-    ///
-    /// # Arguments
-    ///
-    /// * `schema` - Optional schema for type checking. If provided, the builder will validate
-    ///   operations and fragments against the schema while building.
-    /// * `errors` - Mutable reference to a DiagnosticList where errors will be accumulated
     pub fn new(schema: Option<&'schema Schema>, errors: &'errors mut DiagnosticList) -> Self {
         Self {
             document: ExecutableDocument::new(),
@@ -70,28 +59,6 @@ impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
     /// This is a convenience method that creates a parser and calls
     /// [`Parser::parse_into_executable_builder`](crate::parser::Parser::parse_into_executable_builder).
     ///
-    /// # Arguments
-    ///
-    /// * `source_text` - The GraphQL source text to parse
-    /// * `path` - The filesystem path (or arbitrary string) used in diagnostics to identify this source file
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use apollo_compiler::{Schema, ExecutableDocument};
-    /// use apollo_compiler::validation::DiagnosticList;
-    /// # let schema_src = "type Query { user: User } type User { id: ID }";
-    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
-    ///
-    /// let mut errors = DiagnosticList::new(Default::default());
-    /// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
-    ///     .parse("query GetUser { user { id } }", "query1.graphql")
-    ///     .parse("query GetMore { user { id } }", "query2.graphql")
-    ///     .build();
-    ///
-    /// assert!(errors.is_empty());
-    /// assert_eq!(doc.operations.named.len(), 2);
-    /// ```
     pub fn parse(
         mut self,
         source_text: impl Into<String>,
@@ -102,12 +69,6 @@ impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
     }
 
     /// Adds an AST document to the executable document being built.
-    ///
-    /// # Arguments
-    ///
-    /// * `document` - The AST document to add
-    /// * `type_system_definitions_are_errors` - If true, type system definitions (types, directives, etc.)
-    ///   in the document will be reported as errors
     pub fn add_ast_document(
         &mut self,
         document: &ast::Document,

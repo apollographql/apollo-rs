@@ -354,12 +354,6 @@ impl ExecutableDocument {
     /// The builder allows you to parse and combine executable definitions (operations and fragments)
     /// from multiple source files into a single [`ExecutableDocument`].
     ///
-    /// # Arguments
-    ///
-    /// * `schema` - Optional schema for type checking. If provided, the builder will validate
-    ///   operations and fragments against the schema while building.
-    /// * `errors` - Mutable reference to a DiagnosticList where errors will be accumulated
-    ///
     /// # Example
     ///
     /// ```rust
@@ -369,24 +363,14 @@ impl ExecutableDocument {
     /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
     /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
     ///
-    /// let mut errors = DiagnosticList::new(Default::default());
-    /// let mut builder = ExecutableDocument::builder(Some(&schema), &mut errors);
-    ///
-    /// Parser::new().parse_into_executable_builder(
-    ///     "query GetUser { user { id } }",
-    ///     "query1.graphql",
-    ///     &mut builder,
-    /// );
-    /// Parser::new().parse_into_executable_builder(
-    ///     "query GetPost { post { title } }",
-    ///     "query2.graphql",
-    ///     &mut builder,
-    /// );
-    ///
-    /// let document = builder.build();
-    /// // Check for errors
-    /// assert!(errors.is_empty());
-    /// ```
+/// let mut errors = DiagnosticList::new(Default::default());  
+/// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)  
+///     .parse("query GetUser { user { id } }", "query1.graphql")  
+///     .parse("query GetMore { user { id } }", "query2.graphql")  
+///     .build();  
+///  
+/// assert!(errors.is_empty());  
+/// assert_eq!(doc.operations.named.len(), 2);  
     pub fn builder<'schema, 'errors>(
         schema: Option<&'schema Valid<Schema>>,
         errors: &'errors mut DiagnosticList,
