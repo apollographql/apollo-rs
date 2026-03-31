@@ -73,11 +73,11 @@ use crate::response::JsonValue;
 use crate::ty;
 use crate::validation::DiagnosticList;
 use crate::validation::Valid;
-use std::sync::Arc;
 use crate::validation::WithErrors;
 pub use crate::Name;
 use crate::Node;
 use std::path::Path;
+use std::sync::Arc;
 use std::sync::OnceLock;
 
 mod component;

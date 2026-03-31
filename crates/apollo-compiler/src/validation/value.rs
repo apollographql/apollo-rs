@@ -120,9 +120,7 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Scalar(scalar) => {
                 if !scalar.is_built_in() {
                     // Custom scalar: delegate to registered coercer, or accept any value.
-                    if let Some(coercer) =
-                        schema.get_custom_scalar_coercer(scalar.name.as_str())
-                    {
+                    if let Some(coercer) = schema.get_custom_scalar_coercer(scalar.name.as_str()) {
                         if !coercer.validate_ast_value(arg_value) {
                             unsupported_type(diagnostics, arg_value, ty);
                         }
@@ -141,9 +139,7 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::Scalar(scalar) => {
                 if !scalar.is_built_in() {
                     // Custom scalar: delegate to registered coercer, or accept any value.
-                    if let Some(coercer) =
-                        schema.get_custom_scalar_coercer(scalar.name.as_str())
-                    {
+                    if let Some(coercer) = schema.get_custom_scalar_coercer(scalar.name.as_str()) {
                         if !coercer.validate_ast_value(arg_value) {
                             unsupported_type(diagnostics, arg_value, ty);
                         }
@@ -223,9 +219,7 @@ pub(crate) fn value_of_correct_type(
                 // Custom scalar accepting a list value directly:
                 // delegate to registered coercer, or accept any value.
                 if let schema::ExtendedType::Scalar(scalar) = &type_definition {
-                    if let Some(coercer) =
-                        schema.get_custom_scalar_coercer(scalar.name.as_str())
-                    {
+                    if let Some(coercer) = schema.get_custom_scalar_coercer(scalar.name.as_str()) {
                         if !coercer.validate_ast_value(arg_value) {
                             unsupported_type(diagnostics, arg_value, ty);
                         }

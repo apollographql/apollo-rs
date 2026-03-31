@@ -152,12 +152,12 @@ fn coerce_variable_value(
             _ => {
                 // Custom scalar: delegate to registered coercer, or accept as-is.
                 if let Some(coercer) = schema.get_custom_scalar_coercer(ty_name.as_str()) {
-                    return coercer
-                        .coerce_variable_value(value)
-                        .map_err(|message| InputCoercionError::ValueError {
+                    return coercer.coerce_variable_value(value).map_err(|message| {
+                        InputCoercionError::ValueError {
                             message,
                             location: None,
-                        });
+                        }
+                    });
                 }
                 return Ok(value.clone());
             }
