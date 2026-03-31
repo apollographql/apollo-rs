@@ -478,6 +478,27 @@ fn builder_handles_anonymous_and_named_operations() {
 }
 
 #[test]
+fn builder_handles_multiple_anonymous_operations() {
+    let schema_src = "type Query { field: String }";
+    let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+    let anonymous1 = "{ field }";
+    let anonymous2 = "{ field }";
+
+    let mut errors = DiagnosticList::new(Default::default());
+    let _doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+        .parse(anonymous1, "anonymous1.graphql")
+        .parse(anonymous2, "anonymous2.graphql")
+        .build();
+
+    // Should error because multiple anonymous operations are not allowed
+    assert!(
+        !errors.is_empty(),
+        "Expected errors for multiple anonymous operations"
+    );
+}
+
+#[test]
 fn builder_with_multiple_fragments_used_in_query() {
     let schema_src = r#"
         type Query { user: User }
