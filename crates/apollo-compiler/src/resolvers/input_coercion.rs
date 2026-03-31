@@ -150,8 +150,15 @@ fn coerce_variable_value(
                 }
             }
             _ => {
-                // Custom scalar
-                // TODO: have a hook for coercion of custom scalars?
+                // Custom scalar: delegate to registered coercer, or accept as-is.
+                if let Some(coercer) = schema.get_custom_scalar_coercer(ty_name.as_str()) {
+                    return coercer
+                        .coerce_variable_value(value)
+                        .map_err(|message| InputCoercionError::ValueError {
+                            message,
+                            location: None,
+                        });
+                }
                 return Ok(value.clone());
             }
         },
@@ -490,6 +497,7 @@ impl InputCoercionError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::schema::CustomScalarCoercer;
     use crate::validation::Valid;
     use crate::ExecutableDocument;
     use crate::Schema;
@@ -596,5 +604,96 @@ mod tests {
             variables.as_object().unwrap(),
         )
         .unwrap_err();
+    }
+
+    /// A coercer that only accepts string values for a DateTime scalar.
+    struct DateTimeCoercer;
+
+    impl CustomScalarCoercer for DateTimeCoercer {
+        fn coerce_variable_value(&self, value: &JsonValue) -> Result<JsonValue, String> {
+            match value.as_str() {
+                Some(_) => Ok(value.clone()),
+                None => Err("DateTime must be a string in ISO 8601 format".to_string()),
+            }
+        }
+    }
+
+    fn schema_and_doc_with_custom_scalar(
+        coercer: impl CustomScalarCoercer + 'static,
+    ) -> (Valid<Schema>, Valid<ExecutableDocument>) {
+        let mut schema = Schema::parse(
+            r#"
+                scalar DateTime
+                type Query {
+                    event(at: DateTime!): String
+                }
+            "#,
+            "sdl",
+        )
+        .unwrap();
+        schema.add_custom_scalar_coercer("DateTime", coercer);
+        let schema = schema.validate().unwrap();
+        let doc = ExecutableDocument::parse_and_validate(
+            &schema,
+            "query ($at: DateTime!) { event(at: $at) }",
+            "op.graphql",
+        )
+        .unwrap();
+        (schema, doc)
+    }
+
+    #[test]
+    fn custom_scalar_coercer_accepts_valid_value() {
+        let (schema, doc) = schema_and_doc_with_custom_scalar(DateTimeCoercer);
+        let variables = serde_json_bytes::json!({ "at": "2024-01-15T10:30:00Z" });
+
+        let result = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        );
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn custom_scalar_coercer_rejects_invalid_value() {
+        let (schema, doc) = schema_and_doc_with_custom_scalar(DateTimeCoercer);
+        let variables = serde_json_bytes::json!({ "at": 12345 });
+
+        let result = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn custom_scalar_without_coercer_accepts_any_value() {
+        // No coercer registered — should accept any value (default behavior).
+        let schema = Schema::parse_and_validate(
+            r#"
+                scalar DateTime
+                type Query {
+                    event(at: DateTime!): String
+                }
+            "#,
+            "sdl",
+        )
+        .unwrap();
+        let doc = ExecutableDocument::parse_and_validate(
+            &schema,
+            "query ($at: DateTime!) { event(at: $at) }",
+            "op.graphql",
+        )
+        .unwrap();
+        let variables = serde_json_bytes::json!({ "at": 12345 });
+
+        let result = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        );
+        assert!(result.is_ok());
     }
 }
