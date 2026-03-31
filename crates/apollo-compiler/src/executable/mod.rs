@@ -363,14 +363,14 @@ impl ExecutableDocument {
     /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
     /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
     ///
-/// let mut errors = DiagnosticList::new(Default::default());  
-/// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)  
-///     .parse("query GetUser { user { id } }", "query1.graphql")  
-///     .parse("query GetMore { user { id } }", "query2.graphql")  
-///     .build();  
-///  
-/// assert!(errors.is_empty());  
-/// assert_eq!(doc.operations.named.len(), 2);  
+    /// let mut errors = DiagnosticList::new(Default::default());  
+    /// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)  
+    ///     .parse("query GetUser { user { id } }", "query1.graphql")  
+    ///     .parse("query GetMore { user { id } }", "query2.graphql")  
+    ///     .build();  
+    ///  
+    /// assert!(errors.is_empty());  
+    /// assert_eq!(doc.operations.named.len(), 2);  
     pub fn builder<'schema, 'errors>(
         schema: Option<&'schema Valid<Schema>>,
         errors: &'errors mut DiagnosticList,
