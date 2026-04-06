@@ -50,7 +50,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.15.2"
+apollo-smith = "0.16.0"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
@@ -120,12 +120,17 @@ If you have a GraphQL operation in the form of an `ExecutableDocument` and its
 accompanying `Schema`, you can generate a response matching the shape of the
 operation with `apollo_smith::ResponseBuilder`.
 
+`ResponseBuilder` is generic over its randomness source via the `RandomProvider`
+trait. This allows it to be used with `arbitrary::Unstructured` for fuzz testing,
+with `RandProvider` for standard random generation, or with any custom implementation.
+
+### Using `Unstructured` (for fuzz testing)
+
 ```rust
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
-use apollo_smith::ResponseBuilder;
-use arbitrary::Result;
+use apollo_smith::{ResponseBuilder, ResponseError};
 use arbitrary::Unstructured;
 use rand::RngExt as _;
 use serde_json_bytes::Value;
@@ -133,13 +138,55 @@ use serde_json_bytes::Value;
 pub fn generate_valid_response(
     doc: &Valid<ExecutableDocument>,
     schema: &Valid<Schema>,
-) -> Result<Value> {
+) -> Result<Value, ResponseError> {
     let mut buf = [0u8; 2048];
     rand::rng().fill(&mut buf);
     let mut u = Unstructured::new(&buf);
 
     ResponseBuilder::new(&mut u, doc, schema).build()
 }
+```
+
+### Using `RandProvider`
+
+Use `RandProvider` to wrap any `rand::Rng`:
+
+```rust,ignore
+use apollo_smith::{RandProvider, ResponseBuilder};
+
+let mut rng = RandProvider(rand::rng());
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_min_list_size(1)
+    .with_max_list_size(5)
+    .with_null_ratio(1, 4)
+    .build()?;
+```
+
+### Configuring scalar generation
+
+Use `with_scalar_config` to override how values are generated for specific scalar types:
+
+```rust,ignore
+use apollo_smith::{ResponseBuilder, ScalarConfig};
+use apollo_compiler::Name;
+
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_scalar_config(
+        Name::new_unchecked("ID".into()),
+        ScalarConfig::String { min_len: 8, max_len: 8 },
+    )
+    .build()?;
+```
+
+### Federation support
+
+For Apollo Federation subgraphs, you can use `override_sdl` to provide correct `_service { sdl }`
+responses instead of including the full schema (and all the generated federation types) in the response:
+
+```rust,ignore
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .override_sdl(&original_sdl_string)
+    .build()?;
 ```
 
 ## Limitations
