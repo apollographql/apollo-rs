@@ -151,13 +151,13 @@ fn coerce_variable_value(
             }
             _ => {
                 // Custom scalar: delegate to registered coercer, or accept as-is.
-                if let Some(coercer) = schema.get_custom_scalar_coercer(ty_name.as_str()) {
-                    return coercer.coerce_variable_value(value).map_err(|message| {
-                        InputCoercionError::ValueError {
+                if let Some(coercer) = schema.custom_scalar_coercer() {
+                    return coercer
+                        .coerce_variable_value(ty_name.as_str(), value)
+                        .map_err(|message| InputCoercionError::ValueError {
                             message,
                             location: None,
-                        }
-                    });
+                        });
                 }
                 return Ok(value.clone());
             }
@@ -606,14 +606,21 @@ mod tests {
         .unwrap_err();
     }
 
-    /// A coercer that only accepts string values for a DateTime scalar.
-    struct DateTimeCoercer;
+    /// A blanket coercer that only accepts string values for DateTime scalars.
+    struct MyCoercer;
 
-    impl CustomScalarCoercer for DateTimeCoercer {
-        fn coerce_variable_value(&self, value: &JsonValue) -> Result<JsonValue, String> {
-            match value.as_str() {
-                Some(_) => Ok(value.clone()),
-                None => Err("DateTime must be a string in ISO 8601 format".to_string()),
+    impl CustomScalarCoercer for MyCoercer {
+        fn coerce_variable_value(
+            &self,
+            scalar_name: &str,
+            value: &JsonValue,
+        ) -> Result<JsonValue, String> {
+            match scalar_name {
+                "DateTime" => match value.as_str() {
+                    Some(_) => Ok(value.clone()),
+                    None => Err("DateTime must be a string in ISO 8601 format".to_string()),
+                },
+                _ => Ok(value.clone()),
             }
         }
     }
@@ -631,7 +638,7 @@ mod tests {
             "sdl",
         )
         .unwrap();
-        schema.add_custom_scalar_coercer("DateTime", coercer);
+        schema.set_custom_scalar_coercer(coercer);
         let schema = schema.validate().unwrap();
         let doc = ExecutableDocument::parse_and_validate(
             &schema,
@@ -644,7 +651,7 @@ mod tests {
 
     #[test]
     fn custom_scalar_coercer_accepts_valid_value() {
-        let (schema, doc) = schema_and_doc_with_custom_scalar(DateTimeCoercer);
+        let (schema, doc) = schema_and_doc_with_custom_scalar(MyCoercer);
         let variables = serde_json_bytes::json!({ "at": "2024-01-15T10:30:00Z" });
 
         let result = coerce_variable_values(
@@ -657,7 +664,7 @@ mod tests {
 
     #[test]
     fn custom_scalar_coercer_rejects_invalid_value() {
-        let (schema, doc) = schema_and_doc_with_custom_scalar(DateTimeCoercer);
+        let (schema, doc) = schema_and_doc_with_custom_scalar(MyCoercer);
         let variables = serde_json_bytes::json!({ "at": 12345 });
 
         let result = coerce_variable_values(

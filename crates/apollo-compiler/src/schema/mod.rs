@@ -102,8 +102,11 @@ pub use crate::ast::Value;
 
 /// Trait for coercing and validating values of custom scalar types.
 ///
-/// Implement this trait to define how a custom scalar type should validate and coerce
-/// its input values. Register implementations using [`Schema::add_custom_scalar_coercer`].
+/// A single implementation handles **all** custom scalars in a schema.
+/// The `scalar_name` parameter lets you dispatch to per-scalar logic using
+/// a `match` statement, a `HashMap`, or any other approach you prefer.
+///
+/// Register an implementation using [`Schema::set_custom_scalar_coercer`].
 ///
 /// # Examples
 ///
@@ -112,42 +115,59 @@ pub use crate::ast::Value;
 /// use apollo_compiler::ast::Value;
 /// use apollo_compiler::response::JsonValue;
 ///
-/// struct DateTimeCoercer;
+/// struct MyCoercer;
 ///
-/// impl CustomScalarCoercer for DateTimeCoercer {
-///     fn coerce_variable_value(&self, value: &JsonValue) -> Result<JsonValue, String> {
-///         match value.as_str() {
-///             Some(s) if s.len() >= 10 => Ok(value.clone()),
-///             _ => Err("DateTime must be a string in ISO 8601 format".to_string()),
+/// impl CustomScalarCoercer for MyCoercer {
+///     fn coerce_variable_value(
+///         &self,
+///         scalar_name: &str,
+///         value: &JsonValue,
+///     ) -> Result<JsonValue, String> {
+///         match scalar_name {
+///             "DateTime" => match value.as_str() {
+///                 Some(_) => Ok(value.clone()),
+///                 None => Err("DateTime must be a string in ISO 8601 format".to_string()),
+///             },
+///             _ => Ok(value.clone()),
 ///         }
 ///     }
 ///
-///     fn validate_ast_value(&self, value: &Value) -> bool {
-///         matches!(value, Value::String(_))
+///     fn validate_ast_value(&self, scalar_name: &str, value: &Value) -> bool {
+///         match scalar_name {
+///             "DateTime" => matches!(value, Value::String(_)),
+///             _ => true,
+///         }
 ///     }
 /// }
 /// ```
 pub trait CustomScalarCoercer: Send + Sync {
-    /// Coerce a JSON variable value for this custom scalar type.
+    /// Coerce a JSON variable value for a custom scalar type.
     ///
-    /// Called during variable coercion when a variable of this scalar type is provided.
+    /// Called during variable coercion when a variable of a custom scalar type is provided.
+    /// `scalar_name` is the name of the scalar type being coerced.
     /// Return `Ok(value)` with the (possibly transformed) value if valid,
     /// or `Err(message)` with an error message if the value cannot be coerced.
     ///
     /// The default implementation accepts any value as-is.
-    fn coerce_variable_value(&self, value: &JsonValue) -> Result<JsonValue, String> {
+    fn coerce_variable_value(
+        &self,
+        scalar_name: &str,
+        value: &JsonValue,
+    ) -> Result<JsonValue, String> {
+        let _ = scalar_name;
         Ok(value.clone())
     }
 
-    /// Validate an AST value literal for this custom scalar type.
+    /// Validate an AST value literal for a custom scalar type.
     ///
     /// Called during schema and document validation when a literal value
-    /// (e.g., a default value) is provided for a field of this scalar type.
+    /// (e.g., a default value) is provided for a field of a custom scalar type.
+    /// `scalar_name` is the name of the scalar type being validated.
     /// Return `true` if the value is acceptable, `false` otherwise.
     ///
     /// The default implementation accepts any value.
-    fn validate_ast_value(&self, value: &ast::Value) -> bool {
-        let _ = value;
+    fn validate_ast_value(&self, scalar_name: &str, value: &ast::Value) -> bool {
+        let _ = (scalar_name, value);
         true
     }
 }
@@ -180,10 +200,10 @@ pub struct Schema {
     ///   We reflect in this Rust API the behavior of `__Schema.types` in GraphQL introspection.
     pub types: IndexMap<NamedType, ExtendedType>,
 
-    /// Registered custom scalar coercers, keyed by scalar type name.
+    /// Optional blanket coercer for all custom scalar types.
     ///
-    /// Use [`Schema::add_custom_scalar_coercer`] to register a coercer.
-    custom_scalar_coercers: HashMap<Name, Arc<dyn CustomScalarCoercer>>,
+    /// Use [`Schema::set_custom_scalar_coercer`] to register a coercer.
+    custom_scalar_coercer: Option<Arc<dyn CustomScalarCoercer>>,
 }
 
 /// The [`schema` definition](https://spec.graphql.org/draft/#sec-Schema) and its extensions,
@@ -506,11 +526,11 @@ impl Schema {
         errors.into_valid_result(self)
     }
 
-    /// Register a custom scalar coercer for the given scalar type name.
+    /// Register a blanket coercer that handles all custom scalar types.
     ///
-    /// The coercer will be used during validation and input coercion to validate
-    /// and transform values of this scalar type, instead of the default behavior
-    /// of accepting any value.
+    /// The coercer is called for every custom scalar during validation and input coercion.
+    /// The scalar type name is passed to each method so the implementation can dispatch
+    /// per-scalar logic using a `match` statement, a `HashMap`, or any other approach.
     ///
     /// # Examples
     ///
@@ -520,16 +540,26 @@ impl Schema {
     /// use apollo_compiler::ast::Value;
     /// use apollo_compiler::response::JsonValue;
     ///
-    /// struct DateTimeCoercer;
-    /// impl CustomScalarCoercer for DateTimeCoercer {
-    ///     fn coerce_variable_value(&self, value: &JsonValue) -> Result<JsonValue, String> {
-    ///         match value.as_str() {
-    ///             Some(_) => Ok(value.clone()),
-    ///             None => Err("DateTime must be a string".to_string()),
+    /// struct MyCoercer;
+    /// impl CustomScalarCoercer for MyCoercer {
+    ///     fn coerce_variable_value(
+    ///         &self,
+    ///         scalar_name: &str,
+    ///         value: &JsonValue,
+    ///     ) -> Result<JsonValue, String> {
+    ///         match scalar_name {
+    ///             "DateTime" => match value.as_str() {
+    ///                 Some(_) => Ok(value.clone()),
+    ///                 None => Err("DateTime must be a string".to_string()),
+    ///             },
+    ///             _ => Ok(value.clone()),
     ///         }
     ///     }
-    ///     fn validate_ast_value(&self, value: &Value) -> bool {
-    ///         matches!(value, Value::String(_))
+    ///     fn validate_ast_value(&self, scalar_name: &str, value: &Value) -> bool {
+    ///         match scalar_name {
+    ///             "DateTime" => matches!(value, Value::String(_)),
+    ///             _ => true,
+    ///         }
     ///     }
     /// }
     ///
@@ -537,20 +567,15 @@ impl Schema {
     ///     "scalar DateTime\ntype Query { now: DateTime }",
     ///     "schema.graphql",
     /// ).unwrap();
-    /// schema.add_custom_scalar_coercer("DateTime", DateTimeCoercer);
+    /// schema.set_custom_scalar_coercer(MyCoercer);
     /// ```
-    pub fn add_custom_scalar_coercer(
-        &mut self,
-        scalar_name: &str,
-        coercer: impl CustomScalarCoercer + 'static,
-    ) {
-        self.custom_scalar_coercers
-            .insert(Name::new_unchecked(scalar_name), Arc::new(coercer));
+    pub fn set_custom_scalar_coercer(&mut self, coercer: impl CustomScalarCoercer + 'static) {
+        self.custom_scalar_coercer = Some(Arc::new(coercer));
     }
 
-    /// Returns the custom scalar coercer registered for the given type name, if any.
-    pub fn get_custom_scalar_coercer(&self, name: &str) -> Option<&dyn CustomScalarCoercer> {
-        self.custom_scalar_coercers.get(name).map(|c| c.as_ref())
+    /// Returns the registered custom scalar coercer, if any.
+    pub fn custom_scalar_coercer(&self) -> Option<&dyn CustomScalarCoercer> {
+        self.custom_scalar_coercer.as_deref()
     }
 
     /// Returns the type with the given name, if it is a scalar type
@@ -1254,7 +1279,7 @@ impl PartialEq for Schema {
             schema_definition,
             directive_definitions,
             types,
-            custom_scalar_coercers: _, // not compared
+            custom_scalar_coercer: _, // not compared
         } = self;
         *schema_definition == other.schema_definition
             && *directive_definitions == other.directive_definitions
@@ -1350,7 +1375,7 @@ impl std::fmt::Debug for Schema {
             schema_definition,
             directive_definitions,
             types,
-            custom_scalar_coercers: _,
+            custom_scalar_coercer: _,
         } = self;
         f.debug_struct("Schema")
             .field("sources", sources)
