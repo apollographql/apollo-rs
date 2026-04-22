@@ -2,7 +2,7 @@ use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
 use apollo_smith::ResponseBuilder;
-use arbitrary::Result;
+use apollo_smith::ResponseError;
 use arbitrary::Unstructured;
 use rand::RngExt as _;
 use serde_json_bytes::Value;
@@ -11,7 +11,7 @@ use std::fs;
 pub fn generate_valid_response(
     doc: &Valid<ExecutableDocument>,
     schema: &Valid<Schema>,
-) -> Result<Value> {
+) -> Result<Value, ResponseError> {
     let mut buf = [0u8; 2048];
     rand::rng().fill(&mut buf);
     let mut u = Unstructured::new(&buf);
