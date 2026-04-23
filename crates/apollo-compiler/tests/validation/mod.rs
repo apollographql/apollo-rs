@@ -2,6 +2,7 @@ mod field_merging;
 mod ignore_builtin_redefinition;
 mod interface;
 mod object;
+mod one_of;
 mod operation;
 mod recursion;
 mod types;

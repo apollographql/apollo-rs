@@ -292,7 +292,38 @@ pub(crate) enum DiagnosticData {
         "{describe} cannot be named `{name}` as names starting with two underscores are reserved"
     )]
     ReservedName { name: Name, describe: &'static str },
+    #[error("`{coordinate}` field of a @oneOf input object must be nullable")]
+    OneOfInputObjectFieldNonNull {
+        coordinate: TypeAttributeCoordinate,
+        definition_location: Option<SourceSpan>,
+    },
+    #[error(
+        "@oneOf input object `{name}` must specify exactly one key, but {provided} {} given",
+        if *provided == 1 { "was" } else { "were" }
+    )]
+    OneOfInputObjectWrongNumberOfFields { name: Name, provided: usize },
+    #[error("`{name}.{field}` value for @oneOf input object must be non-null")]
+    OneOfInputObjectNullField { name: Name, field: Name },
+    #[error("`{coordinate}` field of a @oneOf input object must not have a default value")]
+    OneOfInputObjectFieldHasDefault {
+        coordinate: TypeAttributeCoordinate,
+        default_location: Option<SourceSpan>,
+    },
+    #[error(
+        "variable `${variable}` is of type `{variable_type}` \
+         but must be non-nullable to be used for @oneOf input object `{name}` field `{field}`"
+    )]
+    OneOfInputObjectNullableVariable {
+        name: Name,
+        field: Name,
+        variable: Name,
+        variable_type: Node<ast::Type>,
+    },
 }
+
+/// Shared help text for the two @oneOf schema-definition errors.
+const ONE_OF_FIELD_REQUIREMENTS: &str =
+    "Fields of a @oneOf input object must all be nullable and must not have default values.";
 
 impl DiagnosticData {
     pub(crate) fn report(&self, main_location: Option<SourceSpan>, report: &mut CliReport) {
@@ -720,6 +751,66 @@ impl DiagnosticData {
             }
             DiagnosticData::ReservedName { name, .. } => {
                 report.with_label_opt(name.location(), "Pick a different name here");
+            }
+            DiagnosticData::OneOfInputObjectFieldNonNull {
+                coordinate,
+                definition_location,
+            } => {
+                report.with_label_opt(
+                    *definition_location,
+                    format_args!("field `{coordinate}` defined here"),
+                );
+                report.with_label_opt(main_location, "remove the `!` to make this field nullable");
+                report.with_help(ONE_OF_FIELD_REQUIREMENTS);
+            }
+            DiagnosticData::OneOfInputObjectWrongNumberOfFields { name, provided } => {
+                report.with_label_opt(
+                    main_location,
+                    format_args!(
+                        "{provided} {} provided",
+                        if *provided == 1 {
+                            "field was"
+                        } else {
+                            "fields were"
+                        }
+                    ),
+                );
+                report.with_help(format_args!(
+                    "@oneOf input object `{name}` requires exactly one non-null field."
+                ));
+            }
+            DiagnosticData::OneOfInputObjectNullField { name, field } => {
+                report.with_label_opt(main_location, "this value is null");
+                report.with_help(format_args!(
+                    "@oneOf input object `{name}` field `{field}` must be non-null."
+                ));
+            }
+            DiagnosticData::OneOfInputObjectFieldHasDefault {
+                coordinate,
+                default_location,
+            } => {
+                report.with_label_opt(
+                    *default_location,
+                    format_args!("default value for `{coordinate}` defined here"),
+                );
+                report.with_label_opt(main_location, "remove the default value");
+                report.with_help(ONE_OF_FIELD_REQUIREMENTS);
+            }
+            DiagnosticData::OneOfInputObjectNullableVariable {
+                name,
+                field,
+                variable,
+                variable_type,
+            } => {
+                report.with_label_opt(
+                    main_location,
+                    format_args!(
+                        "variable `${variable}` has type `{variable_type}`, which is nullable"
+                    ),
+                );
+                report.with_help(format_args!(
+                    "use `{variable_type}!` to make this variable non-nullable for @oneOf input object `{name}` field `{field}`."
+                ));
             }
         }
     }

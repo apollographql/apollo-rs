@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::collections::HashMap;
+use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema::validation::BuiltInScalars;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
@@ -97,6 +98,38 @@ pub(crate) fn validate_input_object_definition(
                     describe_type: "input object",
                 },
             );
+        }
+    }
+
+    // @oneOf input objects: all fields must be nullable and must not have default values.
+    // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+    if input_object.is_one_of() {
+        for (field_name, field) in &input_object.fields {
+            if field.ty.is_non_null() {
+                diagnostics.push(
+                    field.location(),
+                    DiagnosticData::OneOfInputObjectFieldNonNull {
+                        coordinate: TypeAttributeCoordinate {
+                            ty: input_object.name.clone(),
+                            attribute: field_name.clone(),
+                        },
+                        definition_location: field.location(),
+                    },
+                );
+            }
+            if field.default_value.is_some() {
+                let default_location = field.default_value.as_ref().and_then(|v| v.location());
+                diagnostics.push(
+                    field.location(),
+                    DiagnosticData::OneOfInputObjectFieldHasDefault {
+                        coordinate: TypeAttributeCoordinate {
+                            ty: input_object.name.clone(),
+                            attribute: field_name.clone(),
+                        },
+                        default_location,
+                    },
+                );
+            }
         }
     }
 

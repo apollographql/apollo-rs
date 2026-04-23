@@ -25,6 +25,7 @@ Schema {
         "skip": built_in_directive!("skip"),
         "include": built_in_directive!("include"),
         "deprecated": built_in_directive!("deprecated"),
+        "oneOf": built_in_directive!("oneOf"),
         "specifiedBy": built_in_directive!("specifiedBy"),
     },
     types: {
@@ -221,7 +222,7 @@ ExecutableDocument {
                                                     selections: [
                                                         Field(
                                                             163..167 @27 Field {
-                                                                definition: 2906..2919 @1 FieldDefinition {
+                                                                definition: 2988..3001 @1 FieldDefinition {
                                                                     description: None,
                                                                     name: "name",
                                                                     arguments: [],
@@ -242,7 +243,7 @@ ExecutableDocument {
                                                         ),
                                                         Field(
                                                             174..201 @27 Field {
-                                                                definition: 3005..3018 @1 FieldDefinition {
+                                                                definition: 3087..3100 @1 FieldDefinition {
                                                                     description: None,
                                                                     name: "type",
                                                                     arguments: [],

@@ -17,6 +17,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-03-25
+
+## Features
+
+- **Implement `@oneOf` input objects - [issue/882].**
+  Adds full support for the [`@oneOf` RFC](https://github.com/graphql/graphql-spec/pull/825)
+  as defined in the GraphQL draft specification (§3.10.1 OneOf Input Objects).
+
+  - `directive @oneOf on INPUT_OBJECT` is now a built-in directive definition.
+  - `__Type.isOneOf: Boolean!` introspection field is now exposed for all types
+    (returns `true` only for `@oneOf` input objects).
+  - New schema validation rules (enforced in `Schema::parse_and_validate`):
+    - All fields of a `@oneOf` input object must be nullable.
+    - No field of a `@oneOf` input object may have a default value.
+  - New executable-document validation rules (enforced in `ExecutableDocument::parse_and_validate`):
+    - A literal `@oneOf` input object value must supply exactly one field,
+      and that field's value must be non-null.
+    - A variable used as the sole value of a `@oneOf` field must be declared
+      with a non-null type (e.g. `String!`, not `String`).
+  - Runtime input coercion (`coerce_variable_values`) now also enforces the
+    "exactly one non-null field" invariant for `@oneOf` types.
+  - `InputObjectType::is_one_of() -> bool` convenience method added.
+
+[issue/882]: https://github.com/apollographql/apollo-rs/issues/882
+
 # [1.31.1](https://crates.io/crates/apollo-compiler/1.31.1) - 2026-02-20
 
 ## Fixes

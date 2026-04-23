@@ -66,6 +66,7 @@ Schema {
                 "SCHEMA",
             ],
         },
+        "oneOf": built_in_directive!("oneOf"),
         "specifiedBy": built_in_directive!("specifiedBy"),
     },
     types: {
