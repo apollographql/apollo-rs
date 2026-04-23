@@ -125,6 +125,7 @@ impl Convert for cst::OperationDefinition {
             ast::OperationType::Query
         };
         Some(Self::Target {
+            description: self.description().convert(file_id)?,
             operation_type,
             name: self.name().convert(file_id)?,
             variables: collect_opt(file_id, self.variable_definitions(), |x| {
@@ -147,6 +148,7 @@ impl Convert for cst::FragmentDefinition {
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
+            description: self.description().convert(file_id)?,
             name: self.fragment_name()?.name()?.convert(file_id)?,
             type_condition: self.type_condition()?.convert(file_id)?,
             directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
@@ -530,6 +532,7 @@ impl Convert for cst::VariableDefinition {
         };
         let ty = &self.ty()?;
         Some(Self::Target {
+            description: self.description().convert(file_id)?,
             name: self.variable()?.name()?.convert(file_id)?,
             ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
             default_value,
