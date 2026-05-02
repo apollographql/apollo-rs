@@ -220,13 +220,12 @@ impl<'a> Cursor<'a> {
                     '\\' => {
                         state = State::BlockStringLiteralBackslash;
                     }
-                    '"' => {
+                    '"'
                         // Require two additional quotes to complete the triple quote.
-                        if self.eatc('"') && self.eatc('"') {
+                        if self.eatc('"') && self.eatc('"') => {
                             token.data = self.current_str();
                             return self.done(token);
                         }
-                    }
                     _ => {}
                 },
                 State::StringLiteralStart => match c {

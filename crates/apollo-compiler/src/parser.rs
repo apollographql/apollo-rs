@@ -258,6 +258,25 @@ impl Parser {
         errors.into_result_with(document)
     }
 
+    /// Parse the given source text as an additional input to an executable document builder.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// This can be used to build an executable document from multiple source files.
+    /// Errors (if any) are recorded in the builder and returned by
+    /// [`ExecutableDocumentBuilder::build`].
+    pub fn parse_into_executable_builder(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+        builder: &mut executable::ExecutableDocumentBuilder,
+    ) {
+        let ast = self.parse_ast_inner(source_text, path, FileId::new(), builder.errors);
+        let type_system_definitions_are_errors = true;
+        builder.add_ast_document(&ast, type_system_definitions_are_errors);
+    }
+
     pub(crate) fn parse_executable_inner(
         &mut self,
         schema: &Valid<Schema>,

@@ -281,30 +281,26 @@ fn complete_leaf_value(
                     field_error!("resolver returned {json_value}, expected Int")
                 }
             }
-            "Float" => {
+            "Float"
                 // https://spec.graphql.org/October2021/#sec-Float.Result-Coercion
-                if !json_value.is_f64() {
+                if !json_value.is_f64() => {
                     field_error!("resolver returned {json_value}, expected Float")
                 }
-            }
-            "String" => {
+            "String"
                 // https://spec.graphql.org/October2021/#sec-String.Result-Coercion
-                if !json_value.is_string() {
+                if !json_value.is_string() => {
                     field_error!("resolver returned {json_value}, expected String")
                 }
-            }
-            "Boolean" => {
+            "Boolean"
                 // https://spec.graphql.org/October2021/#sec-Boolean.Result-Coercion
-                if !json_value.is_boolean() {
+                if !json_value.is_boolean() => {
                     field_error!("resolver returned {json_value}, expected Boolean")
                 }
-            }
-            "ID" => {
+            "ID"
                 // https://spec.graphql.org/October2021/#sec-ID.Result-Coercion
-                if !(json_value.is_string() || json_value.is_i64()) {
+                if !(json_value.is_string() || json_value.is_i64()) => {
                     field_error!("resolver returned {json_value}, expected ID")
                 }
-            }
             _ => {
                 // Custom scalar: accept any JSON value (including an array or object,
                 // despite this being a "leaf" as far as GraphQL resolution is concerned)
