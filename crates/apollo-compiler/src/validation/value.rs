@@ -20,6 +20,22 @@ fn unsupported_type(
     )
 }
 
+/// Validate a custom scalar value using the registered coercer, if any.
+/// Returns `true` if the value is acceptable (no coercer registered, or coercer accepts it).
+fn validate_custom_scalar(
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    scalar_name: &str,
+    arg_value: &Node<ast::Value>,
+    ty: &Node<ast::Type>,
+) {
+    if let Some(coercer) = schema.custom_scalar_coercer() {
+        if !coercer.validate_ast_value(scalar_name, arg_value) {
+            unsupported_type(diagnostics, arg_value, ty);
+        }
+    }
+}
+
 pub(crate) fn validate_values(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
@@ -51,8 +67,10 @@ pub(crate) fn value_of_correct_type(
         // When expected as an input type, any string (such as "4") or
         // integer (such as 4 or -4) input value should be coerced to ID
         ast::Value::Int(int) => match &type_definition {
-            // Any value is valid for a custom scalar.
-            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
+            // Custom scalar: delegate to registered coercer, or accept any value.
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
+                validate_custom_scalar(diagnostics, schema, scalar.name.as_str(), arg_value, ty);
+            }
             schema::ExtendedType::Scalar(scalar) => match scalar.name.as_str() {
                 // Any integer sequence is valid for an ID.
                 "ID" => {}
@@ -85,8 +103,10 @@ pub(crate) fn value_of_correct_type(
         // with numeric content, must raise a request error indicating an
         // incorrect type.
         ast::Value::Float(float) => match &type_definition {
-            // Any value is valid for a custom scalar.
-            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
+            // Custom scalar: delegate to registered coercer, or accept any value.
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
+                validate_custom_scalar(diagnostics, schema, scalar.name.as_str(), arg_value, ty);
+            }
             schema::ExtendedType::Scalar(scalar) if scalar.name == "Float" => {
                 if float.try_to_f64().is_err() {
                     diagnostics.push(
@@ -106,11 +126,17 @@ pub(crate) fn value_of_correct_type(
         // integer (such as 4 or -4) input value should be coerced to ID
         ast::Value::String(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
-                // specifically return diagnostics for ints, floats, and
-                // booleans.
-                // string, ids and custom scalars are ok, and
-                // don't need a diagnostic.
-                if scalar.is_built_in() && !matches!(scalar.name.as_str(), "String" | "ID") {
+                if !scalar.is_built_in() {
+                    // Custom scalar: delegate to registered coercer, or accept any value.
+                    validate_custom_scalar(
+                        diagnostics,
+                        schema,
+                        scalar.name.as_str(),
+                        arg_value,
+                        ty,
+                    );
+                } else if !matches!(scalar.name.as_str(), "String" | "ID") {
+                    // specifically return diagnostics for ints, floats, and booleans.
                     unsupported_type(diagnostics, arg_value, ty);
                 }
             }
@@ -121,7 +147,16 @@ pub(crate) fn value_of_correct_type(
         // indicating an incorrect type.
         ast::Value::Boolean(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in() && scalar.name.as_str() != "Boolean" {
+                if !scalar.is_built_in() {
+                    // Custom scalar: delegate to registered coercer, or accept any value.
+                    validate_custom_scalar(
+                        diagnostics,
+                        schema,
+                        scalar.name.as_str(),
+                        arg_value,
+                        ty,
+                    );
+                } else if scalar.name.as_str() != "Boolean" {
                     unsupported_type(diagnostics, arg_value, ty);
                 }
             }
@@ -158,7 +193,8 @@ pub(crate) fn value_of_correct_type(
         }
         ast::Value::Enum(value) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
-                // Accept enum values as input for custom scalars
+                // Custom scalar: delegate to registered coercer, or accept any value.
+                validate_custom_scalar(diagnostics, schema, scalar.name.as_str(), arg_value, ty);
             }
             schema::ExtendedType::Enum(enum_) => {
                 if !enum_.values.contains_key(value) {
@@ -175,19 +211,30 @@ pub(crate) fn value_of_correct_type(
             _ => unsupported_type(diagnostics, arg_value, ty),
         },
         // When expected as an input, list values are accepted only when
-        // each item in the list can be accepted by the list’s item type.
+        // each item in the list can be accepted by the list's item type.
         //
         // If the value passed as an input to a list type is not a list and
         // not the null value, then the result of input coercion is a list
         // of size one, where the single item value is the result of input
-        // coercion for the list’s item type on the provided value (note
+        // coercion for the list's item type on the provided value (note
         // this may apply recursively for nested lists).
         ast::Value::List(li) => {
-            let accepts_list = ty.is_list()
-                // A named type can still accept a list if it is a custom scalar.
-                || matches!(type_definition, schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in());
+            let is_custom_scalar = matches!(&type_definition, schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in());
+            let accepts_list = ty.is_list() || is_custom_scalar;
             if !accepts_list {
                 unsupported_type(diagnostics, arg_value, ty)
+            } else if is_custom_scalar && !ty.is_list() {
+                // Custom scalar accepting a list value directly:
+                // delegate to registered coercer, or accept any value.
+                if let schema::ExtendedType::Scalar(scalar) = &type_definition {
+                    validate_custom_scalar(
+                        diagnostics,
+                        schema,
+                        scalar.name.as_str(),
+                        arg_value,
+                        ty,
+                    );
+                }
             } else {
                 let item_type = ty.same_location(ty.item_type().clone());
                 if type_definition.is_input_type() {
@@ -200,7 +247,10 @@ pub(crate) fn value_of_correct_type(
             }
         }
         ast::Value::Object(obj) => match &type_definition {
-            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {
+                // Custom scalar: delegate to registered coercer, or accept any value.
+                validate_custom_scalar(diagnostics, schema, scalar.name.as_str(), arg_value, ty);
+            }
             schema::ExtendedType::InputObject(input_obj) => {
                 let undefined_field = obj
                     .iter()
