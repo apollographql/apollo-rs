@@ -85,4 +85,14 @@ pub(crate) fn validate_object_type_definition(
         &object.fields,
         &object.implements_interfaces,
     );
+
+    // Validate that fields in the implementing type have matching arguments
+    // per the IsValidImplementation rule.
+    super::interface::validate_implementation_field_arguments(
+        diagnostics,
+        schema,
+        &object.name,
+        &object.fields,
+        &object.implements_interfaces,
+    );
 }

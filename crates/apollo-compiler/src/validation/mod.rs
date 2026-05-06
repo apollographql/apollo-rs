@@ -315,6 +315,13 @@ impl DiagnosticData {
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
                     ReservedName { .. } => "ReservedName",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
+                    MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
+                    InvalidImplementationFieldArgumentType { .. } => {
+                        "InvalidImplementationFieldArgumentType"
+                    }
+                    ExtraRequiredImplementationFieldArgument { .. } => {
+                        "ExtraRequiredImplementationFieldArgument"
+                    }
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
@@ -522,6 +529,35 @@ impl DiagnosticData {
                         ..
                     } => Some(format!(
                         r#"Interface field {interface}.{field} expects type {interface_type} but {name}.{field} of type {actual_type} is not a proper subtype."#
+                    )),
+                    MissingInterfaceFieldArgument {
+                        name,
+                        interface,
+                        field,
+                        argument,
+                        ..
+                    } => Some(format!(
+                        r#"Interface field argument {interface}.{field}({argument}:) expected but {name}.{field} does not provide it."#
+                    )),
+                    InvalidImplementationFieldArgumentType {
+                        name,
+                        interface,
+                        field,
+                        argument,
+                        interface_type,
+                        actual_type,
+                        ..
+                    } => Some(format!(
+                        r#"Interface field {interface}.{field}({argument}:) expects type {interface_type} but {name}.{field}({argument}:) is type {actual_type}."#
+                    )),
+                    ExtraRequiredImplementationFieldArgument {
+                        name,
+                        interface,
+                        field,
+                        argument,
+                        ..
+                    } => Some(format!(
+                        r#"Object field {name}.{field} includes required argument {argument} that is missing from the Interface field {interface}.{field}."#
                     )),
                 }
             }

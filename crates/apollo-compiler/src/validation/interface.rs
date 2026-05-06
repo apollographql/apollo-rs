@@ -1,8 +1,12 @@
 use crate::ast;
+use crate::ast::FieldDefinition;
+use crate::ast::InputValueDefinition;
 use crate::ast::Type;
+use crate::collections::IndexMap;
 use crate::collections::IndexSet;
 use crate::parser::SourceSpan;
 use crate::schema::validation::BuiltInScalars;
+use crate::schema::Component;
 use crate::schema::ComponentName;
 use crate::schema::InterfaceType;
 use crate::schema::Name;
@@ -106,9 +110,19 @@ pub(crate) fn validate_interface_definition(
         }
     }
 
-    // Validate that fields in the implementing interface have return types that are
+    // Validate that fields in the implementing type have return types that are
     // proper subtypes of the super-interface fields.
     validate_implementation_field_types(
+        diagnostics,
+        schema,
+        &interface.name,
+        &interface.fields,
+        &interface.implements_interfaces,
+    );
+
+    // Validate that fields in the implementing type have matching arguments
+    // per the IsValidImplementation rule.
+    validate_implementation_field_arguments(
         diagnostics,
         schema,
         &interface.name,
@@ -216,14 +230,13 @@ pub(crate) fn is_valid_implementation_field_type(
 
 /// Validates that fields in an implementing type have return types that are proper subtypes of
 /// the corresponding interface fields.
+///
+/// GraphQL spec: [IsValidImplementationFieldType](https://spec.graphql.org/draft/#IsValidImplementationFieldType())
 pub(crate) fn validate_implementation_field_types(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     implementor_name: &Name,
-    implementor_fields: &crate::collections::IndexMap<
-        Name,
-        crate::schema::Component<crate::ast::FieldDefinition>,
-    >,
+    implementor_fields: &IndexMap<Name, Component<FieldDefinition>>,
     implements_interfaces: &IndexSet<ComponentName>,
 ) {
     for interface_name in implements_interfaces {
@@ -247,6 +260,97 @@ pub(crate) fn validate_implementation_field_types(
                         interface_field_location: interface_field.location(),
                     },
                 );
+            }
+        }
+    }
+}
+
+fn is_required_argument(arg: &InputValueDefinition) -> bool {
+    arg.ty.is_non_null() && arg.default_value.is_none()
+}
+
+/// GraphQL spec: [IsValidImplementation](https://spec.graphql.org/draft/#IsValidImplementation())
+///
+/// Validates that implementing field arguments satisfy the interface contract:
+/// - Every argument on the interface field must exist on the implementing field with the same type
+/// - Extra arguments on the implementing field must not be required
+pub(crate) fn validate_implementation_field_arguments(
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    implementor_name: &Name,
+    implementor_fields: &IndexMap<Name, Component<FieldDefinition>>,
+    implements_interfaces: &IndexSet<ComponentName>,
+) {
+    for interface_name in implements_interfaces {
+        let Some(interface) = schema.get_interface(interface_name) else {
+            continue;
+        };
+        for (field_name, interface_field) in &interface.fields {
+            let Some(impl_field) = implementor_fields.get(field_name) else {
+                continue; // Missing field is reported separately
+            };
+
+            // Every argument on the interface field must exist on the implementing field
+            // with the same type (invariant).
+            for iface_arg in &interface_field.arguments {
+                let impl_arg = impl_field
+                    .arguments
+                    .iter()
+                    .find(|a| a.name == iface_arg.name);
+
+                match impl_arg {
+                    None => {
+                        diagnostics.push(
+                            impl_field.location(),
+                            DiagnosticData::MissingInterfaceFieldArgument {
+                                name: implementor_name.clone(),
+                                interface: interface_name.name.clone(),
+                                field: field_name.clone(),
+                                argument: iface_arg.name.clone(),
+                                field_location: impl_field.location(),
+                                interface_argument_location: iface_arg.location(),
+                            },
+                        );
+                    }
+                    Some(impl_arg) => {
+                        if *iface_arg.ty != *impl_arg.ty {
+                            diagnostics.push(
+                                impl_arg.location(),
+                                DiagnosticData::InvalidImplementationFieldArgumentType {
+                                    name: implementor_name.clone(),
+                                    interface: interface_name.name.clone(),
+                                    field: field_name.clone(),
+                                    argument: iface_arg.name.clone(),
+                                    interface_type: iface_arg.ty.clone(),
+                                    actual_type: impl_arg.ty.clone(),
+                                    argument_location: impl_arg.location(),
+                                    interface_argument_location: iface_arg.location(),
+                                },
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Extra arguments on the implementing field must not be required.
+            for impl_arg in &impl_field.arguments {
+                let in_interface = interface_field
+                    .arguments
+                    .iter()
+                    .any(|a| a.name == impl_arg.name);
+                if !in_interface && is_required_argument(impl_arg) {
+                    diagnostics.push(
+                        impl_arg.location(),
+                        DiagnosticData::ExtraRequiredImplementationFieldArgument {
+                            name: implementor_name.clone(),
+                            interface: interface_name.name.clone(),
+                            field: field_name.clone(),
+                            argument: impl_arg.name.clone(),
+                            argument_location: impl_arg.location(),
+                            interface_field_location: interface_field.location(),
+                        },
+                    );
+                }
             }
         }
     }
