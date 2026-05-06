@@ -220,7 +220,10 @@ pub(crate) fn validate_implementation_field_types(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     implementor_name: &Name,
-    implementor_fields: &crate::collections::IndexMap<Name, crate::schema::Component<crate::ast::FieldDefinition>>,
+    implementor_fields: &crate::collections::IndexMap<
+        Name,
+        crate::schema::Component<crate::ast::FieldDefinition>,
+    >,
     implements_interfaces: &IndexSet<ComponentName>,
 ) {
     for interface_name in implements_interfaces {

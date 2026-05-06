@@ -314,9 +314,7 @@ impl DiagnosticData {
                     EmptyMemberSet { .. } => "EmptyMemberSet",
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
                     ReservedName { .. } => "ReservedName",
-                    InvalidImplementationFieldType { .. } => {
-                        "InvalidImplementationFieldType"
-                    }
+                    InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
