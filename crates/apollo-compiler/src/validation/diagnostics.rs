@@ -85,6 +85,20 @@ pub(crate) enum DiagnosticData {
         /// Location of the definition of the field in the interface
         field_location: Option<SourceSpan>,
     },
+    #[error(
+        "Interface field {interface}.{field} expects type {interface_type} but {name}.{field} of type {actual_type} is not a proper subtype."
+    )]
+    InvalidImplementationFieldType {
+        name: Name,
+        interface: Name,
+        field: Name,
+        interface_type: Type,
+        actual_type: Type,
+        /// Location of the field in the implementing type
+        field_location: Option<SourceSpan>,
+        /// Location of the field in the interface
+        interface_field_location: Option<SourceSpan>,
+    },
     #[error("the required argument `{coordinate}` is not provided")]
     RequiredArgument {
         name: Name,
@@ -472,6 +486,24 @@ impl DiagnosticData {
                 report.with_help(
                     "An object or interface must declare all fields required by the interfaces it implements",
                 )
+            }
+            DiagnosticData::InvalidImplementationFieldType {
+                name: _,
+                interface,
+                field,
+                interface_type: _,
+                actual_type: _,
+                field_location,
+                interface_field_location,
+            } => {
+                report.with_label_opt(
+                    *field_location,
+                    format_args!("field type is not a proper subtype of `{interface}.{field}`"),
+                );
+                report.with_label_opt(
+                    *interface_field_location,
+                    format_args!("`{interface}.{field}` originally defined here"),
+                );
             }
             DiagnosticData::TransitiveImplementedInterfaces {
                 interface: _,

@@ -75,4 +75,14 @@ pub(crate) fn validate_object_type_definition(
             }
         }
     }
+
+    // Validate that fields in the implementing type have return types that are
+    // proper subtypes of the interface fields.
+    super::interface::validate_implementation_field_types(
+        diagnostics,
+        schema,
+        &object.name,
+        &object.fields,
+        &object.implements_interfaces,
+    );
 }

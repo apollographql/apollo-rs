@@ -210,3 +210,92 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         "{errors}"
     );
 }
+
+#[test]
+fn it_fails_validation_when_object_field_type_is_not_subtype_of_interface_field() {
+    let input = r#"
+type Query implements Node {
+  id: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Product {
+  details: ProductDetails!
+}
+
+type ProductDetails {
+  name: String
+}
+
+type DigitalProduct implements Product {
+  details: ProductDetails
+}
+"#;
+    let errors = Schema::parse_and_validate(input, "schema.graphql")
+        .unwrap_err()
+        .errors
+        .to_string();
+    assert!(
+        errors.contains("Interface field Product.details expects type ProductDetails! but DigitalProduct.details of type ProductDetails is not a proper subtype"),
+        "{errors}"
+    );
+}
+
+#[test]
+fn it_accepts_valid_covariant_interface_field_types() {
+    let input = r#"
+type Query implements Node {
+  id: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Animal {
+  name: String
+}
+
+type Dog implements Animal {
+  name: String!
+}
+"#;
+    Schema::parse_and_validate(input, "schema.graphql")
+        .expect("Expected validation to succeed for covariant non-null field");
+}
+
+#[test]
+fn it_fails_validation_when_list_item_type_is_not_subtype() {
+    let input = r#"
+type Query implements Node {
+  id: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Collection {
+  items: [Item!]!
+}
+
+type Item {
+  name: String
+}
+
+type MyCollection implements Collection {
+  items: [Item]!
+}
+"#;
+    let errors = Schema::parse_and_validate(input, "schema.graphql")
+        .unwrap_err()
+        .errors
+        .to_string();
+    assert!(
+        errors.contains("Interface field Collection.items expects type [Item!]! but MyCollection.items of type [Item]! is not a proper subtype"),
+        "{errors}"
+    );
+}

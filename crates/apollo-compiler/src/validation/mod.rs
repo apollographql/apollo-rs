@@ -314,6 +314,9 @@ impl DiagnosticData {
                     EmptyMemberSet { .. } => "EmptyMemberSet",
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
                     ReservedName { .. } => "ReservedName",
+                    InvalidImplementationFieldType { .. } => {
+                        "InvalidImplementationFieldType"
+                    }
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
@@ -512,6 +515,16 @@ impl DiagnosticData {
                     EmptyMemberSet { .. } => None,
                     EmptyInputValueSet { .. } => None,
                     ReservedName { .. } => None,
+                    InvalidImplementationFieldType {
+                        name,
+                        interface,
+                        field,
+                        interface_type,
+                        actual_type,
+                        ..
+                    } => Some(format!(
+                        r#"Interface field {interface}.{field} expects type {interface_type} but {name}.{field} of type {actual_type} is not a proper subtype."#
+                    )),
                 }
             }
             Details::ExecutableBuildError(error) => match error {

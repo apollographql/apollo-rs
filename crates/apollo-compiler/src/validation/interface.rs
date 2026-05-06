@@ -1,4 +1,5 @@
 use crate::ast;
+use crate::ast::Type;
 use crate::collections::IndexSet;
 use crate::parser::SourceSpan;
 use crate::schema::validation::BuiltInScalars;
@@ -104,6 +105,16 @@ pub(crate) fn validate_interface_definition(
             }
         }
     }
+
+    // Validate that fields in the implementing interface have return types that are
+    // proper subtypes of the super-interface fields.
+    validate_implementation_field_types(
+        diagnostics,
+        schema,
+        &interface.name,
+        &interface.fields,
+        &interface.implements_interfaces,
+    );
 }
 
 pub(crate) fn validate_implements_interfaces(
@@ -166,5 +177,74 @@ pub(crate) fn validate_implements_interfaces(
                 transitive_interface_location: transitive_loc,
             },
         );
+    }
+}
+
+/// GraphQL spec: [IsValidImplementationFieldType](https://spec.graphql.org/draft/#IsValidImplementationFieldType())
+pub(crate) fn is_valid_implementation_field_type(
+    schema: &crate::Schema,
+    interface_field_type: &Type,
+    impl_field_type: &Type,
+) -> bool {
+    match (interface_field_type, impl_field_type) {
+        // NonNull interface field requires NonNull implementation
+        (Type::NonNullNamed(_) | Type::NonNullList(_), Type::Named(_) | Type::List(_)) => false,
+        // Both NonNull named: inner names must match or impl must be a subtype
+        (Type::NonNullNamed(iface_name), Type::NonNullNamed(impl_name)) => {
+            iface_name == impl_name || schema.is_subtype(iface_name, impl_name)
+        }
+        // Both NonNull lists: recurse on item types
+        (Type::NonNullList(iface_inner), Type::NonNullList(impl_inner)) => {
+            is_valid_implementation_field_type(schema, iface_inner, impl_inner)
+        }
+        // NonNull list vs NonNull named or vice versa
+        (Type::NonNullNamed(_), Type::NonNullList(_))
+        | (Type::NonNullList(_), Type::NonNullNamed(_)) => false,
+        // Nullable named: impl can be nullable or non-null, same name or subtype
+        (Type::Named(iface_name), Type::Named(impl_name) | Type::NonNullNamed(impl_name)) => {
+            iface_name == impl_name || schema.is_subtype(iface_name, impl_name)
+        }
+        // Nullable list: impl can be nullable or non-null list, recurse on items
+        (Type::List(iface_inner), Type::List(impl_inner) | Type::NonNullList(impl_inner)) => {
+            is_valid_implementation_field_type(schema, iface_inner, impl_inner)
+        }
+        // Named vs List mismatch
+        (Type::Named(_), Type::List(_) | Type::NonNullList(_)) => false,
+        (Type::List(_), Type::Named(_) | Type::NonNullNamed(_)) => false,
+    }
+}
+
+/// Validates that fields in an implementing type have return types that are proper subtypes of
+/// the corresponding interface fields.
+pub(crate) fn validate_implementation_field_types(
+    diagnostics: &mut DiagnosticList,
+    schema: &crate::Schema,
+    implementor_name: &Name,
+    implementor_fields: &crate::collections::IndexMap<Name, crate::schema::Component<crate::ast::FieldDefinition>>,
+    implements_interfaces: &IndexSet<ComponentName>,
+) {
+    for interface_name in implements_interfaces {
+        let Some(interface) = schema.get_interface(interface_name) else {
+            continue;
+        };
+        for (field_name, interface_field) in &interface.fields {
+            let Some(impl_field) = implementor_fields.get(field_name) else {
+                continue; // Missing field is reported separately
+            };
+            if !is_valid_implementation_field_type(schema, &interface_field.ty, &impl_field.ty) {
+                diagnostics.push(
+                    impl_field.location(),
+                    DiagnosticData::InvalidImplementationFieldType {
+                        name: implementor_name.clone(),
+                        interface: interface_name.name.clone(),
+                        field: field_name.clone(),
+                        interface_type: Type::clone(&interface_field.ty),
+                        actual_type: Type::clone(&impl_field.ty),
+                        field_location: impl_field.location(),
+                        interface_field_location: interface_field.location(),
+                    },
+                );
+            }
+        }
     }
 }
