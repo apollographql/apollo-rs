@@ -215,7 +215,8 @@ pub(crate) fn is_valid_implementation_field_type(
 }
 
 /// Validates that fields in an implementing type have return types that are proper subtypes of
-/// the corresponding interface fields.
+/// the corresponding interface fields, and that field arguments match per
+/// [IsValidImplementation](https://spec.graphql.org/draft/#IsValidImplementation()).
 pub(crate) fn validate_implementation_field_types(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
@@ -248,6 +249,94 @@ pub(crate) fn validate_implementation_field_types(
                     },
                 );
             }
+
+            validate_implementation_field_arguments(
+                diagnostics,
+                implementor_name,
+                &interface_name.name,
+                field_name,
+                interface_field,
+                impl_field,
+            );
+        }
+    }
+}
+
+/// Argument-related sub-rules of GraphQL spec
+/// [IsValidImplementation](https://spec.graphql.org/draft/#IsValidImplementation()):
+///
+/// - "field must include an argument of the same name for every argument defined in
+///   implementedField."
+/// - "That named argument on field must accept the same type (invariant) as that named argument
+///   on implementedField."
+/// - "field may include additional arguments not defined in implementedField, but any additional
+///   argument must not be required, e.g. must not be of a non-nullable type."
+fn validate_implementation_field_arguments(
+    diagnostics: &mut DiagnosticList,
+    implementor_name: &Name,
+    interface_name: &Name,
+    field_name: &Name,
+    interface_field: &Node<crate::ast::FieldDefinition>,
+    impl_field: &Node<crate::ast::FieldDefinition>,
+) {
+    // Each interface argument must appear on the implementing field with an invariant type.
+    for iface_arg in &interface_field.arguments {
+        match impl_field
+            .arguments
+            .iter()
+            .find(|a| a.name == iface_arg.name)
+        {
+            None => {
+                diagnostics.push(
+                    impl_field.location(),
+                    DiagnosticData::MissingImplementationFieldArgument {
+                        name: implementor_name.clone(),
+                        interface: interface_name.clone(),
+                        field: field_name.clone(),
+                        argument: iface_arg.name.clone(),
+                        field_location: impl_field.location(),
+                        interface_argument_location: iface_arg.location(),
+                    },
+                );
+            }
+            Some(impl_arg) if impl_arg.ty != iface_arg.ty => {
+                diagnostics.push(
+                    impl_arg.location(),
+                    DiagnosticData::InvalidImplementationFieldArgumentType {
+                        name: implementor_name.clone(),
+                        interface: interface_name.clone(),
+                        field: field_name.clone(),
+                        argument: iface_arg.name.clone(),
+                        interface_type: Type::clone(&iface_arg.ty),
+                        actual_type: Type::clone(&impl_arg.ty),
+                        argument_location: impl_arg.location(),
+                        interface_argument_location: iface_arg.location(),
+                    },
+                );
+            }
+            _ => {}
+        }
+    }
+
+    // Any additional argument on the implementing field that is not on the interface
+    // must be nullable.
+    for impl_arg in &impl_field.arguments {
+        let on_interface = interface_field
+            .arguments
+            .iter()
+            .any(|a| a.name == impl_arg.name);
+        if !on_interface && impl_arg.ty.is_non_null() {
+            diagnostics.push(
+                impl_arg.location(),
+                DiagnosticData::ExtraImplementationFieldArgumentMustBeNullable {
+                    name: implementor_name.clone(),
+                    interface: interface_name.clone(),
+                    field: field_name.clone(),
+                    argument: impl_arg.name.clone(),
+                    actual_type: Type::clone(&impl_arg.ty),
+                    argument_location: impl_arg.location(),
+                },
+            );
         }
     }
 }

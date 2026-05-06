@@ -300,13 +300,10 @@ type MyCollection implements Collection {
     );
 }
 
-// FIXME: The argument-related sub-rules of the GraphQL spec rule `IsValidImplementation`
-// (https://spec.graphql.org/draft/#IsValidImplementation()) are not yet enforced.
-// The two `#[ignore]`d tests below document the gap: run them with `cargo test -- --ignored`
-// to observe the missing diagnostics. Remove the `#[ignore]` attribute once the rule is added.
+// Argument-related sub-rules of GraphQL spec IsValidImplementation:
+// https://spec.graphql.org/draft/#IsValidImplementation()
 
 #[test]
-#[ignore = "argument validation in IsValidImplementation not yet implemented"]
 fn it_fails_validation_when_implementing_field_is_missing_interface_argument() {
     let input = r#"
 type Query implements Node {
@@ -336,7 +333,6 @@ type Greeter implements HasGreeting {
 }
 
 #[test]
-#[ignore = "argument validation in IsValidImplementation not yet implemented"]
 fn it_fails_validation_when_implementing_field_argument_type_differs() {
     let input = r#"
 type Query implements Node {
@@ -362,5 +358,58 @@ type Greeter implements HasGreeting {
     assert!(
         errors.contains("Greeter.greeting") && errors.contains("language"),
         "expected a diagnostic about the `language` argument type mismatch (String vs Int); got: {errors}"
+    );
+}
+
+#[test]
+fn it_fails_validation_when_extra_implementing_field_argument_is_non_null() {
+    let input = r#"
+type Query implements Node {
+  id: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+interface HasGreeting {
+  greeting: String
+}
+
+type Greeter implements HasGreeting {
+  greeting(language: String!): String
+}
+"#;
+    let errors = Schema::parse_and_validate(input, "schema.graphql")
+        .unwrap_err()
+        .errors
+        .to_string();
+    assert!(
+        errors.contains("Greeter.greeting") && errors.contains("language") && errors.contains("nullable"),
+        "expected a diagnostic about the extra non-null `language` argument on Greeter.greeting; got: {errors}"
+    );
+}
+
+#[test]
+fn it_accepts_extra_nullable_argument_on_implementing_field() {
+    let input = r#"
+type Query implements Node {
+  id: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+interface HasGreeting {
+  greeting: String
+}
+
+type Greeter implements HasGreeting {
+  greeting(language: String): String
+}
+"#;
+    Schema::parse_and_validate(input, "schema.graphql").expect(
+        "Expected validation to succeed when extra implementing-field argument is nullable",
     );
 }

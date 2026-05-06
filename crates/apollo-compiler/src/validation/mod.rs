@@ -315,6 +315,15 @@ impl DiagnosticData {
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
                     ReservedName { .. } => "ReservedName",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
+                    MissingImplementationFieldArgument { .. } => {
+                        "MissingImplementationFieldArgument"
+                    }
+                    InvalidImplementationFieldArgumentType { .. } => {
+                        "InvalidImplementationFieldArgumentType"
+                    }
+                    ExtraImplementationFieldArgumentMustBeNullable { .. } => {
+                        "ExtraImplementationFieldArgumentMustBeNullable"
+                    }
                 })
             }
             Details::ExecutableBuildError(error) => Some(match error {
@@ -522,6 +531,36 @@ impl DiagnosticData {
                         ..
                     } => Some(format!(
                         r#"Interface field {interface}.{field} expects type {interface_type} but {name}.{field} of type {actual_type} is not a proper subtype."#
+                    )),
+                    MissingImplementationFieldArgument {
+                        name,
+                        interface,
+                        field,
+                        argument,
+                        ..
+                    } => Some(format!(
+                        r#"Field `{name}.{field}` is missing the argument `{argument}` declared by interface `{interface}.{field}`."#
+                    )),
+                    InvalidImplementationFieldArgumentType {
+                        name,
+                        interface,
+                        field,
+                        argument,
+                        interface_type,
+                        actual_type,
+                        ..
+                    } => Some(format!(
+                        r#"Argument `{name}.{field}({argument}:)` has type `{actual_type}` but interface `{interface}.{field}({argument}:)` declares type `{interface_type}`. Argument types must be invariant."#
+                    )),
+                    ExtraImplementationFieldArgumentMustBeNullable {
+                        name,
+                        interface,
+                        field,
+                        argument,
+                        actual_type,
+                        ..
+                    } => Some(format!(
+                        r#"Argument `{name}.{field}({argument}:)` is not declared on interface `{interface}.{field}` and must therefore be a nullable type, but is `{actual_type}`."#
                     )),
                 }
             }

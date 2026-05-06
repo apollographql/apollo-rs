@@ -99,6 +99,46 @@ pub(crate) enum DiagnosticData {
         /// Location of the field in the interface
         interface_field_location: Option<SourceSpan>,
     },
+    #[error(
+        "Field `{name}.{field}` is missing the argument `{argument}` declared by interface `{interface}.{field}`."
+    )]
+    MissingImplementationFieldArgument {
+        name: Name,
+        interface: Name,
+        field: Name,
+        argument: Name,
+        /// Location of the field in the implementing type
+        field_location: Option<SourceSpan>,
+        /// Location of the argument in the interface
+        interface_argument_location: Option<SourceSpan>,
+    },
+    #[error(
+        "Argument `{name}.{field}({argument}:)` has type `{actual_type}` but interface `{interface}.{field}({argument}:)` declares type `{interface_type}`. Argument types must be invariant."
+    )]
+    InvalidImplementationFieldArgumentType {
+        name: Name,
+        interface: Name,
+        field: Name,
+        argument: Name,
+        interface_type: Type,
+        actual_type: Type,
+        /// Location of the argument in the implementing type
+        argument_location: Option<SourceSpan>,
+        /// Location of the argument in the interface
+        interface_argument_location: Option<SourceSpan>,
+    },
+    #[error(
+        "Argument `{name}.{field}({argument}:)` is not declared on interface `{interface}.{field}` and must therefore be a nullable type, but is `{actual_type}`."
+    )]
+    ExtraImplementationFieldArgumentMustBeNullable {
+        name: Name,
+        interface: Name,
+        field: Name,
+        argument: Name,
+        actual_type: Type,
+        /// Location of the extra argument in the implementing type
+        argument_location: Option<SourceSpan>,
+    },
     #[error("the required argument `{coordinate}` is not provided")]
     RequiredArgument {
         name: Name,
@@ -503,6 +543,55 @@ impl DiagnosticData {
                 report.with_label_opt(
                     *interface_field_location,
                     format_args!("`{interface}.{field}` originally defined here"),
+                );
+            }
+            DiagnosticData::MissingImplementationFieldArgument {
+                name: _,
+                interface,
+                field,
+                argument,
+                field_location,
+                interface_argument_location,
+            } => {
+                report.with_label_opt(
+                    *field_location,
+                    format_args!("missing argument `{argument}` required by `{interface}.{field}`"),
+                );
+                report.with_label_opt(
+                    *interface_argument_location,
+                    format_args!("argument `{argument}` declared on `{interface}.{field}` here"),
+                );
+            }
+            DiagnosticData::InvalidImplementationFieldArgumentType {
+                name: _,
+                interface,
+                field,
+                argument,
+                interface_type: _,
+                actual_type: _,
+                argument_location,
+                interface_argument_location,
+            } => {
+                report.with_label_opt(
+                    *argument_location,
+                    format_args!("argument type does not match `{interface}.{field}({argument}:)`"),
+                );
+                report.with_label_opt(
+                    *interface_argument_location,
+                    format_args!("`{interface}.{field}({argument}:)` originally declared here"),
+                );
+            }
+            DiagnosticData::ExtraImplementationFieldArgumentMustBeNullable {
+                name: _,
+                interface: _,
+                field: _,
+                argument: _,
+                actual_type: _,
+                argument_location,
+            } => {
+                report.with_label_opt(
+                    *argument_location,
+                    "extra argument on the implementing field must be nullable",
                 );
             }
             DiagnosticData::TransitiveImplementedInterfaces {
