@@ -85,6 +85,61 @@ pub(crate) enum DiagnosticData {
         /// Location of the definition of the field in the interface
         field_location: Option<SourceSpan>,
     },
+    #[error(
+        "Interface field {interface}.{field} expects type {interface_type} but {name}.{field} of type {actual_type} is not a proper subtype."
+    )]
+    InvalidImplementationFieldType {
+        name: Name,
+        interface: Name,
+        field: Name,
+        interface_type: Type,
+        actual_type: Type,
+        /// Location of the field in the implementing type
+        field_location: Option<SourceSpan>,
+        /// Location of the field in the interface
+        interface_field_location: Option<SourceSpan>,
+    },
+    #[error(
+        "Interface field {interface}.{field} expects argument `{argument}` but {name}.{field} does not provide it."
+    )]
+    MissingInterfaceFieldArgument {
+        name: Name,
+        interface: Name,
+        field: Name,
+        argument: Name,
+        /// Location of the field in the implementing type
+        field_location: Option<SourceSpan>,
+        /// Location of the argument in the interface field
+        interface_argument_location: Option<SourceSpan>,
+    },
+    #[error(
+        "Interface field {interface}.{field} expects argument `{argument}` of type `{interface_type}` but {name}.{field} provides type `{actual_type}`."
+    )]
+    InvalidImplementationFieldArgumentType {
+        name: Name,
+        interface: Name,
+        field: Name,
+        argument: Name,
+        interface_type: Node<Type>,
+        actual_type: Node<Type>,
+        /// Location of the argument in the implementing type
+        argument_location: Option<SourceSpan>,
+        /// Location of the argument in the interface field
+        interface_argument_location: Option<SourceSpan>,
+    },
+    #[error(
+        "{name}.{field} has extra required argument `{argument}` not present in interface {interface}.{field}."
+    )]
+    ExtraRequiredImplementationFieldArgument {
+        name: Name,
+        interface: Name,
+        field: Name,
+        argument: Name,
+        /// Location of the extra argument in the implementing type
+        argument_location: Option<SourceSpan>,
+        /// Location of the field in the interface
+        interface_field_location: Option<SourceSpan>,
+    },
     #[error("the required argument `{coordinate}` is not provided")]
     RequiredArgument {
         name: Name,
@@ -472,6 +527,82 @@ impl DiagnosticData {
                 report.with_help(
                     "An object or interface must declare all fields required by the interfaces it implements",
                 )
+            }
+            DiagnosticData::InvalidImplementationFieldType {
+                name: _,
+                interface,
+                field,
+                interface_type: _,
+                actual_type: _,
+                field_location,
+                interface_field_location,
+            } => {
+                report.with_label_opt(
+                    *field_location,
+                    format_args!("field type is not a proper subtype of `{interface}.{field}`"),
+                );
+                report.with_label_opt(
+                    *interface_field_location,
+                    format_args!("`{interface}.{field}` originally defined here"),
+                );
+            }
+            DiagnosticData::MissingInterfaceFieldArgument {
+                name: _,
+                interface,
+                field,
+                argument,
+                field_location,
+                interface_argument_location,
+            } => {
+                report.with_label_opt(
+                    *field_location,
+                    format_args!("missing argument `{argument}` on this field"),
+                );
+                report.with_label_opt(
+                    *interface_argument_location,
+                    format_args!("`{interface}.{field}({argument}:)` defined here"),
+                );
+            }
+            DiagnosticData::InvalidImplementationFieldArgumentType {
+                name: _,
+                interface,
+                field,
+                argument,
+                interface_type: _,
+                actual_type: _,
+                argument_location,
+                interface_argument_location,
+            } => {
+                report.with_label_opt(
+                    *argument_location,
+                    format_args!("argument type does not match `{interface}.{field}({argument}:)`"),
+                );
+                report.with_label_opt(
+                    *interface_argument_location,
+                    format_args!("`{interface}.{field}({argument}:)` defined here"),
+                );
+            }
+            DiagnosticData::ExtraRequiredImplementationFieldArgument {
+                name: _,
+                interface,
+                field,
+                argument,
+                argument_location,
+                interface_field_location,
+            } => {
+                report.with_label_opt(
+                    *argument_location,
+                    format_args!(
+                        "required argument `{argument}` is not in the interface definition"
+                    ),
+                );
+                report.with_label_opt(
+                    *interface_field_location,
+                    format_args!("`{interface}.{field}` defined here"),
+                );
+                report.with_help(
+                    "Additional arguments on implementing fields must be optional (nullable or have a default value)",
+                );
             }
             DiagnosticData::TransitiveImplementedInterfaces {
                 interface: _,
