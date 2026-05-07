@@ -592,7 +592,9 @@ impl DiagnosticData {
             } => {
                 report.with_label_opt(
                     *argument_location,
-                    format_args!("required argument `{argument}` is not in the interface definition"),
+                    format_args!(
+                        "required argument `{argument}` is not in the interface definition"
+                    ),
                 );
                 report.with_label_opt(
                     *interface_field_location,

@@ -353,8 +353,9 @@ type ResourcePage implements HasNode {
   node: Resource
 }
 "#;
-    Schema::parse_and_validate(input, "schema.graphql")
-        .expect("Expected validation to succeed: interface implementing interface is a valid subtype");
+    Schema::parse_and_validate(input, "schema.graphql").expect(
+        "Expected validation to succeed: interface implementing interface is a valid subtype",
+    );
 }
 
 #[test]
@@ -435,7 +436,9 @@ type MyNode implements Node {
         .errors
         .to_string();
     assert!(
-        errors.contains("Interface field Node.field expects argument `id` but MyNode.field does not provide it"),
+        errors.contains(
+            "Interface field Node.field expects argument `id` but MyNode.field does not provide it"
+        ),
         "{errors}"
     );
 }
@@ -485,7 +488,9 @@ type MyNode implements Node {
         .errors
         .to_string();
     assert!(
-        errors.contains("MyNode.field has extra required argument `extra` not present in interface Node.field"),
+        errors.contains(
+            "MyNode.field has extra required argument `extra` not present in interface Node.field"
+        ),
         "{errors}"
     );
 }
