@@ -86,7 +86,7 @@ pub(crate) enum DiagnosticData {
         field_location: Option<SourceSpan>,
     },
     #[error(
-        "Interface field {interface}.{field} expects type {interface_type} but {name}.{field} of type {actual_type} is not a proper subtype."
+        "interface field `{interface}.{field}` expects type `{interface_type}` but `{name}.{field}` of type `{actual_type}` is not a proper subtype"
     )]
     InvalidImplementationFieldType {
         name: Name,
@@ -100,7 +100,7 @@ pub(crate) enum DiagnosticData {
         interface_field_location: Option<SourceSpan>,
     },
     #[error(
-        "Interface field {interface}.{field} expects argument `{argument}` but {name}.{field} does not provide it."
+        "interface field `{interface}.{field}` expects argument `{argument}` but `{name}.{field}` does not provide it"
     )]
     MissingInterfaceFieldArgument {
         name: Name,
@@ -113,7 +113,7 @@ pub(crate) enum DiagnosticData {
         interface_argument_location: Option<SourceSpan>,
     },
     #[error(
-        "Interface field {interface}.{field} expects argument `{argument}` of type `{interface_type}` but {name}.{field} provides type `{actual_type}`."
+        "interface field `{interface}.{field}` expects argument `{argument}` of type `{interface_type}` but `{name}.{field}` provides type `{actual_type}`"
     )]
     InvalidImplementationFieldArgumentType {
         name: Name,
@@ -128,7 +128,7 @@ pub(crate) enum DiagnosticData {
         interface_argument_location: Option<SourceSpan>,
     },
     #[error(
-        "{name}.{field} has extra required argument `{argument}` not present in interface {interface}.{field}."
+        "`{name}.{field}` has extra required argument `{argument}` not present in interface `{interface}.{field}`"
     )]
     ExtraRequiredImplementationFieldArgument {
         name: Name,

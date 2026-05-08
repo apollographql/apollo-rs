@@ -1,5 +1,6 @@
 use apollo_compiler::parser::Parser;
 use apollo_compiler::Schema;
+use expect_test::expect;
 
 #[test]
 fn it_fails_validation_with_duplicate_operation_fields() {
@@ -238,10 +239,22 @@ type DigitalProduct implements Product {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains("Interface field Product.details expects type ProductDetails! but DigitalProduct.details of type ProductDetails is not a proper subtype"),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `Product.details` expects type `ProductDetails!` but `DigitalProduct.details` of type `ProductDetails` is not a proper subtype
+            ╭─[ schema.graphql:19:3 ]
+            │
+         19 │   details: ProductDetails
+            │   ───────────┬───────────  
+            │              ╰───────────── field type is not a proper subtype of `Product.details`
+            │
+            ├─[ schema.graphql:19:3 ]
+            │
+         11 │   details: ProductDetails!
+            │   ────────────┬───────────  
+            │               ╰───────────── `Product.details` originally defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -294,10 +307,22 @@ type MyCollection implements Collection {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains("Interface field Collection.items expects type [Item!]! but MyCollection.items of type [Item]! is not a proper subtype"),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `Collection.items` expects type `[Item!]!` but `MyCollection.items` of type `[Item]!` is not a proper subtype
+            ╭─[ schema.graphql:19:3 ]
+            │
+         19 │   items: [Item]!
+            │   ───────┬──────  
+            │          ╰──────── field type is not a proper subtype of `Collection.items`
+            │
+            ├─[ schema.graphql:19:3 ]
+            │
+         11 │   items: [Item!]!
+            │   ───────┬───────  
+            │          ╰───────── `Collection.items` originally defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -381,10 +406,22 @@ interface Child implements Base {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains("Interface field Base.node expects type Node! but Child.node of type Node is not a proper subtype"),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `Base.node` expects type `Node!` but `Child.node` of type `Node` is not a proper subtype
+            ╭─[ schema.graphql:15:3 ]
+            │
+         15 │   node: Node
+            │   ─────┬────  
+            │        ╰────── field type is not a proper subtype of `Base.node`
+            │
+            ├─[ schema.graphql:15:3 ]
+            │
+         11 │   node: Node!
+            │   ─────┬─────  
+            │        ╰─────── `Base.node` originally defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -410,10 +447,22 @@ type MyGrid implements HasGrid {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains("Interface field HasGrid.grid expects type [[Item]!]! but MyGrid.grid of type [[Item]] is not a proper subtype"),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `HasGrid.grid` expects type `[[Item]!]!` but `MyGrid.grid` of type `[[Item]]` is not a proper subtype
+            ╭─[ schema.graphql:15:3 ]
+            │
+         15 │   grid: [[Item]]
+            │   ───────┬──────  
+            │          ╰──────── field type is not a proper subtype of `HasGrid.grid`
+            │
+            ├─[ schema.graphql:15:3 ]
+            │
+         11 │   grid: [[Item]!]!
+            │   ────────┬───────  
+            │           ╰───────── `HasGrid.grid` originally defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -435,12 +484,22 @@ type MyNode implements Node {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains(
-            "Interface field Node.field expects argument `id` but MyNode.field does not provide it"
-        ),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `Node.field` expects argument `id` but `MyNode.field` does not provide it
+            ╭─[ schema.graphql:11:3 ]
+            │
+         11 │   field: String
+            │   ──────┬──────  
+            │         ╰──────── missing argument `id` on this field
+            │
+            ├─[ schema.graphql:11:3 ]
+            │
+          7 │   field(id: ID!): String
+            │         ───┬───  
+            │            ╰───── `Node.field(id:)` defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -462,10 +521,22 @@ type MyNode implements Node {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains("Interface field Node.field expects argument `id` of type `ID!` but MyNode.field provides type `String!`"),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `Node.field` expects argument `id` of type `ID!` but `MyNode.field` provides type `String!`
+            ╭─[ schema.graphql:11:9 ]
+            │
+         11 │   field(id: String!): String
+            │         ─────┬─────  
+            │              ╰─────── argument type does not match `Node.field(id:)`
+            │
+            ├─[ schema.graphql:11:9 ]
+            │
+          7 │   field(id: ID!): String
+            │         ───┬───  
+            │            ╰───── `Node.field(id:)` defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -487,12 +558,24 @@ type MyNode implements Node {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains(
-            "MyNode.field has extra required argument `extra` not present in interface Node.field"
-        ),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: `MyNode.field` has extra required argument `extra` not present in interface `Node.field`
+            ╭─[ schema.graphql:11:18 ]
+            │
+         11 │   field(id: ID!, extra: String!): String
+            │                  ───────┬──────  
+            │                         ╰──────── required argument `extra` is not in the interface definition
+            │
+            ├─[ schema.graphql:11:18 ]
+            │
+          7 │   field(id: ID!): String
+            │   ───────────┬──────────  
+            │              ╰──────────── `Node.field` defined here
+            │ 
+            │ Help: Additional arguments on implementing fields must be optional (nullable or have a default value)
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
@@ -552,10 +635,22 @@ interface Child implements Node {
         .unwrap_err()
         .errors
         .to_string();
-    assert!(
-        errors.contains("Interface field Node.field expects argument `id` of type `ID!` but Child.field provides type `String!`"),
-        "{errors}"
-    );
+    let expected = expect![[r#"
+        Error: interface field `Node.field` expects argument `id` of type `ID!` but `Child.field` provides type `String!`
+            ╭─[ schema.graphql:11:9 ]
+            │
+         11 │   field(id: String!): String
+            │         ─────┬─────  
+            │              ╰─────── argument type does not match `Node.field(id:)`
+            │
+            ├─[ schema.graphql:11:9 ]
+            │
+          7 │   field(id: ID!): String
+            │         ───┬───  
+            │            ╰───── `Node.field(id:)` defined here
+        ────╯
+    "#]];
+    expected.assert_eq(&errors);
 }
 
 #[test]
