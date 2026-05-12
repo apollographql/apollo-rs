@@ -5,6 +5,13 @@ use serde_json_bytes::serde_json::Number;
 use serde_json_bytes::Value;
 use std::collections::HashMap;
 
+const ALPHANUM_CHARS: &[char; 62] = &[
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+    'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+    'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4',
+    '5', '6', '7', '8', '9',
+];
+
 /// Error type for response generation.
 #[derive(Debug, thiserror::Error)]
 pub enum ResponseError {
@@ -39,7 +46,7 @@ pub trait RandomProvider {
     /// Choose a random index in `0..len`. Returns an error if `len == 0`.
     fn choose_index(&mut self, len: usize) -> Result<usize, ResponseError>;
 
-    /// Return `true` with probability `numerator / denominator`.
+    /// Return `true` with probability `numerator / denominator`. Panics if `numerator == 0` or `numerator > denominator`.
     fn ratio(&mut self, numerator: u32, denominator: u32) -> Result<bool, ResponseError>;
 }
 
@@ -68,39 +75,19 @@ impl RandomProvider for Unstructured<'_> {
     }
 
     fn gen_alphanumeric_char(&mut self) -> Result<char, ResponseError> {
-        let idx: u8 = self
-            .int_in_range(0..=61)
-            .map_err(|_| ResponseError::Exhausted)?;
-        Ok(match idx {
-            0..=9 => (b'0' + idx) as char,
-            10..=35 => (b'a' + idx - 10) as char,
-            _ => (b'A' + idx - 36) as char,
-        })
+        self.choose(ALPHANUM_CHARS)
+            .map_err(|_| ResponseError::Exhausted)
+            .copied()
     }
 
     fn choose_index(&mut self, len: usize) -> Result<usize, ResponseError> {
-        if len == 0 {
-            return Err(ResponseError::InvalidFormat(
-                "cannot choose from empty collection".into(),
-            ));
-        }
-        self.int_in_range(0..=(len - 1))
-            .map_err(|_| ResponseError::Exhausted)
+        self.choose_index(len)
+            .map_err(|_| ResponseError::InvalidFormat("cannot choose from empty collection".into()))
     }
 
     fn ratio(&mut self, numerator: u32, denominator: u32) -> Result<bool, ResponseError> {
-        // Unstructured::ratio takes u8, so we scale down if needed.
-        // For ratios that fit in u8, use directly; otherwise approximate.
-        let (n, d) = if numerator <= u8::MAX as u32 && denominator <= u8::MAX as u32 {
-            (numerator as u8, denominator as u8)
-        } else {
-            // Scale to fit in u8
-            let scale = denominator.max(1) as f64 / 255.0;
-            let n = (numerator as f64 / scale).round() as u8;
-            let d = ((denominator as f64 / scale).round() as u8).max(1);
-            (n, d)
-        };
-        self.ratio(n, d).map_err(|_| ResponseError::Exhausted)
+        self.ratio(numerator, denominator)
+            .map_err(|_| ResponseError::Exhausted)
     }
 }
 
