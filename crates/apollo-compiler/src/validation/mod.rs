@@ -18,6 +18,9 @@ pub(crate) mod union_;
 pub(crate) mod value;
 pub(crate) mod variable;
 
+use crate::Name;
+use crate::Node;
+use crate::Schema;
 use crate::collections::HashMap;
 use crate::collections::HashSet;
 use crate::collections::IndexSet;
@@ -37,9 +40,6 @@ use crate::parser::SourceSpan;
 use crate::response::GraphQLError;
 use crate::schema::BuildError as SchemaBuildError;
 use crate::schema::Implementers;
-use crate::Name;
-use crate::Node;
-use crate::Schema;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::OnceLock;
@@ -319,7 +319,7 @@ impl DiagnosticData {
                         "OneOfInputObjectWrongNumberOfFields"
                     }
                     OneOfInputObjectNullField { .. } => "OneOfInputObjectNullField",
-                    OneOfInputObjectFieldHasDefault { .. } => "OneOfInputObjectFieldHasDefault",
+                    UnsupportedDefault { .. } => "UnsupportedDefault",
                     OneOfInputObjectNullableVariable { .. } => "OneOfInputObjectNullableVariable",
                 })
             }
@@ -528,7 +528,7 @@ impl DiagnosticData {
                     OneOfInputObjectNullField { name, field } => Some(format!(
                         r#"Field "{name}.{field}" used for OneOf Input Object must be non-null."#
                     )),
-                    OneOfInputObjectFieldHasDefault { coordinate, .. } => Some(format!(
+                    UnsupportedDefault { coordinate, .. } => Some(format!(
                         r#"OneOf input field "{coordinate}" cannot have a default value."#
                     )),
                     OneOfInputObjectNullableVariable {

@@ -1,3 +1,5 @@
+use crate::Name;
+use crate::Node;
 use crate::ast;
 use crate::ast::DirectiveLocation;
 use crate::ast::Type;
@@ -6,8 +8,6 @@ use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
 use crate::executable;
 use crate::parser::SourceSpan;
-use crate::Name;
-use crate::Node;
 use std::fmt;
 use thiserror::Error;
 
@@ -304,8 +304,8 @@ pub(crate) enum DiagnosticData {
     OneOfInputObjectWrongNumberOfFields { name: Name, provided: usize },
     #[error("`{name}.{field}` value for @oneOf input object must be non-null")]
     OneOfInputObjectNullField { name: Name, field: Name },
-    #[error("`{coordinate}` field of a @oneOf input object must not have a default value")]
-    OneOfInputObjectFieldHasDefault {
+    #[error("`{coordinate}` field must not have a default value")]
+    UnsupportedDefault {
         coordinate: TypeAttributeCoordinate,
         default_location: Option<SourceSpan>,
     },
@@ -785,7 +785,7 @@ impl DiagnosticData {
                     "@oneOf input object `{name}` field `{field}` must be non-null."
                 ));
             }
-            DiagnosticData::OneOfInputObjectFieldHasDefault {
+            DiagnosticData::UnsupportedDefault {
                 coordinate,
                 default_location,
             } => {
