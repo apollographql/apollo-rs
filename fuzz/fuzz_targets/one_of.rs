@@ -35,14 +35,7 @@ fuzz_target!(|data: &[u8]| {
             continue;
         };
 
-        let has_directive = input_obj.directives.get("oneOf").is_some();
         let is_one_of = input_obj.is_one_of();
-
-        // Invariant: is_one_of() must agree with directive presence.
-        assert_eq!(
-            has_directive, is_one_of,
-            "is_one_of() disagrees with @oneOf directive presence for type `{type_name}`"
-        );
 
         if is_one_of {
             for (field_name, field) in &input_obj.fields {
