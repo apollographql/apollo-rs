@@ -64,11 +64,12 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> ArbitraryRe
     let gen_str = String::from_utf8(
         (0..size)
             .map(|_curr_idx| {
-                let idx = u.arbitrary::<usize>()?;
-
-                let idx = idx % CHARSET.len();
-
-                Ok(CHARSET[idx])
+                // `u.choose(&slice)` reads just enough bytes to pick one of
+                // `slice.len()` choices (1 byte for the 81-entry charset).
+                // The original used `u.arbitrary::<usize>()` — 8 bytes per
+                // character on 64-bit targets — which exhausted the
+                // Unstructured very quickly when generating many descriptions.
+                Ok(*u.choose(CHARSET)?)
             })
             .collect::<ArbitraryResult<Vec<u8>>>()?,
     )
