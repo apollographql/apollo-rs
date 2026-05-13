@@ -1,9 +1,5 @@
-use apollo_compiler::Name;
 use arbitrary::Unstructured;
 use rand::RngExt;
-use serde_json_bytes::serde_json::Number;
-use serde_json_bytes::Value;
-use std::collections::HashMap;
 
 const ALPHANUM_CHARS: &[char; 62] = &[
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
@@ -136,82 +132,4 @@ impl<R: rand::Rng> RandomProvider for RandProvider<R> {
     fn ratio(&mut self, numerator: u32, denominator: u32) -> Result<bool, ResponseError> {
         Ok(self.0.random_ratio(numerator, denominator))
     }
-}
-
-/// Configuration for generating scalar values.
-///
-/// Each variant describes how to generate a value of a particular type using
-/// a [`RandomProvider`]. Register custom scalar configs via
-/// [`ResponseBuilder::with_scalar_config`][crate::ResponseBuilder::with_scalar_config].
-#[derive(Debug, Clone)]
-pub enum ScalarConfig {
-    /// Generate a random boolean.
-    Bool,
-    /// Generate a random integer in the given inclusive range.
-    Int { min: i32, max: i32 },
-    /// Generate a random float in the given inclusive range.
-    Float { min: f64, max: f64 },
-    /// Generate a random alphanumeric string with length in the given inclusive range.
-    String { min_len: usize, max_len: usize },
-}
-
-impl ScalarConfig {
-    /// The default configuration used for unknown or custom scalars: an
-    /// alphanumeric string of length 1–10.
-    pub const DEFAULT: Self = Self::String {
-        min_len: 1,
-        max_len: 10,
-    };
-
-    /// Generate a random value according to this configuration.
-    pub fn generate<R: RandomProvider>(&self, rng: &mut R) -> Result<Value, ResponseError> {
-        match *self {
-            Self::Bool => Ok(Value::Bool(rng.gen_bool()?)),
-            Self::Int { min, max } => Ok(Value::Number(rng.gen_i32_range(min, max)?.into())),
-            Self::Float { min, max } => {
-                let f = rng.gen_f64_range(min, max)?;
-                let num = Number::from_f64(f).ok_or_else(|| {
-                    ResponseError::InvalidFormat("generated non-finite float".into())
-                })?;
-                Ok(Value::Number(num))
-            }
-            Self::String { min_len, max_len } => {
-                let len = rng.gen_usize_range(min_len, max_len)?;
-                let s: Result<std::string::String, _> =
-                    (0..len).map(|_| rng.gen_alphanumeric_char()).collect();
-                Ok(Value::String(s?.into()))
-            }
-        }
-    }
-}
-
-/// Returns the default scalar configurations for the built-in GraphQL scalar types.
-pub fn default_scalar_configs() -> HashMap<Name, ScalarConfig> {
-    [
-        (Name::new_unchecked("Boolean"), ScalarConfig::Bool),
-        (
-            Name::new_unchecked("Int"),
-            ScalarConfig::Int { min: 0, max: 100 },
-        ),
-        (
-            Name::new_unchecked("ID"),
-            ScalarConfig::Int { min: 0, max: 100 },
-        ),
-        (
-            Name::new_unchecked("Float"),
-            ScalarConfig::Float {
-                min: -1.0,
-                max: 1.0,
-            },
-        ),
-        (
-            Name::new_unchecked("String"),
-            ScalarConfig::String {
-                min_len: 1,
-                max_len: 10,
-            },
-        ),
-    ]
-    .into_iter()
-    .collect()
 }
