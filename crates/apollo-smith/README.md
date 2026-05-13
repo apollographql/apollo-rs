@@ -164,29 +164,119 @@ let response = ResponseBuilder::new(&mut rng, &doc, &schema)
 
 ### Configuring scalar generation
 
-Use `with_scalar_config` to override how values are generated for specific scalar types:
+Use `with_scalar_generator` to override how values are generated for specific scalar types:
 
 ```rust,ignore
-use apollo_smith::{ResponseBuilder, ScalarConfig};
+use apollo_smith::{ResponseBuilder, DefaultScalarGenerator};
 use apollo_compiler::Name;
 
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-    .with_scalar_config(
+    .with_scalar_generator(
         Name::new_unchecked("ID".into()),
-        ScalarConfig::String { min_len: 8, max_len: 8 },
+        DefaultScalarGenerator::String { min_len: 8, max_len: 8 }.boxed(),
     )
     .build()?;
 ```
 
-### Federation support
-
-For Apollo Federation subgraphs, you can use `override_sdl` to provide correct `_service { sdl }`
-responses instead of including the full schema (and all the generated federation types) in the response:
+Or with completely custom generation logic:
 
 ```rust,ignore
+use apollo_smith::{ResponseBuilder, DefaultScalarGenerator};
+use apollo_compiler::Name;
+
+struct IncrementingGenerator {
+    id: i32,
+}
+
+impl<R: RandomProvider> ScalarGenerator<R> for IncrementingGenerator {
+    fn generate(&mut self, _rng: &mut R) -> Result<Value, ResponseError> {
+        self.id += 1;
+        Ok(Value::Number(self.id.into()))
+    }
+}
+
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-    .override_sdl(&original_sdl_string)
+    .with_scalar_generator(
+        Name::new_unchecked("ID".into()),
+        Box::new(IncrementingGenerator { id: 0 }) as Box<dyn ScalarGenerator<_>>,
+    )
+    .build();
+```
+
+### Configuring object generation
+
+Use `with_object_generator` to take over generation for an entire object (or
+interface/union) type. The generator receives the requested fields with
+fragment spreads and inline fragments already flattened and grouped by
+response key (alias if present, else field name), so it can return only the
+fields the caller asked for.
+
+```rust,ignore
+use apollo_smith::{ObjectGenerator, RandomProvider, ResponseBuilder, ResponseError, ScalarGenerators};
+use apollo_compiler::executable::Field;
+use apollo_compiler::{Name, Node};
+use indexmap::IndexMap;
+use serde_json_bytes::{Map, Value};
+
+/// Generator for the federation `_Service` type that returns the real schema SDL.
+struct ServiceGenerator {
+    sdl: String,
+}
+
+impl<R: RandomProvider> ObjectGenerator<R> for ServiceGenerator {
+    fn generate(
+        &mut self,
+        _rng: &mut R,
+        _scalars: &mut ScalarGenerators<R>,
+        fields: &IndexMap<String, Vec<Node<Field>>>,
+    ) -> Result<Value, ResponseError> {
+        let mut obj = Map::new();
+        for (response_key, group) in fields {
+            // The first field in the group is representative — multiple entries only
+            // appear when the same response key shows up in several fragments.
+            if group[0].name == "sdl" {
+                obj.insert(response_key.clone(), Value::String(self.sdl.clone().into()));
+            }
+        }
+        Ok(Value::Object(obj))
+    }
+}
+
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_object_generator(
+        Name::new_unchecked("_Service"),
+        Box::new(ServiceGenerator { sdl })
+            as Box<dyn ObjectGenerator<_>>,
+    )
     .build()?;
+```
+
+The `scalars` argument lets an object generator delegate leaf-field generation
+back to the builder's registered scalar generators:
+
+```rust,ignore
+impl<R: RandomProvider> ObjectGenerator<R> for PartialUserGenerator {
+    fn generate(
+        &mut self,
+        rng: &mut R,
+        scalars: &mut ScalarGenerators<R>,
+        fields: &IndexMap<String, Vec<Node<Field>>>,
+    ) -> Result<Value, ResponseError> {
+        let mut obj = Map::new();
+        for (response_key, group) in fields {
+            let field = &group[0];
+            let value = if field.name == "id" {
+                Value::String(self.next_id().into())
+            } else {
+                // Defer to whatever scalar generator the builder has registered
+                // (falling back to the default if none is set).
+                scalars.generate(field.ty().inner_named_type(), rng)?
+            };
+            obj.insert(response_key.clone(), value);
+        }
+        Ok(Value::Object(obj))
+    }
+}
 ```
 
 ## Limitations

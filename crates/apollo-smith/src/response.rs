@@ -1,7 +1,9 @@
-use crate::random::default_scalar_configs;
+use crate::generators::default_scalar_generators;
+use crate::generators::ObjectGenerator;
+use crate::generators::ScalarGenerator;
+use crate::generators::ScalarGenerators;
 use crate::random::RandomProvider;
 use crate::random::ResponseError;
-use crate::random::ScalarConfig;
 use apollo_compiler::executable::Field;
 use apollo_compiler::executable::Selection;
 use apollo_compiler::executable::SelectionSet;
@@ -18,7 +20,6 @@ use serde_json_bytes::Value;
 use std::collections::HashMap;
 
 const TYPENAME: &str = "__typename";
-const SERVICE: &str = "_service";
 
 /// Builds a GraphQL response which matches the shape of a given executable GraphQL document.
 ///
@@ -39,12 +40,12 @@ pub struct ResponseBuilder<'a, 'doc, 'schema, R: RandomProvider> {
     rng: &'a mut R,
     doc: &'doc Valid<ExecutableDocument>,
     schema: &'schema Valid<Schema>,
-    scalar_configs: HashMap<Name, ScalarConfig>,
+    scalar_generators: HashMap<Name, Box<dyn ScalarGenerator<R>>>,
+    object_generators: HashMap<Name, Box<dyn ObjectGenerator<R>>>,
     min_list_size: usize,
     max_list_size: usize,
     null_ratio: Option<(u32, u32)>,
     operation_name: Option<&'doc str>,
-    sdl: Option<String>,
 }
 
 impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R> {
@@ -58,21 +59,41 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
             rng,
             doc,
             schema,
-            scalar_configs: default_scalar_configs(),
+            scalar_generators: default_scalar_generators(),
+            object_generators: HashMap::new(),
             min_list_size: 0,
             max_list_size: 5,
             null_ratio: None,
             operation_name: None,
-            sdl: None,
         }
     }
 
-    /// Register a [`ScalarConfig`] for generating values of the named scalar type.
+    /// Register a [`ScalarGenerator`] for generating values of the named scalar type.
     ///
     /// This overrides the default configuration for built-in scalars or provides
-    /// generation config for custom scalars.
-    pub fn with_scalar_config(mut self, scalar_name: Name, config: ScalarConfig) -> Self {
-        self.scalar_configs.insert(scalar_name, config);
+    /// generation behavior for custom scalars.
+    pub fn with_scalar_generator(
+        mut self,
+        scalar_name: Name,
+        generator: Box<dyn ScalarGenerator<R>>,
+    ) -> Self {
+        self.scalar_generators.insert(scalar_name, generator);
+        self
+    }
+
+    /// Register an [`ObjectGenerator`] for the named object (or interface/union) type.
+    ///
+    /// When the builder is about to produce a value of this type — at the root or any nested
+    /// position, including each item of a list — the generator is invoked instead of the
+    /// default field-by-field generation. The generator receives the requested fields with
+    /// fragment spreads and inline fragments already flattened and grouped by response key,
+    /// and its return value is used as-is (the builder does not recurse into it).
+    pub fn with_object_generator(
+        mut self,
+        type_name: Name,
+        generator: Box<dyn ObjectGenerator<R>>,
+    ) -> Self {
+        self.object_generators.insert(type_name, generator);
         self
     }
 
@@ -98,13 +119,6 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
     /// If the operation does not exist, returns a response with `data: null`.
     pub fn with_operation_name(mut self, operation_name: Option<&'doc str>) -> Self {
         self.operation_name = operation_name;
-        self
-    }
-
-    /// Overrides the schema SDL string for federation `_service { sdl }` responses. If not set, `_service`
-    /// will respond with the full SDL for `self.schema` which may include implicit federation types.
-    pub fn override_sdl(mut self, sdl: impl Into<String>) -> Self {
-        self.sdl = Some(sdl.into());
         self
     }
 
@@ -162,6 +176,12 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
 
     fn selection_set(&mut self, selection_set: &SelectionSet) -> Result<Value, ResponseError> {
         let grouped_fields = self.collect_fields(selection_set);
+
+        if let Some(generator) = self.object_generators.get_mut(&selection_set.ty) {
+            let mut scalars = ScalarGenerators::new(&mut self.scalar_generators);
+            return generator.generate(self.rng, &mut scalars, &grouped_fields);
+        }
+
         let mut result = Map::new();
 
         for (key, fields) in grouped_fields {
@@ -187,11 +207,6 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
                     selection_set.ty.to_string()
                 };
                 Value::String(type_name.into())
-            } else if meta_field.name == SERVICE {
-                let sdl = self.sdl.clone().unwrap_or_else(|| self.schema.to_string());
-                let mut service_obj = Map::new();
-                service_obj.insert("sdl".to_string(), Value::String(sdl.into()));
-                Value::Object(service_obj)
             } else if !meta_field.ty().is_non_null() && self.should_be_null()? {
                 Value::Null
             } else {
@@ -264,11 +279,9 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
                     .expect("choose_index returned valid index");
                 Ok(Value::String(enum_value.value.to_string().into()))
             }
-            ExtendedType::Scalar(scalar) => self
-                .scalar_configs
-                .get(&scalar.name)
-                .unwrap_or(&ScalarConfig::DEFAULT)
-                .generate(self.rng),
+            ExtendedType::Scalar(scalar) => {
+                ScalarGenerators::new(&mut self.scalar_generators).generate(&scalar.name, self.rng)
+            }
             _ => unreachable!("A field with an empty selection set must be a scalar or enum type"),
         }
     }
@@ -533,49 +546,7 @@ mod tests {
     }
 
     #[test]
-    fn service_sdl_defaults_to_schema() {
-        let schema_with_service = r#"
-            type Query {
-                _service: _Service!
-            }
-            type _Service {
-                sdl: String!
-            }
-        "#;
-        let service_schema =
-            Schema::parse_and_validate(schema_with_service, "schema.graphql").unwrap();
-        let query = "query { _service { sdl } }";
-        let doc = ExecutableDocument::parse_and_validate(&service_schema, query, "query.graphql")
-            .unwrap();
-
-        let mut rng = RandProvider(rand::rng());
-        let response = ResponseBuilder::new(&mut rng, &doc, &service_schema)
-            .build()
-            .unwrap();
-
-        let sdl = response
-            .get("data")
-            .unwrap()
-            .get("_service")
-            .unwrap()
-            .get("sdl")
-            .unwrap()
-            .as_str()
-            .unwrap();
-
-        // Should be the serialized schema, not random data
-        assert!(
-            sdl.contains("_Service"),
-            "SDL should contain the schema types"
-        );
-        assert!(
-            sdl.contains("_service"),
-            "SDL should contain the _service field"
-        );
-    }
-
-    #[test]
-    fn service_sdl_override() {
+    fn custom_object_override() {
         let schema_with_service = r#"
             type Query {
                 _service: _Service!
@@ -588,10 +559,36 @@ mod tests {
         let query = "query { _service { sdl } }";
         let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
 
+        struct SDLGenerator {
+            sdl: String,
+        }
+
+        impl<R: RandomProvider> ObjectGenerator<R> for SDLGenerator {
+            fn generate(
+                &mut self,
+                _rng: &mut R,
+                _scalars: &mut ScalarGenerators<R>,
+                fields: &IndexMap<String, Vec<Node<Field>>>,
+            ) -> Result<Value, ResponseError> {
+                let mut service_obj = Map::new();
+                for (key, group) in fields {
+                    if group[0].name == "sdl" {
+                        service_obj.insert(key.clone(), Value::String(self.sdl.clone().into()));
+                    }
+                }
+                Ok(Value::Object(service_obj))
+            }
+        }
+
         let custom_sdl = "type Query { hello: String }";
         let mut rng = RandProvider(rand::rng());
         let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-            .override_sdl(custom_sdl)
+            .with_object_generator(
+                Name::new_unchecked("_Service"),
+                Box::new(SDLGenerator {
+                    sdl: custom_sdl.to_owned(),
+                }) as Box<dyn ObjectGenerator<_>>,
+            )
             .build()
             .unwrap();
 
@@ -606,5 +603,100 @@ mod tests {
             .unwrap();
 
         assert_eq!(sdl, custom_sdl);
+    }
+
+    #[test]
+    fn custom_scalar_override() {
+        let schema_sdl = r#"
+            scalar UUID
+            type Query {
+                id: UUID!
+            }
+        "#;
+        let schema = Schema::parse_and_validate(schema_sdl, "schema.graphql").unwrap();
+        let query = "query { id }";
+        let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+
+        struct ConstantGenerator(&'static str);
+
+        impl<R: RandomProvider> ScalarGenerator<R> for ConstantGenerator {
+            fn generate(&mut self, _rng: &mut R) -> Result<Value, ResponseError> {
+                Ok(Value::String(self.0.into()))
+            }
+        }
+
+        let mut rng = RandProvider(rand::rng());
+        let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+            .with_scalar_generator(
+                Name::new_unchecked("UUID"),
+                Box::new(ConstantGenerator("00000000-0000-0000-0000-000000000000"))
+                    as Box<dyn ScalarGenerator<_>>,
+            )
+            .build()
+            .unwrap();
+
+        let id = response
+            .get("data")
+            .unwrap()
+            .get("id")
+            .unwrap()
+            .as_str()
+            .unwrap();
+        assert_eq!(id, "00000000-0000-0000-0000-000000000000");
+    }
+
+    #[test]
+    fn object_generator_delegates_to_scalar_generators() {
+        // An ObjectGenerator that doesn't want to hand-roll every leaf field can
+        // delegate to the builder's registered scalar generators. Here we register a
+        // custom `ID` generator and assert the object generator reuses it.
+        let schema = Schema::parse_and_validate(SIMPLE_SCHEMA, "schema.graphql").unwrap();
+        let query = r#"query { user(id: "1") { id name } }"#;
+        let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+
+        struct UserGenerator;
+        impl<R: RandomProvider> ObjectGenerator<R> for UserGenerator {
+            fn generate(
+                &mut self,
+                rng: &mut R,
+                scalars: &mut ScalarGenerators<R>,
+                fields: &IndexMap<String, Vec<Node<Field>>>,
+            ) -> Result<Value, ResponseError> {
+                let mut obj = Map::new();
+                for (key, group) in fields {
+                    let scalar_name = group[0].ty().inner_named_type();
+                    obj.insert(key.clone(), scalars.generate(scalar_name, rng)?);
+                }
+                Ok(Value::Object(obj))
+            }
+        }
+
+        struct ConstantGenerator(&'static str);
+        impl<R: RandomProvider> ScalarGenerator<R> for ConstantGenerator {
+            fn generate(&mut self, _rng: &mut R) -> Result<Value, ResponseError> {
+                Ok(Value::String(self.0.into()))
+            }
+        }
+
+        let mut rng = RandProvider(rand::rng());
+        let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+            .with_scalar_generator(
+                Name::new_unchecked("ID"),
+                Box::new(ConstantGenerator("user-id")) as Box<dyn ScalarGenerator<_>>,
+            )
+            .with_object_generator(
+                Name::new_unchecked("User"),
+                Box::new(UserGenerator) as Box<dyn ObjectGenerator<_>>,
+            )
+            .build()
+            .unwrap();
+
+        let user = response.get("data").unwrap().get("user").unwrap();
+        assert_eq!(user.get("id").unwrap().as_str().unwrap(), "user-id");
+        // `name` is a String — no custom scalar registered, so it falls back to the
+        // default alphanumeric generator (length 1–10).
+        let name = user.get("name").unwrap().as_str().unwrap();
+        assert!((1..=10).contains(&name.len()));
+        assert!(name.chars().all(|c| c.is_ascii_alphanumeric()));
     }
 }
