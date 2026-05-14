@@ -109,11 +109,7 @@ impl DocumentBuilder<'_> {
             let gen_str = String::from_utf8(
                 (0..size)
                     .map(|curr_idx| {
-                        // `u.choose(&slice)` reads just enough bytes to pick
-                        // one of `slice.len()` choices (1 byte for our
-                        // sub-64-entry charsets). The previous implementation
-                        // pulled `u.arbitrary::<usize>()` — 8 bytes on
-                        // 64-bit — for every single character.
+                        // GraphQL names can't start with a digit or `_`.
                         let charset = if curr_idx == 0 {
                             CHARSET_NAME_HEAD
                         } else {
