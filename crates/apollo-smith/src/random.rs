@@ -11,6 +11,9 @@ const ALPHANUM_CHARS: &[char; 62] = &[
 /// Error type for response generation.
 #[derive(Debug, thiserror::Error)]
 pub enum ResponseError {
+    /// The randomness source attempted to choose from an empty range.
+    #[error("randomness source attempted to choose from an empty range")]
+    EmptyChoose,
     /// The randomness source was exhausted or produced invalid data.
     #[error("randomness source exhausted or produced invalid data")]
     Exhausted,
@@ -78,7 +81,7 @@ impl RandomProvider for Unstructured<'_> {
 
     fn choose_index(&mut self, len: usize) -> Result<usize, ResponseError> {
         self.choose_index(len)
-            .map_err(|_| ResponseError::InvalidFormat("cannot choose from empty collection".into()))
+            .map_err(|_| ResponseError::EmptyChoose)
     }
 
     fn ratio(&mut self, numerator: u32, denominator: u32) -> Result<bool, ResponseError> {
@@ -122,9 +125,7 @@ impl<R: rand::Rng> RandomProvider for RandProvider<R> {
 
     fn choose_index(&mut self, len: usize) -> Result<usize, ResponseError> {
         if len == 0 {
-            return Err(ResponseError::InvalidFormat(
-                "cannot choose from empty collection".into(),
-            ));
+            return Err(ResponseError::EmptyChoose);
         }
         Ok(self.0.random_range(0..len))
     }
