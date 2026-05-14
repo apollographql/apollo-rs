@@ -196,36 +196,47 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
     ///
     /// For unions, a random member is chosen. For interfaces, a random implementing
     /// object type is chosen. For object (or any other) types, `ty` is returned as-is.
-    fn concrete_type(&mut self, ty: &Name) -> Result<Name, ResponseError> {
+    fn concrete_type<'s>(&mut self, ty: &'s Name) -> Result<&'s Name, ResponseError>
+    where
+        'schema: 's,
+    {
         match self.schema.types.get(ty) {
             Some(ExtendedType::Union(union_ty)) => {
                 let idx = self.rng.choose_index(union_ty.members.len())?;
-                Ok(union_ty
+                let member = union_ty
                     .members
                     .get_index(idx)
-                    .expect("choose_index returned valid index")
-                    .name
-                    .clone())
+                    .expect("choose_index returned valid index");
+                Ok(&member.name)
             }
             Some(ExtendedType::Interface(_)) => {
-                let implementers: Vec<Name> = self
+                let count = self
+                    .schema
+                    .types
+                    .values()
+                    .filter(|t| {
+                        matches!(t, ExtendedType::Object(obj) if obj.implements_interfaces.contains(ty))
+                    })
+                    .count();
+                if count == 0 {
+                    return Ok(ty);
+                }
+                let idx = self.rng.choose_index(count)?;
+                let chosen = self
                     .schema
                     .types
                     .iter()
                     .filter_map(|(name, t)| match t {
                         ExtendedType::Object(obj) if obj.implements_interfaces.contains(ty) => {
-                            Some(name.clone())
+                            Some(name)
                         }
                         _ => None,
                     })
-                    .collect();
-                if implementers.is_empty() {
-                    return Ok(ty.clone());
-                }
-                let idx = self.rng.choose_index(implementers.len())?;
-                Ok(implementers[idx].clone())
+                    .nth(idx)
+                    .expect("idx came from counting the same filter");
+                Ok(chosen)
             }
-            _ => Ok(ty.clone()),
+            _ => Ok(ty),
         }
     }
 
@@ -249,7 +260,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
 
     fn selection_set(&mut self, selection_set: &SelectionSet) -> Result<Value, ResponseError> {
         let concrete = self.concrete_type(&selection_set.ty)?;
-        let grouped_fields = self.collect_fields(selection_set, &concrete);
+        let grouped_fields = self.collect_fields(selection_set, concrete);
 
         if let Some(generator) = self.object_generators.get_mut(&selection_set.ty) {
             let mut scalars = ScalarGenerators::new(&mut self.scalar_generators);
