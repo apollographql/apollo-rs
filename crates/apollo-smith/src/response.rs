@@ -145,9 +145,14 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
 
     /// Collect fields from a selection set, grouping by response key (alias or field name).
     ///
-    /// This flattens fragment spreads and inline fragments, merging fields that share the same
-    /// response key.
-    fn collect_fields(&self, selection_set: &SelectionSet) -> IndexMap<String, Vec<Node<Field>>> {
+    /// Inline fragments and fragment spreads are flattened into the result, but only when
+    /// their type condition applies to `concrete_type`. Fields sharing a response key are
+    /// merged into a single entry.
+    fn collect_fields(
+        &self,
+        selection_set: &SelectionSet,
+        concrete_type: &Name,
+    ) -> IndexMap<String, Vec<Node<Field>>> {
         let mut collected: IndexMap<String, Vec<Node<Field>>> = IndexMap::new();
 
         for selection in &selection_set.selections {
@@ -158,14 +163,27 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
                 }
                 Selection::FragmentSpread(fragment) => {
                     if let Some(fragment_def) = self.doc.fragments.get(&fragment.fragment_name) {
-                        for (key, mut fields) in self.collect_fields(&fragment_def.selection_set) {
-                            collected.entry(key).or_default().append(&mut fields);
+                        if self.type_condition_matches(fragment_def.type_condition(), concrete_type)
+                        {
+                            for (key, mut fields) in
+                                self.collect_fields(&fragment_def.selection_set, concrete_type)
+                            {
+                                collected.entry(key).or_default().append(&mut fields);
+                            }
                         }
                     }
                 }
                 Selection::InlineFragment(inline_fragment) => {
-                    for (key, mut fields) in self.collect_fields(&inline_fragment.selection_set) {
-                        collected.entry(key).or_default().append(&mut fields);
+                    let matches = match &inline_fragment.type_condition {
+                        None => true,
+                        Some(cond) => self.type_condition_matches(cond, concrete_type),
+                    };
+                    if matches {
+                        for (key, mut fields) in
+                            self.collect_fields(&inline_fragment.selection_set, concrete_type)
+                        {
+                            collected.entry(key).or_default().append(&mut fields);
+                        }
                     }
                 }
             }
@@ -174,8 +192,64 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
         collected
     }
 
+    /// Resolve the concrete object type that will be produced for `ty`.
+    ///
+    /// For unions, a random member is chosen. For interfaces, a random implementing
+    /// object type is chosen. For object (or any other) types, `ty` is returned as-is.
+    fn concrete_type(&mut self, ty: &Name) -> Result<Name, ResponseError> {
+        match self.schema.types.get(ty) {
+            Some(ExtendedType::Union(union_ty)) => {
+                let idx = self.rng.choose_index(union_ty.members.len())?;
+                Ok(union_ty
+                    .members
+                    .get_index(idx)
+                    .expect("choose_index returned valid index")
+                    .name
+                    .clone())
+            }
+            Some(ExtendedType::Interface(_)) => {
+                let implementers: Vec<Name> = self
+                    .schema
+                    .types
+                    .iter()
+                    .filter_map(|(name, t)| match t {
+                        ExtendedType::Object(obj) if obj.implements_interfaces.contains(ty) => {
+                            Some(name.clone())
+                        }
+                        _ => None,
+                    })
+                    .collect();
+                if implementers.is_empty() {
+                    return Ok(ty.clone());
+                }
+                let idx = self.rng.choose_index(implementers.len())?;
+                Ok(implementers[idx].clone())
+            }
+            _ => Ok(ty.clone()),
+        }
+    }
+
+    /// Whether a fragment with type condition `cond` should contribute fields when the
+    /// object being generated has concrete type `concrete`.
+    fn type_condition_matches(&self, cond: &Name, concrete: &Name) -> bool {
+        if cond == concrete {
+            return true;
+        }
+        match self.schema.types.get(cond) {
+            Some(ExtendedType::Interface(_)) => matches!(
+                self.schema.types.get(concrete),
+                Some(ExtendedType::Object(obj)) if obj.implements_interfaces.contains(cond)
+            ),
+            Some(ExtendedType::Union(union_ty)) => {
+                union_ty.members.iter().any(|m| m.name == *concrete)
+            }
+            _ => false,
+        }
+    }
+
     fn selection_set(&mut self, selection_set: &SelectionSet) -> Result<Value, ResponseError> {
-        let grouped_fields = self.collect_fields(selection_set);
+        let concrete = self.concrete_type(&selection_set.ty)?;
+        let grouped_fields = self.collect_fields(selection_set, &concrete);
 
         if let Some(generator) = self.object_generators.get_mut(&selection_set.ty) {
             let mut scalars = ScalarGenerators::new(&mut self.scalar_generators);
@@ -189,24 +263,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
             let meta_field = &fields[0];
 
             let val = if meta_field.name == TYPENAME {
-                let type_name = if let Some(union_ty) = self
-                    .schema
-                    .types
-                    .get(&selection_set.ty)
-                    .and_then(|t| t.as_union())
-                {
-                    // Pick a specific member of the union rather than the union name itself
-                    let idx = self.rng.choose_index(union_ty.members.len())?;
-                    union_ty
-                        .members
-                        .get_index(idx)
-                        .expect("choose_index returned valid index")
-                        .name
-                        .to_string()
-                } else {
-                    selection_set.ty.to_string()
-                };
-                Value::String(type_name.into())
+                Value::String(concrete.to_string().into())
             } else if !meta_field.ty().is_non_null() && self.should_be_null()? {
                 Value::Null
             } else {
@@ -371,6 +428,28 @@ mod tests {
         union Content = Post | Article
     "#;
 
+    const INTERFACE_SCHEMA: &str = r#"
+        type Query {
+            user(id: ID!): User
+        }
+        type User {
+            id: ID!
+            name: String!
+            content: [Content!]!
+        }
+        interface Content {
+            title: String!
+        }
+        type Post implements Content {
+            title: String!
+            views: Int!
+        }
+        type Article implements Content {
+            title: String!
+            citations: [String!]!
+        }
+    "#;
+
     #[test]
     fn basic_response_shape() {
         let response = build_response(
@@ -533,8 +612,114 @@ mod tests {
                     typename == "Post" || typename == "Article",
                     "unexpected __typename: {typename}"
                 );
-                seen_post |= typename == "Post";
-                seen_article |= typename == "Article";
+                // Each item should only have the fields from the inline fragment whose
+                // type condition matches the chosen __typename.
+                match typename {
+                    "Post" => {
+                        assert!(item.get("title").is_some(), "Post should have title");
+                        assert!(item.get("views").is_some(), "Post should have views");
+                        assert!(
+                            item.get("citations").is_none(),
+                            "Post should not have citations"
+                        );
+                        seen_post = true;
+                    }
+                    "Article" => {
+                        assert!(item.get("title").is_some(), "Article should have title");
+                        assert!(
+                            item.get("citations").is_some(),
+                            "Article should have citations"
+                        );
+                        assert!(item.get("views").is_none(), "Article should not have views");
+                        seen_article = true
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
+
+        assert!(seen_post, "should have seen Post at least once in 100 runs");
+        assert!(
+            seen_article,
+            "should have seen Article at least once in 100 runs"
+        );
+    }
+
+    #[test]
+    fn interface_typename_picks_implementer() {
+        let schema = Schema::parse_and_validate(INTERFACE_SCHEMA, "schema.graphql").unwrap();
+        // `title` is on the interface and is requested unconditionally; the inline
+        // fragments contribute fields specific to each implementer.
+        let query = r#"
+            query {
+                user(id: "1") {
+                    content {
+                        __typename
+                        title
+                        ... on Post { views }
+                        ... on Article { citations }
+                    }
+                }
+            }
+        "#;
+        let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+
+        let mut seen_post = false;
+        let mut seen_article = false;
+
+        for _ in 0..100 {
+            let mut rng = RandProvider(rand::rng());
+            let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+                .with_null_ratio(0, 1)
+                .with_min_list_size(1)
+                .build()
+                .unwrap();
+
+            let content = response
+                .get("data")
+                .unwrap()
+                .get("user")
+                .unwrap()
+                .get("content")
+                .unwrap()
+                .as_array()
+                .unwrap();
+
+            for item in content {
+                let typename = item.get("__typename").unwrap().as_str().unwrap();
+                assert_ne!(
+                    typename, "Content",
+                    "__typename must not be the interface name"
+                );
+                assert!(
+                    typename == "Post" || typename == "Article",
+                    "unexpected __typename: {typename}"
+                );
+                // `title` is selected at the interface level, so it should be present
+                // regardless of which concrete type was chosen.
+                assert!(
+                    item.get("title").is_some(),
+                    "title should always be present"
+                );
+                match typename {
+                    "Post" => {
+                        assert!(item.get("views").is_some(), "Post should have views");
+                        assert!(
+                            item.get("citations").is_none(),
+                            "Post should not have citations"
+                        );
+                        seen_post = true;
+                    }
+                    "Article" => {
+                        assert!(
+                            item.get("citations").is_some(),
+                            "Article should have citations"
+                        );
+                        assert!(item.get("views").is_none(), "Article should not have views");
+                        seen_article = true;
+                    }
+                    _ => unreachable!(),
+                }
             }
         }
 
