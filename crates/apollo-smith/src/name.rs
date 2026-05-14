@@ -5,8 +5,7 @@ use std::fmt::Write as _;
 // First char in a GraphQL name can't be a digit and we don't want it to be
 // `_` either. Body chars can be letters, `_`, or digits.
 const CHARSET_NAME_HEAD: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const CHARSET_NAME_BODY: &[u8] =
-    b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
+const CHARSET_NAME_BODY: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
 const RESERVED_KEYWORDS: &[&str] = &[
     "on",
     "Int",
