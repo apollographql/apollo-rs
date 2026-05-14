@@ -47,6 +47,8 @@ impl<'a, R: RandomProvider> ScalarGenerators<'a, R> {
 pub enum DefaultScalarGenerator {
     /// Generate a random boolean.
     Bool,
+    /// Generate a random integer ID in the given inclusive range, serialized as a string
+    ID { min: i32, max: i32 },
     /// Generate a random integer in the given inclusive range.
     Int { min: i32, max: i32 },
     /// Generate a random float in the given inclusive range.
@@ -86,6 +88,9 @@ impl<R: RandomProvider> ScalarGenerator<R> for DefaultScalarGenerator {
                     (0..len).map(|_| rng.gen_alphanumeric_char()).collect();
                 Ok(Value::String(s?.into()))
             }
+            Self::ID { min, max } => Ok(Value::String(
+                rng.gen_i32_range(min, max)?.to_string().into(),
+            )),
         }
     }
 }
@@ -104,7 +109,7 @@ pub fn default_scalar_generators<R: RandomProvider>() -> HashMap<Name, Box<dyn S
         ),
         (
             Name::new_unchecked("ID"),
-            DefaultScalarGenerator::Int { min: 0, max: 100 }.boxed(),
+            DefaultScalarGenerator::ID { min: 0, max: 100 }.boxed(),
         ),
         (
             Name::new_unchecked("Float"),
