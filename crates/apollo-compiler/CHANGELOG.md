@@ -17,6 +17,72 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
+
+## Features
+
+- **Introduce `ExecutableDocumentBuilder` for operations with multiple sources - [trevor-scheer], [pull/1017]**
+
+  Adds an `ExecutableDocumentBuilder` that follows the same pattern as
+  `SchemaBuilder`, letting callers assemble an `ExecutableDocument` from
+  multiple sources before validation. API additions:
+
+  - `ExecutableDocumentBuilder` with `new()`, `add_ast_document()`, `parse()`,
+    and `build()` methods.
+  - `ExecutableDocument::builder()` convenience constructor.
+  - `Parser::parse_into_executable_builder()` for multi-file parsing.
+
+  ```rust
+  use apollo_compiler::{Schema, ExecutableDocument};
+  use apollo_compiler::validation::DiagnosticList;
+
+  let schema_src = "type Query { user: User } type User { id: ID }";
+  let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+  let mut errors = DiagnosticList::new(Default::default());
+  let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+      .parse("query GetUser { user { id } }", "query1.graphql")
+      .parse("query GetMore { user { id } }", "query2.graphql")
+      .build();
+
+  assert!(errors.is_empty());
+  assert_eq!(doc.operations.named.len(), 2);
+  ```
+
+## Fixes
+
+- **Validate interface field type covariance per GraphQL spec - [dariuszkuc], [pull/1036]**
+
+  Implements the `IsValidImplementationFieldType` rule from the GraphQL spec.
+  Previously, apollo-compiler only checked that implementing types contained
+  all fields required by their interfaces but did not verify that implementing
+  field types were valid subtypes. Schemas such as the following now correctly
+  fail validation:
+
+  ```graphql
+  interface Foo { x: String! }
+  type Bar implements Foo { x: String }
+  ```
+
+  The new check covers non-null covariance, list item covariance, named-type
+  subtyping (object/interface hierarchy), argument-name parity, argument-type
+  invariance, and rejects extra non-null arguments on the implementing field.
+
+  Note: schemas that previously passed validation but violated this rule will
+  now report errors.
+
+## Maintenance
+
+- **Fix collapsible-match clippy warnings - [lrlna], [pull/1035]**
+
+[dariuszkuc]: https://github.com/dariuszkuc
+[lrlna]: https://github.com/lrlna
+[trevor-scheer]: https://github.com/trevor-scheer
+[pull/1017]: https://github.com/apollographql/apollo-rs/pull/1017
+[pull/1035]: https://github.com/apollographql/apollo-rs/pull/1035
+[pull/1036]: https://github.com/apollographql/apollo-rs/pull/1036
+
+
 # [1.31.1](https://crates.io/crates/apollo-compiler/1.31.1) - 2026-02-20
 
 ## Fixes
