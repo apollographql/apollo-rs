@@ -16,28 +16,44 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [x.x.x] (unreleased) - 2026-mm-dd
+# [0.8.6](https://crates.io/crates/apollo-parser/0.8.6) - 2026-05-14
+
+## Fixes
+
+- **Correct EOF location reporting for empty input - [Abdel-Monaam-Aouini], [pull/1021]**
+
+  When lexing an empty input, the parser reported the EOF token one byte past
+  the end of the source. This caused downstream consumers (error reporters,
+  span lookups) to point past the file when surfacing diagnostics for empty
+  documents. The lexer now reports EOF at the actual end of the input.
 
 ## Maintenance
-- **use peek_token() instead of peek_data().unwrap() - [surajk-m], [pull/1028] [pull/900]**
+
+- **Use `peek_token()` instead of `peek_data().unwrap()` - [surajk-m], [pull/1028], [pull/900]**
 
   There were a few places where we called `peek()` to check an upcoming token's
   kind, and then `peek_data().unwrap()` to check its value. For example, to
   identify what type of definition is coming up: `type`, `union`, or something
   else, like in [this code snippet
-  here](https://github.com/apollographql/apollo-rs/blob/6c9adc4c076d23a83de740ac31717ca921ce6161/crates/apollo-parser/src/parser/grammar/object.rs#L27-L33)
+  here](https://github.com/apollographql/apollo-rs/blob/6c9adc4c076d23a83de740ac31717ca921ce6161/crates/apollo-parser/src/parser/grammar/object.rs#L27-L33).
 
-  The `unwrap()` call was valid in those cases, but it can be imporved. For it to
-  continue to be valid, the current token **must not** change between those calls,
-  and this is not statically verifiable. A mistake in a refactor could disconnect
-  the `peek()` and `peek_data()` calls and then the unwrap could panic.
+  The `unwrap()` call was valid in those cases, but it can be improved. For it
+  to continue to be valid, the current token **must not** change between those
+  calls, and this is not statically verifiable. A mistake in a refactor could
+  disconnect the `peek()` and `peek_data()` calls and the unwrap could panic.
 
   This change replaces these specific uses of `peek_data().unwrap()` with
-  `peek_token()`. 
+  `peek_token()`.
 
+- **Fix collapsible-match clippy warnings - [lrlna], [pull/1035]**
+
+[Abdel-Monaam-Aouini]: https://github.com/Abdel-Monaam-Aouini
+[lrlna]: https://github.com/lrlna
 [surajk-m]: https://github.com/surajk-m
-[pull/1028]: https://github.com/apollographql/apollo-rs/pull/1028
 [pull/900]: https://github.com/apollographql/apollo-rs/pull/900
+[pull/1021]: https://github.com/apollographql/apollo-rs/pull/1021
+[pull/1028]: https://github.com/apollographql/apollo-rs/pull/1028
+[pull/1035]: https://github.com/apollographql/apollo-rs/pull/1035
 
 # [0.8.5](https://crates.io/crates/apollo-parser/0.8.5) - 2026-02-20
 
