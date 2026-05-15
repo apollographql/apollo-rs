@@ -333,9 +333,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
                     .expect("choose_index returned valid index");
                 Ok(Value::String(enum_value.value.to_string().into()))
             }
-            ExtendedType::Scalar(scalar) => {
-                self.generators.generate_scalar(&scalar.name, self.rng)
-            }
+            ExtendedType::Scalar(scalar) => self.generators.generate_scalar(&scalar.name, self.rng),
             _ => unreachable!("A field with an empty selection set must be a scalar or enum type"),
         }
     }
