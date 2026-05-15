@@ -100,7 +100,7 @@ impl<R: RandomProvider> Generators<R> {
 }
 
 /// Generates a random boolean.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct BooleanGenerator;
 
 impl<R: RandomProvider> Generator<R> for BooleanGenerator {
@@ -132,6 +132,12 @@ impl<R: RandomProvider> Generator<R> for IntGenerator {
     }
 }
 
+impl Default for IntGenerator {
+    fn default() -> Self {
+        Self { min: 0, max: 100 }
+    }
+}
+
 /// Generates a random float in the given inclusive range.
 #[derive(Debug, Clone)]
 pub struct FloatGenerator {
@@ -150,6 +156,15 @@ impl<R: RandomProvider> Generator<R> for FloatGenerator {
         let num = Number::from_f64(f)
             .ok_or_else(|| ResponseError::InvalidFormat("generated non-finite float".into()))?;
         Ok(Value::Number(num))
+    }
+}
+
+impl Default for FloatGenerator {
+    fn default() -> Self {
+        Self {
+            min: -1.0,
+            max: 1.0,
+        }
     }
 }
 
@@ -174,6 +189,15 @@ impl<R: RandomProvider> Generator<R> for StringGenerator {
     }
 }
 
+impl Default for StringGenerator {
+    fn default() -> Self {
+        Self {
+            min_len: 1,
+            max_len: 10,
+        }
+    }
+}
+
 /// Generates a random integer ID in the given inclusive range, serialized as a string.
 #[derive(Debug, Clone)]
 pub struct IdGenerator {
@@ -194,33 +218,28 @@ impl<R: RandomProvider> Generator<R> for IdGenerator {
     }
 }
 
+impl Default for IdGenerator {
+    fn default() -> Self {
+        Self { min: 0, max: 100 }
+    }
+}
+
 impl<R: RandomProvider> Default for Generators<R> {
     fn default() -> Self {
         let map: HashMap<Name, Box<dyn Generator<R>>> = [
-            (Name::new_unchecked("Boolean"), BooleanGenerator.boxed()),
             (
-                Name::new_unchecked("Int"),
-                IntGenerator { min: 0, max: 100 }.boxed(),
+                Name::new_unchecked("Boolean"),
+                BooleanGenerator::default().boxed(),
             ),
-            (
-                Name::new_unchecked("ID"),
-                IdGenerator { min: 0, max: 100 }.boxed(),
-            ),
+            (Name::new_unchecked("Int"), IntGenerator::default().boxed()),
+            (Name::new_unchecked("ID"), IdGenerator::default().boxed()),
             (
                 Name::new_unchecked("Float"),
-                FloatGenerator {
-                    min: -1.0,
-                    max: 1.0,
-                }
-                .boxed(),
+                FloatGenerator::default().boxed(),
             ),
             (
                 Name::new_unchecked("String"),
-                StringGenerator {
-                    min_len: 1,
-                    max_len: 10,
-                }
-                .boxed(),
+                StringGenerator::default().boxed(),
             ),
         ]
         .into_iter()
