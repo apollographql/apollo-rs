@@ -227,10 +227,7 @@ impl Default for IdGenerator {
 impl<R: RandomProvider> Default for Generators<R> {
     fn default() -> Self {
         let map: HashMap<Name, Box<dyn Generator<R>>> = [
-            (
-                Name::new_unchecked("Boolean"),
-                BooleanGenerator::default().boxed(),
-            ),
+            (Name::new_unchecked("Boolean"), BooleanGenerator.boxed()),
             (Name::new_unchecked("Int"), IntGenerator::default().boxed()),
             (Name::new_unchecked("ID"), IdGenerator::default().boxed()),
             (
