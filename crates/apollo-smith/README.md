@@ -173,13 +173,13 @@ response key) for composite types.
 To swap one of the built-in scalar defaults:
 
 ```rust,ignore
-use apollo_smith::{ResponseBuilder, DefaultScalarGenerator};
+use apollo_smith::{Generator, ResponseBuilder, StringGenerator};
 use apollo_compiler::Name;
 
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
     .with_generator(
         Name::new_unchecked("ID".into()),
-        DefaultScalarGenerator::String { min_len: 8, max_len: 8 }.boxed(),
+        StringGenerator { min_len: 8, max_len: 8 }.boxed(),
     )
     .build()?;
 ```
