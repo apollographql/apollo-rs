@@ -173,13 +173,13 @@ response key) for composite types.
 To swap one of the built-in scalar defaults:
 
 ```rust,ignore
-use apollo_smith::{Generator, ResponseBuilder, StringGenerator};
+use apollo_smith::{ResponseBuilder, StringGenerator};
 use apollo_compiler::Name;
 
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
     .with_generator(
         Name::new_unchecked("ID".into()),
-        StringGenerator { min_len: 8, max_len: 8 }.boxed(),
+        StringGenerator { min_len: 8, max_len: 8 },
     )
     .build()?;
 ```
@@ -212,7 +212,7 @@ impl<R: RandomProvider> Generator<R> for IncrementingGenerator {
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
     .with_generator(
         Name::new_unchecked("ID".into()),
-        Box::new(IncrementingGenerator { id: 0 }) as Box<dyn Generator<_>>,
+        IncrementingGenerator { id: 0 },
     )
     .build();
 ```
@@ -256,8 +256,7 @@ impl<R: RandomProvider> Generator<R> for ServiceGenerator {
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
     .with_generator(
         Name::new_unchecked("_Service"),
-        Box::new(ServiceGenerator { sdl })
-            as Box<dyn Generator<_>>,
+        ServiceGenerator { sdl },
     )
     .build()?;
 ```

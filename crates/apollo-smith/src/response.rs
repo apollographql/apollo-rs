@@ -1,4 +1,3 @@
-use crate::generators::default_generators;
 use crate::generators::Generator;
 use crate::generators::Generators;
 use crate::random::RandomProvider;
@@ -56,7 +55,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
             rng,
             doc,
             schema,
-            generators: default_generators(),
+            generators: Generators::default(),
             min_list_size: 0,
             max_list_size: 5,
             null_ratio: None,
@@ -74,12 +73,11 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
     /// is used as-is (the builder does not recurse into it). For scalar types, the
     /// `fields` argument is empty and the generator's return value replaces the
     /// configured default.
-    pub fn with_generator(
-        mut self,
-        type_name: Name,
-        generator: Box<dyn Generator<R>>,
-    ) -> Self {
-        self.generators.insert(type_name, generator);
+    pub fn with_generator<G>(mut self, type_name: Name, generator: G) -> Self
+    where
+        G: Generator<R> + 'static,
+    {
+        self.generators.insert(type_name, Box::new(generator));
         self
     }
 
@@ -769,9 +767,9 @@ mod tests {
         let response = ResponseBuilder::new(&mut rng, &doc, &schema)
             .with_generator(
                 Name::new_unchecked("_Service"),
-                Box::new(SDLGenerator {
+                SDLGenerator {
                     sdl: custom_sdl.to_owned(),
-                }) as Box<dyn Generator<_>>,
+                },
             )
             .build()
             .unwrap();
@@ -818,8 +816,7 @@ mod tests {
         let response = ResponseBuilder::new(&mut rng, &doc, &schema)
             .with_generator(
                 Name::new_unchecked("UUID"),
-                Box::new(ConstantGenerator("00000000-0000-0000-0000-000000000000"))
-                    as Box<dyn Generator<_>>,
+                ConstantGenerator("00000000-0000-0000-0000-000000000000"),
             )
             .build()
             .unwrap();
@@ -874,14 +871,8 @@ mod tests {
 
         let mut rng = RandProvider(rand::rng());
         let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-            .with_generator(
-                Name::new_unchecked("ID"),
-                Box::new(ConstantGenerator("user-id")) as Box<dyn Generator<_>>,
-            )
-            .with_generator(
-                Name::new_unchecked("User"),
-                Box::new(UserGenerator) as Box<dyn Generator<_>>,
-            )
+            .with_generator(Name::new_unchecked("ID"), ConstantGenerator("user-id"))
+            .with_generator(Name::new_unchecked("User"), UserGenerator)
             .build()
             .unwrap();
 

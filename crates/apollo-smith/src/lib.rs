@@ -48,7 +48,6 @@ pub use document::Document;
 pub use enum_::EnumTypeDef;
 use field::FieldDef;
 pub use fragment::FragmentDef;
-pub use generators::default_generators;
 pub use generators::BooleanGenerator;
 pub use generators::FloatGenerator;
 pub use generators::Generator;

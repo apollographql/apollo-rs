@@ -49,10 +49,6 @@ pub struct Generators<R: RandomProvider> {
 }
 
 impl<R: RandomProvider> Generators<R> {
-    pub(crate) fn new(map: HashMap<Name, Box<dyn Generator<R>>>) -> Self {
-        Self { map }
-    }
-
     pub(crate) fn insert(&mut self, name: Name, generator: Box<dyn Generator<R>>) {
         self.map.insert(name, generator);
     }
@@ -198,36 +194,37 @@ impl<R: RandomProvider> Generator<R> for IdGenerator {
     }
 }
 
-/// Returns a [`Generators`] registry pre-populated with the built-in GraphQL scalar generators.
-pub fn default_generators<R: RandomProvider>() -> Generators<R> {
-    let map: HashMap<Name, Box<dyn Generator<R>>> = [
-        (Name::new_unchecked("Boolean"), BooleanGenerator.boxed()),
-        (
-            Name::new_unchecked("Int"),
-            IntGenerator { min: 0, max: 100 }.boxed(),
-        ),
-        (
-            Name::new_unchecked("ID"),
-            IdGenerator { min: 0, max: 100 }.boxed(),
-        ),
-        (
-            Name::new_unchecked("Float"),
-            FloatGenerator {
-                min: -1.0,
-                max: 1.0,
-            }
-            .boxed(),
-        ),
-        (
-            Name::new_unchecked("String"),
-            StringGenerator {
-                min_len: 1,
-                max_len: 10,
-            }
-            .boxed(),
-        ),
-    ]
-    .into_iter()
-    .collect();
-    Generators::new(map)
+impl<R: RandomProvider> Default for Generators<R> {
+    fn default() -> Self {
+        let map: HashMap<Name, Box<dyn Generator<R>>> = [
+            (Name::new_unchecked("Boolean"), BooleanGenerator.boxed()),
+            (
+                Name::new_unchecked("Int"),
+                IntGenerator { min: 0, max: 100 }.boxed(),
+            ),
+            (
+                Name::new_unchecked("ID"),
+                IdGenerator { min: 0, max: 100 }.boxed(),
+            ),
+            (
+                Name::new_unchecked("Float"),
+                FloatGenerator {
+                    min: -1.0,
+                    max: 1.0,
+                }
+                .boxed(),
+            ),
+            (
+                Name::new_unchecked("String"),
+                StringGenerator {
+                    min_len: 1,
+                    max_len: 10,
+                }
+                .boxed(),
+            ),
+        ]
+        .into_iter()
+        .collect();
+        Self { map }
+    }
 }
