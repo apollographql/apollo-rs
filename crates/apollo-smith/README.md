@@ -162,16 +162,22 @@ let response = ResponseBuilder::new(&mut rng, &doc, &schema)
     .build()?;
 ```
 
-### Configuring scalar generation
+### Configuring generation per type
 
-Use `with_scalar_generator` to override how values are generated for specific scalar types:
+Use `with_generator` to register a [`Generator`] for any named GraphQL type —
+scalars, objects, interfaces, or unions. The same trait powers both leaf and
+composite generation; the `fields` argument is empty for scalar types and
+contains the requested selection (flattened across fragments and grouped by
+response key) for composite types.
+
+To swap one of the built-in scalar defaults:
 
 ```rust,ignore
 use apollo_smith::{ResponseBuilder, DefaultScalarGenerator};
 use apollo_compiler::Name;
 
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-    .with_scalar_generator(
+    .with_generator(
         Name::new_unchecked("ID".into()),
         DefaultScalarGenerator::String { min_len: 8, max_len: 8 }.boxed(),
     )
@@ -181,38 +187,43 @@ let response = ResponseBuilder::new(&mut rng, &doc, &schema)
 Or with completely custom generation logic:
 
 ```rust,ignore
-use apollo_smith::{ResponseBuilder, DefaultScalarGenerator};
-use apollo_compiler::Name;
+use apollo_smith::{Generator, Generators, RandomProvider, ResponseBuilder, ResponseError};
+use apollo_compiler::executable::Field;
+use apollo_compiler::{Name, Node};
+use indexmap::IndexMap;
+use serde_json_bytes::Value;
 
 struct IncrementingGenerator {
     id: i32,
 }
 
-impl<R: RandomProvider> ScalarGenerator<R> for IncrementingGenerator {
-    fn generate(&mut self, _rng: &mut R) -> Result<Value, ResponseError> {
+impl<R: RandomProvider> Generator<R> for IncrementingGenerator {
+    fn generate(
+        &mut self,
+        _rng: &mut R,
+        _generators: &mut Generators<R>,
+        _fields: &IndexMap<String, Vec<Node<Field>>>,
+    ) -> Result<Value, ResponseError> {
         self.id += 1;
         Ok(Value::Number(self.id.into()))
     }
 }
 
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-    .with_scalar_generator(
+    .with_generator(
         Name::new_unchecked("ID".into()),
-        Box::new(IncrementingGenerator { id: 0 }) as Box<dyn ScalarGenerator<_>>,
+        Box::new(IncrementingGenerator { id: 0 }) as Box<dyn Generator<_>>,
     )
     .build();
 ```
 
-### Configuring object generation
-
-Use `with_object_generator` to take over generation for an entire object (or
-interface/union) type. The generator receives the requested fields with
-fragment spreads and inline fragments already flattened and grouped by
-response key (alias if present, else field name), so it can return only the
-fields the caller asked for.
+For composite types, the generator's return value is used as-is — the builder
+does not recurse into it. The generator receives the requested fields already
+flattened across fragments and grouped by response key, so it can return only
+what the caller asked for:
 
 ```rust,ignore
-use apollo_smith::{ObjectGenerator, RandomProvider, ResponseBuilder, ResponseError, ScalarGenerators};
+use apollo_smith::{Generator, Generators, RandomProvider, ResponseBuilder, ResponseError};
 use apollo_compiler::executable::Field;
 use apollo_compiler::{Name, Node};
 use indexmap::IndexMap;
@@ -223,11 +234,11 @@ struct ServiceGenerator {
     sdl: String,
 }
 
-impl<R: RandomProvider> ObjectGenerator<R> for ServiceGenerator {
+impl<R: RandomProvider> Generator<R> for ServiceGenerator {
     fn generate(
         &mut self,
         _rng: &mut R,
-        _scalars: &mut ScalarGenerators<R>,
+        _generators: &mut Generators<R>,
         fields: &IndexMap<String, Vec<Node<Field>>>,
     ) -> Result<Value, ResponseError> {
         let mut obj = Map::new();
@@ -243,23 +254,24 @@ impl<R: RandomProvider> ObjectGenerator<R> for ServiceGenerator {
 }
 
 let response = ResponseBuilder::new(&mut rng, &doc, &schema)
-    .with_object_generator(
+    .with_generator(
         Name::new_unchecked("_Service"),
         Box::new(ServiceGenerator { sdl })
-            as Box<dyn ObjectGenerator<_>>,
+            as Box<dyn Generator<_>>,
     )
     .build()?;
 ```
 
-The `scalars` argument lets an object generator delegate leaf-field generation
-back to the builder's registered scalar generators:
+The `generators` argument lets a composite-type generator delegate leaf-field
+generation back to the registered scalar generators via `generate_scalar`,
+falling back to the default scalar generator when no override is registered:
 
 ```rust,ignore
-impl<R: RandomProvider> ObjectGenerator<R> for PartialUserGenerator {
+impl<R: RandomProvider> Generator<R> for PartialUserGenerator {
     fn generate(
         &mut self,
         rng: &mut R,
-        scalars: &mut ScalarGenerators<R>,
+        generators: &mut Generators<R>,
         fields: &IndexMap<String, Vec<Node<Field>>>,
     ) -> Result<Value, ResponseError> {
         let mut obj = Map::new();
@@ -268,9 +280,7 @@ impl<R: RandomProvider> ObjectGenerator<R> for PartialUserGenerator {
             let value = if field.name == "id" {
                 Value::String(self.next_id().into())
             } else {
-                // Defer to whatever scalar generator the builder has registered
-                // (falling back to the default if none is set).
-                scalars.generate(field.ty().inner_named_type(), rng)?
+                generators.generate_scalar(field.ty().inner_named_type(), rng)?
             };
             obj.insert(response_key.clone(), value);
         }
