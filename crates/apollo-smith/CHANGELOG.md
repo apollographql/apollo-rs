@@ -18,6 +18,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.16.0] (https://crates.io/crates/apollo-smith/0.16.0) - 2026-05-19
+
+Important: 2 breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Improve byte efficiency for type and field name generation - [tninesling], [pull/1040]**
+- **Backport configurable response generation - [SharkBaitDLS], [tninesling], [pull/1033]**
+  This change backports behavior from the subgraph-mock that allows for configurable response
+  generation. Response generation is now generic over the source of randomness so that it can
+  be used with rand or arbitrary, which results in a breaking change to its error type.
+
+[tninesling]: https://github.com/tninesling
+[SharkBaitDLS]: https://github.com/SharkBaitDLS
+[pull/1040]: https://github.com/apollographql/apollo-rs/pull/1040
+[pull/1033]: https://github.com/apollographql/apollo-rs/pull/1033
+
+## Maintenance
+
+- **update rust crate rand to 0.10.1
+
 # [0.15.2](https://crates.io/crates/apollo-smith/0.15.2) - 2025-11-10
 
 ## Fixes
