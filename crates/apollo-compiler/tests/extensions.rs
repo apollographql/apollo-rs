@@ -203,9 +203,8 @@ fn test_orphan_extension_preserves_source_location() {
         .unwrap();
 
     let type_def = &schema.types["T"];
-    let obj = match type_def {
-        apollo_compiler::schema::ExtendedType::Object(obj) => obj,
-        _ => panic!("expected object type"),
+    let apollo_compiler::schema::ExtendedType::Object(obj) = type_def else {
+        panic!("expected object type");
     };
 
     assert!(
