@@ -189,6 +189,30 @@ fn test_orphan_extensions_kind_mismatch() {
     );
 }
 
+#[test]
+fn test_orphan_extension_preserves_source_location() {
+    let input = r#"
+        extend type T { foo: String }
+        type Query { x: Int }
+    "#;
+
+    let schema = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap();
+
+    let type_def = &schema.types["T"];
+    let apollo_compiler::schema::ExtendedType::Object(obj) = type_def else {
+        panic!("expected object type");
+    };
+
+    assert!(
+        obj.location().is_some(),
+        "Adopted orphan extension type should have a source location from the extension"
+    );
+}
+
 /// https://github.com/apollographql/apollo-rs/issues/682
 #[test]
 fn test_extend_implicit_schema() {
