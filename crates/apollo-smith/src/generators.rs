@@ -1,6 +1,42 @@
 //! Generator trait and registry used by [`ResponseBuilder`][crate::ResponseBuilder]
 //! to produce values for GraphQL types, plus the built-in generators for the
 //! standard GraphQL scalars.
+//!
+//! # Built-in defaults
+//!
+//! [`Generators::default`] pre-registers a generator for each of the five
+//! standard GraphQL scalars:
+//!
+//! | Type      | Generator                                       | Default range          |
+//! |-----------|-------------------------------------------------|------------------------|
+//! | `Boolean` | [`BooleanGenerator`]                            | `true` or `false`      |
+//! | `Int`     | [`IntGenerator`]                                | `0..=100`              |
+//! | `Float`   | [`FloatGenerator`]                              | `-1.0..=1.0`           |
+//! | `String`  | [`StringGenerator`]                             | 1–10 alphanumeric chars|
+//! | `ID`      | [`IdGenerator`]                                 | `0..=100`, stringified |
+//!
+//! Each per-type struct is public, so a custom generator can construct one
+//! directly (for example, to call a configured [`IntGenerator`] inline) or
+//! register a tuned instance via
+//! [`ResponseBuilder::with_generator`][crate::ResponseBuilder::with_generator]
+//! to override the default range.
+//!
+//! # Accessing defaults from a custom generator
+//!
+//! Every [`Generator::generate`] call receives a `&mut Generators<R>` — the
+//! same registry the builder is using, including any defaults from
+//! [`Generators::default`] and any overrides registered with
+//! [`ResponseBuilder::with_generator`][crate::ResponseBuilder::with_generator].
+//! A custom generator can delegate back to the registry in two ways:
+//!
+//! - [`Generators::generate_scalar`] — fill a leaf field by named scalar type,
+//!   falling back to a default [`StringGenerator`] if nothing is registered.
+//!   This is the common path for composite generators that only want to
+//!   customize a few fields and let defaults handle the rest.
+//! - [`Generators::try_generate`] — dispatch to any registered generator
+//!   (composite or leaf) by type name, returning `None` if none is registered.
+//!   Useful when a custom generator wants to compose results from other
+//!   registered types.
 
 use crate::random::RandomProvider;
 use crate::random::ResponseError;
@@ -44,6 +80,19 @@ pub trait Generator<R: RandomProvider> {
 }
 
 /// Registry of [`Generator`]s keyed by GraphQL type name.
+///
+/// [`Generators::default`] pre-registers a generator for each of the five
+/// standard GraphQL scalars: [`BooleanGenerator`], [`IntGenerator`],
+/// [`FloatGenerator`], [`StringGenerator`], and [`IdGenerator`]. The
+/// [`ResponseBuilder`][crate::ResponseBuilder] starts from this set and layers
+/// any overrides supplied via
+/// [`ResponseBuilder::with_generator`][crate::ResponseBuilder::with_generator]
+/// on top.
+///
+/// Custom generators receive a `&mut Generators<R>` and can delegate back to
+/// it via [`Self::generate_scalar`] (for leaf fields) or [`Self::try_generate`]
+/// (for any registered type) — see the [module-level docs][self] for the full
+/// picture.
 pub struct Generators<R: RandomProvider> {
     map: HashMap<Name, Box<dyn Generator<R>>>,
 }

@@ -261,9 +261,36 @@ let response = ResponseBuilder::new(&mut rng, &doc, &schema)
     .build()?;
 ```
 
-The `generators` argument lets a composite-type generator delegate leaf-field
-generation back to the registered scalar generators via `generate_scalar`,
-falling back to the default scalar generator when no override is registered:
+### Accessing the default generators
+
+The `generators` argument passed to every `Generator::generate` call is the
+same registry the builder is using. It starts from `Generators::default()`,
+which pre-registers a generator for each of the five standard GraphQL scalars:
+
+| Type      | Generator          | Default range                  |
+|-----------|--------------------|--------------------------------|
+| `Boolean` | `BooleanGenerator` | `true` or `false`              |
+| `Int`     | `IntGenerator`     | `0..=100`                      |
+| `Float`   | `FloatGenerator`   | `-1.0..=1.0`                   |
+| `String`  | `StringGenerator`  | 1–10 alphanumeric characters   |
+| `ID`      | `IdGenerator`      | `0..=100`, serialized as a string |
+
+Each per-type struct is public, so a custom composite generator can:
+
+- delegate a single field back to the registry via
+  `generators.generate_scalar(type_name, rng)` — uses whatever is registered
+  for that scalar (default or user-supplied), falling back to a
+  `StringGenerator` if nothing is registered;
+- dispatch to any registered type by name with
+  `generators.try_generate(type_name, rng, fields)` — returns `None` if no
+  generator is registered for that type;
+- construct one of the built-in per-type generators directly
+  (e.g. `IntGenerator { min: -10, max: 10 }.generate(rng, generators, &fields)`)
+  when you want a tuned instance without registering it.
+
+The example below uses `generate_scalar` so each field is filled by whichever
+generator is registered for its scalar type — including any overrides the
+caller has installed via `with_generator`:
 
 ```rust,ignore
 impl<R: RandomProvider> Generator<R> for PartialUserGenerator {
