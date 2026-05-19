@@ -236,12 +236,42 @@ impl DocumentBuilder<'_> {
                 Ok(InputValue::Enum(
                     doc_builder.arbitrary_variant(&enum_)?.clone(),
                 ))
+            } else if let Some(input_object_ty) = doc_builder
+                .input_object_type_defs
+                .iter()
+                .find(|io| &io.name == ty.name())
+                .cloned()
+            {
+                Ok(InputValue::Object(
+                    input_object_ty
+                        .fields
+                        .iter()
+                        .map(|field_def| {
+                            Ok((
+                                field_def.name.clone(),
+                                doc_builder.input_value_for_type(&field_def.ty)?,
+                            ))
+                        })
+                        .collect::<ArbitraryResult<Vec<_>>>()?,
+                ))
+            } else if doc_builder
+                .scalar_type_defs
+                .iter()
+                .any(|s| &s.name == ty.name())
+            {
+                // Custom scalars accept any literal value; a String is always
+                // syntactically valid.
+                Ok(InputValue::String(doc_builder.limited_string(40)?))
             } else if let Some(object_ty) = doc_builder
                 .object_type_defs
                 .iter()
                 .find(|o| &o.name == ty.name())
                 .cloned()
             {
+                // Object types are not valid input types, but keep this branch
+                // as a defensive fallback in case one slips into an input
+                // position via a path that doesn't yet use
+                // `list_existing_input_types`.
                 Ok(InputValue::Object(
                     object_ty
                         .fields_def
@@ -288,7 +318,7 @@ impl DocumentBuilder<'_> {
                 .then(|| self.description())
                 .transpose()?;
             let name = self.name_with_index(i)?;
-            let ty = self.choose_ty(&self.list_existing_types())?;
+            let ty = self.choose_ty(&self.list_existing_input_types())?;
             // TODO: incorrect because input_values_def is called from different locations
             let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
             // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
@@ -319,7 +349,7 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let name = self.name()?;
-        let ty = self.choose_ty(&self.list_existing_types())?;
+        let ty = self.choose_ty(&self.list_existing_input_types())?;
         // TODO: incorrect because input_values_def is called from different locations
         let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
         // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
