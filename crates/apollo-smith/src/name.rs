@@ -1,5 +1,6 @@
 use crate::DocumentBuilder;
 use arbitrary::Result as ArbitraryResult;
+use std::collections::HashSet;
 use std::fmt::Write as _;
 
 // First char in a GraphQL name can't be a digit and we don't want it to be
@@ -80,17 +81,23 @@ impl DocumentBuilder<'_> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
-    /// Create an arbitrary type `Name`
+    /// Create an arbitrary type `Name` that is unique across every type-like
+    /// definition the builder has produced so far. Per the GraphQL spec, all
+    /// type definitions share a single namespace, so a numeric suffix is
+    /// appended and incremented until the candidate is free.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
-        let mut new_name = self.limited_string(30)?;
-        if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let _ = write!(
-                new_name,
-                "{}",
-                self.object_type_defs.len() + self.enum_type_defs.len() + self.directive_defs.len()
-            );
+        let base = self.limited_string(30)?;
+        let existing: HashSet<&str> = self
+            .list_existing_type_names()
+            .map(|n| n.name.as_str())
+            .collect();
+        let mut candidate = base.clone();
+        let mut suffix: usize = 0;
+        while existing.contains(candidate.as_str()) {
+            candidate = format!("{base}{suffix}");
+            suffix += 1;
         }
-        Ok(Name::new(new_name))
+        Ok(Name::new(candidate))
     }
 
     /// Create an arbitrary `Name` with an index included in the name (to avoid name conflict)
