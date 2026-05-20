@@ -1,6 +1,5 @@
 use crate::DocumentBuilder;
 use arbitrary::Result as ArbitraryResult;
-use std::collections::HashSet;
 use std::fmt::Write as _;
 
 // First char in a GraphQL name can't be a digit and we don't want it to be
@@ -81,23 +80,27 @@ impl DocumentBuilder<'_> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
-    /// Create an arbitrary type `Name` that is unique across every type-like
-    /// definition the builder has produced so far. Per the GraphQL spec, all
-    /// type definitions share a single namespace, so a numeric suffix is
-    /// appended and incremented until the candidate is free.
+    /// Create an arbitrary type `Name`. Per the GraphQL spec, all type
+    /// definitions share a single namespace; if the randomly drawn base name
+    /// collides with anything already generated, append a numeric suffix
+    /// derived from the running count of every kind of definition the
+    /// builder has produced. The suffix grows monotonically across calls, so
+    /// disambiguation stays a constant-time addition rather than a search.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
-        let base = self.limited_string(30)?;
-        let existing: HashSet<&str> = self
-            .list_existing_type_names()
-            .map(|n| n.name.as_str())
-            .collect();
-        let mut candidate = base.clone();
-        let mut suffix: usize = 0;
-        while existing.contains(candidate.as_str()) {
-            candidate = format!("{base}{suffix}");
-            suffix += 1;
+        let mut new_name = self.limited_string(30)?;
+        if self.list_existing_type_names().any(|n| n.name == new_name) {
+            let suffix = self.object_type_defs.len()
+                + self.interface_type_defs.len()
+                + self.union_type_defs.len()
+                + self.scalar_type_defs.len()
+                + self.enum_type_defs.len()
+                + self.input_object_type_defs.len()
+                + self.directive_defs.len()
+                + self.fragment_defs.len()
+                + self.operation_defs.len();
+            let _ = write!(new_name, "{suffix}");
         }
-        Ok(Name::new(candidate))
+        Ok(Name::new(new_name))
     }
 
     /// Create an arbitrary `Name` with an index included in the name (to avoid name conflict)
