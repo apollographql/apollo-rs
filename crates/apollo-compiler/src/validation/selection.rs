@@ -149,9 +149,9 @@ fn same_name_and_arguments(
         |original_arg: Option<&Node<ast::Argument>>,
          redefined_arg: Option<&Node<ast::Argument>>| {
             debug_assert!(
-                    original_arg.is_some() || redefined_arg.is_some(),
-                    "a conflicting field argument error can only exist when at least one field has the argument",
-                );
+                original_arg.is_some() || redefined_arg.is_some(),
+                "a conflicting field argument error can only exist when at least one field has the argument",
+            );
 
             // We can take the name from either one of the arguments as they are necessarily the same.
             let arg = original_arg.or(redefined_arg).unwrap();

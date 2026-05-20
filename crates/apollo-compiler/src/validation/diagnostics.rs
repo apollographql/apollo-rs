@@ -1,5 +1,3 @@
-use crate::Name;
-use crate::Node;
 use crate::ast;
 use crate::ast::DirectiveLocation;
 use crate::ast::Type;
@@ -8,6 +6,8 @@ use crate::coordinate::TypeAttributeCoordinate;
 use crate::diagnostic::CliReport;
 use crate::executable;
 use crate::parser::SourceSpan;
+use crate::Name;
+use crate::Node;
 use std::fmt;
 use thiserror::Error;
 

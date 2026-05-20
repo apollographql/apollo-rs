@@ -1,15 +1,15 @@
-use crate::Name;
-use crate::Node;
 use crate::ast;
 use crate::collections::HashMap;
 use crate::coordinate::TypeAttributeCoordinate;
-use crate::schema::InputObjectType;
 use crate::schema::validation::BuiltInScalars;
+use crate::schema::InputObjectType;
+use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::CycleError;
 use crate::validation::DiagnosticList;
 use crate::validation::RecursionGuard;
 use crate::validation::RecursionStack;
-use crate::validation::diagnostics::DiagnosticData;
+use crate::Name;
+use crate::Node;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.
