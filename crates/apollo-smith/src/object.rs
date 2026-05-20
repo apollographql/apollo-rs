@@ -166,37 +166,52 @@ impl DocumentBuilder<'_> {
             self.type_name()?
         };
 
-        // ---- Interface
-        let interface_impls = self.implements_interfaces()?;
-        let implements_fields: Vec<FieldDef> = interface_impls
-            .iter()
-            .flat_map(|itf_name| {
-                self.interface_type_defs
-                    .iter()
-                    .find(|itf| &itf.name == itf_name)
-                    .expect("cannot find the corresponding interface")
-                    .fields_def
-                    .clone()
-            })
-            .collect();
-
-        let mut fields_def = self.fields_definition(
-            &implements_fields
-                .iter()
-                .map(|f| &f.name)
-                .collect::<Vec<&Name>>(),
-        )?;
-        // Add fields coming from interfaces
-        fields_def.extend(implements_fields);
+        // Only base defs declare `implements` clauses; extensions leave
+        // it empty so we never emit `implements X` twice for the same
+        // object. `implements_interfaces` already expands transitively.
+        let implements_interfaces = if extend {
+            IndexSet::new()
+        } else {
+            self.implements_interfaces()?
+        };
+        let fields_def = self.fields_definition(&[])?;
+        let directives = self.directives(DirectiveLocation::Object)?;
 
         Ok(ObjectTypeDef {
             description,
-            directives: self.directives(DirectiveLocation::Object)?,
-            implements_interfaces: interface_impls,
+            directives,
+            implements_interfaces,
             name,
             fields_def,
             extend,
         })
+    }
+
+    /// After every interface and object has been generated, append any
+    /// fields each object is missing from its declared interfaces.
+    /// Single pass: existing fields are left alone, only missing ones
+    /// get added.
+    pub(crate) fn backfill_inherited_object_fields(&mut self) {
+        let iface_fields = crate::interface::effective_fields_by_name(&self.interface_type_defs);
+        for idx in 0..self.object_type_defs.len() {
+            let parents = self.object_type_defs[idx].implements_interfaces.clone();
+            let owned: std::collections::HashSet<String> = self.object_type_defs[idx]
+                .fields_def
+                .iter()
+                .map(|f| f.name.name.clone())
+                .collect();
+            for parent in &parents {
+                let Some(fields) = iface_fields.get(parent) else {
+                    continue;
+                };
+                for (fname, fdef) in fields {
+                    if owned.contains(fname) {
+                        continue;
+                    }
+                    self.object_type_defs[idx].fields_def.push(fdef.clone());
+                }
+            }
+        }
     }
 }
 

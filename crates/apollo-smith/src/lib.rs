@@ -160,11 +160,13 @@ impl<'a> DocumentBuilder<'a> {
             let interface_type_def = builder.interface_type_definition()?;
             builder.interface_type_defs.push(interface_type_def);
         }
+        builder.backfill_inherited_interface_fields();
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
             let object_type_def = builder.object_type_definition()?;
             builder.object_type_defs.push(object_type_def);
         }
+        builder.backfill_inherited_object_fields();
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
             let union_type_def = builder.union_type_definition()?;

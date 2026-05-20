@@ -154,9 +154,18 @@ impl DocumentBuilder<'_> {
         } else {
             self.type_name()?
         };
+        // Only the base def declares `implements`; extensions leave it
+        // empty so we don't emit `implements X` twice for the same type.
+        let interfaces: IndexSet<Name> = if extend {
+            IndexSet::new()
+        } else {
+            self.implements_interfaces()?
+                .into_iter()
+                .filter(|n| n != &name)
+                .collect()
+        };
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Interface)?;
-        let interfaces = self.implements_interfaces()?;
 
         Ok(InterfaceTypeDef {
             description,
@@ -168,23 +177,105 @@ impl DocumentBuilder<'_> {
         })
     }
 
-    /// Create an arbitrary `IndexSet` of implemented interfaces
+    /// Pick a random set of interfaces to implement, expanded to its
+    /// transitive closure. If we roll `X`, and `X implements Y`, the
+    /// caller's `implements` clause is `X & Y` so the validator's
+    /// "must also implement" rule is satisfied without a backfill step.
     pub fn implements_interfaces(&mut self) -> ArbitraryResult<IndexSet<Name>> {
         if self.interface_type_defs.is_empty() {
             return Ok(IndexSet::new());
         }
-
         let num_itf = self
             .u
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
-        let mut interface_impls = IndexSet::with_capacity(num_itf);
-
+        let mut picks: IndexSet<Name> = IndexSet::with_capacity(num_itf);
         for _ in 0..num_itf {
-            interface_impls.insert(self.u.choose(&self.interface_type_defs)?.name.clone());
+            picks.insert(self.u.choose(&self.interface_type_defs)?.name.clone());
         }
-
-        Ok(interface_impls)
+        let mut frontier: Vec<Name> = picks.iter().cloned().collect();
+        while let Some(next) = frontier.pop() {
+            for itf in &self.interface_type_defs {
+                if itf.name == next {
+                    for parent in &itf.interfaces {
+                        if picks.insert(parent.clone()) {
+                            frontier.push(parent.clone());
+                        }
+                    }
+                }
+            }
+        }
+        Ok(picks)
     }
+
+    /// After every interface (base + extension) has been generated,
+    /// append any fields each implementer is missing from its declared
+    /// parents. Single pass: existing fields are left alone, only
+    /// missing ones get added.
+    pub(crate) fn backfill_inherited_interface_fields(&mut self) {
+        let parent_fields = effective_fields_by_name(&self.interface_type_defs);
+        for idx in 0..self.interface_type_defs.len() {
+            let parents = self.interface_type_defs[idx].interfaces.clone();
+            let owned: std::collections::HashSet<String> = self.interface_type_defs[idx]
+                .fields_def
+                .iter()
+                .map(|f| f.name.name.clone())
+                .collect();
+            for parent in &parents {
+                let Some(fields) = parent_fields.get(parent) else {
+                    continue;
+                };
+                for (fname, fdef) in fields {
+                    if owned.contains(fname) {
+                        continue;
+                    }
+                    self.interface_type_defs[idx].fields_def.push(fdef.clone());
+                }
+            }
+        }
+    }
+}
+
+/// Defs with a name and field list. Used by `effective_fields_by_name`
+/// so both `InterfaceTypeDef` and `ObjectTypeDef` can share it.
+pub(crate) trait NamedDef {
+    fn name(&self) -> &Name;
+    fn fields(&self) -> &[FieldDef];
+}
+
+impl NamedDef for InterfaceTypeDef {
+    fn name(&self) -> &Name {
+        &self.name
+    }
+    fn fields(&self) -> &[FieldDef] {
+        &self.fields_def
+    }
+}
+
+impl NamedDef for crate::ObjectTypeDef {
+    fn name(&self) -> &Name {
+        &self.name
+    }
+    fn fields(&self) -> &[FieldDef] {
+        &self.fields_def
+    }
+}
+
+/// Union of every def's fields by type name, merging base + extensions.
+/// First occurrence of each field name wins.
+pub(crate) fn effective_fields_by_name<T: NamedDef>(
+    defs: &[T],
+) -> std::collections::HashMap<Name, IndexMap<String, FieldDef>> {
+    use std::collections::HashMap;
+    let mut out: HashMap<Name, IndexMap<String, FieldDef>> = HashMap::new();
+    for def in defs {
+        let entry = out.entry(def.name().clone()).or_default();
+        for f in def.fields() {
+            entry
+                .entry(f.name.name.clone())
+                .or_insert_with(|| f.clone());
+        }
+    }
+    out
 }
 
 impl StackedEntity for InterfaceTypeDef {
