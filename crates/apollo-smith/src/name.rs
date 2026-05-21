@@ -80,15 +80,20 @@ impl DocumentBuilder<'_> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
-    /// Create an arbitrary type `Name`
+    /// Create an arbitrary type `Name` that does not yet exist in the document.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
         let mut new_name = self.limited_string(30)?;
         if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let _ = write!(
-                new_name,
-                "{}",
-                self.object_type_defs.len() + self.enum_type_defs.len() + self.directive_defs.len()
-            );
+            let suffix = self.object_type_defs.len()
+                + self.interface_type_defs.len()
+                + self.union_type_defs.len()
+                + self.scalar_type_defs.len()
+                + self.enum_type_defs.len()
+                + self.input_object_type_defs.len()
+                + self.directive_defs.len()
+                + self.fragment_defs.len()
+                + self.operation_defs.len();
+            let _ = write!(new_name, "{suffix}");
         }
         Ok(Name::new(new_name))
     }
