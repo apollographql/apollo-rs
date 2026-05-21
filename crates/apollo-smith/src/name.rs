@@ -80,12 +80,7 @@ impl DocumentBuilder<'_> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
-    /// Create an arbitrary type `Name`. Per the GraphQL spec, all type
-    /// definitions share a single namespace; if the randomly drawn base name
-    /// collides with anything already generated, append a numeric suffix
-    /// derived from the running count of every kind of definition the
-    /// builder has produced. The suffix grows monotonically across calls, so
-    /// disambiguation stays a constant-time addition rather than a search.
+    /// Create an arbitrary type `Name` that does not yet exist in the document.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
         let mut new_name = self.limited_string(30)?;
         if self.list_existing_type_names().any(|n| n.name == new_name) {
