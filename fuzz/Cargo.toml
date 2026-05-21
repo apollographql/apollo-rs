@@ -58,3 +58,9 @@ name = "coordinate"
 path = "fuzz_targets/coordinate.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "validate"
+path = "fuzz_targets/validate.rs"
+test = false
+doc = false
