@@ -236,15 +236,15 @@ impl DocumentBuilder<'_> {
                 Ok(InputValue::Enum(
                     doc_builder.arbitrary_variant(&enum_)?.clone(),
                 ))
-            } else if let Some(object_ty) = doc_builder
-                .object_type_defs
+            } else if let Some(input_object_ty) = doc_builder
+                .input_object_type_defs
                 .iter()
-                .find(|o| &o.name == ty.name())
+                .find(|io| &io.name == ty.name())
                 .cloned()
             {
                 Ok(InputValue::Object(
-                    object_ty
-                        .fields_def
+                    input_object_ty
+                        .fields
                         .iter()
                         .map(|field_def| {
                             Ok((
@@ -254,8 +254,15 @@ impl DocumentBuilder<'_> {
                         })
                         .collect::<ArbitraryResult<Vec<_>>>()?,
                 ))
+            } else if doc_builder
+                .scalar_type_defs
+                .iter()
+                .any(|s| &s.name == ty.name())
+            {
+                // Custom scalars accept any literal value; generate an Int to be entropy-efficient
+                Ok(InputValue::Int(doc_builder.u.arbitrary()?))
             } else {
-                todo!()
+                panic!("Type {} is not a valid input type", ty.name().name);
             }
         };
 
@@ -288,7 +295,7 @@ impl DocumentBuilder<'_> {
                 .then(|| self.description())
                 .transpose()?;
             let name = self.name_with_index(i)?;
-            let ty = self.choose_ty(&self.list_existing_types())?;
+            let ty = self.choose_ty(&self.list_existing_input_types())?;
             // TODO: incorrect because input_values_def is called from different locations
             let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
             // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
@@ -319,7 +326,7 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let name = self.name()?;
-        let ty = self.choose_ty(&self.list_existing_types())?;
+        let ty = self.choose_ty(&self.list_existing_input_types())?;
         // TODO: incorrect because input_values_def is called from different locations
         let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
         // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
@@ -352,11 +359,9 @@ impl DocumentBuilder<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::field::FieldDef;
-    use crate::ObjectTypeDef;
+    use crate::InputObjectTypeDef;
     use arbitrary::Unstructured;
     use indexmap::IndexMap;
-    use indexmap::IndexSet;
 
     #[test]
     fn test_input_value_for_type() {
@@ -378,58 +383,47 @@ mod tests {
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
         };
-        let my_nested_type = ObjectTypeDef {
+        let my_nested_type = InputObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_nested_object"),
             },
-            implements_interfaces: IndexSet::new(),
             directives: IndexMap::new(),
-            fields_def: vec![FieldDef {
+            fields: vec![InputValueDef {
                 description: None,
                 name: Name {
                     name: String::from("value"),
                 },
-                arguments_definition: None,
                 ty: Ty::Named(Name {
                     name: String::from("String"),
                 }),
+                default_value: None,
                 directives: IndexMap::new(),
             }],
             extend: false,
         };
 
-        let my_object_type = ObjectTypeDef {
+        let my_object_type = InputObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_object"),
             },
-            implements_interfaces: IndexSet::new(),
             directives: IndexMap::new(),
-            fields_def: vec![FieldDef {
+            fields: vec![InputValueDef {
                 description: None,
                 name: Name {
                     name: String::from("first"),
                 },
-                arguments_definition: None,
                 ty: Ty::List(Box::new(Ty::Named(Name {
                     name: String::from("my_nested_object"),
                 }))),
+                default_value: None,
                 directives: IndexMap::new(),
             }],
             extend: false,
         };
-        document_builder.object_type_defs.push(my_nested_type);
-        document_builder.object_type_defs.push(my_object_type);
-
-        let my_type_to_find = Ty::List(Box::new(Ty::Named(Name {
-            name: String::from("my_object"),
-        })));
-        document_builder.object_type_defs.iter().find(|o| {
-            let res = &o.name == my_type_to_find.name();
-
-            res
-        });
+        document_builder.input_object_type_defs.push(my_nested_type);
+        document_builder.input_object_type_defs.push(my_object_type);
 
         let input_val = document_builder
             .input_value_for_type(&Ty::List(Box::new(Ty::Named(Name {

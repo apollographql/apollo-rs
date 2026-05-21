@@ -47,8 +47,8 @@ fn snapshot_tests() {
         }
 
         input A5 {
-          A0: A3
-          A1: A3
+          A0: A
+          A1: A
         }
 
         directive @A7 on QUERY
@@ -114,8 +114,8 @@ fn snapshot_tests() {
         }
 
         input A10 {
-          A0: A8
-          A1: A8
+          A0: CD
+          A1: CD
         }
 
         directive @A12 on QUERY
@@ -189,8 +189,8 @@ fn snapshot_tests() {
         }
 
         input A10 {
-          A0: A8
-          A1: A8
+          A0: CD
+          A1: CD
         }
 
         directive @A12 on QUERY
@@ -343,8 +343,8 @@ fn snapshot_tests() {
         }
 
         input A16 {
-          A0: A14
-          A1: A14
+          A0: CD
+          A1: CD
         }
 
         directive @A18 on QUERY

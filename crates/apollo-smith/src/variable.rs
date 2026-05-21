@@ -46,7 +46,7 @@ impl DocumentBuilder<'_> {
     /// Create an arbitrary `VariableDef`
     pub fn variable_definition(&mut self) -> ArbitraryResult<VariableDef> {
         let name = self.type_name()?;
-        let ty = self.choose_ty(&self.list_existing_types())?;
+        let ty = self.choose_ty(&self.list_existing_input_types())?;
         let default_value = self
             .u
             .arbitrary()
