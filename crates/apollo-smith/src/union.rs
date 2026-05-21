@@ -134,7 +134,6 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let directives = self.directives(DirectiveLocation::Union)?;
-        let extend = self.u.arbitrary().unwrap_or(false);
         let mut existing_types = self.list_existing_object_types();
         existing_types.extend(
             self.union_type_defs
