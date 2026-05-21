@@ -24,6 +24,26 @@ impl From<SelectionSet> for Vec<ast::Selection> {
     }
 }
 
+impl SelectionSet {
+    pub(crate) fn collect_fragment_spreads(&self, into: &mut indexmap::IndexSet<Name>) {
+        for selection in &self.selections {
+            match selection {
+                Selection::Field(field) => {
+                    if let Some(inner) = &field.selection_set {
+                        inner.collect_fragment_spreads(into);
+                    }
+                }
+                Selection::FragmentSpread(spread) => {
+                    into.insert(spread.name.clone());
+                }
+                Selection::InlineFragment(inline) => {
+                    inline.selection_set.collect_fragment_spreads(into);
+                }
+            }
+        }
+    }
+}
+
 impl TryFrom<apollo_parser::cst::SelectionSet> for SelectionSet {
     type Error = crate::FromError;
 

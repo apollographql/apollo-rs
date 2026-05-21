@@ -26,6 +26,7 @@ pub(crate) mod union;
 pub(crate) mod variable;
 
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -230,6 +231,35 @@ impl<'a> DocumentBuilder<'a> {
 
     /// Convert a `DocumentBuilder` into a GraphQL `Document`
     pub fn finish(self) -> Document {
+        // Validation requires every fragment definition to be referenced by some
+        // operation (directly or transitively). Drop fragments that never get
+        // spread to avoid producing invalid documents.
+        //
+        // We walk transitively from operations so chains like `op -> A -> B` keep
+        // both A and B, while `A -> B` with no operation referencing A drops both
+        // (B is only reachable through A, which is itself unused).
+        let mut reachable: IndexSet<crate::name::Name> = IndexSet::new();
+        for op in &self.operation_defs {
+            op.selection_set.collect_fragment_spreads(&mut reachable);
+        }
+        let mut frontier: Vec<crate::name::Name> = reachable.iter().cloned().collect();
+        while let Some(name) = frontier.pop() {
+            if let Some(frag) = self.fragment_defs.iter().find(|f| f.name == name) {
+                let mut nested: IndexSet<crate::name::Name> = IndexSet::new();
+                frag.selection_set.collect_fragment_spreads(&mut nested);
+                for n in nested {
+                    if reachable.insert(n.clone()) {
+                        frontier.push(n);
+                    }
+                }
+            }
+        }
+        let fragment_definitions = self
+            .fragment_defs
+            .into_iter()
+            .filter(|f| reachable.contains(&f.name))
+            .collect();
+
         Document {
             schema_definition: self.schema_def,
             object_type_definitions: self.object_type_defs,
@@ -237,7 +267,7 @@ impl<'a> DocumentBuilder<'a> {
             enum_type_definitions: self.enum_type_defs,
             directive_definitions: self.directive_defs,
             operation_definitions: self.operation_defs,
-            fragment_definitions: self.fragment_defs,
+            fragment_definitions,
             scalar_type_definitions: self.scalar_type_defs,
             union_type_definitions: self.union_type_defs,
             input_object_type_definitions: self.input_object_type_defs,

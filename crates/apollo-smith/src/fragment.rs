@@ -178,7 +178,7 @@ impl DocumentBuilder<'_> {
         let available_fragment: Vec<&FragmentDef> = self
             .fragment_defs
             .iter()
-            .filter(|f| excludes.contains(&f.name))
+            .filter(|f| !excludes.contains(&f.name))
             .collect();
 
         let name = if available_fragment.is_empty() {
