@@ -17,10 +17,6 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A6 on A3 {
-          A0
-        }
-
         schema {
           query: A3
           mutation: A3
@@ -56,10 +52,6 @@ fn snapshot_tests() {
     .assert_eq(&gen(0));
     expect![[r#"
         {
-          A0
-        }
-
-        fragment A11 on A8 {
           A0
         }
 
@@ -123,10 +115,6 @@ fn snapshot_tests() {
     .assert_eq(&gen(10));
     expect![[r#"
         {
-          A0
-        }
-
-        fragment A11 on A8 {
           A0
         }
 
@@ -198,10 +186,6 @@ fn snapshot_tests() {
     .assert_eq(&gen(100));
     expect![[r#"
         {
-          A0
-        }
-
-        fragment A17 on A14 {
           A0
         }
 
