@@ -341,10 +341,7 @@ mod tests {
     fn orphan_chain_is_not_reachable() {
         // A -> B with no operation referencing A: neither retained
         let ops: Vec<OperationDef> = vec![];
-        let frags = vec![
-            frag("A", "T", vec!["B"]),
-            frag("B", "T", vec![]),
-        ];
+        let frags = vec![frag("A", "T", vec!["B"]), frag("B", "T", vec![])];
         let result = reachable_fragment_names(&ops, &frags);
         assert!(result.is_empty());
     }
@@ -353,10 +350,7 @@ mod tests {
     fn unreferenced_fragment_among_used_ones_is_pruned() {
         // op -> A, but B exists in isolation -> only A reachable
         let ops = vec![op(vec!["A"])];
-        let frags = vec![
-            frag("A", "T", vec![]),
-            frag("B", "T", vec![]),
-        ];
+        let frags = vec![frag("A", "T", vec![]), frag("B", "T", vec![])];
         let result = reachable_fragment_names(&ops, &frags);
         assert_eq!(result, names(&["A"]));
     }

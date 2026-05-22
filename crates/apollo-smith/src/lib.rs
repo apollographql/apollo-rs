@@ -237,7 +237,8 @@ impl<'a> DocumentBuilder<'a> {
         // We walk transitively from operations so chains like `op -> A -> B` keep
         // both A and B, while `A -> B` with no operation referencing A drops both
         // (B is only reachable through A, which is itself unused).
-        let reachable = fragment::reachable_fragment_names(&self.operation_defs, &self.fragment_defs);
+        let reachable =
+            fragment::reachable_fragment_names(&self.operation_defs, &self.fragment_defs);
         let fragment_definitions = self
             .fragment_defs
             .into_iter()
