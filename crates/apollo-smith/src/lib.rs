@@ -26,7 +26,6 @@ pub(crate) mod union;
 pub(crate) mod variable;
 
 use indexmap::IndexMap;
-use indexmap::IndexSet;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -238,22 +237,7 @@ impl<'a> DocumentBuilder<'a> {
         // We walk transitively from operations so chains like `op -> A -> B` keep
         // both A and B, while `A -> B` with no operation referencing A drops both
         // (B is only reachable through A, which is itself unused).
-        let mut reachable: IndexSet<crate::name::Name> = IndexSet::new();
-        for op in &self.operation_defs {
-            op.selection_set.collect_fragment_spreads(&mut reachable);
-        }
-        let mut frontier: Vec<crate::name::Name> = reachable.iter().cloned().collect();
-        while let Some(name) = frontier.pop() {
-            if let Some(frag) = self.fragment_defs.iter().find(|f| f.name == name) {
-                let mut nested: IndexSet<crate::name::Name> = IndexSet::new();
-                frag.selection_set.collect_fragment_spreads(&mut nested);
-                for n in nested {
-                    if reachable.insert(n.clone()) {
-                        frontier.push(n);
-                    }
-                }
-            }
-        }
+        let reachable = fragment::reachable_fragment_names(&self.operation_defs, &self.fragment_defs);
         let fragment_definitions = self
             .fragment_defs
             .into_iter()
