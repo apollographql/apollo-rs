@@ -120,12 +120,17 @@ If you have a GraphQL operation in the form of an `ExecutableDocument` and its
 accompanying `Schema`, you can generate a response matching the shape of the
 operation with `apollo_smith::ResponseBuilder`.
 
+`ResponseBuilder` is generic over its randomness source via the `RandomProvider`
+trait. This allows it to be used with `arbitrary::Unstructured` for fuzz testing,
+with `RandProvider` for standard random generation, or with any custom implementation.
+
+### Using `Unstructured` (for fuzz testing)
+
 ```rust
 use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 use apollo_compiler::Schema;
-use apollo_smith::ResponseBuilder;
-use arbitrary::Result;
+use apollo_smith::{ResponseBuilder, ResponseError};
 use arbitrary::Unstructured;
 use rand::RngExt as _;
 use serde_json_bytes::Value;
@@ -133,12 +138,180 @@ use serde_json_bytes::Value;
 pub fn generate_valid_response(
     doc: &Valid<ExecutableDocument>,
     schema: &Valid<Schema>,
-) -> Result<Value> {
+) -> Result<Value, ResponseError> {
     let mut buf = [0u8; 2048];
     rand::rng().fill(&mut buf);
     let mut u = Unstructured::new(&buf);
 
     ResponseBuilder::new(&mut u, doc, schema).build()
+}
+```
+
+### Using `RandProvider`
+
+Use `RandProvider` to wrap any `rand::Rng`:
+
+```rust,ignore
+use apollo_smith::{RandProvider, ResponseBuilder};
+
+let mut rng = RandProvider(rand::rng());
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_min_list_size(1)
+    .with_max_list_size(5)
+    .with_null_ratio(1, 4)
+    .build()?;
+```
+
+### Configuring generation per type
+
+Use `with_generator` to register a [`Generator`] for any named GraphQL type —
+scalars, objects, interfaces, or unions. The same trait powers both leaf and
+composite generation; the `fields` argument is empty for scalar types and
+contains the requested selection (flattened across fragments and grouped by
+response key) for composite types.
+
+To swap one of the built-in scalar defaults:
+
+```rust,ignore
+use apollo_smith::{ResponseBuilder, StringGenerator};
+use apollo_compiler::Name;
+
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_generator(
+        Name::new_unchecked("ID".into()),
+        StringGenerator { min_len: 8, max_len: 8 },
+    )
+    .build()?;
+```
+
+Or with completely custom generation logic:
+
+```rust,ignore
+use apollo_smith::{Generator, Generators, RandomProvider, ResponseBuilder, ResponseError};
+use apollo_compiler::executable::Field;
+use apollo_compiler::{Name, Node};
+use indexmap::IndexMap;
+use serde_json_bytes::Value;
+
+struct IncrementingGenerator {
+    id: i32,
+}
+
+impl<R: RandomProvider> Generator<R> for IncrementingGenerator {
+    fn generate(
+        &mut self,
+        _rng: &mut R,
+        _generators: &mut Generators<R>,
+        _fields: &IndexMap<String, Vec<Node<Field>>>,
+    ) -> Result<Value, ResponseError> {
+        self.id += 1;
+        Ok(Value::Number(self.id.into()))
+    }
+}
+
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_generator(
+        Name::new_unchecked("ID".into()),
+        IncrementingGenerator { id: 0 },
+    )
+    .build();
+```
+
+For composite types, the generator's return value is used as-is — the builder
+does not recurse into it. The generator receives the requested fields already
+flattened across fragments and grouped by response key, so it can return only
+what the caller asked for:
+
+```rust,ignore
+use apollo_smith::{Generator, Generators, RandomProvider, ResponseBuilder, ResponseError};
+use apollo_compiler::executable::Field;
+use apollo_compiler::{Name, Node};
+use indexmap::IndexMap;
+use serde_json_bytes::{Map, Value};
+
+/// Generator for the federation `_Service` type that returns the real schema SDL.
+struct ServiceGenerator {
+    sdl: String,
+}
+
+impl<R: RandomProvider> Generator<R> for ServiceGenerator {
+    fn generate(
+        &mut self,
+        _rng: &mut R,
+        _generators: &mut Generators<R>,
+        fields: &IndexMap<String, Vec<Node<Field>>>,
+    ) -> Result<Value, ResponseError> {
+        let mut obj = Map::new();
+        for (response_key, group) in fields {
+            // The first field in the group is representative — multiple entries only
+            // appear when the same response key shows up in several fragments.
+            if group[0].name == "sdl" {
+                obj.insert(response_key.clone(), Value::String(self.sdl.clone().into()));
+            }
+        }
+        Ok(Value::Object(obj))
+    }
+}
+
+let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+    .with_generator(
+        Name::new_unchecked("_Service"),
+        ServiceGenerator { sdl },
+    )
+    .build()?;
+```
+
+### Accessing the default generators
+
+The `generators` argument passed to every `Generator::generate` call is the
+same registry the builder is using. It starts from `Generators::default()`,
+which pre-registers a generator for each of the five standard GraphQL scalars:
+
+| Type      | Generator          | Default range                  |
+|-----------|--------------------|--------------------------------|
+| `Boolean` | `BooleanGenerator` | `true` or `false`              |
+| `Int`     | `IntGenerator`     | `0..=100`                      |
+| `Float`   | `FloatGenerator`   | `-1.0..=1.0`                   |
+| `String`  | `StringGenerator`  | 1–10 alphanumeric characters   |
+| `ID`      | `IdGenerator`      | `0..=100`, serialized as a string |
+
+Each per-type struct is public, so a custom composite generator can:
+
+- delegate a single field back to the registry via
+  `generators.generate_scalar(type_name, rng)` — uses whatever is registered
+  for that scalar (default or user-supplied), falling back to a
+  `StringGenerator` if nothing is registered;
+- dispatch to any registered type by name with
+  `generators.try_generate(type_name, rng, fields)` — returns `None` if no
+  generator is registered for that type;
+- construct one of the built-in per-type generators directly
+  (e.g. `IntGenerator { min: -10, max: 10 }.generate(rng, generators, &fields)`)
+  when you want a tuned instance without registering it.
+
+The example below uses `generate_scalar` so each field is filled by whichever
+generator is registered for its scalar type — including any overrides the
+caller has installed via `with_generator`:
+
+```rust,ignore
+impl<R: RandomProvider> Generator<R> for PartialUserGenerator {
+    fn generate(
+        &mut self,
+        rng: &mut R,
+        generators: &mut Generators<R>,
+        fields: &IndexMap<String, Vec<Node<Field>>>,
+    ) -> Result<Value, ResponseError> {
+        let mut obj = Map::new();
+        for (response_key, group) in fields {
+            let field = &group[0];
+            let value = if field.name == "id" {
+                Value::String(self.next_id().into())
+            } else {
+                generators.generate_scalar(field.ty().inner_named_type(), rng)?
+            };
+            obj.insert(response_key.clone(), value);
+        }
+        Ok(Value::Object(obj))
+    }
 }
 ```
 

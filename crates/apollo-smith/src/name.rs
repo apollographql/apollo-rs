@@ -2,8 +2,10 @@ use crate::DocumentBuilder;
 use arbitrary::Result as ArbitraryResult;
 use std::fmt::Write as _;
 
-const CHARSET_LETTERS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-const CHARSET_NUMBERS: &[u8] = b"0123456789";
+// First char in a GraphQL name can't be a digit and we don't want it to be
+// `_` either. Body chars can be letters, `_`, or digits.
+const CHARSET_NAME_HEAD: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const CHARSET_NAME_BODY: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
 const RESERVED_KEYWORDS: &[&str] = &[
     "on",
     "Int",
@@ -78,15 +80,20 @@ impl DocumentBuilder<'_> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
-    /// Create an arbitrary type `Name`
+    /// Create an arbitrary type `Name` that does not yet exist in the document.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
         let mut new_name = self.limited_string(30)?;
         if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let _ = write!(
-                new_name,
-                "{}",
-                self.object_type_defs.len() + self.enum_type_defs.len() + self.directive_defs.len()
-            );
+            let suffix = self.object_type_defs.len()
+                + self.interface_type_defs.len()
+                + self.union_type_defs.len()
+                + self.scalar_type_defs.len()
+                + self.enum_type_defs.len()
+                + self.input_object_type_defs.len()
+                + self.directive_defs.len()
+                + self.fragment_defs.len()
+                + self.operation_defs.len();
+            let _ = write!(new_name, "{suffix}");
         }
         Ok(Name::new(new_name))
     }
@@ -107,22 +114,13 @@ impl DocumentBuilder<'_> {
             let gen_str = String::from_utf8(
                 (0..size)
                     .map(|curr_idx| {
-                        let idx = self.u.arbitrary::<usize>()?;
-
-                        // Cannot start with a number
-                        let ch = if curr_idx == 0 {
-                            // len - 1 to not have a _ at the begining
-                            CHARSET_LETTERS[idx % (CHARSET_LETTERS.len() - 1)]
+                        // GraphQL names can't start with a digit or `_`.
+                        let charset = if curr_idx == 0 {
+                            CHARSET_NAME_HEAD
                         } else {
-                            let idx = idx % (CHARSET_LETTERS.len() + CHARSET_NUMBERS.len());
-                            if idx < CHARSET_LETTERS.len() {
-                                CHARSET_LETTERS[idx]
-                            } else {
-                                CHARSET_NUMBERS[idx - CHARSET_LETTERS.len()]
-                            }
+                            CHARSET_NAME_BODY
                         };
-
-                        Ok(ch)
+                        Ok(*self.u.choose(charset)?)
                     })
                     .collect::<ArbitraryResult<Vec<u8>>>()?,
             )

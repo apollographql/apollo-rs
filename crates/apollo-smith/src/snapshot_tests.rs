@@ -17,41 +17,41 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A2 on A1 {
+        fragment A6 on A3 {
           A0
         }
 
         schema {
-          query: A1
-          mutation: A1
-          subscription: A1
+          query: A3
+          mutation: A3
+          subscription: A3
         }
 
         scalar A
 
-        type A1 {
-          A0: A0
-          A1: A0
-        }
-
-        interface A1 {
-          A0: A0
-          A1: A0
-        }
-
-        union A2 = A1
-
-        enum A0 {
-          A0
-          A1
-        }
-
-        input A2 @oneOf {
+        type A3 {
           A0: A1
           A1: A1
         }
 
-        directive @A2 on QUERY
+        interface A2 {
+          A0: A1
+          A1: A1
+        }
+
+        union A4 = A3
+
+        enum A1 {
+          A0
+          A1
+        }
+
+        input A5 {
+          A0: A
+          A1: A
+        }
+
+        directive @A7 on QUERY
     "#]]
     .assert_eq(&gen(0));
     expect![[r#"
@@ -59,41 +59,66 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A2 on A1 {
+        fragment A11 on A8 {
           A0
         }
 
         schema {
-          query: A1
-          mutation: A1
-          subscription: A1
+          query: A8
+          mutation: A8
+          subscription: A8
         }
 
-        scalar CA
+        scalar CD
 
-        type A1 {
-          A0: A
-          A1: A
+        type A8 {
+          A0: IJAAAAAA
+          A1: IJAAAAAA
         }
 
-        interface A1 {
-          A0: A
-          A1: A
+        interface A7 {
+          A0: IJAAAAAA
+          A1: IJAAAAAA
         }
 
-        union A2 = A1
+        union A9 = A8
+
+        enum IJAAAAAA {
+          A0
+          A1
+        }
 
         enum A {
           A0
           A1
         }
 
-        input A2 @oneOf {
-          A0: A1
-          A1: A1
+        enum A3 {
+          A0
+          A1
         }
 
-        directive @A2 on QUERY
+        enum A4 {
+          A0
+          A1
+        }
+
+        enum A5 {
+          A0
+          A1
+        }
+
+        enum A6 {
+          A0
+          A1
+        }
+
+        input A10 {
+          A0: CD
+          A1: CD
+        }
+
+        directive @A12 on QUERY
     "#]]
     .assert_eq(&gen(10));
     expect![[r#"
@@ -101,41 +126,44 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A21 on A20 {
+        fragment A11 on A8 {
           A0
         }
 
         schema {
-          query: A20
-          mutation: A20
-          subscription: A20
+          query: A8
+          mutation: A8
+          subscription: A8
         }
 
-        scalar CJ
+        scalar CD
 
-        type A20 {
-          A0: uECA86420zAAAAAAAAAAAA
-          A1: uECA86420zAAAAAAAAAAAA
+        type A8 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        interface A20 {
-          A0: uECA86420zAAAAAAAAAAAA
-          A1: uECA86420zAAAAAAAAAAAA
+        interface A7 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        union A21 = A20
+        union A9 = A8
 
-        enum uECA86420zAAAAAAAAAAAA {
-          A0
-          A1
+        enum IJKLMNOP {
+          UVWXYZabcdefghijklmn0
+          qrstuvwxyz_01
+          E456789ABCDEFGHIJKLMNOPQRS2
+          gWXYZabcdefghijkAAAAAAAA3
+          A4
+          A5
+          A6
+          A7
+          A8
+          A9
         }
 
         enum A {
-          A0
-          A1
-        }
-
-        enum A2 {
           A0
           A1
         }
@@ -160,77 +188,12 @@ fn snapshot_tests() {
           A1
         }
 
-        enum A7 {
-          A0
-          A1
+        input A10 {
+          A0: CD
+          A1: CD
         }
 
-        enum A8 {
-          A0
-          A1
-        }
-
-        enum A9 {
-          A0
-          A1
-        }
-
-        enum A10 {
-          A0
-          A1
-        }
-
-        enum A11 {
-          A0
-          A1
-        }
-
-        enum A12 {
-          A0
-          A1
-        }
-
-        enum A13 {
-          A0
-          A1
-        }
-
-        enum A14 {
-          A0
-          A1
-        }
-
-        enum A15 {
-          A0
-          A1
-        }
-
-        enum A16 {
-          A0
-          A1
-        }
-
-        enum A17 {
-          A0
-          A1
-        }
-
-        enum A18 {
-          A0
-          A1
-        }
-
-        enum A19 {
-          A0
-          A1
-        }
-
-        input A21 @oneOf {
-          A0: A20
-          A1: A20
-        }
-
-        directive @A21 on QUERY
+        directive @A12 on QUERY
     "#]]
     .assert_eq(&gen(100));
     expect![[r#"
@@ -238,138 +201,153 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A21 on A20 {
+        fragment A17 on A14 {
           A0
         }
 
         schema {
-          query: A20
-          mutation: A20
-          subscription: A20
+          query: A14
+          mutation: A14
+          subscription: A14
         }
 
-        scalar CJ
+        scalar CD
 
-        type A20 {
-          A0: uECA86420zxvtrpnljhfdb
-          A1: uECA86420zxvtrpnljhfdb
+        type A14 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        interface A20 {
-          A0: uECA86420zxvtrpnljhfdb
-          A1: uECA86420zxvtrpnljhfdb
+        "9ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_\n\r	"
+        interface Jdefghi {
+          SmnopqAAAAAAAAAA0: IJKLMNOP
+          A1: IJKLMNOP
+          A2: IJKLMNOP
+          A3: IJKLMNOP
+          A4: IJKLMNOP
+          A5: IJKLMNOP
+          A6: IJKLMNOP
+          A7: IJKLMNOP
+          A8: IJKLMNOP
+          A9: IJKLMNOP
+          A10: IJKLMNOP
+          A11: IJKLMNOP
+          A12: IJKLMNOP
+          A13: IJKLMNOP
+          A14: IJKLMNOP
+          A15: IJKLMNOP
+          A16: IJKLMNOP
+          A17: IJKLMNOP
+          A18: IJKLMNOP
+          A19: IJKLMNOP
+          A20: IJKLMNOP
+          A21: IJKLMNOP
+          A22: IJKLMNOP
+          A23: IJKLMNOP
+          A24: IJKLMNOP
+          A25: IJKLMNOP
+          A26: IJKLMNOP
+          A27: IJKLMNOP
+          A28: IJKLMNOP
+          A29: IJKLMNOP
         }
 
-        union A21 = A20
-
-        enum uECA86420zxvtrpnljhfdb {
-          aWUSQO2LJHFDB97531_ywu0
-          AKIG1
-          ChfdbZXV2
+        interface A {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        "S_LdpAi3b-U\rNvGo9h2a.T"
-        enum mkigecaYWUSQO2LJHFDB97531 {
-          Ovtrpnljhfdb0
-          g1_yAAAAAAAAAAAAAAAA1
+        interface A9 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        enum A {
-          A0
-          A1
+        interface A10 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        enum A3 {
-          A0
-          A1
+        interface A11 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        enum A4 {
-          A0
-          A1
+        interface A12 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        enum A5 {
-          A0
-          A1
+        interface A13 {
+          A0: IJKLMNOP
+          A1: IJKLMNOP
         }
 
-        enum A6 {
-          A0
-          A1
+        union A15 = A14
+
+        enum IJKLMNOP {
+          UVWXYZabcdefghijklmn0
+          qrstuvwxyz_01
+          E456789ABCDEFGHIJKLMNOPQRS2
+          gWXYZabcdefghijklmnopqrs3
+          Gwxyz_0123456789ABCD4
+          cHIJKLMNOPQR5
+          qVWXYZabcdefghijklmnopqrst6
+          Sxyz_0123456789ABCDEFGHI7
+          sMNOPQRSTUVWXYZabcde8
+          Oijklmnopqrs9
         }
 
-        enum A7 {
-          A0
-          A1
+        """CDEFGHIJKLMNOPQRSTU0123456789ABCDE"""
+        enum QRSTUVWXYZabcdef {
+          klmnop0
+          stuvwxyz_012341
+          I89ABCDEFGHIJKLMNOPQRSTUVWXYZa2
+          oe3
+          sijklm4
+          Aqrstuvwxyz_015
+          Q56789ABCDEFGHIJKLMNOPQRSTUVWX6
+          wb7
         }
 
-        enum A8 {
-          A0
-          A1
+        """789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"""
+        enum FZa {
+          Mghijklmno0
+          Ystuvwxyz_0123456789AB1
+          ABCDEFGHIJKLMNOP2
         }
 
-        enum A9 {
-          A0
-          A1
+        """JKLMNOPQRSTUVWXYZa"""
+        enum mnopqrst {
+          yz_0123456789ABCDEFG0
+          UKLMNOPQRSTU1
+          iYZabcdefghijklmnopqrstuvw2
+          K_0123456789ABCDEFGHIJKL3
         }
 
-        enum A10 {
-          A0
-          A1
+        """/$#!.-+='0123456789ABCDEFGHIJKLMNOPQRST"""
+        enum Z {
+          e89ABC0
+          mGHIJKLMNOPQRS1
+          CWXYZabcdefghijklmnopqrstuvwxy2
+          i13
+          m567894
         }
 
-        enum A11 {
-          A0
-          A1
+        """U0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno"""
+        enum A0123456789ABCDEFGHIJK {
+          aQRSTUVWXYZabcdefg0
+          uklmnopq1
+          Euvwxyz_01234567892
+          YDEFGHIJ3
+          iNOPQRSTUVWXYZabcd4
         }
 
-        enum A12 {
-          A0
-          A1
+        input A16 {
+          A0: CD
+          A1: CD
         }
 
-        enum A13 {
-          A0
-          A1
-        }
-
-        enum A14 {
-          A0
-          A1
-        }
-
-        enum A15 {
-          A0
-          A1
-        }
-
-        enum A16 {
-          A0
-          A1
-        }
-
-        enum A17 {
-          A0
-          A1
-        }
-
-        enum A18 {
-          A0
-          A1
-        }
-
-        enum A19 {
-          A0
-          A1
-        }
-
-        input A21 @oneOf {
-          A0: A20
-          A1: A20
-        }
-
-        directive @A21 on QUERY
+        directive @A18 on QUERY
     "#]]
     .assert_eq(&gen(1000));
 }

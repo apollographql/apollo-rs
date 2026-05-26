@@ -70,6 +70,7 @@ pub(crate) mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
+pub use self::from_ast::ExecutableDocumentBuilder;
 pub use crate::ast::Argument;
 use crate::ast::ArgumentByNameError;
 pub use crate::ast::Directive;
@@ -346,6 +347,35 @@ impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Returns a new builder for creating an ExecutableDocument from multiple AST documents.
+    ///
+    /// The builder allows you to parse and combine executable definitions (operations and fragments)
+    /// from multiple source files into a single [`ExecutableDocument`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use apollo_compiler::{Schema, ExecutableDocument};
+    /// use apollo_compiler::parser::Parser;
+    /// use apollo_compiler::validation::DiagnosticList;
+    /// # let schema_src = "type Query { user: User, post: Post } type User { id: ID } type Post { title: String }";
+    /// # let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+    ///
+    /// let mut errors = DiagnosticList::new(Default::default());  
+    /// let doc = ExecutableDocument::builder(Some(&schema), &mut errors)  
+    ///     .parse("query GetUser { user { id } }", "query1.graphql")  
+    ///     .parse("query GetMore { user { id } }", "query2.graphql")  
+    ///     .build();  
+    ///  
+    /// assert!(errors.is_empty());  
+    /// assert_eq!(doc.operations.named.len(), 2);  
+    pub fn builder<'schema, 'errors>(
+        schema: Option<&'schema Valid<Schema>>,
+        errors: &'errors mut DiagnosticList,
+    ) -> from_ast::ExecutableDocumentBuilder<'schema, 'errors> {
+        from_ast::ExecutableDocumentBuilder::new(schema.map(|s| s.as_ref()), errors)
     }
 
     /// Parse an executable document with the default configuration.

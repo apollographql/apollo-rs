@@ -377,7 +377,7 @@ fn adopt_type_extensions(
         ($( $ExtensionVariant: path => $describe: literal $empty_def: expr )+) => {
             match &extensions[0] {
                 $(
-                    $ExtensionVariant(_) => {
+                    $ExtensionVariant(first_ext) => {
                         let mut def = $empty_def;
                         for ext in extensions {
                             if let $ExtensionVariant(ext) = ext {
@@ -395,7 +395,7 @@ fn adopt_type_extensions(
                                 )
                             }
                         }
-                        def.into()
+                        ExtendedType::from(first_ext.same_location(def))
                     }
                 )+
                 _ => unreachable!(),
