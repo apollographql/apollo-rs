@@ -8,12 +8,12 @@
 //! and `type-system/definition-test.ts` (oneOf section).
 //!
 //! Spec reference: <https://spec.graphql.org/draft/#sec-OneOf-Input-Objects>
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use apollo_compiler::introspection;
 use apollo_compiler::request::coerce_variable_values;
 use apollo_compiler::response::JsonMap;
 use apollo_compiler::validation::Valid;
-use apollo_compiler::ExecutableDocument;
-use apollo_compiler::Schema;
 use expect_test::expect;
 use std::sync::OnceLock;
 
@@ -131,7 +131,7 @@ fn invalid_one_of_field_has_default_value() {
     .errors;
 
     let expected = expect![[r#"
-        Error: `Foo.a` field of a @oneOf input object must not have a default value
+        Error: `Foo.a` field must not have a default value
            ╭─[ schema.graphql:4:13 ]
            │
          4 │             a: String = "hello"
@@ -501,7 +501,7 @@ fn extending_oneof_type_with_default_value_is_invalid() {
     )
     .expect_err("field with default added via extension should be invalid");
     let expected = expect![[r#"
-        Error: `Foo.b` field of a @oneOf input object must not have a default value
+        Error: `Foo.b` field must not have a default value
            ╭─[ schema.graphql:4:28 ]
            │
          4 │         extend input Foo { b: Int = 0 }
