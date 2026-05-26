@@ -8,12 +8,12 @@
 //! and `type-system/definition-test.ts` (oneOf section).
 //!
 //! Spec reference: <https://spec.graphql.org/draft/#sec-OneOf-Input-Objects>
-use apollo_compiler::ExecutableDocument;
-use apollo_compiler::Schema;
 use apollo_compiler::introspection;
 use apollo_compiler::request::coerce_variable_values;
 use apollo_compiler::response::JsonMap;
 use apollo_compiler::validation::Valid;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use expect_test::expect;
 use std::sync::OnceLock;
 
