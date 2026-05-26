@@ -267,72 +267,59 @@ pub(crate) fn reachable_fragment_names(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::operation::OperationType;
-    use crate::selection_set::Selection;
-    use crate::selection_set::SelectionSet;
 
-    fn n(s: &str) -> Name {
-        Name::new(s.to_string())
-    }
-
-    fn spread(target: &str) -> Selection {
-        Selection::FragmentSpread(FragmentSpread {
-            name: n(target),
-            directives: IndexMap::new(),
-        })
-    }
-
-    fn sset(selections: Vec<Selection>) -> SelectionSet {
-        SelectionSet { selections }
+    fn parse(src: &str) -> (Vec<OperationDef>, Vec<FragmentDef>) {
+        let cst = apollo_parser::Parser::new(src).parse();
+        assert!(cst.errors().next().is_none(), "parse errors: {src}");
+        let mut ops = vec![];
+        let mut frags = vec![];
+        for def in cst.document().definitions() {
+            match def {
+                apollo_parser::cst::Definition::OperationDefinition(o) => {
+                    ops.push(o.try_into().unwrap())
+                }
+                apollo_parser::cst::Definition::FragmentDefinition(f) => {
+                    frags.push(f.try_into().unwrap())
+                }
+                _ => panic!("unexpected definition in test input"),
+            }
+        }
+        (ops, frags)
     }
 
     fn names(items: &[&str]) -> IndexSet<Name> {
-        items.iter().map(|s| n(s)).collect()
-    }
-
-    fn op(spreads: Vec<&str>) -> OperationDef {
-        OperationDef {
-            operation_type: OperationType::Query,
-            name: None,
-            variable_definitions: vec![],
-            directives: IndexMap::new(),
-            selection_set: sset(spreads.into_iter().map(spread).collect()),
-        }
-    }
-
-    fn frag(name: &str, on: &str, spreads: Vec<&str>) -> FragmentDef {
-        FragmentDef {
-            name: n(name),
-            type_condition: TypeCondition { name: n(on) },
-            directives: IndexMap::new(),
-            selection_set: sset(spreads.into_iter().map(spread).collect()),
-        }
+        items.iter().map(|s| Name::new(s.to_string())).collect()
     }
 
     #[test]
     fn no_operations_means_nothing_reachable() {
-        let frags = vec![frag("A", "T", vec![])];
-        let result = reachable_fragment_names(&[], &frags);
+        let (ops, frags) = parse("fragment A on T { __typename }");
+        let result = reachable_fragment_names(&ops, &frags);
         assert!(result.is_empty());
     }
 
     #[test]
     fn direct_spread_is_reachable() {
-        let ops = vec![op(vec!["A"])];
-        let frags = vec![frag("A", "T", vec![])];
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { __typename }
+            ",
+        );
         let result = reachable_fragment_names(&ops, &frags);
         assert_eq!(result, names(&["A"]));
     }
 
     #[test]
     fn transitive_chain_is_reachable() {
-        // op -> A -> B -> C : all three reachable
-        let ops = vec![op(vec!["A"])];
-        let frags = vec![
-            frag("A", "T", vec!["B"]),
-            frag("B", "T", vec!["C"]),
-            frag("C", "T", vec![]),
-        ];
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { ...B }
+            fragment B on T { ...C }
+            fragment C on T { __typename }
+            ",
+        );
         let result = reachable_fragment_names(&ops, &frags);
         assert_eq!(result, names(&["A", "B", "C"]));
     }
@@ -340,17 +327,25 @@ mod tests {
     #[test]
     fn orphan_chain_is_not_reachable() {
         // A -> B with no operation referencing A: neither retained
-        let ops: Vec<OperationDef> = vec![];
-        let frags = vec![frag("A", "T", vec!["B"]), frag("B", "T", vec![])];
+        let (ops, frags) = parse(
+            "
+            fragment A on T { ...B }
+            fragment B on T { __typename }
+            ",
+        );
         let result = reachable_fragment_names(&ops, &frags);
         assert!(result.is_empty());
     }
 
     #[test]
     fn unreferenced_fragment_among_used_ones_is_pruned() {
-        // op -> A, but B exists in isolation -> only A reachable
-        let ops = vec![op(vec!["A"])];
-        let frags = vec![frag("A", "T", vec![]), frag("B", "T", vec![])];
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { __typename }
+            fragment B on T { __typename }
+            ",
+        );
         let result = reachable_fragment_names(&ops, &frags);
         assert_eq!(result, names(&["A"]));
     }
@@ -358,8 +353,13 @@ mod tests {
     #[test]
     fn cycle_terminates() {
         // op -> A -> B -> A : both reachable, no infinite loop
-        let ops = vec![op(vec!["A"])];
-        let frags = vec![frag("A", "T", vec!["B"]), frag("B", "T", vec!["A"])];
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { ...B }
+            fragment B on T { ...A }
+            ",
+        );
         let result = reachable_fragment_names(&ops, &frags);
         assert_eq!(result, names(&["A", "B"]));
     }
