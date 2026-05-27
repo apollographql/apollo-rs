@@ -1,12 +1,14 @@
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
+use crate::operation::OperationDef;
 use crate::selection_set::SelectionSet;
 use crate::ty::Ty;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// The __fragmentDef type represents a fragment definition
 ///
@@ -178,7 +180,7 @@ impl DocumentBuilder<'_> {
         let available_fragment: Vec<&FragmentDef> = self
             .fragment_defs
             .iter()
-            .filter(|f| excludes.contains(&f.name))
+            .filter(|f| !excludes.contains(&f.name))
             .collect();
 
         let name = if available_fragment.is_empty() {
@@ -229,5 +231,136 @@ impl DocumentBuilder<'_> {
                 })
             }
         }
+    }
+}
+
+/// Compute the set of fragment names reachable from `operations`, walking
+/// through `fragments` transitively when one fragment spreads another.
+///
+/// A fragment is reachable iff some operation spreads it directly, or spreads
+/// some other reachable fragment whose chain leads to it. Chains like
+/// `A -> B` with no operation referencing A produce no reachable names, even
+/// though `A` syntactically references `B`.
+pub(crate) fn reachable_fragment_names(
+    operations: &[OperationDef],
+    fragments: &[FragmentDef],
+) -> IndexSet<Name> {
+    let mut reachable: IndexSet<Name> = IndexSet::new();
+    for op in operations {
+        op.selection_set.collect_fragment_spreads(&mut reachable);
+    }
+    let mut frontier: Vec<Name> = reachable.iter().cloned().collect();
+    while let Some(name) = frontier.pop() {
+        if let Some(frag) = fragments.iter().find(|f| f.name == name) {
+            let mut nested: IndexSet<Name> = IndexSet::new();
+            frag.selection_set.collect_fragment_spreads(&mut nested);
+            for n in nested {
+                if reachable.insert(n.clone()) {
+                    frontier.push(n);
+                }
+            }
+        }
+    }
+    reachable
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse(src: &str) -> (Vec<OperationDef>, Vec<FragmentDef>) {
+        let cst = apollo_parser::Parser::new(src).parse();
+        assert!(cst.errors().next().is_none(), "parse errors: {src}");
+        let mut ops = vec![];
+        let mut frags = vec![];
+        for def in cst.document().definitions() {
+            match def {
+                apollo_parser::cst::Definition::OperationDefinition(o) => {
+                    ops.push(o.try_into().unwrap())
+                }
+                apollo_parser::cst::Definition::FragmentDefinition(f) => {
+                    frags.push(f.try_into().unwrap())
+                }
+                _ => panic!("unexpected definition in test input"),
+            }
+        }
+        (ops, frags)
+    }
+
+    fn names(items: &[&str]) -> IndexSet<Name> {
+        items.iter().map(|s| Name::new(s.to_string())).collect()
+    }
+
+    #[test]
+    fn no_operations_means_nothing_reachable() {
+        let (ops, frags) = parse("fragment A on T { __typename }");
+        let result = reachable_fragment_names(&ops, &frags);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn direct_spread_is_reachable() {
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { __typename }
+            ",
+        );
+        let result = reachable_fragment_names(&ops, &frags);
+        assert_eq!(result, names(&["A"]));
+    }
+
+    #[test]
+    fn transitive_chain_is_reachable() {
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { ...B }
+            fragment B on T { ...C }
+            fragment C on T { __typename }
+            ",
+        );
+        let result = reachable_fragment_names(&ops, &frags);
+        assert_eq!(result, names(&["A", "B", "C"]));
+    }
+
+    #[test]
+    fn orphan_chain_is_not_reachable() {
+        // A -> B with no operation referencing A: neither retained
+        let (ops, frags) = parse(
+            "
+            fragment A on T { ...B }
+            fragment B on T { __typename }
+            ",
+        );
+        let result = reachable_fragment_names(&ops, &frags);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn unreferenced_fragment_among_used_ones_is_pruned() {
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { __typename }
+            fragment B on T { __typename }
+            ",
+        );
+        let result = reachable_fragment_names(&ops, &frags);
+        assert_eq!(result, names(&["A"]));
+    }
+
+    #[test]
+    fn cycle_terminates() {
+        // op -> A -> B -> A : both reachable, no infinite loop
+        let (ops, frags) = parse(
+            "
+            query { ...A }
+            fragment A on T { ...B }
+            fragment B on T { ...A }
+            ",
+        );
+        let result = reachable_fragment_names(&ops, &frags);
+        assert_eq!(result, names(&["A", "B"]));
     }
 }
