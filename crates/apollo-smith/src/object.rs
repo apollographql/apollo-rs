@@ -187,30 +187,36 @@ impl DocumentBuilder<'_> {
         })
     }
 
-    /// After every interface and object has been generated, append any
-    /// fields each object is missing from its declared interfaces.
-    /// Single pass: existing fields are left alone, only missing ones
-    /// get added.
+    /// After every interface and object has been generated, reconcile
+    /// each object's fields against its declared interfaces. A field
+    /// whose name matches a parent's is overwritten with the parent's
+    /// signature; parent fields not yet declared get appended to the
+    /// base def.
     pub(crate) fn backfill_inherited_object_fields(&mut self) {
-        let iface_fields = crate::interface::effective_fields_by_name(&self.interface_type_defs);
-        for idx in 0..self.object_type_defs.len() {
-            let parents = self.object_type_defs[idx].implements_interfaces.clone();
-            let owned: std::collections::HashSet<String> = self.object_type_defs[idx]
-                .fields_def
-                .iter()
-                .map(|f| f.name.name.clone())
-                .collect();
-            for parent in &parents {
-                let Some(fields) = iface_fields.get(parent) else {
-                    continue;
-                };
-                for (fname, fdef) in fields {
-                    if owned.contains(fname) {
-                        continue;
+        use crate::interface::base_def_index;
+        use crate::interface::def_indices_with_name;
+        use crate::interface::parent_fields_now;
+        use crate::interface::unique_names;
+
+        for name in unique_names(&self.object_type_defs) {
+            let Some(base_idx) = base_def_index(&self.object_type_defs, &name) else {
+                continue;
+            };
+            let parents = self.object_type_defs[base_idx]
+                .implements_interfaces
+                .clone();
+            let mut inherited = parent_fields_now(&parents, &self.interface_type_defs);
+            let def_indices = def_indices_with_name(&self.object_type_defs, &name);
+            for &i in &def_indices {
+                for f in self.object_type_defs[i].fields_def.iter_mut() {
+                    if let Some(parent_fdef) = inherited.shift_remove(&f.name.name) {
+                        *f = parent_fdef;
                     }
-                    self.object_type_defs[idx].fields_def.push(fdef.clone());
                 }
             }
+            self.object_type_defs[base_idx]
+                .fields_def
+                .extend(inherited.into_values());
         }
     }
 }

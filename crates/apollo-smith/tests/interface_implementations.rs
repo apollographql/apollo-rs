@@ -1,14 +1,12 @@
 //! A type that declares `implements X` must declare every field `X`
-//! declares, and any interface `X` transitively implements. This test
-//! pins two failure modes the validator emits when smith hasn't
-//! reconciled interface inheritance:
+//! declares with a matching signature, and any interface `X`
+//! transitively implements. This test pins four failure modes the
+//! validator emits when smith hasn't reconciled interface inheritance:
 //!
 //! - "does not satisfy interface: missing field"
+//! - "is not a proper subtype" (return-type covariance)
+//! - "expects argument X but Y does not provide it" (missing argument)
 //! - "declares that it implements X, but to do so it must also implement Y"
-//!
-//! Covariance (the implementer happens to roll a field whose name
-//! matches a parent's but with a different type) is out of scope for
-//! this branch — leaving it to other generation-time changes.
 
 use apollo_compiler::ast::Document as AstDocument;
 use apollo_smith::DocumentBuilder;
@@ -26,7 +24,10 @@ fn assert_implementations_satisfied(seed: &[u8]) {
         let errors_str = errors.to_string();
         for diag in [
             "does not satisfy interface",
+            "is not a proper subtype",
             "but to do so it must also implement",
+            "expects argument",
+            "has extra required argument",
         ] {
             assert!(
                 !errors_str.contains(diag),

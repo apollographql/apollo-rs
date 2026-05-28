@@ -181,6 +181,12 @@ impl DocumentBuilder<'_> {
     /// transitive closure. If we roll `X`, and `X implements Y`, the
     /// caller's `implements` clause is `X & Y` so the validator's
     /// "must also implement" rule is satisfied without a backfill step.
+    ///
+    /// A candidate is dropped (along with its closure) when its fields
+    /// would conflict with parents already picked — generation can
+    /// independently roll two interfaces that declare the same field
+    /// with incompatible signatures, and a single implementer can never
+    /// satisfy both.
     pub fn implements_interfaces(&mut self) -> ArbitraryResult<IndexSet<Name>> {
         if self.interface_type_defs.is_empty() {
             return Ok(IndexSet::new());
@@ -188,63 +194,75 @@ impl DocumentBuilder<'_> {
         let num_itf = self
             .u
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
-        let mut picks: IndexSet<Name> = IndexSet::with_capacity(num_itf);
+        let parent_fields = effective_fields_by_name(&self.interface_type_defs);
+        let direct: std::collections::HashMap<Name, IndexSet<Name>> = self
+            .interface_type_defs
+            .iter()
+            .map(|i| (i.name.clone(), i.interfaces.clone()))
+            .collect();
+
+        let mut accepted: IndexSet<Name> = IndexSet::new();
+        let mut signatures: IndexMap<String, FieldDef> = IndexMap::new();
         for _ in 0..num_itf {
-            picks.insert(self.u.choose(&self.interface_type_defs)?.name.clone());
+            let candidate = self.u.choose(&self.interface_type_defs)?.name.clone();
+            try_accept_with_closure(
+                &candidate,
+                &direct,
+                &parent_fields,
+                &mut accepted,
+                &mut signatures,
+            );
         }
-        let mut frontier: Vec<Name> = picks.iter().cloned().collect();
-        while let Some(next) = frontier.pop() {
-            for itf in &self.interface_type_defs {
-                if itf.name == next {
-                    for parent in &itf.interfaces {
-                        if picks.insert(parent.clone()) {
-                            frontier.push(parent.clone());
-                        }
-                    }
-                }
-            }
-        }
-        Ok(picks)
+        Ok(accepted)
     }
 
     /// After every interface (base + extension) has been generated,
-    /// append any fields each implementer is missing from its declared
-    /// parents. Single pass: existing fields are left alone, only
-    /// missing ones get added.
+    /// reconcile each implementer's fields against its declared parents.
+    /// A field whose name matches a parent's is overwritten with the
+    /// parent's signature so the return type and arguments match.
+    /// Parent fields the implementer doesn't declare yet are appended
+    /// to its base def.
+    ///
+    /// Interfaces are processed in `unique_names` (generation) order so
+    /// each parent has already been reconciled by the time a child
+    /// reads its fields — `parent_fields_now` always sees the
+    /// post-backfill signature.
     pub(crate) fn backfill_inherited_interface_fields(&mut self) {
-        let parent_fields = effective_fields_by_name(&self.interface_type_defs);
-        for idx in 0..self.interface_type_defs.len() {
-            let parents = self.interface_type_defs[idx].interfaces.clone();
-            let owned: std::collections::HashSet<String> = self.interface_type_defs[idx]
-                .fields_def
-                .iter()
-                .map(|f| f.name.name.clone())
-                .collect();
-            for parent in &parents {
-                let Some(fields) = parent_fields.get(parent) else {
-                    continue;
-                };
-                for (fname, fdef) in fields {
-                    if owned.contains(fname) {
-                        continue;
+        for name in unique_names(&self.interface_type_defs) {
+            let Some(base_idx) = base_def_index(&self.interface_type_defs, &name) else {
+                continue;
+            };
+            let parents = self.interface_type_defs[base_idx].interfaces.clone();
+            let mut inherited = parent_fields_now(&parents, &self.interface_type_defs);
+            let def_indices = def_indices_with_name(&self.interface_type_defs, &name);
+            for &i in &def_indices {
+                for f in self.interface_type_defs[i].fields_def.iter_mut() {
+                    if let Some(parent_fdef) = inherited.shift_remove(&f.name.name) {
+                        *f = parent_fdef;
                     }
-                    self.interface_type_defs[idx].fields_def.push(fdef.clone());
                 }
             }
+            self.interface_type_defs[base_idx]
+                .fields_def
+                .extend(inherited.into_values());
         }
     }
 }
 
-/// Defs with a name and field list. Used by `effective_fields_by_name`
-/// so both `InterfaceTypeDef` and `ObjectTypeDef` can share it.
+/// Defs with a name and field list. Used by the backfill helpers so
+/// both `InterfaceTypeDef` and `ObjectTypeDef` can share them.
 pub(crate) trait NamedDef {
     fn name(&self) -> &Name;
+    fn is_extend(&self) -> bool;
     fn fields(&self) -> &[FieldDef];
 }
 
 impl NamedDef for InterfaceTypeDef {
     fn name(&self) -> &Name {
         &self.name
+    }
+    fn is_extend(&self) -> bool {
+        self.extend
     }
     fn fields(&self) -> &[FieldDef] {
         &self.fields_def
@@ -255,8 +273,70 @@ impl NamedDef for crate::ObjectTypeDef {
     fn name(&self) -> &Name {
         &self.name
     }
+    fn is_extend(&self) -> bool {
+        self.extend
+    }
     fn fields(&self) -> &[FieldDef] {
         &self.fields_def
+    }
+}
+
+/// Accept a candidate interface along with its transitive parents, but
+/// only if every field signature inside the closure is compatible with
+/// the parents already accepted. A conflicting candidate drops out
+/// entirely — its closure is never partially accepted — so the
+/// implementer's `implements` clause and its inherited field set stay
+/// internally consistent.
+pub(crate) fn try_accept_with_closure(
+    candidate: &Name,
+    direct: &std::collections::HashMap<Name, IndexSet<Name>>,
+    parent_fields: &std::collections::HashMap<Name, IndexMap<String, FieldDef>>,
+    accepted: &mut IndexSet<Name>,
+    signatures: &mut IndexMap<String, FieldDef>,
+) {
+    // Walk transitive parents (skipping the candidate itself, so
+    // self-cycles can't loop forever).
+    let mut closure: IndexSet<Name> = IndexSet::from_iter([candidate.clone()]);
+    let mut frontier: Vec<Name> = vec![candidate.clone()];
+    while let Some(next) = frontier.pop() {
+        if let Some(parents) = direct.get(&next) {
+            for parent in parents {
+                if parent != candidate && closure.insert(parent.clone()) {
+                    frontier.push(parent.clone());
+                }
+            }
+        }
+    }
+
+    for name in &closure {
+        if accepted.contains(name) {
+            continue;
+        }
+        let Some(fields) = parent_fields.get(name) else {
+            continue;
+        };
+        for (fname, fdef) in fields {
+            if let Some(existing) = signatures.get(fname) {
+                if existing.ty != fdef.ty
+                    || existing.arguments_definition != fdef.arguments_definition
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    for name in closure {
+        if !accepted.insert(name.clone()) {
+            continue;
+        }
+        if let Some(fields) = parent_fields.get(&name) {
+            for (fname, fdef) in fields {
+                signatures
+                    .entry(fname.clone())
+                    .or_insert_with(|| fdef.clone());
+            }
+        }
     }
 }
 
@@ -273,6 +353,51 @@ pub(crate) fn effective_fields_by_name<T: NamedDef>(
             entry
                 .entry(f.name.name.clone())
                 .or_insert_with(|| f.clone());
+        }
+    }
+    out
+}
+
+/// Distinct names across base + extensions, in first-occurrence order.
+pub(crate) fn unique_names<T: NamedDef>(defs: &[T]) -> Vec<Name> {
+    let mut seen: IndexSet<Name> = IndexSet::new();
+    for d in defs {
+        seen.insert(d.name().clone());
+    }
+    seen.into_iter().collect()
+}
+
+/// Index of the base def for `name` (`extend: false`), falling back to
+/// the first matching def when no base exists.
+pub(crate) fn base_def_index<T: NamedDef>(defs: &[T], name: &Name) -> Option<usize> {
+    defs.iter()
+        .position(|d| !d.is_extend() && d.name() == name)
+        .or_else(|| defs.iter().position(|d| d.name() == name))
+}
+
+/// Positions of every def (base + extensions) sharing the given name.
+pub(crate) fn def_indices_with_name<T: NamedDef>(defs: &[T], name: &Name) -> Vec<usize> {
+    defs.iter()
+        .enumerate()
+        .filter_map(|(i, d)| (d.name() == name).then_some(i))
+        .collect()
+}
+
+/// Current (first-wins) union of every parent's fields, read live from
+/// `defs`. Used by the backfill so a child sees its parent's
+/// post-backfill signature rather than a stale snapshot.
+pub(crate) fn parent_fields_now<T: NamedDef>(
+    parents: &IndexSet<Name>,
+    defs: &[T],
+) -> IndexMap<String, FieldDef> {
+    let mut out: IndexMap<String, FieldDef> = IndexMap::new();
+    for parent in parents {
+        for def in defs {
+            if def.name() == parent {
+                for f in def.fields() {
+                    out.entry(f.name.name.clone()).or_insert_with(|| f.clone());
+                }
+            }
         }
     }
     out
