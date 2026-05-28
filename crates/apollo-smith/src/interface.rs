@@ -158,14 +158,9 @@ impl DocumentBuilder<'_> {
         // Extensions can add new `implements` clauses, but must not
         // duplicate prior ones, form a cycle, or overwrite a field
         // signature the type already commits to. `additional_implements`
-        // enforces all three given the existing picks and signatures.
-        let already_implemented_parents = self.implements_graph.direct_parents(&name);
+        // enforces all three given the existing signatures.
         let existing_field_signatures = field_signatures_for(&self.interface_type_defs, &name);
-        let interfaces = self.additional_implements(
-            &already_implemented_parents,
-            &existing_field_signatures,
-            Some(&name),
-        )?;
+        let interfaces = self.additional_implements(&existing_field_signatures, Some(&name))?;
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Interface)?;
 
@@ -184,14 +179,11 @@ impl DocumentBuilder<'_> {
     /// rule is satisfied. A candidate is dropped if its closure would
     /// conflict with parents already picked.
     pub fn implements_interfaces(&mut self) -> ArbitraryResult<IndexSet<Name>> {
-        self.additional_implements(&IndexSet::new(), &IndexMap::new(), None)
+        self.additional_implements(&IndexMap::new(), None)
     }
 
     /// Pick interfaces to add to an existing `implements` clause.
     ///
-    /// - `already_implemented_parents`: parents the type already lists
-    ///   (union of base + prior extensions). Skipped to avoid
-    ///   duplicates; their fields seed the conflict guard.
     /// - `existing_field_signatures`: field signatures the type
     ///   already commits to. A pick whose closure would overwrite any
     ///   of them is rejected.
@@ -202,7 +194,6 @@ impl DocumentBuilder<'_> {
     /// parents.
     pub(crate) fn additional_implements(
         &mut self,
-        already_implemented_parents: &IndexSet<Name>,
         existing_field_signatures: &IndexMap<String, FieldDef>,
         self_name: Option<&Name>,
     ) -> ArbitraryResult<IndexSet<Name>> {
@@ -214,12 +205,16 @@ impl DocumentBuilder<'_> {
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
         let fields_by_type_name = fields_from_all_definitions(&self.interface_type_defs);
 
+        let already_implemented_parents = match self_name {
+            Some(n) => self.implements_graph.direct_parents(n),
+            None => IndexSet::new(),
+        };
         let mut accepted = already_implemented_parents.clone();
         // Seed the conflict guard with each existing parent's fields so a
         // new candidate whose closure carries a clashing signature is
         // rejected before it joins `accepted`.
         let mut accumulated_signatures = existing_field_signatures.clone();
-        for parent in already_implemented_parents {
+        for parent in &already_implemented_parents {
             if let Some(fields) = fields_by_type_name.get(parent) {
                 for (fname, fdef) in fields {
                     accumulated_signatures
@@ -231,7 +226,7 @@ impl DocumentBuilder<'_> {
 
         for _ in 0..num_itf {
             let candidate = self.u.choose(&self.interface_type_defs)?.name.clone();
-            try_accept_with_closure(
+            try_accept_candidate(
                 &candidate,
                 &self.implements_graph,
                 &fields_by_type_name,
@@ -331,13 +326,15 @@ impl NamedDef for crate::ObjectTypeDef {
     }
 }
 
-/// Accept a candidate interface along with its transitive parents, but
-/// only if every field signature inside the closure is compatible with
-/// the parents already accepted. A conflicting candidate drops out
-/// entirely — its closure is never partially accepted — so the
-/// implementer's `implements` clause and its inherited field set stay
-/// internally consistent.
-pub(crate) fn try_accept_with_closure(
+/// Try to accept `candidate` (and every interface it transitively
+/// implements) into the implementer's `accepted` set.
+///
+/// Rejects when:
+/// - The closure loops back at the implementer (would produce
+///   `X implements ... implements X`).
+/// - Any field in the closure clashes with a signature already
+///   committed to in `accumulated_signatures`.
+fn try_accept_candidate(
     candidate: &Name,
     graph: &crate::implements_graph::ImplementsGraph,
     fields_by_type_name: &HashMap<Name, IndexMap<String, FieldDef>>,
@@ -345,46 +342,33 @@ pub(crate) fn try_accept_with_closure(
     accumulated_signatures: &mut IndexMap<String, FieldDef>,
     self_name: Option<&Name>,
 ) {
-    // Reject a candidate whose closure loops back at the implementer
-    // (`X implements ... implements X` isn't valid).
-    if self_name == Some(candidate) {
-        return;
-    }
     let closure = graph.closure(candidate);
-    if let Some(name) = self_name {
-        if closure.contains(name) {
-            return;
-        }
-    }
 
-    for name in &closure {
-        if accepted.contains(name) {
-            continue;
-        }
-        let Some(fields) = fields_by_type_name.get(name) else {
-            continue;
-        };
-        for (fname, fdef) in fields {
-            if let Some(existing) = accumulated_signatures.get(fname) {
-                if existing.ty != fdef.ty
-                    || existing.arguments_definition != fdef.arguments_definition
-                {
-                    return;
-                }
-            }
-        }
+    let would_cycle = self_name.is_some_and(|n| closure.contains(n));
+    let would_conflict = closure.iter().any(|name| {
+        fields_by_type_name
+            .get(name)
+            .into_iter()
+            .flatten()
+            .any(|(fname, fdef)| {
+                accumulated_signatures.get(fname).is_some_and(|existing| {
+                    existing.ty != fdef.ty
+                        || existing.arguments_definition != fdef.arguments_definition
+                })
+            })
+    });
+    if would_cycle || would_conflict {
+        return;
     }
 
     for name in closure {
         if !accepted.insert(name.clone()) {
             continue;
         }
-        if let Some(fields) = fields_by_type_name.get(&name) {
-            for (fname, fdef) in fields {
-                accumulated_signatures
-                    .entry(fname.clone())
-                    .or_insert_with(|| fdef.clone());
-            }
+        for (fname, fdef) in fields_by_type_name.get(&name).into_iter().flatten() {
+            accumulated_signatures
+                .entry(fname.clone())
+                .or_insert_with(|| fdef.clone());
         }
     }
 }

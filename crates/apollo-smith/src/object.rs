@@ -175,13 +175,8 @@ impl DocumentBuilder<'_> {
         // duplicate prior picks or overwrite a field signature the
         // type already commits to. Objects can't appear in the
         // interface graph, so no cycle protection is needed.
-        let already_implemented_parents = self.implements_graph.direct_parents(&name);
         let existing_field_signatures = field_signatures_for(&self.object_type_defs, &name);
-        let implements_interfaces = self.additional_implements(
-            &already_implemented_parents,
-            &existing_field_signatures,
-            None,
-        )?;
+        let implements_interfaces = self.additional_implements(&existing_field_signatures, None)?;
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Object)?;
 
