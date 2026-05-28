@@ -359,6 +359,7 @@ impl DocumentBuilder<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::implements_graph::ImplementsGraph;
     use crate::InputObjectTypeDef;
     use arbitrary::Unstructured;
     use indexmap::IndexMap;
@@ -379,6 +380,7 @@ mod tests {
             directive_defs: Vec::new(),
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
+            implements_graph: ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),

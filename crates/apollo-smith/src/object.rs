@@ -4,10 +4,8 @@ use crate::directive::DirectiveLocation;
 use crate::field::FieldDef;
 use crate::interface::base_def_index;
 use crate::interface::def_indices_with_name;
-use crate::interface::interface_implements_union;
-use crate::interface::parent_fields_now;
-use crate::interface::signatures_of;
-use crate::interface::transitive_closure;
+use crate::interface::field_signatures_for;
+use crate::interface::parent_fields_from_defs;
 use crate::interface::unique_names;
 use crate::name::Name;
 use crate::DocumentBuilder;
@@ -173,21 +171,17 @@ impl DocumentBuilder<'_> {
             self.type_name()?
         };
 
-        // Extensions can declare additional `implements` clauses but
-        // must not repeat names already declared by the base or earlier
-        // extensions, and must not force-overwrite a field signature
-        // the type already commits to. Objects can't appear in the
+        // Extensions can add new `implements` clauses but must not
+        // duplicate prior picks or overwrite a field signature the
+        // type already commits to. Objects can't appear in the
         // interface graph, so no cycle protection is needed.
-        let (already_declared, existing_signatures) = if extend {
-            (
-                existing_implements_of(&self.object_type_defs, &name),
-                signatures_of(&self.object_type_defs, &name),
-            )
-        } else {
-            (IndexSet::new(), IndexMap::new())
-        };
-        let implements_interfaces =
-            self.additional_implements(&already_declared, &existing_signatures, None)?;
+        let already_implemented_parents = self.implements_graph.direct_parents(&name);
+        let existing_field_signatures = field_signatures_for(&self.object_type_defs, &name);
+        let implements_interfaces = self.additional_implements(
+            &already_implemented_parents,
+            &existing_field_signatures,
+            None,
+        )?;
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Object)?;
 
@@ -201,19 +195,10 @@ impl DocumentBuilder<'_> {
         })
     }
 
-    /// After every interface and object has been generated, reconcile
-    /// each object's `implements` clause and fields.
-    ///
-    /// Extensions can add `implements B` whose own parent set may have
-    /// grown since the object was first generated, so the base's
-    /// recorded `implements_interfaces` is stale. Each name's clause
-    /// is re-expanded to the transitive closure (through the interface
-    /// graph) and missing parents are added to the base def, held out
-    /// from extensions to avoid double-declaration.
-    ///
-    /// Then a field whose name matches a parent's is overwritten with
-    /// the parent's signature; parent fields not yet declared get
-    /// appended to the base def.
+    /// Reconcile each object's `implements` clause and fields once
+    /// the interface backfill has finished. Each interface already
+    /// holds its full inherited field set by that point, so the
+    /// object only needs to copy from its direct parents.
     pub(crate) fn backfill_inherited_object_fields(&mut self) {
         for name in unique_names(&self.object_type_defs) {
             let Some(base_idx) = base_def_index(&self.object_type_defs, &name) else {
@@ -221,58 +206,41 @@ impl DocumentBuilder<'_> {
             };
             self.expand_object_implements_closure(&name, base_idx);
 
-            let parents = existing_implements_of(&self.object_type_defs, &name);
-            let mut inherited = parent_fields_now(&parents, &self.interface_type_defs);
+            let parents = self.implements_graph.direct_parents(&name);
+            let mut inherited_fields = parent_fields_from_defs(&parents, &self.interface_type_defs);
             let def_indices = def_indices_with_name(&self.object_type_defs, &name);
             for &i in &def_indices {
                 for f in self.object_type_defs[i].fields_def.iter_mut() {
-                    if let Some(parent_fdef) = inherited.shift_remove(&f.name.name) {
+                    if let Some(parent_fdef) = inherited_fields.shift_remove(&f.name.name) {
                         *f = parent_fdef;
                     }
                 }
             }
             self.object_type_defs[base_idx]
                 .fields_def
-                .extend(inherited.into_values());
+                .extend(inherited_fields.into_values());
         }
     }
 
-    /// Re-expand `name`'s direct implements set (taken across base +
-    /// extensions) to its transitive closure via the interface graph,
-    /// and add any newly-required parents to the base def. Anything an
-    /// extension already declares is held out so the same interface is
-    /// never listed twice.
+    /// Write `name`'s transitive interface parents onto its base
+    /// def's `implements_interfaces`, skipping any an extension
+    /// already lists.
     fn expand_object_implements_closure(&mut self, name: &Name, base_idx: usize) {
-        let iface_direct = interface_implements_union(&self.interface_type_defs);
-        let start = existing_implements_of(&self.object_type_defs, name);
-        let closure = transitive_closure(start, &iface_direct, None);
+        let closure = self.implements_graph.transitive_parents(name);
         let extension_declared: IndexSet<Name> = self
             .object_type_defs
             .iter()
             .filter(|o| o.extend && &o.name == name)
             .flat_map(|o| o.implements_interfaces.iter().cloned())
             .collect();
-        let base = &mut self.object_type_defs[base_idx].implements_interfaces;
-        for parent in closure {
-            if !extension_declared.contains(&parent) {
-                base.insert(parent);
-            }
-        }
+        self.object_type_defs[base_idx]
+            .implements_interfaces
+            .extend(
+                closure
+                    .into_iter()
+                    .filter(|p| !extension_declared.contains(p)),
+            );
     }
-}
-
-/// Union of `implements_interfaces` across every object def sharing
-/// `name` (base + extensions). Used both when an extension rolls
-/// additional implements (so it knows what to avoid) and when the
-/// backfill needs the full implements set for the type.
-fn existing_implements_of(defs: &[ObjectTypeDef], name: &Name) -> IndexSet<Name> {
-    let mut out: IndexSet<Name> = IndexSet::new();
-    for def in defs {
-        if &def.name == name {
-            out.extend(def.implements_interfaces.iter().cloned());
-        }
-    }
-    out
 }
 
 impl StackedEntity for ObjectTypeDef {
