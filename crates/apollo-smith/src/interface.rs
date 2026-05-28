@@ -10,6 +10,7 @@ use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use std::collections::HashMap;
 
 /// InterfaceTypeDef is an abstract type where there are common fields declared.
 ///
@@ -154,16 +155,26 @@ impl DocumentBuilder<'_> {
         } else {
             self.type_name()?
         };
-        // Only the base def declares `implements`; extensions leave it
-        // empty so we don't emit `implements X` twice for the same type.
-        let interfaces: IndexSet<Name> = if extend {
-            IndexSet::new()
+        // Extensions can declare additional `implements` clauses but must
+        // not repeat names the base or earlier extensions already
+        // declared, and must not introduce a cycle by picking an
+        // interface whose closure points back at this type. Picks are
+        // also rejected if they'd force-overwrite a field signature the
+        // base def already declared (those overwrites would break
+        // anything that already implements this type).
+        let (already_declared, existing_signatures) = if extend {
+            (
+                existing_interfaces_of(&self.interface_type_defs, &name),
+                signatures_of(&self.interface_type_defs, &name),
+            )
         } else {
-            self.implements_interfaces()?
-                .into_iter()
-                .filter(|n| n != &name)
-                .collect()
+            (IndexSet::new(), IndexMap::new())
         };
+        let interfaces: IndexSet<Name> = self
+            .additional_implements(&already_declared, &existing_signatures, Some(&name))?
+            .into_iter()
+            .filter(|n| n != &name)
+            .collect();
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Interface)?;
 
@@ -188,6 +199,33 @@ impl DocumentBuilder<'_> {
     /// with incompatible signatures, and a single implementer can never
     /// satisfy both.
     pub fn implements_interfaces(&mut self) -> ArbitraryResult<IndexSet<Name>> {
+        self.additional_implements(&IndexSet::new(), &IndexMap::new(), None)
+    }
+
+    /// Pick interfaces to add to an existing `implements` clause.
+    ///
+    /// - `already_declared`: the union of the type's base + earlier
+    ///   extension implements clauses, used both to skip duplicates
+    ///   and to seed the conflict guard so new picks can't introduce a
+    ///   field signature that contradicts what's already declared.
+    /// - `existing_signatures`: field signatures the type already
+    ///   commits to (across its base + prior extensions). New picks
+    ///   that would force-overwrite any of these are dropped so we
+    ///   don't change a parent's effective fields out from under
+    ///   downstream implementers.
+    /// - `forbidden`: the type's own name when an interface extension
+    ///   is rolling new picks, so a candidate whose closure points back
+    ///   at this type is dropped (no `X implements ... implements X`
+    ///   cycles).
+    ///
+    /// Returns only the newly accepted interfaces (and their transitive
+    /// parents).
+    pub(crate) fn additional_implements(
+        &mut self,
+        already_declared: &IndexSet<Name>,
+        existing_signatures: &IndexMap<String, FieldDef>,
+        forbidden: Option<&Name>,
+    ) -> ArbitraryResult<IndexSet<Name>> {
         if self.interface_type_defs.is_empty() {
             return Ok(IndexSet::new());
         }
@@ -195,14 +233,20 @@ impl DocumentBuilder<'_> {
             .u
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
         let parent_fields = effective_fields_by_name(&self.interface_type_defs);
-        let direct: std::collections::HashMap<Name, IndexSet<Name>> = self
-            .interface_type_defs
-            .iter()
-            .map(|i| (i.name.clone(), i.interfaces.clone()))
-            .collect();
+        let direct = interface_implements_union(&self.interface_type_defs);
 
-        let mut accepted: IndexSet<Name> = IndexSet::new();
-        let mut signatures: IndexMap<String, FieldDef> = IndexMap::new();
+        let mut accepted: IndexSet<Name> = already_declared.clone();
+        let mut signatures: IndexMap<String, FieldDef> = existing_signatures.clone();
+        for name in already_declared {
+            if let Some(fields) = parent_fields.get(name) {
+                for (fname, fdef) in fields {
+                    signatures
+                        .entry(fname.clone())
+                        .or_insert_with(|| fdef.clone());
+                }
+            }
+        }
+
         for _ in 0..num_itf {
             let candidate = self.u.choose(&self.interface_type_defs)?.name.clone();
             try_accept_with_closure(
@@ -211,31 +255,34 @@ impl DocumentBuilder<'_> {
                 &parent_fields,
                 &mut accepted,
                 &mut signatures,
+                forbidden,
             );
         }
-        Ok(accepted)
+        Ok(accepted
+            .into_iter()
+            .filter(|n| !already_declared.contains(n))
+            .collect())
     }
 
     /// After every interface (base + extension) has been generated,
-    /// reconcile each implementer's fields against its declared parents.
-    /// A field whose name matches a parent's is overwritten with the
-    /// parent's signature so the return type and arguments match.
-    /// Parent fields the implementer doesn't declare yet are appended
-    /// to its base def.
-    ///
-    /// Interfaces are processed in `unique_names` (generation) order so
-    /// each parent has already been reconciled by the time a child
-    /// reads its fields — `parent_fields_now` always sees the
-    /// post-backfill signature.
+    /// reconcile each implementer's `implements` clause and fields.
+    /// For each type: expand the `implements` clause to its transitive
+    /// closure (so a parent reached via an extension's late picks is
+    /// recorded), then copy parent fields onto the implementer. The
+    /// `existing_signatures` guard at pick time keeps every parent's
+    /// effective field set stable through backfill, so iterating once
+    /// against the pre-backfill snapshot is enough — no topological
+    /// ordering needed.
     pub(crate) fn backfill_inherited_interface_fields(&mut self) {
         for name in unique_names(&self.interface_type_defs) {
             let Some(base_idx) = base_def_index(&self.interface_type_defs, &name) else {
                 continue;
             };
-            let parents = self.interface_type_defs[base_idx].interfaces.clone();
+            self.expand_interface_implements_closure(&name, base_idx);
+
+            let parents = existing_interfaces_of(&self.interface_type_defs, &name);
             let mut inherited = parent_fields_now(&parents, &self.interface_type_defs);
-            let def_indices = def_indices_with_name(&self.interface_type_defs, &name);
-            for &i in &def_indices {
+            for i in def_indices_with_name(&self.interface_type_defs, &name) {
                 for f in self.interface_type_defs[i].fields_def.iter_mut() {
                     if let Some(parent_fdef) = inherited.shift_remove(&f.name.name) {
                         *f = parent_fdef;
@@ -245,6 +292,28 @@ impl DocumentBuilder<'_> {
             self.interface_type_defs[base_idx]
                 .fields_def
                 .extend(inherited.into_values());
+        }
+    }
+
+    /// Re-expand `name`'s direct implements set (taken across base +
+    /// extensions) to its transitive closure and add any newly-required
+    /// parents to the base def. Anything an extension already declares
+    /// is held out so the same interface is never listed twice.
+    fn expand_interface_implements_closure(&mut self, name: &Name, base_idx: usize) {
+        let direct = interface_implements_union(&self.interface_type_defs);
+        let start = existing_interfaces_of(&self.interface_type_defs, name);
+        let closure = transitive_closure(start, &direct, Some(name));
+        let extension_declared: IndexSet<Name> = self
+            .interface_type_defs
+            .iter()
+            .filter(|i| i.extend && &i.name == name)
+            .flat_map(|i| i.interfaces.iter().cloned())
+            .collect();
+        let base = &mut self.interface_type_defs[base_idx].interfaces;
+        for parent in closure {
+            if &parent != name && !extension_declared.contains(&parent) {
+                base.insert(parent);
+            }
         }
     }
 }
@@ -289,22 +358,21 @@ impl NamedDef for crate::ObjectTypeDef {
 /// internally consistent.
 pub(crate) fn try_accept_with_closure(
     candidate: &Name,
-    direct: &std::collections::HashMap<Name, IndexSet<Name>>,
-    parent_fields: &std::collections::HashMap<Name, IndexMap<String, FieldDef>>,
+    direct: &HashMap<Name, IndexSet<Name>>,
+    parent_fields: &HashMap<Name, IndexMap<String, FieldDef>>,
     accepted: &mut IndexSet<Name>,
     signatures: &mut IndexMap<String, FieldDef>,
+    forbidden: Option<&Name>,
 ) {
-    // Walk transitive parents (skipping the candidate itself, so
-    // self-cycles can't loop forever).
-    let mut closure: IndexSet<Name> = IndexSet::from_iter([candidate.clone()]);
-    let mut frontier: Vec<Name> = vec![candidate.clone()];
-    while let Some(next) = frontier.pop() {
-        if let Some(parents) = direct.get(&next) {
-            for parent in parents {
-                if parent != candidate && closure.insert(parent.clone()) {
-                    frontier.push(parent.clone());
-                }
-            }
+    // Reject a candidate whose closure reaches `forbidden` — that
+    // would force `forbidden implements ... implements forbidden`.
+    if forbidden == Some(candidate) {
+        return;
+    }
+    let closure = transitive_closure(IndexSet::from_iter([candidate.clone()]), direct, None);
+    if let Some(f) = forbidden {
+        if closure.contains(f) {
+            return;
         }
     }
 
@@ -344,8 +412,7 @@ pub(crate) fn try_accept_with_closure(
 /// First occurrence of each field name wins.
 pub(crate) fn effective_fields_by_name<T: NamedDef>(
     defs: &[T],
-) -> std::collections::HashMap<Name, IndexMap<String, FieldDef>> {
-    use std::collections::HashMap;
+) -> HashMap<Name, IndexMap<String, FieldDef>> {
     let mut out: HashMap<Name, IndexMap<String, FieldDef>> = HashMap::new();
     for def in defs {
         let entry = out.entry(def.name().clone()).or_default();
@@ -381,6 +448,78 @@ pub(crate) fn def_indices_with_name<T: NamedDef>(defs: &[T], name: &Name) -> Vec
         .enumerate()
         .filter_map(|(i, d)| (d.name() == name).then_some(i))
         .collect()
+}
+
+/// Union of `interfaces` clauses across every interface def sharing
+/// `name` (base + extensions). Used both when an extension picks
+/// additional implements (so it knows what to avoid) and when the
+/// backfill needs the full implements set for the type.
+pub(crate) fn existing_interfaces_of(defs: &[InterfaceTypeDef], name: &Name) -> IndexSet<Name> {
+    let mut out: IndexSet<Name> = IndexSet::new();
+    for def in defs {
+        if &def.name == name {
+            out.extend(def.interfaces.iter().cloned());
+        }
+    }
+    out
+}
+
+/// First-wins union of every field signature across `name`'s base +
+/// prior extensions. An extension picking new implements consults this
+/// so it doesn't accept a parent whose fields would overwrite anything
+/// the type already declares.
+pub(crate) fn signatures_of<T: NamedDef>(defs: &[T], name: &Name) -> IndexMap<String, FieldDef> {
+    let mut out: IndexMap<String, FieldDef> = IndexMap::new();
+    for def in defs {
+        if def.name() == name {
+            for f in def.fields() {
+                out.entry(f.name.name.clone()).or_insert_with(|| f.clone());
+            }
+        }
+    }
+    out
+}
+
+/// Transitive closure over an implements graph, starting from `start`
+/// and walking edges in `direct`. `skip` is omitted from the closure
+/// even when it appears as a parent — used by the interface case to
+/// avoid pulling a type into its own implements set on cycle.
+pub(crate) fn transitive_closure(
+    start: IndexSet<Name>,
+    direct: &HashMap<Name, IndexSet<Name>>,
+    skip: Option<&Name>,
+) -> IndexSet<Name> {
+    let mut closure = start.clone();
+    let mut frontier: Vec<Name> = start.into_iter().collect();
+    while let Some(next) = frontier.pop() {
+        if let Some(parents) = direct.get(&next) {
+            for parent in parents {
+                if Some(parent) == skip {
+                    continue;
+                }
+                if closure.insert(parent.clone()) {
+                    frontier.push(parent.clone());
+                }
+            }
+        }
+    }
+    closure
+}
+
+/// Direct implements graph: for every interface name, the union of
+/// `interfaces` clauses across its base and every extension. A naive
+/// `iter().map().collect()` would overwrite on duplicate keys and
+/// lose extension-added implements; this combines them properly.
+pub(crate) fn interface_implements_union(
+    defs: &[InterfaceTypeDef],
+) -> HashMap<Name, IndexSet<Name>> {
+    let mut out: HashMap<Name, IndexSet<Name>> = HashMap::new();
+    for def in defs {
+        out.entry(def.name.clone())
+            .or_default()
+            .extend(def.interfaces.iter().cloned());
+    }
+    out
 }
 
 /// Current (first-wins) union of every parent's fields, read live from
