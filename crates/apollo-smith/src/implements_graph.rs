@@ -29,30 +29,16 @@ impl ImplementsGraph {
         }
     }
 
-    /// Reserve a node for `name` even when it has no edges, so closure
-    /// queries return empty instead of treating it as unknown.
-    pub(crate) fn ensure_node(&mut self, name: &Name) {
-        self.node_for(name);
-    }
-
-    /// Names reachable from `start`, excluding `start` itself.
-    pub(crate) fn transitive_parents(&self, start: &Name) -> IndexSet<Name> {
+    /// `start` plus every name reachable from it.
+    pub(crate) fn closure(&self, start: &Name) -> IndexSet<Name> {
         let Some(&root) = self.by_name.get(start) else {
             return IndexSet::new();
         };
         let mut bfs = Bfs::new(&self.graph, root);
         let mut out = IndexSet::new();
-        bfs.next(&self.graph); // skip start
         while let Some(idx) = bfs.next(&self.graph) {
             out.insert(self.graph[idx].clone());
         }
-        out
-    }
-
-    /// `start` plus its transitive parents.
-    pub(crate) fn closure(&self, start: &Name) -> IndexSet<Name> {
-        let mut out: IndexSet<Name> = IndexSet::from_iter([start.clone()]);
-        out.extend(self.transitive_parents(start));
         out
     }
 
@@ -81,7 +67,7 @@ impl ImplementsGraph {
         }
     }
 
-    fn node_for(&mut self, name: &Name) -> NodeIndex {
+    pub(crate) fn node_for(&mut self, name: &Name) -> NodeIndex {
         if let Some(&idx) = self.by_name.get(name) {
             return idx;
         }

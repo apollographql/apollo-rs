@@ -204,10 +204,13 @@ impl DocumentBuilder<'_> {
             let Some(base_idx) = base_def_index(&self.object_type_defs, &name) else {
                 continue;
             };
-            self.expand_object_implements_closure(&name, base_idx);
+            self.expand_transitive_object_implementations(&name, base_idx);
 
             let parents = self.implements_graph.direct_parents(&name);
             let mut inherited_fields = parent_fields_from_defs(&parents, &self.interface_type_defs);
+            // Rewrite object-declared fields to the parent interface's
+            // signature so the object satisfies the interface contract
+            // exactly (matching type + args).
             let def_indices = def_indices_with_name(&self.object_type_defs, &name);
             for &i in &def_indices {
                 for f in self.object_type_defs[i].fields_def.iter_mut() {
@@ -216,30 +219,31 @@ impl DocumentBuilder<'_> {
                     }
                 }
             }
+            // Append the interface fields the object never declared.
             self.object_type_defs[base_idx]
                 .fields_def
                 .extend(inherited_fields.into_values());
         }
     }
 
-    /// Write `name`'s transitive interface parents onto its base
-    /// def's `implements_interfaces`, skipping any an extension
-    /// already lists.
-    fn expand_object_implements_closure(&mut self, name: &Name, base_idx: usize) {
-        let closure = self.implements_graph.transitive_parents(name);
-        let extension_declared: IndexSet<Name> = self
+    /// Write `name`'s transitive interface parents onto its base def, skipping any already declared by an extension.
+    fn expand_transitive_object_implementations(&mut self, name: &Name, base_idx: usize) {
+        let mut all_implemented_interfaces = self.implements_graph.closure(name);
+        // Closure includes `name`, but an object never implements itself.
+        all_implemented_interfaces.shift_remove(name);
+
+        let interfaces_declared_by_extensions: IndexSet<Name> = self
             .object_type_defs
             .iter()
             .filter(|o| o.extend && &o.name == name)
             .flat_map(|o| o.implements_interfaces.iter().cloned())
             .collect();
+        let interfaces_to_add = all_implemented_interfaces
+            .into_iter()
+            .filter(|p| !interfaces_declared_by_extensions.contains(p));
         self.object_type_defs[base_idx]
             .implements_interfaces
-            .extend(
-                closure
-                    .into_iter()
-                    .filter(|p| !extension_declared.contains(p)),
-            );
+            .extend(interfaces_to_add);
     }
 }
 

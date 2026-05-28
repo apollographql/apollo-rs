@@ -102,8 +102,7 @@ pub struct DocumentBuilder<'a> {
     pub(crate) directive_defs: Vec<DirectiveDef>,
     pub(crate) operation_defs: Vec<OperationDef>,
     pub(crate) fragment_defs: Vec<FragmentDef>,
-    /// Edges of every `implements` clause picked so far. Queried for
-    /// transitive parents instead of re-walking `*_type_defs`.
+    // A graph with edges representing the "implements" relationship between types
     pub(crate) implements_graph: implements_graph::ImplementsGraph,
     // A stack to set current ObjectTypeDef
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
@@ -163,7 +162,7 @@ impl<'a> DocumentBuilder<'a> {
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
             let def = builder.interface_type_definition()?;
-            builder.implements_graph.ensure_node(&def.name);
+            builder.implements_graph.node_for(&def.name);
             for parent in &def.interfaces {
                 builder.implements_graph.add_edge(&def.name, parent);
             }
@@ -173,7 +172,7 @@ impl<'a> DocumentBuilder<'a> {
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
             let def = builder.object_type_definition()?;
-            builder.implements_graph.ensure_node(&def.name);
+            builder.implements_graph.node_for(&def.name);
             for parent in &def.implements_interfaces {
                 builder.implements_graph.add_edge(&def.name, parent);
             }
@@ -220,13 +219,13 @@ impl<'a> DocumentBuilder<'a> {
     pub fn with_document(u: &'a mut Unstructured<'a>, document: Document) -> Result<Self> {
         let mut implements_graph = implements_graph::ImplementsGraph::new();
         for itf in &document.interface_type_definitions {
-            implements_graph.ensure_node(&itf.name);
+            implements_graph.node_for(&itf.name);
             for parent in &itf.interfaces {
                 implements_graph.add_edge(&itf.name, parent);
             }
         }
         for obj in &document.object_type_definitions {
-            implements_graph.ensure_node(&obj.name);
+            implements_graph.node_for(&obj.name);
             for parent in &obj.implements_interfaces {
                 implements_graph.add_edge(&obj.name, parent);
             }

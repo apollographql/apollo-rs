@@ -161,15 +161,11 @@ impl DocumentBuilder<'_> {
         // enforces all three given the existing picks and signatures.
         let already_implemented_parents = self.implements_graph.direct_parents(&name);
         let existing_field_signatures = field_signatures_for(&self.interface_type_defs, &name);
-        let interfaces: IndexSet<Name> = self
-            .additional_implements(
-                &already_implemented_parents,
-                &existing_field_signatures,
-                Some(&name),
-            )?
-            .into_iter()
-            .filter(|n| n != &name)
-            .collect();
+        let interfaces = self.additional_implements(
+            &already_implemented_parents,
+            &existing_field_signatures,
+            Some(&name),
+        )?;
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Interface)?;
 
@@ -218,9 +214,11 @@ impl DocumentBuilder<'_> {
             .int_in_range(0..=(self.interface_type_defs.len() - 1))?;
         let fields_by_type_name = fields_from_all_definitions(&self.interface_type_defs);
 
-        let mut accepted: IndexSet<Name> = already_implemented_parents.clone();
-        let mut accumulated_signatures: IndexMap<String, FieldDef> =
-            existing_field_signatures.clone();
+        let mut accepted = already_implemented_parents.clone();
+        // Seed the conflict guard with each existing parent's fields so a
+        // new candidate whose closure carries a clashing signature is
+        // rejected before it joins `accepted`.
+        let mut accumulated_signatures = existing_field_signatures.clone();
         for parent in already_implemented_parents {
             if let Some(fields) = fields_by_type_name.get(parent) {
                 for (fname, fdef) in fields {
@@ -259,10 +257,13 @@ impl DocumentBuilder<'_> {
             let Some(base_idx) = base_def_index(&self.interface_type_defs, &name) else {
                 continue;
             };
-            self.expand_interface_implements_closure(&name, base_idx);
+            self.expand_transitive_interface_implementations(&name, base_idx);
 
             let parents = self.implements_graph.direct_parents(&name);
             let mut inherited_fields = parent_fields_from_defs(&parents, &self.interface_type_defs);
+            // Rewrite child-declared fields to the parent's signature so a
+            // child's locally-picked type/args don't drift from the
+            // interface contract (covariance + matching args).
             for i in def_indices_with_name(&self.interface_type_defs, &name) {
                 for f in self.interface_type_defs[i].fields_def.iter_mut() {
                     if let Some(parent_fdef) = inherited_fields.shift_remove(&f.name.name) {
@@ -270,28 +271,31 @@ impl DocumentBuilder<'_> {
                     }
                 }
             }
+            // Append the parent fields the child never declared.
             self.interface_type_defs[base_idx]
                 .fields_def
                 .extend(inherited_fields.into_values());
         }
     }
 
-    /// Write `name`'s transitive parents onto its base def, skipping
-    /// any an extension already lists (printing would otherwise emit
-    /// `implements X` twice).
-    fn expand_interface_implements_closure(&mut self, name: &Name, base_idx: usize) {
-        let closure = self.implements_graph.transitive_parents(name);
-        let extension_declared: IndexSet<Name> = self
+    /// Write `name`'s transitive implementations onto its base def, skipping any already declared by an extension.
+    fn expand_transitive_interface_implementations(&mut self, name: &Name, base_idx: usize) {
+        let mut all_implemented_interfaces = self.implements_graph.closure(name);
+        // Closure includes `name`, but we don't want to write `interface X implements X`
+        all_implemented_interfaces.shift_remove(name);
+
+        let interfaces_declared_by_extensions: IndexSet<Name> = self
             .interface_type_defs
             .iter()
             .filter(|i| i.extend && &i.name == name)
             .flat_map(|i| i.interfaces.iter().cloned())
             .collect();
-        self.interface_type_defs[base_idx].interfaces.extend(
-            closure
-                .into_iter()
-                .filter(|p| p != name && !extension_declared.contains(p)),
-        );
+        let interfaces_to_add = all_implemented_interfaces
+            .into_iter()
+            .filter(|p| !interfaces_declared_by_extensions.contains(p));
+        self.interface_type_defs[base_idx]
+            .interfaces
+            .extend(interfaces_to_add);
     }
 }
 
@@ -390,16 +394,13 @@ pub(crate) fn try_accept_with_closure(
 pub(crate) fn fields_from_all_definitions<T: NamedDef>(
     defs: &[T],
 ) -> HashMap<Name, IndexMap<String, FieldDef>> {
-    let mut out: HashMap<Name, IndexMap<String, FieldDef>> = HashMap::new();
-    for def in defs {
-        let entry = out.entry(def.name().clone()).or_default();
-        for f in def.fields() {
-            entry
-                .entry(f.name.name.clone())
-                .or_insert_with(|| f.clone());
-        }
-    }
-    out
+    unique_names(defs)
+        .into_iter()
+        .map(|n| {
+            let fields = field_signatures_for(defs, &n);
+            (n, fields)
+        })
+        .collect()
 }
 
 /// Distinct names across base + extensions, in first-occurrence order.
