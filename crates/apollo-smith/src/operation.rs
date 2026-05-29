@@ -110,18 +110,39 @@ impl From<apollo_parser::cst::OperationType> for OperationType {
 }
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
+    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`.
     pub fn operation_definition(&mut self) -> ArbitraryResult<Option<OperationDef>> {
+        self.operation_definition_in_document(false)
+    }
+
+    /// Like [`operation_definition`], but forces the operation to be
+    /// named when `require_named` is true. A document with more than
+    /// one operation may not contain an anonymous operation.
+    ///
+    /// Operation Name Uniqueness across the document is upheld by
+    /// `type_name`, which never returns a name that already exists on
+    /// the builder.
+    ///
+    /// See <https://spec.graphql.org/October2021/#sec-Lone-Anonymous-Operations>
+    /// and <https://spec.graphql.org/October2021/#sec-Operation-Name-Uniqueness>.
+    ///
+    /// [`operation_definition`]: Self::operation_definition
+    pub(crate) fn operation_definition_in_document(
+        &mut self,
+        require_named: bool,
+    ) -> ArbitraryResult<Option<OperationDef>> {
         let schema = match self.schema_def.clone() {
             Some(schema_def) => schema_def,
             None => return Ok(None),
         };
-        let name = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.type_name())
-            .transpose()?;
+
+        let want_name = require_named || self.u.arbitrary().unwrap_or(false);
+        let name = if want_name {
+            Some(self.type_name()?)
+        } else {
+            None
+        };
+
         let available_operations = {
             let mut ops = vec![];
             if let Some(query) = &schema.query {
