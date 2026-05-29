@@ -123,7 +123,7 @@ impl DocumentBuilder<'_> {
     /// `type_name`, which never returns a name that already exists on
     /// the builder.
     ///
-    /// See <https://spec.graphql.org/October2021/#sec-Lone-Anonymous-Operations>
+    /// See <https://spec.graphql.org/October2021/#sec-Lone-Anonymous-Operation>
     /// and <https://spec.graphql.org/October2021/#sec-Operation-Name-Uniqueness>.
     ///
     /// [`operation_definition`]: Self::operation_definition
@@ -172,8 +172,8 @@ impl DocumentBuilder<'_> {
         let selection_set = if matches!(operation_type, OperationType::Subscription) {
             // Subscription operations must have exactly one root field
             // per <https://spec.graphql.org/October2021/#sec-Single-root-field>.
-            // Picking a `Field` directly avoids fragments at the top
-            // level, whose contents could otherwise widen the root.
+            // We generate exactly one field to satisfy that condition. The 0-index
+            // is sometimes used to create an alias for the field.
             SelectionSet {
                 selections: vec![Selection::Field(self.field(0)?)],
             }
