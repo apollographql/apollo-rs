@@ -1,6 +1,7 @@
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
+use crate::selection_set::Selection;
 use crate::selection_set::SelectionSet;
 use crate::variable::VariableDef;
 use crate::DocumentBuilder;
@@ -147,7 +148,17 @@ impl DocumentBuilder<'_> {
         // Stack
         self.stack_ty(chosen_ty);
 
-        let selection_set = self.selection_set()?;
+        let selection_set = if matches!(operation_type, OperationType::Subscription) {
+            // Subscription operations must have exactly one root field
+            // per <https://spec.graphql.org/October2021/#sec-Single-root-field>.
+            // Picking a `Field` directly avoids fragments at the top
+            // level, whose contents could otherwise widen the root.
+            SelectionSet {
+                selections: vec![Selection::Field(self.field(0)?)],
+            }
+        } else {
+            self.selection_set()?
+        };
 
         self.stack.pop();
         // Clear the chosen arguments for an operation
