@@ -225,9 +225,12 @@ pub(crate) fn value_of_correct_type(
                     if obj.len() != 1 {
                         diagnostics.push(
                             arg_value.location(),
-                            DiagnosticData::OneOfInputObjectWrongNumberOfFields {
+                            DiagnosticData::OneOfInputObjectFieldCount {
                                 name: input_obj.name.clone(),
-                                provided: obj.len(),
+                                provided_fields: obj
+                                    .iter()
+                                    .map(|(name, _)| (name.clone(), name.location()))
+                                    .collect(),
                             },
                         );
                     }

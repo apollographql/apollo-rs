@@ -353,10 +353,14 @@ pub(crate) enum DiagnosticData {
         definition_location: Option<SourceSpan>,
     },
     #[error(
-        "@oneOf input object `{name}` must specify exactly one key, but {provided} {} given",
-        if *provided == 1 { "was" } else { "were" }
+        "@oneOf input object `{name}` must specify exactly one key, but {} {} given",
+        provided_fields.len(),
+        if provided_fields.len() == 1 { "was" } else { "were" }
     )]
-    OneOfInputObjectWrongNumberOfFields { name: Name, provided: usize },
+    OneOfInputObjectFieldCount {
+        name: Name,
+        provided_fields: Vec<(Name, Option<SourceSpan>)>,
+    },
     #[error("`{coordinate}` field must not have a default value")]
     UnsupportedDefault {
         coordinate: TypeAttributeCoordinate,
@@ -882,18 +886,35 @@ impl DiagnosticData {
                 report.with_label_opt(main_location, "remove the `!` to make this field nullable");
                 report.with_help(ONE_OF_FIELD_REQUIREMENTS);
             }
-            DiagnosticData::OneOfInputObjectWrongNumberOfFields { name, provided } => {
-                report.with_label_opt(
-                    main_location,
-                    format_args!(
-                        "{provided} {} provided",
-                        if *provided == 1 {
-                            "field was"
-                        } else {
-                            "fields were"
-                        }
-                    ),
-                );
+            DiagnosticData::OneOfInputObjectFieldCount {
+                name,
+                provided_fields,
+            } => {
+                if provided_fields.is_empty() {
+                    report.with_label_opt(main_location, "no fields provided");
+                } else {
+                    // Cap labels so a pathological many-field input doesn't produce a
+                    // multi-kilobyte unreadable diagnostic.  Three is the threshold rustc
+                    // uses for the closest analog — struct-field truncation in
+                    // `rustc_hir_typeck::expr` — and the overflow goes into a single note,
+                    // following the same `saturating_sub(N)` + "and N other(s)" convention.
+                    const MAX_LABELED_FIELDS: usize = 3;
+                    for (field_name, field_location) in
+                        provided_fields.iter().take(MAX_LABELED_FIELDS)
+                    {
+                        report.with_label_opt(
+                            *field_location,
+                            format_args!("field `{field_name}` provided here"),
+                        );
+                    }
+                    let overflow = provided_fields.len().saturating_sub(MAX_LABELED_FIELDS);
+                    if overflow > 0 {
+                        report.with_note(format_args!(
+                            "{overflow} more {} provided",
+                            if overflow == 1 { "field" } else { "fields" }
+                        ));
+                    }
+                }
                 report.with_help(format_args!(
                     "@oneOf input object `{name}` requires exactly one non-null field."
                 ));

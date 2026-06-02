@@ -220,7 +220,7 @@ fn invalid_one_of_no_fields() {
            │
          1 │ { oneOfField(arg: {}) }
            │                   ─┬  
-           │                    ╰── 0 fields were provided
+           │                    ╰── no fields provided
            │ 
            │ Help: @oneOf input object `OneOfInput` requires exactly one non-null field.
         ───╯
@@ -244,8 +244,10 @@ fn invalid_one_of_multiple_fields() {
            ╭─[ query.graphql:1:19 ]
            │
          1 │ { oneOfField(arg: { stringField: "a", intField: 1 }) }
-           │                   ────────────────┬────────────────  
-           │                                   ╰────────────────── 2 fields were provided
+           │                     ─────┬─────       ────┬───  
+           │                          ╰────────────────────── field `stringField` provided here
+           │                                           │     
+           │                                           ╰───── field `intField` provided here
            │ 
            │ Help: @oneOf input object `OneOfInput` requires exactly one non-null field.
         ───╯

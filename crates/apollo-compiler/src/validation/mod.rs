@@ -315,9 +315,7 @@ impl DiagnosticData {
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
                     ReservedName { .. } => "ReservedName",
                     OneOfInputObjectFieldNonNull { .. } => "OneOfInputObjectFieldNonNull",
-                    OneOfInputObjectWrongNumberOfFields { .. } => {
-                        "OneOfInputObjectWrongNumberOfFields"
-                    }
+                    OneOfInputObjectFieldCount { .. } => "OneOfInputObjectFieldCount",
                     UnsupportedDefault { .. } => "UnsupportedDefault",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                     MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
@@ -528,7 +526,7 @@ impl DiagnosticData {
                     OneOfInputObjectFieldNonNull { coordinate, .. } => Some(format!(
                         r#"OneOf input field "{coordinate}" must be nullable."#
                     )),
-                    OneOfInputObjectWrongNumberOfFields { name, .. } => Some(format!(
+                    OneOfInputObjectFieldCount { name, .. } => Some(format!(
                         r#"OneOf Input Object "{name}" must specify exactly one key."#
                     )),
                     UnsupportedDefault { coordinate, .. } => Some(format!(
