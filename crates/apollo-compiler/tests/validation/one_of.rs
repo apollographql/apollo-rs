@@ -265,14 +265,18 @@ fn invalid_one_of_null_field() {
     .errors;
 
     let expected = expect![[r#"
-        Error: `OneOfInput.stringField` value for @oneOf input object must be non-null
+        Error: expected value of type String!, found null
            ╭─[ query.graphql:1:34 ]
            │
          1 │ { oneOfField(arg: { stringField: null }) }
            │                                  ──┬─  
-           │                                    ╰─── this value is null
-           │ 
-           │ Help: @oneOf input object `OneOfInput` field `stringField` must be non-null.
+           │                                    ╰─── provided value is null
+           │
+           ├─[ schema.graphql:4:30 ]
+           │
+         4 │                 stringField: String
+           │                              ───┬──  
+           │                                 ╰──── expected type declared here as String!
         ───╯
     "#]];
     expected.assert_eq(&errors.to_string());
@@ -303,14 +307,14 @@ fn invalid_one_of_nullable_variable() {
     .errors;
 
     let expected = expect![[r#"
-        Error: variable `$var` is of type `String` but must be non-nullable to be used for @oneOf input object `OneOfInput` field `stringField`
+        Error: variable `$var` of type `String` cannot be used for argument `stringField` of type `String!`
            ╭─[ query.graphql:1:56 ]
            │
          1 │ query Q($var: String) { oneOfField(arg: { stringField: $var }) }
-           │                                                        ──┬─  
-           │                                                          ╰─── variable `$var` has type `String`, which is nullable
-           │ 
-           │ Help: use `String!` to make this variable non-nullable for @oneOf input object `OneOfInput` field `stringField`.
+           │         ──────┬─────                                   ──┬─  
+           │               ╰────────────────────────────────────────────── variable `$var` of type `String` is declared here
+           │                                                          │   
+           │                                                          ╰─── variable `$var` used here
         ───╯
     "#]];
     expected.assert_eq(&errors.to_string());

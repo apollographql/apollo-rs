@@ -357,22 +357,10 @@ pub(crate) enum DiagnosticData {
         if *provided == 1 { "was" } else { "were" }
     )]
     OneOfInputObjectWrongNumberOfFields { name: Name, provided: usize },
-    #[error("`{name}.{field}` value for @oneOf input object must be non-null")]
-    OneOfInputObjectNullField { name: Name, field: Name },
     #[error("`{coordinate}` field must not have a default value")]
     UnsupportedDefault {
         coordinate: TypeAttributeCoordinate,
         default_location: Option<SourceSpan>,
-    },
-    #[error(
-        "variable `${variable}` is of type `{variable_type}` \
-         but must be non-nullable to be used for @oneOf input object `{name}` field `{field}`"
-    )]
-    OneOfInputObjectNullableVariable {
-        name: Name,
-        field: Name,
-        variable: Name,
-        variable_type: Node<ast::Type>,
     },
 }
 
@@ -910,12 +898,6 @@ impl DiagnosticData {
                     "@oneOf input object `{name}` requires exactly one non-null field."
                 ));
             }
-            DiagnosticData::OneOfInputObjectNullField { name, field } => {
-                report.with_label_opt(main_location, "this value is null");
-                report.with_help(format_args!(
-                    "@oneOf input object `{name}` field `{field}` must be non-null."
-                ));
-            }
             DiagnosticData::UnsupportedDefault {
                 coordinate,
                 default_location,
@@ -926,22 +908,6 @@ impl DiagnosticData {
                 );
                 report.with_label_opt(main_location, "remove the default value");
                 report.with_help(ONE_OF_FIELD_REQUIREMENTS);
-            }
-            DiagnosticData::OneOfInputObjectNullableVariable {
-                name,
-                field,
-                variable,
-                variable_type,
-            } => {
-                report.with_label_opt(
-                    main_location,
-                    format_args!(
-                        "variable `${variable}` has type `{variable_type}`, which is nullable"
-                    ),
-                );
-                report.with_help(format_args!(
-                    "use `{variable_type}!` to make this variable non-nullable for @oneOf input object `{name}` field `{field}`."
-                ));
             }
         }
     }

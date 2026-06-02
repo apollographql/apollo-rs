@@ -230,31 +230,47 @@ pub(crate) fn value_of_correct_type(
                                 provided: obj.len(),
                             },
                         );
-                    } else if let Some((field_name, field_val)) = obj.first() {
+                    }
+                    // Check ALL provided fields (not just the first) so diagnostics are
+                    // complete even when the caller supplies the wrong count.
+                    for (field_name, field_val) in obj.iter() {
                         if field_val.is_null() {
-                            diagnostics.push(
-                                field_val.location(),
-                                DiagnosticData::OneOfInputObjectNullField {
-                                    name: input_obj.name.clone(),
-                                    field: field_name.clone(),
-                                },
-                            );
+                            // @oneOf fields are declared nullable in the schema, but in a
+                            // @oneOf context the provided value must be non-null.  Route
+                            // through unsupported_type() so this surfaces as the same
+                            // UnsupportedValueType diagnostic used for all other value-kind
+                            // mismatches.
+                            if let Some(field_def) = input_obj.fields.get(field_name) {
+                                let non_null_ty = field_def
+                                    .ty
+                                    .same_location(field_def.ty.as_ref().clone().non_null());
+                                unsupported_type(diagnostics, field_val, &non_null_ty);
+                            }
                         } else if let ast::Value::Variable(var_name) = &**field_val {
-                            // The field value is a variable — the variable must be declared
-                            // non-null.  An undefined variable is left to the UndefinedVariable
-                            // rule; we only flag nullable variables that are definitely known.
-                            // https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
+                            // A nullable variable can never satisfy a @oneOf field because
+                            // the runtime value might be null.  Undefined variables are
+                            // handled by the UndefinedVariable rule; only flag known nullable
+                            // ones.  Use DisallowedVariableUsage — the same diagnostic
+                            // validate_variable_usage emits — treating the field as non-null.
                             if let Some(var_def) = var_defs.iter().find(|v| v.name == *var_name) {
                                 if !var_def.ty.is_non_null() {
-                                    diagnostics.push(
-                                        field_val.location(),
-                                        DiagnosticData::OneOfInputObjectNullableVariable {
-                                            name: input_obj.name.clone(),
-                                            field: field_name.clone(),
-                                            variable: var_name.clone(),
-                                            variable_type: var_def.ty.clone(),
-                                        },
-                                    );
+                                    if let Some(field_def) = input_obj.fields.get(field_name) {
+                                        diagnostics.push(
+                                            field_val.location(),
+                                            DiagnosticData::DisallowedVariableUsage {
+                                                variable: var_name.clone(),
+                                                variable_type: (*var_def.ty).clone(),
+                                                variable_location: var_def.location(),
+                                                argument: field_name.clone(),
+                                                argument_type: field_def
+                                                    .ty
+                                                    .as_ref()
+                                                    .clone()
+                                                    .non_null(),
+                                                argument_location: field_def.location(),
+                                            },
+                                        );
+                                    }
                                 }
                             }
                         }

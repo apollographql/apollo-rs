@@ -318,9 +318,7 @@ impl DiagnosticData {
                     OneOfInputObjectWrongNumberOfFields { .. } => {
                         "OneOfInputObjectWrongNumberOfFields"
                     }
-                    OneOfInputObjectNullField { .. } => "OneOfInputObjectNullField",
                     UnsupportedDefault { .. } => "UnsupportedDefault",
-                    OneOfInputObjectNullableVariable { .. } => "OneOfInputObjectNullableVariable",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                     MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
                     InvalidImplementationFieldArgumentType { .. } => {
@@ -533,19 +531,8 @@ impl DiagnosticData {
                     OneOfInputObjectWrongNumberOfFields { name, .. } => Some(format!(
                         r#"OneOf Input Object "{name}" must specify exactly one key."#
                     )),
-                    OneOfInputObjectNullField { name, field } => Some(format!(
-                        r#"Field "{name}.{field}" used for OneOf Input Object must be non-null."#
-                    )),
                     UnsupportedDefault { coordinate, .. } => Some(format!(
                         r#"OneOf input field "{coordinate}" cannot have a default value."#
-                    )),
-                    OneOfInputObjectNullableVariable {
-                        name,
-                        field,
-                        variable,
-                        variable_type,
-                    } => Some(format!(
-                        r#"Variable "${variable}" is of type "{variable_type}" but must be non-nullable to be used for OneOf Input Object "{name}" field "{field}"."#
                     )),
                     InvalidImplementationFieldType {
                         name,
