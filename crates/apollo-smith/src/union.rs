@@ -2,7 +2,6 @@ use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
-use crate::ty::Ty;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
@@ -134,15 +133,14 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let directives = self.directives(DirectiveLocation::Union)?;
-        let mut existing_types = self.list_existing_object_types();
-        existing_types.extend(
-            self.union_type_defs
-                .iter()
-                .map(|u| Ty::Named(u.name.clone())),
-        );
-
+        // Union members must be Object base types — built-in scalars,
+        // other unions, interfaces, enums, and input objects are all
+        // invalid as members.
+        //
+        // See <https://spec.graphql.org/October2021/#sec-Unions>.
+        let object_types = self.list_existing_object_types();
         let members = (0..self.u.int_in_range(2..=10)?)
-            .map(|_| Ok(self.choose_named_ty(&existing_types)?.name().clone()))
+            .map(|_| Ok(self.u.choose(&object_types)?.name().clone()))
             .collect::<ArbitraryResult<IndexSet<_>>>()?;
 
         Ok(UnionTypeDef {
