@@ -1,3 +1,4 @@
+use crate::directive::DirectiveLocation;
 use crate::input_value::Constness;
 use crate::input_value::InputValue;
 use crate::input_value::InputValueDef;
@@ -121,7 +122,8 @@ impl DocumentBuilder<'_> {
     /// Create an arbitrary `ArgumentsDef`
     pub fn arguments_definition(&mut self) -> ArbitraryResult<ArgumentsDef> {
         Ok(ArgumentsDef {
-            input_value_definitions: self.input_values_def()?,
+            input_value_definitions: self
+                .input_values_def(DirectiveLocation::ArgumentDefinition)?,
         })
     }
 }
