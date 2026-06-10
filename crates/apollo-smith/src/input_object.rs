@@ -141,7 +141,7 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let fields = self.input_values_def()?;
+        let fields = self.input_values_def(DirectiveLocation::InputFieldDefinition)?;
 
         Ok(InputObjectTypeDef {
             description,

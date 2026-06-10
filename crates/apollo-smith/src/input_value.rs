@@ -282,8 +282,15 @@ impl DocumentBuilder<'_> {
         Ok(val)
     }
 
-    /// Create an arbitrary list of `InputValueDef`
-    pub fn input_values_def(&mut self) -> ArbitraryResult<Vec<InputValueDef>> {
+    /// Create an arbitrary list of `InputValueDef`. The caller passes
+    /// `directive_location` so directives applied to each value are
+    /// filtered against the right context — `InputFieldDefinition` for
+    /// input-object fields, `ArgumentDefinition` for argument lists on
+    /// fields and directives.
+    pub fn input_values_def(
+        &mut self,
+        directive_location: DirectiveLocation,
+    ) -> ArbitraryResult<Vec<InputValueDef>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
 
@@ -296,8 +303,7 @@ impl DocumentBuilder<'_> {
                 .transpose()?;
             let name = self.name_with_index(i)?;
             let ty = self.choose_ty(&self.list_existing_input_types())?;
-            // TODO: incorrect because input_values_def is called from different locations
-            let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
+            let directives = self.directives(directive_location)?;
             // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
             let default_value = self
                 .u
@@ -317,8 +323,13 @@ impl DocumentBuilder<'_> {
 
         Ok(input_values)
     }
-    /// Create an arbitrary `InputValueDef`
-    pub fn input_value_def(&mut self) -> ArbitraryResult<InputValueDef> {
+    /// Create an arbitrary `InputValueDef`. The caller passes
+    /// `directive_location` for the same reason as
+    /// [`input_values_def`](Self::input_values_def).
+    pub fn input_value_def(
+        &mut self,
+        directive_location: DirectiveLocation,
+    ) -> ArbitraryResult<InputValueDef> {
         let description = self
             .u
             .arbitrary()
@@ -327,8 +338,7 @@ impl DocumentBuilder<'_> {
             .transpose()?;
         let name = self.name()?;
         let ty = self.choose_ty(&self.list_existing_input_types())?;
-        // TODO: incorrect because input_values_def is called from different locations
-        let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
+        let directives = self.directives(directive_location)?;
         // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
         let default_value = self
             .u

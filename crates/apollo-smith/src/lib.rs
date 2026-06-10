@@ -203,8 +203,13 @@ impl<'a> DocumentBuilder<'a> {
         let schema_def = builder.schema_definition()?;
         builder.schema_def = Some(schema_def);
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let operation_def = builder.operation_definition()?;
+        // An anonymous operation may only exist as the sole operation
+        // in a document, so any time we're producing more than one,
+        // every operation must be named.
+        let num_ops = builder.u.int_in_range(1..=50)?;
+        let require_named = num_ops > 1;
+        for _ in 0..num_ops {
+            let operation_def = builder.operation_definition_in_document(require_named)?;
             // Could be None if there is no schema definition (in this case it never happens)
             if let Some(operation_def) = operation_def {
                 builder.operation_defs.push(operation_def);
