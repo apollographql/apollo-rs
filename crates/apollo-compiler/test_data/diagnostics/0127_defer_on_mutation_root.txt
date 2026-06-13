@@ -1,0 +1,8 @@
+Error: `@defer` is not allowed on root selections of mutation operations
+   ╭─[ 0127_defer_on_mutation_root.graphql:2:9 ]
+   │
+ 2 │     ... @defer {
+   │         ───┬──  
+   │            ╰──── `@defer` on a root mutation selection
+───╯
+

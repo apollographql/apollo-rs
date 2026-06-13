@@ -348,6 +348,14 @@ impl DiagnosticData {
                 ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
                     "SubscriptionUsesConditionalSelection"
                 }
+                ExecutableBuildError::DuplicateDeferLabel { .. } => "DuplicateDeferLabel",
+                ExecutableBuildError::DeferLabelMustNotBeVariable => "DeferLabelMustNotBeVariable",
+                ExecutableBuildError::DeferOnRootMutationOrSubscriptionField { .. } => {
+                    "DeferOnRootMutationOrSubscriptionField"
+                }
+                ExecutableBuildError::DeferInSubscriptionMustBeConditional => {
+                    "DeferInSubscriptionMustBeConditional"
+                }
                 ExecutableBuildError::ConflictingFieldType(_) => "ConflictingFieldType",
                 ExecutableBuildError::ConflictingFieldName(_) => "ConflictingFieldName",
                 ExecutableBuildError::ConflictingFieldArgument(_) => "ConflictingFieldArgument",
@@ -676,6 +684,21 @@ impl DiagnosticData {
                         r#"Fields "{alias}" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional."#
                     ))
                 }
+                ExecutableBuildError::DuplicateDeferLabel { .. } => Some(
+                    r#"Value for arguments "defer(label:)" and "stream(label:)" must be unique across all Defer/Stream directive usages."#
+                        .to_string(),
+                ),
+                ExecutableBuildError::DeferLabelMustNotBeVariable => Some(
+                    r#"Argument "@defer(label:)" must be a static string."#.to_string(),
+                ),
+                ExecutableBuildError::DeferOnRootMutationOrSubscriptionField {
+                    operation_type,
+                } => Some(format!(
+                    r#"Defer directive cannot be used on root {operation_type} type."#
+                )),
+                ExecutableBuildError::DeferInSubscriptionMustBeConditional => Some(
+                    "Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.".to_string(),
+                ),
             },
             _ => None,
         }
@@ -902,6 +925,27 @@ impl ToCliReport for DiagnosticData {
                 }
                 ExecutableBuildError::SubscriptionUsesConditionalSelection { .. } => {
                     report.with_label_opt(self.location, "conditional directive used here");
+                }
+                ExecutableBuildError::DuplicateDeferLabel {
+                    original_location, ..
+                } => {
+                    report.with_label_opt(*original_location, "label first used here");
+                    report.with_label_opt(self.location, "duplicate label used here");
+                }
+                ExecutableBuildError::DeferLabelMustNotBeVariable => {
+                    report.with_label_opt(self.location, "variable used as label here");
+                }
+                ExecutableBuildError::DeferOnRootMutationOrSubscriptionField { operation_type } => {
+                    report.with_label_opt(
+                        self.location,
+                        format_args!("`@defer` on a root {operation_type} selection"),
+                    );
+                }
+                ExecutableBuildError::DeferInSubscriptionMustBeConditional => {
+                    report.with_label_opt(
+                        self.location,
+                        "`@defer` in a subscription must use `if: false` or `if: $variable`",
+                    );
                 }
                 ExecutableBuildError::ConflictingFieldType(inner) => {
                     let ConflictingFieldType {
