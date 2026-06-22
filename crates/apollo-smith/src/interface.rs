@@ -235,10 +235,9 @@ impl DocumentBuilder<'_> {
                 self_name,
             );
         }
-        Ok(accepted
-            .into_iter()
-            .filter(|n| !already_implemented_parents.contains(n))
-            .collect())
+
+        accepted.retain(|n| !already_implemented_parents.contains(n));
+        Ok(accepted)
     }
 
     /// Reconcile each interface's `implements` clause and fields once
