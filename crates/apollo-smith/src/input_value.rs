@@ -369,7 +369,6 @@ impl DocumentBuilder<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::implements_graph::ImplementsGraph;
     use crate::InputObjectTypeDef;
     use arbitrary::Unstructured;
     use indexmap::IndexMap;
