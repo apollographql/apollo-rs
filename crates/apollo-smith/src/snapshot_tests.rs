@@ -5,8 +5,8 @@ use expect_test::expect;
 fn gen(len: usize) -> String {
     let entropy: Vec<u8> = (0..len).map(|i| i as u8).collect();
     DocumentBuilder::new(&mut Unstructured::new(&entropy))
+        .build()
         .unwrap()
-        .finish()
         .into()
 }
 

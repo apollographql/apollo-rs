@@ -66,8 +66,7 @@ use apollo_smith::DocumentBuilder;
 
 fuzz_target!(|input: &[u8]| {
     let mut u = Unstructured::new(input);
-    let gql_doc = DocumentBuilder::new(&mut u)?;
-    let document = gql_doc.finish();
+    let document = DocumentBuilder::new(&mut u).build()?;
     let document_str = String::from(document);
 
 

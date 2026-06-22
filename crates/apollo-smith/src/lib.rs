@@ -71,6 +71,8 @@ pub use serde_json_bytes::Value;
 use ty::Ty;
 pub use union::UnionTypeDef;
 
+const DEFAULT_MAX: usize = 50;
+
 /// DocumentBuilder is a struct to build an arbitrary valid GraphQL document
 ///
 /// ```compile_fail
@@ -83,8 +85,7 @@ pub use union::UnionTypeDef;
 ///
 /// fuzz_target!(|input: &[u8]| {
 ///     let mut u = Unstructured::new(input);
-///     let gql_doc = DocumentBuilder::new(&mut u)?;
-///     let document = gql_doc.finish();
+///     let document = DocumentBuilder::new(&mut u).build()?;
 ///     let document_str = String::from(document);
 ///
 ///     // Your code here...
@@ -110,6 +111,16 @@ pub struct DocumentBuilder<'a> {
     pub(crate) chosen_arguments: IndexMap<Name, Vec<Argument>>,
     // Useful to keep the same aliases for a specific field name
     pub(crate) chosen_aliases: IndexMap<Name, Name>,
+    // Maximum number of generated definitions per kind
+    max_scalar_types: usize,
+    max_enum_types: usize,
+    max_interface_types: usize,
+    max_object_types: usize,
+    max_union_types: usize,
+    max_input_object_types: usize,
+    max_fragment_definitions: usize,
+    max_directive_definitions: usize,
+    max_operation_definitions: usize,
 }
 
 impl Debug for DocumentBuilder<'_> {
@@ -131,8 +142,8 @@ impl Debug for DocumentBuilder<'_> {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an instance of `DocumentBuilder`
-    pub fn new(u: &'a mut Unstructured<'a>) -> Result<Self> {
-        let mut builder = Self {
+    pub fn new(u: &'a mut Unstructured<'a>) -> Self {
+        Self {
             u,
             object_type_defs: Vec::new(),
             interface_type_defs: Vec::new(),
@@ -148,75 +159,154 @@ impl<'a> DocumentBuilder<'a> {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
-        };
+            max_scalar_types: DEFAULT_MAX,
+            max_enum_types: DEFAULT_MAX,
+            max_interface_types: DEFAULT_MAX,
+            max_object_types: DEFAULT_MAX,
+            max_union_types: DEFAULT_MAX,
+            max_input_object_types: DEFAULT_MAX,
+            max_fragment_definitions: DEFAULT_MAX,
+            max_directive_definitions: DEFAULT_MAX,
+            max_operation_definitions: DEFAULT_MAX,
+        }
+    }
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let scalar_type_def = builder.scalar_type_definition()?;
-            builder.scalar_type_defs.push(scalar_type_def);
+    /// Set the maximum number of scalar type definitions (default 50).
+    pub fn max_scalar_types(mut self, max: usize) -> Self {
+        self.max_scalar_types = max;
+        self
+    }
+
+    /// Set the maximum number of enum type definitions (default 50).
+    pub fn max_enum_types(mut self, max: usize) -> Self {
+        self.max_enum_types = max;
+        self
+    }
+
+    /// Set the maximum number of interface type definitions (default 50).
+    pub fn max_interface_types(mut self, max: usize) -> Self {
+        self.max_interface_types = max;
+        self
+    }
+
+    /// Set the maximum number of object type definitions (default 50).
+    pub fn max_object_types(mut self, max: usize) -> Self {
+        self.max_object_types = max;
+        self
+    }
+
+    /// Set the maximum number of union type definitions (default 50).
+    pub fn max_union_types(mut self, max: usize) -> Self {
+        self.max_union_types = max;
+        self
+    }
+
+    /// Set the maximum number of input object type definitions (default 50).
+    pub fn max_input_object_types(mut self, max: usize) -> Self {
+        self.max_input_object_types = max;
+        self
+    }
+
+    /// Set the maximum number of fragment definitions (default 50).
+    pub fn max_fragment_definitions(mut self, max: usize) -> Self {
+        self.max_fragment_definitions = max;
+        self
+    }
+
+    /// Set the maximum number of directive definitions (default 50).
+    pub fn max_directive_definitions(mut self, max: usize) -> Self {
+        self.max_directive_definitions = max;
+        self
+    }
+
+    /// Set the maximum number of operation definitions (default 50).
+    pub fn max_operation_definitions(mut self, max: usize) -> Self {
+        self.max_operation_definitions = max;
+        self
+    }
+
+    /// Generate random definitions according to the configured maximums
+    /// and return the resulting [`Document`].
+    pub fn build(mut self) -> Result<Document> {
+        for _ in 0..self.u.int_in_range(1..=self.max_scalar_types)? {
+            let scalar_type_def = self.scalar_type_definition()?;
+            self.scalar_type_defs.push(scalar_type_def);
         }
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let enum_type_def = builder.enum_type_definition()?;
-            builder.enum_type_defs.push(enum_type_def);
+        for _ in 0..self.u.int_in_range(1..=self.max_enum_types)? {
+            let enum_type_def = self.enum_type_definition()?;
+            self.enum_type_defs.push(enum_type_def);
         }
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let def = builder.interface_type_definition()?;
-            builder.implements_graph.node_for(&def.name);
+        for _ in 0..self.u.int_in_range(1..=self.max_interface_types)? {
+            let def = self.interface_type_definition()?;
+            self.implements_graph.node_for(&def.name);
             for parent in &def.interfaces {
-                builder.implements_graph.add_edge(&def.name, parent);
+                self.implements_graph.add_edge(&def.name, parent);
             }
-            builder.interface_type_defs.push(def);
+            self.interface_type_defs.push(def);
         }
-        builder.backfill_inherited_interface_fields();
+        self.backfill_inherited_interface_fields();
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let def = builder.object_type_definition()?;
-            builder.implements_graph.node_for(&def.name);
+        for _ in 0..self.u.int_in_range(1..=self.max_object_types)? {
+            let def = self.object_type_definition()?;
+            self.implements_graph.node_for(&def.name);
             for parent in &def.implements_interfaces {
-                builder.implements_graph.add_edge(&def.name, parent);
+                self.implements_graph.add_edge(&def.name, parent);
             }
-            builder.object_type_defs.push(def);
+            self.object_type_defs.push(def);
         }
-        builder.backfill_inherited_object_fields();
+        self.backfill_inherited_object_fields();
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let union_type_def = builder.union_type_definition()?;
-            builder.union_type_defs.push(union_type_def);
-        }
-
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let input_object_type_def = builder.input_object_type_definition()?;
-            builder.input_object_type_defs.push(input_object_type_def);
+        for _ in 0..self.u.int_in_range(1..=self.max_union_types)? {
+            let union_type_def = self.union_type_definition()?;
+            self.union_type_defs.push(union_type_def);
         }
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let fragment_def = builder.fragment_definition()?;
-            builder.fragment_defs.push(fragment_def);
+        for _ in 0..self.u.int_in_range(1..=self.max_input_object_types)? {
+            let input_object_type_def = self.input_object_type_definition()?;
+            self.input_object_type_defs.push(input_object_type_def);
         }
 
-        for _ in 0..builder.u.int_in_range(1..=50)? {
-            let directive_def = builder.directive_def()?;
-            builder.directive_defs.push(directive_def);
+        for _ in 0..self.u.int_in_range(1..=self.max_fragment_definitions)? {
+            let fragment_def = self.fragment_definition()?;
+            self.fragment_defs.push(fragment_def);
         }
 
-        let schema_def = builder.schema_definition()?;
-        builder.schema_def = Some(schema_def);
+        for _ in 0..self.u.int_in_range(1..=self.max_directive_definitions)? {
+            let directive_def = self.directive_def()?;
+            self.directive_defs.push(directive_def);
+        }
+
+        let schema_def = self.schema_definition()?;
+        self.schema_def = Some(schema_def);
 
         // An anonymous operation may only exist as the sole operation
         // in a document, so any time we're producing more than one,
         // every operation must be named.
-        let num_ops = builder.u.int_in_range(1..=50)?;
+        let num_ops = self.u.int_in_range(1..=self.max_operation_definitions)?;
         let require_named = num_ops > 1;
         for _ in 0..num_ops {
-            let operation_def = builder.operation_definition_in_document(require_named)?;
-            // Could be None if there is no schema definition (in this case it never happens)
+            let operation_def = self.operation_definition_in_document(require_named)?;
             if let Some(operation_def) = operation_def {
-                builder.operation_defs.push(operation_def);
+                self.operation_defs.push(operation_def);
             }
         }
 
-        Ok(builder)
+        self.prune_unused_fragments();
+
+        Ok(Document {
+            schema_definition: self.schema_def,
+            object_type_definitions: self.object_type_defs,
+            interface_type_definitions: self.interface_type_defs,
+            enum_type_definitions: self.enum_type_defs,
+            directive_definitions: self.directive_defs,
+            operation_definitions: self.operation_defs,
+            fragment_definitions: self.fragment_defs,
+            scalar_type_definitions: self.scalar_type_defs,
+            union_type_definitions: self.union_type_defs,
+            input_object_type_definitions: self.input_object_type_defs,
+        })
     }
 
     /// Create an instance of `DocumentBuilder` given a `Document` to be able to call
@@ -251,6 +341,15 @@ impl<'a> DocumentBuilder<'a> {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
+            max_scalar_types: DEFAULT_MAX,
+            max_enum_types: DEFAULT_MAX,
+            max_interface_types: DEFAULT_MAX,
+            max_object_types: DEFAULT_MAX,
+            max_union_types: DEFAULT_MAX,
+            max_input_object_types: DEFAULT_MAX,
+            max_fragment_definitions: DEFAULT_MAX,
+            max_directive_definitions: DEFAULT_MAX,
+            max_operation_definitions: DEFAULT_MAX,
         };
 
         Ok(builder)
@@ -259,37 +358,6 @@ impl<'a> DocumentBuilder<'a> {
     /// Returns whether the provided `Unstructured` is now empty
     pub fn input_exhausted(&self) -> bool {
         self.u.is_empty()
-    }
-
-    /// Convert a `DocumentBuilder` into a GraphQL `Document`
-    pub fn finish(self) -> Document {
-        // Validation requires every fragment definition to be referenced by some
-        // operation (directly or transitively). Drop fragments that never get
-        // spread to avoid producing invalid documents.
-        //
-        // We walk transitively from operations so chains like `op -> A -> B` keep
-        // both A and B, while `A -> B` with no operation referencing A drops both
-        // (B is only reachable through A, which is itself unused).
-        let reachable =
-            fragment::reachable_fragment_names(&self.operation_defs, &self.fragment_defs);
-        let fragment_definitions = self
-            .fragment_defs
-            .into_iter()
-            .filter(|f| reachable.contains(&f.name))
-            .collect();
-
-        Document {
-            schema_definition: self.schema_def,
-            object_type_definitions: self.object_type_defs,
-            interface_type_definitions: self.interface_type_defs,
-            enum_type_definitions: self.enum_type_defs,
-            directive_definitions: self.directive_defs,
-            operation_definitions: self.operation_defs,
-            fragment_definitions,
-            scalar_type_definitions: self.scalar_type_defs,
-            union_type_definitions: self.union_type_defs,
-            input_object_type_definitions: self.input_object_type_defs,
-        }
     }
 
     pub(crate) fn stack_ty(&mut self, ty: &Ty) -> bool {
@@ -324,6 +392,19 @@ impl<'a> DocumentBuilder<'a> {
         } else {
             todo!("'{:?}' need to implement for union, scalar, ...", type_name);
         }
+    }
+
+    /// Validation requires every fragment definition to be referenced by some
+    /// operation (directly or transitively). Drop fragments that never get
+    /// spread to avoid producing invalid documents.
+    ///
+    /// We walk transitively from operations so chains like `op -> A -> B` keep
+    /// both A and B, while `A -> B` with no operation referencing A drops both
+    /// (B is only reachable through A, which is itself unused).
+    fn prune_unused_fragments(&mut self) {
+        let reachable =
+            fragment::reachable_fragment_names(&self.operation_defs, &self.fragment_defs);
+        self.fragment_defs.retain(|f| reachable.contains(&f.name));
     }
 }
 
