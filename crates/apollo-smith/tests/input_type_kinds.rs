@@ -8,7 +8,7 @@ use arbitrary::Unstructured;
 
 fn assert_input_positions_are_input_types(seed: &[u8]) {
     let mut u = Unstructured::new(seed);
-    let doc: String = DocumentBuilder::new(&mut u).unwrap().finish().into();
+    let doc: String = DocumentBuilder::new(&mut u).build().unwrap().into();
     let ast = AstDocument::parse(&doc, "smith.graphql").expect("smith output must parse");
 
     if let Err(errors) = ast.to_mixed_validate() {

@@ -377,22 +377,7 @@ mod tests {
     fn test_input_value_for_type() {
         let data: Vec<u8> = (0..=5000usize).map(|n| (n % 255) as u8).collect();
         let mut u = Unstructured::new(&data);
-        let mut document_builder = DocumentBuilder {
-            u: &mut u,
-            input_object_type_defs: Vec::new(),
-            object_type_defs: Vec::new(),
-            interface_type_defs: Vec::new(),
-            union_type_defs: Vec::new(),
-            enum_type_defs: Vec::new(),
-            scalar_type_defs: Vec::new(),
-            schema_def: None,
-            directive_defs: Vec::new(),
-            operation_defs: Vec::new(),
-            fragment_defs: Vec::new(),
-            stack: Vec::new(),
-            chosen_arguments: IndexMap::new(),
-            chosen_aliases: IndexMap::new(),
-        };
+        let mut document_builder = DocumentBuilder::new(&mut u);
         let my_nested_type = InputObjectTypeDef {
             description: None,
             name: Name {
