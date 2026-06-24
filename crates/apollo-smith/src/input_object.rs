@@ -141,7 +141,14 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let fields = self.input_values_def(DirectiveLocation::InputFieldDefinition)?;
+        let existing_field_names: Vec<Name> = self
+            .input_object_type_defs
+            .iter()
+            .filter(|io| io.name == name)
+            .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
+            .collect();
+        let exclude_fields: Vec<&Name> = existing_field_names.iter().collect();
+        let fields = self.input_values_def(DirectiveLocation::InputFieldDefinition, &exclude_fields)?;
 
         Ok(InputObjectTypeDef {
             description,
