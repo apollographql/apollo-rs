@@ -169,6 +169,10 @@ impl DocumentBuilder<'_> {
         let fields_def = self.fields_definition(&exclude_fields)?;
         let directives = self.directives(DirectiveLocation::Interface)?;
 
+        if extend && directives.is_empty() && fields_def.is_empty() && interfaces.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
+
         Ok(InterfaceTypeDef {
             description,
             name,
