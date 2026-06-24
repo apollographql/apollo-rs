@@ -177,10 +177,14 @@ impl DocumentBuilder<'_> {
         &mut self,
         excludes: &mut Vec<Name>,
     ) -> ArbitraryResult<Option<FragmentSpread>> {
+        let current_type = self.stack.last().map(|e| e.name().clone());
         let available_fragment: Vec<&FragmentDef> = self
             .fragment_defs
             .iter()
-            .filter(|f| !excludes.contains(&f.name))
+            .filter(|f| {
+                !excludes.contains(&f.name)
+                    && self.fragment_spread_possible(&f.type_condition.name, current_type.as_ref())
+            })
             .collect();
 
         let name = if available_fragment.is_empty() {
@@ -210,6 +214,40 @@ impl DocumentBuilder<'_> {
             directives,
             selection_set,
         })
+    }
+
+    /// Whether a fragment with `fragment_type` can be spread inside a
+    /// selection set for `current_type`. The two types must share at
+    /// least one possible object type.
+    ///
+    /// See <https://spec.graphql.org/October2021/#sec-Fragment-spread-is-possible>.
+    fn fragment_spread_possible(
+        &self,
+        fragment_type: &Name,
+        current_type: Option<&Name>,
+    ) -> bool {
+        let Some(current) = current_type else {
+            return true;
+        };
+        let current_objects = self.possible_object_types(current);
+        let fragment_objects = self.possible_object_types(fragment_type);
+        current_objects.iter().any(|o| fragment_objects.contains(o))
+    }
+
+    /// The set of object types that `type_name` can resolve to at runtime.
+    fn possible_object_types(&self, type_name: &Name) -> IndexSet<Name> {
+        if self.object_type_defs.iter().any(|o| &o.name == type_name) {
+            return IndexSet::from([type_name.clone()]);
+        }
+        if let Some(u) = self.union_type_defs.iter().find(|u| &u.name == type_name) {
+            return u.members.clone();
+        }
+        // Interface: collect every object whose implements closure includes it
+        self.object_type_defs
+            .iter()
+            .filter(|o| self.implements_graph.closure(&o.name).contains(type_name))
+            .map(|o| o.name.clone())
+            .collect()
     }
 
     /// Create an arbitrary `TypeCondition`
