@@ -8,6 +8,7 @@ pub(crate) mod enum_;
 pub(crate) mod field;
 pub(crate) mod fragment;
 pub mod generators;
+pub(crate) mod implements_graph;
 pub(crate) mod input_object;
 pub(crate) mod input_value;
 pub(crate) mod interface;
@@ -102,6 +103,8 @@ pub struct DocumentBuilder<'a> {
     pub(crate) directive_defs: Vec<DirectiveDef>,
     pub(crate) operation_defs: Vec<OperationDef>,
     pub(crate) fragment_defs: Vec<FragmentDef>,
+    // A graph with edges representing the "implements" relationship between types
+    pub(crate) implements_graph: implements_graph::ImplementsGraph,
     // A stack to set current ObjectTypeDef
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field
@@ -152,6 +155,7 @@ impl<'a> DocumentBuilder<'a> {
             scalar_type_defs: Vec::new(),
             union_type_defs: Vec::new(),
             input_object_type_defs: Vec::new(),
+            implements_graph: implements_graph::ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
@@ -235,14 +239,24 @@ impl<'a> DocumentBuilder<'a> {
         }
 
         for _ in 0..self.u.int_in_range(1..=self.max_interface_types)? {
-            let interface_type_def = self.interface_type_definition()?;
-            self.interface_type_defs.push(interface_type_def);
+            let def = self.interface_type_definition()?;
+            self.implements_graph.node_for(&def.name);
+            for parent in &def.interfaces {
+                self.implements_graph.add_edge(&def.name, parent);
+            }
+            self.interface_type_defs.push(def);
         }
+        self.backfill_inherited_interface_fields();
 
         for _ in 0..self.u.int_in_range(1..=self.max_object_types)? {
-            let object_type_def = self.object_type_definition()?;
-            self.object_type_defs.push(object_type_def);
+            let def = self.object_type_definition()?;
+            self.implements_graph.node_for(&def.name);
+            for parent in &def.implements_interfaces {
+                self.implements_graph.add_edge(&def.name, parent);
+            }
+            self.object_type_defs.push(def);
         }
+        self.backfill_inherited_object_fields();
 
         for _ in 0..self.u.int_in_range(1..=self.max_union_types)? {
             let union_type_def = self.union_type_definition()?;
@@ -298,6 +312,19 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an instance of `DocumentBuilder` given a `Document` to be able to call
     /// methods on DocumentBuilder and generate valid entities like for example an operation
     pub fn with_document(u: &'a mut Unstructured<'a>, document: Document) -> Result<Self> {
+        let mut implements_graph = implements_graph::ImplementsGraph::new();
+        for itf in &document.interface_type_definitions {
+            implements_graph.node_for(&itf.name);
+            for parent in &itf.interfaces {
+                implements_graph.add_edge(&itf.name, parent);
+            }
+        }
+        for obj in &document.object_type_definitions {
+            implements_graph.node_for(&obj.name);
+            for parent in &obj.implements_interfaces {
+                implements_graph.add_edge(&obj.name, parent);
+            }
+        }
         let builder = Self {
             u,
             object_type_defs: document.object_type_definitions,
@@ -310,6 +337,7 @@ impl<'a> DocumentBuilder<'a> {
             scalar_type_defs: document.scalar_type_definitions,
             union_type_defs: document.union_type_definitions,
             input_object_type_defs: document.input_object_type_definitions,
+            implements_graph,
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             chosen_aliases: IndexMap::new(),
