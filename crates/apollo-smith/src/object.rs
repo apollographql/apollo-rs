@@ -177,7 +177,12 @@ impl DocumentBuilder<'_> {
         // interface graph, so no cycle protection is needed.
         let existing_field_signatures = field_signatures_for(&self.object_type_defs, &name);
         let implements_interfaces = self.additional_implements(&existing_field_signatures, None)?;
-        let fields_def = self.fields_definition(&[])?;
+        let existing_field_names: Vec<Name> = existing_field_signatures
+            .keys()
+            .map(|k| Name::new(k.clone()))
+            .collect();
+        let exclude_fields: Vec<&Name> = existing_field_names.iter().collect();
+        let fields_def = self.fields_definition(&exclude_fields)?;
         let directives = self.directives(DirectiveLocation::Object)?;
 
         Ok(ObjectTypeDef {
