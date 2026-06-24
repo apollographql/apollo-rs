@@ -156,6 +156,10 @@ impl DocumentBuilder<'_> {
             .map(|_| Ok(self.u.choose(&object_types)?.name().clone()))
             .collect::<ArbitraryResult<IndexSet<_>>>()?;
 
+        if extend && directives.is_empty() && members.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
+
         Ok(UnionTypeDef {
             name,
             description,

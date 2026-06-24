@@ -196,6 +196,10 @@ impl DocumentBuilder<'_> {
         let enum_values_def = self.enum_values_definition(&existing_values)?;
         let directives = self.directives(DirectiveLocation::Enum)?;
 
+        if extend && directives.is_empty() && enum_values_def.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
+
         Ok(EnumTypeDef {
             description,
             name,
