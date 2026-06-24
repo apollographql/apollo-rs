@@ -292,6 +292,7 @@ impl DocumentBuilder<'_> {
         &mut self,
         directive_location: DirectiveLocation,
         exclude: &IndexSet<Name>,
+        self_name: Option<&Name>,
     ) -> ArbitraryResult<Vec<InputValueDef>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
@@ -304,7 +305,14 @@ impl DocumentBuilder<'_> {
                 .then(|| self.description())
                 .transpose()?;
             let name = self.name_with_index(i)?;
-            let ty = self.choose_ty(&self.list_existing_input_types())?;
+            let mut ty = self.choose_ty(&self.list_existing_input_types())?;
+            // Prevent required self-referential input object fields, which
+            // would make the type impossible to construct.
+            if self_name.is_some_and(|n| ty.name() == n) {
+                if let Ty::NonNull(inner) = ty {
+                    ty = *inner;
+                }
+            }
             let directives = self.directives(directive_location)?;
             // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
             let default_value = self
