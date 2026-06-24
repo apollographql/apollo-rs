@@ -311,7 +311,7 @@ pub(crate) fn validate_directives<'dir>(
                         super::value::validate_values(
                             diagnostics,
                             schema,
-                            &input_value.ty,
+                            input_value,
                             argument,
                             var_defs,
                         );

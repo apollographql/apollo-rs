@@ -1,9 +1,27 @@
 use crate::ast;
 use crate::coordinate::TypeAttributeCoordinate;
+use crate::parser::SourceSpan;
 use crate::schema;
 use crate::validation::diagnostics::DiagnosticData;
+use crate::validation::variable::is_variable_usage_allowed;
 use crate::validation::DiagnosticList;
+use crate::Name;
 use crate::Node;
+
+/// The Argument, ObjectField, or other position into which a value (or nested value)
+/// is being written.  Threaded through recursive value validation so the Variable arm
+/// can apply spec rule 5.8.5 against the *innermost* position, and emit a
+/// `DisallowedVariableUsage` diagnostic that names that position.
+#[derive(Clone, Copy)]
+pub(crate) struct VariablePosition<'a> {
+    /// Position name — argument name at the top level, field name when recursing into
+    /// an input object.
+    name: &'a Name,
+    /// Source location of the position's definition.
+    location: Option<SourceSpan>,
+    /// Whether the position declares a default value, per spec rule 5.8.5 step 3.b.
+    has_default: bool,
+}
 
 fn unsupported_type(
     diagnostics: &mut DiagnosticList,
@@ -23,11 +41,23 @@ fn unsupported_type(
 pub(crate) fn validate_values(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
-    ty: &Node<ast::Type>,
+    arg_definition: &Node<ast::InputValueDefinition>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
 ) {
-    value_of_correct_type(diagnostics, schema, ty, &argument.value, var_defs);
+    let position = VariablePosition {
+        name: &arg_definition.name,
+        location: arg_definition.location(),
+        has_default: arg_definition.default_value.is_some(),
+    };
+    value_of_correct_type(
+        diagnostics,
+        schema,
+        &arg_definition.ty,
+        &argument.value,
+        var_defs,
+        Some(position),
+    );
 }
 
 pub(crate) fn value_of_correct_type(
@@ -36,6 +66,7 @@ pub(crate) fn value_of_correct_type(
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
     var_defs: &[Node<ast::VariableDefinition>],
+    position: Option<VariablePosition<'_>>,
 ) {
     let Some(type_definition) = schema.types.get(ty.inner_named_type()) else {
         return;
@@ -134,18 +165,23 @@ pub(crate) fn value_of_correct_type(
         }
         ast::Value::Variable(var_name) => {
             if let Some(var_def) = var_defs.iter().find(|v| v.name == *var_name) {
-                match &type_definition {
-                    schema::ExtendedType::Scalar(_)
-                    | schema::ExtendedType::Enum(_)
-                    | schema::ExtendedType::InputObject(_) => {
-                        // we don't have the actual variable values here, so just
-                        // compare if two Types are the same
-                        // TODO(@goto-bus-stop) This should use the is_assignable_to check
-                        if var_def.ty.inner_named_type() != ty.inner_named_type() {
-                            unsupported_type(diagnostics, arg_value, ty);
-                        }
+                let location_has_default = position.is_some_and(|p| p.has_default);
+                if !is_variable_usage_allowed(var_def, ty, location_has_default) {
+                    if let Some(pos) = position {
+                        diagnostics.push(
+                            arg_value.location(),
+                            DiagnosticData::DisallowedVariableUsage {
+                                variable: var_name.clone(),
+                                variable_type: (*var_def.ty).clone(),
+                                variable_location: var_def.location(),
+                                argument: pos.name.clone(),
+                                argument_type: (**ty).clone(),
+                                argument_location: pos.location,
+                            },
+                        );
+                    } else {
+                        unsupported_type(diagnostics, arg_value, ty);
                     }
-                    _ => unsupported_type(diagnostics, arg_value, ty),
                 }
             } else {
                 diagnostics.push(
@@ -192,7 +228,22 @@ pub(crate) fn value_of_correct_type(
                 let item_type = ty.same_location(ty.item_type().clone());
                 if type_definition.is_input_type() {
                     for v in li {
-                        value_of_correct_type(diagnostics, schema, &item_type, v, var_defs);
+                        // Per spec rule 5.8.5, a list value entry's location_ty is the
+                        // item type — but it carries no default of its own.  Inherit the
+                        // enclosing position's name/location so a nested variable error
+                        // still names the surrounding argument or field.
+                        let item_position = position.map(|p| VariablePosition {
+                            has_default: false,
+                            ..p
+                        });
+                        value_of_correct_type(
+                            diagnostics,
+                            schema,
+                            &item_type,
+                            v,
+                            var_defs,
+                            item_position,
+                        );
                     }
                 } else {
                     unsupported_type(diagnostics, arg_value, &item_type);
@@ -219,65 +270,23 @@ pub(crate) fn value_of_correct_type(
                     );
                 }
 
-                // @oneOf: exactly one non-null field must be provided.
+                // @oneOf: exactly one key must be provided.
                 // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
-                if input_obj.is_one_of() {
-                    if obj.len() != 1 {
-                        diagnostics.push(
-                            arg_value.location(),
-                            DiagnosticData::OneOfInputObjectFieldCount {
-                                name: input_obj.name.clone(),
-                                provided_fields: obj
-                                    .iter()
-                                    .map(|(name, _)| (name.clone(), name.location()))
-                                    .collect(),
-                            },
-                        );
-                    }
-                    // Check ALL provided fields (not just the first) so diagnostics are
-                    // complete even when the caller supplies the wrong count.
-                    for (field_name, field_val) in obj.iter() {
-                        if field_val.is_null() {
-                            // @oneOf fields are declared nullable in the schema, but in a
-                            // @oneOf context the provided value must be non-null.  Route
-                            // through unsupported_type() so this surfaces as the same
-                            // UnsupportedValueType diagnostic used for all other value-kind
-                            // mismatches.
-                            if let Some(field_def) = input_obj.fields.get(field_name) {
-                                let non_null_ty = field_def
-                                    .ty
-                                    .same_location(field_def.ty.as_ref().clone().non_null());
-                                unsupported_type(diagnostics, field_val, &non_null_ty);
-                            }
-                        } else if let ast::Value::Variable(var_name) = &**field_val {
-                            // A nullable variable can never satisfy a @oneOf field because
-                            // the runtime value might be null.  Undefined variables are
-                            // handled by the UndefinedVariable rule; only flag known nullable
-                            // ones.  Use DisallowedVariableUsage — the same diagnostic
-                            // validate_variable_usage emits — treating the field as non-null.
-                            if let Some(var_def) = var_defs.iter().find(|v| v.name == *var_name) {
-                                if !var_def.ty.is_non_null() {
-                                    if let Some(field_def) = input_obj.fields.get(field_name) {
-                                        diagnostics.push(
-                                            field_val.location(),
-                                            DiagnosticData::DisallowedVariableUsage {
-                                                variable: var_name.clone(),
-                                                variable_type: (*var_def.ty).clone(),
-                                                variable_location: var_def.location(),
-                                                argument: field_name.clone(),
-                                                argument_type: field_def
-                                                    .ty
-                                                    .as_ref()
-                                                    .clone()
-                                                    .non_null(),
-                                                argument_location: field_def.location(),
-                                            },
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    }
+                //
+                // Per-field non-null / nullable-variable checks fall out of the recursion
+                // below — @oneOf field positions are treated as non-null (coerced when
+                // recursing), so the generic Null and Variable arms catch the violations.
+                if input_obj.is_one_of() && obj.len() != 1 {
+                    diagnostics.push(
+                        arg_value.location(),
+                        DiagnosticData::OneOfInputObjectFieldCount {
+                            name: input_obj.name.clone(),
+                            provided_fields: obj
+                                .iter()
+                                .map(|(name, _)| (name.clone(), name.location()))
+                                .collect(),
+                        },
+                    );
                 }
 
                 input_obj.fields.iter().for_each(|(input_name, f)| {
@@ -309,7 +318,29 @@ pub(crate) fn value_of_correct_type(
                     let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);
 
                     if let Some((_, v)) = used_val {
-                        value_of_correct_type(diagnostics, schema, ty, v, var_defs);
+                        let field_position = VariablePosition {
+                            name: input_name,
+                            location: f.location(),
+                            has_default: f.default_value.is_some(),
+                        };
+                        // @oneOf: coerce the field's declared nullable type to non-null
+                        // so the generic Null and Variable arms reject `null` literals
+                        // and nullable variables at this position.
+                        let coerced;
+                        let effective_ty = if input_obj.is_one_of() && !ty.is_non_null() {
+                            coerced = ty.same_location(ty.as_ref().clone().non_null());
+                            &coerced
+                        } else {
+                            ty
+                        };
+                        value_of_correct_type(
+                            diagnostics,
+                            schema,
+                            effective_ty,
+                            v,
+                            var_defs,
+                            Some(field_position),
+                        );
                     }
                 })
             }

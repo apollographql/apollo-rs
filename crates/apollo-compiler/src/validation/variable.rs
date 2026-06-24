@@ -40,7 +40,14 @@ pub(crate) fn validate_variable_definitions(
                     if let Some(default) = &variable.default_value {
                         // Default values are "const", not allowed to refer to other variables:
                         let var_defs_in_scope = &[];
-                        value_of_correct_type(diagnostics, schema, ty, default, var_defs_in_scope);
+                        value_of_correct_type(
+                            diagnostics,
+                            schema,
+                            ty,
+                            default,
+                            var_defs_in_scope,
+                            None,
+                        );
                     }
                 }
                 Some(type_definition) => {
@@ -271,7 +278,11 @@ pub(crate) fn validate_variable_usage(
         // variable_name defined within operation.
         let var_def = var_defs.iter().find(|v| v.name == *var_name);
         if let Some(var_def) = var_def {
-            let is_allowed = is_variable_usage_allowed(var_def, var_usage);
+            let is_allowed = is_variable_usage_allowed(
+                var_def,
+                &var_usage.ty,
+                var_usage.default_value.is_some(),
+            );
             if !is_allowed {
                 diagnostics.push(
                     argument.location(),
@@ -294,16 +305,22 @@ pub(crate) fn validate_variable_usage(
     Ok(())
 }
 
-fn is_variable_usage_allowed(
+/// Spec rule 5.8.5 "All Variable Usages Are Allowed".
+///
+/// Takes the location as constituent pieces — `location_ty` is the expected type at the
+/// Argument, ObjectField, or ListValue entry where the variable usage is located, and
+/// `location_has_default` is whether a default value is declared at that position.
+/// This shape lets the check be shared with positions that don't have a dedicated
+/// definition node (e.g. list value entries during recursive value validation).
+///
+/// <https://spec.graphql.org/draft/#sec-All-Variable-Usages-Are-Allowed>
+pub(crate) fn is_variable_usage_allowed(
     variable_def: &ast::VariableDefinition,
-    variable_usage: &ast::InputValueDefinition,
+    location_ty: &ast::Type,
+    location_has_default: bool,
 ) -> bool {
     // 1. Let variable_ty be the expected type of variable_def.
     let variable_ty = &variable_def.ty;
-    // 2. Let location_ty be the expected type of the Argument,
-    // ObjectField, or ListValue entry where variableUsage is
-    // located.
-    let location_ty = &variable_usage.ty;
     // 3. if location_ty is a non-null type AND variable_ty is
     // NOT a non-null type:
     if location_ty.is_non_null() && !variable_ty.is_non_null() {
@@ -311,20 +328,16 @@ fn is_variable_usage_allowed(
         // if a default value exists for variableDefinition
         // and is not the value null.
         let has_non_null_default_value = variable_def.default_value.is_some();
-        // 3.b. Let hasLocationDefaultValue be true if a default
-        // value exists for the Argument or ObjectField where
-        // variableUsage is located.
-        let has_location_default_value = variable_usage.default_value.is_some();
         // 3.c. If hasNonNullVariableDefaultValue is NOT true
         // AND hasLocationDefaultValue is NOT true, return
         // false.
-        if !has_non_null_default_value && !has_location_default_value {
+        if !has_non_null_default_value && !location_has_default {
             return false;
         }
 
         // 3.d. Let nullable_location_ty be the unwrapped
         // nullable type of location_ty.
-        return variable_ty.is_assignable_to(&location_ty.as_ref().clone().nullable());
+        return variable_ty.is_assignable_to(&location_ty.clone().nullable());
     }
 
     variable_ty.is_assignable_to(location_ty)
