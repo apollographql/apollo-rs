@@ -141,7 +141,7 @@ impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#TypeCondition).
 #[derive(Debug, Clone)]
 pub struct TypeCondition {
-    name: Name,
+    pub(crate) name: Name,
 }
 
 impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
@@ -221,11 +221,7 @@ impl DocumentBuilder<'_> {
     /// least one possible object type.
     ///
     /// See <https://spec.graphql.org/October2021/#sec-Fragment-spread-is-possible>.
-    fn fragment_spread_possible(
-        &self,
-        fragment_type: &Name,
-        current_type: Option<&Name>,
-    ) -> bool {
+    fn fragment_spread_possible(&self, fragment_type: &Name, current_type: Option<&Name>) -> bool {
         let Some(current) = current_type else {
             return true;
         };

@@ -8,6 +8,7 @@ use crate::selection_set::SelectionSet;
 use crate::ty::Ty;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
+use apollo_compiler::coordinate::TypeAttributeCoordinate;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
@@ -172,8 +173,12 @@ impl DocumentBuilder<'_> {
         let chosen_field_def = self.u.choose(fields_defs)?.clone();
 
         let name = chosen_field_def.name.clone();
+        let coord = TypeAttributeCoordinate {
+            ty: self.stack.last().unwrap().name().clone().into(),
+            attribute: name.clone().into(),
+        };
         // To not have same selection with different arguments
-        let args = match self.chosen_arguments.get(&name) {
+        let args = match self.chosen_arguments.get(&coord) {
             Some(args) => args.clone(),
             None => {
                 let args = chosen_field_def
@@ -181,7 +186,7 @@ impl DocumentBuilder<'_> {
                     .clone()
                     .map(|args_def| self.arguments_with_def(&args_def))
                     .unwrap_or_else(|| Ok(vec![]))?;
-                self.chosen_arguments.insert(name.clone(), args.clone());
+                self.chosen_arguments.insert(coord, args.clone());
 
                 args
             }
