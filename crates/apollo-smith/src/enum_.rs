@@ -187,7 +187,13 @@ impl DocumentBuilder<'_> {
         } else {
             self.type_name()?
         };
-        let enum_values_def = self.enum_values_definition()?;
+        let existing_values: IndexSet<Name> = self
+            .enum_type_defs
+            .iter()
+            .filter(|e| e.name == name)
+            .flat_map(|e| e.enum_values_def.iter().map(|v| v.value.clone()))
+            .collect();
+        let enum_values_def = self.enum_values_definition(&existing_values)?;
         let directives = self.directives(DirectiveLocation::Enum)?;
 
         Ok(EnumTypeDef {
@@ -216,7 +222,10 @@ impl DocumentBuilder<'_> {
     }
 
     /// Create an arbitrary `EnumValueDefinition`
-    pub fn enum_values_definition(&mut self) -> Result<IndexSet<EnumValueDefinition>> {
+    pub fn enum_values_definition(
+        &mut self,
+        exclude: &IndexSet<Name>,
+    ) -> Result<IndexSet<EnumValueDefinition>> {
         let mut enum_values_def = IndexSet::with_capacity(self.u.int_in_range(2..=10usize)?);
         for i in 0..self.u.int_in_range(2..=10usize)? {
             let description = self
@@ -228,11 +237,13 @@ impl DocumentBuilder<'_> {
             let value = self.name_with_index(i)?;
             let directives = self.directives(DirectiveLocation::EnumValue)?;
 
-            enum_values_def.insert(EnumValueDefinition {
-                description,
-                value,
-                directives,
-            });
+            if !exclude.contains(&value) {
+                enum_values_def.insert(EnumValueDefinition {
+                    description,
+                    value,
+                    directives,
+                });
+            }
         }
 
         Ok(enum_values_def)
