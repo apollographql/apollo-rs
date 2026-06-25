@@ -124,13 +124,16 @@ impl TryFrom<apollo_parser::cst::Field> for Field {
 
 impl DocumentBuilder<'_> {
     /// Create an arbitrary list of `FieldDef`
-    pub fn fields_definition(&mut self, exclude: &[&Name]) -> ArbitraryResult<Vec<FieldDef>> {
+    pub fn fields_definition(
+        &mut self,
+        exclude: &IndexSet<Name>,
+    ) -> ArbitraryResult<Vec<FieldDef>> {
         let num_fields = self.u.int_in_range(2..=50usize)?;
         let mut fields_names = IndexSet::with_capacity(num_fields);
 
         for i in 0..num_fields {
             let name = self.name_with_index(i)?;
-            if !exclude.contains(&&name) {
+            if !exclude.contains(&name) {
                 fields_names.insert(name);
             }
         }
