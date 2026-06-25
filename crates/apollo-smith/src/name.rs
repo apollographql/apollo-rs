@@ -1,5 +1,6 @@
 use crate::DocumentBuilder;
 use arbitrary::Result as ArbitraryResult;
+use std::collections::HashSet;
 use std::fmt::Write as _;
 
 // First char in a GraphQL name can't be a digit and we don't want it to be
@@ -82,18 +83,16 @@ impl DocumentBuilder<'_> {
 
     /// Create an arbitrary type `Name` that does not yet exist in the document.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
-        let mut new_name = self.limited_string(30)?;
-        if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let suffix = self.object_type_defs.len()
-                + self.interface_type_defs.len()
-                + self.union_type_defs.len()
-                + self.scalar_type_defs.len()
-                + self.enum_type_defs.len()
-                + self.input_object_type_defs.len()
-                + self.directive_defs.len()
-                + self.fragment_defs.len()
-                + self.operation_defs.len();
-            let _ = write!(new_name, "{suffix}");
+        let existing: HashSet<String> = self
+            .list_existing_type_names()
+            .map(|n| n.name.clone())
+            .collect();
+        let base = self.limited_string(30)?;
+        let mut suffix = 0usize;
+        let mut new_name = base.clone();
+        while existing.contains(new_name.as_str()) {
+            new_name = format!("{base}{suffix}");
+            suffix += 1;
         }
         Ok(Name::new(new_name))
     }
@@ -142,7 +141,6 @@ impl DocumentBuilder<'_> {
             .chain(self.union_type_defs.iter().map(|itf| &itf.name))
             .chain(self.input_object_type_defs.iter().map(|itf| &itf.name))
             .chain(self.scalar_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.directive_defs.iter().map(|itf| &itf.name))
             .chain(self.fragment_defs.iter().map(|itf| &itf.name))
             .chain(self.operation_defs.iter().filter_map(|op| op.name.as_ref()))
     }
