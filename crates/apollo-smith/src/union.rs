@@ -138,10 +138,27 @@ impl DocumentBuilder<'_> {
         // invalid as members.
         //
         // See <https://spec.graphql.org/October2021/#sec-Unions>.
-        let object_types = self.list_existing_object_types();
+        let existing_members: IndexSet<Name> = self
+            .union_type_defs
+            .iter()
+            .filter(|u| u.name == name)
+            .flat_map(|u| u.members.iter().cloned())
+            .collect();
+        let object_types: Vec<_> = self
+            .list_existing_object_types()
+            .into_iter()
+            .filter(|o| !existing_members.contains(o.name()))
+            .collect();
+        if object_types.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
         let members = (0..self.u.int_in_range(2..=10)?)
             .map(|_| Ok(self.u.choose(&object_types)?.name().clone()))
             .collect::<ArbitraryResult<IndexSet<_>>>()?;
+
+        if extend && directives.is_empty() && members.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
 
         Ok(UnionTypeDef {
             name,
