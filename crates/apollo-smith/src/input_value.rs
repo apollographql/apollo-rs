@@ -8,6 +8,7 @@ use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Constness {
@@ -290,6 +291,7 @@ impl DocumentBuilder<'_> {
     pub fn input_values_def(
         &mut self,
         directive_location: DirectiveLocation,
+        exclude: &IndexSet<Name>,
     ) -> ArbitraryResult<Vec<InputValueDef>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
@@ -312,13 +314,15 @@ impl DocumentBuilder<'_> {
                 .then(|| self.input_value(Constness::Const))
                 .transpose()?;
 
-            input_values.push(InputValueDef {
-                description,
-                name,
-                ty,
-                default_value,
-                directives,
-            });
+            if !exclude.contains(&name) {
+                input_values.push(InputValueDef {
+                    description,
+                    name,
+                    ty,
+                    default_value,
+                    directives,
+                });
+            }
         }
 
         Ok(input_values)

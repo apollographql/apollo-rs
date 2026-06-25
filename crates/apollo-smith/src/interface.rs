@@ -161,8 +161,16 @@ impl DocumentBuilder<'_> {
         // enforces all three given the existing signatures.
         let existing_field_signatures = field_signatures_for(&self.interface_type_defs, &name);
         let interfaces = self.additional_implements(&existing_field_signatures, Some(&name))?;
-        let fields_def = self.fields_definition(&[])?;
+        let exclude_fields: IndexSet<Name> = existing_field_signatures
+            .keys()
+            .map(|k| Name::new(k.clone()))
+            .collect();
+        let fields_def = self.fields_definition(&exclude_fields)?;
         let directives = self.directives(DirectiveLocation::Interface)?;
+
+        if extend && directives.is_empty() && fields_def.is_empty() && interfaces.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
 
         Ok(InterfaceTypeDef {
             description,
