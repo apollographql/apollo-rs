@@ -41,6 +41,7 @@ pub enum FromError {
     ParseBoolError(#[from] std::str::ParseBoolError),
 }
 
+use apollo_compiler::coordinate::TypeAttributeCoordinate;
 pub use arbitrary::Result;
 pub use arbitrary::Unstructured;
 use argument::Argument;
@@ -107,8 +108,8 @@ pub struct DocumentBuilder<'a> {
     pub(crate) implements_graph: implements_graph::ImplementsGraph,
     // A stack to set current ObjectTypeDef
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
-    // Useful to keep the same arguments for a specific field
-    pub(crate) chosen_arguments: IndexMap<Name, Vec<Argument>>,
+    // Useful to keep the same arguments for a specific field on a specific type
+    pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
     // Useful to keep the same aliases for a specific field name
     pub(crate) chosen_aliases: IndexMap<Name, Name>,
     // Maximum number of generated definitions per kind
