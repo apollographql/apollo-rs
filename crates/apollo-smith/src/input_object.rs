@@ -8,6 +8,7 @@ use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
@@ -141,13 +142,12 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let existing_field_names: Vec<Name> = self
+        let exclude_fields: IndexSet<Name> = self
             .input_object_type_defs
             .iter()
             .filter(|io| io.name == name)
             .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
             .collect();
-        let exclude_fields: Vec<&Name> = existing_field_names.iter().collect();
         let fields =
             self.input_values_def(DirectiveLocation::InputFieldDefinition, &exclude_fields)?;
 
