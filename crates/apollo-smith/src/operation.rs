@@ -182,8 +182,6 @@ impl DocumentBuilder<'_> {
         };
 
         self.stack.pop();
-        // Clear the chosen aliases for field in an operation
-        self.chosen_aliases.clear();
         assert!(
             self.stack.is_empty(),
             "the stack must be empty at the end of an operation definition"

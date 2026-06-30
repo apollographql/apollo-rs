@@ -111,8 +111,6 @@ pub struct DocumentBuilder<'a> {
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field on a specific type
     pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
-    // Useful to keep the same aliases for a specific field name
-    pub(crate) chosen_aliases: IndexMap<Name, Name>,
     pub(crate) used_type_names: HashSet<String>,
     // Maximum number of generated definitions per kind
     max_scalar_types: usize,
@@ -161,7 +159,6 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph: implements_graph::ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
-            chosen_aliases: IndexMap::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -344,7 +341,6 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph,
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
-            chosen_aliases: IndexMap::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
