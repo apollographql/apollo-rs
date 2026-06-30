@@ -9,5 +9,5 @@ ungrammar = "1.16.1"
 proc-macro2 = "1.0.8"
 quote = "1.0.2"
 xshell = "0.2"
-anyhow = "1"
+anyhow = "1.0.103"
 clap = { version = "4.4.0", features = ["derive"] }
