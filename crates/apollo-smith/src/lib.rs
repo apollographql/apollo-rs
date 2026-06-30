@@ -27,6 +27,7 @@ pub(crate) mod union;
 pub(crate) mod variable;
 
 use indexmap::IndexMap;
+use std::collections::HashSet;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -110,8 +111,7 @@ pub struct DocumentBuilder<'a> {
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field on a specific type
     pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
-    // Useful to keep the same aliases for a specific field name
-    pub(crate) chosen_aliases: IndexMap<Name, Name>,
+    pub(crate) used_type_names: HashSet<String>,
     // Maximum number of generated definitions per kind
     max_scalar_types: usize,
     max_enum_types: usize,
@@ -159,7 +159,7 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph: implements_graph::ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
-            chosen_aliases: IndexMap::new(),
+            used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
             max_interface_types: DEFAULT_MAX,
@@ -326,7 +326,7 @@ impl<'a> DocumentBuilder<'a> {
                 implements_graph.add_edge(&obj.name, parent);
             }
         }
-        let builder = Self {
+        let mut builder = Self {
             u,
             object_type_defs: document.object_type_definitions,
             interface_type_defs: document.interface_type_definitions,
@@ -341,7 +341,7 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph,
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
-            chosen_aliases: IndexMap::new(),
+            used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
             max_interface_types: DEFAULT_MAX,
@@ -352,6 +352,35 @@ impl<'a> DocumentBuilder<'a> {
             max_directive_definitions: DEFAULT_MAX,
             max_operation_definitions: DEFAULT_MAX,
         };
+        for def in &builder.object_type_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.interface_type_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.enum_type_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.directive_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.union_type_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.input_object_type_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.scalar_type_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.fragment_defs {
+            builder.used_type_names.insert(def.name.name.clone());
+        }
+        for def in &builder.operation_defs {
+            if let Some(name) = &def.name {
+                builder.used_type_names.insert(name.name.clone());
+            }
+        }
 
         Ok(builder)
     }

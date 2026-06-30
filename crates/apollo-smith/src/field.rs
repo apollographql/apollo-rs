@@ -166,7 +166,7 @@ impl DocumentBuilder<'_> {
     }
 
     /// Create an arbitrary `Field` given an object type
-    pub fn field(&mut self, index: usize) -> ArbitraryResult<Field> {
+    pub fn field(&mut self, _index: usize) -> ArbitraryResult<Field> {
         let fields_defs = self
             .stack
             .last()
@@ -174,12 +174,6 @@ impl DocumentBuilder<'_> {
             .fields_def();
 
         let chosen_field_def = self.u.choose(fields_defs)?.clone();
-        let mut alias = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.name_with_index(index))
-            .transpose()?;
 
         let name = chosen_field_def.name.clone();
         let coord = TypeAttributeCoordinate {
@@ -215,34 +209,13 @@ impl DocumentBuilder<'_> {
             None
         };
 
-        // To not choose different alias name for the same field
-        // Useful in this situation
-        // {
-        //  me {
-        //      T1: name
-        //  }
-        //  me {
-        //    T0: id
-        //    T1: id
-        //  }
-        // }
-        if let Some(alias_name) = alias.take() {
-            match self.chosen_aliases.get(&alias_name) {
-                None => {
-                    self.chosen_aliases.insert(alias_name.clone(), name.clone());
-                    alias = Some(alias_name);
-                }
-                Some(original_field_name) => {
-                    // If the alias point to the same original field name then we can keep this alias, if not we don't use it
-                    if original_field_name == &name {
-                        alias = Some(alias_name);
-                    }
-                }
-            }
-        }
+        // TODO: Reintroduce alias generation logic which respects aliases on other fields
+        // or fragments. For now, we will not generate aliases to avoid conflicts.
+        // See <https://spec.graphql.org/October2021/#sec-Field-Selection-Merging> for merge
+        // requirements.
 
         Ok(Field {
-            alias,
+            alias: None,
             name,
             args,
             directives,
