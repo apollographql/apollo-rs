@@ -148,8 +148,11 @@ impl DocumentBuilder<'_> {
             .filter(|io| io.name == name)
             .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
             .collect();
-        let fields =
-            self.input_values_def(DirectiveLocation::InputFieldDefinition, &exclude_fields)?;
+        let fields = self.input_values_def(
+            DirectiveLocation::InputFieldDefinition,
+            &exclude_fields,
+            Some(&name),
+        )?;
 
         let directives = self.directives(DirectiveLocation::InputObject)?;
 

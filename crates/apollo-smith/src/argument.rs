@@ -123,8 +123,11 @@ impl DocumentBuilder<'_> {
     /// Create an arbitrary `ArgumentsDef`
     pub fn arguments_definition(&mut self) -> ArbitraryResult<ArgumentsDef> {
         Ok(ArgumentsDef {
-            input_value_definitions: self
-                .input_values_def(DirectiveLocation::ArgumentDefinition, &IndexSet::new())?,
+            input_value_definitions: self.input_values_def(
+                DirectiveLocation::ArgumentDefinition,
+                &IndexSet::new(),
+                None,
+            )?,
         })
     }
 }
