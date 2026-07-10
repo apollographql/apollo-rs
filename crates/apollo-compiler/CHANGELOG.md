@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Implement `@oneOf` input objects - [issue/882].**
+- **Implement `@oneOf` input objects - [abernix], [issue/882], [pull/1030].**
   Adds full support for the [`@oneOf` RFC](https://github.com/graphql/graphql-spec/pull/825)
   as defined in the GraphQL draft specification (§3.10.1 OneOf Input Objects).
 
@@ -19,15 +19,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - All fields of a `@oneOf` input object must be nullable.
     - No field of a `@oneOf` input object may have a default value.
   - New executable-document validation rules (enforced in `ExecutableDocument::parse_and_validate`):
-    - A literal `@oneOf` input object value must supply exactly one field,
-      and that field's value must be non-null.
-    - A variable used as the sole value of a `@oneOf` field must be declared
-      with a non-null type (e.g. `String!`, not `String`).
+    - A literal `@oneOf` input object value must supply exactly one non-null field.
+    - A variable used at a `@oneOf` field position must be declared with a
+      non-null type (e.g. `String!`, not `String`).  This falls out of the
+      spec 5.8.5 rework in Fixes below — `@oneOf` field positions are treated
+      as non-null when checking variable usages.
   - Runtime input coercion (`coerce_variable_values`) now also enforces the
     "exactly one non-null field" invariant for `@oneOf` types.
   - `InputObjectType::is_one_of() -> bool` convenience method added.
 
+## Fixes
+
+- **Apply spec rule 5.8.5 to nested variable usages - [abernix], [pull/1030].**
+  `value_of_correct_type` previously compared only inner named types for
+  nested variables — nullability and list-shape mismatches at list-value
+  entries and input-object-field positions were silently accepted.  Now the
+  full [`is_variable_usage_allowed`](https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed)
+  check runs against the innermost position, and mismatches surface as
+  `DisallowedVariableUsage` with argument/field context.
+
+  Note: operations that previously passed validation but violated this rule
+  will now report errors.
+
+[abernix]: https://github.com/abernix
 [issue/882]: https://github.com/apollographql/apollo-rs/issues/882
+[pull/1030]: https://github.com/apollographql/apollo-rs/pull/1030
 
 # [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
 
@@ -95,7 +111,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/1036]: https://github.com/apollographql/apollo-rs/pull/1036
 
 
->>>>>>> origin/main
 # [1.31.1](https://crates.io/crates/apollo-compiler/1.31.1) - 2026-02-20
 
 ## Fixes
