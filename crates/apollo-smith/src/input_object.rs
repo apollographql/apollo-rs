@@ -8,6 +8,7 @@ use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
@@ -141,12 +142,22 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
+        let exclude_fields: IndexSet<Name> = self
+            .input_object_type_defs
+            .iter()
+            .filter(|io| io.name == name)
+            .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
+            .collect();
 
         // Randomly apply @oneOf to this input object (~1-in-5 chance).  When
         // we do, enforce the spec constraints on every field: all must be
         // nullable and none may carry a default value.
         let is_one_of: bool = self.u.int_in_range(0..=4usize).unwrap_or(1) == 0;
-        let mut fields = self.input_values_def()?;
+        let mut fields = self.input_values_def(
+            DirectiveLocation::InputFieldDefinition,
+            &exclude_fields,
+            Some(&name),
+        )?;
         if is_one_of {
             for field in &mut fields {
                 field.ty = field.ty.clone().into_nullable();
@@ -163,6 +174,10 @@ impl DocumentBuilder<'_> {
                     arguments: Vec::new(),
                 },
             );
+        }
+
+        if extend && directives.is_empty() && fields.is_empty() {
+            return Err(arbitrary::Error::IncorrectFormat);
         }
 
         Ok(InputObjectTypeDef {

@@ -31,7 +31,7 @@ triomphe = "0.1.13"
 typed-arena = "2.0"
 
 [dev-dependencies]
-anyhow = "1.0"
+anyhow = "1.0.103"
 criterion = "0.8.0"
 expect-test = "1.4"
 notify = "8.0.0"

@@ -140,31 +140,22 @@ impl DocumentBuilder<'_> {
 
         let arbitrary_idx: usize = self.u.arbitrary::<usize>()?;
 
-        let mut query = arbitrary_idx
-            .is_multiple_of(2)
-            .then(|| self.u.choose(&named_types))
-            .transpose()?
-            .cloned();
-        let mut mutation = arbitrary_idx
+        // Every schema must declare a `query` root operation type, even
+        // when no operations reference it. Mutation and subscription are
+        // optional.
+        //
+        // See <https://spec.graphql.org/October2021/#sec-Root-Operation-Types>.
+        let query = Some(self.u.choose(&named_types)?.clone());
+        let mutation = arbitrary_idx
             .is_multiple_of(3)
             .then(|| self.u.choose(&named_types))
             .transpose()?
             .cloned();
-        let mut subscription = arbitrary_idx
+        let subscription = arbitrary_idx
             .is_multiple_of(5)
             .then(|| self.u.choose(&named_types))
             .transpose()?
             .cloned();
-        // If no one has been filled
-        if let (None, None, None) = (&query, &mutation, &subscription) {
-            let arbitrary_op_type_idx = self.u.int_in_range(0..=2usize)?;
-            match arbitrary_op_type_idx {
-                0 => query = Some(self.u.choose(&named_types)?.clone()),
-                1 => mutation = Some(self.u.choose(&named_types)?.clone()),
-                2 => subscription = Some(self.u.choose(&named_types)?.clone()),
-                _ => unreachable!(),
-            }
-        }
 
         Ok(SchemaDef {
             description,
@@ -172,7 +163,13 @@ impl DocumentBuilder<'_> {
             query,
             mutation,
             subscription,
-            extend: self.u.arbitrary().unwrap_or(false),
+            // A schema extension is only valid alongside a base schema
+            // definition. The builder only ever generates one schema
+            // node, so rendering it as an extension would produce an
+            // orphan `extend schema` block.
+            //
+            // See <https://spec.graphql.org/October2021/#sec-Schema-Extension>.
+            extend: false,
         })
     }
 }

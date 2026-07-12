@@ -143,7 +143,7 @@ impl DocumentBuilder<'_> {
             return Ok(IndexMap::new());
         }
 
-        let num_directives = self.u.int_in_range(0..=(self.directive_defs.len() - 1))?;
+        let num_directives = self.u.int_in_range(0..=self.directive_defs.len())?;
         let directives = (0..num_directives)
             .map(|_| self.directive(directive_location))
             .collect::<ArbitraryResult<Vec<_>>>()?

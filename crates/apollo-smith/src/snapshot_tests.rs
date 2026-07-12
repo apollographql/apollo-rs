@@ -5,8 +5,8 @@ use expect_test::expect;
 fn gen(len: usize) -> String {
     let entropy: Vec<u8> = (0..len).map(|i| i as u8).collect();
     DocumentBuilder::new(&mut Unstructured::new(&entropy))
+        .build()
         .unwrap()
-        .finish()
         .into()
 }
 
@@ -17,41 +17,37 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A6 on A3 {
-          A0
-        }
-
         schema {
-          query: A3
-          mutation: A3
-          subscription: A3
+          query: A2
+          mutation: A2
+          subscription: A2
         }
 
         scalar A
 
-        type A3 {
-          A0: A1
-          A1: A1
+        type A2 {
+          A0: A0
+          A1: A0
         }
 
-        interface A2 {
-          A0: A1
-          A1: A1
+        interface A1 {
+          A0: A0
+          A1: A0
         }
 
-        union A4 = A3
+        union A3 = A2
 
-        enum A1 {
+        enum A0 {
           A0
           A1
         }
 
-        input A5 @oneOf {
+        input A4 @oneOf {
           A0: A
           A1: A
         }
 
-        directive @A7 on QUERY
+        directive @A6 on QUERY
     "#]]
     .assert_eq(&gen(0));
     expect![[r#"
@@ -59,29 +55,25 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A11 on A8 {
-          A0
-        }
-
         schema {
-          query: A8
-          mutation: A8
-          subscription: A8
+          query: A5
+          mutation: A5
+          subscription: A5
         }
 
         scalar CD
 
-        type A8 {
+        type A5 {
           A0: IJAAAAAA
           A1: IJAAAAAA
         }
 
-        interface A7 {
+        interface A4 {
           A0: IJAAAAAA
           A1: IJAAAAAA
         }
 
-        union A9 = A8
+        union A6 = A5
 
         enum IJAAAAAA {
           A0
@@ -93,32 +85,32 @@ fn snapshot_tests() {
           A1
         }
 
+        enum A0 {
+          A0
+          A1
+        }
+
+        enum A1 {
+          A0
+          A1
+        }
+
+        enum A2 {
+          A0
+          A1
+        }
+
         enum A3 {
           A0
           A1
         }
 
-        enum A4 {
-          A0
-          A1
-        }
-
-        enum A5 {
-          A0
-          A1
-        }
-
-        enum A6 {
-          A0
-          A1
-        }
-
-        input A10 @oneOf {
+        input A7 @oneOf {
           A0: CD
           A1: CD
         }
 
-        directive @A12 on QUERY
+        directive @A9 on QUERY
     "#]]
     .assert_eq(&gen(10));
     expect![[r#"
@@ -126,29 +118,25 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A11 on A8 {
-          A0
-        }
-
         schema {
-          query: A8
-          mutation: A8
-          subscription: A8
+          query: A5
+          mutation: A5
+          subscription: A5
         }
 
         scalar CD
 
-        type A8 {
+        type A5 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        interface A7 {
+        interface A4 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        union A9 = A8
+        union A6 = A5
 
         enum IJKLMNOP {
           UVWXYZabcdefghijklmn0
@@ -168,32 +156,32 @@ fn snapshot_tests() {
           A1
         }
 
+        enum A0 {
+          A0
+          A1
+        }
+
+        enum A1 {
+          A0
+          A1
+        }
+
+        enum A2 {
+          A0
+          A1
+        }
+
         enum A3 {
           A0
           A1
         }
 
-        enum A4 {
-          A0
-          A1
-        }
-
-        enum A5 {
-          A0
-          A1
-        }
-
-        enum A6 {
-          A0
-          A1
-        }
-
-        input A10 @oneOf {
+        input A7 @oneOf {
           A0: CD
           A1: CD
         }
 
-        directive @A12 on QUERY
+        directive @A9 on QUERY
     "#]]
     .assert_eq(&gen(100));
     expect![[r#"
@@ -201,19 +189,15 @@ fn snapshot_tests() {
           A0
         }
 
-        fragment A17 on A14 {
-          A0
-        }
-
         schema {
-          query: A14
-          mutation: A14
-          subscription: A14
+          query: A5
+          mutation: A5
+          subscription: A5
         }
 
         scalar CD
 
-        type A14 {
+        type A5 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
@@ -257,32 +241,32 @@ fn snapshot_tests() {
           A1: IJKLMNOP
         }
 
-        interface A9 {
+        interface A0 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        interface A10 {
+        interface A1 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        interface A11 {
+        interface A2 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        interface A12 {
+        interface A3 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        interface A13 {
+        interface A4 {
           A0: IJKLMNOP
           A1: IJKLMNOP
         }
 
-        union A15 = A14
+        union A6 = A5
 
         enum IJKLMNOP {
           UVWXYZabcdefghijklmn0
@@ -342,12 +326,12 @@ fn snapshot_tests() {
           iNOPQRSTUVWXYZabcd4
         }
 
-        input A16 @oneOf {
+        input A7 @oneOf {
           A0: CD
           A1: CD
         }
 
-        directive @A18 on QUERY
+        directive @A9 on QUERY
     "#]]
     .assert_eq(&gen(1000));
 }

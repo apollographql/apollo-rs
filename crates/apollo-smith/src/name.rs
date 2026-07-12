@@ -82,19 +82,15 @@ impl DocumentBuilder<'_> {
 
     /// Create an arbitrary type `Name` that does not yet exist in the document.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
-        let mut new_name = self.limited_string(30)?;
-        if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let suffix = self.object_type_defs.len()
-                + self.interface_type_defs.len()
-                + self.union_type_defs.len()
-                + self.scalar_type_defs.len()
-                + self.enum_type_defs.len()
-                + self.input_object_type_defs.len()
-                + self.directive_defs.len()
-                + self.fragment_defs.len()
-                + self.operation_defs.len();
-            let _ = write!(new_name, "{suffix}");
+        let base = self.limited_string(30)?;
+        let mut suffix = 0usize;
+        let mut new_name = base.clone();
+        while self.used_type_names.contains(new_name.as_str()) {
+            new_name.clear();
+            let _ = write!(new_name, "{base}{suffix}");
+            suffix += 1;
         }
+        self.used_type_names.insert(new_name.clone());
         Ok(Name::new(new_name))
     }
 
@@ -130,20 +126,5 @@ impl DocumentBuilder<'_> {
                 break Ok(new_gen.to_string());
             }
         }
-    }
-
-    fn list_existing_type_names(&self) -> impl Iterator<Item = &Name> {
-        self.object_type_defs
-            .iter()
-            .map(|o| &o.name)
-            .chain(self.interface_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.enum_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.directive_defs.iter().map(|itf| &itf.name))
-            .chain(self.union_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.input_object_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.scalar_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.directive_defs.iter().map(|itf| &itf.name))
-            .chain(self.fragment_defs.iter().map(|itf| &itf.name))
-            .chain(self.operation_defs.iter().filter_map(|op| op.name.as_ref()))
     }
 }
