@@ -1,7 +1,10 @@
 use apollo_compiler::executable::FieldSet;
 use apollo_compiler::name;
+use apollo_compiler::parser::SourceSpan;
+use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::validation::Valid;
 use apollo_compiler::Schema;
+use expect_test::expect;
 
 fn common_schema() -> Valid<Schema> {
     let input = r#"
@@ -64,4 +67,79 @@ fn test_invalid_field_sets() {
         errors.contains("the argument `arg` is not supported"),
         "{errors}"
     );
+}
+
+/// Helper: find the span of a string argument value on a directive applied to a type.
+fn string_arg_value_span(
+    schema: &Schema,
+    type_name: &str,
+    directive_name: &str,
+    arg_name: &str,
+) -> SourceSpan {
+    let ExtendedType::Object(obj) = &schema.types[type_name] else {
+        panic!("{type_name} is not an object type");
+    };
+    let dir = obj
+        .directives
+        .iter()
+        .find(|d| d.name == directive_name)
+        .unwrap_or_else(|| panic!("no @{directive_name} directive on {type_name}"));
+    let arg = dir
+        .arguments
+        .iter()
+        .find(|a| a.name == arg_name)
+        .unwrap_or_else(|| panic!("no {arg_name} argument"));
+    arg.value
+        .location()
+        .expect("argument value has no source location")
+}
+
+#[test]
+fn parse_at_span_valid() {
+    let sdl = r#"
+        directive @sel(fields: String!) on OBJECT
+        type Query { product: Product }
+        type Product @sel(fields: "id") { id: ID }
+    "#;
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = string_arg_value_span(&schema, "Product", "sel", "fields");
+    let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
+    assert!(result.is_ok(), "{}", result.unwrap_err());
+}
+
+#[test]
+fn parse_at_span_error_rendering() {
+    let sdl =
+        "type Product @sel(fields: \"id details { nonexistent }\") { id: ID, details: Details }\n\
+               type Details { name: String }\n\
+               directive @sel(fields: String!) on OBJECT\n\
+               type Query { product: Product }\n";
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = string_arg_value_span(&schema, "Product", "sel", "fields");
+
+    let err =
+        FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
+
+    expect![[r#"
+        Error: interface, union and object types must have a subselection set
+           ╭─[ schema.graphql:1:31 ]
+           │
+         1 │ type Product @sel(fields: "id details { nonexistent }") { id: ID, details: Details }
+           │                               ───────────┬───────────  
+           │                                          ╰───────────── `Product.details` is an object type `Details` and must select fields
+        ───╯
+        Error: type `Details` does not have a field `nonexistent`
+           ╭─[ schema.graphql:1:41 ]
+           │
+         1 │ type Product @sel(fields: "id details { nonexistent }") { id: ID, details: Details }
+           │                                         ─────┬─────  
+           │                                              ╰─────── field `nonexistent` selected here
+         2 │ type Details { name: String }
+           │      ───┬───  
+           │         ╰───── type `Details` defined here
+           │ 
+           │ Note: path to the field: `Product → details → nonexistent`
+        ───╯
+    "#]]
+    .assert_eq(&err.errors.to_string());
 }

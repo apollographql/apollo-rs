@@ -23,7 +23,6 @@ use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::Schema;
-use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use serde::Deserialize;
 use serde::Serialize;
@@ -162,7 +161,23 @@ impl Parser {
         errors: &mut DiagnosticList,
         parse: impl FnOnce(apollo_parser::Parser) -> apollo_parser::SyntaxTree<T>,
     ) -> apollo_parser::SyntaxTree<T> {
-        let mut parser = apollo_parser::Parser::new(&source_text);
+        let tree = self.parse_syntax(&source_text, parse);
+        let source_file = Arc::new(SourceFile {
+            path,
+            source_text,
+            source: OnceLock::new(),
+        });
+        Arc::make_mut(&mut errors.sources).insert(file_id, source_file);
+        Self::collect_parse_errors(&tree, file_id, 0.into(), errors);
+        tree
+    }
+
+    fn parse_syntax<T: apollo_parser::cst::CstNode>(
+        &mut self,
+        source_text: &str,
+        parse: impl FnOnce(apollo_parser::Parser) -> apollo_parser::SyntaxTree<T>,
+    ) -> apollo_parser::SyntaxTree<T> {
+        let mut parser = apollo_parser::Parser::new(source_text);
         if let Some(value) = self.recursion_limit {
             parser = parser.recursion_limit(value)
         }
@@ -172,25 +187,28 @@ impl Parser {
         let tree = parse(parser);
         self.recursion_reached = tree.recursion_limit().high;
         self.tokens_reached = tree.token_limit().high;
-        let source_file = Arc::new(SourceFile {
-            path,
-            source_text,
-            source: OnceLock::new(),
-        });
-        Arc::make_mut(&mut errors.sources).insert(file_id, source_file);
+        tree
+    }
+
+    fn collect_parse_errors<T: apollo_parser::cst::CstNode>(
+        tree: &apollo_parser::SyntaxTree<T>,
+        file_id: FileId,
+        base_offset: rowan::TextSize,
+        errors: &mut DiagnosticList,
+    ) {
         for parser_error in tree.errors() {
             // Silently skip parse errors at index beyond 4 GiB.
             // Rowan in apollo-parser might complain about files that large
             // before we get here anyway.
-            let Ok(index) = parser_error.index().try_into() else {
+            let Ok(index): Result<rowan::TextSize, _> = parser_error.index().try_into() else {
                 continue;
             };
-            let Ok(len) = parser_error.data().len().try_into() else {
+            let Ok(len): Result<rowan::TextSize, _> = parser_error.data().len().try_into() else {
                 continue;
             };
             let location = Some(SourceSpan {
                 file_id,
-                text_range: rowan::TextRange::at(index, len),
+                text_range: rowan::TextRange::at(index + base_offset, len),
             });
             let details = if parser_error.is_limit() {
                 Details::ParserLimit {
@@ -203,7 +221,6 @@ impl Parser {
             };
             errors.push(location, details)
         }
-        tree
     }
 
     /// Parse the given source text as the sole input file of a schema.
@@ -350,7 +367,8 @@ impl Parser {
         path: impl AsRef<Path>,
     ) -> (executable::FieldSet, DiagnosticList) {
         let file_id = FileId::new();
-        let mut errors = DiagnosticList::new(Default::default());
+        let sources = IndexMap::clone(&schema.sources);
+        let mut errors = DiagnosticList::new(Arc::new(sources));
         let tree = self.parse_common(
             source_text.into(),
             path.as_ref().to_owned(),
@@ -359,23 +377,64 @@ impl Parser {
             |parser| parser.parse_selection_set(),
         );
         let ast = ast::from_cst::convert_selection_set(&tree.field_set(), file_id);
-        let mut selection_set = executable::SelectionSet::new(type_name);
+        Self::build_field_set(schema, type_name, &ast, errors)
+    }
+
+    fn build_field_set(
+        schema: &Valid<Schema>,
+        type_name: ast::NamedType,
+        ast: &[ast::Selection],
+        mut errors: DiagnosticList,
+    ) -> (executable::FieldSet, DiagnosticList) {
+        let mut selection_set = executable::SelectionSet::new(type_name.clone());
         let mut build_errors = executable::from_ast::BuildErrors {
             errors: &mut errors,
             path: executable::SelectionPath {
                 nested_fields: Vec::new(),
-                // 🤷
-                root: executable::ExecutableDefinitionName::AnonymousOperation(
-                    ast::OperationType::Query,
-                ),
+                root: executable::ExecutableDefinitionName::FieldSet(type_name),
             },
         };
-        selection_set.extend_from_ast(Some(schema), &mut build_errors, &ast);
+        selection_set.extend_from_ast(Some(schema), &mut build_errors, ast);
         let field_set = executable::FieldSet {
             sources: errors.sources.clone(),
             selection_set,
         };
         (field_set, errors)
+    }
+
+    /// Parses the field set at `source_span` within an already-parsed source
+    /// file. The text is extracted from the schema's sources and errors point
+    /// to the original location. If the span covers a quoted string literal,
+    /// the quotes are stripped automatically.
+    pub(crate) fn parse_field_set_at_span(
+        &mut self,
+        schema: &Valid<Schema>,
+        type_name: ast::NamedType,
+        source_span: SourceSpan,
+    ) -> (executable::FieldSet, DiagnosticList) {
+        let sources = IndexMap::clone(&schema.sources);
+        let mut errors = DiagnosticList::new(Arc::new(sources));
+        let Some(source_file) = schema.sources.get(&source_span.file_id) else {
+            return Self::build_field_set(schema, type_name, &[], errors);
+        };
+        let start = source_span.offset();
+        let end = source_span.end_offset();
+        let spanned_text = &source_file.source_text[start..end];
+        let (source_text, base_offset) = match spanned_text
+            .strip_prefix('"')
+            .and_then(|s| s.strip_suffix('"'))
+        {
+            Some(content) => (
+                content,
+                source_span.text_range.start() + rowan::TextSize::from(1),
+            ),
+            None => (spanned_text, source_span.text_range.start()),
+        };
+        let tree = self.parse_syntax(source_text, |p| p.parse_selection_set());
+        Self::collect_parse_errors(&tree, source_span.file_id, base_offset, &mut errors);
+        let ctx = ast::from_cst::SourceContext::with_offset(source_span.file_id, base_offset);
+        let ast = ast::from_cst::convert_selection_set(&tree.field_set(), ctx);
+        Self::build_field_set(schema, type_name, &ast, errors)
     }
 
     /// Parse the given source text (e.g. `[Foo!]!`) as a reference to a GraphQL type.
@@ -398,7 +457,7 @@ impl Parser {
         );
         errors.into_result().map(|()| {
             tree.ty()
-                .convert(file_id)
+                .convert(file_id.into())
                 .expect("conversion should be infallible if there were no syntax errors")
         })
     }
@@ -574,13 +633,6 @@ impl TaggedFileId {
 }
 
 impl SourceSpan {
-    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
-        Self {
-            file_id,
-            text_range: node.text_range(),
-        }
-    }
-
     /// Returns the file ID for this location
     pub fn file_id(&self) -> FileId {
         self.file_id

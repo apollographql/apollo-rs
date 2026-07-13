@@ -452,8 +452,8 @@ fn builder_preserves_source_information() {
 
     // Verify that source information is tracked
     assert_eq!(doc.sources.len(), 2);
-    assert_eq!(doc.sources[0].path(), "query1.graphql");
-    assert_eq!(doc.sources[1].path(), "query2.graphql");
+    assert_eq!(doc.sources[0].path().to_str().unwrap(), "query1.graphql");
+    assert_eq!(doc.sources[1].path().to_str().unwrap(), "query2.graphql");
 }
 
 #[test]
