@@ -35,6 +35,8 @@ use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
+pub(crate) const TRIPLE_QUOTE: &str = "\"\"\"";
+
 /// Configuration for parsing an input string as GraphQL syntax
 #[derive(Default, Debug, Clone)]
 pub struct Parser {
@@ -403,9 +405,8 @@ impl Parser {
     }
 
     /// Parses the field set at `source_span` within an already-parsed source
-    /// file. The text is extracted from the schema's sources and errors point
-    /// to the original location. If the span covers a quoted string literal,
-    /// the quotes are stripped automatically.
+    /// file. The span must cover a string literal (`"..."` or `"""..."""`);
+    /// quotes are stripped and errors point to the original location.
     pub(crate) fn parse_field_set_at_span(
         &mut self,
         schema: &Valid<Schema>,
@@ -420,15 +421,30 @@ impl Parser {
         let start = source_span.offset();
         let end = source_span.end_offset();
         let spanned_text = &source_file.source_text[start..end];
-        let (source_text, base_offset) = match spanned_text
+        let (source_text, base_offset) = if let Some(content) = spanned_text
+            .strip_prefix(TRIPLE_QUOTE)
+            .and_then(|s| s.strip_suffix(TRIPLE_QUOTE))
+        {
+            (
+                content,
+                source_span.text_range.start() + rowan::TextSize::from(TRIPLE_QUOTE.len() as u32),
+            )
+        } else if let Some(content) = spanned_text
             .strip_prefix('"')
             .and_then(|s| s.strip_suffix('"'))
         {
-            Some(content) => (
+            (
                 content,
                 source_span.text_range.start() + rowan::TextSize::from(1),
-            ),
-            None => (spanned_text, source_span.text_range.start()),
+            )
+        } else {
+            errors.push(
+                Some(source_span),
+                Details::SyntaxError {
+                    message: "expected a string literal".to_owned(),
+                },
+            );
+            return Self::build_field_set(schema, type_name, &[], errors);
         };
         let tree = self.parse_syntax(source_text, |p| p.parse_selection_set());
         Self::collect_parse_errors(&tree, source_span.file_id, base_offset, &mut errors);

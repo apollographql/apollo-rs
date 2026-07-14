@@ -69,8 +69,8 @@ fn test_invalid_field_sets() {
     );
 }
 
-/// Helper: find the span of a string argument value on a directive applied to a type.
-fn string_arg_value_span(
+/// Helper: find the span of an argument value on a directive applied to a type.
+fn arg_value_span(
     schema: &Schema,
     type_name: &str,
     directive_name: &str,
@@ -102,7 +102,20 @@ fn parse_at_span_valid() {
         type Product @sel(fields: "id") { id: ID }
     "#;
     let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
-    let value_span = string_arg_value_span(&schema, "Product", "sel", "fields");
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+    let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
+    assert!(result.is_ok(), "{}", result.unwrap_err());
+}
+
+#[test]
+fn parse_at_span_block_string_valid() {
+    let sdl = r#"
+        directive @sel(fields: String!) on OBJECT
+        type Query { product: Product }
+        type Product @sel(fields: """id""") { id: ID }
+    "#;
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
     let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
     assert!(result.is_ok(), "{}", result.unwrap_err());
 }
@@ -115,7 +128,7 @@ fn parse_at_span_error_rendering() {
                directive @sel(fields: String!) on OBJECT\n\
                type Query { product: Product }\n";
     let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
-    let value_span = string_arg_value_span(&schema, "Product", "sel", "fields");
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
 
     let err =
         FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
@@ -139,6 +152,108 @@ fn parse_at_span_error_rendering() {
            │         ╰───── type `Details` defined here
            │ 
            │ Note: path to the field: `Product → details → nonexistent`
+        ───╯
+    "#]]
+    .assert_eq(&err.errors.to_string());
+}
+
+#[test]
+fn parse_at_span_block_string_error_rendering() {
+    let sdl = r#"type Product @sel(fields: """
+id
+details { nonexistent }
+""") {
+  id: ID
+  details: Details
+}
+type Details { name: String }
+directive @sel(fields: String!) on OBJECT
+type Query { product: Product }
+"#;
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+
+    let err =
+        FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
+
+    expect![[r#"
+        Error: interface, union and object types must have a subselection set
+           ╭─[ schema.graphql:3:1 ]
+           │
+         3 │ details { nonexistent }
+           │ ───────────┬───────────  
+           │            ╰───────────── `Product.details` is an object type `Details` and must select fields
+        ───╯
+        Error: type `Details` does not have a field `nonexistent`
+           ╭─[ schema.graphql:3:11 ]
+           │
+         3 │ details { nonexistent }
+           │           ─────┬─────  
+           │                ╰─────── field `nonexistent` selected here
+           │ 
+         8 │ type Details { name: String }
+           │      ───┬───  
+           │         ╰───── type `Details` defined here
+           │ 
+           │ Note: path to the field: `Product → details → nonexistent`
+        ───╯
+    "#]]
+    .assert_eq(&err.errors.to_string());
+}
+
+#[test]
+fn parse_at_span_not_a_string() {
+    let sdl = "directive @sel(fields: Int!) on OBJECT\n\
+         type Query { product: Product }\n\
+         type Product @sel(fields: 42) { id: ID }\n";
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+    let err =
+        FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
+
+    expect![[r#"
+        Error: syntax error: expected a string literal
+           ╭─[ schema.graphql:3:27 ]
+           │
+         3 │ type Product @sel(fields: 42) { id: ID }
+           │                           ─┬  
+           │                            ╰── expected a string literal
+        ───╯
+    "#]]
+    .assert_eq(&err.errors.to_string());
+}
+
+#[test]
+fn parse_at_span_utf8_in_selection() {
+    // A multi-byte UTF-8 character inside the selection string is a parse error
+    // (GraphQL names are ASCII-only). Verify the diagnostic renders with the
+    // correct byte offset and file attribution.
+    let sdl = "directive @sel(fields: String!) on OBJECT\n\
+               type Query { product: Product }\n\
+               type Product @sel(fields: \"id café\") { id: ID }\n";
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+    let err =
+        FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
+
+    expect![[r#"
+        Error: type `Product` does not have a field `caf`
+           ╭─[ schema.graphql:3:31 ]
+           │
+         3 │ type Product @sel(fields: "id café") { id: ID }
+           │      ───┬───                  ─┬─  
+           │         ╰────────────────────────── type `Product` defined here
+           │                                │   
+           │                                ╰─── field `caf` selected here
+           │ 
+           │ Note: path to the field: `Product → caf`
+        ───╯
+        Error: syntax error: Unexpected character "é"
+           ╭─[ schema.graphql:3:34 ]
+           │
+         3 │ type Product @sel(fields: "id café") { id: ID }
+           │                                  ┬  
+           │                                  ╰── Unexpected character "é"
         ───╯
     "#]]
     .assert_eq(&err.errors.to_string());

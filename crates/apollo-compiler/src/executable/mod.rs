@@ -1071,9 +1071,8 @@ impl FieldSet {
     /// Parses and validates the field set at `source_span` within an
     /// already-parsed source file. Errors point to the original location.
     ///
-    /// `source_span` should be the span of the string argument value. If the
-    /// span covers a quoted string literal, the quotes are stripped
-    /// automatically.
+    /// `source_span` must be the span of a string literal value (`"..."` or
+    /// `"""..."""`); quotes are stripped automatically.
     pub fn parse_and_validate_at_span(
         schema: &Valid<Schema>,
         type_name: NamedType,
