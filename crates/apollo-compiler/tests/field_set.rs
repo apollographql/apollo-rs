@@ -233,7 +233,7 @@ fn parse_at_span_utf8_in_selection() {
     // correct byte offset and file attribution.
     let sdl = "directive @sel(fields: String!) on OBJECT\n\
                type Query { product: Product }\n\
-               type Product @sel(fields: \"id café\") { id: ID }\n";
+               type Product @sel(fields: \"id\\u0020caf한글\") { id: ID }\n";
     let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
     let value_span = arg_value_span(&schema, "Product", "sel", "fields");
     let err =
