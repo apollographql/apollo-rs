@@ -176,20 +176,23 @@ type Query { product: Product }
     let err =
         FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
 
+    // NOTE(@goto-bus-stop): This output is wrong because I haven't accounted for whitespace
+    // stripping in block strings
     expect![[r#"
         Error: interface, union and object types must have a subselection set
-           ╭─[ schema.graphql:3:1 ]
+           ╭─[ schema.graphql:2:3 ]
            │
-         3 │ details { nonexistent }
-           │ ───────────┬───────────  
-           │            ╰───────────── `Product.details` is an object type `Details` and must select fields
+         2 │ ╭─▶ id
+         3 │ ├─▶ details { nonexistent }
+           │ │                             
+           │ ╰───────────────────────────── `Product.details` is an object type `Details` and must select fields
         ───╯
         Error: type `Details` does not have a field `nonexistent`
-           ╭─[ schema.graphql:3:11 ]
+           ╭─[ schema.graphql:3:10 ]
            │
          3 │ details { nonexistent }
-           │           ─────┬─────  
-           │                ╰─────── field `nonexistent` selected here
+           │          ─────┬─────  
+           │               ╰─────── field `nonexistent` selected here
            │ 
          8 │ type Details { name: String }
            │      ───┬───  

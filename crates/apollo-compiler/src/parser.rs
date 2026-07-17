@@ -421,22 +421,20 @@ impl Parser {
         let start = source_span.offset();
         let end = source_span.end_offset();
         let spanned_text = &source_file.source_text[start..end];
-        let (source_text, base_offset) = if let Some(content) = spanned_text
+
+        // Base offset of the text _inside_ the string
+        let base_offset = if spanned_text
             .strip_prefix(TRIPLE_QUOTE)
             .and_then(|s| s.strip_suffix(TRIPLE_QUOTE))
+            .is_some()
         {
-            (
-                content,
-                source_span.text_range.start() + rowan::TextSize::from(TRIPLE_QUOTE.len() as u32),
-            )
-        } else if let Some(content) = spanned_text
+            source_span.text_range.start() + rowan::TextSize::from(TRIPLE_QUOTE.len() as u32)
+        } else if spanned_text
             .strip_prefix('"')
             .and_then(|s| s.strip_suffix('"'))
+            .is_some()
         {
-            (
-                content,
-                source_span.text_range.start() + rowan::TextSize::from(1),
-            )
+            source_span.text_range.start() + rowan::TextSize::from(1)
         } else {
             errors.push(
                 Some(source_span),
@@ -446,7 +444,22 @@ impl Parser {
             );
             return Self::build_field_set(schema, type_name, &[], errors);
         };
-        let tree = self.parse_syntax(source_text, |p| p.parse_selection_set());
+
+        // Parse the string literal, including escape sequence handling
+        let value = self.parse_syntax(spanned_text, |p| p.parse_value());
+        let Some(value) = value.string_value() else {
+            errors.push(
+                Some(source_span),
+                Details::SyntaxError {
+                    message: "expected a string literal".to_owned(),
+                },
+            );
+            return Self::build_field_set(schema, type_name, &[], errors);
+        };
+        let source_text = String::from(&value);
+
+        // Then parse the contents of the string as a selection set
+        let tree = self.parse_syntax(&source_text, |p| p.parse_selection_set());
         Self::collect_parse_errors(&tree, source_span.file_id, base_offset, &mut errors);
         let ctx = ast::from_cst::SourceContext::with_offset(source_span.file_id, base_offset);
         let ast = ast::from_cst::convert_selection_set(&tree.field_set(), ctx);

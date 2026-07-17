@@ -51,6 +51,7 @@ use std::slice::Iter;
 pub(crate) enum SyntaxTreeWrapper {
     Document(SyntaxTree<cst::Document>),
     FieldSet(SyntaxTree<cst::SelectionSet>),
+    Value(SyntaxTree<cst::Value>),
     Type(SyntaxTree<cst::Type>),
 }
 
@@ -111,6 +112,16 @@ impl SyntaxTree<cst::SelectionSet> {
         cst::SelectionSet {
             syntax: self.syntax_node(),
         }
+    }
+}
+
+impl SyntaxTree<cst::Value> {
+    /// Return the root typed `SelectionSet` node. This is used for parsing
+    /// selection sets defined by @requires directive.
+    pub fn string_value(&self) -> Option<cst::StringValue> {
+        (self.syntax_node().kind() == SyntaxKind::STRING_VALUE).then(|| cst::StringValue {
+            syntax: self.syntax_node(),
+        })
     }
 }
 
@@ -241,6 +252,23 @@ impl SyntaxTreeBuilder {
         token_limit: LimitTracker,
     ) -> SyntaxTreeWrapper {
         SyntaxTreeWrapper::FieldSet(SyntaxTree {
+            green: self.builder.finish(),
+            // TODO: keep the errors in the builder rather than pass it in here?
+            errors,
+            // TODO: keep the recursion and token limits in the builder rather than pass it in here?
+            recursion_limit,
+            token_limit,
+            _phantom: PhantomData,
+        })
+    }
+
+    pub(crate) fn finish_value(
+        self,
+        errors: Vec<Error>,
+        recursion_limit: LimitTracker,
+        token_limit: LimitTracker,
+    ) -> SyntaxTreeWrapper {
+        SyntaxTreeWrapper::Value(SyntaxTree {
             green: self.builder.finish(),
             // TODO: keep the errors in the builder rather than pass it in here?
             errors,

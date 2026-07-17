@@ -162,10 +162,27 @@ impl<'input> Parser<'input> {
         match builder {
             syntax_tree::SyntaxTreeWrapper::Document(tree) => tree,
             syntax_tree::SyntaxTreeWrapper::Type(_)
+            | syntax_tree::SyntaxTreeWrapper::Value(_)
             | syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
                 unreachable!("parse constructor can only construct a document")
             }
         }
+    }
+
+    pub fn parse_value(mut self) -> SyntaxTree<crate::cst::Value> {
+        grammar::value::value(&mut self, grammar::value::Constness::NotConst, true);
+
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        let builder =
+            builder.finish_value(self.errors, self.recursion_limit, self.lexer.limit_tracker);
+
+        let syntax_tree::SyntaxTreeWrapper::Value(value) = builder else {
+            unreachable!("parse constructor can only construct a value")
+        };
+
+        value
     }
 
     /// Parse a selection set with optional outer braces.
@@ -186,6 +203,7 @@ impl<'input> Parser<'input> {
         match builder {
             syntax_tree::SyntaxTreeWrapper::FieldSet(tree) => tree,
             syntax_tree::SyntaxTreeWrapper::Document(_)
+            | syntax_tree::SyntaxTreeWrapper::Value(_)
             | syntax_tree::SyntaxTreeWrapper::Type(_) => {
                 unreachable!("parse_selection_set constructor can only construct a selection set")
             }
@@ -207,6 +225,7 @@ impl<'input> Parser<'input> {
         match builder {
             syntax_tree::SyntaxTreeWrapper::Type(tree) => tree,
             syntax_tree::SyntaxTreeWrapper::FieldSet(_)
+            | syntax_tree::SyntaxTreeWrapper::Value(_)
             | syntax_tree::SyntaxTreeWrapper::Document(_) => {
                 unreachable!("parse_type constructor can only construct a type")
             }
