@@ -81,8 +81,8 @@ impl TryFrom<apollo_parser::cst::ScalarTypeExtension> for ScalarTypeDef {
 impl DocumentBuilder<'_> {
     /// Create an arbitrary `ScalarTypeDef`
     pub fn scalar_type_definition(&mut self) -> ArbitraryResult<ScalarTypeDef> {
-        let extend = !self.scalar_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
-        let name = if extend {
+        let mut extend = !self.scalar_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let mut name = if extend {
             let available_scalars: Vec<&Name> = self
                 .scalar_type_defs
                 .iter()
@@ -105,8 +105,14 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let directives = self.directives(DirectiveLocation::Scalar)?;
-        // Extended scalar must have directive
-        let extend = !directives.is_empty() && self.u.arbitrary().unwrap_or(false);
+
+        // A scalar extension must add at least one directive. If we picked the extend path
+        // but have no directives to add, fall back to a fresh unique scalar instead of
+        // emitting a duplicate definition.
+        if extend && directives.is_empty() {
+            extend = false;
+            name = self.type_name()?;
+        }
 
         Ok(ScalarTypeDef {
             name,

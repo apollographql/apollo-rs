@@ -2,6 +2,11 @@ use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::field::FieldDef;
+use crate::interface::base_def_index;
+use crate::interface::def_indices_with_name;
+use crate::interface::field_signatures_for;
+use crate::interface::parent_fields_from_defs;
+use crate::interface::unique_names;
 use crate::name::Name;
 use crate::DocumentBuilder;
 use crate::StackedEntity;
@@ -166,37 +171,86 @@ impl DocumentBuilder<'_> {
             self.type_name()?
         };
 
-        // ---- Interface
-        let interface_impls = self.implements_interfaces()?;
-        let implements_fields: Vec<FieldDef> = interface_impls
-            .iter()
-            .flat_map(|itf_name| {
-                self.interface_type_defs
-                    .iter()
-                    .find(|itf| &itf.name == itf_name)
-                    .expect("cannot find the corresponding interface")
-                    .fields_def
-                    .clone()
-            })
+        // Extensions can add new `implements` clauses but must not
+        // duplicate prior picks or overwrite a field signature the
+        // type already commits to. Objects can't appear in the
+        // interface graph, so no cycle protection is needed.
+        let existing_field_signatures = field_signatures_for(&self.object_type_defs, &name);
+        let implements_interfaces = self.additional_implements(&existing_field_signatures, None)?;
+        let exclude_fields: IndexSet<Name> = existing_field_signatures
+            .keys()
+            .map(|k| Name::new(k.clone()))
             .collect();
+        let fields_def = self.fields_definition(&exclude_fields)?;
+        let directives = self.directives(DirectiveLocation::Object)?;
 
-        let mut fields_def = self.fields_definition(
-            &implements_fields
-                .iter()
-                .map(|f| &f.name)
-                .collect::<Vec<&Name>>(),
-        )?;
-        // Add fields coming from interfaces
-        fields_def.extend(implements_fields);
+        if extend
+            && directives.is_empty()
+            && fields_def.is_empty()
+            && implements_interfaces.is_empty()
+        {
+            return Err(arbitrary::Error::IncorrectFormat);
+        }
 
         Ok(ObjectTypeDef {
             description,
-            directives: self.directives(DirectiveLocation::Object)?,
-            implements_interfaces: interface_impls,
+            directives,
+            implements_interfaces,
             name,
             fields_def,
             extend,
         })
+    }
+
+    /// Reconcile each object's `implements` clause and fields once
+    /// the interface backfill has finished. Each interface already
+    /// holds its full inherited field set by that point, so the
+    /// object only needs to copy from its direct parents.
+    pub(crate) fn backfill_inherited_object_fields(&mut self) {
+        for name in unique_names(&self.object_type_defs) {
+            let Some(base_idx) = base_def_index(&self.object_type_defs, &name) else {
+                continue;
+            };
+            self.expand_transitive_object_implementations(&name, base_idx);
+
+            let parents = self.implements_graph.direct_parents(&name);
+            let mut inherited_fields = parent_fields_from_defs(&parents, &self.interface_type_defs);
+            // Rewrite object-declared fields to the parent interface's
+            // signature so the object satisfies the interface contract
+            // exactly (matching type + args).
+            let def_indices = def_indices_with_name(&self.object_type_defs, &name);
+            for &i in &def_indices {
+                for f in self.object_type_defs[i].fields_def.iter_mut() {
+                    if let Some(parent_fdef) = inherited_fields.shift_remove(&f.name.name) {
+                        *f = parent_fdef;
+                    }
+                }
+            }
+            // Append the interface fields the object never declared.
+            self.object_type_defs[base_idx]
+                .fields_def
+                .extend(inherited_fields.into_values());
+        }
+    }
+
+    /// Write `name`'s transitive interface parents onto its base def, skipping any already declared by an extension.
+    fn expand_transitive_object_implementations(&mut self, name: &Name, base_idx: usize) {
+        let mut all_implemented_interfaces = self.implements_graph.closure(name);
+        // Closure includes `name`, but an object never implements itself.
+        all_implemented_interfaces.shift_remove(name);
+
+        let interfaces_declared_by_extensions: IndexSet<Name> = self
+            .object_type_defs
+            .iter()
+            .filter(|o| o.extend && &o.name == name)
+            .flat_map(|o| o.implements_interfaces.iter().cloned())
+            .collect();
+        let interfaces_to_add = all_implemented_interfaces
+            .into_iter()
+            .filter(|p| !interfaces_declared_by_extensions.contains(p));
+        self.object_type_defs[base_idx]
+            .implements_interfaces
+            .extend(interfaces_to_add);
     }
 }
 

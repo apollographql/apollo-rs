@@ -1,6 +1,7 @@
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
+use crate::selection_set::Selection;
 use crate::selection_set::SelectionSet;
 use crate::variable::VariableDef;
 use crate::DocumentBuilder;
@@ -109,18 +110,39 @@ impl From<apollo_parser::cst::OperationType> for OperationType {
 }
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
+    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`.
     pub fn operation_definition(&mut self) -> ArbitraryResult<Option<OperationDef>> {
+        self.operation_definition_in_document(false)
+    }
+
+    /// Like [`operation_definition`], but forces the operation to be
+    /// named when `require_named` is true. A document with more than
+    /// one operation may not contain an anonymous operation.
+    ///
+    /// Operation Name Uniqueness across the document is upheld by
+    /// `type_name`, which never returns a name that already exists on
+    /// the builder.
+    ///
+    /// See <https://spec.graphql.org/October2021/#sec-Lone-Anonymous-Operation>
+    /// and <https://spec.graphql.org/October2021/#sec-Operation-Name-Uniqueness>.
+    ///
+    /// [`operation_definition`]: Self::operation_definition
+    pub(crate) fn operation_definition_in_document(
+        &mut self,
+        require_named: bool,
+    ) -> ArbitraryResult<Option<OperationDef>> {
         let schema = match self.schema_def.clone() {
             Some(schema_def) => schema_def,
             None => return Ok(None),
         };
-        let name = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.type_name())
-            .transpose()?;
+
+        let want_name = require_named || self.u.arbitrary().unwrap_or(false);
+        let name = if want_name {
+            Some(self.type_name()?)
+        } else {
+            None
+        };
+
         let available_operations = {
             let mut ops = vec![];
             if let Some(query) = &schema.query {
@@ -147,14 +169,19 @@ impl DocumentBuilder<'_> {
         // Stack
         self.stack_ty(chosen_ty);
 
-        let selection_set = self.selection_set()?;
+        let selection_set = if matches!(operation_type, OperationType::Subscription) {
+            // Subscription operations must have exactly one root field
+            // per <https://spec.graphql.org/October2021/#sec-Single-root-field>.
+            // We generate exactly one field to satisfy that condition. The 0-index
+            // is sometimes used to create an alias for the field.
+            SelectionSet {
+                selections: vec![Selection::Field(self.field(0)?)],
+            }
+        } else {
+            self.selection_set()?
+        };
 
         self.stack.pop();
-        // Clear the chosen arguments for an operation
-        self.chosen_arguments.clear();
-        // Clear the chosen aliases for field in an operation
-        self.chosen_aliases.clear();
-
         assert!(
             self.stack.is_empty(),
             "the stack must be empty at the end of an operation definition"

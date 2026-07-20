@@ -8,6 +8,7 @@ use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Constness {
@@ -236,15 +237,15 @@ impl DocumentBuilder<'_> {
                 Ok(InputValue::Enum(
                     doc_builder.arbitrary_variant(&enum_)?.clone(),
                 ))
-            } else if let Some(object_ty) = doc_builder
-                .object_type_defs
+            } else if let Some(input_object_ty) = doc_builder
+                .input_object_type_defs
                 .iter()
-                .find(|o| &o.name == ty.name())
+                .find(|io| &io.name == ty.name())
                 .cloned()
             {
                 Ok(InputValue::Object(
-                    object_ty
-                        .fields_def
+                    input_object_ty
+                        .fields
                         .iter()
                         .map(|field_def| {
                             Ok((
@@ -254,8 +255,15 @@ impl DocumentBuilder<'_> {
                         })
                         .collect::<ArbitraryResult<Vec<_>>>()?,
                 ))
+            } else if doc_builder
+                .scalar_type_defs
+                .iter()
+                .any(|s| &s.name == ty.name())
+            {
+                // Custom scalars accept any literal value; generate an Int to be entropy-efficient
+                Ok(InputValue::Int(doc_builder.u.arbitrary()?))
             } else {
-                todo!()
+                panic!("Type {} is not a valid input type", ty.name().name);
             }
         };
 
@@ -275,8 +283,17 @@ impl DocumentBuilder<'_> {
         Ok(val)
     }
 
-    /// Create an arbitrary list of `InputValueDef`
-    pub fn input_values_def(&mut self) -> ArbitraryResult<Vec<InputValueDef>> {
+    /// Create an arbitrary list of `InputValueDef`. The caller passes
+    /// `directive_location` so directives applied to each value are
+    /// filtered against the right context — `InputFieldDefinition` for
+    /// input-object fields, `ArgumentDefinition` for argument lists on
+    /// fields and directives.
+    pub fn input_values_def(
+        &mut self,
+        directive_location: DirectiveLocation,
+        exclude: &IndexSet<Name>,
+        self_name: Option<&Name>,
+    ) -> ArbitraryResult<Vec<InputValueDef>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
 
@@ -288,9 +305,15 @@ impl DocumentBuilder<'_> {
                 .then(|| self.description())
                 .transpose()?;
             let name = self.name_with_index(i)?;
-            let ty = self.choose_ty(&self.list_existing_types())?;
-            // TODO: incorrect because input_values_def is called from different locations
-            let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
+            let mut ty = self.choose_ty(&self.list_existing_input_types())?;
+            // Prevent required self-referential input object fields, which
+            // would make the type impossible to construct.
+            if self_name.is_some_and(|n| ty.name() == n) {
+                if let Ty::NonNull(inner) = ty {
+                    ty = *inner;
+                }
+            }
+            let directives = self.directives(directive_location)?;
             // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
             let default_value = self
                 .u
@@ -299,19 +322,26 @@ impl DocumentBuilder<'_> {
                 .then(|| self.input_value(Constness::Const))
                 .transpose()?;
 
-            input_values.push(InputValueDef {
-                description,
-                name,
-                ty,
-                default_value,
-                directives,
-            });
+            if !exclude.contains(&name) {
+                input_values.push(InputValueDef {
+                    description,
+                    name,
+                    ty,
+                    default_value,
+                    directives,
+                });
+            }
         }
 
         Ok(input_values)
     }
-    /// Create an arbitrary `InputValueDef`
-    pub fn input_value_def(&mut self) -> ArbitraryResult<InputValueDef> {
+    /// Create an arbitrary `InputValueDef`. The caller passes
+    /// `directive_location` for the same reason as
+    /// [`input_values_def`](Self::input_values_def).
+    pub fn input_value_def(
+        &mut self,
+        directive_location: DirectiveLocation,
+    ) -> ArbitraryResult<InputValueDef> {
         let description = self
             .u
             .arbitrary()
@@ -319,9 +349,8 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let name = self.name()?;
-        let ty = self.choose_ty(&self.list_existing_types())?;
-        // TODO: incorrect because input_values_def is called from different locations
-        let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
+        let ty = self.choose_ty(&self.list_existing_input_types())?;
+        let directives = self.directives(directive_location)?;
         // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
         let default_value = self
             .u
@@ -352,84 +381,56 @@ impl DocumentBuilder<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::field::FieldDef;
-    use crate::ObjectTypeDef;
+    use crate::InputObjectTypeDef;
     use arbitrary::Unstructured;
     use indexmap::IndexMap;
-    use indexmap::IndexSet;
 
     #[test]
     fn test_input_value_for_type() {
         let data: Vec<u8> = (0..=5000usize).map(|n| (n % 255) as u8).collect();
         let mut u = Unstructured::new(&data);
-        let mut document_builder = DocumentBuilder {
-            u: &mut u,
-            input_object_type_defs: Vec::new(),
-            object_type_defs: Vec::new(),
-            interface_type_defs: Vec::new(),
-            union_type_defs: Vec::new(),
-            enum_type_defs: Vec::new(),
-            scalar_type_defs: Vec::new(),
-            schema_def: None,
-            directive_defs: Vec::new(),
-            operation_defs: Vec::new(),
-            fragment_defs: Vec::new(),
-            stack: Vec::new(),
-            chosen_arguments: IndexMap::new(),
-            chosen_aliases: IndexMap::new(),
-        };
-        let my_nested_type = ObjectTypeDef {
+        let mut document_builder = DocumentBuilder::new(&mut u);
+        let my_nested_type = InputObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_nested_object"),
             },
-            implements_interfaces: IndexSet::new(),
             directives: IndexMap::new(),
-            fields_def: vec![FieldDef {
+            fields: vec![InputValueDef {
                 description: None,
                 name: Name {
                     name: String::from("value"),
                 },
-                arguments_definition: None,
                 ty: Ty::Named(Name {
                     name: String::from("String"),
                 }),
+                default_value: None,
                 directives: IndexMap::new(),
             }],
             extend: false,
         };
 
-        let my_object_type = ObjectTypeDef {
+        let my_object_type = InputObjectTypeDef {
             description: None,
             name: Name {
                 name: String::from("my_object"),
             },
-            implements_interfaces: IndexSet::new(),
             directives: IndexMap::new(),
-            fields_def: vec![FieldDef {
+            fields: vec![InputValueDef {
                 description: None,
                 name: Name {
                     name: String::from("first"),
                 },
-                arguments_definition: None,
                 ty: Ty::List(Box::new(Ty::Named(Name {
                     name: String::from("my_nested_object"),
                 }))),
+                default_value: None,
                 directives: IndexMap::new(),
             }],
             extend: false,
         };
-        document_builder.object_type_defs.push(my_nested_type);
-        document_builder.object_type_defs.push(my_object_type);
-
-        let my_type_to_find = Ty::List(Box::new(Ty::Named(Name {
-            name: String::from("my_object"),
-        })));
-        document_builder.object_type_defs.iter().find(|o| {
-            let res = &o.name == my_type_to_find.name();
-
-            res
-        });
+        document_builder.input_object_type_defs.push(my_nested_type);
+        document_builder.input_object_type_defs.push(my_object_type);
 
         let input_val = document_builder
             .input_value_for_type(&Ty::List(Box::new(Ty::Named(Name {
