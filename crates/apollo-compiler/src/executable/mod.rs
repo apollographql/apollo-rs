@@ -341,6 +341,7 @@ pub(crate) enum ExecutableDefinitionName {
     AnonymousOperation(ast::OperationType),
     NamedOperation(ast::OperationType, Name),
     Fragment(Name),
+    FieldSet(Name),
 }
 
 impl ExecutableDocument {
@@ -1067,6 +1068,22 @@ impl FieldSet {
         errors.into_valid_result(field_set)
     }
 
+    /// Parses and validates the field set at `source_span` within an
+    /// already-parsed source file. Errors point to the original location.
+    ///
+    /// `source_span` must be the span of a string literal value (`"..."` or
+    /// `"""..."""`); quotes are stripped automatically.
+    pub fn parse_and_validate_at_span(
+        schema: &Valid<Schema>,
+        type_name: NamedType,
+        source_span: SourceSpan,
+    ) -> Result<Valid<Self>, WithErrors<Self>> {
+        let (field_set, mut errors) =
+            Parser::new().parse_field_set_at_span(schema, type_name, source_span);
+        validation::validate_field_set(&mut errors, schema, &field_set);
+        errors.into_valid_result(field_set)
+    }
+
     pub fn validate(&self, schema: &Valid<Schema>) -> Result<(), DiagnosticList> {
         let mut sources = IndexMap::clone(&schema.sources);
         sources.extend(self.sources.iter().map(|(k, v)| (*k, v.clone())));
@@ -1088,6 +1105,7 @@ impl fmt::Display for SelectionPath {
                 write!(f, "{operation_type} {name}")?
             }
             ExecutableDefinitionName::Fragment(name) => write!(f, "fragment {name}")?,
+            ExecutableDefinitionName::FieldSet(type_name) => write!(f, "{type_name}")?,
         }
         for name in &self.nested_fields {
             write!(f, " → {name}")?
