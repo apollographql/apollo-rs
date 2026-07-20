@@ -86,6 +86,14 @@ impl Ty {
     pub(crate) fn is_builtin(&self) -> bool {
         BUILTIN_SCALAR_NAMES.contains(&Ty::Named(self.name().clone()))
     }
+
+    /// Strip the outermost `NonNull` wrapper, if present, making this type nullable.
+    pub(crate) fn into_nullable(self) -> Self {
+        match self {
+            Ty::NonNull(inner) => *inner,
+            other => other,
+        }
+    }
 }
 
 impl DocumentBuilder<'_> {

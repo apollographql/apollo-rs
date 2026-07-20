@@ -178,6 +178,36 @@ fn coerce_variable_value(
                         location: None,
                     });
                 }
+                // @oneOf: exactly one non-null field must be provided at runtime.
+                // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+                if ty_def.is_one_of() {
+                    let provided_count = object
+                        .keys()
+                        .filter(|k| ty_def.fields.contains_key(k.as_str()))
+                        .count();
+                    if provided_count != 1 {
+                        return Err(InputCoercionError::ValueError {
+                            message: format!(
+                                "@oneOf input object '{ty_name}' must specify exactly one key, \
+                                 but {provided_count} {} given",
+                                if provided_count == 1 { "was" } else { "were" }
+                            ),
+                            location: None,
+                        });
+                    }
+                    if let Some((field_name, field_value)) = object.iter().next() {
+                        if field_value.is_null() {
+                            return Err(InputCoercionError::ValueError {
+                                message: format!(
+                                    "@oneOf input object '{ty_name}' field '{}' \
+                                     must be non-null",
+                                    field_name.as_str()
+                                ),
+                                location: None,
+                            });
+                        }
+                    }
+                }
                 let mut object = object.clone();
                 for (field_name, field_def) in &ty_def.fields {
                     if let Some(field_value) = object.get_mut(field_name.as_str()) {
@@ -407,6 +437,41 @@ fn coerce_argument_value(
                     ));
                     return Err(PropagateNull);
                 }
+                // @oneOf: exactly one non-null field must be provided at runtime.
+                // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+                if ty_def.is_one_of() {
+                    let provided_count = object
+                        .iter()
+                        .filter(|(k, _)| ty_def.fields.contains_key(k))
+                        .count();
+                    if provided_count != 1 {
+                        ctx.errors.push(GraphQLError::field_error(
+                            format!(
+                                "@oneOf input object '{ty_name}' must specify exactly one key, \
+                                 but {provided_count} {} given",
+                                if provided_count == 1 { "was" } else { "were" }
+                            ),
+                            path,
+                            value.location(),
+                            &ctx.document.sources,
+                        ));
+                        return Err(PropagateNull);
+                    }
+                    if let Some((field_name, field_value)) = object.iter().next() {
+                        if field_value.is_null() {
+                            ctx.errors.push(GraphQLError::field_error(
+                                format!(
+                                    "@oneOf input object '{ty_name}' field '{field_name}' \
+                                     must be non-null"
+                                ),
+                                path,
+                                value.location(),
+                                &ctx.document.sources,
+                            ));
+                            return Err(PropagateNull);
+                        }
+                    }
+                }
                 #[allow(clippy::map_identity)] // `map` converts `&(k, v)` to `(&k, &v)`
                 let object: HashMap<_, _> = object.iter().map(|(k, v)| (k, v)).collect();
                 let mut coerced_object = JsonMap::new();
@@ -596,5 +661,100 @@ mod tests {
             variables.as_object().unwrap(),
         )
         .unwrap_err();
+    }
+
+    // -----------------------------------------------------------------------
+    // @oneOf runtime coercion tests
+    // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+    // -----------------------------------------------------------------------
+
+    fn one_of_schema_and_doc() -> (Valid<Schema>, Valid<ExecutableDocument>) {
+        let schema = Schema::parse_and_validate(
+            r#"
+                type Query {
+                    search(filter: SearchFilter): String
+                }
+                input SearchFilter @oneOf {
+                    byName: String
+                    byId: Int
+                }
+            "#,
+            "schema.graphql",
+        )
+        .unwrap();
+        let doc = ExecutableDocument::parse_and_validate(
+            &schema,
+            "query ($filter: SearchFilter) { search(filter: $filter) }",
+            "op.graphql",
+        )
+        .unwrap();
+        (schema, doc)
+    }
+
+    #[test]
+    fn one_of_coercion_valid_single_field() {
+        let (schema, doc) = one_of_schema_and_doc();
+        let variables = serde_json_bytes::json!({ "filter": { "byName": "alice" } });
+        coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .expect("single non-null field should be accepted");
+    }
+
+    fn one_of_error_message(err: InputCoercionError) -> String {
+        match err {
+            InputCoercionError::ValueError { message, .. } => message,
+            InputCoercionError::SuspectedValidationBug(b) => b.message,
+        }
+    }
+
+    #[test]
+    fn one_of_coercion_rejects_zero_fields() {
+        let (schema, doc) = one_of_schema_and_doc();
+        let variables = serde_json_bytes::json!({ "filter": {} });
+        let err = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+        let msg = one_of_error_message(err);
+        assert!(
+            msg.contains("must specify exactly one key"),
+            "unexpected error: {msg}"
+        );
+    }
+
+    #[test]
+    fn one_of_coercion_rejects_multiple_fields() {
+        let (schema, doc) = one_of_schema_and_doc();
+        let variables = serde_json_bytes::json!({ "filter": { "byName": "alice", "byId": 1 } });
+        let err = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+        let msg = one_of_error_message(err);
+        assert!(
+            msg.contains("must specify exactly one key"),
+            "unexpected error: {msg}"
+        );
+    }
+
+    #[test]
+    fn one_of_coercion_rejects_null_field_value() {
+        let (schema, doc) = one_of_schema_and_doc();
+        let variables = serde_json_bytes::json!({ "filter": { "byName": null } });
+        let err = coerce_variable_values(
+            &schema,
+            doc.operations.anonymous.as_ref().unwrap(),
+            variables.as_object().unwrap(),
+        )
+        .unwrap_err();
+        let msg = one_of_error_message(err);
+        assert!(msg.contains("must be non-null"), "unexpected error: {msg}");
     }
 }

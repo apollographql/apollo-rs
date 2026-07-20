@@ -1015,6 +1015,11 @@ impl EnumType {
 }
 
 impl InputObjectType {
+    /// Returns true if this is a OneOf Input Object (has the `@oneOf` directive).
+    pub fn is_one_of(&self) -> bool {
+        self.directives.get("oneOf").is_some()
+    }
+
     /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic

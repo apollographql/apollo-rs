@@ -18,6 +18,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.15.3](https://crates.io/crates/apollo-smith/0.15.3) - 2026-03-25
+
+## Features
+
+- **Generate `@oneOf` input objects during structure-aware fuzzing.**
+  `DocumentBuilder::input_object_type_definition` now has a ~1-in-5 chance
+  of applying `@oneOf` to a generated input type.  When it does, every field
+  is forced nullable and stripped of default values, so the generated document
+  always satisfies the spec invariants.  A new `Ty::as_nullable` helper strips
+  the outermost `NonNull` wrapper from an arbitrary type.
+
 # [0.15.2](https://crates.io/crates/apollo-smith/0.15.2) - 2025-11-10
 
 ## Fixes

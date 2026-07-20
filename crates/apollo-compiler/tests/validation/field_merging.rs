@@ -76,8 +76,7 @@ const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
     stringListField: [String]
   }
 
-  # TODO oneOf not supported in apollo-rs
-  input OneOfInput { # @oneOf
+  input OneOfInput @oneOf {
     stringField: String
     intField: Int
   }

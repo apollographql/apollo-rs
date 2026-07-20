@@ -141,9 +141,9 @@ fn handles_built_in_type_redefinition() {
         .errors;
     let expected = expect![[r#"
         Error: the type `__Directive` is defined multiple times in the schema
-            ╭─[ built_in.graphql:87:6 ]
+            ╭─[ built_in.graphql:89:6 ]
             │
-         87 │ type __Directive {
+         89 │ type __Directive {
             │      ─────┬─────  
             │           ╰─────── previous definition of `__Directive` here
             │
@@ -186,9 +186,9 @@ fn handles_built_in_type_redefinition() {
             │ Help: remove or rename one of the definitions, or use `extend`
         ────╯
         Error: the type `__TypeKind` is defined multiple times in the schema
-            ╭─[ built_in.graphql:38:6 ]
+            ╭─[ built_in.graphql:40:6 ]
             │
-         38 │ enum __TypeKind {
+         40 │ enum __TypeKind {
             │      ─────┬────  
             │           ╰────── previous definition of `__TypeKind` here
             │
@@ -201,9 +201,9 @@ fn handles_built_in_type_redefinition() {
             │ Help: remove or rename one of the definitions, or use `extend`
         ────╯
         Error: the type `__Field` is defined multiple times in the schema
-            ╭─[ built_in.graphql:58:6 ]
+            ╭─[ built_in.graphql:60:6 ]
             │
-         58 │ type __Field {
+         60 │ type __Field {
             │      ───┬───  
             │         ╰───── previous definition of `__Field` here
             │
@@ -216,9 +216,9 @@ fn handles_built_in_type_redefinition() {
             │ Help: remove or rename one of the definitions, or use `extend`
         ────╯
         Error: the type `__InputValue` is defined multiple times in the schema
-            ╭─[ built_in.graphql:68:6 ]
+            ╭─[ built_in.graphql:70:6 ]
             │
-         68 │ type __InputValue {
+         70 │ type __InputValue {
             │      ──────┬─────  
             │            ╰─────── previous definition of `__InputValue` here
             │
@@ -231,9 +231,9 @@ fn handles_built_in_type_redefinition() {
             │ Help: remove or rename one of the definitions, or use `extend`
         ────╯
         Error: the type `__EnumValue` is defined multiple times in the schema
-            ╭─[ built_in.graphql:79:6 ]
+            ╭─[ built_in.graphql:81:6 ]
             │
-         79 │ type __EnumValue {
+         81 │ type __EnumValue {
             │      ─────┬─────  
             │           ╰─────── previous definition of `__EnumValue` here
             │
