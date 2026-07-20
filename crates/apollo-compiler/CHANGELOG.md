@@ -17,6 +17,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.33.0](https://crates.io/crates/apollo-compiler/1.33.0) - 2026-07-21
+
+## Features
+
+- Allow parsing `FieldSet` from spans inside an existing parsed schema document - [tninesling], [pull/1065]
+
+  Adds a new API `FieldSet::parse_and_validate_at_span()` as an alternative to
+  `FieldSet::parse_and_validate`.  This is useful for parsing directive arguments
+  as selections, where the initial parsing of the schema handles the arguments
+  as strings. Supplying the span allows the diagnostic generator to give context
+  about parser errors with references to the original document.
+
+## Fixes
+
+- Preserve source location for adopted orphan type extensions - [dariuszkuc], [pull/1041]
+
+  When using `SchemaBuilder::adopt_orphan_extensions`, the source location of
+  an orphaned extension was dropped. This ensures the location is preserved
+  and can be used later for diagnostics.
+
+
+[dariuszkuc]: https://github.com/dariuszkuc
+[tninesling]: https://github.com/tninesling
+[pull/1041]: https://github.com/apollographql/apollo-rs/pull/1041
+[pull/1065]: https://github.com/apollographql/apollo-rs/pull/1065
+
 # [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
 
 ## Features

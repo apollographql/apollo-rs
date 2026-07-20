@@ -41,7 +41,7 @@ Or add this to your `Cargo.toml` for a manual installation:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-compiler = "1.32.0"
+apollo-compiler = "1.33.0"
 ```
 
 ## Rust versions
@@ -194,5 +194,3 @@ Licensed under either of
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/licenses/MIT>)
 
 at your option.
-
-[`salsa`]: https://docs.rs/salsa/latest/salsa/
