@@ -134,7 +134,6 @@ Important: 6 breaking changes below, indicated by **BREAKING**
 # [0.15.2](https://crates.io/crates/apollo-smith/0.15.2) - 2025-11-10
 
 ## Fixes
-
 - **Return arbitrary::Error::IncorrectFormat for unsupported floats- [tninesling], [pull/1005]**
   When generating floats for GraphQL documents, we were naively unwrapping the
   conversion from `f64` to `serde_json::Number`. This would panic when
@@ -144,10 +143,10 @@ Important: 6 breaking changes below, indicated by **BREAKING**
   So, we return `arbitrary::Error::IncorrectFormat` to tell fuzzers to use a
   different seed in the future.
 
+[tninesling]: https://github.com/tninesling
 [pull/1005]: https://github.com/apollographql/apollo-rs/pull/1005
 
 ## Maintenance
-
 - **Apply new clippy rules from Rust 1.90 - [goto-bus-stop], [pull/1001]**
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
@@ -155,13 +154,16 @@ Important: 6 breaking changes below, indicated by **BREAKING**
 
 - **bump minimum arbitrary version - [goto-bus-stop], [pull/1007]**
 
+[goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/1007]: https://github.com/apollographql/apollo-rs/pull/1007
 
 # [0.15.1](https://crates.io/crates/apollo-smith/0.15.1) - 2025-08-08
 
 - **Implement builder for arbitrary responses - [tninesling], [pull/981]**
 
+[tninesling]: https://github.com/tninesling
 [pull/981]: https://github.com/apollographql/apollo-rs/pull/981
+
 
 # [0.15.0](https://crates.io/crates/apollo-smith/0.14.0) - 2025-01-16
 
@@ -209,6 +211,7 @@ Important: 6 breaking changes below, indicated by **BREAKING**
 [geal]: https://github.com/geal
 [pull/866]: https://github.com/apollographql/apollo-rs/pull/866
 
+
 # [0.6.0-beta.1](https://crates.io/crates/apollo-smith/0.6.0-beta.1) - 2023-11-30
 
 ## BREAKING
@@ -229,7 +232,6 @@ Important: 6 breaking changes below, indicated by **BREAKING**
 # [0.5.0](https://crates.io/crates/apollo-smith/0.5.0) - 2023-10-19
 
 ## BREAKING
-
 - **apollo-parser@0.7.0 - [SimonSapin], [pull/694]**
 
   This updates the version of `apollo-parser` required by the `TryFrom`
@@ -240,12 +242,12 @@ Important: 6 breaking changes below, indicated by **BREAKING**
   `apollo-compiler@1.0.0` can be directly serialised to sdl without requiring
   apollo-encoder. the `tryfrom` implementation is therefore no longer necessary.
 
+[SimonSapin]: https://github.com/SimonSapin
 [pull/694]: https://github.com/apollographql/apollo-rs/pull/694
 
 # [0.4.0](https://crates.io/crates/apollo-smith/0.4.0) - 2023-08-21
 
 ## BREAKING
-
 - **apollo-parser@0.6.0 - [goto-bus-stop], [pull/621]**
 
   This updates the version of `apollo-parser` required by the `TryFrom`
@@ -256,21 +258,19 @@ Important: 6 breaking changes below, indicated by **BREAKING**
   This updates the version of `apollo-encoder` required by the `From`
   implementations in this crate.
 
+[goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/621]: https://github.com/apollographql/apollo-rs/pull/621
 [pull/623]: https://github.com/apollographql/apollo-rs/pull/623
 
 # [0.3.2](https://crates.io/crates/apollo-smith/0.3.2) - 2023-01-18
-
 ## Features
-
 - Derive `Clone` on `apollo-smith` types, [SimonSapin] in [429]
 - Add `DocumentBuilder::input_exhausted`, [SimonSapin] in [430]
-
 ## Fixes
-
 - TryFrom for enums to use std::Result, continuation of [390], [bnjjj] in [428]
 - Break infinite loop in input string generation, [SimonSapin] in [427]
 
+[SimonSapin]: https://github.com/SimonSapin
 [bnjjj]: https://github.com/bnjjj
 [427]: https://github.com/apollographql/apollo-rs/pull/427
 [428]: https://github.com/apollographql/apollo-rs/pull/428
@@ -278,13 +278,11 @@ Important: 6 breaking changes below, indicated by **BREAKING**
 [430]: https://github.com/apollographql/apollo-rs/pull/430
 
 # [0.3.1](https://crates.io/crates/apollo-smith/0.3.1) - 2022-11-29
-
 This is a re-publish of 0.3.0 with fixed dependency versions.
 
 # [0.3.0](https://crates.io/crates/apollo-smith/0.3.0) - 2022-11-29 (YANKED)
 
 ## BREAKING
-
 - **make conversions from apollo-parser types fallible - [goto-bus-stop], [pull/371]**
 
   The `parser-impl` feature flag contains conversion code from apollo-parser AST node types
@@ -294,13 +292,14 @@ This is a re-publish of 0.3.0 with fixed dependency versions.
   You now have to use the `try_from()` and `try_into()` methods instead of `from()` and
   `into()`.
 
+  [goto-bus-stop]: https://github.com/goto-bus-stop
   [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
 
 # [0.2.0](https://crates.io/crates/apollo-smith/0.2.0) - 2022-11-08
 
 ## BREAKING
 
-- **update <apollo-parser@0.3.x> - [lrlna], [pull/340], [pull/348]**
+- **update apollo-parser@0.3.x - [lrlna], [pull/340], [pull/348]**
 
   This change was first released in the apollo-smith@0.1.4 patch release.
   It should have been a breaking change, as the update to the new version
@@ -316,48 +315,49 @@ This is a re-publish of 0.3.0 with fixed dependency versions.
 # [0.1.5](https://crates.io/crates/apollo-smith/0.1.5) - 2022-11-04 (YANKED)
 
 ## Maintenance
-
 - **update apollo-parser@0.3.1 - [lrlna], [pull/348]**
 
+  [lrlna]: https://github.com/lrlna
+  [pull/348]: https://github.com/apollographql/apollo-rs/pull/348
 
 - **update apollo-encoder@0.3.4 - [lrlna], [pull/349]**
 
+  [lrlna]: https://github.com/lrlna
   [pull/349]: https://github.com/apollographql/apollo-rs/pull/349
 
 # [0.1.4](https://crates.io/crates/apollo-smith/0.1.4) - 2022-11-04 (YANKED)
 
 ## Maintenance
-
 - **update apollo-parser@0.3.0 - [lrlna], [pull/340]**
 
+  [lrlna]: https://github.com/lrlna
+  [pull/340]: https://github.com/apollographql/apollo-rs/pull/340
 
 # [0.1.3](https://crates.io/crates/apollo-smith/0.1.3) - 2022-05-12
 
 ## Fixes
-
 - **add interface definition to internal stack - [bnjjj], [pull/213]**
 
   Added support of interface definition in the stack to fill an operation with
   correct fields.
 
+  [bnjjj]: https://github.com/bnjjj
   [pull/213]: https://github.com/apollographql/apollo-rs/pull/213
 
 # [0.1.2](https://crates.io/crates/apollo-smith/0.1.2) - 2022-04-28
 
 ## Maintenance
-
 - **Update apollo-encoder to 0.3.0 - [lrlna], [pull/207] [pull/208]**
   `apollo-encoder`'s 0.3.0 changes `desciption` and `default-value` setters to
   accept String as a parameter. This changes the internals of apollo-smith
   accordingly.
 
+  [lrlna]: https://github.com/lrlna
   [pull/207]: https://github.com/apollographql/apollo-rs/pull/207
   [pull/208]: https://github.com/apollographql/apollo-rs/pull/208
 
 # [0.1.1](https://crates.io/crates/apollo-smith/0.1.1) - 2022-04-01
-
 ## Features
-
 - **Add `parser-impl` feature flag - [bnjjj], [pull/197]**
   `parser-impl` feature in `apollo-smith` is used to convert
   `apollo-parser` types to `apollo-smith` types. This is useful when you require
@@ -401,19 +401,22 @@ This is a re-publish of 0.3.0 with fixed dependency versions.
   }
   ```
 
+  [bnjjj]: https://github.com/bnjjj
   [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
 
 - **Introduces semantic validations to the test-case generation - [bnjjj], [pull/197]**
 
   Semantic validations currently include:
-  - Directives used in the document must already be defined
-  - Directives must be unique in a given Directive Location
-  - Default values must be of correct type
-  - Input values must be of correct type
-  - All type extensions are applied to an existing type
-  - Field arguments in fragments and operation definitions must be defined on
+    - Directives used in the document must already be defined
+    - Directives must be unique in a given Directive Location
+    - Default values must be of correct type
+    - Input values must be of correct type
+    - All type extensions are applied to an existing type
+    - Field arguments in fragments and operation definitions must be defined on
       original type and must be of correct type
 
+  [bnjjj]: https://github.com/bnjjj
+  [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
 
 # [0.1.0](https://crates.io/crates/apollo-smith/0.1.0) - 2021-02-18
 
