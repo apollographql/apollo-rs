@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- Allow parsing `FieldSet` from spans inside an existing parsed schema document - [tninesling], [pull/1065]
+- **Allow parsing `FieldSet` from spans inside an existing parsed schema document - [tninesling], [pull/1065]**
 
   Adds a new API `FieldSet::parse_and_validate_at_span()` as an alternative to
   `FieldSet::parse_and_validate`.  This is useful for parsing directive arguments
@@ -31,7 +31,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- Preserve source location for adopted orphan type extensions - [dariuszkuc], [pull/1041]
+- **Preserve source location for adopted orphan type extensions - [dariuszkuc], [pull/1041]**
 
   When using `SchemaBuilder::adopt_orphan_extensions`, the source location of
   an orphaned extension was dropped. This ensures the location is preserved
