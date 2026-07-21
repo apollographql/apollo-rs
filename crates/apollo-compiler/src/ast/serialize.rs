@@ -857,7 +857,7 @@ fn serialize_string_value(state: &mut State, is_description: bool, mut str: &str
 }
 
 fn serialize_block_string(state: &mut State, contains_newline: bool, str: &str) -> fmt::Result {
-    use crate::parser::TRIPLE_QUOTE;
+    const TRIPLE_QUOTE: &str = "\"\"\"";
     const ESCAPED_TRIPLE_QUOTE: &str = "\\\"\"\"";
     const _: () = assert!(TRIPLE_QUOTE.len() == 3);
     const _: () = assert!(ESCAPED_TRIPLE_QUOTE.len() == 4);
