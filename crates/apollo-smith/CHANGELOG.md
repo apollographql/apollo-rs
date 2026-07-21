@@ -24,13 +24,26 @@ Important: 6 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
 
+- **Make response generation configurable - [SharkBaitDLS], [tninesling], [pull/1033]**
+
+  `ResponseBuilder` now supports `with_min_list_size`, `with_max_list_size`, and
+  `with_null_ratio` to control the shape of generated responses, plus `with_generator`
+  to register a custom `Generator` for any scalar, object, interface, or union
+  type by name. It can also be driven by either `arbitrary::Unstructured` or a
+  standard `rand::Rng` (via the new `RandProvider` wrapper), so the same builder
+  works for both fuzz testing and general-purpose mock data. The primary breaking
+  change is that `ResponseBuilder` is now generic over its randomness source,
+  and its error type changed to `ResponseError`.
+
 - **Improve byte efficiency for type and field name generation - [tninesling], [pull/1040]**
 
-- **Backport configurable response generation - [SharkBaitDLS], [tninesling], [pull/1033]**
-
-  This change backports behavior from the subgraph-mock that allows for configurable response
-  generation. Response generation is now generic over the source of randomness so that it can
-  be used with rand or arbitrary, which results in a breaking change to its error type.
+  This change makes document generation more efficient by using `Unstructured::choose`
+  when building type names from characters, instead of generating a random
+  `usize` and indexing into the character set. This mitigates cases where the
+  generator would consume all bytes in the sequence before finishing the
+  document, resulting in only one instance of each type. There is no breaking
+  change to the API, but it does change the name selections chosen for types and
+  therefore changes the generated documents.
 
 - **Pass the correct directive location to input_values_def - [tninesling], [pull/1053]**
 
