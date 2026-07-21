@@ -18,6 +18,132 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.16.0](https://crates.io/crates/apollo-smith/0.16.0) - 2026-07-21
+
+Important: 6 breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Make response generation configurable - [SharkBaitDLS], [tninesling], [pull/1033]**
+
+  `ResponseBuilder` now supports `with_min_list_size`, `with_max_list_size`, and
+  `with_null_ratio` to control the shape of generated responses, plus `with_generator`
+  to register a custom `Generator` for any scalar, object, interface, or union
+  type by name. It can also be driven by either `arbitrary::Unstructured` or a
+  standard `rand::Rng` (via the new `RandProvider` wrapper), so the same builder
+  works for both fuzz testing and general-purpose mock data. The primary breaking
+  change is that `ResponseBuilder` is now generic over its randomness source,
+  and its error type changed to `ResponseError`.
+
+- **Improve byte efficiency for type and field name generation - [tninesling], [pull/1040]**
+
+  This change makes document generation more efficient by using `Unstructured::choose`
+  when building type names from characters, instead of generating a random
+  `usize` and indexing into the character set. This mitigates cases where the
+  generator would consume all bytes in the sequence before finishing the
+  document, resulting in only one instance of each type. There is no breaking
+  change to the API, but it does change the name selections chosen for types and
+  therefore changes the generated documents.
+
+- **Pass the correct directive location to input_values_def - [tninesling], [pull/1053]**
+
+  This change adds a new directive location parameter to `DocumentBuilder::input_values_def`.
+  This specifying whether it is generating an input value definition for an
+  argument or an input object field. This is necessary to ensure that the
+  correct directives are applied to the generated input value definition.
+
+- **Make upper bounds for type counts configurable - [tninesling], [pull/1054]**
+
+  Previously, the document generator would create up to 50 instances of each type kind. Now,
+  you can specify the upper bound for how many of each type are generated.
+
+  ```rust
+  let builder = DocumentBuilder::new().max_scalar_types(75);
+  ```
+
+  The breaking change is that the constructor now infallibly returns a builder
+  instead of a partial document, which allows chaining these type count bounds
+  before document generation. In order to provide a more standardized API, the
+  previous API's `.finish()` method is replaced with the more usual `.build()`.
+
+  **Before**
+
+  ```rust
+  let mut u = Unstructured::new(fuzzer_input);
+  let gql_doc = DocumentBuilder::new(&mut u)?;
+  let doc = gql_doc.finish();
+  ```
+
+  **After**
+
+  ```rust
+  let mut u = Unstructured::new(fuzzer_input);
+  let builder = DocumentBuilder::new(&mut u);
+  let doc = builder.build()?;
+  ```
+
+- **Prevent extensions from duplicating existing values - [tninesling], [pull/1057]**
+
+  Adds a new `exclude` parameter to `DocumentBuilder::enum_values_definition` and
+  `DocumentBuilder::input_values_def`, plus the argument of the same name in
+  `DocumentBuilder::fields_definition` is now an `IndexSet` instead of `&[&Name]`
+  to match the other two.
+
+  When generating the initial definition for any of these, an empty `IndexSet`
+  should be passed. They are used internally when generating extensions to
+  to existing types, ensuring that an extension does not duplicate some
+  already-chosen field or value from the base definition.
+
+- **Prevent non-null self-references in input objects - [tninesling], [pull/1062]**
+
+  The `DocumentBuilder::input_values_def` function now takes a `self_name: Option<&Name>`
+  parameter so inner value definitions do not choose a non-null value of the type
+  being generated, which would otherwise cause an impossible cycle.
+
+## Fixes
+
+- **Ensure type names are unique across all type kinds - [tninesling], [pull/1045], [pull/1058], and [pull/1063]**
+- **Choose input definition types from valid input types - [tninesling], [pull/1046]**
+- **Ensure scalar and union extensions correctly extend original types - [tninesling], [pull/1047]**
+- **Ensure generated documents do not have unused fragment definitions - [tninesling], [pull/1048]**
+- **Allow directive applications when only one directive is defined - [duckki], [pull/1049]**
+- **Generate valid interface inheritance - [tninesling], [pull/1050]**
+- **Produce schemas with valid root operation types - [tninesling], [pull/1051]**
+- **Restrict union members to object types - [tninesling], [pull/1052]**
+- **Disable alias generation to avoid field selection merging conflicts - [tninesling], [pull/1059]**
+- **Fix fragment spread and argument selection merging - [tninesling], [pull/1060]**
+
+## Maintenance
+
+- **update dependency rust to v2 - [pull/1055]**
+- **update dependency gh to v3 - [pull/1056]**
+- **update rust crate anyhow to 1.0.103 - [pull/1064]**
+
+[duckki]: https://github.com/duckki
+[tninesling]: https://github.com/tninesling
+[SharkBaitDLS]: https://github.com/SharkBaitDLS
+[pull/1064]: https://github.com/apollographql/apollo-rs/pull/1064
+[pull/1063]: https://github.com/apollographql/apollo-rs/pull/1063
+[pull/1062]: https://github.com/apollographql/apollo-rs/pull/1062
+[pull/1060]: https://github.com/apollographql/apollo-rs/pull/1060
+[pull/1059]: https://github.com/apollographql/apollo-rs/pull/1059
+[pull/1058]: https://github.com/apollographql/apollo-rs/pull/1058
+[pull/1057]: https://github.com/apollographql/apollo-rs/pull/1057
+[pull/1056]: https://github.com/apollographql/apollo-rs/pull/1056
+[pull/1055]: https://github.com/apollographql/apollo-rs/pull/1055
+[pull/1054]: https://github.com/apollographql/apollo-rs/pull/1054
+[pull/1053]: https://github.com/apollographql/apollo-rs/pull/1053
+[pull/1052]: https://github.com/apollographql/apollo-rs/pull/1052
+[pull/1051]: https://github.com/apollographql/apollo-rs/pull/1051
+[pull/1050]: https://github.com/apollographql/apollo-rs/pull/1050
+[pull/1049]: https://github.com/apollographql/apollo-rs/pull/1049
+[pull/1048]: https://github.com/apollographql/apollo-rs/pull/1048
+[pull/1047]: https://github.com/apollographql/apollo-rs/pull/1047
+[pull/1046]: https://github.com/apollographql/apollo-rs/pull/1046
+[pull/1045]: https://github.com/apollographql/apollo-rs/pull/1045
+[pull/1040]: https://github.com/apollographql/apollo-rs/pull/1040
+[pull/1033]: https://github.com/apollographql/apollo-rs/pull/1033
+
 # [0.15.2](https://crates.io/crates/apollo-smith/0.15.2) - 2025-11-10
 
 ## Fixes
