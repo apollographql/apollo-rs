@@ -1,0 +1,8 @@
+Error: `@defer` in a subscription operation must be disabled with an `if` argument
+   ╭─[ 0128_defer_in_subscription_unconditional.graphql:3:13 ]
+   │
+ 3 │         ... @defer {
+   │             ───┬──  
+   │                ╰──── `@defer` in a subscription must use `if: false` or `if: $variable`
+───╯
+

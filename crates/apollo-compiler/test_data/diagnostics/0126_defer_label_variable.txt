@@ -1,0 +1,8 @@
+Error: `@defer` label argument must be a static String, not a variable
+   ╭─[ 0126_defer_label_variable.graphql:3:27 ]
+   │
+ 3 │         ... @defer(label: $label) {
+   │                           ───┬──  
+   │                              ╰──── variable used as label here
+───╯
+

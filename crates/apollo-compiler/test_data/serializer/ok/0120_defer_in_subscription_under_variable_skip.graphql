@@ -1,0 +1,23 @@
+subscription Sub($cond: Boolean!) {
+  newMessage {
+    ... @skip(if: $cond) {
+      ... @defer {
+        body
+      }
+    }
+  }
+}
+
+directive @defer(if: Boolean! = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+type Query {
+  message: Message
+}
+
+type Subscription {
+  newMessage: Message
+}
+
+type Message {
+  body: String
+}
