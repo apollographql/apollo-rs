@@ -117,6 +117,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "A": 173..203 @20 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "A",
@@ -161,6 +162,7 @@ ExecutableDocument {
     },
     fragments: {
         "A": 148..171 @20 Fragment {
+            description: None,
             name: "A",
             directives: [],
             selection_set: SelectionSet {

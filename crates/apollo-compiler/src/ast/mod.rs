@@ -116,6 +116,7 @@ pub enum Definition {
 /// [_OperationDefinition_](https://spec.graphql.org/draft/#OperationDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct OperationDefinition {
+    pub description: Option<Node<str>>,
     pub operation_type: OperationType,
     pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
@@ -127,6 +128,7 @@ pub struct OperationDefinition {
 /// [_FragmentDefinition_](https://spec.graphql.org/draft/#FragmentDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FragmentDefinition {
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub type_condition: NamedType,
     pub directives: DirectiveList,
@@ -335,6 +337,7 @@ pub enum DirectiveLocation {
 /// in an [`OperationDefinition`].
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct VariableDefinition {
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub ty: Node<Type>,
     pub default_value: Option<Node<Value>>,

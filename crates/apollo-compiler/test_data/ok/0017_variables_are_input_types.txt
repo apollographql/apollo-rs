@@ -225,12 +225,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "takesBoolean": 0..106 @19 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "takesBoolean",
                 ),
                 variables: [
                     19..41 @19 VariableDefinition {
+                        description: None,
                         name: "atOtherHomes",
                         ty: 34..41 @19 Named(
                             "Boolean",
@@ -307,12 +309,14 @@ ExecutableDocument {
                 },
             },
             "takesComplexInput": 108..213 @19 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "takesComplexInput",
                 ),
                 variables: [
                     132..159 @19 VariableDefinition {
+                        description: None,
                         name: "complexInput",
                         ty: 147..159 @19 Named(
                             "ComplexInput",
@@ -389,12 +393,14 @@ ExecutableDocument {
                 },
             },
             "TakesListOfBooleanBang": 215..311 @19 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "TakesListOfBooleanBang",
                 ),
                 variables: [
                     244..265 @19 VariableDefinition {
+                        description: None,
                         name: "booleans",
                         ty: 255..265 @19 List(
                             NonNullNamed(
