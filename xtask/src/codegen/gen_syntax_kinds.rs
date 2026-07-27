@@ -126,5 +126,8 @@ pub(crate) fn generate_kinds(kinds: KindsSrc<'_>) -> Result<String> {
         }
     };
 
-    reformat(&cst.to_string())
+    // `quote!` emits `macro_rules !` (with a space) because `!` is a separate
+    // punct token. Stable rustfmt handles the space, but nightly panics on it.
+    let text = cst.to_string().replace("macro_rules !", "macro_rules!");
+    reformat(&text)
 }
