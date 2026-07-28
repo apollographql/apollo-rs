@@ -1,0 +1,11 @@
+Error: the same type `SharedType` must not be used for multiple root operation types
+   ╭─[ 0127_duplicate_root_operation_types_mutation_subscription.graphql:4:17 ]
+   │
+ 3 │   mutation: SharedType
+   │             ─────┬────  
+   │                  ╰────── `mutation` is defined here
+ 4 │   subscription: SharedType
+   │                 ─────┬────  
+   │                      ╰────── `subscription` uses the same type here
+───╯
+

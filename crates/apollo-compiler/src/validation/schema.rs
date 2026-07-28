@@ -21,20 +21,17 @@ pub(crate) fn validate_schema_definition(diagnostics: &mut DiagnosticList, schem
     );
 }
 
-// All root operations in a schema definition must be unique.
+// The query, mutation, and subscription root types must all be different
+// types if provided.
 //
-// Return a Unique Operation Definition error in case of a duplicate name.
+// Return a Duplicate Root Operation Type error in case of a duplicate name.
 pub(crate) fn validate_root_operation_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
 ) {
-    for op in [
-        &schema.schema_definition.query,
-        &schema.schema_definition.mutation,
-        &schema.schema_definition.subscription,
-    ] {
-        let Some(name) = op else { continue };
+    let mut seen: Vec<(ast::OperationType, &crate::Name)> = Vec::new();
 
+    for (op, name) in schema.schema_definition.iter_root_operations() {
         // Root Operation Named Type must be of Object Type.
         //
         // Return a Object Type error if it's any other type definition.
@@ -56,6 +53,24 @@ pub(crate) fn validate_root_operation_definitions(
                     name: name.name.clone(),
                 },
             );
+        }
+
+        if let Some((original_op, original_name)) = seen
+            .iter()
+            .find(|(_, seen_name)| *seen_name == name.as_ref())
+        {
+            diagnostics.push(
+                name.location(),
+                DiagnosticData::DuplicateRootOperationType {
+                    name: name.name.clone(),
+                    original_operation: *original_op,
+                    original_definition: original_name.location(),
+                    redefined_operation: op,
+                    redefined_definition: name.location(),
+                },
+            );
+        } else {
+            seen.push((op, name));
         }
     }
 }
