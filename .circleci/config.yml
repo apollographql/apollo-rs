@@ -162,6 +162,9 @@ jobs:
           rust_channel: nightly
           platform: << parameters.platform >>
       - run:
+          name: Install cargo-fuzz
+          command: cargo install cargo-fuzz
+      - run:
           name: Regression test fuzzer seed corpus (validate target)
           # The -runs=0 argument tells libfuzzer to stop after the seed corpus
           command: cargo fuzz run validate -- -runs=0
