@@ -1,6 +1,5 @@
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
-use crate::input_value::Constness;
 use crate::input_value::InputValue;
 use crate::name::Name;
 use crate::ty::Ty;
@@ -51,7 +50,7 @@ impl DocumentBuilder<'_> {
             .u
             .arbitrary()
             .unwrap_or(false)
-            .then(|| self.input_value(Constness::Const))
+            .then(|| self.input_value_for_type(&ty))
             .transpose()?;
         let directives = self.directives(DirectiveLocation::VariableDefinition)?;
 
