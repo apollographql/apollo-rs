@@ -1,0 +1,11 @@
+Error: `@defer` label `dup` is not unique within the document
+   ╭─[ 0125_defer_duplicate_label.graphql:4:31 ]
+   │
+ 3 │         ... @defer(label: "dup") {
+   │                           ──┬──  
+   │                             ╰──── label first used here
+ 4 │             ... @defer(label: "dup") {
+   │                               ──┬──  
+   │                                 ╰──── duplicate label used here
+───╯
+
