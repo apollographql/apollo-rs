@@ -1,0 +1,11 @@
+Error: the same type `SharedType` must not be used for multiple root operation types
+   ╭─[ 0129_duplicate_root_operation_types_query_mutation.graphql:3:13 ]
+   │
+ 2 │   query: SharedType
+   │          ─────┬────  
+   │               ╰────── `query` is defined here
+ 3 │   mutation: SharedType
+   │             ─────┬────  
+   │                  ╰────── `mutation` uses the same type here
+───╯
+

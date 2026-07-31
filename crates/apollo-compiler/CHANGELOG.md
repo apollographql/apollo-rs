@@ -17,6 +17,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Features
+
+- **Validate `@defer` directive usage - [duckki], [pull/1069]**
+
+  Adds validation for the `@defer` rules from the GraphQL Defer & Stream draft
+  ([graphql-spec#1110]). apollo-compiler previously had no `@defer` validation,
+  so operations the spec forbids passed silently.
+
+  Three rules are validated, matching graphql-js's `specifiedRules`:
+
+  - Every `@defer(label:)` value must be a static string (not a variable) and
+    unique across the document.
+  - `@defer` is not allowed on root selections of `mutation` or `subscription`
+    operations.
+  - Inside a `subscription`, any `@defer` not statically removed by
+    `@skip`/`@include` must be disable-able via an `if` argument set to `false`
+    or a variable.
+
+  `@defer` is not a built-in directive in apollo-compiler, so a schema using it
+  must declare the directive. `@stream` is out of scope.
+
+[graphql-spec#1110]: https://github.com/graphql/graphql-spec/pull/1110
+[duckki]: https://github.com/duckki
+[pull/1069]: https://github.com/apollographql/apollo-rs/pull/1069
+
 # [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
 
 ## Features

@@ -276,6 +276,24 @@ pub(crate) enum BuildError {
         name: Option<Name>,
     },
 
+    #[error("`@defer` label `{label}` is not unique within the document")]
+    DuplicateDeferLabel {
+        label: String,
+        original_location: Option<SourceSpan>,
+    },
+
+    #[error("`@defer` label argument must be a static String, not a variable")]
+    DeferLabelMustNotBeVariable,
+
+    #[error(
+        "`@defer` is not allowed on root selections of {} operations",
+        operation_type.name()
+    )]
+    DeferOnRootMutationOrSubscriptionField { operation_type: OperationType },
+
+    #[error("`@defer` in a subscription operation must be disabled with an `if` argument")]
+    DeferInSubscriptionMustBeConditional,
+
     #[error("{0}")]
     ConflictingFieldType(Box<ConflictingFieldType>),
     #[error("{0}")]
