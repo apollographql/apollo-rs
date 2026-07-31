@@ -92,14 +92,14 @@ impl FileWatcher {
                 Ok(Err(e)) => {
                     println!(
                         "unknown error while watching {},  {:?}",
-                        &dir.display(),
+                        dir.display(),
                         Some(anyhow!("{}", e)),
                     );
                 }
                 Err(e) => {
                     println!(
                         "unknown error while watching {},  {:?}",
-                        &dir.display(),
+                        dir.display(),
                         Some(anyhow!("{}", e)),
                     );
                 }

@@ -4,8 +4,9 @@
 //! This allows for a lot of control over how you would like your error output
 //! to look before your print them all out.
 //!
-//! [annotate-snippets]: https://docs.rs/annotate-snippets/0.11.0/annotate_snippets/
+//! [annotate-snippets]: https://docs.rs/annotate-snippets/0.12.0/annotate_snippets/
 
+use annotate_snippets::AnnotationKind;
 use annotate_snippets::Level;
 use annotate_snippets::Renderer;
 use annotate_snippets::Snippet;
@@ -30,20 +31,20 @@ fn parse_schema() -> cst::Document {
     // - message (err.message())
     // - index (err.index())
     for err in cst.errors() {
-        let snippet = Level::Error.title(err.message()).snippet(
+        let snippet = Level::ERROR.primary_title(err.message()).element(
             Snippet::source(&src)
                 .line_start(0)
-                .origin(file_name)
+                .path(file_name)
                 .fold(true)
                 .annotation(
-                    Level::Error
+                    AnnotationKind::Primary
                         .span(err.index()..err.index() + err.data().len())
                         .label(err.message()),
                 ),
         );
 
         let renderer = Renderer::styled();
-        println!("{}\n\n", renderer.render(snippet));
+        println!("{}\n\n", renderer.render(&[snippet]));
     }
 
     cst.document()

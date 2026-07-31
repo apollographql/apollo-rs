@@ -1,0 +1,10 @@
+query {
+  dog {
+    name
+    nickname
+    barkVolume
+    owner {
+      name
+    }
+  }
+}

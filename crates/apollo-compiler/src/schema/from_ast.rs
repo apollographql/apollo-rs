@@ -7,6 +7,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
+    ignore_builtin_redefinitions: bool,
     pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
@@ -33,6 +34,7 @@ impl SchemaBuilder {
         BUILT_IN.get_or_init(|| {
             let mut builder = SchemaBuilder {
                 adopt_orphan_extensions: false,
+                ignore_builtin_redefinitions: false,
                 schema: Schema {
                     sources: Default::default(),
                     schema_definition: Node::new(SchemaDefinition {
@@ -73,6 +75,14 @@ impl SchemaBuilder {
     /// accepted as if extending an empty definition instead of being rejected as errors.
     pub fn adopt_orphan_extensions(mut self) -> Self {
         self.adopt_orphan_extensions = true;
+        self
+    }
+
+    /// Configure the builder to allow SDL to contain built-in type re-definitions.
+    /// Re-definitions are going to be effectively ignored and compiler will continue to use
+    /// built-in GraphQL spec definitions.
+    pub fn ignore_builtin_redefinitions(mut self) -> Self {
+        self.ignore_builtin_redefinitions = true;
         self
     }
 
@@ -124,6 +134,10 @@ impl SchemaBuilder {
                         }
                         Entry::Occupied(entry) => {
                             let previous = entry.get();
+                            if self.ignore_builtin_redefinitions && previous.is_built_in() {
+                                continue;
+                            }
+
                             if $is_scalar && previous.is_built_in() {
                                 self.errors.push(
                                     $def.location(),
@@ -254,6 +268,10 @@ impl SchemaBuilder {
         }
     }
 
+    pub fn iter_orphan_extension_types(&self) -> impl Iterator<Item = &Name> {
+        self.orphan_type_extensions.keys()
+    }
+
     /// Returns the schema built from all added documents
     #[allow(clippy::result_large_err)] // Typically not called very often
     pub fn build(self) -> Result<Schema, WithErrors<Schema>> {
@@ -264,12 +282,31 @@ impl SchemaBuilder {
     pub(crate) fn build_inner(self) -> (Schema, DiagnosticList) {
         let SchemaBuilder {
             adopt_orphan_extensions,
+            ignore_builtin_redefinitions: _allow_builtin_redefinitions,
             mut schema,
             schema_definition,
             orphan_type_extensions,
             mut errors,
         } = self;
         schema.sources = errors.sources.clone();
+
+        // process orphan type extensions (https://github.com/apollographql/apollo-rs/pull/678) first,
+        // so they can be reflected on the implicit schema definition below
+        if adopt_orphan_extensions {
+            for (type_name, extensions) in orphan_type_extensions {
+                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
+                let previous = schema.types.insert(type_name, type_def);
+                assert!(previous.is_none());
+            }
+        } else {
+            for extensions in orphan_type_extensions.values() {
+                for ext in extensions {
+                    let name = ext.name().unwrap().clone();
+                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
+                }
+            }
+        }
+
         match schema_definition {
             SchemaDefinitionStatus::Found => {}
             SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
@@ -308,21 +345,6 @@ impl SchemaBuilder {
                 }
             }
         }
-        // https://github.com/apollographql/apollo-rs/pull/678
-        if adopt_orphan_extensions {
-            for (type_name, extensions) in orphan_type_extensions {
-                let type_def = adopt_type_extensions(&mut errors, &type_name, &extensions);
-                let previous = schema.types.insert(type_name, type_def);
-                assert!(previous.is_none());
-            }
-        } else {
-            for extensions in orphan_type_extensions.values() {
-                for ext in extensions {
-                    let name = ext.name().unwrap().clone();
-                    errors.push(name.location(), BuildError::OrphanTypeExtension { name })
-                }
-            }
-        }
         (schema, errors)
     }
 }
@@ -355,7 +377,7 @@ fn adopt_type_extensions(
         ($( $ExtensionVariant: path => $describe: literal $empty_def: expr )+) => {
             match &extensions[0] {
                 $(
-                    $ExtensionVariant(_) => {
+                    $ExtensionVariant(first_ext) => {
                         let mut def = $empty_def;
                         for ext in extensions {
                             if let $ExtensionVariant(ext) = ext {
@@ -373,7 +395,7 @@ fn adopt_type_extensions(
                                 )
                             }
                         }
-                        def.into()
+                        ExtendedType::from(first_ext.same_location(def))
                     }
                 )+
                 _ => unreachable!(),

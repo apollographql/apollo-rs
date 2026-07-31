@@ -17,6 +17,274 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
+
+## Features
+
+- **Introduce `ExecutableDocumentBuilder` for operations with multiple sources - [trevor-scheer], [pull/1017]**
+
+  Adds an `ExecutableDocumentBuilder` that follows the same pattern as
+  `SchemaBuilder`, letting callers assemble an `ExecutableDocument` from
+  multiple sources before validation. API additions:
+
+  - `ExecutableDocumentBuilder` with `new()`, `add_ast_document()`, `parse()`,
+    and `build()` methods.
+  - `ExecutableDocument::builder()` convenience constructor.
+  - `Parser::parse_into_executable_builder()` for multi-file parsing.
+
+  ```rust
+  use apollo_compiler::{Schema, ExecutableDocument};
+  use apollo_compiler::validation::DiagnosticList;
+
+  let schema_src = "type Query { user: User } type User { id: ID }";
+  let schema = Schema::parse_and_validate(schema_src, "schema.graphql").unwrap();
+
+  let mut errors = DiagnosticList::new(Default::default());
+  let doc = ExecutableDocument::builder(Some(&schema), &mut errors)
+      .parse("query GetUser { user { id } }", "query1.graphql")
+      .parse("query GetMore { user { id } }", "query2.graphql")
+      .build();
+
+  assert!(errors.is_empty());
+  assert_eq!(doc.operations.named.len(), 2);
+  ```
+
+## Fixes
+
+- **Validate interface field type covariance per GraphQL spec - [dariuszkuc], [pull/1036]**
+
+  Implements the `IsValidImplementationFieldType` rule from the GraphQL spec.
+  Previously, apollo-compiler only checked that implementing types contained
+  all fields required by their interfaces but did not verify that implementing
+  field types were valid subtypes. Schemas such as the following now correctly
+  fail validation:
+
+  ```graphql
+  interface Foo { x: String! }
+  type Bar implements Foo { x: String }
+  ```
+
+  The new check covers non-null covariance, list item covariance, named-type
+  subtyping (object/interface hierarchy), argument-name parity, argument-type
+  invariance, and rejects extra non-null arguments on the implementing field.
+
+  Note: schemas that previously passed validation but violated this rule will
+  now report errors.
+
+## Maintenance
+
+- **Fix collapsible-match clippy warnings - [lrlna], [pull/1035]**
+
+[dariuszkuc]: https://github.com/dariuszkuc
+[lrlna]: https://github.com/lrlna
+[trevor-scheer]: https://github.com/trevor-scheer
+[pull/1017]: https://github.com/apollographql/apollo-rs/pull/1017
+[pull/1035]: https://github.com/apollographql/apollo-rs/pull/1035
+[pull/1036]: https://github.com/apollographql/apollo-rs/pull/1036
+
+
+# [1.31.1](https://crates.io/crates/apollo-compiler/1.31.1) - 2026-02-20
+
+## Fixes
+- **Correct error report formatting with multi-byte UTF-8 characters - [DaleSeo], [pull/1023].**
+  Picks up the apollo-parser fix for incorrect byte-offset spans, which could
+  cause panics or garbled error labels on schemas/queries containing CJK text or
+  emoji. Fixes [#450].
+
+## Maintenance
+- **Update `ariadne` dependency to 0.6.0 - [pull/1013].**
+
+[DaleSeo]: https://github.com/DaleSeo
+[pull/1023]: https://github.com/apollographql/apollo-rs/pull/1023
+[pull/1013]: https://github.com/apollographql/apollo-rs/pull/1013
+[#450]: https://github.com/apollographql/apollo-rs/issues/450
+
+
+# [1.31.0](https://crates.io/crates/apollo-compiler/1.31.0) - 2025-11-10
+
+## Features
+
+- **Allow coercing Int variables to Float - [tninesling], [pull/1011]**
+
+  The GraphQL spec allows coercing Int values to Float in input positions (see
+  [input coercion]). There are a couple things to note about this.
+
+  - Strings are not allowed to be coerced in this position, even if they are
+    numeric.
+  - Ints can only be converted to Float when they are "representable by finite
+    IEEE 754" floating point numbers.
+
+  Since an IEEE 754 floating point double (f64) has 53 bits of precision, it can
+  safely represent up to the value 2^53 - 1 as a finite value. Beyond that, the
+  round trip from integer to float and back will lose information. This is
+  represented with a new `MAX_SAFE_INT` constant which is often included in
+  other languages like JavaScript's `Number.MAX_SAFE_INT`. When, we encounter an
+  Int variable in a Float position, we ensure that its value is finitely
+  representable.
+
+  There is some nuance in that the spec does not say all floats have to be
+  within this range. So, this implementation allows explicitly passed floats
+  which are greater than that bound, only applying the integer conversion limit
+  when coercing a value.
+
+## Fixes
+
+- **Validate missing fragments when parsing standalone executable documents - [Abdel-Monaam-Aouini], [pull/1003]**
+
+  When validating standalone executable documents, the use of undefined fragment
+  definitions will return a validation error. Previously, executable documents
+  like the following would pass validation without errors, despite
+  `CompanyFragment` being undefined.
+
+  ```graphql
+  query {
+    company {
+      user {
+        ...UserFragment
+      }
+      ...CompanyFragment
+    }
+  }
+  fragment UserFragment on User {
+    id
+    name
+  }
+  ```
+
+## Maintenance
+
+- **Add benchmark for parsing and validation when a type has many extensions  [tninesling], [pull/1011]**
+
+  Introduces a new benchmark for query parsing and validation when a type has
+  many extensions. We made an update in `apollo-compiler@1.28.0` to expose
+  `.iter_origins()` for AST nodes, and we reimplemented `.extensions()` in
+  terms of `.iter_origins()`. We were concerned that this may have caused a
+  performance regression in parsing, but running this new benchmark against
+  `main` with `1.28.0` as the base indicates no change in performance.
+
+[Abdel-Monaam-Aouini]: https://github.com/Abdel-Monaam-Aouini
+[tninesling]: https://github.com/tninesling
+[input coercion]: https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
+[pull/1000]: https://github.com/apollographql/apollo-rs/pull/1000
+[pull/1003]: https://github.com/apollographql/apollo-rs/pull/1003
+[pull/1011]: https://github.com/apollographql/apollo-rs/pull/1011
+
+# [1.30.0](https://crates.io/crates/apollo-compiler/1.30.0) - 2025-08-27
+
+## Features
+
+- **Add `ignore_builtin_redefinitions` method to `SchemaBuilder`- [dariuszkuc], [pull/990] and [pull/994]**
+
+  This allows input SDL to contain built-in types.
+
+  The following SDL will result in a validation error, for example:
+  ```rust
+    let schema = r#"
+      type __Directive {
+        name: String!
+        description: String!
+        isRepeatable: String!
+        args: __InputValue
+        locations: String!
+      }
+      type Query {
+        foo: String
+      }
+      "#;
+
+    let valid = Schema::parse_and_validate(schema, "schema.graphql")?
+  ```
+  Error:
+  ```shell
+    Error: the type `__Directive` is defined multiple times in the schema
+      ╭─[ built_in.graphql:87:6 ]
+      │
+   87 │ type __Directive {
+      │      ─────┬─────  
+      │           ╰─────── previous definition of `__Directive` here
+      │
+      ├─[ schema.graphql:2:6 ]
+      │
+    2 │ type __Directive {
+      │      ─────┬─────  
+      │           ╰─────── `__Directive` redefined here
+      │ 
+      │ Help: remove or rename one of the definitions, or use `extend`
+  ────╯
+  ```
+
+  However, when using the `ignore_builtin_redefinitions` method, this successfully passes validation given the same schema:
+  ```rust
+    let builder = SchemaBuilder::new().ignore_builtin_redefinitions();
+    let _ = builder
+        .parse(schema, "schema.graphql")
+        .build()
+        .expect("schema parsed successfully");
+  ```
+
+
+## Fixes
+
+- **Fix handling of orphan root type extensions - [dariuszkuc], [pull/993](#993)**
+  
+  `SchemaBuilder`'s `adopt_orphan_extensions` method allows users to define type
+  extensions without an existing type definition. But before this fix, orphan
+  `RootTypeOperation` extensions would result in an invalid schema despite
+  `adopt_orphan_extensions` being enabled. Using this method now generates a
+  valid schema for all lone extensions.   
+
+- **Fix directive definition validation with nested types arguments - [dariuszkuc], [pull/987](#987)**
+  
+  Directive definition with nested argument types resulted in a stack overflow, for example
+  ```graphql
+    directive @custom(input: NestedInput) on OBJECT | INTERFACE
+
+    input NestedInput {
+      name: String
+      nested: NestedInput
+    }
+    
+    type Query @custom(input: {name: "hello", nested: {name: "hello"}}) {
+      foo: String
+    }
+    
+    query myQuery {
+      foo
+    }
+  ```
+  This fix ensures the above example is possible and does not result in a validation error.
+
+- **Fix `iter_origins()` to be a pub method - [duckki], [pull/989](#989)**
+  
+  Previously added `::iter_origins()` methods on Schema and Type Definitions was not made `pub`.
+
+[dariuszkuc]: https://github.com/dariuszkuc
+[duckki]: https://github.com/duckki
+[pull/994]: https://github.com/apollographql/apollo-rs/pull/994
+[pull/993]: https://github.com/apollographql/apollo-rs/pull/993
+[pull/990]: https://github.com/apollographql/apollo-rs/pull/990
+[pull/989]: https://github.com/apollographql/apollo-rs/pull/989
+[pull/987]: https://github.com/apollographql/apollo-rs/pull/987
+
+
+# [1.29.0](https://crates.io/crates/apollo-compiler/1.29.0) - 2025-08-08
+
+## Features
+
+- **Add `iter_origin()` methods to schema elements - [duckki], [pull/978]**
+- **Add public API for resolver-based execution - [SimonSapin], [pull/983]**
+
+## Fixes
+
+- **Fix serialization in non-standard orphan extensions mode - [duckki], [pull/984]**
+
+[duckki]: https://github.com/duckki
+[SimonSapin]: https://github.com/SimonSapin
+[pull/978]: https://github.com/apollographql/apollo-rs/pull/978
+[pull/983]: https://github.com/apollographql/apollo-rs/pull/983
+[pull/984]: https://github.com/apollographql/apollo-rs/pull/984
+
+
 # [1.28.0](https://crates.io/crates/apollo-compiler/1.28.0) - 2025-04-24
 
 ## Features
@@ -1152,12 +1420,6 @@ that provides structural sharing and copy-on-write semantics.
 
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/642]: https://github.com/apollographql/apollo-rs/pull/642
-
-# [0.12.0] (unreleased) - 2023-mm-dd
-
-## BREAKING
-
-- (TODO: write this)
 
 # [0.11.1](https://crates.io/crates/apollo-compiler/0.11.1) - 2023-08-24
 

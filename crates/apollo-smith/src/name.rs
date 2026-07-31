@@ -2,8 +2,10 @@ use crate::DocumentBuilder;
 use arbitrary::Result as ArbitraryResult;
 use std::fmt::Write as _;
 
-const CHARSET_LETTERS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-const CHARSET_NUMBERS: &[u8] = b"0123456789";
+// First char in a GraphQL name can't be a digit and we don't want it to be
+// `_` either. Body chars can be letters, `_`, or digits.
+const CHARSET_NAME_HEAD: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const CHARSET_NAME_BODY: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
 const RESERVED_KEYWORDS: &[&str] = &[
     "on",
     "Int",
@@ -78,16 +80,17 @@ impl DocumentBuilder<'_> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
-    /// Create an arbitrary type `Name`
+    /// Create an arbitrary type `Name` that does not yet exist in the document.
     pub fn type_name(&mut self) -> ArbitraryResult<Name> {
-        let mut new_name = self.limited_string(30)?;
-        if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let _ = write!(
-                new_name,
-                "{}",
-                self.object_type_defs.len() + self.enum_type_defs.len() + self.directive_defs.len()
-            );
+        let base = self.limited_string(30)?;
+        let mut suffix = 0usize;
+        let mut new_name = base.clone();
+        while self.used_type_names.contains(new_name.as_str()) {
+            new_name.clear();
+            let _ = write!(new_name, "{base}{suffix}");
+            suffix += 1;
         }
+        self.used_type_names.insert(new_name.clone());
         Ok(Name::new(new_name))
     }
 
@@ -107,22 +110,13 @@ impl DocumentBuilder<'_> {
             let gen_str = String::from_utf8(
                 (0..size)
                     .map(|curr_idx| {
-                        let idx = self.u.arbitrary::<usize>()?;
-
-                        // Cannot start with a number
-                        let ch = if curr_idx == 0 {
-                            // len - 1 to not have a _ at the begining
-                            CHARSET_LETTERS[idx % (CHARSET_LETTERS.len() - 1)]
+                        // GraphQL names can't start with a digit or `_`.
+                        let charset = if curr_idx == 0 {
+                            CHARSET_NAME_HEAD
                         } else {
-                            let idx = idx % (CHARSET_LETTERS.len() + CHARSET_NUMBERS.len());
-                            if idx < CHARSET_LETTERS.len() {
-                                CHARSET_LETTERS[idx]
-                            } else {
-                                CHARSET_NUMBERS[idx - CHARSET_LETTERS.len()]
-                            }
+                            CHARSET_NAME_BODY
                         };
-
-                        Ok(ch)
+                        Ok(*self.u.choose(charset)?)
                     })
                     .collect::<ArbitraryResult<Vec<u8>>>()?,
             )
@@ -132,20 +126,5 @@ impl DocumentBuilder<'_> {
                 break Ok(new_gen.to_string());
             }
         }
-    }
-
-    fn list_existing_type_names(&self) -> impl Iterator<Item = &Name> {
-        self.object_type_defs
-            .iter()
-            .map(|o| &o.name)
-            .chain(self.interface_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.enum_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.directive_defs.iter().map(|itf| &itf.name))
-            .chain(self.union_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.input_object_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.scalar_type_defs.iter().map(|itf| &itf.name))
-            .chain(self.directive_defs.iter().map(|itf| &itf.name))
-            .chain(self.fragment_defs.iter().map(|itf| &itf.name))
-            .chain(self.operation_defs.iter().filter_map(|op| op.name.as_ref()))
     }
 }

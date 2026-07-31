@@ -1,56 +1,66 @@
 Error: expected value of type Int!, found a list
     ╭─[ 0110_list_usage_in_non_list_type.graphql:20:10 ]
     │
-  5 │   int: Int!
-    │        ──┬─  
-    │          ╰─── expected type declared here as Int!
-    │ 
  20 │     int: [1, 2, 3]
     │          ────┬────  
     │              ╰────── provided value is a list
+    │
+    ├─[ 0110_list_usage_in_non_list_type.graphql:20:10 ]
+    │
+  5 │   int: Int!
+    │        ──┬─  
+    │          ╰─── expected type declared here as Int!
 ────╯
 Error: expected value of type String!, found a list
     ╭─[ 0110_list_usage_in_non_list_type.graphql:21:10 ]
     │
-  6 │   str: String!
-    │        ───┬───  
-    │           ╰───── expected type declared here as String!
-    │ 
  21 │     str: ["1"]
     │          ──┬──  
     │            ╰──── provided value is a list
+    │
+    ├─[ 0110_list_usage_in_non_list_type.graphql:21:10 ]
+    │
+  6 │   str: String!
+    │        ───┬───  
+    │           ╰───── expected type declared here as String!
 ────╯
 Error: expected value of type Boolean!, found a list
     ╭─[ 0110_list_usage_in_non_list_type.graphql:22:11 ]
     │
-  7 │   bool: Boolean!
-    │         ────┬───  
-    │             ╰───── expected type declared here as Boolean!
-    │ 
  22 │     bool: [true, false]
     │           ──────┬──────  
     │                 ╰──────── provided value is a list
+    │
+    ├─[ 0110_list_usage_in_non_list_type.graphql:22:11 ]
+    │
+  7 │   bool: Boolean!
+    │         ────┬───  
+    │             ╰───── expected type declared here as Boolean!
 ────╯
 Error: expected value of type Int, found a list
     ╭─[ 0110_list_usage_in_non_list_type.graphql:23:10 ]
     │
-  8 │   opt: Int
-    │        ─┬─  
-    │         ╰─── expected type declared here as Int
-    │ 
  23 │     opt: [1, 2, 3]
     │          ────┬────  
     │              ╰────── provided value is a list
+    │
+    ├─[ 0110_list_usage_in_non_list_type.graphql:23:10 ]
+    │
+  8 │   opt: Int
+    │        ─┬─  
+    │         ╰─── expected type declared here as Int
 ────╯
 Error: expected value of type ID!, found a list
     ╭─[ 0110_list_usage_in_non_list_type.graphql:24:9 ]
     │
-  9 │   id: ID!
-    │       ─┬─  
-    │        ╰─── expected type declared here as ID!
-    │ 
  24 │     id: [1, "2", 3]
     │         ─────┬─────  
     │              ╰─────── provided value is a list
+    │
+    ├─[ 0110_list_usage_in_non_list_type.graphql:24:9 ]
+    │
+  9 │   id: ID!
+    │       ─┬─  
+    │        ╰─── expected type declared here as ID!
 ────╯
 

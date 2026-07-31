@@ -45,17 +45,21 @@ Error: type `ImplementsBaseButNotExtension` does not satisfy interface `Extended
     ╭─[ 0094_object_type_extensions.graphql:38:1 ]
     │
  38 │ ╭─▶ type ImplementsBaseButNotExtension implements ExtendedInterface {
-    │ │                                                 ────────┬────────  
-    │ │                                                         ╰────────── implementation of interface ExtendedInterface declared here
     ┆ ┆   
  40 │ ├─▶ }
     │ │       
     │ ╰─────── add `fail` field to this type
+    │
+    ├─[ 0094_object_type_extensions.graphql:38:1 ]
+    │
+ 38 │ type ImplementsBaseButNotExtension implements ExtendedInterface {
+    │                                               ────────┬────────  
+    │                                                       ╰────────── implementation of interface ExtendedInterface declared here
     │ 
- 42 │       fail: Boolean
-    │       ──────┬──────  
-    │             ╰──────── `ExtendedInterface.fail` originally defined here
-    │     
-    │     Help: An object or interface must declare all fields required by the interfaces it implements
+ 42 │   fail: Boolean
+    │   ──────┬──────  
+    │         ╰──────── `ExtendedInterface.fail` originally defined here
+    │ 
+    │ Help: An object or interface must declare all fields required by the interfaces it implements
 ────╯
 

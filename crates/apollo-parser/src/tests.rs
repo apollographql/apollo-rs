@@ -1,6 +1,7 @@
 // The testing framework in this file is pretty much entirely copied from rust-analyzer's parser and lexer tests:
 // https://github.com/rust-analyzer/rust-analyzer/blob/master/crates/syntax/src/tests.rs
 
+use crate::cst::CstNode;
 use crate::Error;
 use crate::Lexer;
 use crate::Parser;
@@ -41,6 +42,7 @@ fn parser_tests() {
         let parser = Parser::new(text);
         let cst = parser.parse();
         assert_errors_are_absent(&cst.errors().cloned().collect::<Vec<_>>(), path);
+        assert_cst_spans_are_valid_utf8_boundaries(text, cst.document().syntax());
         format!("{cst:?}")
     });
 
@@ -48,6 +50,7 @@ fn parser_tests() {
         let parser = Parser::new(text);
         let cst = parser.parse();
         assert_errors_are_present(&cst.errors().cloned().collect::<Vec<_>>(), path);
+        assert_cst_spans_are_valid_utf8_boundaries(text, cst.document().syntax());
         format!("{cst:?}")
     });
 }
@@ -184,4 +187,51 @@ fn project_root() -> PathBuf {
     .nth(1)
     .unwrap()
     .to_path_buf()
+}
+
+/// Verifies all CST node and token spans fall on valid UTF-8 character boundaries.
+fn assert_cst_spans_are_valid_utf8_boundaries(input: &str, node: &crate::SyntaxNode) {
+    use rowan::NodeOrToken;
+
+    let range = node.text_range();
+    let start: usize = range.start().into();
+    let end: usize = range.end().into();
+
+    assert!(
+        input.is_char_boundary(start),
+        "Node {:?} start {} is not a char boundary",
+        node.kind(),
+        start
+    );
+    assert!(
+        input.is_char_boundary(end),
+        "Node {:?} end {} is not a char boundary",
+        node.kind(),
+        end
+    );
+
+    for child in node.children_with_tokens() {
+        match child {
+            NodeOrToken::Node(child_node) => {
+                assert_cst_spans_are_valid_utf8_boundaries(input, &child_node)
+            }
+            NodeOrToken::Token(token) => {
+                let range = token.text_range();
+                let start: usize = range.start().into();
+                let end: usize = range.end().into();
+                assert!(
+                    input.is_char_boundary(start),
+                    "Token {:?} start {} is not a char boundary",
+                    token.kind(),
+                    start
+                );
+                assert!(
+                    input.is_char_boundary(end),
+                    "Token {:?} end {} is not a char boundary",
+                    token.kind(),
+                    end
+                );
+            }
+        }
+    }
 }

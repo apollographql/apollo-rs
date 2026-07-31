@@ -1,3 +1,4 @@
+use apollo_compiler::schema::SchemaBuilder;
 use apollo_compiler::Schema;
 
 #[test]
@@ -225,4 +226,26 @@ fn test_default_root_op_name_ignored_with_explicit_schema_def() {
     "#;
     let schema = Schema::parse_and_validate(input, "schema.graphql").unwrap();
     assert!(schema.schema_definition.mutation.is_none())
+}
+
+#[test]
+fn handles_implicit_root_types() {
+    let sdl = r#"
+extend type Query {
+  foo: String
+}
+
+extend type Mutation {
+  bar: String
+}
+"#;
+
+    let builder = SchemaBuilder::new().adopt_orphan_extensions();
+    let schema = builder
+        .parse(sdl, "schema.graphql")
+        .build()
+        .expect("schema parsed successfully");
+
+    assert!(schema.schema_definition.query.is_some());
+    assert!(schema.schema_definition.mutation.is_some());
 }

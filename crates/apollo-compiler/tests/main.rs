@@ -1,3 +1,4 @@
+mod error_formatting;
 mod executable;
 mod extensions;
 mod field_set;

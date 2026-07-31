@@ -177,6 +177,27 @@ impl DocumentBuilder<'_> {
             .collect()
     }
 
+    /// List the existing types that are valid in input positions (argument
+    /// types, input-object fields, variable definitions). Per the GraphQL
+    /// spec, only scalars, enums, and input objects qualify. Built-in
+    /// scalars are added separately by `choose_ty`.
+    pub(crate) fn list_existing_input_types(&self) -> Vec<Ty> {
+        self.scalar_type_defs
+            .iter()
+            .map(|s| Ty::Named(s.name.clone()))
+            .chain(
+                self.enum_type_defs
+                    .iter()
+                    .map(|e| Ty::Named(e.name.clone())),
+            )
+            .chain(
+                self.input_object_type_defs
+                    .iter()
+                    .map(|io| Ty::Named(io.name.clone())),
+            )
+            .collect()
+    }
+
     /// List all existing object (already created) `Ty`
     pub(crate) fn list_existing_object_types(&self) -> Vec<Ty> {
         self.object_type_defs

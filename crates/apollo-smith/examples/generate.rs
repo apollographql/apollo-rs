@@ -5,7 +5,7 @@ use arbitrary::Result;
 use arbitrary::Unstructured;
 use rand::distr::Alphanumeric;
 use rand::rngs::StdRng;
-use rand::Rng;
+use rand::RngExt as _;
 use rand::SeedableRng;
 use std::fs;
 

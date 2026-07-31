@@ -45,24 +45,28 @@ Error: variable `$booleanList` of type `[Boolean]` cannot be used for argument `
 Error: variable `$intArg` of type `Int` cannot be used for argument `nonNullIntArg` of type `Int!`
     ╭─[ 0101_mismatched_variable_usage.graphql:26:24 ]
     │
- 26 │     nonNullIntArgField(nonNullIntArg: $intArg)
-    │                        ───────────┬──────────  
-    │                                   ╰──────────── variable `$intArg` used here
-    │ 
  29 │ query fragmentNonNullIntArgField($intArg: Int) {
     │                                  ──────┬─────  
     │                                        ╰─────── variable `$intArg` of type `Int` is declared here
+    │
+    ├─[ 0101_mismatched_variable_usage.graphql:26:24 ]
+    │
+ 26 │     nonNullIntArgField(nonNullIntArg: $intArg)
+    │                        ───────────┬──────────  
+    │                                   ╰──────────── variable `$intArg` used here
 ────╯
 Error: variable `$intArg` of type `Int` cannot be used for argument `nonNullIntArg` of type `Int!`
     ╭─[ 0101_mismatched_variable_usage.graphql:40:24 ]
     │
- 40 │     nonNullIntArgField(nonNullIntArg: $intArg)
-    │                        ───────────┬──────────  
-    │                                   ╰──────────── variable `$intArg` used here
-    │ 
  43 │ query doubleNestedFragmentNonNullIntArgField($intArg: Int) {
     │                                              ──────┬─────  
     │                                                    ╰─────── variable `$intArg` of type `Int` is declared here
+    │
+    ├─[ 0101_mismatched_variable_usage.graphql:40:24 ]
+    │
+ 40 │     nonNullIntArgField(nonNullIntArg: $intArg)
+    │                        ───────────┬──────────  
+    │                                   ╰──────────── variable `$intArg` used here
 ────╯
 Error: expected value of type Boolean, found a variable
     ╭─[ 0101_mismatched_variable_usage.graphql:51:50 ]

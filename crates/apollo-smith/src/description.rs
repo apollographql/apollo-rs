@@ -63,13 +63,7 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> ArbitraryRe
 
     let gen_str = String::from_utf8(
         (0..size)
-            .map(|_curr_idx| {
-                let idx = u.arbitrary::<usize>()?;
-
-                let idx = idx % CHARSET.len();
-
-                Ok(CHARSET[idx])
-            })
+            .map(|_curr_idx| Ok(*u.choose(CHARSET)?))
             .collect::<ArbitraryResult<Vec<u8>>>()?,
     )
     .unwrap();

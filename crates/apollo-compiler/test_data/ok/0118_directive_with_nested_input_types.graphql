@@ -1,0 +1,14 @@
+directive @custom(input: NestedInput) on OBJECT | INTERFACE
+
+input NestedInput {
+  name: String
+  nested: NestedInput
+}
+
+type Query @custom(input: {name: "hello", nested: {name: "hello"}}) {
+  foo: String
+}
+
+query myQuery {
+  foo
+}

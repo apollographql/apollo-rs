@@ -23,10 +23,6 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
 Error: type `Derived` does not satisfy interface `Base`: missing field `b`
     ╭─[ 0098_interface_extensions.graphql:21:1 ]
     │
- 18 │       b: Int
-    │       ───┬──  
-    │          ╰──── `Base.b` originally defined here
-    │ 
  21 │ ╭─▶ interface Derived {
     ┆ ┆   
  23 │ ├─▶ }
@@ -35,7 +31,13 @@ Error: type `Derived` does not satisfy interface `Base`: missing field `b`
  24 │     extend interface Derived implements Base {
     │                                         ──┬─  
     │                                           ╰─── implementation of interface Base declared here
-    │     
-    │     Help: An object or interface must declare all fields required by the interfaces it implements
+    │
+    ├─[ 0098_interface_extensions.graphql:21:1 ]
+    │
+ 18 │   b: Int
+    │   ───┬──  
+    │      ╰──── `Base.b` originally defined here
+    │ 
+    │ Help: An object or interface must declare all fields required by the interfaces it implements
 ────╯
 

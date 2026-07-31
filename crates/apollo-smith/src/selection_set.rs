@@ -6,6 +6,7 @@ use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
+use indexmap::IndexSet;
 
 /// The __selectionSet type represents a selection_set type in a fragment spread, an operation or a field
 ///
@@ -15,12 +16,32 @@ use arbitrary::Result as ArbitraryResult;
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Selection-Sets).
 #[derive(Debug, Clone)]
 pub struct SelectionSet {
-    selections: Vec<Selection>,
+    pub(crate) selections: Vec<Selection>,
 }
 
 impl From<SelectionSet> for Vec<ast::Selection> {
     fn from(sel_set: SelectionSet) -> Self {
         sel_set.selections.into_iter().map(Into::into).collect()
+    }
+}
+
+impl SelectionSet {
+    pub(crate) fn collect_fragment_spreads(&self, into: &mut IndexSet<Name>) {
+        for selection in &self.selections {
+            match selection {
+                Selection::Field(field) => {
+                    if let Some(inner) = &field.selection_set {
+                        inner.collect_fragment_spreads(into);
+                    }
+                }
+                Selection::FragmentSpread(spread) => {
+                    into.insert(spread.name.clone());
+                }
+                Selection::InlineFragment(inline) => {
+                    inline.selection_set.collect_fragment_spreads(into);
+                }
+            }
+        }
     }
 }
 

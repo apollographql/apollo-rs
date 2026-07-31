@@ -1,3 +1,4 @@
+use apollo_compiler::ast;
 use apollo_compiler::parser::Parser;
 
 #[test]
@@ -97,4 +98,15 @@ fn it_errors_with_multiple_limits() {
         "{errors}"
     );
     assert!(errors.contains("doc.graphql:6:25"), "{errors}");
+}
+
+#[test]
+fn it_reports_location_for_empty_input() {
+    let errors = ast::Document::parse("", "example.graphql")
+        .unwrap_err()
+        .errors
+        .to_string();
+
+    assert!(errors.contains("example.graphql:1:1"), "{errors}");
+    assert!(errors.contains("Unexpected <EOF>."), "{errors}");
 }

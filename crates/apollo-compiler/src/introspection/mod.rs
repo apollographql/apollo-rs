@@ -1,5 +1,5 @@
-//! [Execution](https://spec.graphql.org/draft/#sec-Execution) engine
-//! for the [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+//! Partial execition of the
+//! [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
 //! portion of a query
 //!
 //! The main entry point is [`partial_execute`].
@@ -8,12 +8,14 @@ use crate::collections::HashMap;
 use crate::executable::Operation;
 #[cfg(doc)]
 use crate::executable::OperationMap;
-use crate::execution::engine::execute_selection_set;
-use crate::execution::engine::ExecutionMode;
-use crate::execution::engine::PropagateNull;
 #[cfg(doc)]
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
+use crate::resolvers::Execution;
+use crate::resolvers::FieldError;
+use crate::resolvers::ObjectValue;
+use crate::resolvers::ResolveInfo;
+use crate::resolvers::ResolvedValue;
 use crate::response::ExecutionResponse;
 use crate::response::JsonMap;
 use crate::schema::Implementers;
@@ -23,7 +25,7 @@ use crate::Name;
 use crate::Schema;
 
 mod max_depth;
-mod resolvers;
+pub(crate) mod resolvers;
 
 /// Check that the nesting level of some list fields does not exceed a fixed depth limit.
 ///
@@ -95,38 +97,32 @@ pub fn partial_execute(
     operation: &Operation,
     variable_values: &Valid<JsonMap>,
 ) -> Result<ExecutionResponse, RequestError> {
-    let object_type_name = operation.object_type();
-    let Some(root_operation_object_type_def) = schema.get_object(object_type_name) else {
-        return Err(RequestError {
-            message: "Undefined root operation type".to_owned(),
-            location: object_type_name.location(),
-            is_suspected_validation_bug: true,
-        });
-    };
+    struct InitialValue<'a> {
+        type_name: &'a str,
+    }
 
-    let initial_value =
-        &resolvers::IntrospectionRootResolver(resolvers::SchemaWithImplementersMap {
-            schema,
-            implementers_map,
-        });
-    let mut errors = Vec::new();
-    let path = None;
-    let data = execute_selection_set(
-        schema,
-        document,
-        variable_values,
-        &mut errors,
-        path,
-        ExecutionMode::Normal,
-        root_operation_object_type_def,
-        initial_value,
-        &operation.selection_set.selections,
-    )
-    // What `.ok()` below converts to `None` is a field error on a non-null field
-    // propagated all the way to the root, so that the response JSON should contain `"data": null`.
-    //
-    // No-op to witness the error type:
-    .inspect_err(|_: &PropagateNull| {})
-    .ok();
-    Ok(ExecutionResponse { data, errors })
+    impl ObjectValue for InitialValue<'_> {
+        fn type_name(&self) -> &str {
+            self.type_name
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            _info: &'a ResolveInfo<'a>,
+        ) -> Result<ResolvedValue<'a>, FieldError> {
+            // Introspection meta-fields are handled separately
+            // so this is only called for concrete fields of the root query type
+            Ok(ResolvedValue::SkipForPartialExecution)
+        }
+    }
+
+    let initial_value = InitialValue {
+        type_name: operation.object_type(),
+    };
+    Execution::new(schema, document)
+        .implementers_map(implementers_map)
+        .operation(operation)
+        .coerced_variable_values(variable_values)
+        .enable_schema_introspection(true)
+        .execute_sync(&initial_value)
 }
