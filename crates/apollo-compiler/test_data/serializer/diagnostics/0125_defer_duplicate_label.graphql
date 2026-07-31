@@ -1,0 +1,19 @@
+query Q {
+  me {
+    ... @defer(label: "dup") {
+      ... @defer(label: "dup") {
+        id
+      }
+    }
+  }
+}
+
+directive @defer(if: Boolean! = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+type Query {
+  me: User
+}
+
+type User {
+  id: ID
+}
