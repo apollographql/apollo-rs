@@ -1,0 +1,11 @@
+Error: the same type `SharedType` must not be used for multiple root operation types
+   ╭─[ 0130_duplicate_root_operation_types_query_subscription.graphql:3:17 ]
+   │
+ 2 │   query: SharedType
+   │          ─────┬────  
+   │               ╰────── `query` is defined here
+ 3 │   subscription: SharedType
+   │                 ─────┬────  
+   │                      ╰────── `subscription` uses the same type here
+───╯
+

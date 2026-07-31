@@ -293,6 +293,7 @@ impl DiagnosticData {
                     QueryRootOperationType => "QueryRootOperationType",
                     UnusedVariable { .. } => "UnusedVariable",
                     RootOperationObjectType { .. } => "RootOperationObjectType",
+                    DuplicateRootOperationType { .. } => "DuplicateRootOperationType",
                     UnionMemberObjectType { .. } => "UnionMemberObjectType",
                     UnsupportedLocation { .. } => "UnsupportedLocation",
                     UnsupportedValueType { .. } => "UnsupportedValueType",
@@ -440,6 +441,7 @@ impl DiagnosticData {
                         Some(format!(r#"Variable "${name}" is never used."#))
                     }
                     RootOperationObjectType { .. } => None,
+                    DuplicateRootOperationType { .. } => None,
                     UnionMemberObjectType { .. } => None,
                     UnsupportedLocation { name, location, .. } => Some(format!(
                         r#"Directive "@{name}" may not be used on {location}."#
