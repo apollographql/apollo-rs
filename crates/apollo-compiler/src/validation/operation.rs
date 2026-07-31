@@ -194,6 +194,9 @@ pub(crate) fn validate_defer(document: &ExecutableDocument, diagnostics: &mut Di
     validate_defer_labels(document, diagnostics);
 
     for operation in document.operations.iter() {
+        if operation.is_query() {
+            continue;
+        }
         let _ = forbid_defer_on_root(
             document,
             &operation.selection_set,
