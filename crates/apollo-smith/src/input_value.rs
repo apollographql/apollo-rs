@@ -314,12 +314,11 @@ impl DocumentBuilder<'_> {
                 }
             }
             let directives = self.directives(directive_location)?;
-            // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
             let default_value = self
                 .u
                 .arbitrary()
                 .unwrap_or(false)
-                .then(|| self.input_value(Constness::Const))
+                .then(|| self.input_value_for_type(&ty))
                 .transpose()?;
 
             if !exclude.contains(&name) {
@@ -351,12 +350,11 @@ impl DocumentBuilder<'_> {
         let name = self.name()?;
         let ty = self.choose_ty(&self.list_existing_input_types())?;
         let directives = self.directives(directive_location)?;
-        // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
         let default_value = self
             .u
             .arbitrary()
             .unwrap_or(false)
-            .then(|| self.input_value(Constness::Const))
+            .then(|| self.input_value_for_type(&ty))
             .transpose()?;
 
         Ok(InputValueDef {
