@@ -694,7 +694,8 @@ impl DiagnosticData {
                 ExecutableBuildError::DeferOnRootMutationOrSubscriptionField {
                     operation_type,
                 } => Some(format!(
-                    r#"Defer directive cannot be used on root {operation_type} type."#
+                    r#"Defer directive cannot be used on root {} type."#,
+                    operation_type.name()
                 )),
                 ExecutableBuildError::DeferInSubscriptionMustBeConditional => Some(
                     "Defer directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.".to_string(),
@@ -938,7 +939,7 @@ impl ToCliReport for DiagnosticData {
                 ExecutableBuildError::DeferOnRootMutationOrSubscriptionField { operation_type } => {
                     report.with_label_opt(
                         self.location,
-                        format_args!("`@defer` on a root {operation_type} selection"),
+                        format_args!("`@defer` on a root {} selection", operation_type.name()),
                     );
                 }
                 ExecutableBuildError::DeferInSubscriptionMustBeConditional => {

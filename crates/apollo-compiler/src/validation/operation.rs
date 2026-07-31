@@ -13,6 +13,11 @@ use crate::ExecutableDocument;
 use crate::Name;
 use crate::Node;
 
+/// Built-in directive names.
+pub(crate) const SKIP_DIRECTIVE_NAME: &str = "skip";
+pub(crate) const INCLUDE_DIRECTIVE_NAME: &str = "include";
+pub(crate) const DEFER_DIRECTIVE_NAME: &str = "defer";
+
 /// Iterate all selections in the selection set.
 ///
 /// This includes fields, fragment spreads, and inline fragments. For fragments, both the spread
@@ -110,11 +115,12 @@ pub(crate) fn validate_subscription(
             }
         }
 
-        if let Some(conditional_directive) = selection
-            .directives()
-            .iter()
-            .find(|d| matches!(d.name.as_str(), "skip" | "include"))
-        {
+        if let Some(conditional_directive) = selection.directives().iter().find(|d| {
+            matches!(
+                d.name.as_str(),
+                SKIP_DIRECTIVE_NAME | INCLUDE_DIRECTIVE_NAME
+            )
+        }) {
             diagnostics.push(
                 conditional_directive.location(),
                 executable::BuildError::SubscriptionUsesConditionalSelection {
@@ -192,15 +198,15 @@ pub(crate) fn validate_defer(document: &ExecutableDocument, diagnostics: &mut Di
     validate_defer_labels(document, diagnostics);
 
     for operation in document.operations.iter() {
-        let op_kind = match operation.operation_type {
-            ast::OperationType::Query => continue,
-            ast::OperationType::Mutation => "mutation",
-            ast::OperationType::Subscription => "subscription",
-        };
+        // `@defer` on a root selection is only forbidden for mutation and
+        // subscription operations, not queries.
+        if matches!(operation.operation_type, ast::OperationType::Query) {
+            continue;
+        }
         let _ = forbid_defer_on_root(
             document,
             &operation.selection_set,
-            op_kind,
+            operation.operation_type,
             diagnostics,
             &mut HashSet::default(),
             DepthCounter::new().with_limit(500).guard(),
@@ -284,7 +290,7 @@ where
 {
     for selection in &selection_set.selections {
         for directive in selection.directives().iter() {
-            if directive.name == "defer" {
+            if directive.name == DEFER_DIRECTIVE_NAME {
                 f(directive);
             }
         }
@@ -304,15 +310,17 @@ where
 fn forbid_defer_on_root<'doc>(
     document: &'doc ExecutableDocument,
     selection_set: &'doc executable::SelectionSet,
-    operation_type: &'static str,
+    operation_type: ast::OperationType,
     diagnostics: &mut DiagnosticList,
     visited_fragments: &mut HashSet<&'doc Name>,
     mut guard: DepthGuard<'_>,
 ) -> Result<(), RecursionLimitError> {
     for selection in &selection_set.selections {
         match selection {
-            // Spec ForbidDeferStream only checks @stream on Fields; @stream is not
-            // covered by this @defer-focused validation.
+            // `@defer` is only valid on inline fragments and fragment spreads, so there is nothing
+            // to check on a field selection here. (The proposed spec's ForbidDeferStream also
+            // checks `@stream` on fields, but `@stream` is out of scope for this `@defer`-focused
+            // validation.)
             executable::Selection::Field(_) => {}
             executable::Selection::InlineFragment(inline) => {
                 report_root_defer(&inline.directives, operation_type, diagnostics);
@@ -348,11 +356,11 @@ fn forbid_defer_on_root<'doc>(
 
 fn report_root_defer(
     directives: &executable::DirectiveList,
-    operation_type: &'static str,
+    operation_type: ast::OperationType,
     diagnostics: &mut DiagnosticList,
 ) {
     for directive in directives.iter() {
-        if directive.name == "defer" {
+        if directive.name == DEFER_DIRECTIVE_NAME {
             diagnostics.push(
                 directive.location(),
                 executable::BuildError::DeferOnRootMutationOrSubscriptionField { operation_type },
@@ -373,7 +381,7 @@ fn forbid_unconditional_defer<'doc>(
             continue;
         }
         for directive in selection.directives().iter() {
-            if directive.name == "defer" && !defer_can_be_disabled(directive) {
+            if directive.name == DEFER_DIRECTIVE_NAME && !defer_can_be_disabled(directive) {
                 diagnostics.push(
                     directive.location(),
                     executable::BuildError::DeferInSubscriptionMustBeConditional,
@@ -428,7 +436,7 @@ fn forbid_unconditional_defer<'doc>(
 /// false positives on runtime-conditional selections.
 fn selection_may_be_excluded(directives: &executable::DirectiveList) -> bool {
     for directive in directives.iter() {
-        if directive.name == "skip" {
+        if directive.name == SKIP_DIRECTIVE_NAME {
             match directive
                 .specified_argument_by_name("if")
                 .map(|a| a.as_ref())
@@ -436,7 +444,7 @@ fn selection_may_be_excluded(directives: &executable::DirectiveList) -> bool {
                 Some(ast::Value::Boolean(false)) => {}
                 _ => return true,
             }
-        } else if directive.name == "include" {
+        } else if directive.name == INCLUDE_DIRECTIVE_NAME {
             match directive
                 .specified_argument_by_name("if")
                 .map(|a| a.as_ref())

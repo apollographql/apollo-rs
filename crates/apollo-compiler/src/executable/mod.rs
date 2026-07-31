@@ -285,8 +285,11 @@ pub(crate) enum BuildError {
     #[error("`@defer` label argument must be a static String, not a variable")]
     DeferLabelMustNotBeVariable,
 
-    #[error("`@defer` is not allowed on root selections of {operation_type} operations")]
-    DeferOnRootMutationOrSubscriptionField { operation_type: &'static str },
+    #[error(
+        "`@defer` is not allowed on root selections of {} operations",
+        operation_type.name()
+    )]
+    DeferOnRootMutationOrSubscriptionField { operation_type: OperationType },
 
     #[error("`@defer` in a subscription operation must be disabled with an `if` argument")]
     DeferInSubscriptionMustBeConditional,
