@@ -1,0 +1,268 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        49: SourceFile {
+            path: "0120_defer_in_subscription_under_variable_skip.graphql",
+            source_text: "subscription Sub($cond: Boolean!) {\n    newMessage {\n        ... @skip(if: $cond) {\n            ... @defer {\n                body\n            }\n        }\n    }\n}\n\ndirective @defer(\n    if: Boolean! = true\n    label: String\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n    message: Message\n}\n\ntype Subscription {\n    newMessage: Message\n}\n\ntype Message {\n    body: String\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Subscription",
+            },
+        ),
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+        "defer": 163..261 @49 DirectiveDefinition {
+            description: None,
+            name: "defer",
+            arguments: [
+                185..204 @49 InputValueDefinition {
+                    description: None,
+                    name: "if",
+                    ty: 189..197 @49 NonNullNamed(
+                        "Boolean",
+                    ),
+                    default_value: Some(
+                        200..204 @49 Boolean(
+                            true,
+                        ),
+                    ),
+                    directives: [],
+                },
+                209..222 @49 InputValueDefinition {
+                    description: None,
+                    name: "label",
+                    ty: 216..222 @49 Named(
+                        "String",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            repeatable: false,
+            locations: [
+                "FRAGMENT_SPREAD",
+                "INLINE_FRAGMENT",
+            ],
+        },
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "Query": Object(
+            263..298 @49 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "message": Component {
+                        origin: Definition,
+                        node: 280..296 @49 FieldDefinition {
+                            description: None,
+                            name: "message",
+                            arguments: [],
+                            ty: Named(
+                                "Message",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Subscription": Object(
+            300..345 @49 ObjectType {
+                description: None,
+                name: "Subscription",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "newMessage": Component {
+                        origin: Definition,
+                        node: 324..343 @49 FieldDefinition {
+                            description: None,
+                            name: "newMessage",
+                            arguments: [],
+                            ty: Named(
+                                "Message",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Message": Object(
+            347..380 @49 ObjectType {
+                description: None,
+                name: "Message",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "body": Component {
+                        origin: Definition,
+                        node: 366..378 @49 FieldDefinition {
+                            description: None,
+                            name: "body",
+                            arguments: [],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        49: SourceFile {
+            path: "0120_defer_in_subscription_under_variable_skip.graphql",
+            source_text: "subscription Sub($cond: Boolean!) {\n    newMessage {\n        ... @skip(if: $cond) {\n            ... @defer {\n                body\n            }\n        }\n    }\n}\n\ndirective @defer(\n    if: Boolean! = true\n    label: String\n) on FRAGMENT_SPREAD | INLINE_FRAGMENT\n\ntype Query {\n    message: Message\n}\n\ntype Subscription {\n    newMessage: Message\n}\n\ntype Message {\n    body: String\n}\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {
+            "Sub": 0..161 @49 Operation {
+                operation_type: Subscription,
+                name: Some(
+                    "Sub",
+                ),
+                variables: [
+                    17..32 @49 VariableDefinition {
+                        name: "cond",
+                        ty: 24..32 @49 NonNullNamed(
+                            "Boolean",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                ],
+                directives: [],
+                selection_set: SelectionSet {
+                    ty: "Subscription",
+                    selections: [
+                        Field(
+                            40..159 @49 Field {
+                                definition: 324..343 @49 FieldDefinition {
+                                    description: None,
+                                    name: "newMessage",
+                                    arguments: [],
+                                    ty: Named(
+                                        "Message",
+                                    ),
+                                    directives: [],
+                                },
+                                alias: None,
+                                name: "newMessage",
+                                arguments: [],
+                                directives: [],
+                                selection_set: SelectionSet {
+                                    ty: "Message",
+                                    selections: [
+                                        InlineFragment(
+                                            61..153 @49 InlineFragment {
+                                                type_condition: None,
+                                                directives: [
+                                                    65..81 @49 Directive {
+                                                        name: "skip",
+                                                        arguments: [
+                                                            71..80 @49 Argument {
+                                                                name: "if",
+                                                                value: 75..80 @49 Variable(
+                                                                    "cond",
+                                                                ),
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                                selection_set: SelectionSet {
+                                                    ty: "Message",
+                                                    selections: [
+                                                        InlineFragment(
+                                                            96..143 @49 InlineFragment {
+                                                                type_condition: None,
+                                                                directives: [
+                                                                    100..106 @49 Directive {
+                                                                        name: "defer",
+                                                                        arguments: [],
+                                                                    },
+                                                                ],
+                                                                selection_set: SelectionSet {
+                                                                    ty: "Message",
+                                                                    selections: [
+                                                                        Field(
+                                                                            125..129 @49 Field {
+                                                                                definition: 366..378 @49 FieldDefinition {
+                                                                                    description: None,
+                                                                                    name: "body",
+                                                                                    arguments: [],
+                                                                                    ty: Named(
+                                                                                        "String",
+                                                                                    ),
+                                                                                    directives: [],
+                                                                                },
+                                                                                alias: None,
+                                                                                name: "body",
+                                                                                arguments: [],
+                                                                                directives: [],
+                                                                                selection_set: SelectionSet {
+                                                                                    ty: "String",
+                                                                                    selections: [],
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                },
+                                            },
+                                        ),
+                                    ],
+                                },
+                            },
+                        ),
+                    ],
+                },
+            },
+        },
+    },
+    fragments: {},
+}

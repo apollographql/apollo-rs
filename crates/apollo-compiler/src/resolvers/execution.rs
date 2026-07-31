@@ -24,6 +24,8 @@ use crate::schema::FieldDefinition;
 use crate::schema::Implementers;
 use crate::schema::ObjectType;
 use crate::schema::Type;
+use crate::validation::operation::INCLUDE_DIRECTIVE_NAME;
+use crate::validation::operation::SKIP_DIRECTIVE_NAME;
 use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::ExecutableDocument;
@@ -143,8 +145,8 @@ fn collect_fields<'a>(
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
 ) {
     for selection in selections {
-        if eval_if_arg(selection, "skip", ctx.variable_values).unwrap_or(false)
-            || !eval_if_arg(selection, "include", ctx.variable_values).unwrap_or(true)
+        if eval_if_arg(selection, SKIP_DIRECTIVE_NAME, ctx.variable_values).unwrap_or(false)
+            || !eval_if_arg(selection, INCLUDE_DIRECTIVE_NAME, ctx.variable_values).unwrap_or(true)
         {
             continue;
         }
