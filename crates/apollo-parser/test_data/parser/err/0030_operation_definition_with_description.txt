@@ -1,7 +1,9 @@
 - DOCUMENT@0..108
-    - ERROR@0..93 "\"after this PR this should not be an issue: https://github.com/graphql/graphql-spec/pull/892\""
-    - WHITESPACE@93..94 "\n"
-    - OPERATION_DEFINITION@94..108
+    - OPERATION_DEFINITION@0..108
+        - DESCRIPTION@0..93
+            - STRING_VALUE@0..93
+                - STRING@0..93 "\"after this PR this should not be an issue: https://github.com/graphql/graphql-spec/pull/892\""
+        - WHITESPACE@93..94 "\n"
         - OPERATION_TYPE@94..99
             - query_KW@94..99 "query"
         - WHITESPACE@99..100 " "
@@ -11,6 +13,5 @@
         - SELECTION_SET@106..108
             - L_CURLY@106..107 "{"
             - R_CURLY@107..108 "}"
-- ERROR@0:93 "expected an Operation Type or a Selection Set" "after this PR this should not be an issue: https://github.com/graphql/graphql-spec/pull/892"
 - ERROR@107:108 "expected at least one Selection in Selection Set" }
 recursion limit: 500, high: 1

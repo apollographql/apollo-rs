@@ -4,8 +4,8 @@ Schema {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        47: SourceFile {
-            path: "0118_executable_descriptions.graphql",
+        50: SourceFile {
+            path: "0121_executable_descriptions.graphql",
             source_text: "\"\"\"\nRequest the current status of a time machine and its operator.\nYou can also check the status for a particular year.\n**Warning:** certain years may trigger an anomaly in the space-time continuum.\n\"\"\"\nquery GetTimeMachineStatus(\n  \"The unique serial number of the time machine to inspect.\"\n  $machineId: ID!\n  \"The year to check the status for.\"\n  $year: Int\n) {\n  timeMachine(id: $machineId) {\n    ...TimeMachineDetails\n    status(year: $year)\n  }\n}\n\n\"Details about a time machine and its operator.\"\nfragment TimeMachineDetails on TimeMachine {\n  id\n  model\n  lastMaintenance\n  operator {\n    name\n    licenseLevel\n  }\n}\n\nscalar Date\n\ntype TimeMachine {\n  id: ID!\n  status(year: Int): String\n  model: String\n  lastMaintenance: Date\n  operator: Operator\n}\ntype Operator {\n  name: String!\n  licenseLevel: Int\n}\ntype Query {\n  timeMachine(id: ID!): TimeMachine\n}\n",
         },
     },
@@ -41,14 +41,14 @@ Schema {
         "Boolean": built_in_type!("Boolean"),
         "ID": built_in_type!("ID"),
         "Date": Scalar(
-            625..636 @47 ScalarType {
+            625..636 @50 ScalarType {
                 description: None,
                 name: "Date",
                 directives: [],
             },
         ),
         "TimeMachine": Object(
-            638..757 @47 ObjectType {
+            638..757 @50 ObjectType {
                 description: None,
                 name: "TimeMachine",
                 implements_interfaces: {},
@@ -56,7 +56,7 @@ Schema {
                 fields: {
                     "id": Component {
                         origin: Definition,
-                        node: 659..666 @47 FieldDefinition {
+                        node: 659..666 @50 FieldDefinition {
                             description: None,
                             name: "id",
                             arguments: [],
@@ -68,14 +68,14 @@ Schema {
                     },
                     "status": Component {
                         origin: Definition,
-                        node: 669..694 @47 FieldDefinition {
+                        node: 669..694 @50 FieldDefinition {
                             description: None,
                             name: "status",
                             arguments: [
-                                676..685 @47 InputValueDefinition {
+                                676..685 @50 InputValueDefinition {
                                     description: None,
                                     name: "year",
-                                    ty: 682..685 @47 Named(
+                                    ty: 682..685 @50 Named(
                                         "Int",
                                     ),
                                     default_value: None,
@@ -90,7 +90,7 @@ Schema {
                     },
                     "model": Component {
                         origin: Definition,
-                        node: 697..710 @47 FieldDefinition {
+                        node: 697..710 @50 FieldDefinition {
                             description: None,
                             name: "model",
                             arguments: [],
@@ -102,7 +102,7 @@ Schema {
                     },
                     "lastMaintenance": Component {
                         origin: Definition,
-                        node: 713..734 @47 FieldDefinition {
+                        node: 713..734 @50 FieldDefinition {
                             description: None,
                             name: "lastMaintenance",
                             arguments: [],
@@ -114,7 +114,7 @@ Schema {
                     },
                     "operator": Component {
                         origin: Definition,
-                        node: 737..755 @47 FieldDefinition {
+                        node: 737..755 @50 FieldDefinition {
                             description: None,
                             name: "operator",
                             arguments: [],
@@ -128,7 +128,7 @@ Schema {
             },
         ),
         "Operator": Object(
-            758..811 @47 ObjectType {
+            758..811 @50 ObjectType {
                 description: None,
                 name: "Operator",
                 implements_interfaces: {},
@@ -136,7 +136,7 @@ Schema {
                 fields: {
                     "name": Component {
                         origin: Definition,
-                        node: 776..789 @47 FieldDefinition {
+                        node: 776..789 @50 FieldDefinition {
                             description: None,
                             name: "name",
                             arguments: [],
@@ -148,7 +148,7 @@ Schema {
                     },
                     "licenseLevel": Component {
                         origin: Definition,
-                        node: 792..809 @47 FieldDefinition {
+                        node: 792..809 @50 FieldDefinition {
                             description: None,
                             name: "licenseLevel",
                             arguments: [],
@@ -162,7 +162,7 @@ Schema {
             },
         ),
         "Query": Object(
-            812..862 @47 ObjectType {
+            812..862 @50 ObjectType {
                 description: None,
                 name: "Query",
                 implements_interfaces: {},
@@ -170,14 +170,14 @@ Schema {
                 fields: {
                     "timeMachine": Component {
                         origin: Definition,
-                        node: 827..860 @47 FieldDefinition {
+                        node: 827..860 @50 FieldDefinition {
                             description: None,
                             name: "timeMachine",
                             arguments: [
-                                839..846 @47 InputValueDefinition {
+                                839..846 @50 InputValueDefinition {
                                     description: None,
                                     name: "id",
-                                    ty: 843..846 @47 NonNullNamed(
+                                    ty: 843..846 @50 NonNullNamed(
                                         "ID",
                                     ),
                                     default_value: None,
@@ -201,40 +201,40 @@ ExecutableDocument {
             path: "built_in.graphql",
             source_text: include_str!("built_in.graphql"),
         },
-        47: SourceFile {
-            path: "0118_executable_descriptions.graphql",
+        50: SourceFile {
+            path: "0121_executable_descriptions.graphql",
             source_text: "\"\"\"\nRequest the current status of a time machine and its operator.\nYou can also check the status for a particular year.\n**Warning:** certain years may trigger an anomaly in the space-time continuum.\n\"\"\"\nquery GetTimeMachineStatus(\n  \"The unique serial number of the time machine to inspect.\"\n  $machineId: ID!\n  \"The year to check the status for.\"\n  $year: Int\n) {\n  timeMachine(id: $machineId) {\n    ...TimeMachineDetails\n    status(year: $year)\n  }\n}\n\n\"Details about a time machine and its operator.\"\nfragment TimeMachineDetails on TimeMachine {\n  id\n  model\n  lastMaintenance\n  operator {\n    name\n    licenseLevel\n  }\n}\n\nscalar Date\n\ntype TimeMachine {\n  id: ID!\n  status(year: Int): String\n  model: String\n  lastMaintenance: Date\n  operator: Operator\n}\ntype Operator {\n  name: String!\n  licenseLevel: Int\n}\ntype Query {\n  timeMachine(id: ID!): TimeMachine\n}\n",
         },
     },
     operations: OperationMap {
         anonymous: None,
         named: {
-            "GetTimeMachineStatus": 0..452 @47 Operation {
+            "GetTimeMachineStatus": 0..452 @50 Operation {
                 description: Some(
-                    0..202 @47 "Request the current status of a time machine and its operator.\nYou can also check the status for a particular year.\n**Warning:** certain years may trigger an anomaly in the space-time continuum.",
+                    0..202 @50 "Request the current status of a time machine and its operator.\nYou can also check the status for a particular year.\n**Warning:** certain years may trigger an anomaly in the space-time continuum.",
                 ),
                 operation_type: Query,
                 name: Some(
                     "GetTimeMachineStatus",
                 ),
                 variables: [
-                    233..309 @47 VariableDefinition {
+                    233..309 @50 VariableDefinition {
                         description: Some(
-                            233..291 @47 "The unique serial number of the time machine to inspect.",
+                            233..291 @50 "The unique serial number of the time machine to inspect.",
                         ),
                         name: "machineId",
-                        ty: 306..309 @47 NonNullNamed(
+                        ty: 306..309 @50 NonNullNamed(
                             "ID",
                         ),
                         default_value: None,
                         directives: [],
                     },
-                    312..360 @47 VariableDefinition {
+                    312..360 @50 VariableDefinition {
                         description: Some(
-                            312..347 @47 "The year to check the status for.",
+                            312..347 @50 "The year to check the status for.",
                         ),
                         name: "year",
-                        ty: 357..360 @47 Named(
+                        ty: 357..360 @50 Named(
                             "Int",
                         ),
                         default_value: None,
@@ -246,15 +246,15 @@ ExecutableDocument {
                     ty: "Query",
                     selections: [
                         Field(
-                            367..450 @47 Field {
-                                definition: 827..860 @47 FieldDefinition {
+                            367..450 @50 Field {
+                                definition: 827..860 @50 FieldDefinition {
                                     description: None,
                                     name: "timeMachine",
                                     arguments: [
-                                        839..846 @47 InputValueDefinition {
+                                        839..846 @50 InputValueDefinition {
                                             description: None,
                                             name: "id",
-                                            ty: 843..846 @47 NonNullNamed(
+                                            ty: 843..846 @50 NonNullNamed(
                                                 "ID",
                                             ),
                                             default_value: None,
@@ -269,9 +269,9 @@ ExecutableDocument {
                                 alias: None,
                                 name: "timeMachine",
                                 arguments: [
-                                    379..393 @47 Argument {
+                                    379..393 @50 Argument {
                                         name: "id",
-                                        value: 383..393 @47 Variable(
+                                        value: 383..393 @50 Variable(
                                             "machineId",
                                         ),
                                     },
@@ -281,21 +281,21 @@ ExecutableDocument {
                                     ty: "TimeMachine",
                                     selections: [
                                         FragmentSpread(
-                                            401..422 @47 FragmentSpread {
+                                            401..422 @50 FragmentSpread {
                                                 fragment_name: "TimeMachineDetails",
                                                 directives: [],
                                             },
                                         ),
                                         Field(
-                                            427..446 @47 Field {
-                                                definition: 669..694 @47 FieldDefinition {
+                                            427..446 @50 Field {
+                                                definition: 669..694 @50 FieldDefinition {
                                                     description: None,
                                                     name: "status",
                                                     arguments: [
-                                                        676..685 @47 InputValueDefinition {
+                                                        676..685 @50 InputValueDefinition {
                                                             description: None,
                                                             name: "year",
-                                                            ty: 682..685 @47 Named(
+                                                            ty: 682..685 @50 Named(
                                                                 "Int",
                                                             ),
                                                             default_value: None,
@@ -310,9 +310,9 @@ ExecutableDocument {
                                                 alias: None,
                                                 name: "status",
                                                 arguments: [
-                                                    434..445 @47 Argument {
+                                                    434..445 @50 Argument {
                                                         name: "year",
-                                                        value: 440..445 @47 Variable(
+                                                        value: 440..445 @50 Variable(
                                                             "year",
                                                         ),
                                                     },
@@ -334,9 +334,9 @@ ExecutableDocument {
         },
     },
     fragments: {
-        "TimeMachineDetails": 454..623 @47 Fragment {
+        "TimeMachineDetails": 454..623 @50 Fragment {
             description: Some(
-                454..502 @47 "Details about a time machine and its operator.",
+                454..502 @50 "Details about a time machine and its operator.",
             ),
             name: "TimeMachineDetails",
             directives: [],
@@ -344,8 +344,8 @@ ExecutableDocument {
                 ty: "TimeMachine",
                 selections: [
                     Field(
-                        550..552 @47 Field {
-                            definition: 659..666 @47 FieldDefinition {
+                        550..552 @50 Field {
+                            definition: 659..666 @50 FieldDefinition {
                                 description: None,
                                 name: "id",
                                 arguments: [],
@@ -365,8 +365,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        555..560 @47 Field {
-                            definition: 697..710 @47 FieldDefinition {
+                        555..560 @50 Field {
+                            definition: 697..710 @50 FieldDefinition {
                                 description: None,
                                 name: "model",
                                 arguments: [],
@@ -386,8 +386,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        563..578 @47 Field {
-                            definition: 713..734 @47 FieldDefinition {
+                        563..578 @50 Field {
+                            definition: 713..734 @50 FieldDefinition {
                                 description: None,
                                 name: "lastMaintenance",
                                 arguments: [],
@@ -407,8 +407,8 @@ ExecutableDocument {
                         },
                     ),
                     Field(
-                        581..621 @47 Field {
-                            definition: 737..755 @47 FieldDefinition {
+                        581..621 @50 Field {
+                            definition: 737..755 @50 FieldDefinition {
                                 description: None,
                                 name: "operator",
                                 arguments: [],
@@ -425,8 +425,8 @@ ExecutableDocument {
                                 ty: "Operator",
                                 selections: [
                                     Field(
-                                        596..600 @47 Field {
-                                            definition: 776..789 @47 FieldDefinition {
+                                        596..600 @50 Field {
+                                            definition: 776..789 @50 FieldDefinition {
                                                 description: None,
                                                 name: "name",
                                                 arguments: [],
@@ -446,8 +446,8 @@ ExecutableDocument {
                                         },
                                     ),
                                     Field(
-                                        605..617 @47 Field {
-                                            definition: 792..809 @47 FieldDefinition {
+                                        605..617 @50 Field {
+                                            definition: 792..809 @50 FieldDefinition {
                                                 description: None,
                                                 name: "licenseLevel",
                                                 arguments: [],

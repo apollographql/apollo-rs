@@ -204,6 +204,7 @@ impl OperationDefinition {
         // Only use shorthand when this is the first item.
         // If not, it might be following a `[lookahead != "{"]` grammar production
         let shorthand = state.output_empty
+            && description.is_none()
             && *operation_type == OperationType::Query
             && name.is_none()
             && variables.is_empty()

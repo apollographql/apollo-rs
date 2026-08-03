@@ -1,0 +1,26 @@
+- DOCUMENT@0..70
+    - OPERATION_DEFINITION@0..69
+        - DESCRIPTION@0..34
+            - STRING_VALUE@0..34
+                - STRING@0..34 "\"Get all our time machine models.\""
+        - WHITESPACE@34..35 "\n"
+        - SELECTION_SET@35..69
+            - L_CURLY@35..36 "{"
+            - WHITESPACE@36..39 "\n  "
+            - FIELD@39..67
+                - NAME@39..51
+                    - IDENT@39..51 "timeMachines"
+                - WHITESPACE@51..52 " "
+                - SELECTION_SET@52..67
+                    - L_CURLY@52..53 "{"
+                    - WHITESPACE@53..58 "\n    "
+                    - FIELD@58..63
+                        - NAME@58..63
+                            - IDENT@58..63 "model"
+                    - WHITESPACE@63..66 "\n  "
+                    - R_CURLY@66..67 "}"
+            - WHITESPACE@67..68 "\n"
+            - R_CURLY@68..69 "}"
+    - WHITESPACE@69..70 "\n"
+- ERROR@0:34 "shorthand operation must not have a description" "Get all our time machine models."
+recursion limit: 500, high: 2

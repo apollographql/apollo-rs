@@ -1,3 +1,4 @@
+use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
@@ -19,6 +20,7 @@ use indexmap::IndexMap;
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Operations).
 #[derive(Debug, Clone)]
 pub struct OperationDef {
+    pub(crate) description: Option<Description>,
     pub(crate) operation_type: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variable_definitions: Vec<VariableDef>,
@@ -29,7 +31,7 @@ pub struct OperationDef {
 impl From<OperationDef> for ast::Definition {
     fn from(x: OperationDef) -> Self {
         ast::OperationDefinition {
-            description: None, // TODO(@goto-bus-stop): represent description
+            description: x.description.map(Into::into),
             operation_type: x.operation_type.into(),
             name: x.name.map(Into::into),
             directives: Directive::to_ast(x.directives),
@@ -57,6 +59,7 @@ impl TryFrom<apollo_parser::cst::OperationDefinition> for OperationDef {
         operation_def: apollo_parser::cst::OperationDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
+            description: operation_def.description().map(Description::from),
             name: operation_def.name().map(Name::from),
             directives: operation_def
                 .directives()
@@ -192,6 +195,7 @@ impl DocumentBuilder<'_> {
         let variable_definitions = vec![];
 
         Ok(Some(OperationDef {
+            description: None,
             operation_type: *operation_type,
             name,
             variable_definitions,

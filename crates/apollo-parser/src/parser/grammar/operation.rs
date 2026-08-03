@@ -12,12 +12,13 @@ use crate::T;
 /// See: https://spec.graphql.org/October2021/#OperationDefinition
 ///
 /// *OperationDefinition*:
-///    OperationType Name? VariableDefinitions? Directives? SelectionSet
+///    Description? OperationType Name? VariableDefinitions? Directives? SelectionSet
 ///    SelectionSet
 pub(crate) fn operation_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
 
-    let description_token = p.peek_token()
+    let description_token = p
+        .peek_token()
         .filter(|token| token.kind() == TokenKind::StringValue)
         .cloned();
     if description_token.is_some() {
@@ -47,7 +48,10 @@ pub(crate) fn operation_definition(p: &mut Parser) {
         }
         Some(T!['{']) => {
             if let Some(description_token) = description_token {
-                p.err_at_token(&description_token, "shorthand operation must not have a description");
+                p.err_at_token(
+                    &description_token,
+                    "shorthand operation must not have a description",
+                );
             }
             selection::selection_set(p)
         }

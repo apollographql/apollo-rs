@@ -38,7 +38,7 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
 /// See: https://spec.graphql.org/October2021/#VariableDefinition
 ///
 /// *VariableDefinition*:
-///     Variable **:** Type DefaultValue? Directives[Const]?
+///     Description? Variable **:** Type DefaultValue? Directives[Const]?
 pub(crate) fn variable_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
 

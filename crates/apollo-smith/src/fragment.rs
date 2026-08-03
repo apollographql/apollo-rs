@@ -1,3 +1,4 @@
+use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
@@ -18,6 +19,7 @@ use indexmap::IndexSet;
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentDefinition).
 #[derive(Debug, Clone)]
 pub struct FragmentDef {
+    pub(crate) description: Option<Description>,
     pub(crate) name: Name,
     pub(crate) type_condition: TypeCondition,
     pub(crate) directives: IndexMap<Name, Directive>,
@@ -27,7 +29,7 @@ pub struct FragmentDef {
 impl From<FragmentDef> for ast::Definition {
     fn from(x: FragmentDef) -> Self {
         ast::FragmentDefinition {
-            description: None, // TODO(@goto-bus-stop): represent description
+            description: x.description.map(Into::into),
             name: x.name.into(),
             type_condition: x.type_condition.name.into(),
             directives: Directive::to_ast(x.directives),
@@ -42,6 +44,7 @@ impl TryFrom<apollo_parser::cst::FragmentDefinition> for FragmentDef {
 
     fn try_from(fragment_def: apollo_parser::cst::FragmentDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
+            description: fragment_def.description().map(Description::from),
             name: fragment_def.fragment_name().unwrap().name().unwrap().into(),
             directives: fragment_def
                 .directives()
@@ -166,6 +169,7 @@ impl DocumentBuilder<'_> {
         self.stack.pop();
 
         Ok(FragmentDef {
+            description: None,
             name,
             type_condition,
             directives,

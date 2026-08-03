@@ -13,7 +13,7 @@ use crate::T;
 /// See: https://spec.graphql.org/October2021/#FragmentDefinition
 ///
 /// *FragmentDefinition*:
-///     **fragment** FragmentName TypeCondition Directives? SelectionSet
+///     Description? **fragment** FragmentName TypeCondition Directives? SelectionSet
 pub(crate) fn fragment_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
 
