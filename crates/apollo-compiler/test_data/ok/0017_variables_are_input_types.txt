@@ -44,63 +44,51 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 327..340 @19 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 327..340 @19 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "nickname": Component {
-                        origin: Definition,
-                        node: 343..359 @19 FieldDefinition {
-                            description: None,
-                            name: "nickname",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "nickname": 343..359 @19 FieldDefinition {
+                        description: None,
+                        name: "nickname",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "barkVolume": Component {
-                        origin: Definition,
-                        node: 362..377 @19 FieldDefinition {
-                            description: None,
-                            name: "barkVolume",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "barkVolume": 362..377 @19 FieldDefinition {
+                        description: None,
+                        name: "barkVolume",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "isHouseTrained": Component {
-                        origin: Definition,
-                        node: 380..427 @19 FieldDefinition {
-                            description: None,
-                            name: "isHouseTrained",
-                            arguments: [
-                                395..416 @19 InputValueDefinition {
-                                    description: None,
-                                    name: "atOtherHomes",
-                                    ty: 409..416 @19 Named(
-                                        "Boolean",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "isHouseTrained": 380..427 @19 FieldDefinition {
+                        description: None,
+                        name: "isHouseTrained",
+                        arguments: [
+                            395..416 @19 InputValueDefinition {
+                                description: None,
+                                name: "atOtherHomes",
+                                ty: 409..416 @19 Named(
+                                    "Boolean",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -111,29 +99,23 @@ Schema {
                 name: "ComplexInput",
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 454..466 @19 InputValueDefinition {
-                            description: None,
-                            name: "name",
-                            ty: 460..466 @19 Named(
-                                "String",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "name": 454..466 @19 InputValueDefinition {
+                        description: None,
+                        name: "name",
+                        ty: 460..466 @19 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "owner": Component {
-                        origin: Definition,
-                        node: 469..482 @19 InputValueDefinition {
-                            description: None,
-                            name: "owner",
-                            ty: 476..482 @19 Named(
-                                "String",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "owner": 469..482 @19 InputValueDefinition {
+                        description: None,
+                        name: "owner",
+                        ty: 476..482 @19 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -145,63 +127,54 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "dog": Component {
-                        origin: Definition,
-                        node: 501..509 @19 FieldDefinition {
-                            description: None,
-                            name: "dog",
-                            arguments: [],
-                            ty: Named(
-                                "Dog",
-                            ),
-                            directives: [],
-                        },
+                    "dog": 501..509 @19 FieldDefinition {
+                        description: None,
+                        name: "dog",
+                        arguments: [],
+                        ty: Named(
+                            "Dog",
+                        ),
+                        directives: [],
                     },
-                    "findDog": Component {
-                        origin: Definition,
-                        node: 512..547 @19 FieldDefinition {
-                            description: None,
-                            name: "findDog",
-                            arguments: [
-                                520..541 @19 InputValueDefinition {
-                                    description: None,
-                                    name: "complex",
-                                    ty: 529..541 @19 Named(
-                                        "ComplexInput",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Dog",
-                            ),
-                            directives: [],
-                        },
+                    "findDog": 512..547 @19 FieldDefinition {
+                        description: None,
+                        name: "findDog",
+                        arguments: [
+                            520..541 @19 InputValueDefinition {
+                                description: None,
+                                name: "complex",
+                                ty: 529..541 @19 Named(
+                                    "ComplexInput",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Dog",
+                        ),
+                        directives: [],
                     },
-                    "booleanList": Component {
-                        origin: Definition,
-                        node: 550..598 @19 FieldDefinition {
-                            description: None,
-                            name: "booleanList",
-                            arguments: [
-                                562..588 @19 InputValueDefinition {
-                                    description: None,
-                                    name: "booleanListArg",
-                                    ty: 578..588 @19 List(
-                                        NonNullNamed(
-                                            "Boolean",
-                                        ),
+                    "booleanList": 550..598 @19 FieldDefinition {
+                        description: None,
+                        name: "booleanList",
+                        arguments: [
+                            562..588 @19 InputValueDefinition {
+                                description: None,
+                                name: "booleanListArg",
+                                ty: 578..588 @19 List(
+                                    NonNullNamed(
+                                        "Boolean",
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },

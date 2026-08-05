@@ -5,7 +5,6 @@
 //!
 //! [schema coordinates]: https://spec.graphql.org/September2025/#sec-Schema-Coordinates
 
-use crate::schema::Component;
 use crate::schema::DirectiveDefinition;
 use crate::schema::EnumValueDefinition;
 use crate::schema::ExtendedType;
@@ -213,9 +212,9 @@ pub enum SchemaLookupError<'coord, 'schema> {
 // Should this be non-exhaustive? Allows for future extension should unions ever be added.
 #[non_exhaustive]
 pub enum TypeAttributeLookup<'schema> {
-    Field(&'schema Component<FieldDefinition>),
-    InputField(&'schema Component<InputValueDefinition>),
-    EnumValue(&'schema Component<EnumValueDefinition>),
+    Field(&'schema Node<FieldDefinition>),
+    InputField(&'schema Node<InputValueDefinition>),
+    EnumValue(&'schema Node<EnumValueDefinition>),
 }
 
 /// Return type of [`SchemaCoordinate::lookup`].
@@ -224,9 +223,9 @@ pub enum TypeAttributeLookup<'schema> {
 pub enum SchemaCoordinateLookup<'schema> {
     Type(&'schema ExtendedType),
     Directive(&'schema Node<DirectiveDefinition>),
-    Field(&'schema Component<FieldDefinition>),
-    InputField(&'schema Component<InputValueDefinition>),
-    EnumValue(&'schema Component<EnumValueDefinition>),
+    Field(&'schema Node<FieldDefinition>),
+    InputField(&'schema Node<InputValueDefinition>),
+    EnumValue(&'schema Node<EnumValueDefinition>),
     Argument(&'schema Node<InputValueDefinition>),
 }
 
@@ -333,7 +332,7 @@ impl TypeAttributeCoordinate {
     pub fn lookup_field<'coord, 'schema>(
         &'coord self,
         schema: &'schema Schema,
-    ) -> Result<&'schema Component<FieldDefinition>, SchemaLookupError<'coord, 'schema>> {
+    ) -> Result<&'schema Node<FieldDefinition>, SchemaLookupError<'coord, 'schema>> {
         let ty = TypeCoordinate::lookup_ref(&self.ty, schema)?;
         match ty {
             ExtendedType::Object(object) => object
@@ -353,7 +352,7 @@ impl TypeAttributeCoordinate {
     pub fn lookup_input_field<'coord, 'schema>(
         &'coord self,
         schema: &'schema Schema,
-    ) -> Result<&'schema Component<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+    ) -> Result<&'schema Node<InputValueDefinition>, SchemaLookupError<'coord, 'schema>> {
         let ty = TypeCoordinate::lookup_ref(&self.ty, schema)?;
         match ty {
             ExtendedType::InputObject(object) => object
@@ -369,7 +368,7 @@ impl TypeAttributeCoordinate {
     pub fn lookup_enum_value<'coord, 'schema>(
         &'coord self,
         schema: &'schema Schema,
-    ) -> Result<&'schema Component<EnumValueDefinition>, SchemaLookupError<'coord, 'schema>> {
+    ) -> Result<&'schema Node<EnumValueDefinition>, SchemaLookupError<'coord, 'schema>> {
         let ty = TypeCoordinate::lookup_ref(&self.ty, schema)?;
         match ty {
             ExtendedType::Enum(enum_) => enum_
@@ -556,20 +555,14 @@ impl<'schema> From<&'schema Node<DirectiveDefinition>> for SchemaCoordinateLooku
     }
 }
 
-impl<'schema> From<&'schema Component<FieldDefinition>> for SchemaCoordinateLookup<'schema> {
-    fn from(inner: &'schema Component<FieldDefinition>) -> Self {
+impl<'schema> From<&'schema Node<FieldDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Node<FieldDefinition>) -> Self {
         Self::Field(inner)
     }
 }
 
-impl<'schema> From<&'schema Component<InputValueDefinition>> for SchemaCoordinateLookup<'schema> {
-    fn from(inner: &'schema Component<InputValueDefinition>) -> Self {
-        Self::InputField(inner)
-    }
-}
-
-impl<'schema> From<&'schema Component<EnumValueDefinition>> for SchemaCoordinateLookup<'schema> {
-    fn from(inner: &'schema Component<EnumValueDefinition>) -> Self {
+impl<'schema> From<&'schema Node<EnumValueDefinition>> for SchemaCoordinateLookup<'schema> {
+    fn from(inner: &'schema Node<EnumValueDefinition>) -> Self {
         Self::EnumValue(inner)
     }
 }

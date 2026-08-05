@@ -44,307 +44,250 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "f1": Component {
-                        origin: Definition,
-                        node: 15..35 @40 FieldDefinition {
-                            description: Some(
-                                15..25 @40 "LF: a\nb",
-                            ),
-                            name: "f1",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f1": 15..35 @40 FieldDefinition {
+                        description: Some(
+                            15..25 @40 "LF: a\nb",
+                        ),
+                        name: "f1",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f2": Component {
-                        origin: Definition,
-                        node: 39..63 @40 FieldDefinition {
-                            description: Some(
-                                39..53 @40 "CRLF: a\r\nb",
-                            ),
-                            name: "f2",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f2": 39..63 @40 FieldDefinition {
+                        description: Some(
+                            39..53 @40 "CRLF: a\r\nb",
+                        ),
+                        name: "f2",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f3": Component {
-                        origin: Definition,
-                        node: 67..103 @40 FieldDefinition {
-                            description: Some(
-                                67..93 @40 "a\n\nb",
-                            ),
-                            name: "f3",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f3": 67..103 @40 FieldDefinition {
+                        description: Some(
+                            67..93 @40 "a\n\nb",
+                        ),
+                        name: "f3",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f4": Component {
-                        origin: Definition,
-                        node: 107..128 @40 FieldDefinition {
-                            description: Some(
-                                107..118 @40 "a \"b\" c",
-                            ),
-                            name: "f4",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f4": 107..128 @40 FieldDefinition {
+                        description: Some(
+                            107..118 @40 "a \"b\" c",
+                        ),
+                        name: "f4",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f5": Component {
-                        origin: Definition,
-                        node: 132..161 @40 FieldDefinition {
-                            description: Some(
-                                132..151 @40 "a \"\"\"b\"\"\" c",
-                            ),
-                            name: "f5",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f5": 132..161 @40 FieldDefinition {
+                        description: Some(
+                            132..151 @40 "a \"\"\"b\"\"\" c",
+                        ),
+                        name: "f5",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f6": Component {
-                        origin: Definition,
-                        node: 165..197 @40 FieldDefinition {
-                            description: Some(
-                                165..187 @40 "regex: \\d+",
-                            ),
-                            name: "f6",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f6": 165..197 @40 FieldDefinition {
+                        description: Some(
+                            165..187 @40 "regex: \\d+",
+                        ),
+                        name: "f6",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f7": Component {
-                        origin: Definition,
-                        node: 201..245 @40 FieldDefinition {
-                            description: Some(
-                                201..235 @40 "\nLeading empty line to preserve",
-                            ),
-                            name: "f7",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f7": 201..245 @40 FieldDefinition {
+                        description: Some(
+                            201..235 @40 "\nLeading empty line to preserve",
+                        ),
+                        name: "f7",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f8": Component {
-                        origin: Definition,
-                        node: 249..304 @40 FieldDefinition {
-                            description: Some(
-                                249..294 @40 " \nLeading whitespace-only line to preserve",
-                            ),
-                            name: "f8",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f8": 249..304 @40 FieldDefinition {
+                        description: Some(
+                            249..294 @40 " \nLeading whitespace-only line to preserve",
+                        ),
+                        name: "f8",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f9": Component {
-                        origin: Definition,
-                        node: 308..353 @40 FieldDefinition {
-                            description: Some(
-                                308..343 @40 "Trailing empty line to preserve\n",
-                            ),
-                            name: "f9",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f9": 308..353 @40 FieldDefinition {
+                        description: Some(
+                            308..343 @40 "Trailing empty line to preserve\n",
+                        ),
+                        name: "f9",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f10": Component {
-                        origin: Definition,
-                        node: 357..415 @40 FieldDefinition {
-                            description: Some(
-                                357..404 @40 "Trailing whitespace-only line to preserve\n\t",
-                            ),
-                            name: "f10",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f10": 357..415 @40 FieldDefinition {
+                        description: Some(
+                            357..404 @40 "Trailing whitespace-only line to preserve\n\t",
+                        ),
+                        name: "f10",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f11": Component {
-                        origin: Definition,
-                        node: 419..449 @40 FieldDefinition {
-                            description: None,
-                            name: "f11",
-                            arguments: [
-                                423..443 @40 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 428..434 @40 Named(
-                                        "String",
+                    "f11": 419..449 @40 FieldDefinition {
+                        description: None,
+                        name: "f11",
+                        arguments: [
+                            423..443 @40 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 428..434 @40 Named(
+                                    "String",
+                                ),
+                                default_value: Some(
+                                    437..443 @40 String(
+                                        "a\nb",
                                     ),
-                                    default_value: Some(
-                                        437..443 @40 String(
-                                            "a\nb",
-                                        ),
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
+                    },
+                    "f12": 453..488 @40 FieldDefinition {
+                        description: None,
+                        name: "f12",
+                        arguments: [
+                            457..482 @40 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 462..468 @40 Named(
+                                    "String",
+                                ),
+                                default_value: Some(
+                                    471..482 @40 String(
+                                        "a \"b\" c",
                                     ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f12": Component {
-                        origin: Definition,
-                        node: 453..488 @40 FieldDefinition {
-                            description: None,
-                            name: "f12",
-                            arguments: [
-                                457..482 @40 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 462..468 @40 Named(
-                                        "String",
+                    "f13": 492..529 @40 FieldDefinition {
+                        description: None,
+                        name: "f13",
+                        arguments: [
+                            496..523 @40 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 501..507 @40 Named(
+                                    "String",
+                                ),
+                                default_value: Some(
+                                    510..523 @40 String(
+                                        "regex: \\d+",
                                     ),
-                                    default_value: Some(
-                                        471..482 @40 String(
-                                            "a \"b\" c",
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f13": Component {
-                        origin: Definition,
-                        node: 492..529 @40 FieldDefinition {
-                            description: None,
-                            name: "f13",
-                            arguments: [
-                                496..523 @40 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 501..507 @40 Named(
-                                        "String",
-                                    ),
-                                    default_value: Some(
-                                        510..523 @40 String(
-                                            "regex: \\d+",
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f14": 533..567 @40 FieldDefinition {
+                        description: Some(
+                            533..556 @40 "Trailing backslash \\",
+                        ),
+                        name: "f14",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f14": Component {
-                        origin: Definition,
-                        node: 533..567 @40 FieldDefinition {
-                            description: Some(
-                                533..556 @40 "Trailing backslash \\",
-                            ),
-                            name: "f14",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f15": 571..600 @40 FieldDefinition {
+                        description: Some(
+                            571..589 @40 "Trailing quote\"",
+                        ),
+                        name: "f15",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f15": Component {
-                        origin: Definition,
-                        node: 571..600 @40 FieldDefinition {
-                            description: Some(
-                                571..589 @40 "Trailing quote\"",
-                            ),
-                            name: "f15",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f16": 604..667 @40 FieldDefinition {
+                        description: Some(
+                            604..656 @40 "   Leading whitespace on a single line to preserve",
+                        ),
+                        name: "f16",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f16": Component {
-                        origin: Definition,
-                        node: 604..667 @40 FieldDefinition {
-                            description: Some(
-                                604..656 @40 "   Leading whitespace on a single line to preserve",
-                            ),
-                            name: "f16",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f17": 671..776 @40 FieldDefinition {
+                        description: Some(
+                            671..765 @40 "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
+                        ),
+                        name: "f17",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f17": Component {
-                        origin: Definition,
-                        node: 671..776 @40 FieldDefinition {
-                            description: Some(
-                                671..765 @40 "   Leading whitespace in multi-line string to preserve\nNo leading whitespace on second line",
-                            ),
-                            name: "f17",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f18": 780..837 @40 FieldDefinition {
+                        description: Some(
+                            780..826 @40 "\n   Leading empty line + indent to preserve",
+                        ),
+                        name: "f18",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "f18": Component {
-                        origin: Definition,
-                        node: 780..837 @40 FieldDefinition {
-                            description: Some(
-                                780..826 @40 "\n   Leading empty line + indent to preserve",
-                            ),
-                            name: "f18",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "f19": Component {
-                        origin: Definition,
-                        node: 841..945 @40 FieldDefinition {
-                            description: Some(
-                                841..934 @40 "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
-                            ),
-                            name: "f19",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "f19": 841..945 @40 FieldDefinition {
+                        description: Some(
+                            841..934 @40 "When serialized as a block string, \\\"\"\" outputs \\ in front of the escaped triple quote",
+                        ),
+                        name: "f19",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

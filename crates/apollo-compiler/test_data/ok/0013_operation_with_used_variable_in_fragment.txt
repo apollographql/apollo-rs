@@ -44,39 +44,33 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "topProducts": Component {
-                        origin: Definition,
-                        node: 180..212 @15 FieldDefinition {
-                            description: None,
-                            name: "topProducts",
-                            arguments: [
-                                192..202 @15 InputValueDefinition {
-                                    description: None,
-                                    name: "first",
-                                    ty: 199..202 @15 Named(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Product",
-                            ),
-                            directives: [],
-                        },
+                    "topProducts": 180..212 @15 FieldDefinition {
+                        description: None,
+                        name: "topProducts",
+                        arguments: [
+                            192..202 @15 InputValueDefinition {
+                                description: None,
+                                name: "first",
+                                ty: 199..202 @15 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Product",
+                        ),
+                        directives: [],
                     },
-                    "reviews": Component {
-                        origin: Definition,
-                        node: 216..231 @15 FieldDefinition {
-                            description: None,
-                            name: "reviews",
-                            arguments: [],
-                            ty: Named(
-                                "Review",
-                            ),
-                            directives: [],
-                        },
+                    "reviews": 216..231 @15 FieldDefinition {
+                        description: None,
+                        name: "reviews",
+                        arguments: [],
+                        ty: Named(
+                            "Review",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -88,17 +82,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "message": Component {
-                        origin: Definition,
-                        node: 251..267 @15 FieldDefinition {
-                            description: None,
-                            name: "message",
-                            arguments: [],
-                            ty: Named(
-                                "Message",
-                            ),
-                            directives: [],
-                        },
+                    "message": 251..267 @15 FieldDefinition {
+                        description: None,
+                        name: "message",
+                        arguments: [],
+                        ty: Named(
+                            "Message",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -110,39 +101,33 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "body": Component {
-                        origin: Definition,
-                        node: 288..300 @15 FieldDefinition {
-                            description: None,
-                            name: "body",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "body": 288..300 @15 FieldDefinition {
+                        description: None,
+                        name: "body",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "sender": Component {
-                        origin: Definition,
-                        node: 303..336 @15 FieldDefinition {
-                            description: None,
-                            name: "sender",
-                            arguments: [
-                                310..327 @15 InputValueDefinition {
-                                    description: None,
-                                    name: "attribute",
-                                    ty: 321..327 @15 Named(
-                                        "String",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "sender": 303..336 @15 FieldDefinition {
+                        description: None,
+                        name: "sender",
+                        arguments: [
+                            310..327 @15 InputValueDefinition {
+                                description: None,
+                                name: "attribute",
+                                ty: 321..327 @15 Named(
+                                    "String",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -154,39 +139,33 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 357..369 @15 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 357..369 @15 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "price": Component {
-                        origin: Definition,
-                        node: 372..397 @15 FieldDefinition {
-                            description: None,
-                            name: "price",
-                            arguments: [
-                                378..391 @15 InputValueDefinition {
-                                    description: None,
-                                    name: "setPrice",
-                                    ty: 388..391 @15 Named(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "price": 372..397 @15 FieldDefinition {
+                        description: None,
+                        name: "price",
+                        arguments: [
+                            378..391 @15 InputValueDefinition {
+                                description: None,
+                                name: "setPrice",
+                                ty: 388..391 @15 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

@@ -44,34 +44,28 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "a": Component {
-                        origin: Definition,
-                        node: 16..34 @52 FieldDefinition {
-                            description: None,
-                            name: "a",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [
-                                23..34 @52 Directive {
-                                    name: "deprecated",
-                                    arguments: [],
-                                },
-                            ],
-                        },
+                    "a": 16..34 @52 FieldDefinition {
+                        description: None,
+                        name: "a",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [
+                            23..34 @52 Directive {
+                                name: "deprecated",
+                                arguments: [],
+                            },
+                        ],
                     },
-                    "b": Component {
-                        origin: Definition,
-                        node: 37..43 @52 FieldDefinition {
-                            description: None,
-                            name: "b",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "b": 37..43 @52 FieldDefinition {
+                        description: None,
+                        name: "b",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -85,34 +79,28 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "a": Component {
-                        origin: Definition,
-                        node: 75..93 @52 FieldDefinition {
-                            description: None,
-                            name: "a",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [
-                                82..93 @52 Directive {
-                                    name: "deprecated",
-                                    arguments: [],
-                                },
-                            ],
-                        },
+                    "a": 75..93 @52 FieldDefinition {
+                        description: None,
+                        name: "a",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [
+                            82..93 @52 Directive {
+                                name: "deprecated",
+                                arguments: [],
+                            },
+                        ],
                     },
-                    "b": Component {
-                        origin: Definition,
-                        node: 96..102 @52 FieldDefinition {
-                            description: None,
-                            name: "b",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "b": 96..102 @52 FieldDefinition {
+                        description: None,
+                        name: "b",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

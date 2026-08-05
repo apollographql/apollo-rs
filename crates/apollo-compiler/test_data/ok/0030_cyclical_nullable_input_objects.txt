@@ -44,39 +44,33 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 17..29 @31 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 17..29 @31 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "example": Component {
-                        origin: Definition,
-                        node: 34..58 @31 FieldDefinition {
-                            description: None,
-                            name: "example",
-                            arguments: [
-                                42..52 @31 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 47..52 @31 Named(
-                                        "First",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "example": 34..58 @31 FieldDefinition {
+                        description: None,
+                        name: "example",
+                        arguments: [
+                            42..52 @31 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 47..52 @31 Named(
+                                    "First",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -87,29 +81,23 @@ Schema {
                 name: "First",
                 directives: [],
                 fields: {
-                    "second": Component {
-                        origin: Definition,
-                        node: 78..92 @31 InputValueDefinition {
-                            description: None,
-                            name: "second",
-                            ty: 86..92 @31 Named(
-                                "Second",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "second": 78..92 @31 InputValueDefinition {
+                        description: None,
+                        name: "second",
+                        ty: 86..92 @31 Named(
+                            "Second",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "value": Component {
-                        origin: Definition,
-                        node: 95..108 @31 InputValueDefinition {
-                            description: None,
-                            name: "value",
-                            ty: 102..108 @31 Named(
-                                "String",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "value": 95..108 @31 InputValueDefinition {
+                        description: None,
+                        name: "value",
+                        ty: 102..108 @31 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -120,31 +108,25 @@ Schema {
                 name: "Second",
                 directives: [],
                 fields: {
-                    "third": Component {
-                        origin: Definition,
-                        node: 129..145 @31 InputValueDefinition {
-                            description: None,
-                            name: "third",
-                            ty: 136..145 @31 NonNullList(
-                                NonNullNamed(
-                                    "Third",
-                                ),
+                    "third": 129..145 @31 InputValueDefinition {
+                        description: None,
+                        name: "third",
+                        ty: 136..145 @31 NonNullList(
+                            NonNullNamed(
+                                "Third",
                             ),
-                            default_value: None,
-                            directives: [],
-                        },
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "value": Component {
-                        origin: Definition,
-                        node: 148..161 @31 InputValueDefinition {
-                            description: None,
-                            name: "value",
-                            ty: 155..161 @31 Named(
-                                "String",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "value": 148..161 @31 InputValueDefinition {
+                        description: None,
+                        name: "value",
+                        ty: 155..161 @31 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -155,29 +137,23 @@ Schema {
                 name: "Third",
                 directives: [],
                 fields: {
-                    "fourth": Component {
-                        origin: Definition,
-                        node: 181..195 @31 InputValueDefinition {
-                            description: None,
-                            name: "fourth",
-                            ty: 189..195 @31 Named(
-                                "Fourth",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "fourth": 181..195 @31 InputValueDefinition {
+                        description: None,
+                        name: "fourth",
+                        ty: 189..195 @31 Named(
+                            "Fourth",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "value": Component {
-                        origin: Definition,
-                        node: 198..211 @31 InputValueDefinition {
-                            description: None,
-                            name: "value",
-                            ty: 205..211 @31 Named(
-                                "String",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "value": 198..211 @31 InputValueDefinition {
+                        description: None,
+                        name: "value",
+                        ty: 205..211 @31 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -188,17 +164,14 @@ Schema {
                 name: "Fourth",
                 directives: [],
                 fields: {
-                    "first": Component {
-                        origin: Definition,
-                        node: 232..244 @31 InputValueDefinition {
-                            description: None,
-                            name: "first",
-                            ty: 239..244 @31 Named(
-                                "First",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "first": 232..244 @31 InputValueDefinition {
+                        description: None,
+                        name: "first",
+                        ty: 239..244 @31 Named(
+                            "First",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },

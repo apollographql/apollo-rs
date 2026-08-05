@@ -45,17 +45,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 17..29 @37 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 17..29 @37 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -67,27 +64,24 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "add": Component {
-                        origin: Definition,
-                        node: 52..79 @37 FieldDefinition {
-                            description: None,
-                            name: "add",
-                            arguments: [
-                                56..69 @37 InputValueDefinition {
-                                    description: None,
-                                    name: "name",
-                                    ty: 62..69 @37 NonNullNamed(
-                                        "String",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Result",
-                            ),
-                            directives: [],
-                        },
+                    "add": 52..79 @37 FieldDefinition {
+                        description: None,
+                        name: "add",
+                        arguments: [
+                            56..69 @37 InputValueDefinition {
+                                description: None,
+                                name: "name",
+                                ty: 62..69 @37 NonNullNamed(
+                                    "String",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Result",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -99,17 +93,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 99..109 @37 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "id": 99..109 @37 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

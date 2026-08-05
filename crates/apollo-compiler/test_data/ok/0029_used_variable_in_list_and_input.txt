@@ -44,31 +44,28 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "attributes": Component {
-                        origin: Definition,
-                        node: 17..63 @30 FieldDefinition {
-                            description: None,
-                            name: "attributes",
-                            arguments: [
-                                28..51 @30 InputValueDefinition {
-                                    description: None,
-                                    name: "includeNames",
-                                    ty: 42..51 @30 List(
-                                        NonNullNamed(
-                                            "String",
-                                        ),
+                    "attributes": 17..63 @30 FieldDefinition {
+                        description: None,
+                        name: "attributes",
+                        arguments: [
+                            28..51 @30 InputValueDefinition {
+                                description: None,
+                                name: "includeNames",
+                                ty: 42..51 @30 List(
+                                    NonNullNamed(
+                                        "String",
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: List(
-                                NonNullNamed(
-                                    "String",
                                 ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: List(
+                            NonNullNamed(
+                                "String",
                             ),
-                            directives: [],
-                        },
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -79,21 +76,18 @@ Schema {
                 name: "Opts",
                 directives: [],
                 fields: {
-                    "prop": Component {
-                        origin: Definition,
-                        node: 82..97 @30 InputValueDefinition {
-                            description: None,
-                            name: "prop",
-                            ty: 88..97 @30 NonNullList(
-                                NonNullList(
-                                    Named(
-                                        "Int",
-                                    ),
+                    "prop": 82..97 @30 InputValueDefinition {
+                        description: None,
+                        name: "prop",
+                        ty: 88..97 @30 NonNullList(
+                            NonNullList(
+                                Named(
+                                    "Int",
                                 ),
                             ),
-                            default_value: None,
-                            directives: [],
-                        },
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -105,29 +99,26 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 116..152 @30 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [
-                                127..137 @30 InputValueDefinition {
-                                    description: None,
-                                    name: "opts",
-                                    ty: 133..137 @30 Named(
-                                        "Opts",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: List(
-                                Named(
-                                    "Product",
+                    "field": 116..152 @30 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [
+                            127..137 @30 InputValueDefinition {
+                                description: None,
+                                name: "opts",
+                                ty: 133..137 @30 Named(
+                                    "Opts",
                                 ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: List(
+                            Named(
+                                "Product",
                             ),
-                            directives: [],
-                        },
+                        ),
+                        directives: [],
                     },
                 },
             },

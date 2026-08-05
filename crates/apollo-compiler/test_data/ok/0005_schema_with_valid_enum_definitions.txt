@@ -43,29 +43,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "pet": Component {
-                        origin: Definition,
-                        node: 15..23 @7 FieldDefinition {
-                            description: None,
-                            name: "pet",
-                            arguments: [],
-                            ty: Named(
-                                "Pet",
-                            ),
-                            directives: [],
-                        },
+                    "pet": 15..23 @7 FieldDefinition {
+                        description: None,
+                        name: "pet",
+                        arguments: [],
+                        ty: Named(
+                            "Pet",
+                        ),
+                        directives: [],
                     },
-                    "snacks": Component {
-                        origin: Definition,
-                        node: 27..40 @7 FieldDefinition {
-                            description: None,
-                            name: "snacks",
-                            arguments: [],
-                            ty: Named(
-                                "Snack",
-                            ),
-                            directives: [],
-                        },
+                    "snacks": 27..40 @7 FieldDefinition {
+                        description: None,
+                        name: "snacks",
+                        arguments: [],
+                        ty: Named(
+                            "Snack",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -76,29 +70,20 @@ Schema {
                 name: "Pet",
                 directives: [],
                 values: {
-                    "CAT": Component {
-                        origin: Definition,
-                        node: 60..63 @7 EnumValueDefinition {
-                            description: None,
-                            value: "CAT",
-                            directives: [],
-                        },
+                    "CAT": 60..63 @7 EnumValueDefinition {
+                        description: None,
+                        value: "CAT",
+                        directives: [],
                     },
-                    "DOG": Component {
-                        origin: Definition,
-                        node: 68..71 @7 EnumValueDefinition {
-                            description: None,
-                            value: "DOG",
-                            directives: [],
-                        },
+                    "DOG": 68..71 @7 EnumValueDefinition {
+                        description: None,
+                        value: "DOG",
+                        directives: [],
                     },
-                    "FOX": Component {
-                        origin: Definition,
-                        node: 76..79 @7 EnumValueDefinition {
-                            description: None,
-                            value: "FOX",
-                            directives: [],
-                        },
+                    "FOX": 76..79 @7 EnumValueDefinition {
+                        description: None,
+                        value: "FOX",
+                        directives: [],
                     },
                 },
             },
@@ -109,29 +94,20 @@ Schema {
                 name: "Snack",
                 directives: [],
                 values: {
-                    "THRIVE_PET_FOODS": Component {
-                        origin: Definition,
-                        node: 100..116 @7 EnumValueDefinition {
-                            description: None,
-                            value: "THRIVE_PET_FOODS",
-                            directives: [],
-                        },
+                    "THRIVE_PET_FOODS": 100..116 @7 EnumValueDefinition {
+                        description: None,
+                        value: "THRIVE_PET_FOODS",
+                        directives: [],
                     },
-                    "LILYS_KITCHEN": Component {
-                        origin: Definition,
-                        node: 121..134 @7 EnumValueDefinition {
-                            description: None,
-                            value: "LILYS_KITCHEN",
-                            directives: [],
-                        },
+                    "LILYS_KITCHEN": 121..134 @7 EnumValueDefinition {
+                        description: None,
+                        value: "LILYS_KITCHEN",
+                        directives: [],
                     },
-                    "ACANA": Component {
-                        origin: Definition,
-                        node: 139..144 @7 EnumValueDefinition {
-                            description: None,
-                            value: "ACANA",
-                            directives: [],
-                        },
+                    "ACANA": 139..144 @7 EnumValueDefinition {
+                        description: None,
+                        value: "ACANA",
+                        directives: [],
                     },
                 },
             },

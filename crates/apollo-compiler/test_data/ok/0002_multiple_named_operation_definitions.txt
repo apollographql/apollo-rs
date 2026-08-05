@@ -43,17 +43,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "cat": Component {
-                        origin: Definition,
-                        node: 124..132 @4 FieldDefinition {
-                            description: None,
-                            name: "cat",
-                            arguments: [],
-                            ty: Named(
-                                "Pet",
-                            ),
-                            directives: [],
-                        },
+                    "cat": 124..132 @4 FieldDefinition {
+                        description: None,
+                        name: "cat",
+                        arguments: [],
+                        ty: Named(
+                            "Pet",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -65,29 +62,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 149..161 @4 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 149..161 @4 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "owner": Component {
-                        origin: Definition,
-                        node: 165..180 @4 FieldDefinition {
-                            description: None,
-                            name: "owner",
-                            arguments: [],
-                            ty: Named(
-                                "PetOwner",
-                            ),
-                            directives: [],
-                        },
+                    "owner": 165..180 @4 FieldDefinition {
+                        description: None,
+                        name: "owner",
+                        arguments: [],
+                        ty: Named(
+                            "PetOwner",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -99,17 +90,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 202..214 @4 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 202..214 @4 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

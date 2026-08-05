@@ -43,17 +43,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "cat": Component {
-                        origin: Definition,
-                        node: 48..56 @3 FieldDefinition {
-                            description: None,
-                            name: "cat",
-                            arguments: [],
-                            ty: Named(
-                                "Pet",
-                            ),
-                            directives: [],
-                        },
+                    "cat": 48..56 @3 FieldDefinition {
+                        description: None,
+                        name: "cat",
+                        arguments: [],
+                        ty: Named(
+                            "Pet",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -65,17 +62,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 73..85 @3 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 73..85 @3 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

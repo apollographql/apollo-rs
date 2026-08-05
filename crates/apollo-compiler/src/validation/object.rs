@@ -15,7 +15,7 @@ pub(crate) fn validate_object_type_definition(
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
-        object.directives.iter_ast(),
+        object.directives.iter(),
         ast::DirectiveLocation::Object,
         // objects don't use variables
         Default::default(),

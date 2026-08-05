@@ -44,17 +44,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "createdAt": Component {
-                        origin: Definition,
-                        node: 196..211 @41 FieldDefinition {
-                            description: None,
-                            name: "createdAt",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "createdAt": 196..211 @41 FieldDefinition {
+                        description: None,
+                        name: "createdAt",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -66,31 +63,25 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "createdAt": Component {
-                        origin: Definition,
-                        node: 230..244 @41 FieldDefinition {
-                            description: None,
-                            name: "createdAt",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "createdAt": 230..244 @41 FieldDefinition {
+                        description: None,
+                        name: "createdAt",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "subselection": Component {
-                        origin: Definition,
-                        node: 247..276 @41 FieldDefinition {
-                            description: None,
-                            name: "subselection",
-                            arguments: [],
-                            ty: List(
-                                NonNullNamed(
-                                    "Subselection",
-                                ),
+                    "subselection": 247..276 @41 FieldDefinition {
+                        description: None,
+                        name: "subselection",
+                        arguments: [],
+                        ty: List(
+                            NonNullNamed(
+                                "Subselection",
                             ),
-                            directives: [],
-                        },
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -102,17 +93,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "issue755": Component {
-                        origin: Definition,
-                        node: 295..310 @41 FieldDefinition {
-                            description: None,
-                            name: "issue755",
-                            arguments: [],
-                            ty: Named(
-                                "Issue",
-                            ),
-                            directives: [],
-                        },
+                    "issue755": 295..310 @41 FieldDefinition {
+                        description: None,
+                        name: "issue755",
+                        arguments: [],
+                        ty: Named(
+                            "Issue",
+                        ),
+                        directives: [],
                     },
                 },
             },

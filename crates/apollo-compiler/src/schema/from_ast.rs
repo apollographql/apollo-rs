@@ -470,7 +470,7 @@ impl SchemaDefinition {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
             query: None,
             mutation: None,
@@ -493,7 +493,7 @@ impl SchemaDefinition {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
         self.add_root_operations(errors, origin, &extension.root_operations)
     }
@@ -537,7 +537,7 @@ impl ScalarType {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
         };
         for def in &extensions {
@@ -558,7 +558,7 @@ impl ScalarType {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
     }
 }
@@ -590,13 +590,13 @@ impl ObjectType {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
             fields: collect_sticky(
                 definition
                     .fields
                     .iter()
-                    .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
+                    .map(|field| (&field.name, field.with_origin(ComponentOrigin::Definition))),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -626,7 +626,7 @@ impl ObjectType {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
         extend_sticky_set(
             &mut self.implements_interfaces,
@@ -649,7 +649,7 @@ impl ObjectType {
             extension
                 .fields
                 .iter()
-                .map(|field| (&field.name, field.to_component(origin.clone()))),
+                .map(|field| (&field.name, field.with_origin(origin.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
@@ -690,13 +690,13 @@ impl InterfaceType {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
             fields: collect_sticky(
                 definition
                     .fields
                     .iter()
-                    .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
+                    .map(|field| (&field.name, field.with_origin(ComponentOrigin::Definition))),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -726,7 +726,7 @@ impl InterfaceType {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
         extend_sticky_set(
             &mut self.implements_interfaces,
@@ -749,7 +749,7 @@ impl InterfaceType {
             extension
                 .fields
                 .iter()
-                .map(|field| (&field.name, field.to_component(origin.clone()))),
+                .map(|field| (&field.name, field.with_origin(origin.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
@@ -775,7 +775,7 @@ impl UnionType {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
             members: collect_sticky_set(
                 definition.members.iter().map(|name| name.to_node(None)),
@@ -808,7 +808,7 @@ impl UnionType {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
         extend_sticky_set(
             &mut self.members,
@@ -841,13 +841,13 @@ impl EnumType {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
             values: collect_sticky(
                 definition.values.iter().map(|value_def| {
                     (
                         &value_def.value,
-                        value_def.to_component(ComponentOrigin::Definition),
+                        value_def.with_origin(ComponentOrigin::Definition),
                     )
                 }),
                 |prev_key, dup_value| {
@@ -879,14 +879,14 @@ impl EnumType {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
         extend_sticky(
             &mut self.values,
             extension
                 .values
                 .iter()
-                .map(|value_def| (&value_def.value, value_def.to_component(origin.clone()))),
+                .map(|value_def| (&value_def.value, value_def.with_origin(origin.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
@@ -912,13 +912,13 @@ impl InputObjectType {
             directives: definition
                 .directives
                 .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .map(|d| d.with_origin(ComponentOrigin::Definition))
                 .collect(),
             fields: collect_sticky(
                 definition
                     .fields
                     .iter()
-                    .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
+                    .map(|field| (&field.name, field.with_origin(ComponentOrigin::Definition))),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -948,14 +948,14 @@ impl InputObjectType {
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_origin(origin.clone())),
         );
         extend_sticky(
             &mut self.fields,
             extension
                 .fields
                 .iter()
-                .map(|field| (&field.name, field.to_component(origin.clone()))),
+                .map(|field| (&field.name, field.with_origin(origin.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
