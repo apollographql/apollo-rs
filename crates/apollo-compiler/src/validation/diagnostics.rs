@@ -384,6 +384,30 @@ pub(crate) enum DiagnosticData {
         type_name: Name,
         extension_location: Option<SourceSpan>,
     },
+    #[error("{describe} `{name}` is required (non-null without a default value) and must not be deprecated")]
+    DeprecatedRequiredInputValue {
+        name: Name,
+        describe: &'static str,
+        definition_location: Option<SourceSpan>,
+    },
+    #[error(
+        "field `{name}.{field}` is deprecated but implements the non-deprecated interface field `{interface}.{field}`"
+    )]
+    DeprecatedImplementationField {
+        name: Name,
+        interface: Name,
+        field: Name,
+        field_location: Option<SourceSpan>,
+        interface_field_location: Option<SourceSpan>,
+    },
+    #[error(
+        "the default value of input object field `{type_name}.{field_name}` cycles back to itself"
+    )]
+    RecursiveInputObjectDefaultValue {
+        type_name: Name,
+        field_name: Name,
+        default_value_location: Option<SourceSpan>,
+    },
 }
 
 /// Shared help text for the two @oneOf schema-definition errors.
@@ -970,6 +994,47 @@ impl DiagnosticData {
                 report.with_label_opt(*extension_location, "@oneOf applied here via extension");
                 report.with_help(
                     "The @oneOf directive must be provided on the input object type definition, not an extension.",
+                );
+            }
+            DiagnosticData::DeprecatedRequiredInputValue {
+                name,
+                describe,
+                definition_location,
+            } => {
+                report.with_label_opt(main_location, "`@deprecated` used here");
+                report.with_label_opt(
+                    *definition_location,
+                    format_args!("{describe} `{name}` defined as required here"),
+                );
+                report.with_help(
+                    "make the type nullable or add a default value, or remove `@deprecated`.",
+                );
+            }
+            DiagnosticData::DeprecatedImplementationField {
+                interface,
+                field,
+                interface_field_location,
+                ..
+            } => {
+                report.with_label_opt(main_location, "this field is deprecated");
+                report.with_label_opt(
+                    *interface_field_location,
+                    format_args!("`{interface}.{field}` is not deprecated"),
+                );
+                report.with_help(format_args!(
+                    "deprecate `{interface}.{field}` as well, or remove `@deprecated` from the implementing field."
+                ));
+            }
+            DiagnosticData::RecursiveInputObjectDefaultValue {
+                default_value_location,
+                ..
+            } => {
+                report.with_label_opt(
+                    *default_value_location,
+                    "coercing this default value requires coercing it again",
+                );
+                report.with_help(
+                    "break the cycle by providing an explicit value for one of the fields involved, or by removing a default value.",
                 );
             }
         }

@@ -47,7 +47,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2026-mm-dd
 
-> Important: 2 breaking changes below, indicated by **BREAKING**
+> Important: 3 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
 
@@ -73,6 +73,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Code that constructs these structures directly needs to add
   `description: None` (or a description!). A description on a query shorthand
   (bare braced selection set) is a parse error.
+
+- **September 2025 validation and execution rules**
+
+  * Default values of arguments and input object fields are now validated
+    against their type's input coercion rules ([issue/928]), and
+    `InputObjectDefaultValueHasCycle` rejects cyclic default values.
+  * `@deprecated` must not appear on required (non-null without a default)
+    arguments or input object fields.
+  * `IsValidImplementation`: an implementing field must not be deprecated when
+    the interface field it implements is not deprecated.
+  * At execution time, default values are coerced (applying defaults of nested
+    input object fields) instead of being used verbatim.
+  * `ID` results that are numeric are serialized as strings.
+
+[issue/928]: https://github.com/apollographql/apollo-rs/issues/928
 
 ## Features
 

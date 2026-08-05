@@ -39,7 +39,7 @@ fn test() {
         }
 
         input In {
-            a: Int! @deprecated
+            a: Int @deprecated
             b: Int @deprecated
         }
 
@@ -317,6 +317,50 @@ fn mixed() {
                 }
               ]
             }
+          }
+        }"#]]
+    .assert_eq(&response);
+}
+
+/// https://spec.graphql.org/September2025/#sec-ID
+/// > While it is often numeric, it must always serialize as a String.
+#[test]
+fn numeric_id_serializes_as_string() {
+    let sdl = r#"
+      type Query {
+        id: ID!
+      }
+    "#;
+    let query = "{ id }";
+
+    struct InitialValue;
+
+    impl ObjectValue for InitialValue {
+        fn type_name(&self) -> &str {
+            "Query"
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            info: &ResolveInfo<'a>,
+        ) -> Result<ResolvedValue<'a>, ExecutionError> {
+            match info.field_name() {
+                "id" => Ok(ResolvedValue::leaf(4)),
+                _ => Err(self.unknown_field_error(info)),
+            }
+        }
+    }
+
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+    let response = Execution::new(&schema, &document)
+        .execute_sync(&InitialValue)
+        .unwrap();
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "data": {
+            "id": "4"
           }
         }"#]]
     .assert_eq(&response);

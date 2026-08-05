@@ -11,7 +11,7 @@ use crate::validation::RecursionStack;
 use crate::Name;
 use crate::Node;
 
-// Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
+// Implements [Circular References](https://spec.graphql.org/September2025/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.
 struct FindRecursiveInputValue<'a> {
     schema: &'a crate::Schema,
@@ -133,6 +133,75 @@ impl FindOneOfCycle<'_> {
     }
 }
 
+/// Implements [InputObjectDefaultValueHasCycle](https://spec.graphql.org/September2025/#InputObjectDefaultValueHasCycle())
+/// from input object type validation: default values must not form a cycle
+/// where coercing one field's default (transitively, through omitted fields
+/// of nested input objects) requires coercing that same default again.
+///
+/// Returns the field definition whose default value closes a cycle, if any.
+fn input_object_default_value_has_cycle<'s>(
+    schema: &'s crate::Schema,
+    input_object: &'s InputObjectType,
+    default_value: Option<&'s ast::Value>,
+    visited_fields: &mut Vec<(&'s Name, &'s Name)>,
+) -> Option<&'s Node<ast::InputValueDefinition>> {
+    match default_value {
+        Some(ast::Value::List(items)) => items.iter().find_map(|item| {
+            input_object_default_value_has_cycle(schema, input_object, Some(item), visited_fields)
+        }),
+        // A missing default value is treated as an empty map: coercion would
+        // fall back to the default value of every field.
+        Some(ast::Value::Object(_)) | None => {
+            let object = match default_value {
+                Some(ast::Value::Object(object)) => &object[..],
+                _ => &[],
+            };
+            input_object.fields.values().find_map(|field| {
+                input_field_default_value_has_cycle(
+                    schema,
+                    &input_object.name,
+                    field,
+                    object,
+                    visited_fields,
+                )
+            })
+        }
+        Some(_) => None,
+    }
+}
+
+/// Implements [InputFieldDefaultValueHasCycle](https://spec.graphql.org/September2025/#InputFieldDefaultValueHasCycle())
+fn input_field_default_value_has_cycle<'s>(
+    schema: &'s crate::Schema,
+    input_object_name: &'s Name,
+    field: &'s Node<ast::InputValueDefinition>,
+    default_value: &'s [(Name, Node<ast::Value>)],
+    visited_fields: &mut Vec<(&'s Name, &'s Name)>,
+) -> Option<&'s Node<ast::InputValueDefinition>> {
+    let named_field_type = field.ty.inner_named_type();
+    let field_type = schema.get_input_object(named_field_type)?;
+    if let Some((_, provided)) = default_value.iter().find(|(name, _)| *name == field.name) {
+        // An explicitly provided value never triggers this field's own default,
+        // so the field is not added to the visited set.
+        input_object_default_value_has_cycle(schema, field_type, Some(provided), visited_fields)
+    } else {
+        let field_default = field.default_value.as_deref()?;
+        let key = (input_object_name, &field.name);
+        if visited_fields.contains(&key) {
+            return Some(field);
+        }
+        visited_fields.push(key);
+        let result = input_object_default_value_has_cycle(
+            schema,
+            field_type,
+            Some(field_default),
+            visited_fields,
+        );
+        visited_fields.pop();
+        result
+    }
+}
+
 pub(crate) fn validate_input_object_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
@@ -251,8 +320,23 @@ pub(crate) fn validate_input_object_definition(
         "an input object field",
     );
 
+    // https://spec.graphql.org/September2025/#sec-Input-Objects.Type-Validation
+    // > InputObjectDefaultValueHasCycle(inputObject) must be false.
+    if let Some(field) =
+        input_object_default_value_has_cycle(schema, input_object, None, &mut Vec::new())
+    {
+        diagnostics.push(
+            field.location(),
+            DiagnosticData::RecursiveInputObjectDefaultValue {
+                type_name: input_object.name.clone(),
+                field_name: field.name.clone(),
+                default_value_location: field.default_value.as_ref().and_then(|v| v.location()),
+            },
+        );
+    }
+
     // validate there is at least one input value on the input object type
-    // https://spec.graphql.org/draft/#sel-HAHhBXDBABAB5BvgD
+    // https://spec.graphql.org/September2025/#sec-Input-Objects.Type-Validation
     if input_object.fields.is_empty() {
         diagnostics.push(
             input_object.location(),
@@ -327,6 +411,21 @@ pub(crate) fn validate_input_value_definitions(
             directive_location,
             Default::default(), // No variables in an input value definition
         );
+        // https://spec.graphql.org/September2025/#sec--deprecated
+        // > The @deprecated directive must not appear on required (non-null
+        // > without a default) arguments or input object field definitions.
+        if input_value.ty.is_non_null() && input_value.default_value.is_none() {
+            if let Some(deprecated) = input_value.directives.get("deprecated") {
+                diagnostics.push(
+                    deprecated.location(),
+                    DiagnosticData::DeprecatedRequiredInputValue {
+                        name: input_value.name.clone(),
+                        describe,
+                        definition_location: input_value.location(),
+                    },
+                );
+            }
+        }
         // Input values must only contain input types.
         let loc = input_value.location();
         let named_type = input_value.ty.inner_named_type();
@@ -342,13 +441,20 @@ pub(crate) fn validate_input_value_definitions(
                     },
                 );
             }
-            // TODO: Validate default values in apollo-compiler 2.0
-            // https://github.com/apollographql/apollo-rs/issues/928
-            //
-            // if let Some(default) = &input_value.default_value {
-            //     let var_defs = &[];
-            //     value_of_correct_type(diagnostics, schema, &input_value.ty, default, var_defs);
-            // }
+            // https://spec.graphql.org/September2025/#sec-Objects.Type-Validation
+            // > If the argument has a default value it must be compatible with
+            // > argumentType as per the coercion rules for that type.
+            if let Some(default) = &input_value.default_value {
+                let var_defs = &[];
+                super::value::value_of_correct_type(
+                    diagnostics,
+                    schema,
+                    &input_value.ty,
+                    default,
+                    var_defs,
+                    None,
+                );
+            }
         } else if is_built_in {
             // `validate_schema()` will insert the missing definition
         } else {
