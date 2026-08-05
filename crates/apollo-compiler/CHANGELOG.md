@@ -73,6 +73,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     "exactly one non-null field" invariant for `@oneOf` types.
   - `InputObjectType::is_one_of() -> bool` convenience method added.
 
+- **`Component<T>`, `ComponentName`, and `ComponentOrigin` are removed; `Node<T>` now tracks extension origin via `Option<ExtensionId>`** ([#851](https://github.com/apollographql/apollo-rs/issues/851))
+
+  Every `Node<T>` now carries an optional `ExtensionId` in its header alongside
+  the source location, so the `Component<T>` wrapper is no longer needed.
+  There is now a single `DirectiveList` type: `schema::DirectiveList` is a
+  re-export of `ast::DirectiveList`, so functions can take a directive list
+  from either a schema or an executable document.
+
+  Extension IDs are only meaningful for schema components. Nodes in executable
+  documents (and nodes created programmatically) have `extension_id() == None`.
+
+  Migration guide:
+
+  * `component.node` → the component itself (it *is* the `Node` now)
+  * `component.origin.extension_id()` → `node.extension_id()`
+  * `node.to_component(origin)` → `node.with_extension_id(id)` or `node.clone()`
+  * `name.to_component(origin)` → `name.to_node(Option<ExtensionId>)`
+  * `component_name.name` → the `Node<Name>` derefs to `Name`
+  * `schema::DirectiveList::iter_ast()` → `.iter()`
+  * `ty.iter_origins()` → `ty.iter_extension_ids()`
+  * `ExtensionId` is re-exported from both the crate root and the `schema` module.
+
+  Note that setting an extension ID with `with_extension_id`/`set_extension_id`
+  on a shared `Node` clones the inner value (copy-on-write, like `make_mut`).
+
 - **Built-in schema follows the September 2025 specification - [tninesling], [pull/1080]**
 
   * `includeDeprecated` introspection arguments are now non-null

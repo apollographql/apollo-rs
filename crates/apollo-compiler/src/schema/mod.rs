@@ -9,11 +9,12 @@
 //!
 //! * Everything from [type system extensions] is stored
 //!   together with corresponding “main” definitions,
-//!   while still preserving extension origins with [`Node<_>`].
 //!   so that most consumers don’t need to care about extensions at all,
+//!   while still preserving extension origins in each [`Node<_>`]’s
+//!   [`origin`][Node::origin].
 //!   (For example, some directives can be applied to an object type extensions to affect
 //!   fields defined in the same extension but not other fields of the object type.)
-//!   See [`Component`].
+//!   See [`ExtensionId`].
 //!
 //! [type system extensions]: https://spec.graphql.org/September2025/#sec-Type-System-Extensions
 //!
@@ -34,9 +35,9 @@
 //!
 //! ## Structural sharing and mutation
 //!
-//! Many parts of a `Schema` are reference-counted with [`Node`] (like in AST) or [`Component`].
+//! Many parts of a `Schema` are reference-counted with [`Node`] (like in AST).
 //! This allows sharing nodes between documents without cloning entire subtrees.
-//! To modify a node or component,
+//! To modify a node,
 //! the [`make_mut`][Node::make_mut] method provides copy-on-write semantics.
 //!
 //! ## Validation
@@ -78,14 +79,10 @@ use crate::Node;
 use std::path::Path;
 use std::sync::OnceLock;
 
-mod component;
 mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
-pub use self::component::Component;
-pub use self::component::ComponentName;
-pub use self::component::ExtensionId;
 pub use self::from_ast::SchemaBuilder;
 pub use crate::ast::Directive;
 pub use crate::ast::DirectiveDefinition;
@@ -97,6 +94,7 @@ pub use crate::ast::InputValueDefinition;
 pub use crate::ast::NamedType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
+pub use crate::node::ExtensionId;
 
 /// High-level representation of a GraphQL type system document a.k.a. schema.
 #[derive(Clone)]
@@ -669,9 +667,7 @@ impl SchemaDefinition {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 }
 
@@ -867,9 +863,7 @@ impl ExtendedType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -889,9 +883,7 @@ impl ScalarType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -919,9 +911,7 @@ impl ObjectType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -949,9 +939,7 @@ impl InterfaceType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -963,10 +951,11 @@ impl UnionType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
-        self.directives
-            .iter()
-            .map(|dir| dir.extension_id())
-            .chain(self.members.iter().map(|component| component.extension_id()))
+        self.directives.iter().map(|dir| dir.extension_id()).chain(
+            self.members
+                .iter()
+                .map(|component| component.extension_id()),
+        )
     }
 
     /// Collect union type extensions that contribute any component
@@ -974,9 +963,7 @@ impl UnionType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -999,9 +986,7 @@ impl EnumType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -1029,9 +1014,7 @@ impl InputObjectType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_extension_ids()
-            .flatten()
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();

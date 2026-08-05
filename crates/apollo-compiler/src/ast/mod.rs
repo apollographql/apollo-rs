@@ -287,8 +287,13 @@ pub struct Argument {
     pub value: Node<Value>,
 }
 
-/// AST for the list of [_Directives_](https://spec.graphql.org/September2025/#Directives)
+/// The list of [_Directives_](https://spec.graphql.org/September2025/#Directives)
 /// applied to some context.
+///
+/// This type is used in both AST and high-level [`Schema`][crate::Schema]
+/// representations. In a schema, each directive [`Node`] tracks whether it
+/// comes from the “main” definition or from an extension
+/// through its [`origin`][Node::origin].
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
 pub struct DirectiveList(pub Vec<Node<Directive>>);
 

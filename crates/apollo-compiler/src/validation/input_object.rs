@@ -191,7 +191,7 @@ pub(crate) fn validate_input_object_definition(
     // https://spec.graphql.org/September2025/#sec-Input-Object-Extensions
     for directive in &input_object.directives.0 {
         if directive.name == "oneOf" {
-            if let Some(ext_id) = directive.origin().extension_id() {
+            if let Some(ext_id) = directive.extension_id() {
                 diagnostics.push(
                     directive.location(),
                     DiagnosticData::OneOfDirectiveOnExtension {
