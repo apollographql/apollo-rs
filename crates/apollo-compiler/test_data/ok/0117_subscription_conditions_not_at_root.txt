@@ -150,12 +150,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "ConditionalSub": 0..202 @46 Operation {
+                description: None,
                 operation_type: Subscription,
                 name: Some(
                     "ConditionalSub",
                 ),
                 variables: [
                     28..59 @46 VariableDefinition {
+                        description: None,
                         name: "includeContent",
                         ty: 45..52 @46 Named(
                             "Boolean",
@@ -168,6 +170,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     61..83 @46 VariableDefinition {
+                        description: None,
                         name: "small",
                         ty: 69..76 @46 Named(
                             "Boolean",

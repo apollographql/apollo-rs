@@ -16,6 +16,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Features
+
+- **Parse descriptions on executable definitions - [goto-bus-stop], [pull/974]**
+
+  Descriptions are now parsed on (longhand) operation definitions, fragment
+  definitions, and variable definitions, as described by the latest GraphQL
+  spec draft ([graphql-spec#1170]). The corresponding CST nodes gain a
+  `description()` accessor.
+
+  A description on a query shorthand (bare braced selection set) raises a
+  parse error.
+
+[graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/974]: https://github.com/apollographql/apollo-rs/pull/974
+
 # [0.8.6](https://crates.io/crates/apollo-parser/0.8.6) - 2026-05-14
 
 ## Fixes

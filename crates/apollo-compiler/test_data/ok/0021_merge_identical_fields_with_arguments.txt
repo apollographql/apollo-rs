@@ -134,6 +134,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "queryPupper": 126..204 @23 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "queryPupper",
@@ -175,12 +176,14 @@ ExecutableDocument {
                 },
             },
             "queryPupperAgain": 206..316 @23 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "queryPupperAgain",
                 ),
                 variables: [
                     229..252 @23 VariableDefinition {
+                        description: None,
                         name: "dogCommand",
                         ty: 242..252 @23 Named(
                             "DogCommand",
@@ -228,6 +231,7 @@ ExecutableDocument {
     },
     fragments: {
         "mergeIdenticalFieldsWithIdenticalArgs": 318..445 @23 Fragment {
+            description: None,
             name: "mergeIdenticalFieldsWithIdenticalArgs",
             directives: [],
             selection_set: SelectionSet {
@@ -313,6 +317,7 @@ ExecutableDocument {
             },
         },
         "mergeIdenticalFieldsWithIdenticalValues": 447..592 @23 Fragment {
+            description: None,
             name: "mergeIdenticalFieldsWithIdenticalValues",
             directives: [],
             selection_set: SelectionSet {

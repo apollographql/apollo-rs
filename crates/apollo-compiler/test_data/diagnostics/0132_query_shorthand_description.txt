@@ -1,0 +1,8 @@
+Error: syntax error: shorthand operation must not have a description
+   ╭─[ 0132_query_shorthand_description.graphql:1:1 ]
+   │
+ 1 │ "Get all our time machine models."
+   │ ─────────────────┬────────────────  
+   │                  ╰────────────────── shorthand operation must not have a description
+───╯
+

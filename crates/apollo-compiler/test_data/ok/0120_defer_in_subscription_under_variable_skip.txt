@@ -159,12 +159,14 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "Sub": 0..161 @49 Operation {
+                description: None,
                 operation_type: Subscription,
                 name: Some(
                     "Sub",
                 ),
                 variables: [
                     17..32 @49 VariableDefinition {
+                        description: None,
                         name: "cond",
                         ty: 24..32 @49 NonNullNamed(
                             "Boolean",

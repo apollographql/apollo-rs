@@ -307,6 +307,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "barkVolume": 419..478 @24 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "barkVolume",
@@ -348,6 +349,7 @@ ExecutableDocument {
                 },
             },
             "doesKnowCommand": 480..542 @24 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "doesKnowCommand",
@@ -389,6 +391,7 @@ ExecutableDocument {
                 },
             },
             "isAtLocation": 544..607 @24 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "isAtLocation",
@@ -433,6 +436,7 @@ ExecutableDocument {
     },
     fragments: {
         "safeDifferingFields": 609..732 @24 Fragment {
+            description: None,
             name: "safeDifferingFields",
             directives: [],
             selection_set: SelectionSet {
@@ -514,6 +518,7 @@ ExecutableDocument {
             },
         },
         "safeDifferingArgs": 734..884 @24 Fragment {
+            description: None,
             name: "safeDifferingArgs",
             directives: [],
             selection_set: SelectionSet {
@@ -625,6 +630,7 @@ ExecutableDocument {
             },
         },
         "safeDifferingArgOrder": 886..981 @24 Fragment {
+            description: None,
             name: "safeDifferingArgOrder",
             directives: [],
             selection_set: SelectionSet {
