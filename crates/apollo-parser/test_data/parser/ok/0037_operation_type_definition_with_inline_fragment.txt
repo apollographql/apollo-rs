@@ -5,7 +5,7 @@
         - WHITESPACE@5..6 " "
         - NAME@6..15
             - IDENT@6..15 "SomeQuery"
-        - VARIABLE_DEFINITIONS@15..56
+        - VARIABLES_DEFINITION@15..56
             - L_PAREN@15..16 "("
             - WHITESPACE@16..19 "\n  "
             - VARIABLE_DEFINITION@19..35

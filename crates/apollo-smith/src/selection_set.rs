@@ -13,7 +13,7 @@ use indexmap::IndexSet;
 /// *SelectionSet*:
 ///     Selection*
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Selection-Sets).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Selection-Sets).
 #[derive(Debug, Clone)]
 pub struct SelectionSet {
     pub(crate) selections: Vec<Selection>,
@@ -62,7 +62,7 @@ impl TryFrom<apollo_parser::cst::SelectionSet> for SelectionSet {
 /// *Selection*:
 ///     Field | FragmentSpread | InlineFragment
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#Selection).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#Selection).
 #[derive(Debug, Clone)]
 pub enum Selection {
     /// Represents a field

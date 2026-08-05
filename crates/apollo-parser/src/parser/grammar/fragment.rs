@@ -10,7 +10,7 @@ use crate::TokenKind;
 use crate::S;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#FragmentDefinition
+/// See: https://spec.graphql.org/September2025/#FragmentDefinition
 ///
 /// *FragmentDefinition*:
 ///     Description? **fragment** FragmentName TypeCondition Directives? SelectionSet
@@ -36,7 +36,7 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#FragmentName
+/// See: https://spec.graphql.org/September2025/#FragmentName
 ///
 /// *FragmentName*:
 ///     Name *but not* **on**
@@ -53,7 +53,7 @@ pub(crate) fn fragment_name(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#TypeCondition
+/// See: https://spec.graphql.org/September2025/#TypeCondition
 ///
 /// *TypeCondition*:
 ///     **on** NamedType
@@ -76,7 +76,7 @@ pub(crate) fn type_condition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#InlineFragment
+/// See: https://spec.graphql.org/September2025/#InlineFragment
 ///
 /// *InlineFragment*:
 ///     **...** TypeCondition? Directives? SelectionSet
@@ -98,7 +98,7 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#FragmentSpread
+/// See: https://spec.graphql.org/September2025/#FragmentSpread
 ///
 /// *FragmentSpread*:
 ///     **...** FragmentName Directives?

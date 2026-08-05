@@ -10,7 +10,7 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#DirectiveDefinition
+/// See: https://spec.graphql.org/September2025/#DirectiveDefinition
 ///
 /// *DirectiveDefinition*:
 ///     Description? **directive @** Name ArgumentsDefinition? **repeatable**? **on** DirectiveLocations
@@ -70,7 +70,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     }
 }
 
-/// https://spec.graphql.org/October2021/#DirectiveLocation
+/// https://spec.graphql.org/September2025/#DirectiveLocation
 ///
 /// *DirectiveLocation*:
 ///     *ExecutableDirectiveLocation*
@@ -170,7 +170,7 @@ fn directive_location(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#DirectiveLocations
+/// See: https://spec.graphql.org/September2025/#DirectiveLocations
 ///
 /// *DirectiveLocations*:
 ///     DirectiveLocations **|** DirectiveLocation
@@ -179,7 +179,7 @@ pub(crate) fn directive_locations(p: &mut Parser) {
     p.parse_separated_list(T![|], S![|], directive_location);
 }
 
-/// See: https://spec.graphql.org/October2021/#Directive
+/// See: https://spec.graphql.org/September2025/#Directive
 ///
 /// *Directive[Const]*:
 ///     **@** Name Arguments[?Const]?
@@ -194,7 +194,7 @@ pub(crate) fn directive(p: &mut Parser, constness: Constness) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#Directives
+/// See: https://spec.graphql.org/September2025/#Directives
 ///
 /// *Directives[Const]*:
 ///     Directive[?Const]*

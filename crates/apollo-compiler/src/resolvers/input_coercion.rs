@@ -313,7 +313,7 @@ pub(crate) fn coerce_argument_values(
             if let Value::Variable(var_name) = arg.value.as_ref() {
                 if let Some(var_value) = ctx.variable_values.get(var_name.as_str()) {
                     if var_value.is_null() && arg_def.ty.is_non_null() {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!("null value for non-nullable argument {arg_name}"),
                             path,
                             arg_def.location(),
@@ -326,7 +326,7 @@ pub(crate) fn coerce_argument_values(
                     }
                 }
             } else if arg.value.is_null() && arg_def.ty.is_non_null() {
-                ctx.errors.push(GraphQLError::field_error(
+                ctx.errors.push(GraphQLError::execution_error(
                     format!("null value for non-nullable argument {arg_name}"),
                     path,
                     arg_def.location(),
@@ -349,14 +349,14 @@ pub(crate) fn coerce_argument_values(
             let value = graphql_value_to_json(&format_args!("argument {arg_name}"), default)
                 .map_err(|err| {
                     ctx.errors
-                        .push(err.into_field_error(path, &ctx.document.sources));
+                        .push(err.into_execution_error(path, &ctx.document.sources));
                     PropagateNull
                 })?;
             coerced_values.insert(arg_def.name.as_str(), value);
             continue;
         }
         if arg_def.ty.is_non_null() {
-            ctx.errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("missing value for required argument {arg_name}"),
                 path,
                 arg_def.location(),
@@ -377,7 +377,7 @@ fn coerce_argument_value(
 ) -> Result<JsonValue, PropagateNull> {
     if value.is_null() {
         if ty.is_non_null() {
-            ctx.errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("null value for non-null {description}"),
                 path,
                 value.location(),
@@ -391,7 +391,7 @@ fn coerce_argument_value(
     if let Some(var_name) = value.as_variable() {
         if let Some(var_value) = ctx.variable_values.get(var_name.as_str()) {
             if var_value.is_null() && ty.is_non_null() {
-                ctx.errors.push(GraphQLError::field_error(
+                ctx.errors.push(GraphQLError::execution_error(
                     format!("null variable value for non-null {description}"),
                     path,
                     value.location(),
@@ -402,7 +402,7 @@ fn coerce_argument_value(
                 return Ok(var_value.clone());
             }
         } else if ty.is_non_null() {
-            ctx.errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("missing variable for non-null {description}"),
                 path,
                 value.location(),
@@ -432,7 +432,7 @@ fn coerce_argument_value(
                 message: format!("undefined type {ty_name} for {description}"),
                 location: value.location(),
             }
-            .into_field_error(&ctx.document.sources, path),
+            .into_execution_error(&ctx.document.sources, path),
         );
         return Err(PropagateNull);
     };
@@ -444,7 +444,7 @@ fn coerce_argument_value(
                     .iter()
                     .find(|(key, _value)| !ty_def.fields.contains_key(key))
                 {
-                    ctx.errors.push(GraphQLError::field_error(
+                    ctx.errors.push(GraphQLError::execution_error(
                         format!("input object has key {key} not in type {ty_name}",),
                         path,
                         value.location(),
@@ -461,7 +461,7 @@ fn coerce_argument_value(
                         .filter(|(k, _)| ty_def.fields.contains_key(k))
                         .count();
                     if provided_count != 1 {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!(
                                 "@oneOf input object '{ty_name}' must specify exactly one key, \
                                  but {provided_count} were given",
@@ -474,7 +474,7 @@ fn coerce_argument_value(
                     }
                     if let Some((field_name, field_value)) = object.iter().next() {
                         if field_value.is_null() {
-                            ctx.errors.push(GraphQLError::field_error(
+                            ctx.errors.push(GraphQLError::execution_error(
                                 format!(
                                     "@oneOf input object '{ty_name}' field '{field_name}' \
                                      must be non-null"
@@ -507,12 +507,12 @@ fn coerce_argument_value(
                         )
                         .map_err(|err| {
                             ctx.errors
-                                .push(err.into_field_error(path, &ctx.document.sources));
+                                .push(err.into_execution_error(path, &ctx.document.sources));
                             PropagateNull
                         })?;
                         coerced_object.insert(field_name.as_str(), default);
                     } else if field_def.ty.is_non_null() {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!(
                                 "Missing value for non-null input object field {ty_name}.{field_name}"
                             ),
@@ -532,7 +532,7 @@ fn coerce_argument_value(
                     let non_null_count =
                         coerced_object.iter().filter(|(_, v)| !v.is_null()).count();
                     if non_null_count != 1 {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!(
                                 "@oneOf input object '{ty_name}' must have exactly one non-null \
                                  field, but {non_null_count} {} given",
@@ -552,12 +552,12 @@ fn coerce_argument_value(
             // For scalar and enums, rely and validation and just convert between Rust types
             return graphql_value_to_json(description, value).map_err(|err| {
                 ctx.errors
-                    .push(err.into_field_error(path, &ctx.document.sources));
+                    .push(err.into_execution_error(path, &ctx.document.sources));
                 PropagateNull
             });
         }
     }
-    ctx.errors.push(GraphQLError::field_error(
+    ctx.errors.push(GraphQLError::execution_error(
         format!("could not coerce {description}: {value} to type {ty_name}"),
         path,
         value.location(),
@@ -573,15 +573,15 @@ impl From<SuspectedValidationBug> for InputCoercionError {
 }
 
 impl InputCoercionError {
-    pub(crate) fn into_field_error(
+    pub(crate) fn into_execution_error(
         self,
         path: LinkedPath<'_>,
         sources: &SourceMap,
     ) -> GraphQLError {
         match self {
-            Self::SuspectedValidationBug(s) => s.into_field_error(sources, path),
+            Self::SuspectedValidationBug(s) => s.into_execution_error(sources, path),
             Self::ValueError { message, location } => {
-                GraphQLError::field_error(message, path, location, sources)
+                GraphQLError::execution_error(message, path, location, sources)
             }
         }
     }

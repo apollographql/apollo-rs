@@ -12,7 +12,7 @@ use crate::TokenKind;
 use crate::S;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#ObjectTypeDefinition
+/// See: https://spec.graphql.org/September2025/#ObjectTypeDefinition
 ///
 /// *ObjectTypeDefinition*:
 ///     Description? **type** Name ImplementsInterfaces? Directives[Const]? FieldsDefinition?
@@ -47,7 +47,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#ObjectTypeExtension
+/// See: https://spec.graphql.org/September2025/#ObjectTypeExtension
 ///
 /// *ObjectTypeExtension*:
 ///     **extend** **type** Name ImplementsInterfaces? Directives[Const]? FieldsDefinition
@@ -87,7 +87,7 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#ImplementsInterfaces
+/// See: https://spec.graphql.org/September2025/#ImplementsInterfaces
 ///
 /// *ImplementsInterfaces*:
 ///     **implements** **&**? NamedType

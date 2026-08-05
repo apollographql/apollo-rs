@@ -39,7 +39,7 @@ Definition =
   | InputObjectTypeExtension
 
 OperationDefinition =
-  Description? OperationType Name? VariableDefinitions? Directives? SelectionSet
+  Description? OperationType Name? VariablesDefinition? Directives? SelectionSet
   | SelectionSet
 
 OperationType =
@@ -123,7 +123,7 @@ ObjectValue =
 ObjectField =
   Name ':' Value
 
-VariableDefinitions =
+VariablesDefinition =
   '(' VariableDefinition* ')'
 
 VariableDefinition =

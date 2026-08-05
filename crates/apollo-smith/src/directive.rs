@@ -15,7 +15,7 @@ use indexmap::IndexSet;
 /// *DirectiveDefinition*:
 ///     Description? **directive @** Name Arguments Definition? **repeatable**? **on** DirectiveLocations
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Type-System.Directives).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Type-System.Directives).
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectiveDef {
     pub(crate) description: Option<Description>,
@@ -79,7 +79,7 @@ impl TryFrom<apollo_parser::cst::DirectiveDefinition> for DirectiveDef {
 /// *Directive*:
 ///     @ Name Arguments?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Directives).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Directives).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Directive {
     pub(crate) name: Name,
@@ -316,7 +316,7 @@ impl From<String> for DirectiveLocation {
             "INPUT_OBJECT" => DirectiveLocation::InputObject,
             "INPUT_FIELD_DEFINITION" => DirectiveLocation::InputFieldDefinition,
             other => unreachable!(
-                "cannot have {} as a directive location. Documentation: https://spec.graphql.org/October2021/#DirectiveLocation",
+                "cannot have {} as a directive location. Documentation: https://spec.graphql.org/September2025/#DirectiveLocation",
                 other
             ),
         }

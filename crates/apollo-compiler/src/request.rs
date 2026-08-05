@@ -1,4 +1,4 @@
-//! GraphQL [requests](https://spec.graphql.org/draft/#request)
+//! GraphQL [requests](https://spec.graphql.org/September2025/#request)
 //!
 //! This exists primarily to support [`introspection::partial_execute`].
 
@@ -14,13 +14,13 @@ use crate::validation::SuspectedValidationBug;
 use crate::validation::Valid;
 use crate::Schema;
 
-/// Coerce the values of [variables](https://spec.graphql.org/draft/#sec-Language.Variables)
+/// Coerce the values of [variables](https://spec.graphql.org/September2025/#sec-Language.Variables)
 /// from a GraphQL request to the types expected by the operation.
 ///
-/// This is [_CoerceVariableValues()_](https://spec.graphql.org/October2021/#CoerceVariableValues())
+/// This is [_CoerceVariableValues()_](https://spec.graphql.org/September2025/#CoerceVariableValues())
 /// in the GraphQL specification.
 ///
-/// Returns a [request error](https://spec.graphql.org/draft/#sec-Errors.Request-Errors)
+/// Returns a [request error](https://spec.graphql.org/September2025/#sec-Errors.Request-Errors)
 /// if a value as an incompatible type, or if a required variable is not provided.
 pub fn coerce_variable_values(
     schema: &Valid<Schema>,
@@ -32,17 +32,17 @@ pub fn coerce_variable_values(
     )?)
 }
 
-/// A [request error](https://spec.graphql.org/draft/#sec-Errors.Request-Errors) is an error
-/// raised during an early phase of the [execution](https://spec.graphql.org/draft/#sec-Execution)
+/// A [request error](https://spec.graphql.org/September2025/#sec-Errors.Request-Errors) is an error
+/// raised during an early phase of the [execution](https://spec.graphql.org/September2025/#sec-Execution)
 /// to indicate that the request as a whole is considered faulty.
 ///
 /// A request error should cause the rest of execution to be aborted,
 /// and result in a GraphQL response that does not have a `data` key.
 /// This differs from a response with `"data": null` which can happen with
-/// a [field error](https://spec.graphql.org/draft/#sec-Errors.Field-Errors)
+/// an [execution error](https://spec.graphql.org/September2025/#sec-Errors.Execution-Errors)
 /// on a non-null field whose ancestors fields are all also non-null.
 /// In that case the `null` value
-/// is [propagated](https://spec.graphql.org/draft/#sec-Handling-Field-Errors)
+/// is [propagated](https://spec.graphql.org/September2025/#sec-Handling-Execution-Errors)
 /// all the way to the entire response data.
 #[derive(Debug, Clone)]
 pub struct RequestError {

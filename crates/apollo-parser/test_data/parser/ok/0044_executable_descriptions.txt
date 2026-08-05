@@ -9,7 +9,7 @@
         - WHITESPACE@208..209 " "
         - NAME@209..229
             - IDENT@209..229 "GetTimeMachineStatus"
-        - VARIABLE_DEFINITIONS@229..362
+        - VARIABLES_DEFINITION@229..362
             - L_PAREN@229..230 "("
             - WHITESPACE@230..233 "\n  "
             - VARIABLE_DEFINITION@233..309

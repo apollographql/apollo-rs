@@ -47,7 +47,7 @@ macro_rules! name {
     }};
 }
 
-/// A GraphQL [_Name_](https://spec.graphql.org/draft/#Name) identifier
+/// A GraphQL [_Name_](https://spec.graphql.org/September2025/#Name) identifier
 ///
 /// Like [`Node`][crate::Node], this string type has cheap `Clone`
 /// and carries an optional source location.
@@ -73,7 +73,7 @@ enum UnpackedRepr {
 }
 
 /// Tried to create a [`Name`] from a string that is not in valid
-/// [GraphQL name](https://spec.graphql.org/draft/#sec-Names) syntax.
+/// [GraphQL name](https://spec.graphql.org/September2025/#sec-Names) syntax.
 #[derive(Clone, Eq, PartialEq, thiserror::Error)]
 #[error("`{name}` is not a valid GraphQL name")]
 pub struct InvalidNameError {
@@ -248,7 +248,7 @@ impl Name {
     }
 
     /// Returns whether the given string is a valid
-    /// GraphQL [_Name_](https://spec.graphql.org/October2021/#Name).
+    /// GraphQL [_Name_](https://spec.graphql.org/September2025/#Name).
     pub const fn is_valid_syntax(value: &str) -> bool {
         let bytes = value.as_bytes();
         let Some(&first) = bytes.first() else {
@@ -279,12 +279,12 @@ impl Name {
         }
     }
 
-    /// <https://spec.graphql.org/October2021/#NameStart>
+    /// <https://spec.graphql.org/September2025/#NameStart>
     const fn is_name_start(byte: u8) -> bool {
         byte.is_ascii_alphabetic() || byte == b'_'
     }
 
-    /// <https://spec.graphql.org/October2021/#NameContinue>
+    /// <https://spec.graphql.org/September2025/#NameContinue>
     const fn is_name_continue(byte: u8) -> bool {
         byte.is_ascii_alphanumeric() || byte == b'_'
     }

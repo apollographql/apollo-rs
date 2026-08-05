@@ -15,9 +15,9 @@ use indexmap::IndexMap;
 /// The __operationDef type represents an operation definition
 ///
 /// *OperationDefinition*:
-///     OperationType Name? VariableDefinitions? Directives? SelectionSet
+///     Description? OperationType Name? VariablesDefinition? Directives? SelectionSet
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Operations).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Operations).
 #[derive(Debug, Clone)]
 pub struct OperationDef {
     pub(crate) description: Option<Description>,
@@ -81,7 +81,7 @@ impl TryFrom<apollo_parser::cst::OperationDefinition> for OperationDef {
 /// *OperationType*:
 ///     query | mutation | subscription
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#OperationType).
 #[derive(Debug, Arbitrary, Clone, Copy, PartialEq, Eq)]
 pub enum OperationType {
     Query,
@@ -127,8 +127,8 @@ impl DocumentBuilder<'_> {
     /// `type_name`, which never returns a name that already exists on
     /// the builder.
     ///
-    /// See <https://spec.graphql.org/October2021/#sec-Lone-Anonymous-Operation>
-    /// and <https://spec.graphql.org/October2021/#sec-Operation-Name-Uniqueness>.
+    /// See <https://spec.graphql.org/September2025/#sec-Lone-Anonymous-Operation>
+    /// and <https://spec.graphql.org/September2025/#sec-Operation-Name-Uniqueness>.
     ///
     /// [`operation_definition`]: Self::operation_definition
     pub(crate) fn operation_definition_in_document(
@@ -175,7 +175,7 @@ impl DocumentBuilder<'_> {
 
         let selection_set = if matches!(operation_type, OperationType::Subscription) {
             // Subscription operations must have exactly one root field
-            // per <https://spec.graphql.org/October2021/#sec-Single-root-field>.
+            // per <https://spec.graphql.org/September2025/#sec-Single-Root-Field>.
             // We generate exactly one field to satisfy that condition. The 0-index
             // is sometimes used to create an alias for the field.
             SelectionSet {

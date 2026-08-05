@@ -11,12 +11,12 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#VariableDefinitions
+/// See: https://spec.graphql.org/September2025/#VariablesDefinition
 ///
-/// *VariableDefinitions*:
+/// *VariablesDefinition*:
 ///     **(** VariableDefinition* **)**
-pub(crate) fn variable_definitions(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
+pub(crate) fn variables_definition(p: &mut Parser) {
+    let _g = p.start_node(SyntaxKind::VARIABLES_DEFINITION);
     p.bump(S!['(']);
 
     if let Some(T![$] | TokenKind::StringValue) = p.peek() {
@@ -35,7 +35,7 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     p.expect(T![')'], S![')']);
 }
 
-/// See: https://spec.graphql.org/October2021/#VariableDefinition
+/// See: https://spec.graphql.org/September2025/#VariableDefinition
 ///
 /// *VariableDefinition*:
 ///     Description? Variable **:** Type DefaultValue? Directives[Const]?
@@ -66,7 +66,7 @@ pub(crate) fn variable_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#Variable
+/// See: https://spec.graphql.org/September2025/#Variable
 ///
 /// *Variable*:
 ///     **$** Name
@@ -99,7 +99,7 @@ query GroceryStoreTrip($budget: Int) {
         for definition in doc.definitions() {
             if let cst::Definition::OperationDefinition(op_def) = definition {
                 for var in op_def
-                    .variable_definitions()
+                    .variables_definition()
                     .unwrap()
                     .variable_definitions()
                 {

@@ -22,7 +22,7 @@ use std::borrow::Cow;
 
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
-/// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
+/// Spec: https://spec.graphql.org/September2025/#GetPossibleTypes()
 fn get_possible_types<'a>(
     type_definition: &schema::ExtendedType,
     implementers_map: &'a HashMap<Name, Implementers>,

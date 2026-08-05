@@ -70,7 +70,7 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &mut Schema) 
     }
 }
 
-/// <https://spec.graphql.org/draft/#sec-Names.Reserved-Names>
+/// <https://spec.graphql.org/September2025/#sec-Names.Reserved-Names>
 pub(crate) fn validate_type_system_name(
     errors: &mut DiagnosticList,
     name: &Name,
@@ -99,7 +99,7 @@ pub(crate) fn validate_type_system_name(
 ///
 /// We reflect this behavior of introspection in the `types` map of a `Valid<Schema>`.
 ///
-/// [built-in scalars]: https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars
+/// [built-in scalars]: https://spec.graphql.org/September2025/#sec-Scalars.Built-in-Scalars
 pub(crate) struct BuiltInScalars {
     all: &'static HashMap<Name, Node<ScalarType>>,
     used_and_defined: HashSet<Name>,

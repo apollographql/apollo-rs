@@ -119,7 +119,7 @@ impl From<InputValue> for String {
 /// *InputValueDefinition*:
 ///     Description? Name **:** Type DefaultValue? Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__InputValue-Type).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-The-__InputValue-Type).
 #[derive(Debug, Clone, PartialEq)]
 pub struct InputValueDef {
     pub(crate) description: Option<Description>,

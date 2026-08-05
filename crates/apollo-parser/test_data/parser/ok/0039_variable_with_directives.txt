@@ -5,7 +5,7 @@
         - WHITESPACE@5..6 " "
         - NAME@6..15
             - IDENT@6..15 "getOutput"
-        - VARIABLE_DEFINITIONS@15..96
+        - VARIABLES_DEFINITION@15..96
             - L_PAREN@15..16 "("
             - VARIABLE_DEFINITION@16..39
                 - VARIABLE@16..22

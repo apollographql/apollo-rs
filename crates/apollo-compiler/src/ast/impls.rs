@@ -912,7 +912,7 @@ impl Type {
     /// Can a value of this type be used when the `target` type is expected?
     ///
     /// Implementation of spec function
-    /// [_AreTypesCompatible()_](https://spec.graphql.org/draft/#AreTypesCompatible()).
+    /// [_AreTypesCompatible()_](https://spec.graphql.org/September2025/#AreTypesCompatible()).
     pub fn is_assignable_to(&self, target: &Self) -> bool {
         match (target, self) {
             // Can't assign a nullable type to a non-nullable type.
@@ -1028,7 +1028,7 @@ impl Field {
     /// query GetField { responseField: sourceField }
     /// ```
     ///
-    /// [response `data`]: https://spec.graphql.org/draft/#sec-Response-Format
+    /// [response `data`]: https://spec.graphql.org/September2025/#sec-Response-Format
     pub fn response_name(&self) -> &Name {
         self.alias.as_ref().unwrap_or(&self.name)
     }
@@ -1140,7 +1140,7 @@ impl Value {
 
 impl IntValue {
     /// Constructs from a string matching the [`IntValue`
-    /// grammar specification](https://spec.graphql.org/October2021/#IntValue)
+    /// grammar specification](https://spec.graphql.org/September2025/#IntValue)
     ///
     /// To convert an `i32`, use `from` or `into` instead.
     pub fn new_parsed(text: &str) -> Self {
@@ -1183,7 +1183,7 @@ impl IntValue {
 
 impl FloatValue {
     /// Constructs from a string matching the [`FloatValue`
-    /// grammar specification](https://spec.graphql.org/October2021/#IntValue)
+    /// grammar specification](https://spec.graphql.org/September2025/#IntValue)
     ///
     /// To convert an `f64`, use `from` or `into` instead.
     pub fn new_parsed(text: &str) -> Self {

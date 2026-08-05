@@ -12,7 +12,7 @@ use crate::T;
 /// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
 ///
-/// See: https://spec.graphql.org/October2021/#RootOperationTypeDefinition
+/// See: https://spec.graphql.org/September2025/#RootOperationTypeDefinition
 ///
 /// *RootOperationTypeDefinition*:
 ///    OperationType **:** NamedType
@@ -27,7 +27,7 @@ fn root_operation_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#SchemaDefinition
+/// See: https://spec.graphql.org/September2025/#SchemaDefinition
 ///
 /// *SchemaDefinition*:
 ///     Description? **schema** Directives[Const]? **{** RootOperationTypeDefinition* **}**
@@ -62,7 +62,7 @@ pub(crate) fn schema_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#SchemaExtension
+/// See: https://spec.graphql.org/September2025/#SchemaExtension
 ///
 /// *SchemaExtension*:
 ///     **extend** **schema** Directives[Const]? **{** RootOperationTypeDefinition* **}**

@@ -7,7 +7,7 @@ use crate::SyntaxKind;
 use crate::TokenKind;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#ScalarTypeDefinition
+/// See: https://spec.graphql.org/September2025/#ScalarTypeDefinition
 ///
 /// *ScalarTypeDefinition*:
 ///     Description? **scalar** Name Directives[Const]?
@@ -32,7 +32,7 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#ScalarTypeExtension
+/// See: https://spec.graphql.org/September2025/#ScalarTypeExtension
 ///
 /// *ScalarTypeExtension*:
 ///     **extend** **scalar** Name Directives[Const]

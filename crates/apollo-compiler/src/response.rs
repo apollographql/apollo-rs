@@ -1,4 +1,4 @@
-//! GraphQL [responses](https://spec.graphql.org/draft/#sec-Response)
+//! GraphQL [responses](https://spec.graphql.org/September2025/#sec-Response)
 //!
 //! This exists primarily to support [`introspection::partial_execute`].
 
@@ -23,14 +23,15 @@ pub type JsonValue = serde_json_bytes::Value;
 /// A JSON-compatible object/map with string keys and dynamically-typed values.
 pub type JsonMap = serde_json_bytes::Map<serde_json_bytes::ByteString, JsonValue>;
 
-/// A [response](https://spec.graphql.org/October2021/#sec-Response-Format)
+/// A [response](https://spec.graphql.org/September2025/#sec-Response-Format)
 /// to a GraphQL request that did not cause any [request error][crate::request::RequestError]
-/// and started [execution](https://spec.graphql.org/draft/#sec-Execution)
+/// and started [execution](https://spec.graphql.org/September2025/#sec-Execution)
 /// of selection sets and fields.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ExecutionResponse {
-    // <https://spec.graphql.org/October2021/#note-6f005> suggests serializing this first
+    // A note in <https://spec.graphql.org/September2025/#sec-Execution-Result>
+    // suggests serializing this first
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(default)]
     pub errors: Vec<GraphQLError>,
@@ -38,7 +39,7 @@ pub struct ExecutionResponse {
     pub data: Option<JsonMap>,
 }
 
-/// A serializable [error](https://spec.graphql.org/October2021/#sec-Errors.Error-result-format),
+/// A serializable [error](https://spec.graphql.org/September2025/#sec-Errors.Error-Result-Format),
 /// as found in a GraphQL response.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -51,10 +52,10 @@ pub struct GraphQLError {
     #[serde(default)]
     pub locations: Vec<LineColumn>,
 
-    /// If non-empty, the error is a [field error]
+    /// If non-empty, the error is an [execution error]
     /// for the particular field found at this path in [`ExecutionResponse::data`].
     ///
-    /// [field error]: https://spec.graphql.org/October2021/#sec-Errors.Field-errors
+    /// [execution error]: https://spec.graphql.org/September2025/#sec-Errors.Execution-Errors
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(default)]
     pub path: Vec<ResponseDataPathSegment>,
@@ -66,7 +67,7 @@ pub struct GraphQLError {
 }
 
 /// A `Vec<ResponseDataPathSegment>` like in [`GraphQLError::path`]
-/// represents a [path](https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format)
+/// represents a [path](https://spec.graphql.org/September2025/#sec-Errors.Error-Result-Format)
 /// into [`ExecutionResponse::data`],
 /// starting at the root and indexing into increasingly nested JSON objects or arrays.
 ///

@@ -18,6 +18,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation -->
 # [x.x.x] (unreleased) - 2026-mm-dd
 
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Rename the `VariableDefinitions` CST node to `VariablesDefinition`**
+
+  The September 2025 specification renamed the `VariableDefinitions` grammar
+  production to `VariablesDefinition`. The CST follows suit:
+  `cst::VariableDefinitions` is now `cst::VariablesDefinition`,
+  `SyntaxKind::VARIABLE_DEFINITIONS` is now `SyntaxKind::VARIABLES_DEFINITION`,
+  and `OperationDefinition::variable_definitions()` is now
+  `OperationDefinition::variables_definition()`.
+  (`VariablesDefinition::variable_definitions()`, which returns the list of
+  individual `VariableDefinition` children, is unchanged.)
+
+  Spec documentation links now point to the
+  [September 2025](https://spec.graphql.org/September2025/) edition.
+
 ## Features
 
 - **Parse descriptions on executable definitions - [goto-bus-stop], [pull/974]**

@@ -1,7 +1,7 @@
 use crate::Parser;
 use crate::SyntaxKind;
 
-/// See: https://spec.graphql.org/October2021/#Description
+/// See: https://spec.graphql.org/September2025/#Description
 ///
 /// *Description*:
 ///     StringValue
