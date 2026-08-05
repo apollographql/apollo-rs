@@ -300,7 +300,7 @@ fn components<'a, T: 'a>(
 ) -> Vec<Node<T>> {
     components
         .into_iter()
-        .filter(|def| def.origin().extension_id() == ext)
+        .filter(|def| def.extension_id() == ext)
         .cloned()
         .collect()
 }
