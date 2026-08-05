@@ -1,0 +1,5 @@
+"Out of range \u{110000}"
+"Lead surrogate \u{D800}"
+"Trail surrogate \u{DCA9}"
+"Empty \u{}"
+"Unterminated \u{1F4A9"
