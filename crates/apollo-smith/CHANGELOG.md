@@ -18,6 +18,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Features
+
+- **Support descriptions on executable definitions - [goto-bus-stop], [pull/974]**
+
+  `OperationDef`, `FragmentDef`, and `VariableDef` now carry an optional
+  description, matching the latest GraphQL spec draft ([graphql-spec#1170]).
+  Descriptions are preserved when converting from parsed documents.
+
+[graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/974]: https://github.com/apollographql/apollo-rs/pull/974
+
 # [0.16.0](https://crates.io/crates/apollo-smith/0.16.0) - 2026-07-21
 
 Important: 6 breaking changes below, indicated by **BREAKING**
