@@ -44,17 +44,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "intf": Component {
-                        origin: Definition,
-                        node: 15..25 @45 FieldDefinition {
-                            description: None,
-                            name: "intf",
-                            arguments: [],
-                            ty: Named(
-                                "Intf",
-                            ),
-                            directives: [],
-                        },
+                    "intf": 15..25 @45 FieldDefinition {
+                        description: None,
+                        name: "intf",
+                        arguments: [],
+                        ty: Named(
+                            "Intf",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -66,17 +63,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 47..57 @45 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "field": 47..57 @45 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

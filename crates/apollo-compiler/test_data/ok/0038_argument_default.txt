@@ -77,31 +77,28 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "guitarAmp": Component {
-                        origin: Definition,
-                        node: 111..145 @39 FieldDefinition {
-                            description: None,
-                            name: "guitarAmp",
-                            arguments: [
-                                121..136 @39 InputValueDefinition {
-                                    description: None,
-                                    name: "upTo",
-                                    ty: 127..131 @39 NonNullNamed(
-                                        "Int",
+                    "guitarAmp": 111..145 @39 FieldDefinition {
+                        description: None,
+                        name: "guitarAmp",
+                        arguments: [
+                            121..136 @39 InputValueDefinition {
+                                description: None,
+                                name: "upTo",
+                                ty: 127..131 @39 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    134..136 @39 Int(
+                                        11,
                                     ),
-                                    default_value: Some(
-                                        134..136 @39 Int(
-                                            11,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

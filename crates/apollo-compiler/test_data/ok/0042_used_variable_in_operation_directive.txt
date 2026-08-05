@@ -88,17 +88,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 119..133 @43 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "field": 119..133 @43 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -110,17 +107,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 152..166 @43 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "field": 152..166 @43 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -132,17 +126,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 189..203 @43 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "field": 189..203 @43 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },

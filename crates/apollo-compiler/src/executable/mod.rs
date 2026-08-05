@@ -673,7 +673,7 @@ impl SelectionSet {
         schema: &'schema Schema,
         name: Name,
     ) -> Result<Field, schema::FieldLookupError<'schema>> {
-        let definition = schema.type_field(&self.ty, &name)?.node.clone();
+        let definition = schema.type_field(&self.ty, &name)?.clone();
         Ok(Field::new(name, definition))
     }
 

@@ -52,75 +52,60 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 659..666 @50 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 659..666 @50 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "ID",
+                        ),
+                        directives: [],
                     },
-                    "status": Component {
-                        origin: Definition,
-                        node: 669..694 @50 FieldDefinition {
-                            description: None,
-                            name: "status",
-                            arguments: [
-                                676..685 @50 InputValueDefinition {
-                                    description: None,
-                                    name: "year",
-                                    ty: 682..685 @50 Named(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "status": 669..694 @50 FieldDefinition {
+                        description: None,
+                        name: "status",
+                        arguments: [
+                            676..685 @50 InputValueDefinition {
+                                description: None,
+                                name: "year",
+                                ty: 682..685 @50 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "model": Component {
-                        origin: Definition,
-                        node: 697..710 @50 FieldDefinition {
-                            description: None,
-                            name: "model",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "model": 697..710 @50 FieldDefinition {
+                        description: None,
+                        name: "model",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "lastMaintenance": Component {
-                        origin: Definition,
-                        node: 713..734 @50 FieldDefinition {
-                            description: None,
-                            name: "lastMaintenance",
-                            arguments: [],
-                            ty: Named(
-                                "Date",
-                            ),
-                            directives: [],
-                        },
+                    "lastMaintenance": 713..734 @50 FieldDefinition {
+                        description: None,
+                        name: "lastMaintenance",
+                        arguments: [],
+                        ty: Named(
+                            "Date",
+                        ),
+                        directives: [],
                     },
-                    "operator": Component {
-                        origin: Definition,
-                        node: 737..755 @50 FieldDefinition {
-                            description: None,
-                            name: "operator",
-                            arguments: [],
-                            ty: Named(
-                                "Operator",
-                            ),
-                            directives: [],
-                        },
+                    "operator": 737..755 @50 FieldDefinition {
+                        description: None,
+                        name: "operator",
+                        arguments: [],
+                        ty: Named(
+                            "Operator",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -132,29 +117,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 776..789 @50 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 776..789 @50 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "licenseLevel": Component {
-                        origin: Definition,
-                        node: 792..809 @50 FieldDefinition {
-                            description: None,
-                            name: "licenseLevel",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "licenseLevel": 792..809 @50 FieldDefinition {
+                        description: None,
+                        name: "licenseLevel",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -166,27 +145,24 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "timeMachine": Component {
-                        origin: Definition,
-                        node: 827..860 @50 FieldDefinition {
-                            description: None,
-                            name: "timeMachine",
-                            arguments: [
-                                839..846 @50 InputValueDefinition {
-                                    description: None,
-                                    name: "id",
-                                    ty: 843..846 @50 NonNullNamed(
-                                        "ID",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "TimeMachine",
-                            ),
-                            directives: [],
-                        },
+                    "timeMachine": 827..860 @50 FieldDefinition {
+                        description: None,
+                        name: "timeMachine",
+                        arguments: [
+                            839..846 @50 InputValueDefinition {
+                                description: None,
+                                name: "id",
+                                ty: 843..846 @50 NonNullNamed(
+                                    "ID",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "TimeMachine",
+                        ),
+                        directives: [],
                     },
                 },
             },

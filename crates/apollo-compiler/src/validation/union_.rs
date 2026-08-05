@@ -13,7 +13,7 @@ pub(crate) fn validate_union_definition(
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
-        union_def.directives.iter_ast(),
+        union_def.directives.iter(),
         ast::DirectiveLocation::Union,
         // unions don't use variables
         Default::default(),

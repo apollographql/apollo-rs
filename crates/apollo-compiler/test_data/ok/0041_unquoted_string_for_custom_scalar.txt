@@ -51,36 +51,33 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "convertToUSD": Component {
-                        origin: Definition,
-                        node: 32..85 @42 FieldDefinition {
-                            description: None,
-                            name: "convertToUSD",
-                            arguments: [
-                                45..57 @42 InputValueDefinition {
-                                    description: None,
-                                    name: "amount",
-                                    ty: 53..57 @42 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                                59..78 @42 InputValueDefinition {
-                                    description: None,
-                                    name: "currency",
-                                    ty: 69..78 @42 NonNullNamed(
-                                        "Currency",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "convertToUSD": 32..85 @42 FieldDefinition {
+                        description: None,
+                        name: "convertToUSD",
+                        arguments: [
+                            45..57 @42 InputValueDefinition {
+                                description: None,
+                                name: "amount",
+                                ty: 53..57 @42 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                            59..78 @42 InputValueDefinition {
+                                description: None,
+                                name: "currency",
+                                ty: 69..78 @42 NonNullNamed(
+                                    "Currency",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

@@ -63,41 +63,32 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "topProducts": Component {
-                        origin: Definition,
-                        node: 85..105 @12 FieldDefinition {
-                            description: None,
-                            name: "topProducts",
-                            arguments: [],
-                            ty: Named(
-                                "Product",
-                            ),
-                            directives: [],
-                        },
+                    "topProducts": 85..105 @12 FieldDefinition {
+                        description: None,
+                        name: "topProducts",
+                        arguments: [],
+                        ty: Named(
+                            "Product",
+                        ),
+                        directives: [],
                     },
-                    "name": Component {
-                        origin: Definition,
-                        node: 108..120 @12 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 108..120 @12 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "size": Component {
-                        origin: Definition,
-                        node: 123..132 @12 FieldDefinition {
-                            description: None,
-                            name: "size",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "size": 123..132 @12 FieldDefinition {
+                        description: None,
+                        name: "size",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -109,101 +100,83 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "inStock": Component {
-                        origin: Definition,
-                        node: 153..200 @12 FieldDefinition {
-                            description: None,
-                            name: "inStock",
-                            arguments: [],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [
-                                170..200 @12 Directive {
-                                    name: "join__field",
-                                    arguments: [
-                                        183..199 @12 Argument {
-                                            name: "graph",
-                                            value: 190..199 @12 Enum(
-                                                "INVENTORY",
-                                            ),
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
+                    "inStock": 153..200 @12 FieldDefinition {
+                        description: None,
+                        name: "inStock",
+                        arguments: [],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [
+                            170..200 @12 Directive {
+                                name: "join__field",
+                                arguments: [
+                                    183..199 @12 Argument {
+                                        name: "graph",
+                                        value: 190..199 @12 Enum(
+                                            "INVENTORY",
+                                        ),
+                                    },
+                                ],
+                            },
+                        ],
                     },
-                    "name": Component {
-                        origin: Definition,
-                        node: 203..245 @12 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [
-                                216..245 @12 Directive {
-                                    name: "join__field",
-                                    arguments: [
-                                        229..244 @12 Argument {
-                                            name: "graph",
-                                            value: 236..244 @12 Enum(
-                                                "PRODUCTS",
-                                            ),
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
+                    "name": 203..245 @12 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [
+                            216..245 @12 Directive {
+                                name: "join__field",
+                                arguments: [
+                                    229..244 @12 Argument {
+                                        name: "graph",
+                                        value: 236..244 @12 Enum(
+                                            "PRODUCTS",
+                                        ),
+                                    },
+                                ],
+                            },
+                        ],
                     },
-                    "price": Component {
-                        origin: Definition,
-                        node: 248..258 @12 FieldDefinition {
-                            description: None,
-                            name: "price",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "price": 248..258 @12 FieldDefinition {
+                        description: None,
+                        name: "price",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "shippingEstimate": Component {
-                        origin: Definition,
-                        node: 261..282 @12 FieldDefinition {
-                            description: None,
-                            name: "shippingEstimate",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "shippingEstimate": 261..282 @12 FieldDefinition {
+                        description: None,
+                        name: "shippingEstimate",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "upc": Component {
-                        origin: Definition,
-                        node: 285..297 @12 FieldDefinition {
-                            description: None,
-                            name: "upc",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "upc": 285..297 @12 FieldDefinition {
+                        description: None,
+                        name: "upc",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "weight": Component {
-                        origin: Definition,
-                        node: 300..311 @12 FieldDefinition {
-                            description: None,
-                            name: "weight",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "weight": 300..311 @12 FieldDefinition {
+                        description: None,
+                        name: "weight",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -214,21 +187,15 @@ Schema {
                 name: "join__Graph",
                 directives: [],
                 values: {
-                    "INVENTORY": Component {
-                        origin: Definition,
-                        node: 399..408 @12 EnumValueDefinition {
-                            description: None,
-                            value: "INVENTORY",
-                            directives: [],
-                        },
+                    "INVENTORY": 399..408 @12 EnumValueDefinition {
+                        description: None,
+                        value: "INVENTORY",
+                        directives: [],
                     },
-                    "PRODUCTS": Component {
-                        origin: Definition,
-                        node: 412..420 @12 EnumValueDefinition {
-                            description: None,
-                            value: "PRODUCTS",
-                            directives: [],
-                        },
+                    "PRODUCTS": 412..420 @12 EnumValueDefinition {
+                        description: None,
+                        value: "PRODUCTS",
+                        directives: [],
                     },
                 },
             },

@@ -44,59 +44,56 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 15..97 @51 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [
-                                21..46 @51 InputValueDefinition {
-                                    description: None,
-                                    name: "nullable",
-                                    ty: 31..34 @51 Named(
-                                        "Int",
+                    "field": 15..97 @51 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [
+                            21..46 @51 InputValueDefinition {
+                                description: None,
+                                name: "nullable",
+                                ty: 31..34 @51 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [
+                                    35..46 @51 Directive {
+                                        name: "deprecated",
+                                        arguments: [],
+                                    },
+                                ],
+                            },
+                            48..79 @51 InputValueDefinition {
+                                description: None,
+                                name: "defaulted",
+                                ty: 59..63 @51 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    66..67 @51 Int(
+                                        0,
                                     ),
-                                    default_value: None,
-                                    directives: [
-                                        35..46 @51 Directive {
-                                            name: "deprecated",
-                                            arguments: [],
-                                        },
-                                    ],
-                                },
-                                48..79 @51 InputValueDefinition {
-                                    description: None,
-                                    name: "defaulted",
-                                    ty: 59..63 @51 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: Some(
-                                        66..67 @51 Int(
-                                            0,
-                                        ),
-                                    ),
-                                    directives: [
-                                        68..79 @51 Directive {
-                                            name: "deprecated",
-                                            arguments: [],
-                                        },
-                                    ],
-                                },
-                                81..88 @51 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 86..88 @51 Named(
-                                        "In",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [
+                                    68..79 @51 Directive {
+                                        name: "deprecated",
+                                        arguments: [],
+                                    },
+                                ],
+                            },
+                            81..88 @51 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 86..88 @51 Named(
+                                    "In",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -107,43 +104,37 @@ Schema {
                 name: "In",
                 directives: [],
                 fields: {
-                    "a": Component {
-                        origin: Definition,
-                        node: 114..132 @51 InputValueDefinition {
-                            description: None,
-                            name: "a",
-                            ty: 117..120 @51 Named(
-                                "Int",
-                            ),
-                            default_value: None,
-                            directives: [
-                                121..132 @51 Directive {
-                                    name: "deprecated",
-                                    arguments: [],
-                                },
-                            ],
-                        },
+                    "a": 114..132 @51 InputValueDefinition {
+                        description: None,
+                        name: "a",
+                        ty: 117..120 @51 Named(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [
+                            121..132 @51 Directive {
+                                name: "deprecated",
+                                arguments: [],
+                            },
+                        ],
                     },
-                    "b": Component {
-                        origin: Definition,
-                        node: 135..158 @51 InputValueDefinition {
-                            description: None,
-                            name: "b",
-                            ty: 138..142 @51 NonNullNamed(
-                                "Int",
+                    "b": 135..158 @51 InputValueDefinition {
+                        description: None,
+                        name: "b",
+                        ty: 138..142 @51 NonNullNamed(
+                            "Int",
+                        ),
+                        default_value: Some(
+                            145..146 @51 Int(
+                                3,
                             ),
-                            default_value: Some(
-                                145..146 @51 Int(
-                                    3,
-                                ),
-                            ),
-                            directives: [
-                                147..158 @51 Directive {
-                                    name: "deprecated",
-                                    arguments: [],
-                                },
-                            ],
-                        },
+                        ),
+                        directives: [
+                            147..158 @51 Directive {
+                                name: "deprecated",
+                                arguments: [],
+                            },
+                        ],
                     },
                 },
             },

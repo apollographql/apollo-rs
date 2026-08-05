@@ -44,51 +44,42 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 15..39 @25 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [
-                                21..33 @25 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 26..33 @25 Named(
-                                        "Boolean",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "field": 15..39 @25 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [
+                            21..33 @25 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 26..33 @25 Named(
+                                    "Boolean",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "fragField": Component {
-                        origin: Definition,
-                        node: 42..56 @25 FieldDefinition {
-                            description: None,
-                            name: "fragField",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "fragField": 42..56 @25 FieldDefinition {
+                        description: None,
+                        name: "fragField",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "inlineField": Component {
-                        origin: Definition,
-                        node: 59..75 @25 FieldDefinition {
-                            description: None,
-                            name: "inlineField",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "inlineField": 59..75 @25 FieldDefinition {
+                        description: None,
+                        name: "inlineField",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

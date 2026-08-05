@@ -44,17 +44,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "foo": Component {
-                        origin: Definition,
-                        node: 148..156 @13 FieldDefinition {
-                            description: None,
-                            name: "foo",
-                            arguments: [],
-                            ty: Named(
-                                "Foo",
-                            ),
-                            directives: [],
-                        },
+                    "foo": 148..156 @13 FieldDefinition {
+                        description: None,
+                        name: "foo",
+                        arguments: [],
+                        ty: Named(
+                            "Foo",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -66,17 +63,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "baz": Component {
-                        origin: Definition,
-                        node: 173..181 @13 FieldDefinition {
-                            description: None,
-                            name: "baz",
-                            arguments: [],
-                            ty: Named(
-                                "Baz",
-                            ),
-                            directives: [],
-                        },
+                    "baz": 173..181 @13 FieldDefinition {
+                        description: None,
+                        name: "baz",
+                        arguments: [],
+                        ty: Named(
+                            "Baz",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -88,17 +82,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 198..204 @13 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: Named(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 198..204 @13 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: Named(
+                            "ID",
+                        ),
+                        directives: [],
                     },
                 },
             },

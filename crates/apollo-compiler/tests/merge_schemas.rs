@@ -2,7 +2,6 @@ use apollo_compiler::ast;
 use apollo_compiler::collections::IndexMap;
 use apollo_compiler::collections::IndexSet;
 use apollo_compiler::schema;
-use apollo_compiler::schema::Component;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::Name;
 use apollo_compiler::Node;
@@ -214,8 +213,8 @@ fn merge_input_object_types(
 }
 
 fn merge_fields(
-    merged: &mut Component<ast::FieldDefinition>,
-    new: &Component<ast::FieldDefinition>,
+    merged: &mut Node<ast::FieldDefinition>,
+    new: &Node<ast::FieldDefinition>,
 ) -> Result<(), &'static str> {
     if (&merged.ty, &merged.arguments) != (&new.ty, &new.arguments) {
         return Err("incompatible field definitions");

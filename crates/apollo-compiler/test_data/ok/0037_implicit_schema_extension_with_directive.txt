@@ -12,18 +12,9 @@ Schema {
     schema_definition: SchemaDefinition {
         description: None,
         directives: [
-            Component {
-                origin: Extension(
-                    ExtensionId {
-                        arc: Some(
-                            33..51 @38,
-                        ),
-                    },
-                ),
-                node: 47..51 @38 Directive {
-                    name: "dir",
-                    arguments: [],
-                },
+            47..51 @38 (extension 33..51 @38) Directive {
+                name: "dir",
+                arguments: [],
             },
         ],
         query: Some(
@@ -66,17 +57,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 17..29 @38 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 17..29 @38 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

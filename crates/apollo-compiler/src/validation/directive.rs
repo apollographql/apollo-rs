@@ -124,7 +124,7 @@ impl FindRecursiveDirective<'_> {
         &self,
         directive_guard: &mut RecursionGuard<'_>,
         type_guard: &mut RecursionGuard<'_>,
-        directives: &[schema::Component<ast::Directive>],
+        directives: &[Node<ast::Directive>],
     ) -> Result<(), CycleError<ast::Directive>> {
         for directive in directives {
             self.directive(directive_guard, type_guard, directive)?;

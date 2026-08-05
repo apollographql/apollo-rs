@@ -78,17 +78,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "message": Component {
-                        origin: Definition,
-                        node: 280..296 @49 FieldDefinition {
-                            description: None,
-                            name: "message",
-                            arguments: [],
-                            ty: Named(
-                                "Message",
-                            ),
-                            directives: [],
-                        },
+                    "message": 280..296 @49 FieldDefinition {
+                        description: None,
+                        name: "message",
+                        arguments: [],
+                        ty: Named(
+                            "Message",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -100,17 +97,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "newMessage": Component {
-                        origin: Definition,
-                        node: 324..343 @49 FieldDefinition {
-                            description: None,
-                            name: "newMessage",
-                            arguments: [],
-                            ty: Named(
-                                "Message",
-                            ),
-                            directives: [],
-                        },
+                    "newMessage": 324..343 @49 FieldDefinition {
+                        description: None,
+                        name: "newMessage",
+                        arguments: [],
+                        ty: Named(
+                            "Message",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -122,17 +116,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "body": Component {
-                        origin: Definition,
-                        node: 366..378 @49 FieldDefinition {
-                            description: None,
-                            name: "body",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "body": 366..378 @49 FieldDefinition {
+                        description: None,
+                        name: "body",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
