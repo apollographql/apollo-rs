@@ -21,5 +21,7 @@ pub mod validation;
 pub use self::executable::ExecutableDocument;
 pub use self::name::InvalidNameError;
 pub use self::name::Name;
+pub use self::node::ExtensionId;
 pub use self::node::Node;
+pub use self::schema::ComponentOrigin;
 pub use self::schema::Schema;
