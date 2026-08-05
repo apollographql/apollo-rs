@@ -3,8 +3,9 @@ use apollo_compiler::collections::IndexMap;
 use apollo_compiler::collections::IndexSet;
 use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
-use apollo_compiler::schema::ComponentName;
 use apollo_compiler::schema::ExtendedType;
+use apollo_compiler::Name;
+use apollo_compiler::Node;
 use apollo_compiler::Schema;
 
 type MergeError = &'static str;
@@ -91,7 +92,7 @@ where
     Ok(())
 }
 
-fn merge_sets(merged: &mut IndexSet<ComponentName>, new: &IndexSet<ComponentName>) {
+fn merge_sets(merged: &mut IndexSet<Node<Name>>, new: &IndexSet<Node<Name>>) {
     for value in new {
         if !merged.contains(value) {
             merged.insert(value.clone());

@@ -329,7 +329,7 @@ async fn execute_field<'a>(
             .schema_definition
             .query
             .as_ref()
-            .is_some_and(|q| q.name == object_type.name)
+            .is_some_and(|q| **q == object_type.name)
     };
     let info = ResolveInfo {
         schema: ctx.schema,

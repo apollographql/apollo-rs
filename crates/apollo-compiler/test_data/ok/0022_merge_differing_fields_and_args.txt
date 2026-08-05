@@ -13,10 +13,7 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Query",
-            },
+            "Query",
         ),
         mutation: None,
         subscription: None,
@@ -131,10 +128,7 @@ Schema {
                 description: None,
                 name: "Dog",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Pet",
-                    },
+                    144..147 @24 "Pet",
                 },
                 directives: [],
                 fields: {
@@ -235,10 +229,7 @@ Schema {
                 description: None,
                 name: "Cat",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Pet",
-                    },
+                    322..325 @24 "Pet",
                 },
                 directives: [],
                 fields: {

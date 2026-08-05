@@ -44,7 +44,7 @@ fn get_possible_types<'a>(
             union_
                 .members
                 .iter()
-                .map(|component| component.name.clone())
+                .map(|component| component.as_ref().clone())
                 .collect(),
         ),
         _ => Default::default(),

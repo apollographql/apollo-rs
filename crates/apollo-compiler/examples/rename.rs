@@ -30,13 +30,13 @@ fn renamed() -> Valid<Schema> {
     schema.types.insert(new_name.clone(), type_def);
 
     // 4. Update any existing reference to the old name
-    schema
+    *schema
         .schema_definition
         .make_mut()
         .query
         .as_mut()
         .unwrap()
-        .name = new_name;
+        .make_mut() = new_name;
 
     schema.validate().unwrap()
 }
