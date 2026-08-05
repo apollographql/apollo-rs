@@ -41,7 +41,7 @@ pub(crate) fn validate_root_operation_definitions(
                 diagnostics.push(
                     name.location(),
                     DiagnosticData::RootOperationObjectType {
-                        name: name.name.clone(),
+                        name: name.as_ref().clone(),
                         describe_type: type_def.describe(),
                     },
                 );
@@ -50,7 +50,7 @@ pub(crate) fn validate_root_operation_definitions(
             diagnostics.push(
                 name.location(),
                 DiagnosticData::UndefinedDefinition {
-                    name: name.name.clone(),
+                    name: name.as_ref().clone(),
                 },
             );
         }
@@ -62,7 +62,7 @@ pub(crate) fn validate_root_operation_definitions(
             diagnostics.push(
                 name.location(),
                 DiagnosticData::DuplicateRootOperationType {
-                    name: name.name.clone(),
+                    name: name.as_ref().clone(),
                     original_operation: *original_op,
                     original_definition: original_name.location(),
                     redefined_operation: op,

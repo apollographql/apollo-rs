@@ -1,12 +1,12 @@
 use crate::diagnostic::CliReport;
 use crate::diagnostic::ToCliReport;
+use crate::node::ExtensionId;
 use crate::parser::FileId;
 use crate::parser::LineColumn;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::parser::TaggedFileId;
-use crate::schema::ComponentName;
-use crate::schema::ComponentOrigin;
+use crate::Node;
 use rowan::TextRange;
 use std::fmt;
 use std::marker::PhantomData;
@@ -289,11 +289,14 @@ impl Name {
         byte.is_ascii_alphanumeric() || byte == b'_'
     }
 
-    pub fn to_component(&self, origin: ComponentOrigin) -> ComponentName {
-        ComponentName {
-            origin,
-            name: self.clone(),
+    /// Converts to a [`Node<Name>`] with the given extension ID,
+    /// keeping the source location of this name.
+    pub fn to_node(&self, extension_id: Option<ExtensionId>) -> Node<Name> {
+        let mut node = Node::new_opt_location(self.clone(), self.location());
+        if let Some(id) = extension_id {
+            node.set_extension_id(id);
         }
+        node
     }
 }
 
@@ -380,6 +383,30 @@ impl PartialOrd for Name {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+impl std::borrow::Borrow<str> for Node<Name> {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl PartialEq<Name> for Node<Name> {
+    fn eq(&self, other: &Name) -> bool {
+        self.as_ref() == other
+    }
+}
+
+impl PartialEq<str> for Node<Name> {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<&'_ str> for Node<Name> {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
     }
 }
 

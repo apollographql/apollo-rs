@@ -42,16 +42,10 @@ Schema {
             },
         ],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Query",
-            },
+            125..130 @17 "Query",
         ),
         mutation: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Mutation",
-            },
+            143..151 @17 "Mutation",
         ),
         subscription: None,
     },
@@ -242,14 +236,8 @@ Schema {
                 name: "AccountType",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "PasswordAccount",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "SMSAccount",
-                    },
+                    647..662 @17 "PasswordAccount",
+                    665..675 @17 "SMSAccount",
                 },
             },
         ),
@@ -281,14 +269,8 @@ Schema {
                 name: "Body",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Image",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Text",
-                    },
+                    726..731 @17 "Image",
+                    734..738 @17 "Text",
                 },
             },
         ),
@@ -297,10 +279,7 @@ Schema {
                 description: None,
                 name: "Book",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Product",
-                    },
+                    761..768 @17 "Product",
                 },
                 directives: [
                     Component {
@@ -778,14 +757,8 @@ Schema {
                 name: "Brand",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Ikea",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Amazon",
-                    },
+                    1741..1745 @17 "Ikea",
+                    1748..1754 @17 "Amazon",
                 },
             },
         ),
@@ -794,10 +767,7 @@ Schema {
                 description: None,
                 name: "Car",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Vehicle",
-                    },
+                    1776..1783 @17 "Vehicle",
                 },
                 directives: [
                     Component {
@@ -1000,10 +970,7 @@ Schema {
                 description: None,
                 name: "Furniture",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Product",
-                    },
+                    2177..2184 @17 "Product",
                 },
                 directives: [
                     Component {
@@ -1376,10 +1343,7 @@ Schema {
                 description: None,
                 name: "Image",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "NamedObject",
-                    },
+                    2924..2935 @17 "NamedObject",
                 },
                 directives: [],
                 fields: {
@@ -1816,14 +1780,8 @@ Schema {
                 name: "MetadataOrError",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "KeyValue",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Error",
-                    },
+                    3760..3768 @17 "KeyValue",
+                    3771..3776 @17 "Error",
                 },
             },
         ),
@@ -2239,10 +2197,7 @@ Schema {
                 description: None,
                 name: "ProductDetailsBook",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "ProductDetails",
-                    },
+                    4571..4585 @17 "ProductDetails",
                 },
                 directives: [],
                 fields: {
@@ -2278,10 +2233,7 @@ Schema {
                 description: None,
                 name: "ProductDetailsFurniture",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "ProductDetails",
-                    },
+                    4662..4676 @17 "ProductDetails",
                 },
                 directives: [],
                 fields: {
@@ -2947,10 +2899,7 @@ Schema {
                 description: None,
                 name: "Text",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "NamedObject",
-                    },
+                    5875..5886 @17 "NamedObject",
                 },
                 directives: [],
                 fields: {
@@ -3021,14 +2970,8 @@ Schema {
                 name: "Thing",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Car",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Ikea",
-                    },
+                    6008..6011 @17 "Car",
+                    6014..6018 @17 "Ikea",
                 },
             },
         ),
@@ -3555,10 +3498,7 @@ Schema {
                 description: None,
                 name: "Van",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Vehicle",
-                    },
+                    7117..7124 @17 "Vehicle",
                 },
                 directives: [
                     Component {

@@ -13,10 +13,7 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Query",
-            },
+            "Query",
         ),
         mutation: None,
         subscription: None,
@@ -68,10 +65,7 @@ Schema {
                 description: None,
                 name: "Dog",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Pet",
-                    },
+                    55..58 @32 "Pet",
                 },
                 directives: [],
                 fields: {
@@ -107,10 +101,7 @@ Schema {
                 description: None,
                 name: "Cat",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Pet",
-                    },
+                    118..121 @32 "Pet",
                 },
                 directives: [],
                 fields: {
@@ -147,14 +138,8 @@ Schema {
                 name: "CatOrDog",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Cat",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Dog",
-                    },
+                    178..181 @32 "Cat",
+                    184..187 @32 "Dog",
                 },
             },
         ),
@@ -188,14 +173,8 @@ Schema {
                 name: "DogOrHuman",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Dog",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Human",
-                    },
+                    239..242 @32 "Dog",
+                    245..250 @32 "Human",
                 },
             },
         ),
@@ -226,10 +205,7 @@ Schema {
                 description: None,
                 name: "Resource",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Node",
-                    },
+                    1379..1383 @32 "Node",
                 },
                 directives: [],
                 fields: {
@@ -265,14 +241,8 @@ Schema {
                 description: None,
                 name: "ConcreteResource",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Resource",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Node",
-                    },
+                    1509..1517 @32 "Resource",
+                    1520..1524 @32 "Node",
                 },
                 directives: [],
                 fields: {

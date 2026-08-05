@@ -67,7 +67,7 @@ pub(crate) fn validate_object_type_definition(
                     DiagnosticData::MissingInterfaceField {
                         name: object.name.clone(),
                         implements_location: implements_interface.location(),
-                        interface: implements_interface.name.clone(),
+                        interface: implements_interface.as_ref().clone(),
                         field: interface_field.name.clone(),
                         field_location: interface_field.location(),
                     },

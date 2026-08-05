@@ -4,7 +4,7 @@ use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
 use crate::response::JsonMap;
 use crate::schema;
-use crate::schema::ComponentName;
+use crate::Name;
 use crate::Node;
 use std::borrow::Cow;
 
@@ -44,7 +44,7 @@ pub(crate) fn type_def<'a>(info: &'a ResolveInfo<'a>, name: &str) -> ResolvedVal
     )
 }
 
-fn type_def_opt<'a>(info: &'a ResolveInfo<'a>, name: &Option<ComponentName>) -> ResolvedValue<'a> {
+fn type_def_opt<'a>(info: &'a ResolveInfo<'a>, name: &Option<Node<Name>>) -> ResolvedValue<'a> {
     if let Some(name) = name {
         type_def(info, name)
     } else {
@@ -177,7 +177,7 @@ impl ObjectValue for TypeDefResolver<'_> {
                         .flat_map(|implementers| &implementers.objects))
                 }
                 schema::ExtendedType::Union(def) => {
-                    types!(def.members.iter().map(|c| &c.name))
+                    types!(def.members.iter().map(|c| c.as_ref()))
                 }
                 schema::ExtendedType::Object(_)
                 | schema::ExtendedType::Scalar(_)
