@@ -403,11 +403,11 @@ fn introspection_is_one_of_true() {
         "expected isOneOf=true for @oneOf type, got: {json}"
     );
 
-    // String is not a @oneOf type → isOneOf must be false.
+    // String is not an input object type → isOneOf must be null.
     assert_eq!(
         data["regularType"]["isOneOf"],
-        serde_json::Value::Bool(false),
-        "expected isOneOf=false for non-@oneOf type, got: {json}"
+        serde_json::Value::Null,
+        "expected isOneOf=null for non-input-object type, got: {json}"
     );
 }
 
@@ -523,10 +523,10 @@ fn extending_oneof_type_with_default_value_is_invalid() {
 }
 
 #[test]
-fn adding_oneof_via_extension_with_valid_base_type_is_valid() {
-    // A regular input type whose fields are all nullable and have no defaults
-    // can have @oneOf added via extension.
-    Schema::parse_and_validate(
+fn adding_oneof_via_extension_is_invalid() {
+    // The @oneOf directive must not be provided by an input object type extension.
+    // https://spec.graphql.org/September2025/#sec-Input-Object-Extensions
+    let errors = Schema::parse_and_validate(
         r#"
         type Query { f: String }
         input Foo { a: String b: Int }
@@ -534,14 +534,26 @@ fn adding_oneof_via_extension_with_valid_base_type_is_valid() {
         "#,
         "schema.graphql",
     )
-    .expect("adding @oneOf via extension to a compatible input type should be valid");
+    .expect_err("@oneOf via extension should be invalid");
+    let expected = expect![[r#"
+        Error: @oneOf must not be provided by an input object type extension on `Foo`
+           ╭─[ schema.graphql:4:26 ]
+           │
+         4 │         extend input Foo @oneOf
+           │         ───────────┬───────────  
+           │                    ╰───────────── @oneOf applied here via extension
+           │ 
+           │ Help: The @oneOf directive must be provided on the input object type definition, not an extension.
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
 }
 
 #[test]
 fn adding_oneof_via_extension_with_nonnull_field_in_base_is_invalid() {
     // If the base type already has a non-null field, applying @oneOf via
-    // extension must be rejected because the merged type would violate the
-    // @oneOf field-nullability rule.
+    // extension must be rejected for both the extension rule and the
+    // field-nullability rule.
     let errors = Schema::parse_and_validate(
         r#"
         type Query { f: String }
@@ -562,6 +574,15 @@ fn adding_oneof_via_extension_with_nonnull_field_in_base_is_invalid() {
            │                          ╰────── remove the `!` to make this field nullable
            │ 
            │ Help: Fields of a @oneOf input object must all be nullable and must not have default values.
+        ───╯
+        Error: @oneOf must not be provided by an input object type extension on `Foo`
+           ╭─[ schema.graphql:4:26 ]
+           │
+         4 │         extend input Foo @oneOf
+           │         ───────────┬───────────  
+           │                    ╰───────────── @oneOf applied here via extension
+           │ 
+           │ Help: The @oneOf directive must be provided on the input object type definition, not an extension.
         ───╯
     "#]];
     expected.assert_eq(&errors.to_string());

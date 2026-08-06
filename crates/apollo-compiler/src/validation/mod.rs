@@ -318,6 +318,7 @@ impl DiagnosticData {
                     OneOfInputObjectFieldNonNull { .. } => "OneOfInputObjectFieldNonNull",
                     OneOfInputObjectFieldCount { .. } => "OneOfInputObjectFieldCount",
                     UnsupportedDefault { .. } => "UnsupportedDefault",
+                    OneOfDirectiveOnExtension { .. } => "OneOfDirectiveOnExtension",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                     MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
                     InvalidImplementationFieldArgumentType { .. } => {
@@ -541,6 +542,9 @@ impl DiagnosticData {
                     )),
                     UnsupportedDefault { coordinate, .. } => Some(format!(
                         r#"OneOf input field "{coordinate}" cannot have a default value."#
+                    )),
+                    OneOfDirectiveOnExtension { type_name, .. } => Some(format!(
+                        r#"The @oneOf directive must not be provided by an input object type extension on "{type_name}"."#
                     )),
                     InvalidImplementationFieldType {
                         name,

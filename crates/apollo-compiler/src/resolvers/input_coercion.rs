@@ -178,8 +178,9 @@ fn coerce_variable_value(
                         location: None,
                     });
                 }
-                // @oneOf: exactly one non-null field must be provided at runtime.
-                // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+                // @oneOf pre-coercion: the provided value must contain exactly one
+                // entry and that entry must not be null.
+                // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects.Input-Coercion
                 if ty_def.is_one_of() {
                     let provided_count = object
                         .keys()
@@ -189,8 +190,7 @@ fn coerce_variable_value(
                         return Err(InputCoercionError::ValueError {
                             message: format!(
                                 "@oneOf input object '{ty_name}' must specify exactly one key, \
-                                 but {provided_count} {} given",
-                                if provided_count == 1 { "was" } else { "were" }
+                                 but {provided_count} were given",
                             ),
                             location: None,
                         });
@@ -230,6 +230,21 @@ fn coerce_variable_value(
                         });
                     } else {
                         // Field not required
+                    }
+                }
+                // @oneOf post-coercion: the resulting coerced map must contain
+                // exactly one entry whose value is not null.
+                // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects.Input-Coercion
+                if ty_def.is_one_of() {
+                    let non_null_count = object.iter().filter(|(_, v)| !v.is_null()).count();
+                    if non_null_count != 1 {
+                        return Err(InputCoercionError::ValueError {
+                            message: format!(
+                                "@oneOf input object '{ty_name}' must have exactly one non-null \
+                                 field after coercion, but {non_null_count} were given",
+                            ),
+                            location: None,
+                        });
                     }
                 }
                 return Ok(object.into());
@@ -437,8 +452,9 @@ fn coerce_argument_value(
                     ));
                     return Err(PropagateNull);
                 }
-                // @oneOf: exactly one non-null field must be provided at runtime.
-                // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+                // @oneOf pre-coercion: the provided value must contain exactly one
+                // entry and that entry must not be null.
+                // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects.Input-Coercion
                 if ty_def.is_one_of() {
                     let provided_count = object
                         .iter()
@@ -448,8 +464,7 @@ fn coerce_argument_value(
                         ctx.errors.push(GraphQLError::field_error(
                             format!(
                                 "@oneOf input object '{ty_name}' must specify exactly one key, \
-                                 but {provided_count} {} given",
-                                if provided_count == 1 { "was" } else { "were" }
+                                 but {provided_count} were given",
                             ),
                             path,
                             value.location(),
@@ -508,6 +523,26 @@ fn coerce_argument_value(
                         return Err(PropagateNull);
                     } else {
                         // Field not required
+                    }
+                }
+                // @oneOf post-coercion: the resulting coerced map must contain
+                // exactly one entry whose value is not null.
+                // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects.Input-Coercion
+                if ty_def.is_one_of() {
+                    let non_null_count =
+                        coerced_object.iter().filter(|(_, v)| !v.is_null()).count();
+                    if non_null_count != 1 {
+                        ctx.errors.push(GraphQLError::field_error(
+                            format!(
+                                "@oneOf input object '{ty_name}' must have exactly one non-null \
+                                 field, but {non_null_count} {} given",
+                                if non_null_count == 1 { "was" } else { "were" }
+                            ),
+                            path,
+                            value.location(),
+                            &ctx.document.sources,
+                        ));
+                        return Err(PropagateNull);
                     }
                 }
                 return Ok(coerced_object.into());
@@ -665,7 +700,7 @@ mod tests {
 
     // -----------------------------------------------------------------------
     // @oneOf runtime coercion tests
-    // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+    // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects
     // -----------------------------------------------------------------------
 
     fn one_of_schema_and_doc() -> (Valid<Schema>, Valid<ExecutableDocument>) {

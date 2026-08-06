@@ -271,7 +271,7 @@ pub(crate) fn value_of_correct_type(
                 }
 
                 // @oneOf: exactly one key must be provided.
-                // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+                // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects
                 //
                 // Per-field non-null / nullable-variable checks fall out of the recursion
                 // below — @oneOf field positions are treated as non-null (coerced when

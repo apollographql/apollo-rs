@@ -298,7 +298,7 @@ ExecutableDocument {
                                                     selections: [
                                                         Field(
                                                             178..182 @14 Field {
-                                                                definition: 4265..4278 @1 FieldDefinition {
+                                                                definition: 4257..4270 @1 FieldDefinition {
                                                                     description: None,
                                                                     name: "name",
                                                                     arguments: [],
@@ -319,7 +319,7 @@ ExecutableDocument {
                                                         ),
                                                         Field(
                                                             189..200 @14 Field {
-                                                                definition: 4281..4300 @1 FieldDefinition {
+                                                                definition: 4273..4292 @1 FieldDefinition {
                                                                     description: None,
                                                                     name: "description",
                                                                     arguments: [],
@@ -340,7 +340,7 @@ ExecutableDocument {
                                                         ),
                                                         Field(
                                                             207..216 @14 Field {
-                                                                definition: 4303..4337 @1 FieldDefinition {
+                                                                definition: 4295..4329 @1 FieldDefinition {
                                                                     description: None,
                                                                     name: "locations",
                                                                     arguments: [],
@@ -363,18 +363,18 @@ ExecutableDocument {
                                                         ),
                                                         Field(
                                                             223..259 @14 Field {
-                                                                definition: 4340..4398 @1 FieldDefinition {
+                                                                definition: 4332..4390 @1 FieldDefinition {
                                                                     description: None,
                                                                     name: "args",
                                                                     arguments: [
-                                                                        4345..4379 @1 InputValueDefinition {
+                                                                        4337..4371 @1 InputValueDefinition {
                                                                             description: None,
                                                                             name: "includeDeprecated",
-                                                                            ty: 4364..4371 @1 Named(
+                                                                            ty: 4356..4363 @1 Named(
                                                                                 "Boolean",
                                                                             ),
                                                                             default_value: Some(
-                                                                                4374..4379 @1 Boolean(
+                                                                                4366..4371 @1 Boolean(
                                                                                     false,
                                                                                 ),
                                                                             ),
@@ -532,7 +532,7 @@ ExecutableDocument {
                                 selections: [
                                     Field(
                                         370..374 @14 Field {
-                                            definition: 2988..3001 @1 FieldDefinition {
+                                            definition: 2980..2993 @1 FieldDefinition {
                                                 description: None,
                                                 name: "name",
                                                 arguments: [],
@@ -553,7 +553,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         379..390 @14 Field {
-                                            definition: 3004..3023 @1 FieldDefinition {
+                                            definition: 2996..3015 @1 FieldDefinition {
                                                 description: None,
                                                 name: "description",
                                                 arguments: [],
@@ -574,18 +574,18 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         395..427 @14 Field {
-                                            definition: 3026..3084 @1 FieldDefinition {
+                                            definition: 3018..3076 @1 FieldDefinition {
                                                 description: None,
                                                 name: "args",
                                                 arguments: [
-                                                    3031..3065 @1 InputValueDefinition {
+                                                    3023..3057 @1 InputValueDefinition {
                                                         description: None,
                                                         name: "includeDeprecated",
-                                                        ty: 3050..3057 @1 Named(
+                                                        ty: 3042..3049 @1 Named(
                                                             "Boolean",
                                                         ),
                                                         default_value: Some(
-                                                            3060..3065 @1 Boolean(
+                                                            3052..3057 @1 Boolean(
                                                                 false,
                                                             ),
                                                         ),
@@ -618,7 +618,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         432..461 @14 Field {
-                                            definition: 3087..3100 @1 FieldDefinition {
+                                            definition: 3079..3092 @1 FieldDefinition {
                                                 description: None,
                                                 name: "type",
                                                 arguments: [],
@@ -646,7 +646,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         466..478 @14 Field {
-                                            definition: 3103..3125 @1 FieldDefinition {
+                                            definition: 3095..3117 @1 FieldDefinition {
                                                 description: None,
                                                 name: "isDeprecated",
                                                 arguments: [],
@@ -667,7 +667,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         483..500 @14 Field {
-                                            definition: 3128..3153 @1 FieldDefinition {
+                                            definition: 3120..3145 @1 FieldDefinition {
                                                 description: None,
                                                 name: "deprecationReason",
                                                 arguments: [],
@@ -807,7 +807,7 @@ ExecutableDocument {
                                 selections: [
                                     Field(
                                         621..625 @14 Field {
-                                            definition: 3774..3787 @1 FieldDefinition {
+                                            definition: 3766..3779 @1 FieldDefinition {
                                                 description: None,
                                                 name: "name",
                                                 arguments: [],
@@ -828,7 +828,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         630..641 @14 Field {
-                                            definition: 3790..3809 @1 FieldDefinition {
+                                            definition: 3782..3801 @1 FieldDefinition {
                                                 description: None,
                                                 name: "description",
                                                 arguments: [],
@@ -849,7 +849,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         646..658 @14 Field {
-                                            definition: 3812..3834 @1 FieldDefinition {
+                                            definition: 3804..3826 @1 FieldDefinition {
                                                 description: None,
                                                 name: "isDeprecated",
                                                 arguments: [],
@@ -870,7 +870,7 @@ ExecutableDocument {
                                     ),
                                     Field(
                                         663..680 @14 Field {
-                                            definition: 3837..3862 @1 FieldDefinition {
+                                            definition: 3829..3854 @1 FieldDefinition {
                                                 description: None,
                                                 name: "deprecationReason",
                                                 arguments: [],
@@ -935,7 +935,7 @@ ExecutableDocument {
                 selections: [
                     Field(
                         764..768 @14 Field {
-                            definition: 3353..3366 @1 FieldDefinition {
+                            definition: 3345..3358 @1 FieldDefinition {
                                 description: None,
                                 name: "name",
                                 arguments: [],
@@ -956,7 +956,7 @@ ExecutableDocument {
                     ),
                     Field(
                         771..782 @14 Field {
-                            definition: 3369..3388 @1 FieldDefinition {
+                            definition: 3361..3380 @1 FieldDefinition {
                                 description: None,
                                 name: "description",
                                 arguments: [],
@@ -977,7 +977,7 @@ ExecutableDocument {
                     ),
                     Field(
                         785..804 @14 Field {
-                            definition: 3391..3404 @1 FieldDefinition {
+                            definition: 3383..3396 @1 FieldDefinition {
                                 description: None,
                                 name: "type",
                                 arguments: [],
@@ -1005,9 +1005,9 @@ ExecutableDocument {
                     ),
                     Field(
                         807..819 @14 Field {
-                            definition: 3407..3511 @1 FieldDefinition {
+                            definition: 3399..3503 @1 FieldDefinition {
                                 description: Some(
-                                    3407..3488 @1 "A GraphQL-formatted string representing the default value for this input value.",
+                                    3399..3480 @1 "A GraphQL-formatted string representing the default value for this input value.",
                                 ),
                                 name: "defaultValue",
                                 arguments: [],

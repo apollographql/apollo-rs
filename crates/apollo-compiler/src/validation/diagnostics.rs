@@ -379,6 +379,11 @@ pub(crate) enum DiagnosticData {
         coordinate: TypeAttributeCoordinate,
         default_location: Option<SourceSpan>,
     },
+    #[error("@oneOf must not be provided by an input object type extension on `{type_name}`")]
+    OneOfDirectiveOnExtension {
+        type_name: Name,
+        extension_location: Option<SourceSpan>,
+    },
 }
 
 /// Shared help text for the two @oneOf schema-definition errors.
@@ -958,6 +963,14 @@ impl DiagnosticData {
                 );
                 report.with_label_opt(main_location, "remove the default value");
                 report.with_help(ONE_OF_FIELD_REQUIREMENTS);
+            }
+            DiagnosticData::OneOfDirectiveOnExtension {
+                extension_location, ..
+            } => {
+                report.with_label_opt(*extension_location, "@oneOf applied here via extension");
+                report.with_help(
+                    "The @oneOf directive must be provided on the input object type definition, not an extension.",
+                );
             }
         }
     }

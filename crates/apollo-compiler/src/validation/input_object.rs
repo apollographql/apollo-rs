@@ -101,8 +101,24 @@ pub(crate) fn validate_input_object_definition(
         }
     }
 
+    // @oneOf must not be provided by an input object type extension.
+    // https://spec.graphql.org/September2025/#sec-Input-Object-Extensions
+    for directive in &input_object.directives.0 {
+        if directive.name == "oneOf" {
+            if let Some(ext_id) = directive.origin.extension_id() {
+                diagnostics.push(
+                    directive.location(),
+                    DiagnosticData::OneOfDirectiveOnExtension {
+                        type_name: input_object.name.clone(),
+                        extension_location: ext_id.location(),
+                    },
+                );
+            }
+        }
+    }
+
     // @oneOf input objects: all fields must be nullable and must not have default values.
-    // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+    // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects
     if input_object.is_one_of() {
         for (field_name, field) in &input_object.fields {
             if field.ty.is_non_null() {
