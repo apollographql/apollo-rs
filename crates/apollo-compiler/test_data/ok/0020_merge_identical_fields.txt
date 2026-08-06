@@ -112,6 +112,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "queryPupper": 76..175 @22 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "queryPupper",
@@ -162,6 +163,7 @@ ExecutableDocument {
     },
     fragments: {
         "mergeIdenticalFields": 177..231 @22 Fragment {
+            description: None,
             name: "mergeIdenticalFields",
             directives: [],
             selection_set: SelectionSet {
@@ -213,6 +215,7 @@ ExecutableDocument {
             },
         },
         "mergeIdenticalAliasesAndFields": 233..319 @22 Fragment {
+            description: None,
             name: "mergeIdenticalAliasesAndFields",
             directives: [],
             selection_set: SelectionSet {

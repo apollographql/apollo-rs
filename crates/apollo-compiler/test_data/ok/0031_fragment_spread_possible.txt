@@ -354,6 +354,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "UseAllFragments": 1759..2068 @32 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "UseAllFragments",
@@ -502,6 +503,7 @@ ExecutableDocument {
     },
     fragments: {
         "dogFragment": 327..392 @32 Fragment {
+            description: None,
             name: "dogFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -545,6 +547,7 @@ ExecutableDocument {
             },
         },
         "petNameFragment": 471..513 @32 Fragment {
+            description: None,
             name: "petNameFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -575,6 +578,7 @@ ExecutableDocument {
             },
         },
         "interfaceWithinObjectFragment": 515..585 @32 Fragment {
+            description: None,
             name: "interfaceWithinObjectFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -590,6 +594,7 @@ ExecutableDocument {
             },
         },
         "catOrDogNameFragment": 587..666 @32 Fragment {
+            description: None,
             name: "catOrDogNameFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -633,6 +638,7 @@ ExecutableDocument {
             },
         },
         "unionWithObjectFragment": 668..737 @32 Fragment {
+            description: None,
             name: "unionWithObjectFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -648,6 +654,7 @@ ExecutableDocument {
             },
         },
         "petFragment": 816..888 @32 Fragment {
+            description: None,
             name: "petFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -712,6 +719,7 @@ ExecutableDocument {
             },
         },
         "catOrDogFragment": 890..965 @32 Fragment {
+            description: None,
             name: "catOrDogFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -755,6 +763,7 @@ ExecutableDocument {
             },
         },
         "unionWithInterface": 1046..1108 @32 Fragment {
+            description: None,
             name: "unionWithInterface",
             directives: [],
             selection_set: SelectionSet {
@@ -770,6 +779,7 @@ ExecutableDocument {
             },
         },
         "dogOrHumanFragment": 1110..1189 @32 Fragment {
+            description: None,
             name: "dogOrHumanFragment",
             directives: [],
             selection_set: SelectionSet {
@@ -813,6 +823,7 @@ ExecutableDocument {
             },
         },
         "interfaceWithInterface": 1554..1619 @32 Fragment {
+            description: None,
             name: "interfaceWithInterface",
             directives: [],
             selection_set: SelectionSet {
@@ -828,6 +839,7 @@ ExecutableDocument {
             },
         },
         "resourceFragment": 1621..1668 @32 Fragment {
+            description: None,
             name: "resourceFragment",
             directives: [],
             selection_set: SelectionSet {

@@ -1,5 +1,6 @@
 use super::FieldSet;
 use crate::validation::fragment::validate_fragments_used;
+use crate::validation::operation::validate_defer;
 use crate::validation::operation::validate_operation_definitions;
 use crate::validation::selection::FieldsInSetCanMerge;
 use crate::validation::DiagnosticList;
@@ -45,6 +46,7 @@ pub(crate) fn validate_with_or_without_schema(
     let context = ExecutableValidationContext::new(schema);
     validate_operation_definitions(errors, document, &context);
     validate_fragments_used(errors, document);
+    validate_defer(document, errors);
 }
 
 pub(crate) fn validate_field_set(

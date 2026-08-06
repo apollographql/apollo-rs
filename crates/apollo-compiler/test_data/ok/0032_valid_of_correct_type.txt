@@ -895,6 +895,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "goodIntValue": 1526..1599 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodIntValue",
@@ -968,6 +969,7 @@ ExecutableDocument {
                 },
             },
             "goodNegativeIntValue": 1601..1682 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodNegativeIntValue",
@@ -1041,6 +1043,7 @@ ExecutableDocument {
                 },
             },
             "goodBooleanValue": 1684..1772 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodBooleanValue",
@@ -1114,6 +1117,7 @@ ExecutableDocument {
                 },
             },
             "goodStringValue": 1774..1860 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodStringValue",
@@ -1187,6 +1191,7 @@ ExecutableDocument {
                 },
             },
             "goodFloatValue": 1862..1943 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodFloatValue",
@@ -1260,6 +1265,7 @@ ExecutableDocument {
                 },
             },
             "goodNegativeFloatValue": 1945..2035 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodNegativeFloatValue",
@@ -1333,6 +1339,7 @@ ExecutableDocument {
                 },
             },
             "intIntoFloat": 2037..2114 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "intIntoFloat",
@@ -1406,6 +1413,7 @@ ExecutableDocument {
                 },
             },
             "intIntoID": 2116..2184 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "intIntoID",
@@ -1479,6 +1487,7 @@ ExecutableDocument {
                 },
             },
             "stringIntoID": 2186..2270 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "stringIntoID",
@@ -1552,6 +1561,7 @@ ExecutableDocument {
                 },
             },
             "goodEnumValue": 2272..2344 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodEnumValue",
@@ -1625,6 +1635,7 @@ ExecutableDocument {
                 },
             },
             "enumWithUndefinedValue": 2346..2437 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "enumWithUndefinedValue",
@@ -1698,6 +1709,7 @@ ExecutableDocument {
                 },
             },
             "enumWithNullValue": 2439..2522 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "enumWithNullValue",
@@ -1769,6 +1781,7 @@ ExecutableDocument {
                 },
             },
             "nullIntoNullableType": 2524..2608 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "nullIntoNullableType",
@@ -1840,6 +1853,7 @@ ExecutableDocument {
                 },
             },
             "goodListValue": 2610..2717 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "goodListValue",
@@ -1923,6 +1937,7 @@ ExecutableDocument {
                 },
             },
             "emptyListValue": 2719..2809 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "emptyListValue",
@@ -1998,6 +2013,7 @@ ExecutableDocument {
                 },
             },
             "nullListValue": 2811..2902 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "nullListValue",
@@ -2071,6 +2087,7 @@ ExecutableDocument {
                 },
             },
             "singleValueIntoList": 2904..3002 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "singleValueIntoList",
@@ -2146,6 +2163,7 @@ ExecutableDocument {
                 },
             },
             "argOnOptionalArg": 3031..3108 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "argOnOptionalArg",
@@ -2223,6 +2241,7 @@ ExecutableDocument {
                 },
             },
             "noArgOnOptionalArg": 3110..3169 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "noArgOnOptionalArg",
@@ -2293,6 +2312,7 @@ ExecutableDocument {
                 },
             },
             "multipleArgs": 3171..3252 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "multipleArgs",
@@ -2381,6 +2401,7 @@ ExecutableDocument {
                 },
             },
             "multiplArgsReverseOrder": 3254..3346 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "multiplArgsReverseOrder",
@@ -2469,6 +2490,7 @@ ExecutableDocument {
                 },
             },
             "noArgsOnMultipleOptional": 3348..3423 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "noArgsOnMultipleOptional",
@@ -2552,6 +2574,7 @@ ExecutableDocument {
                 },
             },
             "oneArgOnMultipleOptional": 3425..3509 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "oneArgOnMultipleOptional",
@@ -2642,6 +2665,7 @@ ExecutableDocument {
                 },
             },
             "secondArgOnMultipleOptional": 3511..3598 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "secondArgOnMultipleOptional",
@@ -2732,6 +2756,7 @@ ExecutableDocument {
                 },
             },
             "multipleRequiredArgsOnMixedList": 3600..3705 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "multipleRequiredArgsOnMixedList",
@@ -2846,6 +2871,7 @@ ExecutableDocument {
                 },
             },
             "multipleRequiredAndOneOptionalArgOnMixedList": 3707..3834 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "multipleRequiredAndOneOptionalArgOnMixedList",
@@ -2966,6 +2992,7 @@ ExecutableDocument {
                 },
             },
             "AllRequiredAndOptionalArgsOnMixedList": 3836..3965 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "AllRequiredAndOptionalArgsOnMixedList",
@@ -3092,6 +3119,7 @@ ExecutableDocument {
                 },
             },
             "optionalArgDespiteRequiredFieldInType": 3994..4085 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "optionalArgDespiteRequiredFieldInType",
@@ -3158,6 +3186,7 @@ ExecutableDocument {
                 },
             },
             "partialObjectOnlyRequired": 4087..4203 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "partialObjectOnlyRequired",
@@ -3238,6 +3267,7 @@ ExecutableDocument {
                 },
             },
             "partialObjectRequiredFieldCanBeFalse": 4205..4333 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "partialObjectRequiredFieldCanBeFalse",
@@ -3318,6 +3348,7 @@ ExecutableDocument {
                 },
             },
             "partialObjectIncludingRequired": 4335..4469 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "partialObjectIncludingRequired",
@@ -3404,6 +3435,7 @@ ExecutableDocument {
                 },
             },
             "fullObject": 4471..4693 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "fullObject",
@@ -3515,6 +3547,7 @@ ExecutableDocument {
                 },
             },
             "fullObjectWithFieldsInDifferentOrder": 4695..4944 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "fullObjectWithFieldsInDifferentOrder",
@@ -3626,6 +3659,7 @@ ExecutableDocument {
                 },
             },
             "withDirectivesOfValidTypes": 4946..5062 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "withDirectivesOfValidTypes",
@@ -3779,12 +3813,14 @@ ExecutableDocument {
                 },
             },
             "withDefaultValues": 5091..5337 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "withDefaultValues",
                 ),
                 variables: [
                     5118..5129 @33 VariableDefinition {
+                        description: None,
                         name: "a",
                         ty: 5122..5125 @33 Named(
                             "Int",
@@ -3797,6 +3833,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     5133..5150 @33 VariableDefinition {
+                        description: None,
                         name: "b",
                         ty: 5137..5143 @33 Named(
                             "String",
@@ -3809,6 +3846,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     5154..5209 @33 VariableDefinition {
+                        description: None,
                         name: "c",
                         ty: 5158..5170 @33 Named(
                             "ComplexInput",
@@ -3978,12 +4016,14 @@ ExecutableDocument {
                 },
             },
             "variablesWithDefaultNullValues": 5339..5605 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "variablesWithDefaultNullValues",
                 ),
                 variables: [
                     5379..5393 @33 VariableDefinition {
+                        description: None,
                         name: "a",
                         ty: 5383..5386 @33 Named(
                             "Int",
@@ -3994,6 +4034,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     5397..5414 @33 VariableDefinition {
+                        description: None,
                         name: "b",
                         ty: 5401..5407 @33 Named(
                             "String",
@@ -4004,6 +4045,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     5418..5476 @33 VariableDefinition {
+                        description: None,
                         name: "c",
                         ty: 5422..5434 @33 Named(
                             "ComplexInput",
@@ -4171,6 +4213,7 @@ ExecutableDocument {
                 },
             },
             "customScalarWithStringValue": 5624..5726 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithStringValue",
@@ -4244,6 +4287,7 @@ ExecutableDocument {
                 },
             },
             "customScalarWithIntValue": 5728..5820 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithIntValue",
@@ -4317,6 +4361,7 @@ ExecutableDocument {
                 },
             },
             "customScalarWithBooleanValue": 5822..5921 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithBooleanValue",
@@ -4390,6 +4435,7 @@ ExecutableDocument {
                 },
             },
             "customScalarWithFloatValue": 5923..6019 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithFloatValue",
@@ -4463,12 +4509,14 @@ ExecutableDocument {
                 },
             },
             "customScalarWithVariableValue": 6021..6146 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithVariableValue",
                 ),
                 variables: [
                     6057..6076 @33 VariableDefinition {
+                        description: None,
                         name: "custom",
                         ty: 6066..6072 @33 Named(
                             "Custom",
@@ -4549,6 +4597,7 @@ ExecutableDocument {
                 },
             },
             "customScalarWithArbitraryInputObject": 6148..6265 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithArbitraryInputObject",
@@ -4629,6 +4678,7 @@ ExecutableDocument {
                 },
             },
             "customScalarWithListValue": 6267..6368 @33 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "customScalarWithListValue",

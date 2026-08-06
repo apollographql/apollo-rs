@@ -194,6 +194,7 @@ impl OperationDefinition {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         // Deconstruct to get a warning if we forget to serialize something
         let Self {
+            description,
             operation_type,
             name,
             variables,
@@ -203,11 +204,13 @@ impl OperationDefinition {
         // Only use shorthand when this is the first item.
         // If not, it might be following a `[lookahead != "{"]` grammar production
         let shorthand = state.output_empty
+            && description.is_none()
             && *operation_type == OperationType::Query
             && name.is_none()
             && variables.is_empty()
             && directives.is_empty();
         if !shorthand {
+            serialize_description(state, description)?;
             state.write(operation_type.name())?;
             if let Some(name) = &name {
                 state.write(" ")?;
@@ -230,11 +233,13 @@ impl OperationDefinition {
 impl FragmentDefinition {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         let Self {
+            description,
             name,
             type_condition,
             directives,
             selection_set,
         } = self;
+        serialize_description(state, description)?;
         display!(state, "fragment {} on {}", name, type_condition)?;
         directives.serialize_impl(state)?;
         state.write(" ")?;
@@ -581,11 +586,13 @@ impl Directive {
 impl VariableDefinition {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         let Self {
+            description,
             name,
             ty,
             default_value,
             directives,
         } = self;
+        serialize_description(state, description)?;
         state.write("$")?;
         state.write(name)?;
         state.write(": ")?;

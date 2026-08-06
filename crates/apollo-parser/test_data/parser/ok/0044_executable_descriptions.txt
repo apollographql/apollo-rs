@@ -1,0 +1,149 @@
+- DOCUMENT@0..624
+    - OPERATION_DEFINITION@0..452
+        - DESCRIPTION@0..202
+            - STRING_VALUE@0..202
+                - STRING@0..202 "\"\"\"\nRequest the current status of a time machine and its operator.\nYou can also check the status for a particular year.\n**Warning:** certain years may trigger an anomaly in the space-time continuum.\n\"\"\""
+        - WHITESPACE@202..203 "\n"
+        - OPERATION_TYPE@203..208
+            - query_KW@203..208 "query"
+        - WHITESPACE@208..209 " "
+        - NAME@209..229
+            - IDENT@209..229 "GetTimeMachineStatus"
+        - VARIABLE_DEFINITIONS@229..362
+            - L_PAREN@229..230 "("
+            - WHITESPACE@230..233 "\n  "
+            - VARIABLE_DEFINITION@233..309
+                - DESCRIPTION@233..291
+                    - STRING_VALUE@233..291
+                        - STRING@233..291 "\"The unique serial number of the time machine to inspect.\""
+                - WHITESPACE@291..294 "\n  "
+                - VARIABLE@294..304
+                    - DOLLAR@294..295 "$"
+                    - NAME@295..304
+                        - IDENT@295..304 "machineId"
+                - COLON@304..305 ":"
+                - WHITESPACE@305..306 " "
+                - NON_NULL_TYPE@306..309
+                    - NAMED_TYPE@306..308
+                        - NAME@306..308
+                            - IDENT@306..308 "ID"
+                    - BANG@308..309 "!"
+            - WHITESPACE@309..312 "\n  "
+            - VARIABLE_DEFINITION@312..360
+                - DESCRIPTION@312..347
+                    - STRING_VALUE@312..347
+                        - STRING@312..347 "\"The year to check the status for.\""
+                - WHITESPACE@347..350 "\n  "
+                - VARIABLE@350..355
+                    - DOLLAR@350..351 "$"
+                    - NAME@351..355
+                        - IDENT@351..355 "year"
+                - COLON@355..356 ":"
+                - WHITESPACE@356..357 " "
+                - NAMED_TYPE@357..360
+                    - NAME@357..360
+                        - IDENT@357..360 "Int"
+            - WHITESPACE@360..361 "\n"
+            - R_PAREN@361..362 ")"
+        - WHITESPACE@362..363 " "
+        - SELECTION_SET@363..452
+            - L_CURLY@363..364 "{"
+            - WHITESPACE@364..367 "\n  "
+            - FIELD@367..450
+                - NAME@367..378
+                    - IDENT@367..378 "timeMachine"
+                - ARGUMENTS@378..394
+                    - L_PAREN@378..379 "("
+                    - ARGUMENT@379..393
+                        - NAME@379..381
+                            - IDENT@379..381 "id"
+                        - COLON@381..382 ":"
+                        - WHITESPACE@382..383 " "
+                        - VARIABLE@383..393
+                            - DOLLAR@383..384 "$"
+                            - NAME@384..393
+                                - IDENT@384..393 "machineId"
+                    - R_PAREN@393..394 ")"
+                - WHITESPACE@394..395 " "
+                - SELECTION_SET@395..450
+                    - L_CURLY@395..396 "{"
+                    - WHITESPACE@396..401 "\n    "
+                    - FRAGMENT_SPREAD@401..422
+                        - SPREAD@401..404 "..."
+                        - FRAGMENT_NAME@404..422
+                            - NAME@404..422
+                                - IDENT@404..422 "TimeMachineDetails"
+                    - WHITESPACE@422..427 "\n    "
+                    - FIELD@427..446
+                        - NAME@427..433
+                            - IDENT@427..433 "status"
+                        - ARGUMENTS@433..446
+                            - L_PAREN@433..434 "("
+                            - ARGUMENT@434..445
+                                - NAME@434..438
+                                    - IDENT@434..438 "year"
+                                - COLON@438..439 ":"
+                                - WHITESPACE@439..440 " "
+                                - VARIABLE@440..445
+                                    - DOLLAR@440..441 "$"
+                                    - NAME@441..445
+                                        - IDENT@441..445 "year"
+                            - R_PAREN@445..446 ")"
+                    - WHITESPACE@446..449 "\n  "
+                    - R_CURLY@449..450 "}"
+            - WHITESPACE@450..451 "\n"
+            - R_CURLY@451..452 "}"
+    - WHITESPACE@452..454 "\n\n"
+    - FRAGMENT_DEFINITION@454..623
+        - DESCRIPTION@454..502
+            - STRING_VALUE@454..502
+                - STRING@454..502 "\"Details about a time machine and its operator.\""
+        - WHITESPACE@502..503 "\n"
+        - fragment_KW@503..511 "fragment"
+        - WHITESPACE@511..512 " "
+        - FRAGMENT_NAME@512..530
+            - NAME@512..530
+                - IDENT@512..530 "TimeMachineDetails"
+        - WHITESPACE@530..531 " "
+        - TYPE_CONDITION@531..545
+            - on_KW@531..533 "on"
+            - WHITESPACE@533..534 " "
+            - NAMED_TYPE@534..545
+                - NAME@534..545
+                    - IDENT@534..545 "TimeMachine"
+        - WHITESPACE@545..546 " "
+        - SELECTION_SET@546..623
+            - L_CURLY@546..547 "{"
+            - WHITESPACE@547..550 "\n  "
+            - FIELD@550..552
+                - NAME@550..552
+                    - IDENT@550..552 "id"
+            - WHITESPACE@552..555 "\n  "
+            - FIELD@555..560
+                - NAME@555..560
+                    - IDENT@555..560 "model"
+            - WHITESPACE@560..563 "\n  "
+            - FIELD@563..578
+                - NAME@563..578
+                    - IDENT@563..578 "lastMaintenance"
+            - WHITESPACE@578..581 "\n  "
+            - FIELD@581..621
+                - NAME@581..589
+                    - IDENT@581..589 "operator"
+                - WHITESPACE@589..590 " "
+                - SELECTION_SET@590..621
+                    - L_CURLY@590..591 "{"
+                    - WHITESPACE@591..596 "\n    "
+                    - FIELD@596..600
+                        - NAME@596..600
+                            - IDENT@596..600 "name"
+                    - WHITESPACE@600..605 "\n    "
+                    - FIELD@605..617
+                        - NAME@605..617
+                            - IDENT@605..617 "licenseLevel"
+                    - WHITESPACE@617..620 "\n  "
+                    - R_CURLY@620..621 "}"
+            - WHITESPACE@621..622 "\n"
+            - R_CURLY@622..623 "}"
+    - WHITESPACE@623..624 "\n"
+recursion limit: 500, high: 2

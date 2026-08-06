@@ -112,10 +112,12 @@ ExecutableDocument {
     operations: OperationMap {
         anonymous: Some(
             156..505 @25 Operation {
+                description: None,
                 operation_type: Query,
                 name: None,
                 variables: [
                     166..197 @25 VariableDefinition {
+                        description: None,
                         name: "fieldDirective",
                         ty: 183..190 @25 Named(
                             "Boolean",
@@ -128,6 +130,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     201..232 @25 VariableDefinition {
+                        description: None,
                         name: "fragDirective",
                         ty: 217..224 @25 Named(
                             "Boolean",
@@ -140,6 +143,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     236..269 @25 VariableDefinition {
+                        description: None,
                         name: "inlineDirective",
                         ty: 254..261 @25 Named(
                             "Boolean",
@@ -152,6 +156,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     273..303 @25 VariableDefinition {
+                        description: None,
                         name: "argDirective",
                         ty: 288..295 @25 Named(
                             "Boolean",
@@ -164,6 +169,7 @@ ExecutableDocument {
                         directives: [],
                     },
                     307..342 @25 VariableDefinition {
+                        description: None,
                         name: "indirectDirective",
                         ty: 327..334 @25 Named(
                             "Boolean",
@@ -300,6 +306,7 @@ ExecutableDocument {
     },
     fragments: {
         "fragment": 79..154 @25 Fragment {
+            description: None,
             name: "fragment",
             directives: [],
             selection_set: SelectionSet {

@@ -1,6 +1,6 @@
+use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
-use crate::input_value::Constness;
 use crate::input_value::InputValue;
 use crate::name::Name;
 use crate::ty::Ty;
@@ -18,6 +18,7 @@ use indexmap::IndexMap;
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Variables).
 #[derive(Debug, Clone)]
 pub struct VariableDef {
+    description: Option<Description>,
     name: Name,
     ty: Ty,
     default_value: Option<InputValue>,
@@ -27,6 +28,7 @@ pub struct VariableDef {
 impl From<VariableDef> for ast::VariableDefinition {
     fn from(x: VariableDef) -> Self {
         Self {
+            description: x.description.map(Into::into),
             name: x.name.into(),
             ty: Node::new(x.ty.into()),
             default_value: x.default_value.map(|x| Node::new(x.into())),
@@ -51,11 +53,12 @@ impl DocumentBuilder<'_> {
             .u
             .arbitrary()
             .unwrap_or(false)
-            .then(|| self.input_value(Constness::Const))
+            .then(|| self.input_value_for_type(&ty))
             .transpose()?;
         let directives = self.directives(DirectiveLocation::VariableDefinition)?;
 
         Ok(VariableDef {
+            description: None,
             name,
             ty,
             default_value,

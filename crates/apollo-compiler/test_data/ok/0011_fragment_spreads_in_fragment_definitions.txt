@@ -123,6 +123,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "IntrospectionQuery": 0..51 @13 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "IntrospectionQuery",
@@ -167,6 +168,7 @@ ExecutableDocument {
     },
     fragments: {
         "Bar": 53..100 @13 Fragment {
+            description: None,
             name: "Bar",
             directives: [],
             selection_set: SelectionSet {
@@ -204,6 +206,7 @@ ExecutableDocument {
             },
         },
         "Quux": 102..131 @13 Fragment {
+            description: None,
             name: "Quux",
             directives: [],
             selection_set: SelectionSet {

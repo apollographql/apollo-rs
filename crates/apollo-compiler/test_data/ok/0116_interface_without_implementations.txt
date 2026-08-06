@@ -101,6 +101,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "SelectDirectly": 61..102 @45 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "SelectDirectly",
@@ -157,6 +158,7 @@ ExecutableDocument {
                 },
             },
             "UsingInlineFragment": 104..172 @45 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "UsingInlineFragment",

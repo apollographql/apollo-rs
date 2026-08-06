@@ -1,0 +1,6 @@
+"Get all our time machine models."
+{
+  timeMachines {
+    model
+  }
+}

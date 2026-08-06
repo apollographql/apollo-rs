@@ -134,6 +134,7 @@ ExecutableDocument {
         anonymous: None,
         named: {
             "getCatName": 0..41 @4 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "getCatName",
@@ -190,6 +191,7 @@ ExecutableDocument {
                 },
             },
             "getOwnerName": 43..106 @4 Operation {
+                description: None,
                 operation_type: Query,
                 name: Some(
                     "getOwnerName",

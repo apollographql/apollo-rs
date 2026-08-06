@@ -19,8 +19,6 @@ fn snapshot_tests() {
 
         schema {
           query: A2
-          mutation: A2
-          subscription: A2
         }
 
         scalar A
@@ -57,8 +55,6 @@ fn snapshot_tests() {
 
         schema {
           query: A5
-          mutation: A5
-          subscription: A5
         }
 
         scalar CD
@@ -120,8 +116,6 @@ fn snapshot_tests() {
 
         schema {
           query: A5
-          mutation: A5
-          subscription: A5
         }
 
         scalar CD
@@ -191,8 +185,6 @@ fn snapshot_tests() {
 
         schema {
           query: A5
-          mutation: A5
-          subscription: A5
         }
 
         scalar CD

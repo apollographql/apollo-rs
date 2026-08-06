@@ -124,6 +124,7 @@ pub struct FieldSet {
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
+    pub description: Option<Node<str>>,
     pub operation_type: OperationType,
     pub name: Option<Name>,
     pub variables: Vec<Node<VariableDefinition>>,
@@ -135,6 +136,7 @@ pub struct Operation {
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
+    pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
     pub selection_set: SelectionSet,
@@ -275,6 +277,24 @@ pub(crate) enum BuildError {
         /// Name of the operation
         name: Option<Name>,
     },
+
+    #[error("`@defer` label `{label}` is not unique within the document")]
+    DuplicateDeferLabel {
+        label: String,
+        original_location: Option<SourceSpan>,
+    },
+
+    #[error("`@defer` label argument must be a static String, not a variable")]
+    DeferLabelMustNotBeVariable,
+
+    #[error(
+        "`@defer` is not allowed on root selections of {} operations",
+        operation_type.name()
+    )]
+    DeferOnRootMutationOrSubscriptionField { operation_type: OperationType },
+
+    #[error("`@defer` in a subscription operation must be disabled with an `if` argument")]
+    DeferInSubscriptionMustBeConditional,
 
     #[error("{0}")]
     ConflictingFieldType(Box<ConflictingFieldType>),

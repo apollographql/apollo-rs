@@ -132,13 +132,11 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let directives = self.directives(DirectiveLocation::Schema)?;
-        let named_types: Vec<Ty> = self
+        let mut named_types: Vec<Ty> = self
             .list_existing_object_types()
             .into_iter()
             .filter(|ty| ty.is_named() && !ty.is_builtin())
             .collect();
-
-        let arbitrary_idx: usize = self.u.arbitrary::<usize>()?;
 
         // Every schema must declare a `query` root operation type, even
         // when no operations reference it. Mutation and subscription are
@@ -146,16 +144,25 @@ impl DocumentBuilder<'_> {
         //
         // See <https://spec.graphql.org/October2021/#sec-Root-Operation-Types>.
         let query = Some(self.u.choose(&named_types)?.clone());
-        let mutation = arbitrary_idx
-            .is_multiple_of(3)
-            .then(|| self.u.choose(&named_types))
-            .transpose()?
-            .cloned();
-        let subscription = arbitrary_idx
-            .is_multiple_of(5)
-            .then(|| self.u.choose(&named_types))
-            .transpose()?
-            .cloned();
+
+        // Ensure we choose a different type for other roots
+        named_types.retain(|ty| Some(ty) != query.as_ref());
+
+        let include_mutation = !named_types.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let mutation = if include_mutation {
+            let m = self.u.choose(&named_types)?.clone();
+            named_types.retain(|ty| *ty != m);
+            Some(m)
+        } else {
+            None
+        };
+
+        let include_subscription = !named_types.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let subscription = if include_subscription {
+            Some(self.u.choose(&named_types)?.clone())
+        } else {
+            None
+        };
 
         Ok(SchemaDef {
             description,
