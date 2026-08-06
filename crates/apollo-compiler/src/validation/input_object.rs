@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::collections::HashMap;
+use crate::coordinate::TypeAttributeCoordinate;
 use crate::schema::validation::BuiltInScalars;
 use crate::schema::InputObjectType;
 use crate::validation::diagnostics::DiagnosticData;
@@ -65,6 +66,73 @@ impl FindRecursiveInputValue<'_> {
     }
 }
 
+// Catches cycles involving @oneOf that FindRecursiveInputValue misses.
+//
+// A field is an "unbreakable link" if it's NonNull, or if its parent is @oneOf
+// (making it semantically non-null). For @oneOf types, a cycle is fatal only
+// when *every* field leads into it (you pick one, so one escape suffices).
+// For regular types, *any* single unbreakable link is fatal.
+struct FindOneOfCycle<'a> {
+    schema: &'a crate::Schema,
+}
+
+impl FindOneOfCycle<'_> {
+    fn input_value_definition(
+        &self,
+        seen: &mut RecursionGuard<'_>,
+        is_one_of: bool,
+        def: &Node<ast::InputValueDefinition>,
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        let name = match &*def.ty {
+            ast::Type::NonNullNamed(name) => name,
+            ast::Type::Named(name) if is_one_of => name,
+            _ => return Ok(()),
+        };
+
+        if !seen.contains(name) {
+            if let Some(object_def) = self.schema.get_input_object(name) {
+                self.input_object_definition(seen.push(name)?, object_def)
+                    .map_err(|err| err.trace(def))?
+            }
+        } else if seen.first() == Some(name) {
+            return Err(CycleError::Recursed(vec![def.clone()]));
+        }
+
+        Ok(())
+    }
+
+    fn input_object_definition(
+        &self,
+        mut seen: RecursionGuard<'_>,
+        input_object: &InputObjectType,
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        let is_one_of = input_object.is_one_of();
+        if is_one_of {
+            let mut last_err = None;
+            for field in input_object.fields.values() {
+                match self.input_value_definition(&mut seen, is_one_of, field) {
+                    Err(e) => last_err = Some(e),
+                    Ok(()) => return Ok(()),
+                }
+            }
+            last_err.map_or(Ok(()), Err)
+        } else {
+            for field in input_object.fields.values() {
+                self.input_value_definition(&mut seen, is_one_of, field)?;
+            }
+            Ok(())
+        }
+    }
+
+    fn check(
+        schema: &crate::Schema,
+        input_object: &InputObjectType,
+    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
+        let mut recursion_stack = RecursionStack::with_root(input_object.name.clone());
+        FindOneOfCycle { schema }.input_object_definition(recursion_stack.guard(), input_object)
+    }
+}
+
 pub(crate) fn validate_input_object_definition(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
@@ -81,7 +149,25 @@ pub(crate) fn validate_input_object_definition(
     );
 
     match FindRecursiveInputValue::check(schema, input_object) {
-        Ok(_) => {}
+        Ok(_) => match FindOneOfCycle::check(schema, input_object) {
+            Ok(_) => {}
+            Err(CycleError::Recursed(trace)) => diagnostics.push(
+                input_object.location(),
+                DiagnosticData::RecursiveInputObjectDefinition {
+                    name: input_object.name.clone(),
+                    trace,
+                },
+            ),
+            Err(CycleError::Limit(_)) => {
+                diagnostics.push(
+                    input_object.location(),
+                    DiagnosticData::DeeplyNestedType {
+                        name: input_object.name.clone(),
+                        describe_type: "input object",
+                    },
+                );
+            }
+        },
         Err(CycleError::Recursed(trace)) => diagnostics.push(
             input_object.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
@@ -97,6 +183,54 @@ pub(crate) fn validate_input_object_definition(
                     describe_type: "input object",
                 },
             );
+        }
+    }
+
+    // @oneOf must not be provided by an input object type extension.
+    // https://spec.graphql.org/September2025/#sec-Input-Object-Extensions
+    for directive in &input_object.directives.0 {
+        if directive.name == "oneOf" {
+            if let Some(ext_id) = directive.origin.extension_id() {
+                diagnostics.push(
+                    directive.location(),
+                    DiagnosticData::OneOfDirectiveOnExtension {
+                        type_name: input_object.name.clone(),
+                        extension_location: ext_id.location(),
+                    },
+                );
+            }
+        }
+    }
+
+    // @oneOf input objects: all fields must be nullable and must not have default values.
+    // https://spec.graphql.org/September2025/#sec-OneOf-Input-Objects
+    if input_object.is_one_of() {
+        for (field_name, field) in &input_object.fields {
+            if field.ty.is_non_null() {
+                diagnostics.push(
+                    field.location(),
+                    DiagnosticData::OneOfInputObjectFieldNonNull {
+                        coordinate: TypeAttributeCoordinate {
+                            ty: input_object.name.clone(),
+                            attribute: field_name.clone(),
+                        },
+                        definition_location: field.location(),
+                    },
+                );
+            }
+            if field.default_value.is_some() {
+                let default_location = field.default_value.as_ref().and_then(|v| v.location());
+                diagnostics.push(
+                    field.location(),
+                    DiagnosticData::UnsupportedDefault {
+                        coordinate: TypeAttributeCoordinate {
+                            ty: input_object.name.clone(),
+                            attribute: field_name.clone(),
+                        },
+                        default_location,
+                    },
+                );
+            }
         }
     }
 

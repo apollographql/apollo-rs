@@ -40,7 +40,7 @@ fn snapshot_tests() {
           A1
         }
 
-        input A4 {
+        input A4 @oneOf {
           A0: A
           A1: A
         }
@@ -101,7 +101,7 @@ fn snapshot_tests() {
           A1
         }
 
-        input A7 {
+        input A7 @oneOf {
           A0: CD
           A1: CD
         }
@@ -170,7 +170,7 @@ fn snapshot_tests() {
           A1
         }
 
-        input A7 {
+        input A7 @oneOf {
           A0: CD
           A1: CD
         }
@@ -318,7 +318,7 @@ fn snapshot_tests() {
           iNOPQRSTUVWXYZabcd4
         }
 
-        input A7 {
+        input A7 @oneOf {
           A0: CD
           A1: CD
         }

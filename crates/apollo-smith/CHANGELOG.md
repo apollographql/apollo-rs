@@ -28,9 +28,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   description, matching the latest GraphQL spec draft ([graphql-spec#1170]).
   Descriptions are preserved when converting from parsed documents.
 
+- **Generate `@oneOf` input objects during structure-aware fuzzing. - [abernix], [pull/1030]**
+
+  `DocumentBuilder::input_object_type_definition` now has a ~1-in-5 chance
+  of applying `@oneOf` to a generated input type.  When it does, every field
+  is forced nullable and stripped of default values, so the generated document
+  always satisfies the spec invariants.  A new `Ty::as_nullable` helper strips
+  the outermost `NonNull` wrapper from an arbitrary type.
+
 [graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
 [goto-bus-stop]: https://github.com/goto-bus-stop
+[abernix]: https://github.com/abernix
 [pull/974]: https://github.com/apollographql/apollo-rs/pull/974
+[pull/1030]: https://github.com/apollographql/apollo-rs/pull/1030
 
 # [0.16.0](https://crates.io/crates/apollo-smith/0.16.0) - 2026-07-21
 

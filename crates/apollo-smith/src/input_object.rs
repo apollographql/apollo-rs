@@ -148,13 +148,33 @@ impl DocumentBuilder<'_> {
             .filter(|io| io.name == name)
             .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
             .collect();
-        let fields = self.input_values_def(
+
+        // Randomly apply @oneOf to this input object (~1-in-5 chance).  When
+        // we do, enforce the spec constraints on every field: all must be
+        // nullable and none may carry a default value.
+        let is_one_of: bool = self.u.int_in_range(0..=4usize).unwrap_or(1) == 0;
+        let mut fields = self.input_values_def(
             DirectiveLocation::InputFieldDefinition,
             &exclude_fields,
             Some(&name),
         )?;
+        if is_one_of {
+            for field in &mut fields {
+                field.ty = field.ty.clone().into_nullable();
+                field.default_value = None;
+            }
+        }
 
-        let directives = self.directives(DirectiveLocation::InputObject)?;
+        let mut directives = self.directives(DirectiveLocation::InputObject)?;
+        if is_one_of {
+            directives.insert(
+                Name::new(String::from("oneOf")),
+                Directive {
+                    name: Name::new(String::from("oneOf")),
+                    arguments: Vec::new(),
+                },
+            );
+        }
 
         if extend && directives.is_empty() && fields.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);

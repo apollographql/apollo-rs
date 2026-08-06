@@ -68,15 +68,15 @@ Error: variable `$intArg` of type `Int` cannot be used for argument `nonNullIntA
     │                        ───────────┬──────────  
     │                                   ╰──────────── variable `$intArg` used here
 ────╯
-Error: expected value of type Boolean, found a variable
+Error: variable `$intArg` of type `Int` cannot be used for argument `nonNullBooleanListArg` of type `Boolean`
     ╭─[ 0101_mismatched_variable_usage.graphql:51:50 ]
     │
+ 49 │ query intCannotGoIntoBooleanList($intArg: Int) {
+    │                                  ──────┬─────  
+    │                                        ╰─────── variable `$intArg` of type `Int` is declared here
+    │ 
  51 │     nonNullBooleanListField(nonNullBooleanListArg: [$intArg])
     │                                                     ───┬───  
-    │                                                        ╰───── provided value is a variable
-    │ 
- 63 │     nonNullBooleanListField(nonNullBooleanListArg: [Boolean]!): Boolean
-    │                                                    ─────┬────  
-    │                                                         ╰────── expected type declared here as Boolean
+    │                                                        ╰───── variable `$intArg` used here
 ────╯
 

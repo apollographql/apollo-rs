@@ -66,7 +66,7 @@ pub(crate) fn validate_field(
                     super::value::validate_values(
                         diagnostics,
                         schema,
-                        &arg_definition.ty,
+                        arg_definition,
                         argument,
                         context.variables,
                     );

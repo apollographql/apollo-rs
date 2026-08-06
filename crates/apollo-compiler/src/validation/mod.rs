@@ -315,6 +315,10 @@ impl DiagnosticData {
                     EmptyMemberSet { .. } => "EmptyMemberSet",
                     EmptyInputValueSet { .. } => "EmptyInputValueSet",
                     ReservedName { .. } => "ReservedName",
+                    OneOfInputObjectFieldNonNull { .. } => "OneOfInputObjectFieldNonNull",
+                    OneOfInputObjectFieldCount { .. } => "OneOfInputObjectFieldCount",
+                    UnsupportedDefault { .. } => "UnsupportedDefault",
+                    OneOfDirectiveOnExtension { .. } => "OneOfDirectiveOnExtension",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                     MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
                     InvalidImplementationFieldArgumentType { .. } => {
@@ -530,6 +534,18 @@ impl DiagnosticData {
                     EmptyMemberSet { .. } => None,
                     EmptyInputValueSet { .. } => None,
                     ReservedName { .. } => None,
+                    OneOfInputObjectFieldNonNull { coordinate, .. } => Some(format!(
+                        r#"OneOf input field "{coordinate}" must be nullable."#
+                    )),
+                    OneOfInputObjectFieldCount { name, .. } => Some(format!(
+                        r#"OneOf Input Object "{name}" must specify exactly one key."#
+                    )),
+                    UnsupportedDefault { coordinate, .. } => Some(format!(
+                        r#"OneOf input field "{coordinate}" cannot have a default value."#
+                    )),
+                    OneOfDirectiveOnExtension { type_name, .. } => Some(format!(
+                        r#"The @oneOf directive must not be provided by an input object type extension on "{type_name}"."#
+                    )),
                     InvalidImplementationFieldType {
                         name,
                         interface,

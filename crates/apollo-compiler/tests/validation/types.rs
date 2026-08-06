@@ -75,8 +75,7 @@ const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
     stringListField: [String]
   }
 
-  # TODO oneOf not supported in apollo-rs
-  input OneOfInput { # @oneOf
+  input OneOfInput @oneOf {
     stringField: String
     intField: Int
   }
@@ -348,9 +347,9 @@ mod invalid_string_values {
                     │                               ┬  
                     │                               ╰── provided value is an integer
                     │
-                    ├─[ schema.graphql:80:29 ]
+                    ├─[ schema.graphql:79:29 ]
                     │
-                 80 │   stringArgField(stringArg: String): String
+                 79 │   stringArgField(stringArg: String): String
                     │                             ───┬──  
                     │                                ╰──── expected type declared here as String
                 ────╯
@@ -376,9 +375,9 @@ mod invalid_string_values {
                     │                               ─┬─  
                     │                                ╰─── provided value is a float
                     │
-                    ├─[ schema.graphql:80:29 ]
+                    ├─[ schema.graphql:79:29 ]
                     │
-                 80 │   stringArgField(stringArg: String): String
+                 79 │   stringArgField(stringArg: String): String
                     │                             ───┬──  
                     │                                ╰──── expected type declared here as String
                 ────╯
@@ -404,9 +403,9 @@ mod invalid_string_values {
                     │                               ──┬─  
                     │                                 ╰─── provided value is a boolean
                     │
-                    ├─[ schema.graphql:80:29 ]
+                    ├─[ schema.graphql:79:29 ]
                     │
-                 80 │   stringArgField(stringArg: String): String
+                 79 │   stringArgField(stringArg: String): String
                     │                             ───┬──  
                     │                                ╰──── expected type declared here as String
                 ────╯
@@ -432,9 +431,9 @@ mod invalid_string_values {
                     │                               ─┬─  
                     │                                ╰─── provided value is an enum
                     │
-                    ├─[ schema.graphql:80:29 ]
+                    ├─[ schema.graphql:79:29 ]
                     │
-                 80 │   stringArgField(stringArg: String): String
+                 79 │   stringArgField(stringArg: String): String
                     │                             ───┬──  
                     │                                ╰──── expected type declared here as String
                 ────╯
@@ -465,9 +464,9 @@ mod invalid_int_values {
                     │                         ─┬─  
                     │                          ╰─── provided value is a string
                     │
-                    ├─[ schema.graphql:78:23 ]
+                    ├─[ schema.graphql:77:23 ]
                     │
-                 78 │   intArgField(intArg: Int): String
+                 77 │   intArgField(intArg: Int): String
                     │                       ─┬─  
                     │                        ╰─── expected type declared here as Int
                 ────╯
@@ -515,9 +514,9 @@ mod invalid_int_values {
                     │                         ─┬─  
                     │                          ╰─── provided value is an enum
                     │
-                    ├─[ schema.graphql:78:23 ]
+                    ├─[ schema.graphql:77:23 ]
                     │
-                 78 │   intArgField(intArg: Int): String
+                 77 │   intArgField(intArg: Int): String
                     │                       ─┬─  
                     │                        ╰─── expected type declared here as Int
                 ────╯
@@ -543,9 +542,9 @@ mod invalid_int_values {
                     │                         ─┬─  
                     │                          ╰─── provided value is a float
                     │
-                    ├─[ schema.graphql:78:23 ]
+                    ├─[ schema.graphql:77:23 ]
                     │
-                 78 │   intArgField(intArg: Int): String
+                 77 │   intArgField(intArg: Int): String
                     │                       ─┬─  
                     │                        ╰─── expected type declared here as Int
                 ────╯
@@ -571,9 +570,9 @@ mod invalid_int_values {
                     │                         ──┬──  
                     │                           ╰──── provided value is a float
                     │
-                    ├─[ schema.graphql:78:23 ]
+                    ├─[ schema.graphql:77:23 ]
                     │
-                 78 │   intArgField(intArg: Int): String
+                 77 │   intArgField(intArg: Int): String
                     │                       ─┬─  
                     │                        ╰─── expected type declared here as Int
                 ────╯
@@ -604,9 +603,9 @@ mod invalid_float_values {
                     │                             ───┬───  
                     │                                ╰───── provided value is a string
                     │
-                    ├─[ schema.graphql:83:27 ]
+                    ├─[ schema.graphql:82:27 ]
                     │
-                 83 │   floatArgField(floatArg: Float): String
+                 82 │   floatArgField(floatArg: Float): String
                     │                           ──┬──  
                     │                             ╰──── expected type declared here as Float
                 ────╯
@@ -632,9 +631,9 @@ mod invalid_float_values {
                     │                             ──┬─  
                     │                               ╰─── provided value is a boolean
                     │
-                    ├─[ schema.graphql:83:27 ]
+                    ├─[ schema.graphql:82:27 ]
                     │
-                 83 │   floatArgField(floatArg: Float): String
+                 82 │   floatArgField(floatArg: Float): String
                     │                           ──┬──  
                     │                             ╰──── expected type declared here as Float
                 ────╯
@@ -660,9 +659,9 @@ mod invalid_float_values {
                     │                             ─┬─  
                     │                              ╰─── provided value is an enum
                     │
-                    ├─[ schema.graphql:83:27 ]
+                    ├─[ schema.graphql:82:27 ]
                     │
-                 83 │   floatArgField(floatArg: Float): String
+                 82 │   floatArgField(floatArg: Float): String
                     │                           ──┬──  
                     │                             ╰──── expected type declared here as Float
                 ────╯
@@ -693,9 +692,9 @@ mod invalid_boolean_values {
                     │                                 ┬  
                     │                                 ╰── provided value is an integer
                     │
-                    ├─[ schema.graphql:81:31 ]
+                    ├─[ schema.graphql:80:31 ]
                     │
-                 81 │   booleanArgField(booleanArg: Boolean): String
+                 80 │   booleanArgField(booleanArg: Boolean): String
                     │                               ───┬───  
                     │                                  ╰───── expected type declared here as Boolean
                 ────╯
@@ -721,9 +720,9 @@ mod invalid_boolean_values {
                     │                                 ─┬─  
                     │                                  ╰─── provided value is a float
                     │
-                    ├─[ schema.graphql:81:31 ]
+                    ├─[ schema.graphql:80:31 ]
                     │
-                 81 │   booleanArgField(booleanArg: Boolean): String
+                 80 │   booleanArgField(booleanArg: Boolean): String
                     │                               ───┬───  
                     │                                  ╰───── expected type declared here as Boolean
                 ────╯
@@ -749,9 +748,9 @@ mod invalid_boolean_values {
                     │                                 ───┬──  
                     │                                    ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:81:31 ]
+                    ├─[ schema.graphql:80:31 ]
                     │
-                 81 │   booleanArgField(booleanArg: Boolean): String
+                 80 │   booleanArgField(booleanArg: Boolean): String
                     │                               ───┬───  
                     │                                  ╰───── expected type declared here as Boolean
                 ────╯
@@ -777,9 +776,9 @@ mod invalid_boolean_values {
                     │                                 ──┬─  
                     │                                   ╰─── provided value is an enum
                     │
-                    ├─[ schema.graphql:81:31 ]
+                    ├─[ schema.graphql:80:31 ]
                     │
-                 81 │   booleanArgField(booleanArg: Boolean): String
+                 80 │   booleanArgField(booleanArg: Boolean): String
                     │                               ───┬───  
                     │                                  ╰───── expected type declared here as Boolean
                 ────╯
@@ -810,9 +809,9 @@ mod invalid_id_values {
                     │                       ─┬─  
                     │                        ╰─── provided value is a float
                     │
-                    ├─[ schema.graphql:84:21 ]
+                    ├─[ schema.graphql:83:21 ]
                     │
-                 84 │   idArgField(idArg: ID): String
+                 83 │   idArgField(idArg: ID): String
                     │                     ─┬  
                     │                      ╰── expected type declared here as ID
                 ────╯
@@ -838,9 +837,9 @@ mod invalid_id_values {
                     │                       ──┬─  
                     │                         ╰─── provided value is a boolean
                     │
-                    ├─[ schema.graphql:84:21 ]
+                    ├─[ schema.graphql:83:21 ]
                     │
-                 84 │   idArgField(idArg: ID): String
+                 83 │   idArgField(idArg: ID): String
                     │                     ─┬  
                     │                      ╰── expected type declared here as ID
                 ────╯
@@ -866,9 +865,9 @@ mod invalid_id_values {
                     │                       ────┬────  
                     │                           ╰────── provided value is an enum
                     │
-                    ├─[ schema.graphql:84:21 ]
+                    ├─[ schema.graphql:83:21 ]
                     │
-                 84 │   idArgField(idArg: ID): String
+                 83 │   idArgField(idArg: ID): String
                     │                     ─┬  
                     │                      ╰── expected type declared here as ID
                 ────╯
@@ -1132,9 +1131,9 @@ mod invalid_list_values {
                     │                                               ┬  
                     │                                               ╰── provided value is an integer
                     │
-                    ├─[ schema.graphql:85:37 ]
+                    ├─[ schema.graphql:84:37 ]
                     │
-                 85 │   stringListArgField(stringListArg: [String]): String
+                 84 │   stringListArgField(stringListArg: [String]): String
                     │                                     ────┬───  
                     │                                         ╰───── expected type declared here as String
                 ────╯
@@ -1160,9 +1159,9 @@ mod invalid_list_values {
                     │                                       ┬  
                     │                                       ╰── provided value is an integer
                     │
-                    ├─[ schema.graphql:85:37 ]
+                    ├─[ schema.graphql:84:37 ]
                     │
-                 85 │   stringListArgField(stringListArg: [String]): String
+                 84 │   stringListArgField(stringListArg: [String]): String
                     │                                     ────┬───  
                     │                                         ╰───── expected type declared here as [String]
                 ────╯
@@ -1327,9 +1326,9 @@ mod invalid_non_nullable_values {
                     │                        ──┬──  
                     │                          ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:89:34 ]
+                    ├─[ schema.graphql:88:34 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                                  ──┬─  
                     │                                    ╰─── expected type declared here as Int!
                 ────╯
@@ -1340,9 +1339,9 @@ mod invalid_non_nullable_values {
                     │                                     ──┬──  
                     │                                       ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:89:22 ]
+                    ├─[ schema.graphql:88:22 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                      ──┬─  
                     │                        ╰─── expected type declared here as Int!
                 ────╯
@@ -1368,9 +1367,9 @@ mod invalid_non_nullable_values {
                     │     ────────────┬────────────  
                     │                 ╰────────────── missing value for argument `req2`
                     │
-                    ├─[ schema.graphql:89:28 ]
+                    ├─[ schema.graphql:88:28 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                            ─────┬────  
                     │                                 ╰────── argument defined here
                 ────╯
@@ -1381,9 +1380,9 @@ mod invalid_non_nullable_values {
                     │                        ──┬──  
                     │                          ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:89:22 ]
+                    ├─[ schema.graphql:88:22 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                      ──┬─  
                     │                        ╰─── expected type declared here as Int!
                 ────╯
@@ -1409,9 +1408,9 @@ mod invalid_non_nullable_values {
                     │     ────────────┬───────────  
                     │                 ╰───────────── missing value for argument `req1`
                     │
-                    ├─[ schema.graphql:89:16 ]
+                    ├─[ schema.graphql:88:16 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                ─────┬────  
                     │                     ╰────── argument defined here
                 ────╯
@@ -1422,9 +1421,9 @@ mod invalid_non_nullable_values {
                     │     ────────────┬───────────  
                     │                 ╰───────────── missing value for argument `req2`
                     │
-                    ├─[ schema.graphql:89:28 ]
+                    ├─[ schema.graphql:88:28 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                            ─────┬────  
                     │                                 ╰────── argument defined here
                 ────╯
@@ -1435,9 +1434,9 @@ mod invalid_non_nullable_values {
                     │                        ──┬─  
                     │                          ╰─── provided value is null
                     │
-                    ├─[ schema.graphql:89:22 ]
+                    ├─[ schema.graphql:88:22 ]
                     │
-                 89 │   multipleReqs(req1: Int!, req2: Int!): String
+                 88 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                      ──┬─  
                     │                        ╰─── expected type declared here as Int!
                 ────╯
@@ -1738,9 +1737,9 @@ mod directive_arguments {
                      │                    ──┬──  
                      │                      ╰──── provided value is a string
                      │
-                     ├─[ built_in.graphql:146:7 ]
+                     ├─[ built_in.graphql:148:7 ]
                      │
-                 146 │   if: Boolean!
+                 148 │   if: Boolean!
                      │       ────┬───  
                      │           ╰───── expected type declared here as Boolean!
                 ─────╯
@@ -1751,9 +1750,9 @@ mod directive_arguments {
                      │                    ──┬─  
                      │                      ╰─── provided value is an enum
                      │
-                     ├─[ built_in.graphql:140:7 ]
+                     ├─[ built_in.graphql:142:7 ]
                      │
-                 140 │   if: Boolean!
+                 142 │   if: Boolean!
                      │       ────┬───  
                      │           ╰───── expected type declared here as Boolean!
                 ─────╯
