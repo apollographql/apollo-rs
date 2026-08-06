@@ -174,6 +174,188 @@ fn invalid_one_of_non_null_field_with_default() {
 }
 
 // ---------------------------------------------------------------------------
+// Schema-level validation — circular references through @oneOf
+// https://spec.graphql.org/September2025/#sec-Input-Objects.Circular-References
+// ---------------------------------------------------------------------------
+
+#[test]
+fn invalid_recursive_oneof_self_reference() {
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input A @oneOf {
+            a: A
+        }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("self-referencing @oneOf should fail")
+    .errors;
+
+    let expected = expect![[r#"
+        Error: `A` input object cannot reference itself
+           ╭─[ schema.graphql:3:9 ]
+           │
+         3 │ ╭─▶         input A @oneOf {
+           ┆ ┆   
+         5 │ ├─▶         }
+           │ │               
+           │ ╰─────────────── cyclical input object definition
+           │
+           ├─[ schema.graphql:3:9 ]
+           │
+         4 │             a: A
+           │             ──┬─  
+           │               ╰─── `A` circularly references `A` here
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn invalid_recursive_oneof_mutual_reference() {
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input A @oneOf {
+            b: B
+        }
+        input B @oneOf {
+            a: A
+        }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("mutually recursive @oneOf types should fail")
+    .errors;
+
+    let expected = expect![[r#"
+        Error: `A` input object cannot reference itself
+           ╭─[ schema.graphql:3:9 ]
+           │
+         3 │ ╭─▶         input A @oneOf {
+           ┆ ┆   
+         5 │ ├─▶         }
+           │ │               
+           │ ╰─────────────── cyclical input object definition
+           │
+           ├─[ schema.graphql:3:9 ]
+           │
+         4 │             b: B
+           │             ──┬─  
+           │               ╰─── `A` references `b` here...
+           │ 
+         7 │             a: A
+           │             ──┬─  
+           │               ╰─── `b` circularly references `A` here
+        ───╯
+        Error: `B` input object cannot reference itself
+           ╭─[ schema.graphql:6:9 ]
+           │
+         6 │ ╭─▶         input B @oneOf {
+           ┆ ┆   
+         8 │ ├─▶         }
+           │ │               
+           │ ╰─────────────── cyclical input object definition
+           │
+           ├─[ schema.graphql:6:9 ]
+           │
+         7 │             a: A
+           │             ──┬─  
+           │               ╰─── `B` references `a` here...
+           │
+           ├─[ schema.graphql:6:9 ]
+           │
+         4 │             b: B
+           │             ──┬─  
+           │               ╰─── `a` circularly references `B` here
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn invalid_recursive_oneof_mixed_with_nonnull() {
+    // Mixed cycle: @oneOf → regular (NonNull back-edge) → @oneOf
+    // `A` requires a non-null `B`, and `B` requires a non-null `A!`.
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input A @oneOf {
+            b: B
+        }
+        input B {
+            a: A!
+        }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("mixed @oneOf/NonNull cycle should fail")
+    .errors;
+
+    let expected = expect![[r#"
+        Error: `A` input object cannot reference itself
+           ╭─[ schema.graphql:3:9 ]
+           │
+         3 │ ╭─▶         input A @oneOf {
+           ┆ ┆   
+         5 │ ├─▶         }
+           │ │               
+           │ ╰─────────────── cyclical input object definition
+           │
+           ├─[ schema.graphql:3:9 ]
+           │
+         4 │             b: B
+           │             ──┬─  
+           │               ╰─── `A` references `b` here...
+           │ 
+         7 │             a: A!
+           │             ──┬──  
+           │               ╰──── `b` circularly references `A` here
+        ───╯
+        Error: `B` input object cannot reference itself
+           ╭─[ schema.graphql:6:9 ]
+           │
+         6 │ ╭─▶         input B {
+           ┆ ┆   
+         8 │ ├─▶         }
+           │ │               
+           │ ╰─────────────── cyclical input object definition
+           │
+           ├─[ schema.graphql:6:9 ]
+           │
+         7 │             a: A!
+           │             ──┬──  
+           │               ╰──── `B` references `a` here...
+           │
+           ├─[ schema.graphql:6:9 ]
+           │
+         4 │             b: B
+           │             ──┬─  
+           │               ╰─── `a` circularly references `B` here
+        ───╯
+    "#]];
+    expected.assert_eq(&errors.to_string());
+}
+
+#[test]
+fn valid_oneof_with_escape_field() {
+    // A @oneOf input object with at least one non-recursive field can be
+    // constructed, so it should be valid.
+    Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input A @oneOf {
+            a: A
+            s: String
+        }
+        "#,
+        "schema.graphql",
+    )
+    .expect("@oneOf with escape field should be valid");
+}
+
+// ---------------------------------------------------------------------------
 // Value coercion — valid cases  (spec §5.6.3)
 // ---------------------------------------------------------------------------
 
