@@ -228,6 +228,68 @@ fn unescape_string(input: &str) -> String {
     output
 }
 
+/// Like `unescape_string`, but also returns a list of
+/// `(unescaped_byte_offset, source_byte_offset)` checkpoints recorded
+/// immediately after each escape sequence. Between checkpoints, offsets
+/// advance 1:1. Callers can use these to map positions in the unescaped
+/// output back to positions in the original source text.
+///
+/// Unlike `unescape_string`, this does not panic on invalid escape
+/// sequences: the input may come from an arbitrary source span that was
+/// never validated by the lexer. Invalid escape sequences produce no output,
+/// matching how `unescape_string` handles unrecognized escapes.
+pub fn unescape_string_with_offsets(input: &str) -> (String, Vec<(usize, usize)>) {
+    let mut output = String::with_capacity(input.len());
+    let mut checkpoints: Vec<(usize, usize)> = Vec::new();
+    let mut source_pos = 0;
+
+    let mut iter = input.chars().peekable();
+    while let Some(c) = iter.next() {
+        if c != '\\' {
+            output.push(c);
+            source_pos += c.len_utf8();
+            continue;
+        }
+        let Some(c2) = iter.next() else {
+            // A lone trailing backslash is kept as-is: same length in both.
+            output.push(c);
+            break;
+        };
+        let mut source_len = 1 + c2.len_utf8();
+        match c2 {
+            '"' | '\\' | '/' => output.push(c2),
+            'b' => output.push('\u{0008}'),
+            'f' => output.push('\u{000c}'),
+            'n' => output.push('\n'),
+            'r' => output.push('\r'),
+            't' => output.push('\t'),
+            'u' => {
+                let mut value: u32 = 0;
+                let mut digits = 0;
+                while digits < 4 {
+                    let Some(digit) = iter.peek().and_then(|c| c.to_digit(16)) else {
+                        break;
+                    };
+                    value = (value << 4) + digit;
+                    iter.next();
+                    digits += 1;
+                    source_len += 1;
+                }
+                if digits == 4 {
+                    if let Some(decoded) = char::from_u32(value) {
+                        output.push(decoded);
+                    }
+                }
+            }
+            _ => (),
+        }
+        source_pos += source_len;
+        checkpoints.push((output.len(), source_pos));
+    }
+
+    (output, checkpoints)
+}
+
 const ESCAPED_TRIPLE_QUOTE: &str = r#"\""""#;
 const TRIPLE_QUOTE: &str = r#"""""#;
 
@@ -479,6 +541,7 @@ fn text_of_first_token(node: &SyntaxNode) -> TokenText {
 #[cfg(test)]
 mod string_tests {
     use super::unescape_string;
+    use super::unescape_string_with_offsets;
 
     #[test]
     fn it_parses_strings() {
@@ -513,6 +576,65 @@ mod string_tests {
         assert_eq!(
             unescape_string(r"extremes \uD800\uDC00 \uDBFF\uDFFF"),
             "extremes \u{10000} \u{10FFFF}"
+        );
+    }
+
+    #[test]
+    fn it_records_offsets_at_escape_boundaries() {
+        // No escapes: no checkpoints
+        assert_eq!(
+            unescape_string_with_offsets("simple"),
+            ("simple".to_string(), vec![])
+        );
+        // Simple escape: 2 source bytes -> 1 output byte
+        assert_eq!(
+            unescape_string_with_offsets(r"a\nb"),
+            ("a\nb".to_string(), vec![(2, 3)])
+        );
+        // Unicode escape: 6 source bytes -> 1 output byte, followed by
+        // multi-byte characters advancing 1:1
+        assert_eq!(
+            unescape_string_with_offsets(r"id\u0020한글"),
+            ("id 한글".to_string(), vec![(3, 8)])
+        );
+        // Unicode escape producing a multi-byte character
+        assert_eq!(
+            unescape_string_with_offsets(r"\uCDEF!"),
+            ("\u{CDEF}!".to_string(), vec![(3, 6)])
+        );
+        // Consecutive escapes
+        assert_eq!(
+            unescape_string_with_offsets(r"\t\t"),
+            ("\t\t".to_string(), vec![(1, 2), (2, 4)])
+        );
+    }
+
+    #[test]
+    fn it_does_not_panic_on_invalid_escapes() {
+        // Unrecognized escapes produce no output, like `unescape_string`
+        assert_eq!(
+            unescape_string_with_offsets(r"a\qb"),
+            ("ab".to_string(), vec![(1, 3)])
+        );
+        // Too few hex digits
+        assert_eq!(
+            unescape_string_with_offsets(r"a\u12"),
+            ("a".to_string(), vec![(1, 5)])
+        );
+        // Non-hex characters after \u
+        assert_eq!(
+            unescape_string_with_offsets(r"a\uZZZZ"),
+            ("aZZZZ".to_string(), vec![(1, 3)])
+        );
+        // Surrogate code point is not a valid `char`
+        assert_eq!(
+            unescape_string_with_offsets(r"a\uD800b"),
+            ("ab".to_string(), vec![(1, 7)])
+        );
+        // Lone trailing backslash is kept
+        assert_eq!(
+            unescape_string_with_offsets("a\\"),
+            ("a\\".to_string(), vec![])
         );
     }
 }
