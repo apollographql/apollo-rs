@@ -92,11 +92,12 @@ pub(crate) async fn execute_selection_set<'a>(
     let mut grouped_field_set = IndexMap::default();
     collect_fields(
         ctx,
+        path,
         object_type,
         selections,
         &mut HashSet::default(),
         &mut grouped_field_set,
-    );
+    )?;
 
     match mode {
         ExecutionMode::Normal => {
@@ -138,18 +139,31 @@ pub(crate) async fn execute_selection_set<'a>(
 }
 
 /// <https://spec.graphql.org/September2025/#CollectFields()>
+///
+/// Returns `Err` when the `if` argument of a `@skip` or `@include` directive
+/// does not coerce to a Boolean, which is an execution error
+/// for the selection set being collected.
 fn collect_fields<'a>(
     ctx: &mut ExecutionContext<'a>,
+    path: LinkedPath<'_>,
     object_type: &ObjectType,
     selections: impl IntoIterator<Item = &'a Selection>,
     visited_fragments: &mut HashSet<&'a Name>,
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
-) {
+) -> Result<(), PropagateNull> {
     for selection in selections {
-        if eval_if_arg(selection, SKIP_DIRECTIVE_NAME, ctx.variable_values).unwrap_or(false)
-            || !eval_if_arg(selection, INCLUDE_DIRECTIVE_NAME, ctx.variable_values).unwrap_or(true)
-        {
-            continue;
+        match skipped_by_directives(selection, ctx.variable_values) {
+            Ok(true) => continue,
+            Ok(false) => {}
+            Err(err) => {
+                ctx.errors.push(GraphQLError::execution_error(
+                    err.message,
+                    path,
+                    err.location,
+                    &ctx.document.sources,
+                ));
+                return Err(PropagateNull);
+            }
         }
         match selection {
             Selection::Field(field) => grouped_fields
@@ -169,11 +183,12 @@ fn collect_fields<'a>(
                 }
                 collect_fields(
                     ctx,
+                    path,
                     object_type,
                     &fragment.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
-                )
+                )?
             }
             Selection::InlineFragment(inline) => {
                 if let Some(condition) = &inline.type_condition {
@@ -183,14 +198,16 @@ fn collect_fields<'a>(
                 }
                 collect_fields(
                     ctx,
+                    path,
                     object_type,
                     &inline.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
-                )
+                )?
             }
         }
     }
+    Ok(())
 }
 
 /// <https://spec.graphql.org/September2025/#DoesFragmentTypeApply()>
@@ -210,20 +227,80 @@ fn does_fragment_type_apply(
     }
 }
 
+/// An execution error raised while evaluating `@skip` or `@include`,
+/// before its selection set is executed.
+struct DirectiveError {
+    message: String,
+    location: Option<SourceSpan>,
+}
+
+/// Whether this selection is excluded by its `@skip` or `@include` directives.
+///
+/// <https://spec.graphql.org/September2025/#CollectFields()>
+fn skipped_by_directives(
+    selection: &Selection,
+    variable_values: &Valid<JsonMap>,
+) -> Result<bool, DirectiveError> {
+    if eval_if_arg(selection, SKIP_DIRECTIVE_NAME, variable_values)? == Some(true) {
+        return Ok(true);
+    }
+    Ok(eval_if_arg(selection, INCLUDE_DIRECTIVE_NAME, variable_values)? == Some(false))
+}
+
+/// Returns the value of the `if` argument of the given directive on this selection,
+/// or `Ok(None)` if the directive is not present.
+///
+/// `if` is a non-null `Boolean!` argument, so a value that does not coerce
+/// to a Boolean is an execution error. That includes a nullable variable
+/// (valid there per the exception for variables with a non-null default value,
+/// <https://spec.graphql.org/September2025/#sec-All-Variable-Usages-Are-Allowed>)
+/// whose runtime value is null.
 fn eval_if_arg(
     selection: &Selection,
     directive_name: &str,
     variable_values: &Valid<JsonMap>,
-) -> Option<bool> {
-    match selection
-        .directives()
-        .get(directive_name)?
-        .specified_argument_by_name("if")?
-        .as_ref()
-    {
-        Value::Boolean(value) => Some(*value),
-        Value::Variable(var) => variable_values.get(var.as_str())?.as_bool(),
-        _ => None,
+) -> Result<Option<bool>, DirectiveError> {
+    let Some(directive) = selection.directives().get(directive_name) else {
+        return Ok(None);
+    };
+    let Some(arg) = directive.specified_argument_by_name("if") else {
+        // `if` is a required argument, so validation rejects its absence
+        return Err(DirectiveError {
+            message: format!(
+                "missing value for required argument if of directive @{directive_name}"
+            ),
+            location: directive.location(),
+        });
+    };
+    match arg.as_ref() {
+        Value::Boolean(value) => Ok(Some(*value)),
+        Value::Variable(var) => match variable_values.get(var.as_str()) {
+            Some(JsonValue::Bool(value)) => Ok(Some(*value)),
+            Some(JsonValue::Null) => Err(DirectiveError {
+                message: format!(
+                    "null value for non-null argument if of directive @{directive_name}"
+                ),
+                location: arg.location(),
+            }),
+            None => Err(DirectiveError {
+                message: format!(
+                    "missing variable for non-null argument if of directive @{directive_name}"
+                ),
+                location: arg.location(),
+            }),
+            // Validation restricts variables used here to Boolean types
+            Some(_) => Err(DirectiveError {
+                message: format!(
+                    "non-boolean value for argument if of directive @{directive_name}"
+                ),
+                location: arg.location(),
+            }),
+        },
+        // Validation restricts literals used here to Boolean values
+        _ => Err(DirectiveError {
+            message: format!("non-boolean value for argument if of directive @{directive_name}"),
+            location: arg.location(),
+        }),
     }
 }
 
