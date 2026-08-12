@@ -8,6 +8,7 @@ use std::sync::Arc;
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
     ignore_builtin_redefinitions: bool,
+    validate_default_values: bool,
     pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
@@ -35,6 +36,7 @@ impl SchemaBuilder {
             let mut builder = SchemaBuilder {
                 adopt_orphan_extensions: false,
                 ignore_builtin_redefinitions: false,
+                validate_default_values: true,
                 schema: Schema {
                     sources: Default::default(),
                     schema_definition: Node::new(SchemaDefinition {
@@ -46,6 +48,7 @@ impl SchemaBuilder {
                     }),
                     directive_definitions: IndexMap::with_hasher(Default::default()),
                     types: IndexMap::with_hasher(Default::default()),
+                    validate_default_values: true,
                 },
                 schema_definition: SchemaDefinitionStatus::NoneSoFar {
                     orphan_extensions: Vec::new(),
@@ -83,6 +86,16 @@ impl SchemaBuilder {
     /// built-in GraphQL spec definitions.
     pub fn ignore_builtin_redefinitions(mut self) -> Self {
         self.ignore_builtin_redefinitions = true;
+        self
+    }
+
+    /// Configure whether to validate default values of input fields and arguments
+    /// against their declared types during schema validation.
+    ///
+    /// Defaults to `true`. Set to `false` to accept schemas where default values
+    /// don't match their field or argument types.
+    pub fn validate_default_values(mut self, enabled: bool) -> Self {
+        self.validate_default_values = enabled;
         self
     }
 
@@ -283,11 +296,13 @@ impl SchemaBuilder {
         let SchemaBuilder {
             adopt_orphan_extensions,
             ignore_builtin_redefinitions: _allow_builtin_redefinitions,
+            validate_default_values,
             mut schema,
             schema_definition,
             orphan_type_extensions,
             mut errors,
         } = self;
+        schema.validate_default_values = validate_default_values;
         schema.sources = errors.sources.clone();
 
         // process orphan type extensions (https://github.com/apollographql/apollo-rs/pull/678) first,

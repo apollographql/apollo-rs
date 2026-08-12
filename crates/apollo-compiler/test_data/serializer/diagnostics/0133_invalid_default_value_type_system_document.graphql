@@ -1,0 +1,17 @@
+type Query {
+  field: String
+}
+
+input MyInput {
+  intField: Int = "not an int"
+  stringField: String = 123
+  boolField: Boolean = "true"
+  listField: [Int] = [
+    "a",
+    "b",
+  ]
+}
+
+type Foo {
+  field(arg: String = 456): String
+}

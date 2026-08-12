@@ -358,6 +358,13 @@ fn variables_in_const_contexts() {
     let errors = schema.validate().unwrap_err().errors;
     let expected = expect_test::expect![[r#"
         Error: variable `$x` is not defined
+           ╭─[ input.graphql:3:34 ]
+           │
+         3 │             arg: InputObj = {x: ["x"]} @dir2(arg: "x")
+           │                                  ─┬─  
+           │                                   ╰─── not found in this scope
+        ───╯
+        Error: variable `$x` is not defined
            ╭─[ input.graphql:3:51 ]
            │
          3 │             arg: InputObj = {x: ["x"]} @dir2(arg: "x")
@@ -400,6 +407,13 @@ fn variables_in_const_contexts() {
             │                                                     ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
+            ╭─[ input.graphql:43:39 ]
+            │
+         43 │                 arg2: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
+            │                                       ─┬─  
+            │                                        ╰─── not found in this scope
+        ────╯
+        Error: variable `$x` is not defined
             ╭─[ input.graphql:43:60 ]
             │
          43 │                 arg2: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
@@ -426,6 +440,13 @@ fn variables_in_const_contexts() {
          48 │         interface Inter @dir(arg: {x: ["x"]}) {
             │                                        ─┬─  
             │                                         ╰─── not found in this scope
+        ────╯
+        Error: variable `$x` is not defined
+            ╭─[ input.graphql:51:39 ]
+            │
+         51 │                 arg2: InputObj = {x: ["x"]} @dir(arg: {x: ["x"]})
+            │                                       ─┬─  
+            │                                        ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
             ╭─[ input.graphql:51:60 ]
@@ -498,6 +519,13 @@ fn variables_in_const_contexts() {
             │                                    ╰─── not found in this scope
         ────╯
         Error: variable `$x` is not defined
+            ╭─[ input.graphql:66:28 ]
+            │
+         66 │             x: [String] = ["x"] @dir2(arg: "x")
+            │                            ─┬─  
+            │                             ╰─── not found in this scope
+        ────╯
+        Error: variable `$x` is not defined
             ╭─[ input.graphql:66:44 ]
             │
          66 │             x: [String] = ["x"] @dir2(arg: "x")
@@ -513,19 +541,12 @@ fn variables_in_const_contexts() {
         ────╯
     "#]];
     expected.assert_eq(&errors.to_string());
-    let expected_schema_errors = 22;
+    let expected_schema_errors = 26;
     assert_eq!(errors.len(), expected_schema_errors);
 
-    // Default values not validated yet: https://github.com/apollographql/apollo-rs/issues/928
-    // * @dir(arg:)
-    // * Query.field(arg2:)
-    // * Inter.field(arg2:)
-    // * InputObj.x
-    let input_default_values_not_yet_validated = 4;
+    // All occurrences of "x" are validated: schema errors + executable errors
     assert_eq!(
         input.matches("\"x\"").count(),
-        expected_schema_errors
-            + expected_executable_errors
-            + input_default_values_not_yet_validated
+        expected_schema_errors + expected_executable_errors
     )
 }

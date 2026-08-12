@@ -1,0 +1,55 @@
+Error: expected value of type Int, found a string
+   ╭─[ 0133_invalid_default_value_type_system_document.graphql:4:21 ]
+   │
+ 4 │     intField: Int = "not an int"
+   │               ─┬─   ──────┬─────  
+   │                ╰────────────────── expected type declared here as Int
+   │                           │       
+   │                           ╰─────── provided value is a string
+───╯
+Error: expected value of type String, found an integer
+   ╭─[ 0133_invalid_default_value_type_system_document.graphql:5:27 ]
+   │
+ 5 │     stringField: String = 123
+   │                  ───┬──   ─┬─  
+   │                     ╰────────── expected type declared here as String
+   │                            │   
+   │                            ╰─── provided value is an integer
+───╯
+Error: expected value of type Boolean, found a string
+   ╭─[ 0133_invalid_default_value_type_system_document.graphql:6:26 ]
+   │
+ 6 │     boolField: Boolean = "true"
+   │                ───┬───   ───┬──  
+   │                   ╰────────────── expected type declared here as Boolean
+   │                             │    
+   │                             ╰──── provided value is a string
+───╯
+Error: expected value of type Int, found a string
+   ╭─[ 0133_invalid_default_value_type_system_document.graphql:7:25 ]
+   │
+ 7 │     listField: [Int] = ["a", "b"]
+   │                ──┬──    ─┬─  
+   │                  ╰─────────── expected type declared here as Int
+   │                          │   
+   │                          ╰─── provided value is a string
+───╯
+Error: expected value of type Int, found a string
+   ╭─[ 0133_invalid_default_value_type_system_document.graphql:7:30 ]
+   │
+ 7 │     listField: [Int] = ["a", "b"]
+   │                ──┬──         ─┬─  
+   │                  ╰──────────────── expected type declared here as Int
+   │                               │   
+   │                               ╰─── provided value is a string
+───╯
+Error: expected value of type String, found an integer
+    ╭─[ 0133_invalid_default_value_type_system_document.graphql:11:25 ]
+    │
+ 11 │     field(arg: String = 456): String
+    │                ───┬──   ─┬─  
+    │                   ╰────────── expected type declared here as String
+    │                          │   
+    │                          ╰─── provided value is an integer
+────╯
+
