@@ -637,6 +637,65 @@ mod string_tests {
             ("a\\".to_string(), vec![])
         );
     }
+
+    #[test]
+    fn it_records_offsets_at_escape_boundaries() {
+        // No escapes: no checkpoints
+        assert_eq!(
+            unescape_string_with_offsets("simple"),
+            ("simple".to_string(), vec![])
+        );
+        // Simple escape: 2 source bytes -> 1 output byte
+        assert_eq!(
+            unescape_string_with_offsets(r"a\nb"),
+            ("a\nb".to_string(), vec![(2, 3)])
+        );
+        // Unicode escape: 6 source bytes -> 1 output byte, followed by
+        // multi-byte characters advancing 1:1
+        assert_eq!(
+            unescape_string_with_offsets(r"id\u0020한글"),
+            ("id 한글".to_string(), vec![(3, 8)])
+        );
+        // Unicode escape producing a multi-byte character
+        assert_eq!(
+            unescape_string_with_offsets(r"\uCDEF!"),
+            ("\u{CDEF}!".to_string(), vec![(3, 6)])
+        );
+        // Consecutive escapes
+        assert_eq!(
+            unescape_string_with_offsets(r"\t\t"),
+            ("\t\t".to_string(), vec![(1, 2), (2, 4)])
+        );
+    }
+
+    #[test]
+    fn it_does_not_panic_on_invalid_escapes() {
+        // Unrecognized escapes produce no output, like `unescape_string`
+        assert_eq!(
+            unescape_string_with_offsets(r"a\qb"),
+            ("ab".to_string(), vec![(1, 3)])
+        );
+        // Too few hex digits
+        assert_eq!(
+            unescape_string_with_offsets(r"a\u12"),
+            ("a".to_string(), vec![(1, 5)])
+        );
+        // Non-hex characters after \u
+        assert_eq!(
+            unescape_string_with_offsets(r"a\uZZZZ"),
+            ("aZZZZ".to_string(), vec![(1, 3)])
+        );
+        // Surrogate code point is not a valid `char`
+        assert_eq!(
+            unescape_string_with_offsets(r"a\uD800b"),
+            ("ab".to_string(), vec![(1, 7)])
+        );
+        // Lone trailing backslash is kept
+        assert_eq!(
+            unescape_string_with_offsets("a\\"),
+            ("a\\".to_string(), vec![])
+        );
+    }
 }
 
 #[cfg(test)]
