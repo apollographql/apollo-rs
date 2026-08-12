@@ -70,12 +70,12 @@ fn test_invalid_field_sets() {
 }
 
 /// Helper: find the span of an argument value on a directive applied to a type.
-fn arg_value_span(
+fn arg_value(
     schema: &Schema,
     type_name: &str,
     directive_name: &str,
     arg_name: &str,
-) -> SourceSpan {
+) -> apollo_compiler::Node<apollo_compiler::ast::Argument> {
     let ExtendedType::Object(obj) = &schema.types[type_name] else {
         panic!("{type_name} is not an object type");
     };
@@ -84,11 +84,20 @@ fn arg_value_span(
         .iter()
         .find(|d| d.name == directive_name)
         .unwrap_or_else(|| panic!("no @{directive_name} directive on {type_name}"));
-    let arg = dir
-        .arguments
+    dir.arguments
         .iter()
         .find(|a| a.name == arg_name)
-        .unwrap_or_else(|| panic!("no {arg_name} argument"));
+        .unwrap_or_else(|| panic!("no {arg_name} argument"))
+        .clone()
+}
+
+fn arg_value_span(
+    schema: &Schema,
+    type_name: &str,
+    directive_name: &str,
+    arg_name: &str,
+) -> SourceSpan {
+    let arg = arg_value(schema, type_name, directive_name, arg_name);
     arg.value
         .location()
         .expect("argument value has no source location")
@@ -118,6 +127,63 @@ fn parse_at_span_block_string_valid() {
     let value_span = arg_value_span(&schema, "Product", "sel", "fields");
     let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
     assert!(result.is_ok(), "{}", result.unwrap_err());
+}
+
+#[test]
+fn parse_at_span_escape_sequence_in_selection_valid() {
+    let sdl = r#"
+        directive @sel(fields: String!) on OBJECT
+        type Query { product: Product }
+        type Product @sel(fields: "id\naltId") { id: ID altId: ID }
+    "#;
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value = arg_value(&schema, "Product", "sel", "fields");
+    let old_result = FieldSet::parse_and_validate(
+        &schema,
+        name!("Product"),
+        value.value.as_str().unwrap().to_string(),
+        "schema.graphql",
+    );
+    assert!(old_result.is_ok(), "{}", old_result.unwrap_err());
+
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+    let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
+    assert!(result.is_ok(), "{}", result.unwrap_err());
+}
+
+#[test]
+fn parse_at_span_escape_sequence_in_block_selection_invalid() {
+    // Unlike the inline case tested in `parse_at_span_escape_sequence_in_selection_valid`,
+    // block strings do not process escape sequences and fail on both `FieldSet` parsers.
+    let sdl = r#"
+        directive @sel(fields: String!) on OBJECT
+        type Query { product: Product }
+        type Product @sel(fields: """
+            id\naltId
+        """) {
+            id: ID
+            altId: ID
+        }
+    "#;
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value = arg_value(&schema, "Product", "sel", "fields");
+    let old_result = FieldSet::parse_and_validate(
+        &schema,
+        name!("Product"),
+        value.value.as_str().unwrap().to_string(),
+        "schema.graphql",
+    );
+    assert!(
+        old_result.is_err(),
+        "FieldSet::parse_and_validate succeeded unexpectedly",
+    );
+
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+    let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
+    assert!(
+        result.is_err(),
+        "FieldSet::parse_and_validate_at_span succeeded unexpectedly",
+    );
 }
 
 #[test]
@@ -257,4 +323,88 @@ fn parse_at_span_utf8_in_selection() {
         ───╯
     "#]]
     .assert_eq(&err.errors.to_string());
+}
+
+#[test]
+fn parse_at_span_escaped_string_error_rendering() {
+    let sdl = "directive @sel(fields: String!) on OBJECT\n\
+               type Query { product: Product }\n\
+               type Product @sel(fields: \"id\\nmissing\") { id: ID }\n";
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+
+    let err =
+        FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
+
+    expect![[r#"
+        Error: type `Product` does not have a field `missing`
+           ╭─[ schema.graphql:3:32 ]
+           │
+         3 │ type Product @sel(fields: "id\nmissing") { id: ID }
+           │      ───┬───                   ───┬───  
+           │         ╰─────────────────────────────── type `Product` defined here
+           │                                   │     
+           │                                   ╰───── field `missing` selected here
+           │ 
+           │ Note: path to the field: `Product → missing`
+        ───╯
+    "#]]
+    .assert_eq(&err.errors.to_string());
+}
+
+#[test]
+fn parse_at_span_unicode_escape_before_multibyte_chars() {
+    // Regression test: a unicode escape sequence (6 source bytes -> 1 parsed
+    // byte) followed by multi-byte characters. Without escape-aware offset
+    // mapping, diagnostic spans land in the middle of a multi-byte character
+    // in the source text and panic when rendered.
+    let sdl = "directive @sel(fields: String!) on OBJECT\n\
+               type Query { product: Product }\n\
+               type Product @sel(fields: \"id\\u0020\u{D55C}\u{AE00}\") { id: ID }\n";
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+
+    let err =
+        FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span).unwrap_err();
+
+    expect![[r#"
+        Error: syntax error: Unexpected character "한"
+           ╭─[ schema.graphql:3:36 ]
+           │
+         3 │ type Product @sel(fields: "id\u0020한글") { id: ID }
+           │                                    ┬─   
+           │                                    ╰──── Unexpected character "한"
+        ───╯
+        Error: syntax error: Unexpected character "글"
+           ╭─[ schema.graphql:3:37 ]
+           │
+         3 │ type Product @sel(fields: "id\u0020한글") { id: ID }
+           │                                      ┬─  
+           │                                      ╰─── Unexpected character "글"
+        ───╯
+    "#]]
+    .assert_eq(&err.errors.to_string());
+}
+
+#[test]
+fn parse_at_span_unicode_escape_valid_selection() {
+    // A unicode escape for a space between two valid field names must parse
+    // successfully, matching `FieldSet::parse_and_validate` on the string value.
+    let sdl = "directive @sel(fields: String!) on OBJECT\n\
+               type Query { product: Product }\n\
+               type Product @sel(fields: \"id\\u0020altId\") { id: ID altId: ID }\n";
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+
+    let value = arg_value(&schema, "Product", "sel", "fields");
+    let old_result = FieldSet::parse_and_validate(
+        &schema,
+        name!("Product"),
+        value.value.as_str().unwrap().to_string(),
+        "schema.graphql",
+    );
+    assert!(old_result.is_ok(), "{}", old_result.unwrap_err());
+
+    let value_span = arg_value_span(&schema, "Product", "sel", "fields");
+    let result = FieldSet::parse_and_validate_at_span(&schema, name!("Product"), value_span);
+    assert!(result.is_ok(), "{}", result.unwrap_err());
 }

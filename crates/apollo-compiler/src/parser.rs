@@ -170,7 +170,7 @@ impl Parser {
             source: OnceLock::new(),
         });
         Arc::make_mut(&mut errors.sources).insert(file_id, source_file);
-        Self::collect_parse_errors(&tree, file_id, 0.into(), errors);
+        Self::collect_parse_errors(&tree, file_id.into(), errors);
         tree
     }
 
@@ -194,8 +194,7 @@ impl Parser {
 
     fn collect_parse_errors<T: apollo_parser::cst::CstNode>(
         tree: &apollo_parser::SyntaxTree<T>,
-        file_id: FileId,
-        base_offset: rowan::TextSize,
+        ctx: ast::from_cst::SourceContext<'_>,
         errors: &mut DiagnosticList,
     ) {
         for parser_error in tree.errors() {
@@ -208,10 +207,7 @@ impl Parser {
             let Ok(len): Result<rowan::TextSize, _> = parser_error.data().len().try_into() else {
                 continue;
             };
-            let location = Some(SourceSpan {
-                file_id,
-                text_range: rowan::TextRange::at(index + base_offset, len),
-            });
+            let location = Some(ctx.map_range(rowan::TextRange::at(index, len)));
             let details = if parser_error.is_limit() {
                 Details::ParserLimit {
                     message: parser_error.message().to_owned(),
@@ -421,20 +417,36 @@ impl Parser {
         let start = source_span.offset();
         let end = source_span.end_offset();
         let spanned_text = &source_file.source_text[start..end];
+        let mut escape_checkpoints: Vec<(rowan::TextSize, rowan::TextSize)> = Vec::new();
         let (source_text, base_offset) = if let Some(content) = spanned_text
             .strip_prefix(TRIPLE_QUOTE)
             .and_then(|s| s.strip_suffix(TRIPLE_QUOTE))
         {
+            // Block strings do not process escape sequences (other than
+            // `\"""`, which can never occur in a valid field set), so the raw
+            // content is parsed as-is and offsets already match the source.
             (
-                content,
+                std::borrow::Cow::Borrowed(content),
                 source_span.text_range.start() + rowan::TextSize::from(TRIPLE_QUOTE.len() as u32),
             )
         } else if let Some(content) = spanned_text
             .strip_prefix('"')
             .and_then(|s| s.strip_suffix('"'))
         {
+            let (unescaped, checkpoints) =
+                apollo_parser::cst::unescape_string_with_offsets(content);
+            // `content` is a slice of a rowan-indexed file, so offsets fit in u32
+            escape_checkpoints = checkpoints
+                .into_iter()
+                .map(|(unescaped, source)| {
+                    (
+                        rowan::TextSize::from(unescaped as u32),
+                        rowan::TextSize::from(source as u32),
+                    )
+                })
+                .collect();
             (
-                content,
+                std::borrow::Cow::Owned(unescaped),
                 source_span.text_range.start() + rowan::TextSize::from(1),
             )
         } else {
@@ -446,9 +458,13 @@ impl Parser {
             );
             return Self::build_field_set(schema, type_name, &[], errors);
         };
-        let tree = self.parse_syntax(source_text, |p| p.parse_selection_set());
-        Self::collect_parse_errors(&tree, source_span.file_id, base_offset, &mut errors);
-        let ctx = ast::from_cst::SourceContext::with_offset(source_span.file_id, base_offset);
+        let tree = self.parse_syntax(&source_text, |p| p.parse_selection_set());
+        let ctx = ast::from_cst::SourceContext::with_escapes(
+            source_span.file_id,
+            base_offset,
+            &escape_checkpoints,
+        );
+        Self::collect_parse_errors(&tree, ctx, &mut errors);
         let ast = ast::from_cst::convert_selection_set(&tree.field_set(), ctx);
         Self::build_field_set(schema, type_name, &ast, errors)
     }

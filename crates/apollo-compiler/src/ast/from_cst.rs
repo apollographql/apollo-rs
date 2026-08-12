@@ -10,48 +10,88 @@ use apollo_parser::SyntaxNode;
 use apollo_parser::S;
 
 #[derive(Copy, Clone)]
-pub(crate) struct SourceContext {
+pub(crate) struct SourceContext<'a> {
     file_id: FileId,
     base_offset: rowan::TextSize,
+    /// `(unescaped_offset, source_offset)` checkpoints recorded after each
+    /// escape sequence when the parsed text was unescaped from a string
+    /// literal in the source. Empty when parsed text matches the source 1:1.
+    /// Both offsets are relative: to the parsed text and to `base_offset`
+    /// respectively.
+    escape_checkpoints: &'a [(rowan::TextSize, rowan::TextSize)],
 }
 
-impl SourceContext {
+impl<'a> SourceContext<'a> {
     pub(crate) fn new(file_id: FileId) -> Self {
-        Self {
-            file_id,
-            base_offset: 0.into(),
-        }
+        Self::with_offset(file_id, 0.into())
     }
 
     pub(crate) fn with_offset(file_id: FileId, base_offset: rowan::TextSize) -> Self {
         Self {
             file_id,
             base_offset,
+            escape_checkpoints: &[],
+        }
+    }
+
+    pub(crate) fn with_escapes(
+        file_id: FileId,
+        base_offset: rowan::TextSize,
+        escape_checkpoints: &'a [(rowan::TextSize, rowan::TextSize)],
+    ) -> Self {
+        Self {
+            file_id,
+            base_offset,
+            escape_checkpoints,
+        }
+    }
+
+    /// Map an offset in the parsed text to an offset in the original source.
+    ///
+    /// Escape sequences make the parsed text shorter than its source form, so
+    /// a flat base offset is not enough: find the last escape checkpoint at or
+    /// before `offset`, then advance 1:1 from there. Offsets produced this way
+    /// always land on character boundaries of the source text.
+    fn map_offset(self, offset: rowan::TextSize) -> rowan::TextSize {
+        let mapped = match self
+            .escape_checkpoints
+            .binary_search_by_key(&offset, |&(unescaped, _)| unescaped)
+        {
+            Ok(index) => self.escape_checkpoints[index].1,
+            Err(0) => offset,
+            Err(index) => {
+                let (unescaped, source) = self.escape_checkpoints[index - 1];
+                source + (offset - unescaped)
+            }
+        };
+        self.base_offset + mapped
+    }
+
+    pub(crate) fn map_range(self, range: rowan::TextRange) -> SourceSpan {
+        SourceSpan {
+            file_id: self.file_id,
+            text_range: rowan::TextRange::new(
+                self.map_offset(range.start()),
+                self.map_offset(range.end()),
+            ),
         }
     }
 }
 
-impl From<FileId> for SourceContext {
+impl From<FileId> for SourceContext<'_> {
     fn from(file_id: FileId) -> Self {
         Self::new(file_id)
     }
 }
 
 fn source_span(ctx: SourceContext, syntax_node: &SyntaxNode) -> SourceSpan {
-    let range = syntax_node.text_range();
-    SourceSpan {
-        file_id: ctx.file_id,
-        text_range: rowan::TextRange::new(
-            range.start() + ctx.base_offset,
-            range.end() + ctx.base_offset,
-        ),
-    }
+    ctx.map_range(syntax_node.text_range())
 }
 
 impl Document {
-    pub(crate) fn from_cst(
+    pub(crate) fn from_cst<'a>(
         document: cst::Document,
-        ctx: impl Into<SourceContext>,
+        ctx: impl Into<SourceContext<'a>>,
         sources: SourceMap,
     ) -> Self {
         let ctx = ctx.into();
@@ -163,10 +203,10 @@ impl Convert for cst::OperationDefinition {
             ast::OperationType::Query
         };
         Some(Self::Target {
-            description: self.description().convert(file_id)?,
+            description: self.description().convert(ctx)?,
             operation_type,
             name: self.name().convert(ctx)?,
-            variables: collect_opt(ctx, self.variable_definitions(), |x| {
+            variables: collect_opt(ctx, self.variables_definition(), |x| {
                 x.variable_definitions()
             }),
             directives: ast::DirectiveList(collect_opt(ctx, self.directives(), |x| x.directives())),
@@ -633,9 +673,9 @@ impl Convert for cst::SelectionSet {
     }
 }
 
-pub(crate) fn convert_selection_set(
+pub(crate) fn convert_selection_set<'a>(
     selection_set: &cst::SelectionSet,
-    ctx: impl Into<SourceContext>,
+    ctx: impl Into<SourceContext<'a>>,
 ) -> Vec<ast::Selection> {
     let ctx = ctx.into();
     selection_set
