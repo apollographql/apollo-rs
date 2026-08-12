@@ -1091,6 +1091,13 @@ impl FieldSet {
     ///
     /// `source_span` must be the span of a string literal value (`"..."` or
     /// `"""..."""`); quotes are stripped automatically.
+    ///
+    /// For `"..."` string literals, escape sequences are processed before
+    /// parsing and error locations are mapped back to the escaped source
+    /// text. Block string (`"""..."""`) content is parsed as written, since
+    /// block strings do not process escape sequences; their indentation is
+    /// also not stripped, which does not affect parsing because field sets
+    /// are whitespace-insensitive.
     pub fn parse_and_validate_at_span(
         schema: &Valid<Schema>,
         type_name: NamedType,
