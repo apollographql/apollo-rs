@@ -18,7 +18,7 @@
 </div>
 
 ## Features
-* Typed GraphQL Concrete Syntax Tree as per [October 2021 specification]
+* Typed GraphQL Concrete Syntax Tree as per [September 2025 specification]
 * Error resilience
   * lexing and parsing does not fail or `panic` if a lexical or a syntax error is found
 * GraphQL lexer
@@ -45,7 +45,7 @@ Older version may or may not be compatible.
 
 ## Usage
 `apollo-parser` is built to parse both GraphQL schemas and queries according to
-the latest [October 2021 specification]. It produces a typed syntax tree that
+the latest [September 2025 specification]. It produces a typed syntax tree that
 then can be walked, extracting all the necessary information. You can quick
 start with:
 
@@ -138,7 +138,7 @@ let input = "
       if let cst::Definition::OperationDefinition(op_def) = def {
           assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
-          let variable_defs = op_def.variable_definitions();
+          let variable_defs = op_def.variables_definition();
           let variables: Vec<String> = variable_defs
               .iter()
               .map(|v| v.variable_definitions())
@@ -168,4 +168,4 @@ at your option.
 [using apollo-rs with miette to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/miette.rs
 [using apollo-rs with annotate_snippets to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
 [checking for unused variables]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/unused_vars.rs
-[October 2021 specification]: https://spec.graphql.org/October2021
+[September 2025 specification]: https://spec.graphql.org/September2025

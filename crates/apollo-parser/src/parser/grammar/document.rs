@@ -14,7 +14,7 @@ use crate::SyntaxKind;
 use crate::TokenKind;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#Document
+/// See: https://spec.graphql.org/September2025/#Document
 ///
 /// *Document*
 ///     Definition*

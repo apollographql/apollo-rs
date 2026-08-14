@@ -1,5 +1,5 @@
 //! Partial execition of the
-//! [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+//! [schema introspection](https://spec.graphql.org/September2025/#sec-Schema-Introspection)
 //! portion of a query
 //!
 //! The main entry point is [`partial_execute`].
@@ -12,7 +12,7 @@ use crate::executable::OperationMap;
 use crate::request::coerce_variable_values;
 use crate::request::RequestError;
 use crate::resolvers::Execution;
-use crate::resolvers::FieldError;
+use crate::resolvers::ExecutionError;
 use crate::resolvers::ObjectValue;
 use crate::resolvers::ResolveInfo;
 use crate::resolvers::ResolvedValue;
@@ -32,13 +32,13 @@ pub(crate) mod resolvers;
 /// Since [the schema-introspection schema][s] is recursive,
 /// a malicious query could cause huge responses that grow exponentially to the nesting depth.
 ///
-/// An error result is a [request error](https://spec.graphql.org/draft/#request-error):
+/// An error result is a [request error](https://spec.graphql.org/September2025/#request-error):
 /// execution must not run at all,
 /// and the GraphQL response must not have a `data` key (which is different from `data: null`).
 ///
 /// The exact criteria may change in future apollo-compiler versions.
 ///
-/// [s]: https://spec.graphql.org/draft/#sec-Schema-Introspection.Schema-Introspection-Schema
+/// [s]: https://spec.graphql.org/September2025/#sec-Schema-Introspection.Schema-Introspection-Schema
 pub fn check_max_depth(
     document: &Valid<ExecutableDocument>,
     operation: &Operation,
@@ -53,7 +53,7 @@ pub fn check_max_depth(
     .map(drop)
 }
 
-/// Excecutes the [schema introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+/// Excecutes the [schema introspection](https://spec.graphql.org/September2025/#sec-Schema-Introspection)
 /// portion of a query and returns a partial response.
 ///
 /// * Consider calling [`check_max_depth`] before this function
@@ -109,7 +109,7 @@ pub fn partial_execute(
         fn resolve_field<'a>(
             &'a self,
             _info: &'a ResolveInfo<'a>,
-        ) -> Result<ResolvedValue<'a>, FieldError> {
+        ) -> Result<ResolvedValue<'a>, ExecutionError> {
             // Introspection meta-fields are handled separately
             // so this is only called for concrete fields of the root query type
             Ok(ResolvedValue::SkipForPartialExecution)

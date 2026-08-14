@@ -12,7 +12,7 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#EnumTypeDefinition
+/// See: https://spec.graphql.org/September2025/#EnumTypeDefinition
 ///
 /// *EnumTypeDefinition*:
 ///     Description? **enum** Name Directives? EnumValuesDefinition?
@@ -41,7 +41,7 @@ pub(crate) fn enum_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#EnumTypeExtension
+/// See: https://spec.graphql.org/September2025/#EnumTypeExtension
 ///
 // *EnumTypeExtension*:
 ///    **extend** **enum** Name Directives[Const]? EnumValuesDefinition
@@ -73,7 +73,7 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#EnumValuesDefinition
+/// See: https://spec.graphql.org/September2025/#EnumValuesDefinition
 ///
 /// *EnumValuesDefinition*:
 ///     **{** EnumValueDefinition* **}**
@@ -97,7 +97,7 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/October2021/#EnumValueDefinition
+/// See: https://spec.graphql.org/September2025/#EnumValueDefinition
 ///
 /// *EnumValueDefinition*:
 ///     Description? EnumValue Directives[Const]?

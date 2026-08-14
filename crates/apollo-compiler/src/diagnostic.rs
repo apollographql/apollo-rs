@@ -334,7 +334,7 @@ impl<T: ToCliReport> Diagnostic<'_, T> {
     /// Get a [`serde`]-serializable version of the current diagnostic. The shape is compatible
     /// with the JSON error shape described in [the GraphQL spec].
     ///
-    /// [the GraphQL spec]: https://spec.graphql.org/draft/#sec-Errors
+    /// [the GraphQL spec]: https://spec.graphql.org/September2025/#sec-Errors
     pub fn to_json(&self) -> GraphQLError
     where
         T: ToString,

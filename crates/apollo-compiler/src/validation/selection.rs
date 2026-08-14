@@ -135,7 +135,7 @@ fn same_name_and_arguments(
     if field_a.field.name != field_b.field.name {
         return Err(BuildError::ConflictingFieldName(Box::new(
             ConflictingFieldName {
-                alias: field_a.field.response_key().clone(),
+                alias: field_a.field.response_name().clone(),
                 original_location: field_a.field.location(),
                 original_selection: field_a.coordinate(),
                 conflicting_location: field_b.field.location(),
@@ -233,7 +233,7 @@ fn same_output_type_shape(
 
     let mismatching_type_diagnostic = || {
         BuildError::ConflictingFieldType(Box::new(ConflictingFieldType {
-            alias: selection_a.field.response_key().clone(),
+            alias: selection_a.field.response_name().clone(),
             original_location: selection_a.field.location(),
             original_coordinate: selection_a.coordinate(),
             original_type: field_a.ty.clone(),
@@ -423,7 +423,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
         self.grouped_by_output_names.get_or_init(|| {
             let mut map = IndexMap::<_, Vec<_>>::with_hasher(Default::default());
             for selection in self.selections {
-                map.entry(selection.field.response_key().clone())
+                map.entry(selection.field.response_name().clone())
                     .or_default()
                     .push(*selection);
             }
@@ -479,7 +479,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
 const FIELD_DEPTH_LIMIT: usize = 128;
 
 /// Implements the `FieldsInSetCanMerge()` validation.
-/// https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+/// https://spec.graphql.org/September2025/#sec-Field-Selection-Merging
 ///
 /// This uses the [validation algorithm described by XING][0] ([archived][1]), which
 /// scales much better with larger selection sets that may have many overlapping fields,

@@ -27,8 +27,8 @@
 * Validation of schemas and executable documents, as defined [in the GraphQL specification][val].
 * Execution of the [schema introspection][introsp] portion of queries.
 
-[val]: https://spec.graphql.org/October2021/#sec-Validation
-[introsp]: https://spec.graphql.org/October2021/#sec-Introspection
+[val]: https://spec.graphql.org/September2025/#sec-Validation
+[introsp]: https://spec.graphql.org/September2025/#sec-Introspection
 
 ## Getting started
 Add the dependency to start using `apollo-compiler`:

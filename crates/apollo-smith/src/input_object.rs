@@ -15,7 +15,7 @@ use indexmap::IndexSet;
 /// InputObjectTypeDefinition
 ///     Description? **input** Name Directives? FieldsDefinition?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Input-Objects).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Input-Objects).
 ///
 /// **Note**: At the moment InputObjectTypeDefinition differs slightly from the
 /// spec. Instead of accepting InputValues as `field` parameter, we accept

@@ -47,9 +47,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2026-mm-dd
 
-> Important: 1 breaking change below, indicated by **BREAKING**
+> Important: 2 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
+
+- **Rename APIs to follow September 2025 specification terminology**
+
+  * `executable::Field::response_key()` is now `response_name()`, following
+    the spec's "response key" → "response name" rename.
+  * `resolvers::FieldError` is now `resolvers::ExecutionError`, following the
+    spec's "field error" → "execution error" rename.
 
 - **Add `description` fields to executable definition types - [goto-bus-stop], [pull/974]**
 
@@ -68,6 +75,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (bare braced selection set) is a parse error.
 
 ## Features
+
+- **Built-in schema follows the September 2025 specification**
+
+  * `includeDeprecated` introspection arguments are now non-null
+    `Boolean! = false`.
+  * `@deprecated` is now declared with `reason: String!`, so explicit
+    `reason: null` arguments are no longer valid.
+
+  Spec documentation links throughout the crate now point to the
+  [September 2025](https://spec.graphql.org/September2025/) edition.
 
 - **Validate `@defer` directive usage - [duckki], [pull/1069]**
 

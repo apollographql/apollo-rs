@@ -13,7 +13,7 @@ use indexmap::IndexSet;
 /// *UnionDefTypeDefinition*:
 ///     Description? **union** Name Directives? UnionDefMemberTypes?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-UnionDef).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Unions).
 #[derive(Debug, Clone)]
 pub struct UnionTypeDef {
     pub(crate) name: Name,
@@ -137,7 +137,7 @@ impl DocumentBuilder<'_> {
         // other unions, interfaces, enums, and input objects are all
         // invalid as members.
         //
-        // See <https://spec.graphql.org/October2021/#sec-Unions>.
+        // See <https://spec.graphql.org/September2025/#sec-Unions>.
         let existing_members: IndexSet<Name> = self
             .union_type_defs
             .iter()

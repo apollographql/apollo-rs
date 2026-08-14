@@ -14,7 +14,7 @@ use indexmap::IndexSet;
 /// *ArgumentsDefinition*:
 ///     ( InputValueDefinition* )
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#ArgumentsDefinition).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#ArgumentsDefinition).
 ///
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArgumentsDef {
@@ -49,7 +49,7 @@ impl TryFrom<apollo_parser::cst::ArgumentsDefinition> for ArgumentsDef {
 /// *Argument*:
 ///     Name: Value
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Arguments).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Arguments).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Argument {
     pub(crate) name: Name,

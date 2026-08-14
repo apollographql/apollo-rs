@@ -33,7 +33,7 @@ const RESERVED_KEYWORDS: &[&str] = &[
 /// Names in GraphQL are case-sensitive. That is to say name, Name, and NAME all refer to different names.
 /// Underscores are significant, which means other_name and othername are two different names
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#Name).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#Name).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Name {
     pub(crate) name: String,

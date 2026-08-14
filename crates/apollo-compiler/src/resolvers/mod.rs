@@ -1,4 +1,4 @@
-//! GraphQL [execution](https://spec.graphql.org/draft/#sec-Execution)
+//! GraphQL [execution](https://spec.graphql.org/September2025/#sec-Execution)
 //! based on callbacks resolving one field at a time.
 //!
 //! Start with [`Execution::new`],
@@ -93,10 +93,10 @@ pub struct ResolveInfo<'a> {
 }
 
 /// An error returned by [`ObjectValue::resolve_field`] or [`AsyncObjectValue::resolve_field`],
-/// which will become a [field error](https://spec.graphql.org/draft/#sec-Errors.Field-Errors)
+/// which will become an [execution error](https://spec.graphql.org/September2025/#sec-Errors.Execution-Errors)
 /// (a.k.a. execution error) in the GraphQL response,
 /// with path and locations filled in.
-pub struct FieldError {
+pub struct ExecutionError {
     pub message: String,
 }
 
@@ -112,7 +112,7 @@ pub trait ObjectValue {
     /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
     ///
-    /// This is _not_ called for [introspection](https://spec.graphql.org/draft/#sec-Introspection)
+    /// This is _not_ called for [introspection](https://spec.graphql.org/September2025/#sec-Introspection)
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     ///
     /// A typical implementation might look like:
@@ -127,15 +127,15 @@ pub trait ObjectValue {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> Result<ResolvedValue<'a>, FieldError>;
+    ) -> Result<ResolvedValue<'a>, ExecutionError>;
 
     /// Generate a resolve error for `resolve_field` to return in case of an unexpected field name.
     ///
     /// In many cases this should never happen,
     /// such as when writing resolvers for a fixed, known schema.
-    /// Still, this method generates a GraphQL field error without Rust panick in case of a bug.
-    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> FieldError {
-        FieldError::unknown_field(info.field_name(), self.type_name())
+    /// Still, this method generates a GraphQL execution error without Rust panick in case of a bug.
+    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ExecutionError {
+        ExecutionError::unknown_field(info.field_name(), self.type_name())
     }
 }
 
@@ -151,7 +151,7 @@ pub trait AsyncObjectValue: Send {
     /// The resolved value is expected to match the type of the corresponding field definition
     /// in the schema.
     ///
-    /// This is _not_ called for [introspection](https://spec.graphql.org/draft/#sec-Introspection)
+    /// This is _not_ called for [introspection](https://spec.graphql.org/September2025/#sec-Introspection)
     /// meta-fields `__typename`, `__type`, or `__schema`: those are handled separately.
     ///
     /// A typical implementation might look like:
@@ -168,15 +168,15 @@ pub trait AsyncObjectValue: Send {
     fn resolve_field<'a>(
         &'a self,
         info: &'a ResolveInfo<'a>,
-    ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, FieldError>>;
+    ) -> BoxFuture<'a, Result<AsyncResolvedValue<'a>, ExecutionError>>;
 
     /// Generate a resolve error for `resolve_field` to return in case of an unexpected field name.
     ///
     /// In many cases this should never happen,
     /// such as when writing resolvers for a fixed, known schema.
-    /// Still, this method generates a GraphQL field error without Rust panick in case of a bug.
-    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> FieldError {
-        FieldError::unknown_field(info.field_name(), self.type_name())
+    /// Still, this method generates a GraphQL execution error without Rust panick in case of a bug.
+    fn unknown_field_error(&self, info: &ResolveInfo<'_>) -> ExecutionError {
+        ExecutionError::unknown_field(info.field_name(), self.type_name())
     }
 }
 
@@ -192,7 +192,7 @@ pub enum ResolvedValue<'a> {
     Object(Box<dyn ObjectValue + 'a>),
 
     /// Expected for GraphQL list types
-    List(Box<dyn Iterator<Item = Result<Self, FieldError>> + 'a>),
+    List(Box<dyn Iterator<Item = Result<Self, ExecutionError>> + 'a>),
 
     /// Skip this field as if the selection had `@skip(if: true)`:
     /// do not insert null nor emit an error.
@@ -218,7 +218,7 @@ pub enum AsyncResolvedValue<'a> {
     Object(Box<dyn AsyncObjectValue + 'a>),
 
     /// Expected for GraphQL list types
-    List(BoxStream<'a, Result<Self, FieldError>>),
+    List(BoxStream<'a, Result<Self, ExecutionError>>),
 
     /// Skip this field as if the selection had `@skip(if: true)`:
     /// do not insert null nor emit an error.
@@ -318,7 +318,7 @@ impl<'a> Execution<'a> {
     }
 
     /// By default, schema introspection is _disabled_ per the [recommendation] to do so in production:
-    /// the meta-field `__schema` and `__type` return a field error.
+    /// the meta-field `__schema` and `__type` return an execution error.
     /// (`__typename` is not affected, as it is always available.)
     ///
     /// Setting this configuration to `true` makes execution
@@ -436,7 +436,7 @@ impl<'a> Execution<'a> {
         )
         .await;
         let data = result
-            // If `Result::ok` converts an error to `None` that’s a field error on a non-null,
+            // If `Result::ok` converts an error to `None` that’s an execution error on a non-null,
             // field propagated all the way to the root,
             // so that the JSON response should contain `"data": null`.
             //
@@ -480,13 +480,13 @@ impl<'a> ResolveInfo<'a> {
     /// The field selections being resolved.
     ///
     /// There is always at least one, but there may be more in case of
-    /// [field merging](https://spec.graphql.org/draft/#sec-Field-Selection-Merging).
+    /// [field merging](https://spec.graphql.org/September2025/#sec-Field-Selection-Merging).
     pub fn field_selections(&self) -> &'a [&'a executable::Field] {
         self.fields
     }
 
     /// The arguments passed to this field, after
-    /// [`CoerceArgumentValues()`](https://spec.graphql.org/draft/#sec-Coercing-Field-Arguments`):
+    /// [`CoerceArgumentValues()`](https://spec.graphql.org/September2025/#sec-Coercing-Field-Arguments):
     /// this matches the argument definitions in the schema.
     pub fn arguments(&self) -> &'a JsonMap {
         self.arguments
@@ -576,7 +576,7 @@ impl MaybeAsync<Box<dyn AsyncObjectValue + '_>, Box<dyn ObjectValue + '_>> {
     }
 }
 
-impl FieldError {
+impl ExecutionError {
     fn unknown_field(field_name: &str, type_name: &str) -> Self {
         Self {
             message: format!("unexpected field name: {field_name} in type {type_name}"),

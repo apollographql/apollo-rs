@@ -327,7 +327,7 @@ Licensed under either of
 
 at your option.
 
-[GraphQL grammar]: https://spec.graphql.org/October2021/#sec-Appendix-Grammar-Summary
+[GraphQL grammar]: https://spec.graphql.org/September2025/#sec-Appendix-Grammar-Summary
 [`wasm-smith`]: https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wasm-smith
 [article written by Nick Fitzgerald]: https://fitzgeraldnick.com/2020/08/24/writing-a-test-case-generator.html#what-is-a-test-case-generator
 [`arbitrary`]: https://docs.rs/arbitrary/latest/arbitrary/

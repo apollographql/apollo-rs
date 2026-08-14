@@ -14,7 +14,7 @@ use indexmap::IndexMap;
 /// *SchemaDefinition*:
 ///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Schema).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Schema).
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     pub(crate) description: Option<Description>,
@@ -142,7 +142,7 @@ impl DocumentBuilder<'_> {
         // when no operations reference it. Mutation and subscription are
         // optional.
         //
-        // See <https://spec.graphql.org/October2021/#sec-Root-Operation-Types>.
+        // See <https://spec.graphql.org/September2025/#sec-Root-Operation-Types>.
         let query = Some(self.u.choose(&named_types)?.clone());
 
         // Ensure we choose a different type for other roots
@@ -175,7 +175,7 @@ impl DocumentBuilder<'_> {
             // node, so rendering it as an extension would produce an
             // orphan `extend schema` block.
             //
-            // See <https://spec.graphql.org/October2021/#sec-Schema-Extension>.
+            // See <https://spec.graphql.org/September2025/#sec-Schema-Extension>.
             extend: false,
         })
     }

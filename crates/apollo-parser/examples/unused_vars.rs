@@ -21,7 +21,7 @@ fn are_variables_unused() {
         if let cst::Definition::OperationDefinition(op_def) = def {
             assert_eq!(op_def.name().unwrap().text(), "GraphCheckMutation");
 
-            let variable_defs = op_def.variable_definitions();
+            let variable_defs = op_def.variables_definition();
             // We grab all the variables defined in the mutation
             let variables: Vec<String> = variable_defs
                 .iter()

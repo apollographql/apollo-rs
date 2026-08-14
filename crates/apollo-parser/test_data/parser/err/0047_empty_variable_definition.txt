@@ -5,7 +5,7 @@
         - WHITESPACE@5..6 " "
         - NAME@6..8
             - IDENT@6..8 "Op"
-        - VARIABLE_DEFINITIONS@8..10
+        - VARIABLES_DEFINITION@8..10
             - L_PAREN@8..9 "("
             - R_PAREN@9..10 ")"
         - WHITESPACE@10..11 " "

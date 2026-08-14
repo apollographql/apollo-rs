@@ -25,7 +25,7 @@ pub(crate) fn validate_object_type_definition(
     validate_field_definitions(diagnostics, schema, built_in_scalars, &object.fields);
 
     // validate there is at least one field on the type
-    // https://spec.graphql.org/draft/#sel-FAHZhCFDBAACDA4qe
+    // https://spec.graphql.org/September2025/#sec-Objects.Type-Validation
     if object.fields.is_empty() {
         diagnostics.push(
             object.location(),

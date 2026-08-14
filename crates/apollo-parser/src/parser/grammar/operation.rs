@@ -9,10 +9,10 @@ use crate::SyntaxKind;
 use crate::TokenKind;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#OperationDefinition
+/// See: https://spec.graphql.org/September2025/#OperationDefinition
 ///
 /// *OperationDefinition*:
-///    Description? OperationType Name? VariableDefinitions? Directives? SelectionSet
+///    Description? OperationType Name? VariablesDefinition? Directives? SelectionSet
 ///    SelectionSet
 pub(crate) fn operation_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
@@ -34,7 +34,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
 
             if let Some(T!['(']) = p.peek() {
-                variable::variable_definitions(p)
+                variable::variables_definition(p)
             }
 
             if let Some(T![@]) = p.peek() {
@@ -59,7 +59,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#OperationType
+/// See: https://spec.graphql.org/September2025/#OperationType
 ///
 /// *OperationType*: one of
 ///    **query**    **mutation**    **subscription**

@@ -13,9 +13,9 @@ use indexmap::IndexMap;
 /// The __variableDef type represents a variable definition
 ///
 /// *VariableDefinition*:
-///     VariableName : Type DefaultValue? Directives?
+///     Description? Variable : Type DefaultValue? Directives[Const]?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Variables).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Variables).
 #[derive(Debug, Clone)]
 pub struct VariableDef {
     description: Option<Description>,

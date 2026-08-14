@@ -128,7 +128,7 @@ impl Convert for cst::OperationDefinition {
             description: self.description().convert(file_id)?,
             operation_type,
             name: self.name().convert(file_id)?,
-            variables: collect_opt(file_id, self.variable_definitions(), |x| {
+            variables: collect_opt(file_id, self.variables_definition(), |x| {
                 x.variable_definitions()
             }),
             directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {

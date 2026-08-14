@@ -15,7 +15,7 @@ use std::hash::Hash;
 /// *EnumTypeDefinition*:
 ///     Description? **enum** Name Directives? EnumValuesDefinition?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Enums).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Enums).
 #[derive(Debug, Clone)]
 pub struct EnumTypeDef {
     pub(crate) description: Option<Description>,
@@ -112,7 +112,7 @@ impl TryFrom<apollo_parser::cst::EnumTypeExtension> for EnumTypeDef {
 /// *EnumValueDefinition*:
 ///     Description? EnumValue Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__EnumValue-Type).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-The-__EnumValue-Type).
 #[derive(Debug, Clone)]
 pub struct EnumValueDefinition {
     pub(crate) description: Option<Description>,
