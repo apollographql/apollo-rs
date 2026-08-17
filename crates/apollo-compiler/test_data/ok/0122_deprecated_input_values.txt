@@ -1,0 +1,172 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        51: SourceFile {
+            path: "0122_deprecated_input_values.graphql",
+            source_text: "type Query {\n  field(nullable: Int @deprecated, defaulted: Int! = 0 @deprecated, arg: In): String\n}\n\ninput In {\n  a: Int @deprecated\n  b: Int! = 3 @deprecated\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "oneOf": built_in_directive!("oneOf"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "Query": Object(
+            0..99 @51 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": Component {
+                        origin: Definition,
+                        node: 15..97 @51 FieldDefinition {
+                            description: None,
+                            name: "field",
+                            arguments: [
+                                21..46 @51 InputValueDefinition {
+                                    description: None,
+                                    name: "nullable",
+                                    ty: 31..34 @51 Named(
+                                        "Int",
+                                    ),
+                                    default_value: None,
+                                    directives: [
+                                        35..46 @51 Directive {
+                                            name: "deprecated",
+                                            arguments: [],
+                                        },
+                                    ],
+                                },
+                                48..79 @51 InputValueDefinition {
+                                    description: None,
+                                    name: "defaulted",
+                                    ty: 59..63 @51 NonNullNamed(
+                                        "Int",
+                                    ),
+                                    default_value: Some(
+                                        66..67 @51 Int(
+                                            0,
+                                        ),
+                                    ),
+                                    directives: [
+                                        68..79 @51 Directive {
+                                            name: "deprecated",
+                                            arguments: [],
+                                        },
+                                    ],
+                                },
+                                81..88 @51 InputValueDefinition {
+                                    description: None,
+                                    name: "arg",
+                                    ty: 86..88 @51 Named(
+                                        "In",
+                                    ),
+                                    default_value: None,
+                                    directives: [],
+                                },
+                            ],
+                            ty: Named(
+                                "String",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "In": InputObject(
+            101..160 @51 InputObjectType {
+                description: None,
+                name: "In",
+                directives: [],
+                fields: {
+                    "a": Component {
+                        origin: Definition,
+                        node: 114..132 @51 InputValueDefinition {
+                            description: None,
+                            name: "a",
+                            ty: 117..120 @51 Named(
+                                "Int",
+                            ),
+                            default_value: None,
+                            directives: [
+                                121..132 @51 Directive {
+                                    name: "deprecated",
+                                    arguments: [],
+                                },
+                            ],
+                        },
+                    },
+                    "b": Component {
+                        origin: Definition,
+                        node: 135..158 @51 InputValueDefinition {
+                            description: None,
+                            name: "b",
+                            ty: 138..142 @51 NonNullNamed(
+                                "Int",
+                            ),
+                            default_value: Some(
+                                145..146 @51 Int(
+                                    3,
+                                ),
+                            ),
+                            directives: [
+                                147..158 @51 Directive {
+                                    name: "deprecated",
+                                    arguments: [],
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        51: SourceFile {
+            path: "0122_deprecated_input_values.graphql",
+            source_text: "type Query {\n  field(nullable: Int @deprecated, defaulted: Int! = 0 @deprecated, arg: In): String\n}\n\ninput In {\n  a: Int @deprecated\n  b: Int! = 3 @deprecated\n}\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
+    fragments: {},
+}

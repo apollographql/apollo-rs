@@ -1,0 +1,7 @@
+type Query {
+  field(arg: Int! @deprecated, arg2: In): String
+}
+
+input In {
+  a: Int! @deprecated
+}

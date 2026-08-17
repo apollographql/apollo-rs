@@ -1,0 +1,144 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        52: SourceFile {
+            path: "0123_deprecated_implementation_fields.graphql",
+            source_text: "interface I {\n  a: Int @deprecated\n  b: Int\n}\n\ntype Query implements I {\n  a: Int @deprecated\n  b: Int\n}\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            ComponentName {
+                origin: Definition,
+                name: "Query",
+            },
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "oneOf": built_in_directive!("oneOf"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "Int": built_in_type!("Int"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "I": Interface(
+            0..45 @52 InterfaceType {
+                description: None,
+                name: "I",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "a": Component {
+                        origin: Definition,
+                        node: 16..34 @52 FieldDefinition {
+                            description: None,
+                            name: "a",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [
+                                23..34 @52 Directive {
+                                    name: "deprecated",
+                                    arguments: [],
+                                },
+                            ],
+                        },
+                    },
+                    "b": Component {
+                        origin: Definition,
+                        node: 37..43 @52 FieldDefinition {
+                            description: None,
+                            name: "b",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+        "Query": Object(
+            47..104 @52 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {
+                    ComponentName {
+                        origin: Definition,
+                        name: "I",
+                    },
+                },
+                directives: [],
+                fields: {
+                    "a": Component {
+                        origin: Definition,
+                        node: 75..93 @52 FieldDefinition {
+                            description: None,
+                            name: "a",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [
+                                82..93 @52 Directive {
+                                    name: "deprecated",
+                                    arguments: [],
+                                },
+                            ],
+                        },
+                    },
+                    "b": Component {
+                        origin: Definition,
+                        node: 96..102 @52 FieldDefinition {
+                            description: None,
+                            name: "b",
+                            arguments: [],
+                            ty: Named(
+                                "Int",
+                            ),
+                            directives: [],
+                        },
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        52: SourceFile {
+            path: "0123_deprecated_implementation_fields.graphql",
+            source_text: "interface I {\n  a: Int @deprecated\n  b: Int\n}\n\ntype Query implements I {\n  a: Int @deprecated\n  b: Int\n}\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
+    fragments: {},
+}

@@ -5,7 +5,6 @@ mod object;
 mod one_of;
 mod operation;
 mod recursion;
-mod september_2025;
 mod types;
 mod variable;
 
