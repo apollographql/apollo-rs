@@ -400,14 +400,6 @@ pub(crate) enum DiagnosticData {
         field_location: Option<SourceSpan>,
         interface_field_location: Option<SourceSpan>,
     },
-    #[error(
-        "the default value of input object field `{type_name}.{field_name}` cycles back to itself"
-    )]
-    RecursiveInputObjectDefaultValue {
-        type_name: Name,
-        field_name: Name,
-        default_value_location: Option<SourceSpan>,
-    },
 }
 
 /// Shared help text for the two @oneOf schema-definition errors.
@@ -1024,18 +1016,6 @@ impl DiagnosticData {
                 report.with_help(format_args!(
                     "deprecate `{interface}.{field}` as well, or remove `@deprecated` from the implementing field."
                 ));
-            }
-            DiagnosticData::RecursiveInputObjectDefaultValue {
-                default_value_location,
-                ..
-            } => {
-                report.with_label_opt(
-                    *default_value_location,
-                    "coercing this default value requires coercing it again",
-                );
-                report.with_help(
-                    "break the cycle by providing an explicit value for one of the fields involved, or by removing a default value.",
-                );
             }
         }
     }

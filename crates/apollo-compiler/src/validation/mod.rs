@@ -321,7 +321,6 @@ impl DiagnosticData {
                     OneOfDirectiveOnExtension { .. } => "OneOfDirectiveOnExtension",
                     DeprecatedRequiredInputValue { .. } => "DeprecatedRequiredInputValue",
                     DeprecatedImplementationField { .. } => "DeprecatedImplementationField",
-                    RecursiveInputObjectDefaultValue { .. } => "RecursiveInputObjectDefaultValue",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                     MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
                     InvalidImplementationFieldArgumentType { .. } => {
@@ -551,7 +550,6 @@ impl DiagnosticData {
                     )),
                     DeprecatedRequiredInputValue { .. } => None,
                     DeprecatedImplementationField { .. } => None,
-                    RecursiveInputObjectDefaultValue { .. } => None,
                     InvalidImplementationFieldType {
                         name,
                         interface,
