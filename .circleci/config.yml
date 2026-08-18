@@ -24,8 +24,6 @@ executors:
     resource_class: windows.xlarge
     shell: powershell.exe -ExecutionPolicy Bypass
 
-# There are two workflows: lint and test.
-
 # We run `cargo clippy` for linting on
 # linux on stable rust.
 
@@ -61,6 +59,13 @@ workflows:
     jobs:
       - miri:
           name: Miri (rust nightly on linux, subset of tests)
+          matrix:
+            parameters:
+              platform: [linux]
+  fuzz:
+    jobs:
+      - fuzz:
+          name: Fuzz (rust nightly on linux)
           matrix:
             parameters:
               platform: [linux]
@@ -145,6 +150,24 @@ jobs:
       - run:
           name: Run a subset of tests under Miri
           command: cargo miri test --test main -- name::smoke_test
+
+  fuzz:
+    parameters:
+      platform:
+        type: executor
+    executor: << parameters.platform >>
+    steps:
+      - checkout
+      - install_system_deps:
+          rust_channel: nightly
+          platform: << parameters.platform >>
+      - run:
+          name: Install cargo-fuzz
+          command: cargo install cargo-fuzz
+      - run:
+          name: Regression test fuzzer seed corpus (validate target)
+          # The -runs=0 argument tells libfuzzer to stop after the seed corpus
+          command: cargo fuzz run validate -- -runs=0
 
 # The folowing are reusable command snippets can be referred to in any `steps`.
 # Commands we currently have: install_system_deps, install_rust_toolchain.
