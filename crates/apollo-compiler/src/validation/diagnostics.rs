@@ -202,6 +202,19 @@ pub(crate) enum DiagnosticData {
         /// Category of the type
         describe_type: &'static str,
     },
+    #[error("the same type `{name}` must not be used for multiple root operation types")]
+    DuplicateRootOperationType {
+        /// Name of the type used by more than one root operation
+        name: Name,
+        /// The operation that first used this type
+        original_operation: ast::OperationType,
+        /// Location of the first root operation to use this type
+        original_definition: Option<SourceSpan>,
+        /// The operation that reused this type
+        redefined_operation: ast::OperationType,
+        /// Location of the root operation that reused this type
+        redefined_definition: Option<SourceSpan>,
+    },
     #[error("union member `{name}` must be an object type")]
     UnionMemberObjectType {
         /// Name of the type in the union
@@ -629,6 +642,22 @@ impl DiagnosticData {
                 report.with_help(format_args!(
                     "fragment `{name}` must be used in an operation"
                 ));
+            }
+            DiagnosticData::DuplicateRootOperationType {
+                name: _,
+                original_operation,
+                original_definition,
+                redefined_operation,
+                redefined_definition,
+            } => {
+                report.with_label_opt(
+                    *original_definition,
+                    format_args!("`{original_operation}` is defined here"),
+                );
+                report.with_label_opt(
+                    *redefined_definition,
+                    format_args!("`{redefined_operation}` uses the same type here"),
+                );
             }
             DiagnosticData::RootOperationObjectType {
                 name: _,
