@@ -60,7 +60,7 @@ pub(crate) fn validate_interface_definition(
     validate_field_definitions(diagnostics, schema, built_in_scalars, &interface.fields);
 
     // validate there is at least one field on the type
-    // https://spec.graphql.org/draft/#sel-HAHbnBFBABABxB4a
+    // https://spec.graphql.org/September2025/#sec-Interfaces.Type-Validation
     if interface.fields.is_empty() {
         diagnostics.push(
             interface.location(),
@@ -194,7 +194,7 @@ pub(crate) fn validate_implements_interfaces(
     }
 }
 
-/// GraphQL spec: [IsValidImplementationFieldType](https://spec.graphql.org/draft/#IsValidImplementationFieldType())
+/// GraphQL spec: [IsValidImplementationFieldType](https://spec.graphql.org/September2025/#IsValidImplementationFieldType())
 pub(crate) fn is_valid_implementation_field_type(
     schema: &crate::Schema,
     interface_field_type: &Type,
@@ -231,7 +231,7 @@ pub(crate) fn is_valid_implementation_field_type(
 /// Validates that fields in an implementing type have return types that are proper subtypes of
 /// the corresponding interface fields.
 ///
-/// GraphQL spec: [IsValidImplementationFieldType](https://spec.graphql.org/draft/#IsValidImplementationFieldType())
+/// GraphQL spec: [IsValidImplementationFieldType](https://spec.graphql.org/September2025/#IsValidImplementationFieldType())
 pub(crate) fn validate_implementation_field_types(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
@@ -261,6 +261,22 @@ pub(crate) fn validate_implementation_field_types(
                     },
                 );
             }
+            // https://spec.graphql.org/September2025/#IsValidImplementation()
+            // > If field is deprecated then implementedField must also be deprecated.
+            if impl_field.directives.has("deprecated")
+                && !interface_field.directives.has("deprecated")
+            {
+                diagnostics.push(
+                    impl_field.location(),
+                    DiagnosticData::DeprecatedImplementationField {
+                        name: implementor_name.clone(),
+                        interface: interface_name.name.clone(),
+                        field: field_name.clone(),
+                        field_location: impl_field.location(),
+                        interface_field_location: interface_field.location(),
+                    },
+                );
+            }
         }
     }
 }
@@ -269,7 +285,7 @@ fn is_required_argument(arg: &InputValueDefinition) -> bool {
     arg.ty.is_non_null() && arg.default_value.is_none()
 }
 
-/// GraphQL spec: [IsValidImplementation](https://spec.graphql.org/draft/#IsValidImplementation())
+/// GraphQL spec: [IsValidImplementation](https://spec.graphql.org/September2025/#IsValidImplementation())
 ///
 /// Validates that implementing field arguments satisfy the interface contract:
 /// - Every argument on the interface field must exist on the implementing field with the same type

@@ -1,0 +1,16 @@
+Error: field `Query.a` is deprecated but implements the non-deprecated interface field `I.a`
+   ╭─[ 0134_deprecated_implementation_field_type_system_document.graphql:6:3 ]
+   │
+ 6 │   a: Int @deprecated
+   │   ─────────┬────────  
+   │            ╰────────── this field is deprecated
+   │
+   ├─[ 0134_deprecated_implementation_field_type_system_document.graphql:6:3 ]
+   │
+ 2 │   a: Int
+   │   ───┬──  
+   │      ╰──── `I.a` is not deprecated
+   │ 
+   │ Help: deprecate `I.a` as well, or remove `@deprecated` from the implementing field.
+───╯
+

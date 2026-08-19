@@ -1,0 +1,23 @@
+Error: an argument `arg` is required (non-null without a default value) and must not be deprecated
+   ╭─[ 0133_deprecated_required_input_value_type_system_document.graphql:2:19 ]
+   │
+ 2 │   field(arg: Int! @deprecated, arg2: In): String
+   │         ──────────┬────┬─────  
+   │                   ╰──────────── an argument `arg` defined as required here
+   │                        │       
+   │                        ╰─────── `@deprecated` used here
+   │ 
+   │ Help: make the type nullable or add a default value, or remove `@deprecated`.
+───╯
+Error: an input object field `a` is required (non-null without a default value) and must not be deprecated
+   ╭─[ 0133_deprecated_required_input_value_type_system_document.graphql:6:11 ]
+   │
+ 6 │   a: Int! @deprecated
+   │   ─────────┬───┬─────  
+   │            ╰─────────── an input object field `a` defined as required here
+   │                │       
+   │                ╰─────── `@deprecated` used here
+   │ 
+   │ Help: make the type nullable or add a default value, or remove `@deprecated`.
+───╯
+

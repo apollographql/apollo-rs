@@ -49,8 +49,15 @@ pub(crate) fn coerce_variable_values(
             )?;
             coerced_values.insert(key.clone(), value);
         } else if let Some(default) = &variable_def.default_value {
-            let value =
-                graphql_value_to_json(&format_args!("default value of variable {name}"), default)?;
+            // https://spec.graphql.org/September2025/#sec-Coercing-Variable-Values
+            // > Let coercedDefaultValue be the result of coercing defaultValue
+            // > according to the input coercion rules of variableType.
+            let value = coerce_default_value(
+                schema,
+                &format_args!("default value of variable {name}"),
+                &variable_def.ty,
+                default,
+            )?;
             coerced_values.insert(name, value);
         } else if variable_def.ty.is_non_null() {
             return Err(InputCoercionError::ValueError {
@@ -66,6 +73,19 @@ pub(crate) fn coerce_variable_values(
         }
     }
     Ok(Valid(coerced_values))
+}
+
+/// As of September2025 default values are coerced like any other input value
+/// instead of being used verbatim, so that (for example) the defaults of
+/// nested input object fields omitted from a default value are applied.
+fn coerce_default_value(
+    schema: &Valid<Schema>,
+    description: &std::fmt::Arguments<'_>,
+    ty: &Type,
+    default: &Node<Value>,
+) -> Result<JsonValue, InputCoercionError> {
+    let value = graphql_value_to_json(description, default)?;
+    coerce_variable_value(schema, description, ty, &value)
 }
 
 fn coerce_variable_value(
@@ -86,7 +106,7 @@ fn coerce_variable_value(
     }
     let ty_name = match ty {
         Type::List(inner) | Type::NonNullList(inner) => {
-            // https://spec.graphql.org/October2021/#sec-List.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-List.Input-Coercion
             return value
                 .as_array()
                 .map(Vec::as_slice)
@@ -113,7 +133,7 @@ fn coerce_variable_value(
         }
         ExtendedType::Scalar(_) => match ty_name.as_str() {
             "Int" => {
-                // https://spec.graphql.org/October2021/#sec-Int.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-Int.Input-Coercion
                 if value
                     .as_i64()
                     .is_some_and(|value| i32::try_from(value).is_ok())
@@ -122,7 +142,7 @@ fn coerce_variable_value(
                 }
             }
             "Float" => {
-                // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
                 if value.is_f64()
                     || value
                         .as_f64()
@@ -132,19 +152,19 @@ fn coerce_variable_value(
                 }
             }
             "String" => {
-                // https://spec.graphql.org/October2021/#sec-String.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-String.Input-Coercion
                 if value.is_string() {
                     return Ok(value.clone());
                 }
             }
             "Boolean" => {
-                // https://spec.graphql.org/October2021/#sec-Boolean.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-Boolean.Input-Coercion
                 if value.is_boolean() {
                     return Ok(value.clone());
                 }
             }
             "ID" => {
-                // https://spec.graphql.org/October2021/#sec-ID.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-ID.Input-Coercion
                 if value.is_string() || value.is_i64() {
                     return Ok(value.clone());
                 }
@@ -156,7 +176,7 @@ fn coerce_variable_value(
             }
         },
         ExtendedType::Enum(ty_def) => {
-            // https://spec.graphql.org/October2021/#sec-Enums.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-Enums.Input-Coercion
             if let Some(str) = value.as_str() {
                 if ty_def.values.keys().any(|value_name| value_name == str) {
                     return Ok(value.clone());
@@ -164,7 +184,7 @@ fn coerce_variable_value(
             }
         }
         ExtendedType::InputObject(ty_def) => {
-            // https://spec.graphql.org/October2021/#sec-Input-Objects.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
             if let Some(object) = value.as_object() {
                 if let Some(key) = object
                     .keys()
@@ -218,8 +238,10 @@ fn coerce_variable_value(
                             field_value,
                         )?
                     } else if let Some(default) = &field_def.default_value {
-                        let default = graphql_value_to_json(
+                        let default = coerce_default_value(
+                            schema,
                             &format_args!("input field {ty_name}.{field_name}"),
+                            &field_def.ty,
                             default,
                         )?;
                         object.insert(field_name.as_str(), default);
@@ -299,7 +321,7 @@ fn graphql_value_to_json(
     }
 }
 
-/// <https://spec.graphql.org/October2021/#sec-Coercing-Field-Arguments>
+/// <https://spec.graphql.org/September2025/#sec-Coercing-Field-Arguments>
 pub(crate) fn coerce_argument_values(
     ctx: &mut ExecutionContext<'_>,
     path: LinkedPath<'_>,
@@ -346,12 +368,22 @@ pub(crate) fn coerce_argument_values(
             }
         }
         if let Some(default) = &arg_def.default_value {
-            let value = graphql_value_to_json(&format_args!("argument {arg_name}"), default)
-                .map_err(|err| {
-                    ctx.errors
-                        .push(err.into_execution_error(path, &ctx.document.sources));
-                    PropagateNull
-                })?;
+            // https://spec.graphql.org/September2025/#sec-Coercing-Field-Arguments
+            // > Let coercedDefaultValue be the result of coercing defaultValue
+            // > according to the input coercion rules of argumentType.
+            // > Any request error raised as a result of input coercion during
+            // > CoerceArgumentValues() should be treated instead as an execution error.
+            let value = coerce_default_value(
+                ctx.schema,
+                &format_args!("argument {arg_name}"),
+                &arg_def.ty,
+                default,
+            )
+            .map_err(|err| {
+                ctx.errors
+                    .push(err.into_execution_error(path, &ctx.document.sources));
+                PropagateNull
+            })?;
             coerced_values.insert(arg_def.name.as_str(), value);
             continue;
         }
@@ -415,7 +447,7 @@ fn coerce_argument_value(
     }
     let ty_name = match ty {
         Type::List(inner_ty) | Type::NonNullList(inner_ty) => {
-            // https://spec.graphql.org/October2021/#sec-List.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-List.Input-Coercion
             return value
                 .as_list()
                 // If not an array, treat the value as an array of size one:
@@ -438,7 +470,7 @@ fn coerce_argument_value(
     };
     match ty_def {
         ExtendedType::InputObject(ty_def) => {
-            // https://spec.graphql.org/October2021/#sec-Input-Objects.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
             if let Some(object) = value.as_object() {
                 if let Some((key, _value)) = object
                     .iter()
@@ -501,8 +533,10 @@ fn coerce_argument_value(
                         )?;
                         coerced_object.insert(field_name.as_str(), coerced_value);
                     } else if let Some(default) = &field_def.default_value {
-                        let default = graphql_value_to_json(
+                        let default = coerce_default_value(
+                            ctx.schema,
                             &format_args!("input field {ty_name}.{field_name}"),
+                            &field_def.ty,
                             default,
                         )
                         .map_err(|err| {

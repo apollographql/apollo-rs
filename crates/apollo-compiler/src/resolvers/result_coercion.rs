@@ -29,9 +29,9 @@ enum LeafOrObject<'a> {
     Object(MaybeAsync<Box<dyn AsyncObjectValue + 'a>, Box<dyn ObjectValue + 'a>>),
 }
 
-/// <https://spec.graphql.org/October2021/#CompleteValue()>
+/// <https://spec.graphql.org/September2025/#CompleteValue()>
 ///
-/// Returns `Err` for a field error being propagated upwards to find a nullable place
+/// Returns `Err` for an execution error being propagated upwards to find a nullable place
 pub(crate) async fn complete_value<'a>(
     ctx: &mut ExecutionContext<'a>,
     path: LinkedPath<'_>,
@@ -219,7 +219,7 @@ async fn complete_list_value<'a, 'b>(
             fields,
         )
         .await;
-        // On field error, try to nullify that item
+        // On execution error, try to nullify that item
         match try_nullify(inner_ty, inner_result) {
             Ok(None) => {}
             Ok(Some(inner_value)) => completed_list.push(inner_value),
@@ -235,7 +235,7 @@ fn complete_leaf_value(
     path: LinkedPath<'_>,
     ty_name: &crate::Name,
     ty_def: &ExtendedType,
-    json_value: JsonValue,
+    mut json_value: JsonValue,
     fields: &[&Field],
 ) -> Result<Option<JsonValue>, PropagateNull> {
     let location = fields[0].name.location();
@@ -260,7 +260,7 @@ fn complete_leaf_value(
             )
         }
         ExtendedType::Enum(enum_def) => {
-            // https://spec.graphql.org/October2021/#sec-Enums.Result-Coercion
+            // https://spec.graphql.org/September2025/#sec-Enums.Result-Coercion
             if !json_value
                 .as_str()
                 .is_some_and(|str| enum_def.values.contains_key(str))
@@ -270,7 +270,7 @@ fn complete_leaf_value(
         }
         ExtendedType::Scalar(_) => match ty_name.as_str() {
             "Int" => {
-                // https://spec.graphql.org/October2021/#sec-Int.Result-Coercion
+                // https://spec.graphql.org/September2025/#sec-Int.Result-Coercion
                 // > GraphQL services may coerce non-integer internal values to integers
                 // > when reasonable without losing information
                 //
@@ -284,25 +284,29 @@ fn complete_leaf_value(
                 }
             }
             "Float"
-                // https://spec.graphql.org/October2021/#sec-Float.Result-Coercion
+                // https://spec.graphql.org/September2025/#sec-Float.Result-Coercion
                 if !json_value.is_f64() => {
                     execution_error!("resolver returned {json_value}, expected Float")
                 }
             "String"
-                // https://spec.graphql.org/October2021/#sec-String.Result-Coercion
+                // https://spec.graphql.org/September2025/#sec-String.Result-Coercion
                 if !json_value.is_string() => {
                     execution_error!("resolver returned {json_value}, expected String")
                 }
             "Boolean"
-                // https://spec.graphql.org/October2021/#sec-Boolean.Result-Coercion
+                // https://spec.graphql.org/September2025/#sec-Boolean.Result-Coercion
                 if !json_value.is_boolean() => {
                     execution_error!("resolver returned {json_value}, expected Boolean")
                 }
-            "ID"
-                // https://spec.graphql.org/October2021/#sec-ID.Result-Coercion
-                if !(json_value.is_string() || json_value.is_i64()) => {
+            "ID" => {
+                // https://spec.graphql.org/September2025/#sec-ID
+                // > While it is often numeric, it must always serialize as a String.
+                if let Some(int) = json_value.as_i64() {
+                    json_value = JsonValue::String(int.to_string().into());
+                } else if !json_value.is_string() {
                     execution_error!("resolver returned {json_value}, expected ID")
                 }
+            }
             _ => {
                 // Custom scalar: accept any JSON value (including an array or object,
                 // despite this being a "leaf" as far as GraphQL resolution is concerned)

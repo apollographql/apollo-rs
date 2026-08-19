@@ -11,7 +11,7 @@ use crate::validation::RecursionStack;
 use crate::Name;
 use crate::Node;
 
-// Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
+// Implements [Circular References](https://spec.graphql.org/September2025/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.
 struct FindRecursiveInputValue<'a> {
     schema: &'a crate::Schema,
@@ -252,7 +252,7 @@ pub(crate) fn validate_input_object_definition(
     );
 
     // validate there is at least one input value on the input object type
-    // https://spec.graphql.org/draft/#sel-HAHhBXDBABAB5BvgD
+    // https://spec.graphql.org/September2025/#sec-Input-Objects.Type-Validation
     if input_object.fields.is_empty() {
         diagnostics.push(
             input_object.location(),
@@ -327,6 +327,21 @@ pub(crate) fn validate_input_value_definitions(
             directive_location,
             Default::default(), // No variables in an input value definition
         );
+        // https://spec.graphql.org/September2025/#sec--deprecated
+        // > The @deprecated directive must not appear on required (non-null
+        // > without a default) arguments or input object field definitions.
+        if input_value.ty.is_non_null() && input_value.default_value.is_none() {
+            if let Some(deprecated) = input_value.directives.get("deprecated") {
+                diagnostics.push(
+                    deprecated.location(),
+                    DiagnosticData::DeprecatedRequiredInputValue {
+                        name: input_value.name.clone(),
+                        describe,
+                        definition_location: input_value.location(),
+                    },
+                );
+            }
+        }
         // Input values must only contain input types.
         let loc = input_value.location();
         let named_type = input_value.ty.inner_named_type();
