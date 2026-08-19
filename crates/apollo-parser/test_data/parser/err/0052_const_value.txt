@@ -2,7 +2,7 @@
     - OPERATION_DEFINITION@0..113
         - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
-        - VARIABLE_DEFINITIONS@5..55
+        - VARIABLES_DEFINITION@5..55
             - L_PAREN@5..6 "("
             - WHITESPACE@6..11 "\n    "
             - VARIABLE_DEFINITION@11..26

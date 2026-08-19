@@ -49,8 +49,15 @@ pub(crate) fn coerce_variable_values(
             )?;
             coerced_values.insert(key.clone(), value);
         } else if let Some(default) = &variable_def.default_value {
-            let value =
-                graphql_value_to_json(&format_args!("default value of variable {name}"), default)?;
+            // https://spec.graphql.org/September2025/#sec-Coercing-Variable-Values
+            // > Let coercedDefaultValue be the result of coercing defaultValue
+            // > according to the input coercion rules of variableType.
+            let value = coerce_default_value(
+                schema,
+                &format_args!("default value of variable {name}"),
+                &variable_def.ty,
+                default,
+            )?;
             coerced_values.insert(name, value);
         } else if variable_def.ty.is_non_null() {
             return Err(InputCoercionError::ValueError {
@@ -66,6 +73,19 @@ pub(crate) fn coerce_variable_values(
         }
     }
     Ok(Valid(coerced_values))
+}
+
+/// As of September2025 default values are coerced like any other input value
+/// instead of being used verbatim, so that (for example) the defaults of
+/// nested input object fields omitted from a default value are applied.
+fn coerce_default_value(
+    schema: &Valid<Schema>,
+    description: &std::fmt::Arguments<'_>,
+    ty: &Type,
+    default: &Node<Value>,
+) -> Result<JsonValue, InputCoercionError> {
+    let value = graphql_value_to_json(description, default)?;
+    coerce_variable_value(schema, description, ty, &value)
 }
 
 fn coerce_variable_value(
@@ -86,7 +106,7 @@ fn coerce_variable_value(
     }
     let ty_name = match ty {
         Type::List(inner) | Type::NonNullList(inner) => {
-            // https://spec.graphql.org/October2021/#sec-List.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-List.Input-Coercion
             return value
                 .as_array()
                 .map(Vec::as_slice)
@@ -113,7 +133,7 @@ fn coerce_variable_value(
         }
         ExtendedType::Scalar(_) => match ty_name.as_str() {
             "Int" => {
-                // https://spec.graphql.org/October2021/#sec-Int.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-Int.Input-Coercion
                 if value
                     .as_i64()
                     .is_some_and(|value| i32::try_from(value).is_ok())
@@ -122,29 +142,29 @@ fn coerce_variable_value(
                 }
             }
             "Float" => {
-                // https://spec.graphql.org/October2021/#sec-Float.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-Float.Input-Coercion
                 if value.is_f64()
                     || value
                         .as_f64()
-                        .is_some_and(|f| f.abs() < MAX_SAFE_INT as f64)
+                        .is_some_and(|f| f.abs() <= MAX_SAFE_INT as f64)
                 {
                     return Ok(value.clone());
                 }
             }
             "String" => {
-                // https://spec.graphql.org/October2021/#sec-String.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-String.Input-Coercion
                 if value.is_string() {
                     return Ok(value.clone());
                 }
             }
             "Boolean" => {
-                // https://spec.graphql.org/October2021/#sec-Boolean.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-Boolean.Input-Coercion
                 if value.is_boolean() {
                     return Ok(value.clone());
                 }
             }
             "ID" => {
-                // https://spec.graphql.org/October2021/#sec-ID.Input-Coercion
+                // https://spec.graphql.org/September2025/#sec-ID.Input-Coercion
                 if value.is_string() || value.is_i64() {
                     return Ok(value.clone());
                 }
@@ -156,7 +176,7 @@ fn coerce_variable_value(
             }
         },
         ExtendedType::Enum(ty_def) => {
-            // https://spec.graphql.org/October2021/#sec-Enums.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-Enums.Input-Coercion
             if let Some(str) = value.as_str() {
                 if ty_def.values.keys().any(|value_name| value_name == str) {
                     return Ok(value.clone());
@@ -164,7 +184,7 @@ fn coerce_variable_value(
             }
         }
         ExtendedType::InputObject(ty_def) => {
-            // https://spec.graphql.org/October2021/#sec-Input-Objects.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
             if let Some(object) = value.as_object() {
                 if let Some(key) = object
                     .keys()
@@ -218,8 +238,10 @@ fn coerce_variable_value(
                             field_value,
                         )?
                     } else if let Some(default) = &field_def.default_value {
-                        let default = graphql_value_to_json(
+                        let default = coerce_default_value(
+                            schema,
                             &format_args!("input field {ty_name}.{field_name}"),
+                            &field_def.ty,
                             default,
                         )?;
                         object.insert(field_name.as_str(), default);
@@ -257,20 +279,48 @@ fn coerce_variable_value(
     })
 }
 
+/// Converts a constant GraphQL value (like a default value) to JSON.
+///
+/// Values from a `Valid` document do not contain variables in const positions.
 fn graphql_value_to_json(
     description: &std::fmt::Arguments<'_>,
     value: &Node<Value>,
 ) -> Result<JsonValue, InputCoercionError> {
+    graphql_literal_to_json(description, value, None)
+}
+
+/// Converts a GraphQL value to JSON.
+///
+/// `variable_values` is `Some` when converting an argument literal from an
+/// executable document, where a custom scalar value may contain nested variables
+/// to substitute with their runtime values.
+/// It is `None` for const values (like default values), where validation
+/// guarantees the absence of variables.
+fn graphql_literal_to_json(
+    description: &std::fmt::Arguments<'_>,
+    value: &Node<Value>,
+    variable_values: Option<&Valid<JsonMap>>,
+) -> Result<JsonValue, InputCoercionError> {
     match value.as_ref() {
         Value::Null => Ok(JsonValue::Null),
-        Value::Variable(_) => {
-            // TODO: separate `ContValue` enum without this variant?
-            Err(InputCoercionError::SuspectedValidationBug(
-                SuspectedValidationBug {
-                    message: format!("variable in default value of {description}."),
-                    location: value.location(),
-                },
-            ))
+        Value::Variable(var_name) => {
+            if let Some(variable_values) = variable_values {
+                // A variable nested inside a custom scalar literal is replaced
+                // with its runtime value; with no runtime value it becomes null
+                // (like a missing list item in graphql-js).
+                Ok(variable_values
+                    .get(var_name.as_str())
+                    .cloned()
+                    .unwrap_or(JsonValue::Null))
+            } else {
+                // TODO: separate `ContValue` enum without this variant?
+                Err(InputCoercionError::SuspectedValidationBug(
+                    SuspectedValidationBug {
+                        message: format!("variable in default value of {description}."),
+                        location: value.location(),
+                    },
+                ))
+            }
         }
         Value::Enum(value) => Ok(value.as_str().into()),
         Value::String(value) => Ok(value.as_str().into()),
@@ -290,16 +340,31 @@ fn graphql_value_to_json(
         })?)),
         Value::List(value) => value
             .iter()
-            .map(|value| graphql_value_to_json(description, value))
+            .map(|value| graphql_literal_to_json(description, value, variable_values))
             .collect(),
         Value::Object(value) => value
             .iter()
-            .map(|(key, value)| Ok((key.as_str(), graphql_value_to_json(description, value)?)))
+            .filter(|(_key, value)| {
+                // An entry whose value is a variable with no runtime value
+                // is omitted entirely, like in graphql-js
+                match (value.as_ref(), variable_values) {
+                    (Value::Variable(var_name), Some(variable_values)) => {
+                        variable_values.contains_key(var_name.as_str())
+                    }
+                    _ => true,
+                }
+            })
+            .map(|(key, value)| {
+                Ok((
+                    key.as_str(),
+                    graphql_literal_to_json(description, value, variable_values)?,
+                ))
+            })
             .collect(),
     }
 }
 
-/// <https://spec.graphql.org/October2021/#sec-Coercing-Field-Arguments>
+/// <https://spec.graphql.org/September2025/#sec-Coercing-Field-Arguments>
 pub(crate) fn coerce_argument_values(
     ctx: &mut ExecutionContext<'_>,
     path: LinkedPath<'_>,
@@ -313,7 +378,7 @@ pub(crate) fn coerce_argument_values(
             if let Value::Variable(var_name) = arg.value.as_ref() {
                 if let Some(var_value) = ctx.variable_values.get(var_name.as_str()) {
                     if var_value.is_null() && arg_def.ty.is_non_null() {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!("null value for non-nullable argument {arg_name}"),
                             path,
                             arg_def.location(),
@@ -326,7 +391,7 @@ pub(crate) fn coerce_argument_values(
                     }
                 }
             } else if arg.value.is_null() && arg_def.ty.is_non_null() {
-                ctx.errors.push(GraphQLError::field_error(
+                ctx.errors.push(GraphQLError::execution_error(
                     format!("null value for non-nullable argument {arg_name}"),
                     path,
                     arg_def.location(),
@@ -346,17 +411,27 @@ pub(crate) fn coerce_argument_values(
             }
         }
         if let Some(default) = &arg_def.default_value {
-            let value = graphql_value_to_json(&format_args!("argument {arg_name}"), default)
-                .map_err(|err| {
-                    ctx.errors
-                        .push(err.into_field_error(path, &ctx.document.sources));
-                    PropagateNull
-                })?;
+            // https://spec.graphql.org/September2025/#sec-Coercing-Field-Arguments
+            // > Let coercedDefaultValue be the result of coercing defaultValue
+            // > according to the input coercion rules of argumentType.
+            // > Any request error raised as a result of input coercion during
+            // > CoerceArgumentValues() should be treated instead as an execution error.
+            let value = coerce_default_value(
+                ctx.schema,
+                &format_args!("argument {arg_name}"),
+                &arg_def.ty,
+                default,
+            )
+            .map_err(|err| {
+                ctx.errors
+                    .push(err.into_execution_error(path, &ctx.document.sources));
+                PropagateNull
+            })?;
             coerced_values.insert(arg_def.name.as_str(), value);
             continue;
         }
         if arg_def.ty.is_non_null() {
-            ctx.errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("missing value for required argument {arg_name}"),
                 path,
                 arg_def.location(),
@@ -377,7 +452,7 @@ fn coerce_argument_value(
 ) -> Result<JsonValue, PropagateNull> {
     if value.is_null() {
         if ty.is_non_null() {
-            ctx.errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("null value for non-null {description}"),
                 path,
                 value.location(),
@@ -391,7 +466,7 @@ fn coerce_argument_value(
     if let Some(var_name) = value.as_variable() {
         if let Some(var_value) = ctx.variable_values.get(var_name.as_str()) {
             if var_value.is_null() && ty.is_non_null() {
-                ctx.errors.push(GraphQLError::field_error(
+                ctx.errors.push(GraphQLError::execution_error(
                     format!("null variable value for non-null {description}"),
                     path,
                     value.location(),
@@ -402,7 +477,7 @@ fn coerce_argument_value(
                 return Ok(var_value.clone());
             }
         } else if ty.is_non_null() {
-            ctx.errors.push(GraphQLError::field_error(
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("missing variable for non-null {description}"),
                 path,
                 value.location(),
@@ -415,7 +490,7 @@ fn coerce_argument_value(
     }
     let ty_name = match ty {
         Type::List(inner_ty) | Type::NonNullList(inner_ty) => {
-            // https://spec.graphql.org/October2021/#sec-List.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-List.Input-Coercion
             return value
                 .as_list()
                 // If not an array, treat the value as an array of size one:
@@ -432,19 +507,19 @@ fn coerce_argument_value(
                 message: format!("undefined type {ty_name} for {description}"),
                 location: value.location(),
             }
-            .into_field_error(&ctx.document.sources, path),
+            .into_execution_error(&ctx.document.sources, path),
         );
         return Err(PropagateNull);
     };
     match ty_def {
         ExtendedType::InputObject(ty_def) => {
-            // https://spec.graphql.org/October2021/#sec-Input-Objects.Input-Coercion
+            // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
             if let Some(object) = value.as_object() {
                 if let Some((key, _value)) = object
                     .iter()
                     .find(|(key, _value)| !ty_def.fields.contains_key(key))
                 {
-                    ctx.errors.push(GraphQLError::field_error(
+                    ctx.errors.push(GraphQLError::execution_error(
                         format!("input object has key {key} not in type {ty_name}",),
                         path,
                         value.location(),
@@ -461,7 +536,7 @@ fn coerce_argument_value(
                         .filter(|(k, _)| ty_def.fields.contains_key(k))
                         .count();
                     if provided_count != 1 {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!(
                                 "@oneOf input object '{ty_name}' must specify exactly one key, \
                                  but {provided_count} were given",
@@ -474,7 +549,7 @@ fn coerce_argument_value(
                     }
                     if let Some((field_name, field_value)) = object.iter().next() {
                         if field_value.is_null() {
-                            ctx.errors.push(GraphQLError::field_error(
+                            ctx.errors.push(GraphQLError::execution_error(
                                 format!(
                                     "@oneOf input object '{ty_name}' field '{field_name}' \
                                      must be non-null"
@@ -491,7 +566,16 @@ fn coerce_argument_value(
                 let object: HashMap<_, _> = object.iter().map(|(k, v)| (k, v)).collect();
                 let mut coerced_object = JsonMap::new();
                 for (field_name, field_def) in &ty_def.fields {
-                    if let Some(field_value) = object.get(field_name) {
+                    // A field whose value is a variable with no runtime value
+                    // behaves as if the field was not provided at all:
+                    // fall back to the field’s default value, or omit the entry.
+                    // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
+                    let provided_value = object.get(field_name).copied().filter(|value| {
+                        value
+                            .as_variable()
+                            .is_none_or(|var| ctx.variable_values.contains_key(var.as_str()))
+                    });
+                    if let Some(field_value) = provided_value {
                         let coerced_value = coerce_argument_value(
                             ctx,
                             path,
@@ -501,18 +585,20 @@ fn coerce_argument_value(
                         )?;
                         coerced_object.insert(field_name.as_str(), coerced_value);
                     } else if let Some(default) = &field_def.default_value {
-                        let default = graphql_value_to_json(
+                        let default = coerce_default_value(
+                            ctx.schema,
                             &format_args!("input field {ty_name}.{field_name}"),
+                            &field_def.ty,
                             default,
                         )
                         .map_err(|err| {
                             ctx.errors
-                                .push(err.into_field_error(path, &ctx.document.sources));
+                                .push(err.into_execution_error(path, &ctx.document.sources));
                             PropagateNull
                         })?;
                         coerced_object.insert(field_name.as_str(), default);
                     } else if field_def.ty.is_non_null() {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!(
                                 "Missing value for non-null input object field {ty_name}.{field_name}"
                             ),
@@ -532,7 +618,7 @@ fn coerce_argument_value(
                     let non_null_count =
                         coerced_object.iter().filter(|(_, v)| !v.is_null()).count();
                     if non_null_count != 1 {
-                        ctx.errors.push(GraphQLError::field_error(
+                        ctx.errors.push(GraphQLError::execution_error(
                             format!(
                                 "@oneOf input object '{ty_name}' must have exactly one non-null \
                                  field, but {non_null_count} {} given",
@@ -549,15 +635,18 @@ fn coerce_argument_value(
             }
         }
         _ => {
-            // For scalar and enums, rely and validation and just convert between Rust types
-            return graphql_value_to_json(description, value).map_err(|err| {
-                ctx.errors
-                    .push(err.into_field_error(path, &ctx.document.sources));
-                PropagateNull
-            });
+            // For scalars and enums, rely on validation and just convert between Rust types,
+            // substituting any variables nested inside custom scalar literals
+            return graphql_literal_to_json(description, value, Some(ctx.variable_values)).map_err(
+                |err| {
+                    ctx.errors
+                        .push(err.into_execution_error(path, &ctx.document.sources));
+                    PropagateNull
+                },
+            );
         }
     }
-    ctx.errors.push(GraphQLError::field_error(
+    ctx.errors.push(GraphQLError::execution_error(
         format!("could not coerce {description}: {value} to type {ty_name}"),
         path,
         value.location(),
@@ -573,15 +662,15 @@ impl From<SuspectedValidationBug> for InputCoercionError {
 }
 
 impl InputCoercionError {
-    pub(crate) fn into_field_error(
+    pub(crate) fn into_execution_error(
         self,
         path: LinkedPath<'_>,
         sources: &SourceMap,
     ) -> GraphQLError {
         match self {
-            Self::SuspectedValidationBug(s) => s.into_field_error(sources, path),
+            Self::SuspectedValidationBug(s) => s.into_execution_error(sources, path),
             Self::ValueError { message, location } => {
-                GraphQLError::field_error(message, path, location, sources)
+                GraphQLError::execution_error(message, path, location, sources)
             }
         }
     }

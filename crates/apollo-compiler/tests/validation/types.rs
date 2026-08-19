@@ -94,7 +94,6 @@ const GRAPHQL_JS_TEST_SCHEMA: &str = r#"
     stringListArgField(stringListArg: [String]): String
     stringListNonNullArgField(stringListNonNullArg: [String!]): String
     complexArgField(complexArg: ComplexInput): String
-    oneOfArgField(oneOfArg: OneOfInput): String
     multipleReqs(req1: Int!, req2: Int!): String
     nonNullFieldWithDefault(arg: Int! = 0): String
     multipleOpts(opt1: Int = 0, opt2: Int = 0): String
@@ -1326,9 +1325,9 @@ mod invalid_non_nullable_values {
                     │                        ──┬──  
                     │                          ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:88:34 ]
+                    ├─[ schema.graphql:87:34 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                                  ──┬─  
                     │                                    ╰─── expected type declared here as Int!
                 ────╯
@@ -1339,9 +1338,9 @@ mod invalid_non_nullable_values {
                     │                                     ──┬──  
                     │                                       ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:88:22 ]
+                    ├─[ schema.graphql:87:22 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                      ──┬─  
                     │                        ╰─── expected type declared here as Int!
                 ────╯
@@ -1367,9 +1366,9 @@ mod invalid_non_nullable_values {
                     │     ────────────┬────────────  
                     │                 ╰────────────── missing value for argument `req2`
                     │
-                    ├─[ schema.graphql:88:28 ]
+                    ├─[ schema.graphql:87:28 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                            ─────┬────  
                     │                                 ╰────── argument defined here
                 ────╯
@@ -1380,9 +1379,9 @@ mod invalid_non_nullable_values {
                     │                        ──┬──  
                     │                          ╰──── provided value is a string
                     │
-                    ├─[ schema.graphql:88:22 ]
+                    ├─[ schema.graphql:87:22 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                      ──┬─  
                     │                        ╰─── expected type declared here as Int!
                 ────╯
@@ -1408,9 +1407,9 @@ mod invalid_non_nullable_values {
                     │     ────────────┬───────────  
                     │                 ╰───────────── missing value for argument `req1`
                     │
-                    ├─[ schema.graphql:88:16 ]
+                    ├─[ schema.graphql:87:16 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                ─────┬────  
                     │                     ╰────── argument defined here
                 ────╯
@@ -1421,9 +1420,9 @@ mod invalid_non_nullable_values {
                     │     ────────────┬───────────  
                     │                 ╰───────────── missing value for argument `req2`
                     │
-                    ├─[ schema.graphql:88:28 ]
+                    ├─[ schema.graphql:87:28 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                            ─────┬────  
                     │                                 ╰────── argument defined here
                 ────╯
@@ -1434,9 +1433,9 @@ mod invalid_non_nullable_values {
                     │                        ──┬─  
                     │                          ╰─── provided value is null
                     │
-                    ├─[ schema.graphql:88:22 ]
+                    ├─[ schema.graphql:87:22 ]
                     │
-                 88 │   multipleReqs(req1: Int!, req2: Int!): String
+                 87 │   multipleReqs(req1: Int!, req2: Int!): String
                     │                      ──┬─  
                     │                        ╰─── expected type declared here as Int!
                 ────╯

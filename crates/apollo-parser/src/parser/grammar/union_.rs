@@ -11,7 +11,7 @@ use crate::TokenKind;
 use crate::S;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#UnionTypeDefinition
+/// See: https://spec.graphql.org/September2025/#UnionTypeDefinition
 ///
 /// *UnionTypeDefinition*:
 ///     Description? **union** Name Directives[Const]? UnionDefMemberTypes?
@@ -40,7 +40,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#UnionTypeExtension
+/// See: https://spec.graphql.org/September2025/#UnionTypeExtension
 ///
 /// *UnionTypeExtension*:
 ///     **extend** **union** Name Directives[Const]? UnionDefMemberTypes
@@ -72,7 +72,7 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#UnionMemberTypes
+/// See: https://spec.graphql.org/September2025/#UnionMemberTypes
 ///
 /// *UnionMemberTypes*:
 ///     **=** **|**? NamedType

@@ -9,7 +9,7 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#Argument
+/// See: https://spec.graphql.org/September2025/#Argument
 ///
 /// *Argument[Const]*:
 ///    Name **:** Value[?Const]
@@ -22,7 +22,7 @@ pub(crate) fn argument(p: &mut Parser, constness: Constness) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#Arguments
+/// See: https://spec.graphql.org/September2025/#Arguments
 ///
 /// *Arguments[Const]*:
 ///    **(** Argument[?Const]* **)**
@@ -40,7 +40,7 @@ pub(crate) fn arguments(p: &mut Parser, constness: Constness) {
     p.expect(T![')'], S![')']);
 }
 
-/// See: https://spec.graphql.org/October2021/#ArgumentsDefinition
+/// See: https://spec.graphql.org/September2025/#ArgumentsDefinition
 ///
 /// *ArgumentsDefinition*:
 ///     **(** InputValueDefinition* **)**

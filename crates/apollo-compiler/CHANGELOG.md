@@ -47,9 +47,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2026-mm-dd
 
-> Important: 1 breaking change below, indicated by **BREAKING**
+> Important: 3 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
+
+- **Rename APIs to follow September 2025 specification terminology**
+
+  * `executable::Field::response_key()` is now `response_name()`, following
+    the spec's "response key" → "response name" rename.
+  * `resolvers::FieldError` is now `resolvers::ExecutionError`, following the
+    spec's "field error" → "execution error" rename.
 
 - **Add `description` fields to executable definition types - [goto-bus-stop], [pull/974]**
 
@@ -67,7 +74,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `description: None` (or a description!). A description on a query shorthand
   (bare braced selection set) is a parse error.
 
+- **September 2025 validation and execution rules**
+
+  * Default values of arguments and input object fields are now validated
+    against their type's input coercion rules ([issue/928]), and
+    `InputObjectDefaultValueHasCycle` rejects cyclic default values.
+  * `@deprecated` must not appear on required (non-null without a default)
+    arguments or input object fields.
+  * `IsValidImplementation`: an implementing field must not be deprecated when
+    the interface field it implements is not deprecated.
+  * At execution time, default values are coerced (applying defaults of nested
+    input object fields) instead of being used verbatim.
+  * `ID` results that are numeric are serialized as strings.
+
+[issue/928]: https://github.com/apollographql/apollo-rs/issues/928
+
 ## Features
+
+- **Built-in schema follows the September 2025 specification**
+
+  * `includeDeprecated` introspection arguments are now non-null
+    `Boolean! = false`.
+  * `@deprecated` is now declared with `reason: String!`, so explicit
+    `reason: null` arguments are no longer valid.
+
+  Spec documentation links throughout the crate now point to the
+  [September 2025](https://spec.graphql.org/September2025/) edition.
 
 - **Validate `@defer` directive usage - [duckki], [pull/1069]**
 
@@ -88,12 +120,45 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `@defer` is not a built-in directive in apollo-compiler, so a schema using it
   must declare the directive. `@stream` is out of scope.
 
+## Fixes
+
+- **Align resolver-based execution and input coercion with the GraphQL spec - [duckki], [pull/1089]**
+
+  Fixes several spec conformance issues in `apollo_compiler::resolvers`
+  execution, found by auditing it against the GraphQL specification and the
+  graphql-js reference implementation:
+
+  - An input object field whose value is a variable with no runtime value now
+    uses the field’s default value, or is omitted when it has no default.
+    Previously the field was set to explicit `null`, which is semantically
+    different and skipped defaults.
+  - A resolver error for a list item with a nullable item type now nullifies
+    only that item instead of the whole list. Items with non-null types still
+    propagate the error to the list position.
+  - Variables nested inside custom scalar argument literals (like
+    `arg: {id: $var}` for a JSON-like scalar) are now replaced with their
+    runtime values. Previously they raised a spurious execution error flagged
+    as a suspected validation bug.
+  - A `@skip` or `@include` directive whose `if` argument resolves to `null`
+    (possible with a nullable variable that has a non-null default value) now
+    raises an execution error, like in graphql-js. Previously the directive
+    was silently ignored.
+  - Integer variable values for `Float` inputs are now accepted up to and
+    including 2⁵³ − 1, the largest integer magnitude that is exactly
+    representable as an IEEE 754 double. The boundary value was previously
+    rejected by an off-by-one.
+
+  Also documents that execution of remaining sibling fields and list items is
+  canceled when an execution error propagates through a non-null position,
+  matching graphql-js.
+
 [graphql-spec#1110]: https://github.com/graphql/graphql-spec/pull/1110
 [graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
 [duckki]: https://github.com/duckki
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/1069]: https://github.com/apollographql/apollo-rs/pull/1069
 [pull/974]: https://github.com/apollographql/apollo-rs/pull/974
+[pull/1089]: https://github.com/apollographql/apollo-rs/pull/1089
 
 # [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
 

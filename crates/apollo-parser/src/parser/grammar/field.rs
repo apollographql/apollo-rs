@@ -14,7 +14,7 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#Field
+/// See: https://spec.graphql.org/September2025/#Field
 ///
 /// *Field*:
 ///     Alias? Name Arguments? Directives? SelectionSet?
@@ -43,7 +43,7 @@ pub(crate) fn field(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#FieldsDefinition
+/// See: https://spec.graphql.org/September2025/#FieldsDefinition
 ///
 /// *FieldsDefinition*:
 ///     **{** FieldDefinition* **}**
@@ -66,7 +66,7 @@ pub(crate) fn fields_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/October2021/#FieldDefinition
+/// See: https://spec.graphql.org/September2025/#FieldDefinition
 ///
 /// *FieldDefinition*:
 ///     Description? Name ArgumentsDefinition? **:** Type Directives[Const]?

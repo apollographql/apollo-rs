@@ -1,8 +1,9 @@
-//! Parsing and printing for schema coordinates as described in [the RFC].
+//! Parsing and printing for [schema coordinates] as standardized in the
+//! September 2025 edition of the GraphQL specification.
 //!
 //! Schema coordinates uniquely point to an item defined in a schema.
 //!
-//! [the RFC]: https://github.com/graphql/graphql-wg/blob/main/rfcs/SchemaCoordinates.md
+//! [schema coordinates]: https://spec.graphql.org/September2025/#sec-Schema-Coordinates
 
 use crate::schema::Component;
 use crate::schema::DirectiveDefinition;

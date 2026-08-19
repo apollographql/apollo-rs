@@ -171,9 +171,13 @@
                   "name": "includeDeprecated",
                   "description": null,
                   "type": {
-                    "kind": "SCALAR",
-                    "name": "Boolean",
-                    "ofType": null
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
                   },
                   "defaultValue": "false",
                   "isDeprecated": false,
@@ -244,9 +248,13 @@
                   "name": "includeDeprecated",
                   "description": null,
                   "type": {
-                    "kind": "SCALAR",
-                    "name": "Boolean",
-                    "ofType": null
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
                   },
                   "defaultValue": "false",
                   "isDeprecated": false,
@@ -277,9 +285,13 @@
                   "name": "includeDeprecated",
                   "description": null,
                   "type": {
-                    "kind": "SCALAR",
-                    "name": "Boolean",
-                    "ofType": null
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
                   },
                   "defaultValue": "false",
                   "isDeprecated": false,
@@ -444,9 +456,13 @@
                   "name": "includeDeprecated",
                   "description": null,
                   "type": {
-                    "kind": "SCALAR",
-                    "name": "Boolean",
-                    "ofType": null
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
                   },
                   "defaultValue": "false",
                   "isDeprecated": false,
@@ -750,9 +766,13 @@
                   "name": "includeDeprecated",
                   "description": null,
                   "type": {
-                    "kind": "SCALAR",
-                    "name": "Boolean",
-                    "ofType": null
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Boolean",
+                      "ofType": null
+                    }
                   },
                   "defaultValue": "false",
                   "isDeprecated": false,
@@ -1050,7 +1070,7 @@
                 "ofType": null
               },
               "isDeprecated": true,
-              "deprecationReason": null
+              "deprecationReason": "No longer supported"
             }
           ],
           "inputFields": null,
@@ -1107,17 +1127,13 @@
               "name": "a",
               "description": null,
               "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                }
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
               },
               "defaultValue": null,
               "isDeprecated": true,
-              "deprecationReason": null
+              "deprecationReason": "No longer supported"
             },
             {
               "name": "b",
@@ -1283,9 +1299,13 @@
               "name": "reason",
               "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).",
               "type": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
               },
               "defaultValue": "\"No longer supported\"",
               "isDeprecated": false,

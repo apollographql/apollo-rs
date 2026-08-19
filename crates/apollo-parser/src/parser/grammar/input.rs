@@ -11,7 +11,7 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#InputObjectTypeDefinition
+/// See: https://spec.graphql.org/September2025/#InputObjectTypeDefinition
 ///
 /// *InputObjectTypeDefinition*:
 ///     Description? **input** Name Directives[Const]? InputFieldsDefinition?
@@ -41,7 +41,7 @@ pub(crate) fn input_object_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#InputObjectTypeExtension
+/// See: https://spec.graphql.org/September2025/#InputObjectTypeExtension
 ///
 /// *InputObjectTypeExtension*:
 ///     **extend** **input** Name Directives[Const]? InputFieldsDefinition
@@ -73,7 +73,7 @@ pub(crate) fn input_object_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#InputFieldsDefinition
+/// See: https://spec.graphql.org/September2025/#InputFieldsDefinition
 ///
 /// *InputFieldsDefinition*:
 ///     **{** InputValueDefinition* **}**
@@ -97,7 +97,7 @@ pub(crate) fn input_fields_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/October2021/#InputValueDefinition
+/// See: https://spec.graphql.org/September2025/#InputValueDefinition
 ///
 /// *InputValueDefinition*:
 ///     Description? Name **:** Type DefaultValue? Directives[Const]?

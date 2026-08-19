@@ -15,7 +15,7 @@
 //!   fields defined in the same extension but not other fields of the object type.)
 //!   See [`Component`].
 //!
-//! [type system extensions]: https://spec.graphql.org/draft/#sec-Type-System-Extensions
+//! [type system extensions]: https://spec.graphql.org/September2025/#sec-Type-System-Extensions
 //!
 //! In some cases like [`SchemaDefinition`], this module and the [`ast`] module
 //! define different Rust types with the same names.
@@ -51,7 +51,7 @@
 //! If there is no mutation needed between parsing and validation,
 //! [`Schema::parse_and_validate`] does both in one step.
 //!
-//! [Type System]: https://spec.graphql.org/draft/#sec-Type-System
+//! [Type System]: https://spec.graphql.org/September2025/#sec-Type-System
 //!
 //! ## Serialization
 //!
@@ -116,11 +116,11 @@ pub struct Schema {
     ///
     /// * Explict types in parsed input files or added programatically.
     ///
-    /// * [Schema-introspection](https://spec.graphql.org/draft/#sec-Schema-Introspection)
+    /// * [Schema-introspection](https://spec.graphql.org/September2025/#sec-Schema-Introspection)
     ///   types such as `__Schema`, `__Field`, etc.
     ///
     /// * When a `Schema` is initially created or parsed,
-    ///   all [Built-in scalars](https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars).
+    ///   all [Built-in scalars](https://spec.graphql.org/September2025/#sec-Scalars.Built-in-Scalars).
     ///   After validation, the Rust `types` map in a `Valid<Schema>` only contains
     ///   built-in scalar definitions for scalars that are used in the schema.
     ///   We reflect in this Rust API the behavior of `__Schema.types` in GraphQL introspection.
@@ -134,7 +134,7 @@ pub struct Schema {
     pub(crate) validate_default_values: bool,
 }
 
-/// The [`schema` definition](https://spec.graphql.org/draft/#sec-Schema) and its extensions,
+/// The [`schema` definition](https://spec.graphql.org/September2025/#sec-Schema) and its extensions,
 /// defining root operations
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
@@ -151,7 +151,7 @@ pub struct SchemaDefinition {
     pub subscription: Option<ComponentName>,
 }
 
-/// The list of [_Directives_](https://spec.graphql.org/draft/#Directives)
+/// The list of [_Directives_](https://spec.graphql.org/September2025/#Directives)
 /// of a GraphQL type or `schema`, each either from the “main” definition or from an extension.
 ///
 /// Like [`ast::DirectiveList`] (a different Rust type with the same name),
@@ -176,7 +176,7 @@ pub enum ExtendedType {
     InputObject(Node<InputObjectType>),
 }
 
-/// The definition of a [scalar type](https://spec.graphql.org/draft/#sec-Scalars),
+/// The definition of a [scalar type](https://spec.graphql.org/September2025/#sec-Scalars),
 /// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
@@ -185,7 +185,7 @@ pub struct ScalarType {
     pub directives: DirectiveList,
 }
 
-/// The definition of an [object type](https://spec.graphql.org/draft/#sec-Objects),
+/// The definition of an [object type](https://spec.graphql.org/September2025/#sec-Objects),
 /// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
@@ -216,7 +216,7 @@ pub struct InterfaceType {
     pub fields: IndexMap<Name, Component<FieldDefinition>>,
 }
 
-/// The definition of an [union type](https://spec.graphql.org/draft/#sec-Unions),
+/// The definition of an [union type](https://spec.graphql.org/September2025/#sec-Unions),
 /// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
@@ -230,7 +230,7 @@ pub struct UnionType {
     pub members: IndexSet<ComponentName>,
 }
 
-/// The definition of an [enum type](https://spec.graphql.org/draft/#sec-Enums),
+/// The definition of an [enum type](https://spec.graphql.org/September2025/#sec-Enums),
 /// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
@@ -240,7 +240,7 @@ pub struct EnumType {
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
 
-/// The definition of an [input object type](https://spec.graphql.org/draft/#sec-Input-Objects),
+/// The definition of an [input object type](https://spec.graphql.org/September2025/#sec-Input-Objects),
 /// with all information from type extensions folded in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
@@ -622,7 +622,7 @@ impl Schema {
 
     /// Returns whether the type `ty` is defined as is an input type
     ///
-    /// <https://spec.graphql.org/October2021/#sec-Input-and-Output-Types>
+    /// <https://spec.graphql.org/September2025/#sec-Input-and-Output-Types>
     pub fn is_input_type(&self, ty: &Type) -> bool {
         match self.types.get(ty.inner_named_type()) {
             Some(ExtendedType::Scalar(_))
@@ -637,7 +637,7 @@ impl Schema {
 
     /// Returns whether the type `ty` is defined as is an output type
     ///
-    /// <https://spec.graphql.org/October2021/#sec-Input-and-Output-Types>
+    /// <https://spec.graphql.org/September2025/#sec-Input-and-Output-Types>
     pub fn is_output_type(&self, ty: &Type) -> bool {
         match self.types.get(ty.inner_named_type()) {
             Some(ExtendedType::Scalar(_))
@@ -810,7 +810,7 @@ impl ExtendedType {
     ///
     /// # Spec
     /// This implements spec function
-    /// [`IsInputType(type)`](https://spec.graphql.org/draft/#IsInputType())
+    /// [`IsInputType(type)`](https://spec.graphql.org/September2025/#IsInputType())
     pub fn is_input_type(&self) -> bool {
         matches!(self, Self::Scalar(_) | Self::Enum(_) | Self::InputObject(_))
     }
@@ -819,7 +819,7 @@ impl ExtendedType {
     ///
     /// # Spec
     /// This implements spec function
-    /// [`IsOutputType(type)`](https://spec.graphql.org/draft/#IsOutputType())
+    /// [`IsOutputType(type)`](https://spec.graphql.org/September2025/#IsOutputType())
     pub fn is_output_type(&self) -> bool {
         matches!(
             self,

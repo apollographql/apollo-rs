@@ -10,9 +10,9 @@
 //! Parsing an input that does not conform to the grammar results in parse errors
 //! together with a partial AST.
 //!
-//! [ignored tokens]: https://spec.graphql.org/October2021/#Ignored
-//! [syntactic grammar]: https://spec.graphql.org/October2021/#sec-Language
-//! [valid]: https://spec.graphql.org/October2021/#sec-Validation
+//! [ignored tokens]: https://spec.graphql.org/September2025/#Ignored
+//! [syntactic grammar]: https://spec.graphql.org/September2025/#sec-Language
+//! [valid]: https://spec.graphql.org/September2025/#sec-Validation
 //!
 //! ## Parsing
 //!
@@ -61,7 +61,7 @@ pub(crate) mod serialize;
 
 pub use self::serialize::Serialize;
 
-/// AST for a GraphQL [_Document_](https://spec.graphql.org/draft/#Document)
+/// AST for a GraphQL [_Document_](https://spec.graphql.org/September2025/#Document)
 /// that can contain executable definitions, type system (schema) definitions, or both.
 ///
 /// It is typically parsed from one `&str` input “file” but can be also be synthesized
@@ -85,11 +85,11 @@ const _: () = {
     assert_sync::<Document>();
 };
 
-/// A [_NamedType_](https://spec.graphql.org/draft/#NamedType)
+/// A [_NamedType_](https://spec.graphql.org/September2025/#NamedType)
 /// references by name a GraphQL type defined elsewhere.
 pub type NamedType = Name;
 
-/// AST for a top-level [_Definition_](https://spec.graphql.org/draft/#Definition) of any kind:
+/// AST for a top-level [_Definition_](https://spec.graphql.org/September2025/#Definition) of any kind:
 /// executable, type system, or type system extension.
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub enum Definition {
@@ -113,7 +113,7 @@ pub enum Definition {
 }
 
 /// Executable AST for an
-/// [_OperationDefinition_](https://spec.graphql.org/draft/#OperationDefinition).
+/// [_OperationDefinition_](https://spec.graphql.org/September2025/#OperationDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct OperationDefinition {
     pub description: Option<Node<str>>,
@@ -125,7 +125,7 @@ pub struct OperationDefinition {
 }
 
 /// Executable AST for a
-/// [_FragmentDefinition_](https://spec.graphql.org/draft/#FragmentDefinition).
+/// [_FragmentDefinition_](https://spec.graphql.org/September2025/#FragmentDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FragmentDefinition {
     pub description: Option<Node<str>>,
@@ -136,7 +136,7 @@ pub struct FragmentDefinition {
 }
 
 /// Type system AST for a `directive @foo`
-/// [_DirectiveDefinition_](https://spec.graphql.org/draft/#DirectiveDefinition).
+/// [_DirectiveDefinition_](https://spec.graphql.org/September2025/#DirectiveDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct DirectiveDefinition {
     pub description: Option<Node<str>>,
@@ -147,7 +147,7 @@ pub struct DirectiveDefinition {
 }
 
 /// Type system AST for a `schema`
-/// [_SchemaDefinition_](https://spec.graphql.org/draft/#SchemaDefinition).
+/// [_SchemaDefinition_](https://spec.graphql.org/September2025/#SchemaDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct SchemaDefinition {
     pub description: Option<Node<str>>,
@@ -156,7 +156,7 @@ pub struct SchemaDefinition {
 }
 
 /// Type system AST for a `scalar FooS`
-/// [_ScalarTypeDefinition_](https://spec.graphql.org/draft/#ScalarTypeDefinition).
+/// [_ScalarTypeDefinition_](https://spec.graphql.org/September2025/#ScalarTypeDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ScalarTypeDefinition {
     pub description: Option<Node<str>>,
@@ -165,7 +165,7 @@ pub struct ScalarTypeDefinition {
 }
 
 /// Type system AST for a `type FooO`
-/// [_ObjectTypeDefinition_](https://spec.graphql.org/draft/#ObjectTypeDefinition).
+/// [_ObjectTypeDefinition_](https://spec.graphql.org/September2025/#ObjectTypeDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ObjectTypeDefinition {
     pub description: Option<Node<str>>,
@@ -176,7 +176,7 @@ pub struct ObjectTypeDefinition {
 }
 
 /// Type system AST for an `interface FooI`
-/// [_InterfaceTypeDefinition_](https://spec.graphql.org/draft/#InterfaceTypeDefinition).
+/// [_InterfaceTypeDefinition_](https://spec.graphql.org/September2025/#InterfaceTypeDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InterfaceTypeDefinition {
     pub description: Option<Node<str>>,
@@ -187,7 +187,7 @@ pub struct InterfaceTypeDefinition {
 }
 
 /// Type system AST for a `union FooU`
-/// [_UnionTypeDefinition_](https://spec.graphql.org/draft/#UnionTypeDefinition).
+/// [_UnionTypeDefinition_](https://spec.graphql.org/September2025/#UnionTypeDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct UnionTypeDefinition {
     pub description: Option<Node<str>>,
@@ -197,7 +197,7 @@ pub struct UnionTypeDefinition {
 }
 
 /// Type system AST for an `enum FooE`
-/// [_EnumTypeDefinition_](https://spec.graphql.org/draft/#EnumTypeDefinition).
+/// [_EnumTypeDefinition_](https://spec.graphql.org/September2025/#EnumTypeDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumTypeDefinition {
     pub description: Option<Node<str>>,
@@ -207,7 +207,7 @@ pub struct EnumTypeDefinition {
 }
 
 /// Type system AST for an `input FooIn`
-/// [_InputObjectTypeDefinition_](https://spec.graphql.org/draft/#InputObjectTypeDefinition).
+/// [_InputObjectTypeDefinition_](https://spec.graphql.org/September2025/#InputObjectTypeDefinition).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputObjectTypeDefinition {
     pub description: Option<Node<str>>,
@@ -217,7 +217,7 @@ pub struct InputObjectTypeDefinition {
 }
 
 /// Type system AST for an `extend schema`
-/// [_SchemaExtension_](https://spec.graphql.org/draft/#SchemaExtension).
+/// [_SchemaExtension_](https://spec.graphql.org/September2025/#SchemaExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct SchemaExtension {
     pub directives: DirectiveList,
@@ -225,7 +225,7 @@ pub struct SchemaExtension {
 }
 
 /// Type system AST for an `extend scalar FooS`
-/// [_ScalarTypeExtension_](https://spec.graphql.org/draft/#ScalarTypeExtension).
+/// [_ScalarTypeExtension_](https://spec.graphql.org/September2025/#ScalarTypeExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ScalarTypeExtension {
     pub name: Name,
@@ -233,7 +233,7 @@ pub struct ScalarTypeExtension {
 }
 
 /// Type system AST for an `extend type FooO`
-/// [_ObjectTypeExtension_](https://spec.graphql.org/draft/#ObjectTypeExtension).
+/// [_ObjectTypeExtension_](https://spec.graphql.org/September2025/#ObjectTypeExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ObjectTypeExtension {
     pub name: Name,
@@ -243,7 +243,7 @@ pub struct ObjectTypeExtension {
 }
 
 /// Type system AST for an `extend interface FooI`
-/// [_InterfaceTypeExtension_](https://spec.graphql.org/draft/#InterfaceTypeExtension).
+/// [_InterfaceTypeExtension_](https://spec.graphql.org/September2025/#InterfaceTypeExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InterfaceTypeExtension {
     pub name: Name,
@@ -253,7 +253,7 @@ pub struct InterfaceTypeExtension {
 }
 
 /// Type system AST for an `extend union FooU`
-/// [_UnionTypeExtension_](https://spec.graphql.org/draft/#UnionTypeExtension).
+/// [_UnionTypeExtension_](https://spec.graphql.org/September2025/#UnionTypeExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct UnionTypeExtension {
     pub name: Name,
@@ -262,7 +262,7 @@ pub struct UnionTypeExtension {
 }
 
 /// Type system AST for an `extend enum FooE`
-/// [_EnumTypeExtension_](https://spec.graphql.org/draft/#EnumTypeExtension).
+/// [_EnumTypeExtension_](https://spec.graphql.org/September2025/#EnumTypeExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumTypeExtension {
     pub name: Name,
@@ -271,7 +271,7 @@ pub struct EnumTypeExtension {
 }
 
 /// Type system AST for an `extend input FooIn`
-/// [_InputObjectTypeExtension_](https://spec.graphql.org/draft/#InputObjectTypeExtension).
+/// [_InputObjectTypeExtension_](https://spec.graphql.org/September2025/#InputObjectTypeExtension).
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputObjectTypeExtension {
     pub name: Name,
@@ -279,7 +279,7 @@ pub struct InputObjectTypeExtension {
     pub fields: Vec<Node<InputValueDefinition>>,
 }
 
-/// AST for an [_Argument_](https://spec.graphql.org/draft/#Argument)
+/// AST for an [_Argument_](https://spec.graphql.org/September2025/#Argument)
 /// of a [`Field`] selection or [`Directive`] application.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Argument {
@@ -287,19 +287,19 @@ pub struct Argument {
     pub value: Node<Value>,
 }
 
-/// AST for the list of [_Directives_](https://spec.graphql.org/draft/#Directives)
+/// AST for the list of [_Directives_](https://spec.graphql.org/September2025/#Directives)
 /// applied to some context.
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
 pub struct DirectiveList(pub Vec<Node<Directive>>);
 
-/// AST for a [_Directive_](https://spec.graphql.org/draft/#Directive) application.
+/// AST for a [_Directive_](https://spec.graphql.org/September2025/#Directive) application.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Directive {
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
 }
 
-/// AST for the [_OperationType_](https://spec.graphql.org/draft/#OperationType)
+/// AST for the [_OperationType_](https://spec.graphql.org/September2025/#OperationType)
 /// of an [`OperationDefinition`] or [`RootOperationDefinition`][SchemaDefinition::root_operations].
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum OperationType {
@@ -308,7 +308,7 @@ pub enum OperationType {
     Subscription,
 }
 
-/// AST for a [_DirectiveLocation_](https://spec.graphql.org/draft/#DirectiveLocation)
+/// AST for a [_DirectiveLocation_](https://spec.graphql.org/September2025/#DirectiveLocation)
 /// of a [`DirectiveDefinition`].
 #[derive(Copy, Clone, Hash, PartialEq, Eq)]
 pub enum DirectiveLocation {
@@ -333,7 +333,7 @@ pub enum DirectiveLocation {
     InputFieldDefinition,
 }
 
-/// Executable AST for a [_VariableDefinition_](https://spec.graphql.org/draft/#VariableDefinition)
+/// Executable AST for a [_VariableDefinition_](https://spec.graphql.org/September2025/#VariableDefinition)
 /// in an [`OperationDefinition`].
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct VariableDefinition {
@@ -344,7 +344,7 @@ pub struct VariableDefinition {
     pub directives: DirectiveList,
 }
 
-/// Type system AST for a reference to a GraphQL [_Type_](https://spec.graphql.org/draft/#Type)
+/// Type system AST for a reference to a GraphQL [_Type_](https://spec.graphql.org/September2025/#Type)
 #[derive(Clone, Debug, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Type {
     /// A `Foo` reference to nullable named type
@@ -362,7 +362,7 @@ pub enum Type {
     NonNullList(Box<Type>),
 }
 
-/// Type system AST for a [_FieldDefinition_](https://spec.graphql.org/draft/#FieldDefinition)
+/// Type system AST for a [_FieldDefinition_](https://spec.graphql.org/September2025/#FieldDefinition)
 /// in an object type or interface type defintion or extension.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FieldDefinition {
@@ -374,7 +374,7 @@ pub struct FieldDefinition {
 }
 
 /// Type system AST for an
-/// [_InputValueDefinition_](https://spec.graphql.org/draft/#InputValueDefinition),
+/// [_InputValueDefinition_](https://spec.graphql.org/September2025/#InputValueDefinition),
 /// a input type field definition or an argument definition.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputValueDefinition {
@@ -386,7 +386,7 @@ pub struct InputValueDefinition {
 }
 
 /// Type system AST for an
-/// [_EnumValueDefinition_](https://spec.graphql.org/draft/#EnumValueDefinition)
+/// [_EnumValueDefinition_](https://spec.graphql.org/September2025/#EnumValueDefinition)
 /// in an enum type definition or extension.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumValueDefinition {
@@ -395,7 +395,7 @@ pub struct EnumValueDefinition {
     pub directives: DirectiveList,
 }
 
-/// Executable AST for a [_Selection_](https://spec.graphql.org/draft/#Selection)
+/// Executable AST for a [_Selection_](https://spec.graphql.org/September2025/#Selection)
 /// in a selection set.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Selection {
@@ -404,7 +404,7 @@ pub enum Selection {
     InlineFragment(Node<InlineFragment>),
 }
 
-/// Executable AST for a [_Field_](https://spec.graphql.org/draft/#Field) selection
+/// Executable AST for a [_Field_](https://spec.graphql.org/September2025/#Field) selection
 /// in a selection set.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Field {
@@ -416,7 +416,7 @@ pub struct Field {
 }
 
 /// Executable AST for a
-/// [_FragmentSpread_](https://spec.graphql.org/draft/#FragmentSpread) selection
+/// [_FragmentSpread_](https://spec.graphql.org/September2025/#FragmentSpread) selection
 /// in a selection set.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FragmentSpread {
@@ -425,7 +425,7 @@ pub struct FragmentSpread {
 }
 
 /// Executable AST for an
-/// [_InlineFragment_](https://spec.graphql.org/draft/#InlineFragment) selection
+/// [_InlineFragment_](https://spec.graphql.org/September2025/#InlineFragment) selection
 /// in a selection set.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InlineFragment {
@@ -434,47 +434,47 @@ pub struct InlineFragment {
     pub selection_set: Vec<Selection>,
 }
 
-/// Executable AST for a literal GraphQL [_Value_](https://spec.graphql.org/draft/#Value).
+/// Executable AST for a literal GraphQL [_Value_](https://spec.graphql.org/September2025/#Value).
 #[derive(Clone, Debug, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Value {
-    /// A [_NullValue_](https://spec.graphql.org/draft/#NullValue)
+    /// A [_NullValue_](https://spec.graphql.org/September2025/#NullValue)
     Null,
 
-    /// An [_EnumValue_](https://spec.graphql.org/draft/#EnumValue)
+    /// An [_EnumValue_](https://spec.graphql.org/September2025/#EnumValue)
     Enum(Name),
 
-    /// A [_Variable_](https://spec.graphql.org/draft/#Variable)
+    /// A [_Variable_](https://spec.graphql.org/September2025/#Variable)
     Variable(Name),
 
-    /// A [_StringValue_](https://spec.graphql.org/draft/#StringValue)
+    /// A [_StringValue_](https://spec.graphql.org/September2025/#StringValue)
     String(
-        /// The [semantic Unicode text](https://spec.graphql.org/draft/#sec-String-Value.Static-Semantics)
+        /// The [semantic Unicode text](https://spec.graphql.org/September2025/#sec-String-Value.Static-Semantics)
         /// that this value represents.
         String,
     ),
 
-    /// A [_FloatValue_](https://spec.graphql.org/draft/#FloatValue)
+    /// A [_FloatValue_](https://spec.graphql.org/September2025/#FloatValue)
     Float(FloatValue),
 
-    /// An [_IntValue_](https://spec.graphql.org/draft/#IntValue)
+    /// An [_IntValue_](https://spec.graphql.org/September2025/#IntValue)
     Int(IntValue),
 
-    /// A [_BooleanValue_](https://spec.graphql.org/draft/#BooleanValue)
+    /// A [_BooleanValue_](https://spec.graphql.org/September2025/#BooleanValue)
     Boolean(bool),
 
-    /// A [_ListValue_](https://spec.graphql.org/draft/#ListValue)
+    /// A [_ListValue_](https://spec.graphql.org/September2025/#ListValue)
     List(Vec<Node<Value>>),
 
-    /// An [_ObjectValue_](https://spec.graphql.org/draft/#ObjectValue)
+    /// An [_ObjectValue_](https://spec.graphql.org/September2025/#ObjectValue)
     Object(Vec<(Name, Node<Value>)>),
 }
 
-/// An [_IntValue_](https://spec.graphql.org/draft/#IntValue),
+/// An [_IntValue_](https://spec.graphql.org/September2025/#IntValue),
 /// represented as a string in order not to lose range or precision.
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct IntValue(String);
 
-/// An [_FloatValue_](https://spec.graphql.org/draft/#FloatValue),
+/// An [_FloatValue_](https://spec.graphql.org/September2025/#FloatValue),
 /// represented as a string in order not to lose range or precision.
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct FloatValue(String);

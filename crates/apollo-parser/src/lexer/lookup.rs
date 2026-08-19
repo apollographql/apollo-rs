@@ -37,7 +37,7 @@ const fn punctuation_lut() -> [Option<TokenKind>; 256] {
     lut
 }
 
-/// <https://spec.graphql.org/October2021/#NameStart>
+/// <https://spec.graphql.org/September2025/#NameStart>
 const fn namestart_lut() -> [bool; 256] {
     let mut lut = [false; 256];
     lut[b'a' as usize] = true;

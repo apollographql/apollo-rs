@@ -906,7 +906,7 @@ fn serialize_block_string(state: &mut State, contains_newline: bool, str: &str) 
 }
 
 /// Is it possible to create a serialization that, when fed through
-/// [BlockStringValue](https://spec.graphql.org/October2021/#BlockStringValue()),
+/// [BlockStringValue](https://spec.graphql.org/September2025/#BlockStringValue()),
 /// returns exactly `value`?
 fn can_be_block_string(value: &str) -> bool {
     // `BlockStringValue` splits its inputs at any `LineTerminator` (\n, \r\n, or \r)
@@ -915,7 +915,7 @@ fn can_be_block_string(value: &str) -> bool {
         return false;
     }
 
-    /// <https://spec.graphql.org/October2021/#WhiteSpace>
+    /// <https://spec.graphql.org/September2025/#Whitespace>
     fn trim_start_graphql_whitespace(value: &str) -> &str {
         value.trim_start_matches([' ', '\t'])
     }

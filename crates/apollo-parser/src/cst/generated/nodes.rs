@@ -41,7 +41,7 @@ impl OperationDefinition {
     pub fn name(&self) -> Option<Name> {
         support::child(&self.syntax)
     }
-    pub fn variable_definitions(&self) -> Option<VariableDefinitions> {
+    pub fn variables_definition(&self) -> Option<VariablesDefinition> {
         support::child(&self.syntax)
     }
     pub fn directives(&self) -> Option<Directives> {
@@ -436,10 +436,10 @@ impl OperationType {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct VariableDefinitions {
+pub struct VariablesDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl VariableDefinitions {
+impl VariablesDefinition {
     pub fn l_paren_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['('])
     }
@@ -1390,9 +1390,9 @@ impl CstNode for OperationType {
         &self.syntax
     }
 }
-impl CstNode for VariableDefinitions {
+impl CstNode for VariablesDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
-        kind == VARIABLE_DEFINITIONS
+        kind == VARIABLES_DEFINITION
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {

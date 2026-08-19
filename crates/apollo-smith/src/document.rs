@@ -25,7 +25,7 @@ use apollo_compiler::ast;
 ///     InputObjectDefinition*
 ///     DirectiveDefinition*
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Document).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Document).
 #[derive(Debug, Clone)]
 pub struct Document {
     pub(crate) operation_definitions: Vec<OperationDef>,

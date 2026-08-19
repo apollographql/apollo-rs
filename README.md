@@ -59,4 +59,4 @@ Licensed under either of
 at your option.
 
 [issue]: https://github.com/apollographql/apollo-rs/issues/new/choose
-[GraphQL specification]: https://spec.graphql.org/October2021
+[GraphQL specification]: https://spec.graphql.org/September2025

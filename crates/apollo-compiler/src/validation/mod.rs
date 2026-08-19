@@ -1,4 +1,4 @@
-//! Supporting APIs for [GraphQL validation](https://spec.graphql.org/October2021/#sec-Validation)
+//! Supporting APIs for [GraphQL validation](https://spec.graphql.org/September2025/#sec-Validation)
 //! and other kinds of errors.
 
 pub(crate) mod argument;
@@ -45,7 +45,7 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 
 /// Wraps a [`Schema`] or [`ExecutableDocument`] to mark it
-/// as [valid](https://spec.graphql.org/October2021/#sec-Validation).
+/// as [valid](https://spec.graphql.org/September2025/#sec-Validation).
 ///
 /// This is obtained either by running validation with one of:
 ///
@@ -319,6 +319,8 @@ impl DiagnosticData {
                     OneOfInputObjectFieldCount { .. } => "OneOfInputObjectFieldCount",
                     UnsupportedDefault { .. } => "UnsupportedDefault",
                     OneOfDirectiveOnExtension { .. } => "OneOfDirectiveOnExtension",
+                    DeprecatedRequiredInputValue { .. } => "DeprecatedRequiredInputValue",
+                    DeprecatedImplementationField { .. } => "DeprecatedImplementationField",
                     InvalidImplementationFieldType { .. } => "InvalidImplementationFieldType",
                     MissingInterfaceFieldArgument { .. } => "MissingInterfaceFieldArgument",
                     InvalidImplementationFieldArgumentType { .. } => {
@@ -546,6 +548,8 @@ impl DiagnosticData {
                     OneOfDirectiveOnExtension { type_name, .. } => Some(format!(
                         r#"The @oneOf directive must not be provided by an input object type extension on "{type_name}"."#
                     )),
+                    DeprecatedRequiredInputValue { .. } => None,
+                    DeprecatedImplementationField { .. } => None,
                     InvalidImplementationFieldType {
                         name,
                         interface,

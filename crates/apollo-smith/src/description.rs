@@ -12,7 +12,7 @@ const CHARSET: &[u8] =
 /// *Description*:
 ///     "string"
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Descriptions).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Descriptions).
 ///
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Description(String);

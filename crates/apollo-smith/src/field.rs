@@ -19,7 +19,7 @@ use indexmap::IndexSet;
 /// *FieldDefinition*:
 ///     Description? Name ArgumentsDefinition? **:** Type Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FieldDefinition).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#FieldDefinition).
 #[derive(Debug, Clone)]
 pub struct FieldDef {
     pub(crate) description: Option<Description>,
@@ -70,7 +70,7 @@ impl TryFrom<apollo_parser::cst::FieldDefinition> for FieldDef {
 /// *Field*:
 ///     Alias? Name Arguments? Directives? SelectionSet?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Fields).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Fields).
 #[derive(Debug, Clone)]
 pub struct Field {
     pub(crate) alias: Option<Name>,
@@ -211,7 +211,7 @@ impl DocumentBuilder<'_> {
 
         // TODO: Reintroduce alias generation logic which respects aliases on other fields
         // or fragments. For now, we will not generate aliases to avoid conflicts.
-        // See <https://spec.graphql.org/October2021/#sec-Field-Selection-Merging> for merge
+        // See <https://spec.graphql.org/September2025/#sec-Field-Selection-Merging> for merge
         // requirements.
 
         Ok(Field {

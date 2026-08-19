@@ -9,7 +9,7 @@ use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::resolvers::input_coercion::coerce_argument_values;
 use crate::resolvers::result_coercion::complete_value;
-use crate::resolvers::FieldError;
+use crate::resolvers::ExecutionError;
 use crate::resolvers::MaybeAsync;
 use crate::resolvers::MaybeAsyncObject;
 use crate::resolvers::MaybeAsyncResolved;
@@ -33,7 +33,7 @@ use crate::Name;
 use crate::Schema;
 use std::sync::OnceLock;
 
-/// <https://spec.graphql.org/October2021/#sec-Normal-and-Serial-Execution>
+/// <https://spec.graphql.org/September2025/#sec-Normal-and-Serial-Execution>
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum ExecutionMode {
     /// Allowed to resolve fields in any order, including in parallel
@@ -42,9 +42,9 @@ pub(crate) enum ExecutionMode {
     Sequential,
 }
 
-/// Return in `Err` when a field error occurred at some non-nullable place
+/// Return in `Err` when an execution error occurred at some non-nullable place
 ///
-/// <https://spec.graphql.org/October2021/#sec-Handling-Field-Errors>
+/// <https://spec.graphql.org/September2025/#sec-Handling-Execution-Errors>
 pub(crate) struct PropagateNull;
 
 /// Linked-list version of `Vec<PathElement>`, taking advantage of the call stack
@@ -77,7 +77,8 @@ impl<'a, T> Clone for MaybeLazy<'a, T> {
 
 impl<'a, T> Copy for MaybeLazy<'a, T> {}
 
-/// <https://spec.graphql.org/October2021/#ExecuteSelectionSet()>
+/// <https://spec.graphql.org/September2025/#CollectFields()> followed by
+/// <https://spec.graphql.org/September2025/#ExecuteCollectedFields()>
 ///
 /// `object_value: None` is a special case for top-level of `introspection::partial_execute`
 pub(crate) async fn execute_selection_set<'a>(
@@ -91,11 +92,12 @@ pub(crate) async fn execute_selection_set<'a>(
     let mut grouped_field_set = IndexMap::default();
     collect_fields(
         ctx,
+        path,
         object_type,
         selections,
         &mut HashSet::default(),
         &mut grouped_field_set,
-    );
+    )?;
 
     match mode {
         ExecutionMode::Normal => {
@@ -106,17 +108,17 @@ pub(crate) async fn execute_selection_set<'a>(
     }
 
     let mut response_map = JsonMap::with_capacity(grouped_field_set.len());
-    for (&response_key, fields) in &grouped_field_set {
+    for (&response_name, fields) in &grouped_field_set {
         // Indexing should not panic: `collect_fields` only creates a `Vec` to push to it
         let field_name = &fields[0].name;
         let Ok(field_def) = ctx.schema.type_field(&object_type.name, field_name) else {
-            // TODO: Return a `validation_bug`` field error here?
+            // TODO: Return a `validation_bug`` execution error here?
             // The spec specifically has a “If fieldType is defined” condition,
             // but it being undefined would make the request invalid, right?
             continue;
         };
         let field_path = LinkedPathElement {
-            element: ResponseDataPathSegment::Field(response_key.clone()),
+            element: ResponseDataPathSegment::Field(response_name.clone()),
             next: path,
         };
         if let Some(value) = execute_field(
@@ -130,29 +132,42 @@ pub(crate) async fn execute_selection_set<'a>(
         )
         .await?
         {
-            response_map.insert(response_key.as_str(), value);
+            response_map.insert(response_name.as_str(), value);
         }
     }
     Ok(response_map)
 }
 
-/// <https://spec.graphql.org/October2021/#CollectFields()>
+/// <https://spec.graphql.org/September2025/#CollectFields()>
+///
+/// Returns `Err` when the `if` argument of a `@skip` or `@include` directive
+/// does not coerce to a Boolean, which is an execution error
+/// for the selection set being collected.
 fn collect_fields<'a>(
     ctx: &mut ExecutionContext<'a>,
+    path: LinkedPath<'_>,
     object_type: &ObjectType,
     selections: impl IntoIterator<Item = &'a Selection>,
     visited_fragments: &mut HashSet<&'a Name>,
     grouped_fields: &mut IndexMap<&'a Name, Vec<&'a Field>>,
-) {
+) -> Result<(), PropagateNull> {
     for selection in selections {
-        if eval_if_arg(selection, SKIP_DIRECTIVE_NAME, ctx.variable_values).unwrap_or(false)
-            || !eval_if_arg(selection, INCLUDE_DIRECTIVE_NAME, ctx.variable_values).unwrap_or(true)
-        {
-            continue;
+        match skipped_by_directives(selection, ctx.variable_values) {
+            Ok(true) => continue,
+            Ok(false) => {}
+            Err(err) => {
+                ctx.errors.push(GraphQLError::execution_error(
+                    err.message,
+                    path,
+                    err.location,
+                    &ctx.document.sources,
+                ));
+                return Err(PropagateNull);
+            }
         }
         match selection {
             Selection::Field(field) => grouped_fields
-                .entry(field.response_key())
+                .entry(field.response_name())
                 .or_default()
                 .push(field.as_ref()),
             Selection::FragmentSpread(spread) => {
@@ -168,11 +183,12 @@ fn collect_fields<'a>(
                 }
                 collect_fields(
                     ctx,
+                    path,
                     object_type,
                     &fragment.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
-                )
+                )?
             }
             Selection::InlineFragment(inline) => {
                 if let Some(condition) = &inline.type_condition {
@@ -182,17 +198,19 @@ fn collect_fields<'a>(
                 }
                 collect_fields(
                     ctx,
+                    path,
                     object_type,
                     &inline.selection_set.selections,
                     visited_fragments,
                     grouped_fields,
-                )
+                )?
             }
         }
     }
+    Ok(())
 }
 
-/// <https://spec.graphql.org/October2021/#DoesFragmentTypeApply()>
+/// <https://spec.graphql.org/September2025/#DoesFragmentTypeApply()>
 fn does_fragment_type_apply(
     schema: &Schema,
     object_type: &ObjectType,
@@ -209,24 +227,84 @@ fn does_fragment_type_apply(
     }
 }
 
+/// An execution error raised while evaluating `@skip` or `@include`,
+/// before its selection set is executed.
+struct DirectiveError {
+    message: String,
+    location: Option<SourceSpan>,
+}
+
+/// Whether this selection is excluded by its `@skip` or `@include` directives.
+///
+/// <https://spec.graphql.org/September2025/#CollectFields()>
+fn skipped_by_directives(
+    selection: &Selection,
+    variable_values: &Valid<JsonMap>,
+) -> Result<bool, DirectiveError> {
+    if eval_if_arg(selection, SKIP_DIRECTIVE_NAME, variable_values)? == Some(true) {
+        return Ok(true);
+    }
+    Ok(eval_if_arg(selection, INCLUDE_DIRECTIVE_NAME, variable_values)? == Some(false))
+}
+
+/// Returns the value of the `if` argument of the given directive on this selection,
+/// or `Ok(None)` if the directive is not present.
+///
+/// `if` is a non-null `Boolean!` argument, so a value that does not coerce
+/// to a Boolean is an execution error. That includes a nullable variable
+/// (valid there per the exception for variables with a non-null default value,
+/// <https://spec.graphql.org/September2025/#sec-All-Variable-Usages-Are-Allowed>)
+/// whose runtime value is null.
 fn eval_if_arg(
     selection: &Selection,
     directive_name: &str,
     variable_values: &Valid<JsonMap>,
-) -> Option<bool> {
-    match selection
-        .directives()
-        .get(directive_name)?
-        .specified_argument_by_name("if")?
-        .as_ref()
-    {
-        Value::Boolean(value) => Some(*value),
-        Value::Variable(var) => variable_values.get(var.as_str())?.as_bool(),
-        _ => None,
+) -> Result<Option<bool>, DirectiveError> {
+    let Some(directive) = selection.directives().get(directive_name) else {
+        return Ok(None);
+    };
+    let Some(arg) = directive.specified_argument_by_name("if") else {
+        // `if` is a required argument, so validation rejects its absence
+        return Err(DirectiveError {
+            message: format!(
+                "missing value for required argument if of directive @{directive_name}"
+            ),
+            location: directive.location(),
+        });
+    };
+    match arg.as_ref() {
+        Value::Boolean(value) => Ok(Some(*value)),
+        Value::Variable(var) => match variable_values.get(var.as_str()) {
+            Some(JsonValue::Bool(value)) => Ok(Some(*value)),
+            Some(JsonValue::Null) => Err(DirectiveError {
+                message: format!(
+                    "null value for non-null argument if of directive @{directive_name}"
+                ),
+                location: arg.location(),
+            }),
+            None => Err(DirectiveError {
+                message: format!(
+                    "missing variable for non-null argument if of directive @{directive_name}"
+                ),
+                location: arg.location(),
+            }),
+            // Validation restricts variables used here to Boolean types
+            Some(_) => Err(DirectiveError {
+                message: format!(
+                    "non-boolean value for argument if of directive @{directive_name}"
+                ),
+                location: arg.location(),
+            }),
+        },
+        // Validation restricts literals used here to Boolean values
+        _ => Err(DirectiveError {
+            message: format!("non-boolean value for argument if of directive @{directive_name}"),
+            location: arg.location(),
+        }),
     }
 }
 
-/// <https://spec.graphql.org/October2021/#ExecuteField()>
+/// <https://spec.graphql.org/September2025/#ExecuteField()>
 ///
 /// `object_value: None` is a special case for top-level of `introspection::partial_execute`
 ///
@@ -273,8 +351,8 @@ async fn execute_field<'a>(
     };
     let completed_result = match resolved_result {
         Ok(resolved) => complete_value(ctx, path, mode, field.ty(), resolved, fields).await,
-        Err(FieldError { message }) => {
-            ctx.errors.push(GraphQLError::field_error(
+        Err(ExecutionError { message }) => {
+            ctx.errors.push(GraphQLError::execution_error(
                 format!("resolver error: {message}"),
                 path,
                 field.name.location(),
@@ -288,7 +366,7 @@ async fn execute_field<'a>(
 
 fn resolve_schema_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
-) -> Result<MaybeAsyncResolved<'a>, FieldError> {
+) -> Result<MaybeAsyncResolved<'a>, ExecutionError> {
     check_schema_introspection_enabled(ctx)?;
     Ok(MaybeAsync::Sync(ResolvedValue::object(SchemaMetaField)))
 }
@@ -296,7 +374,7 @@ fn resolve_schema_meta_field<'a>(
 fn resolve_type_meta_field<'a>(
     ctx: &ExecutionContext<'a>,
     info: &'a ResolveInfo<'a>,
-) -> Result<MaybeAsyncResolved<'a>, FieldError> {
+) -> Result<MaybeAsyncResolved<'a>, ExecutionError> {
     check_schema_introspection_enabled(ctx)?;
     if let Some(name) = info.arguments().get("name").and_then(|v| v.as_str()) {
         Ok(MaybeAsync::Sync(crate::introspection::resolvers::type_def(
@@ -306,19 +384,21 @@ fn resolve_type_meta_field<'a>(
         // This should never happen: `coerce_argument_values()` returns a map that conforms
         // to the `__type(name: String!): __Type` definition
         // Still, in case of a bug prefer returning an error than panicking
-        Err(FieldError {
+        Err(ExecutionError {
             message: "expected string argument `name`".into(),
         })
     }
 }
 
-fn check_schema_introspection_enabled<'a>(ctx: &ExecutionContext<'a>) -> Result<(), FieldError> {
+fn check_schema_introspection_enabled<'a>(
+    ctx: &ExecutionContext<'a>,
+) -> Result<(), ExecutionError> {
     if ctx.enable_schema_introspection {
         Ok(())
     } else {
         // Disabled by default in the `apollo_compiler::resolvers::Excecution` builder,
         // use `.enable_schema_introspection(true)` to enable
-        Err(FieldError {
+        Err(ExecutionError {
             message: "schema introspection is disabled".into(),
         })
     }
@@ -326,7 +406,7 @@ fn check_schema_introspection_enabled<'a>(ctx: &ExecutionContext<'a>) -> Result<
 
 /// Try to insert a propagated null if possible, or keep propagating it.
 ///
-/// <https://spec.graphql.org/October2021/#sec-Handling-Field-Errors>
+/// <https://spec.graphql.org/September2025/#sec-Handling-Execution-Errors>
 pub(crate) fn try_nullify(
     ty: &Type,
     result: Result<Option<JsonValue>, PropagateNull>,
@@ -354,7 +434,7 @@ pub(crate) fn path_to_vec(mut link: LinkedPath<'_>) -> Vec<ResponseDataPathSegme
 }
 
 impl GraphQLError {
-    pub(crate) fn field_error(
+    pub(crate) fn execution_error(
         message: impl Into<String>,
         path: LinkedPath<'_>,
         location: Option<SourceSpan>,
@@ -367,13 +447,13 @@ impl GraphQLError {
 }
 
 impl SuspectedValidationBug {
-    pub(crate) fn into_field_error(
+    pub(crate) fn into_execution_error(
         self,
         sources: &SourceMap,
         path: LinkedPath<'_>,
     ) -> GraphQLError {
         let Self { message, location } = self;
-        let mut err = GraphQLError::field_error(message, path, location, sources);
+        let mut err = GraphQLError::execution_error(message, path, location, sources);
         err.extensions
             .insert("APOLLO_SUSPECTED_VALIDATION_BUG", true.into());
         err

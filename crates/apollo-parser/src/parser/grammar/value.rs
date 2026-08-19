@@ -13,7 +13,7 @@ pub(crate) enum Constness {
     NotConst,
 }
 
-/// See: https://spec.graphql.org/October2021/#Value
+/// See: https://spec.graphql.org/September2025/#Value
 ///
 /// *Value[Const]*
 ///     [if not Const] Variable
@@ -82,7 +82,7 @@ pub(crate) fn value(p: &mut Parser, constness: Constness, pop_on_error: bool) {
         }
     }
 }
-/// See: https://spec.graphql.org/October2021/#EnumValue
+/// See: https://spec.graphql.org/September2025/#EnumValue
 ///
 /// *EnumValue*:
 ///     Name *but not* **true** *or* **false** *or* **null**
@@ -101,7 +101,7 @@ pub(crate) fn enum_value(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#ListValue
+/// See: https://spec.graphql.org/September2025/#ListValue
 ///
 /// *ListValue[Const]*:
 ///     **[** **]**
@@ -127,7 +127,7 @@ pub(crate) fn list_value(p: &mut Parser, constness: Constness) {
     });
 }
 
-/// See: https://spec.graphql.org/October2021/#ObjectValue
+/// See: https://spec.graphql.org/September2025/#ObjectValue
 ///
 /// *ObjectValue[Const]*:
 ///     **{** **}**
@@ -143,7 +143,7 @@ pub(crate) fn object_value(p: &mut Parser, constness: Constness) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/October2021/#ObjectField
+/// See: https://spec.graphql.org/September2025/#ObjectField
 ///
 /// *ObjectField[Const]*:
 ///     Name **:** Value[?Const]
@@ -162,7 +162,7 @@ pub(crate) fn object_field(p: &mut Parser, constness: Constness) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#DefaultValue
+/// See: https://spec.graphql.org/September2025/#DefaultValue
 ///
 /// *DefaultValue*:
 ///     **=** Value[Const]
@@ -359,7 +359,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             if let cst::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
-                let variable_defs = op_def.variable_definitions();
+                let variable_defs = op_def.variables_definition();
                 let variables: Vec<String> = variable_defs
                     .iter()
                     .flat_map(|v| v.variable_definitions())

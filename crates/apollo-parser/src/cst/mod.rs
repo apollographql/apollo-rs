@@ -101,7 +101,7 @@
 //! }
 //! ```
 //!
-//! [GraphQL grammar]: https://spec.graphql.org/October2021/#sec-Document-Syntax
+//! [GraphQL grammar]: https://spec.graphql.org/September2025/#sec-Document-Syntax
 mod generated;
 mod node_ext;
 

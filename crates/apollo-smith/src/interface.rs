@@ -21,7 +21,7 @@ use std::collections::HashMap;
 /// *InterfaceTypeDefinition*:
 ///     Description? **interface** Name ImplementsInterfaces? Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#InterfaceTypeDefinition).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#InterfaceTypeDefinition).
 #[derive(Debug, Clone)]
 pub struct InterfaceTypeDef {
     pub(crate) description: Option<Description>,

@@ -38,7 +38,7 @@
 //! If there is no mutation needed between parsing and validation,
 //! [`ExecutableDocument::parse_and_validate`] does both in one step.
 //!
-//! [Validation]: https://spec.graphql.org/draft/#sec-Validation
+//! [Validation]: https://spec.graphql.org/September2025/#sec-Validation
 //!
 //! ## Serialization
 //!
@@ -120,7 +120,7 @@ pub struct FieldSet {
     pub selection_set: SelectionSet,
 }
 
-/// An [_OperationDefinition_](https://spec.graphql.org/draft/#OperationDefinition)
+/// An [_OperationDefinition_](https://spec.graphql.org/September2025/#OperationDefinition)
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
@@ -132,7 +132,7 @@ pub struct Operation {
     pub selection_set: SelectionSet,
 }
 
-/// A [_FragmentDefinition_](https://spec.graphql.org/draft/#FragmentDefinition)
+/// A [_FragmentDefinition_](https://spec.graphql.org/September2025/#FragmentDefinition)
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
@@ -142,7 +142,7 @@ pub struct Fragment {
     pub selection_set: SelectionSet,
 }
 
-/// A [_SelectionSet_](https://spec.graphql.org/draft/#SelectionSet)
+/// A [_SelectionSet_](https://spec.graphql.org/September2025/#SelectionSet)
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectionSet {
@@ -150,7 +150,7 @@ pub struct SelectionSet {
     pub selections: Vec<Selection>,
 }
 
-/// A [_Selection_](https://spec.graphql.org/draft/#Selection)
+/// A [_Selection_](https://spec.graphql.org/September2025/#Selection)
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
@@ -159,7 +159,7 @@ pub enum Selection {
     InlineFragment(Node<InlineFragment>),
 }
 
-/// A [_Field_](https://spec.graphql.org/draft/#Field) selection,
+/// A [_Field_](https://spec.graphql.org/September2025/#Field) selection,
 /// linked to the corresponding field definition in the schema.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Field {
@@ -172,7 +172,7 @@ pub struct Field {
     pub selection_set: SelectionSet,
 }
 
-/// A [_FragmentSpread_](https://spec.graphql.org/draft/#FragmentSpread)
+/// A [_FragmentSpread_](https://spec.graphql.org/September2025/#FragmentSpread)
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FragmentSpread {
@@ -180,7 +180,7 @@ pub struct FragmentSpread {
     pub directives: DirectiveList,
 }
 
-/// A [_InlineFragment_](https://spec.graphql.org/draft/#InlineFragment)
+/// A [_InlineFragment_](https://spec.graphql.org/September2025/#InlineFragment)
 /// annotated with type information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InlineFragment {
@@ -480,7 +480,7 @@ impl OperationMap {
 
     /// Return the relevant operation for a request, or a request error
     ///
-    /// This is the [_GetOperation()_](https://spec.graphql.org/October2021/#GetOperation())
+    /// This is the [_GetOperation()_](https://spec.graphql.org/September2025/#GetOperation())
     /// algorithm in the _Executing Requests_ section of the specification.
     ///
     /// A GraphQL request comes with a document (which may contain multiple operations)
@@ -600,11 +600,11 @@ impl Operation {
     /// `document` is used to look up fragment definitions.
     ///
     /// This does **not** perform [field merging],
-    /// so multiple items in this iterator may have the same response key
+    /// so multiple items in this iterator may have the same response name
     /// or point to the same field definition.
     /// Named fragments however are only traversed once even if spread multiple times.
     ///
-    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    /// [field merging]: https://spec.graphql.org/September2025/#sec-Field-Selection-Merging
     pub fn root_fields<'doc>(
         &'doc self,
         document: &'doc ExecutableDocument,
@@ -619,11 +619,11 @@ impl Operation {
     /// `document` is used to look up fragment definitions.
     ///
     /// This does **not** perform [field merging],
-    /// so multiple items in this iterator may have the same response key
+    /// so multiple items in this iterator may have the same response name
     /// or point to the same field definition.
     /// Named fragments however are only traversed once even if spread multiple times.
     ///
-    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    /// [field merging]: https://spec.graphql.org/September2025/#sec-Field-Selection-Merging
     pub fn all_fields<'doc>(
         &'doc self,
         document: &'doc ExecutableDocument,
@@ -707,11 +707,11 @@ impl SelectionSet {
     /// `document` is used to look up fragment definitions.
     ///
     /// This does **not** perform [field merging],
-    /// so multiple items in this iterator may have the same response key
+    /// so multiple items in this iterator may have the same response name
     /// or point to the same field definition.
     /// Named fragments however are only traversed once even if spread multiple times.
     ///
-    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    /// [field merging]: https://spec.graphql.org/September2025/#sec-Field-Selection-Merging
     pub fn root_fields<'doc>(
         &'doc self,
         document: &'doc ExecutableDocument,
@@ -758,11 +758,11 @@ impl SelectionSet {
     /// `document` is used to look up fragment definitions.
     ///
     /// This does **not** perform [field merging],
-    /// so multiple items in this iterator may have the same response key
+    /// so multiple items in this iterator may have the same response name
     /// or point to the same field definition.
     /// Named fragments however are only traversed once even if spread multiple times.
     ///
-    /// [field merging]: https://spec.graphql.org/draft/#sec-Field-Selection-Merging
+    /// [field merging]: https://spec.graphql.org/September2025/#sec-Field-Selection-Merging
     pub fn all_fields<'doc>(
         &'doc self,
         document: &'doc ExecutableDocument,
@@ -942,8 +942,8 @@ impl Field {
         self
     }
 
-    /// Returns the response key for this field: the alias if there is one, or the name
-    pub fn response_key(&self) -> &Name {
+    /// Returns the response name for this field: the alias if there is one, or the name
+    pub fn response_name(&self) -> &Name {
         self.alias.as_ref().unwrap_or(&self.name)
     }
 

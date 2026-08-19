@@ -1,0 +1,7 @@
+interface I {
+  a: Int
+}
+
+type Query implements I {
+  a: Int @deprecated
+}

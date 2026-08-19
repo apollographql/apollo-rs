@@ -11,6 +11,7 @@ mod merge_schemas;
 mod misc;
 mod name;
 mod parser;
+mod resolvers;
 mod schema;
 mod serde;
 mod validation;

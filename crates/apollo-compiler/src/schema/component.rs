@@ -136,7 +136,7 @@ impl<T> From<Node<T>> for Component<T> {
     }
 }
 
-/// A GraphQL [_Name_](https://spec.graphql.org/draft/#Name)
+/// A GraphQL [_Name_](https://spec.graphql.org/September2025/#Name)
 /// that is component of a type or `schema`, for example the name of a union member type.
 ///
 /// Wraps a [`Name`] and adds its origin:

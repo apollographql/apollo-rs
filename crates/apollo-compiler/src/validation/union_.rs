@@ -48,7 +48,7 @@ pub(crate) fn validate_union_definition(
     }
 
     // validate there is at least one union member on the union type
-    // https://spec.graphql.org/draft/#sel-HAHdfFBABAB6Bw3R
+    // https://spec.graphql.org/September2025/#sec-Unions.Type-Validation
     if union_def.members.is_empty() {
         diagnostics.push(
             union_def.location(),

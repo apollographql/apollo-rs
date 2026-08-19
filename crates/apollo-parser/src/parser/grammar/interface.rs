@@ -9,7 +9,7 @@ use crate::SyntaxKind;
 use crate::TokenKind;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#InterfaceTypeDefinition
+/// See: https://spec.graphql.org/September2025/#InterfaceTypeDefinition
 ///
 /// *InterfaceTypeDefinition*:
 ///     Description? **interface** Name ImplementsInterface? Directives[Const]? FieldsDefinition?
@@ -42,7 +42,7 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#InterfaceTypeExtension
+/// See: https://spec.graphql.org/September2025/#InterfaceTypeExtension
 ///
 /// *InterfaceTypeExtension*:
 ///     **extend** **interface** Name ImplementsInterface? Directives[Const]? FieldsDefinition

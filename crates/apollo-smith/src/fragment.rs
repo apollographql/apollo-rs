@@ -14,9 +14,9 @@ use indexmap::IndexSet;
 /// The __fragmentDef type represents a fragment definition
 ///
 /// *FragmentDefinition*:
-///     fragment FragmentName TypeCondition Directives? SelectionSet
+///     Description? fragment FragmentName TypeCondition Directives? SelectionSet
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentDefinition).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#FragmentDefinition).
 #[derive(Debug, Clone)]
 pub struct FragmentDef {
     pub(crate) description: Option<Description>,
@@ -62,7 +62,7 @@ impl TryFrom<apollo_parser::cst::FragmentDefinition> for FragmentDef {
 /// *FragmentSpread*:
 ///     ... FragmentName Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentSpread).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#FragmentSpread).
 #[derive(Debug, Clone)]
 pub struct FragmentSpread {
     pub(crate) name: Name,
@@ -103,7 +103,7 @@ impl TryFrom<apollo_parser::cst::FragmentSpread> for FragmentSpread {
 /// *InlineFragment*:
 ///     ... TypeCondition? Directives? SelectionSet
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Inline-Fragments).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Inline-Fragments).
 #[derive(Debug, Clone)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<TypeCondition>,
@@ -142,7 +142,7 @@ impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
 /// *TypeCondition*:
 ///     on NamedType
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#TypeCondition).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#TypeCondition).
 #[derive(Debug, Clone)]
 pub struct TypeCondition {
     name: Name,
@@ -225,7 +225,7 @@ impl DocumentBuilder<'_> {
     /// selection set for `current_type`. The two types must share at
     /// least one possible object type.
     ///
-    /// See <https://spec.graphql.org/October2021/#sec-Fragment-spread-is-possible>.
+    /// See <https://spec.graphql.org/September2025/#sec-Fragment-Spread-Is-Possible>.
     fn fragment_spread_possible(&self, fragment_type: &Name, current_type: Option<&Name>) -> bool {
         let Some(current) = current_type else {
             return true;

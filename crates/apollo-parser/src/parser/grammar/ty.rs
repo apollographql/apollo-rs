@@ -6,7 +6,7 @@ use crate::TokenKind;
 use crate::S;
 use crate::T;
 
-/// See: https://spec.graphql.org/October2021/#InputValueDefinition
+/// See: https://spec.graphql.org/September2025/#InputValueDefinition
 ///
 /// *Type*:
 ///     NamedType
@@ -88,7 +88,7 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Option<Token<'a>>> {
     Ok(())
 }
 
-/// See: https://spec.graphql.org/October2021/#NamedType
+/// See: https://spec.graphql.org/September2025/#NamedType
 ///
 /// *NamedType*:
 ///     Name
@@ -122,7 +122,7 @@ mutation MyMutation($custId: [Int!]!) {
         for definition in doc.definitions() {
             if let cst::Definition::OperationDefinition(op_type) = definition {
                 for var in op_type
-                    .variable_definitions()
+                    .variables_definition()
                     .unwrap()
                     .variable_definitions()
                 {

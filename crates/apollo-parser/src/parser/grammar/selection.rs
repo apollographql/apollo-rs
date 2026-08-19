@@ -7,7 +7,7 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#SelectionSet
+/// See: https://spec.graphql.org/September2025/#SelectionSet
 ///
 /// *SelectionSet*:
 ///     **{** Selection* **}**
@@ -47,7 +47,7 @@ pub(crate) fn field_set(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#Selection
+/// See: https://spec.graphql.org/September2025/#Selection
 ///
 /// *Selection*:
 ///     Field
@@ -185,7 +185,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             if let cst::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
-                let variable_defs = op_def.variable_definitions();
+                let variable_defs = op_def.variables_definition();
                 let variables: Vec<TokenText> = variable_defs
                     .iter()
                     .flat_map(|v| v.variable_definitions())

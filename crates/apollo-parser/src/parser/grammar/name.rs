@@ -3,7 +3,7 @@ use crate::SyntaxKind;
 use crate::TokenKind;
 use crate::S;
 
-/// See: https://spec.graphql.org/October2021/#Name
+/// See: https://spec.graphql.org/September2025/#Name
 ///
 /// *Name*:
 ///     [_A-Za-z][_0-9A-Za-z]
@@ -28,7 +28,7 @@ pub(crate) fn validate_name(name: &str, p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/October2021/#Alias
+/// See: https://spec.graphql.org/September2025/#Alias
 ///
 /// *Alias*:
 ///     Name **:**

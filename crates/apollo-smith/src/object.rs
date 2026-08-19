@@ -24,7 +24,7 @@ use indexmap::IndexSet;
 /// *ObjectTypeDefinition*:
 ///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Object).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Objects).
 #[derive(Debug, Clone)]
 pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,

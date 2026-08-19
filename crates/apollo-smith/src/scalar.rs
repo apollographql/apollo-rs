@@ -13,7 +13,7 @@ use indexmap::IndexMap;
 /// *ScalarTypeDefinition*:
 ///     Description? **scalar** Name Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Scalar).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Scalars).
 #[derive(Debug, Clone)]
 pub struct ScalarTypeDef {
     pub(crate) name: Name,

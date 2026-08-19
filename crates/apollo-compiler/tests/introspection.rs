@@ -4,7 +4,7 @@ use apollo_compiler::introspection;
 use apollo_compiler::name;
 use apollo_compiler::request::coerce_variable_values;
 use apollo_compiler::resolvers::Execution;
-use apollo_compiler::resolvers::FieldError;
+use apollo_compiler::resolvers::ExecutionError;
 use apollo_compiler::resolvers::ObjectValue;
 use apollo_compiler::resolvers::ResolveInfo;
 use apollo_compiler::resolvers::ResolvedValue;
@@ -31,7 +31,7 @@ fn test() {
             id: ID!
             ints: [[Int!]]! @deprecated(reason: "…")
             url(arg: In = { b: 4, a: 2 }): Url
-            union: U @deprecated(reason: null)
+            union: U @deprecated
         }
 
         interface I {
@@ -39,7 +39,7 @@ fn test() {
         }
 
         input In {
-            a: Int! @deprecated(reason: null)
+            a: Int @deprecated
             b: Int @deprecated
         }
 
@@ -141,7 +141,7 @@ fn test() {
                     },
                     {
                       "name": "union",
-                      "deprecationReason": null
+                      "deprecationReason": "No longer supported"
                     }
                   ]
                 }
@@ -261,7 +261,7 @@ fn mixed() {
         fn resolve_field<'a>(
             &'a self,
             info: &ResolveInfo<'a>,
-        ) -> Result<ResolvedValue<'a>, FieldError> {
+        ) -> Result<ResolvedValue<'a>, ExecutionError> {
             match info.field_name() {
                 "f" => Ok(ResolvedValue::leaf(42)),
                 _ => Err(self.unknown_field_error(info)),
@@ -317,6 +317,50 @@ fn mixed() {
                 }
               ]
             }
+          }
+        }"#]]
+    .assert_eq(&response);
+}
+
+/// https://spec.graphql.org/September2025/#sec-ID
+/// > While it is often numeric, it must always serialize as a String.
+#[test]
+fn numeric_id_serializes_as_string() {
+    let sdl = r#"
+      type Query {
+        id: ID!
+      }
+    "#;
+    let query = "{ id }";
+
+    struct InitialValue;
+
+    impl ObjectValue for InitialValue {
+        fn type_name(&self) -> &str {
+            "Query"
+        }
+
+        fn resolve_field<'a>(
+            &'a self,
+            info: &ResolveInfo<'a>,
+        ) -> Result<ResolvedValue<'a>, ExecutionError> {
+            match info.field_name() {
+                "id" => Ok(ResolvedValue::leaf(4)),
+                _ => Err(self.unknown_field_error(info)),
+            }
+        }
+    }
+
+    let schema = Schema::parse_and_validate(sdl, "schema.graphql").unwrap();
+    let document = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+    let response = Execution::new(&schema, &document)
+        .execute_sync(&InitialValue)
+        .unwrap();
+    let response = serde_json::to_string_pretty(&response).unwrap();
+    expect_test::expect![[r#"
+        {
+          "data": {
+            "id": "4"
           }
         }"#]]
     .assert_eq(&response);

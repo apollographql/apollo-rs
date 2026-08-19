@@ -18,7 +18,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation -->
 # [x.x.x] (unreleased) - 2026-mm-dd
 
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Rename the `VariableDefinitions` CST node to `VariablesDefinition`**
+
+  The September 2025 specification renamed the `VariableDefinitions` grammar
+  production to `VariablesDefinition`. The CST follows suit:
+  `cst::VariableDefinitions` is now `cst::VariablesDefinition`,
+  `SyntaxKind::VARIABLE_DEFINITIONS` is now `SyntaxKind::VARIABLES_DEFINITION`,
+  and `OperationDefinition::variable_definitions()` is now
+  `OperationDefinition::variables_definition()`.
+  (`VariablesDefinition::variable_definitions()`, which returns the list of
+  individual `VariableDefinition` children, is unchanged.)
+
+  Spec documentation links now point to the
+  [September 2025](https://spec.graphql.org/September2025/) edition.
+
 ## Features
+
+- **September 2025 string and source character support**
+
+  * String values now support variable-width Unicode escape sequences
+    (`"\u{1F4A9}"`) and legacy surrogate pairs, per the updated
+    [String Value](https://spec.graphql.org/September2025/#sec-String-Value)
+    grammar. Escapes that do not encode a Unicode scalar value (such as
+    `"\u{110000}"` or a lone surrogate `"\uD800"`) are lexing errors.
+  * Source text follows the September 2025 `SourceCharacter` definition: any
+    Unicode scalar value, including control characters, is accepted inside
+    strings and comments.
 
 - **Parse descriptions on executable definitions - [goto-bus-stop], [pull/974]**
 

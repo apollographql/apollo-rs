@@ -23,7 +23,7 @@ pub(crate) fn validate_enum_definition(
     }
 
     // validate there is at least one enum value on the enum type
-    // https://spec.graphql.org/draft/#sel-DAHfFVFBAAEXBAAh7S
+    // https://spec.graphql.org/September2025/#sec-Enums.Type-Validation
     if enum_def.values.is_empty() {
         diagnostics.push(
             enum_def.location(),
