@@ -201,24 +201,29 @@ async fn complete_list_value<'a, 'b>(
             element: ResponseDataPathSegment::ListIndex(index),
             next: path,
         };
-        let inner_resolved = inner_result.map_err(|err| {
-            ctx.errors.push(GraphQLError::execution_error(
-                format!("resolver error: {}", err.message),
-                Some(&inner_path),
-                fields[0].name.location(),
-                &ctx.document.sources,
-            ));
-            PropagateNull
-        })?;
-        let inner_result = complete_value(
-            ctx,
-            Some(&inner_path),
-            mode,
-            inner_ty,
-            inner_resolved,
-            fields,
-        )
-        .await;
+        let inner_result = match inner_result {
+            Ok(inner_resolved) => {
+                complete_value(
+                    ctx,
+                    Some(&inner_path),
+                    mode,
+                    inner_ty,
+                    inner_resolved,
+                    fields,
+                )
+                .await
+            }
+            // An error from the resolver’s iterator is an execution error at this item position
+            Err(err) => {
+                ctx.errors.push(GraphQLError::execution_error(
+                    format!("resolver error: {}", err.message),
+                    Some(&inner_path),
+                    fields[0].name.location(),
+                    &ctx.document.sources,
+                ));
+                Err(PropagateNull)
+            }
+        };
         // On execution error, try to nullify that item
         match try_nullify(inner_ty, inner_result) {
             Ok(None) => {}
@@ -375,7 +380,10 @@ fn test_error_path() {
             }
           ],
           "data": {
-            "f": null
+            "f": [
+              42,
+              null
+            ]
           }
         }"#]]
     .assert_eq(&response);

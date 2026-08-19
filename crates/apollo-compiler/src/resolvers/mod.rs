@@ -16,6 +16,18 @@
 //! or a single Rust enum with a variants per GraphQL object type,
 //! or some other strategy.
 //!
+//! # Execution errors and sibling cancellation
+//!
+//! When an [execution error] propagates through non-null response positions,
+//! execution of the remaining sibling fields (or remaining list items)
+//! in the affected selection set is canceled, like in graphql-js:
+//! their resolvers are not called,
+//! and no additional errors are reported for them.
+//! Response data is unaffected,
+//! since the enclosing response position is discarded either way.
+//!
+//! [execution error]: https://spec.graphql.org/September2025/#sec-Handling-Execution-Errors
+//!
 //! # Example
 //!
 //! ```

@@ -146,7 +146,7 @@ fn coerce_variable_value(
                 if value.is_f64()
                     || value
                         .as_f64()
-                        .is_some_and(|f| f.abs() < MAX_SAFE_INT as f64)
+                        .is_some_and(|f| f.abs() <= MAX_SAFE_INT as f64)
                 {
                     return Ok(value.clone());
                 }
@@ -279,20 +279,48 @@ fn coerce_variable_value(
     })
 }
 
+/// Converts a constant GraphQL value (like a default value) to JSON.
+///
+/// Values from a `Valid` document do not contain variables in const positions.
 fn graphql_value_to_json(
     description: &std::fmt::Arguments<'_>,
     value: &Node<Value>,
 ) -> Result<JsonValue, InputCoercionError> {
+    graphql_literal_to_json(description, value, None)
+}
+
+/// Converts a GraphQL value to JSON.
+///
+/// `variable_values` is `Some` when converting an argument literal from an
+/// executable document, where a custom scalar value may contain nested variables
+/// to substitute with their runtime values.
+/// It is `None` for const values (like default values), where validation
+/// guarantees the absence of variables.
+fn graphql_literal_to_json(
+    description: &std::fmt::Arguments<'_>,
+    value: &Node<Value>,
+    variable_values: Option<&Valid<JsonMap>>,
+) -> Result<JsonValue, InputCoercionError> {
     match value.as_ref() {
         Value::Null => Ok(JsonValue::Null),
-        Value::Variable(_) => {
-            // TODO: separate `ContValue` enum without this variant?
-            Err(InputCoercionError::SuspectedValidationBug(
-                SuspectedValidationBug {
-                    message: format!("variable in default value of {description}."),
-                    location: value.location(),
-                },
-            ))
+        Value::Variable(var_name) => {
+            if let Some(variable_values) = variable_values {
+                // A variable nested inside a custom scalar literal is replaced
+                // with its runtime value; with no runtime value it becomes null
+                // (like a missing list item in graphql-js).
+                Ok(variable_values
+                    .get(var_name.as_str())
+                    .cloned()
+                    .unwrap_or(JsonValue::Null))
+            } else {
+                // TODO: separate `ContValue` enum without this variant?
+                Err(InputCoercionError::SuspectedValidationBug(
+                    SuspectedValidationBug {
+                        message: format!("variable in default value of {description}."),
+                        location: value.location(),
+                    },
+                ))
+            }
         }
         Value::Enum(value) => Ok(value.as_str().into()),
         Value::String(value) => Ok(value.as_str().into()),
@@ -312,11 +340,26 @@ fn graphql_value_to_json(
         })?)),
         Value::List(value) => value
             .iter()
-            .map(|value| graphql_value_to_json(description, value))
+            .map(|value| graphql_literal_to_json(description, value, variable_values))
             .collect(),
         Value::Object(value) => value
             .iter()
-            .map(|(key, value)| Ok((key.as_str(), graphql_value_to_json(description, value)?)))
+            .filter(|(_key, value)| {
+                // An entry whose value is a variable with no runtime value
+                // is omitted entirely, like in graphql-js
+                match (value.as_ref(), variable_values) {
+                    (Value::Variable(var_name), Some(variable_values)) => {
+                        variable_values.contains_key(var_name.as_str())
+                    }
+                    _ => true,
+                }
+            })
+            .map(|(key, value)| {
+                Ok((
+                    key.as_str(),
+                    graphql_literal_to_json(description, value, variable_values)?,
+                ))
+            })
             .collect(),
     }
 }
@@ -523,7 +566,16 @@ fn coerce_argument_value(
                 let object: HashMap<_, _> = object.iter().map(|(k, v)| (k, v)).collect();
                 let mut coerced_object = JsonMap::new();
                 for (field_name, field_def) in &ty_def.fields {
-                    if let Some(field_value) = object.get(field_name) {
+                    // A field whose value is a variable with no runtime value
+                    // behaves as if the field was not provided at all:
+                    // fall back to the field’s default value, or omit the entry.
+                    // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
+                    let provided_value = object.get(field_name).copied().filter(|value| {
+                        value
+                            .as_variable()
+                            .is_none_or(|var| ctx.variable_values.contains_key(var.as_str()))
+                    });
+                    if let Some(field_value) = provided_value {
                         let coerced_value = coerce_argument_value(
                             ctx,
                             path,
@@ -583,12 +635,15 @@ fn coerce_argument_value(
             }
         }
         _ => {
-            // For scalar and enums, rely and validation and just convert between Rust types
-            return graphql_value_to_json(description, value).map_err(|err| {
-                ctx.errors
-                    .push(err.into_execution_error(path, &ctx.document.sources));
-                PropagateNull
-            });
+            // For scalars and enums, rely on validation and just convert between Rust types,
+            // substituting any variables nested inside custom scalar literals
+            return graphql_literal_to_json(description, value, Some(ctx.variable_values)).map_err(
+                |err| {
+                    ctx.errors
+                        .push(err.into_execution_error(path, &ctx.document.sources));
+                    PropagateNull
+                },
+            );
         }
     }
     ctx.errors.push(GraphQLError::execution_error(
