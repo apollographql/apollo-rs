@@ -2014,3 +2014,30 @@ mod variable_default_values {
         );
     }
 }
+
+mod input_field_default_values {
+    use apollo_compiler::Schema;
+
+    #[test]
+    fn opt_out_of_default_value_validation() {
+        let schema_input = r#"
+            type Query { field: String }
+            input MyInput {
+                intField: Int = "not an int"
+            }
+        "#;
+        // With validation enabled (default), this should fail
+        assert!(Schema::parse_and_validate(schema_input, "schema.graphql").is_err());
+
+        // With validation disabled, this should pass
+        let schema = Schema::builder()
+            .validate_default_values(false)
+            .parse(schema_input, "schema.graphql")
+            .build()
+            .unwrap()
+            .validate()
+            .unwrap();
+        // The schema is valid (no errors) even with a bad default
+        assert!(schema.types.contains_key("MyInput"));
+    }
+}

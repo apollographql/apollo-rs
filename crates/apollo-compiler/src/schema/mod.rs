@@ -125,6 +125,13 @@ pub struct Schema {
     ///   built-in scalar definitions for scalars that are used in the schema.
     ///   We reflect in this Rust API the behavior of `__Schema.types` in GraphQL introspection.
     pub types: IndexMap<NamedType, ExtendedType>,
+
+    /// Whether to validate default values of input fields and arguments
+    /// against their types. Defaults to `true`.
+    ///
+    /// Set to `false` via [`SchemaBuilder::validate_default_values`]
+    /// to accept schemas with mistyped default values.
+    pub validate_default_values: bool,
 }
 
 /// The [`schema` definition](https://spec.graphql.org/September2025/#sec-Schema) and its extensions,
@@ -1149,7 +1156,8 @@ impl Eq for Schema {}
 impl PartialEq for Schema {
     fn eq(&self, other: &Self) -> bool {
         let Self {
-            sources: _, // ignored
+            sources: _,                 // ignored
+            validate_default_values: _, // ignored, config only
             schema_definition,
             directive_definitions,
             types,
@@ -1248,6 +1256,7 @@ impl std::fmt::Debug for Schema {
             schema_definition,
             directive_definitions,
             types,
+            validate_default_values: _,
         } = self;
         f.debug_struct("Schema")
             .field("sources", sources)
