@@ -131,7 +131,7 @@ pub struct Schema {
     ///
     /// Set to `false` via [`SchemaBuilder::validate_default_values`]
     /// to accept schemas with mistyped default values.
-    pub(crate) validate_default_values: bool,
+    pub validate_default_values: bool,
 }
 
 /// The [`schema` definition](https://spec.graphql.org/September2025/#sec-Schema) and its extensions,
