@@ -6,7 +6,6 @@ use crate::collections::IndexMap;
 use crate::collections::IndexSet;
 use crate::parser::SourceSpan;
 use crate::schema::validation::BuiltInScalars;
-use crate::schema::Component;
 use crate::schema::InterfaceType;
 use crate::schema::Name;
 use crate::validation::diagnostics::DiagnosticData;
@@ -23,7 +22,7 @@ pub(crate) fn validate_interface_definition(
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
-        interface.directives.iter_ast(),
+        interface.directives.iter(),
         ast::DirectiveLocation::Interface,
         // interfaces don't use variables
         Default::default(),
@@ -235,7 +234,7 @@ pub(crate) fn validate_implementation_field_types(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     implementor_name: &Name,
-    implementor_fields: &IndexMap<Name, Component<FieldDefinition>>,
+    implementor_fields: &IndexMap<Name, Node<FieldDefinition>>,
     implements_interfaces: &IndexSet<Node<Name>>,
 ) {
     for interface_name in implements_interfaces {
@@ -293,7 +292,7 @@ pub(crate) fn validate_implementation_field_arguments(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     implementor_name: &Name,
-    implementor_fields: &IndexMap<Name, Component<FieldDefinition>>,
+    implementor_fields: &IndexMap<Name, Node<FieldDefinition>>,
     implements_interfaces: &IndexSet<Node<Name>>,
 ) {
     for interface_name in implements_interfaces {

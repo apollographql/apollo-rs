@@ -55,29 +55,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 86..98 @8 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 86..98 @8 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "age": Component {
-                        origin: Definition,
-                        node: 101..109 @8 FieldDefinition {
-                            description: None,
-                            name: "age",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "age": 101..109 @8 FieldDefinition {
+                        description: None,
+                        name: "age",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -89,29 +83,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "height": Component {
-                        origin: Definition,
-                        node: 128..139 @8 FieldDefinition {
-                            description: None,
-                            name: "height",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "height": 128..139 @8 FieldDefinition {
+                        description: None,
+                        name: "height",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "width": Component {
-                        origin: Definition,
-                        node: 142..152 @8 FieldDefinition {
-                            description: None,
-                            name: "width",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "width": 142..152 @8 FieldDefinition {
+                        description: None,
+                        name: "width",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -123,17 +111,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "firstSearchResult": Component {
-                        origin: Definition,
-                        node: 177..208 @8 FieldDefinition {
-                            description: None,
-                            name: "firstSearchResult",
-                            arguments: [],
-                            ty: Named(
-                                "SearchResult",
-                            ),
-                            directives: [],
-                        },
+                    "firstSearchResult": 177..208 @8 FieldDefinition {
+                        description: None,
+                        name: "firstSearchResult",
+                        arguments: [],
+                        ty: Named(
+                            "SearchResult",
+                        ),
+                        directives: [],
                     },
                 },
             },

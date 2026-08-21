@@ -44,17 +44,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "arguments": Component {
-                        origin: Definition,
-                        node: 315..335 @34 FieldDefinition {
-                            description: None,
-                            name: "arguments",
-                            arguments: [],
-                            ty: Named(
-                                "Arguments",
-                            ),
-                            directives: [],
-                        },
+                    "arguments": 315..335 @34 FieldDefinition {
+                        description: None,
+                        name: "arguments",
+                        arguments: [],
+                        ty: Named(
+                            "Arguments",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -66,77 +63,68 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "nullableString": Component {
-                        origin: Definition,
-                        node: 360..406 @34 FieldDefinition {
-                            description: None,
-                            name: "nullableString",
-                            arguments: [
-                                375..397 @34 InputValueDefinition {
-                                    description: None,
-                                    name: "nullableString",
-                                    ty: 391..397 @34 Named(
+                    "nullableString": 360..406 @34 FieldDefinition {
+                        description: None,
+                        name: "nullableString",
+                        arguments: [
+                            375..397 @34 InputValueDefinition {
+                                description: None,
+                                name: "nullableString",
+                                ty: 391..397 @34 Named(
+                                    "String",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                    "nullableList": 411..455 @34 FieldDefinition {
+                        description: None,
+                        name: "nullableList",
+                        arguments: [
+                            424..446 @34 InputValueDefinition {
+                                description: None,
+                                name: "nullableList",
+                                ty: 438..446 @34 List(
+                                    Named(
                                         "String",
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "nullableList": Component {
-                        origin: Definition,
-                        node: 411..455 @34 FieldDefinition {
-                            description: None,
-                            name: "nullableList",
-                            arguments: [
-                                424..446 @34 InputValueDefinition {
-                                    description: None,
-                                    name: "nullableList",
-                                    ty: 438..446 @34 List(
+                    "nullableListList": 460..508 @34 FieldDefinition {
+                        description: None,
+                        name: "nullableListList",
+                        arguments: [
+                            477..502 @34 InputValueDefinition {
+                                description: None,
+                                name: "nullableListList",
+                                ty: 495..502 @34 List(
+                                    List(
                                         Named(
-                                            "String",
+                                            "Int",
                                         ),
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "nullableListList": Component {
-                        origin: Definition,
-                        node: 460..508 @34 FieldDefinition {
-                            description: None,
-                            name: "nullableListList",
-                            arguments: [
-                                477..502 @34 InputValueDefinition {
-                                    description: None,
-                                    name: "nullableListList",
-                                    ty: 495..502 @34 List(
-                                        List(
-                                            Named(
-                                                "Int",
-                                            ),
-                                        ),
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },

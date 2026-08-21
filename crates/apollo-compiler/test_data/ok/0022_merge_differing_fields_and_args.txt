@@ -44,17 +44,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 18..31 @24 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 18..31 @24 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -65,21 +62,15 @@ Schema {
                 name: "DogCommand",
                 directives: [],
                 values: {
-                    "SIT": Component {
-                        origin: Definition,
-                        node: 55..58 @24 EnumValueDefinition {
-                            description: None,
-                            value: "SIT",
-                            directives: [],
-                        },
+                    "SIT": 55..58 @24 EnumValueDefinition {
+                        description: None,
+                        value: "SIT",
+                        directives: [],
                     },
-                    "HEEL": Component {
-                        origin: Definition,
-                        node: 61..65 @24 EnumValueDefinition {
-                            description: None,
-                            value: "HEEL",
-                            directives: [],
-                        },
+                    "HEEL": 61..65 @24 EnumValueDefinition {
+                        description: None,
+                        value: "HEEL",
+                        directives: [],
                     },
                 },
             },
@@ -90,13 +81,10 @@ Schema {
                 name: "CatCommand",
                 directives: [],
                 values: {
-                    "JUMP": Component {
-                        origin: Definition,
-                        node: 89..93 @24 EnumValueDefinition {
-                            description: None,
-                            value: "JUMP",
-                            directives: [],
-                        },
+                    "JUMP": 89..93 @24 EnumValueDefinition {
+                        description: None,
+                        value: "JUMP",
+                        directives: [],
                     },
                 },
             },
@@ -108,17 +96,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "pet": Component {
-                        origin: Definition,
-                        node: 112..120 @24 FieldDefinition {
-                            description: None,
-                            name: "pet",
-                            arguments: [],
-                            ty: Named(
-                                "Pet",
-                            ),
-                            directives: [],
-                        },
+                    "pet": 112..120 @24 FieldDefinition {
+                        description: None,
+                        name: "pet",
+                        arguments: [],
+                        ty: Named(
+                            "Pet",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -132,94 +117,79 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 152..165 @24 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 152..165 @24 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "nickname": Component {
-                        origin: Definition,
-                        node: 168..185 @24 FieldDefinition {
-                            description: None,
-                            name: "nickname",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "nickname": 168..185 @24 FieldDefinition {
+                        description: None,
+                        name: "nickname",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "barkVolume": Component {
-                        origin: Definition,
-                        node: 188..204 @24 FieldDefinition {
-                            description: None,
-                            name: "barkVolume",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "barkVolume": 188..204 @24 FieldDefinition {
+                        description: None,
+                        name: "barkVolume",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "doesKnowCommand": Component {
-                        origin: Definition,
-                        node: 207..257 @24 FieldDefinition {
-                            description: None,
-                            name: "doesKnowCommand",
-                            arguments: [
-                                223..246 @24 InputValueDefinition {
-                                    description: None,
-                                    name: "dogCommand",
-                                    ty: 235..246 @24 NonNullNamed(
-                                        "DogCommand",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "doesKnowCommand": 207..257 @24 FieldDefinition {
+                        description: None,
+                        name: "doesKnowCommand",
+                        arguments: [
+                            223..246 @24 InputValueDefinition {
+                                description: None,
+                                name: "dogCommand",
+                                ty: 235..246 @24 NonNullNamed(
+                                    "DogCommand",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
-                    "isAtLocation": Component {
-                        origin: Definition,
-                        node: 260..298 @24 FieldDefinition {
-                            description: None,
-                            name: "isAtLocation",
-                            arguments: [
-                                273..279 @24 InputValueDefinition {
-                                    description: None,
-                                    name: "x",
-                                    ty: 276..279 @24 Named(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                                281..287 @24 InputValueDefinition {
-                                    description: None,
-                                    name: "y",
-                                    ty: 284..287 @24 Named(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "isAtLocation": 260..298 @24 FieldDefinition {
+                        description: None,
+                        name: "isAtLocation",
+                        arguments: [
+                            273..279 @24 InputValueDefinition {
+                                description: None,
+                                name: "x",
+                                ty: 276..279 @24 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                            281..287 @24 InputValueDefinition {
+                                description: None,
+                                name: "y",
+                                ty: 284..287 @24 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -233,51 +203,42 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 330..343 @24 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 330..343 @24 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "meowVolume": Component {
-                        origin: Definition,
-                        node: 346..362 @24 FieldDefinition {
-                            description: None,
-                            name: "meowVolume",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "meowVolume": 346..362 @24 FieldDefinition {
+                        description: None,
+                        name: "meowVolume",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "doesKnowCommand": Component {
-                        origin: Definition,
-                        node: 365..415 @24 FieldDefinition {
-                            description: None,
-                            name: "doesKnowCommand",
-                            arguments: [
-                                381..404 @24 InputValueDefinition {
-                                    description: None,
-                                    name: "catCommand",
-                                    ty: 393..404 @24 NonNullNamed(
-                                        "CatCommand",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "doesKnowCommand": 365..415 @24 FieldDefinition {
+                        description: None,
+                        name: "doesKnowCommand",
+                        arguments: [
+                            381..404 @24 InputValueDefinition {
+                                description: None,
+                                name: "catCommand",
+                                ty: 393..404 @24 NonNullNamed(
+                                    "CatCommand",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },

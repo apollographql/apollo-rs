@@ -13,10 +13,7 @@ pub(crate) fn validate_scalar_definition(
         super::directive::validate_directives(
             diagnostics,
             Some(schema),
-            scalar_def
-                .directives
-                .iter()
-                .map(|component| &component.node),
+            scalar_def.directives.iter(),
             ast::DirectiveLocation::Scalar,
             // scalars don't use variables
             Default::default(),

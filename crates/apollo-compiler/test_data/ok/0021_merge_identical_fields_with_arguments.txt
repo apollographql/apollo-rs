@@ -42,21 +42,15 @@ Schema {
                 name: "DogCommand",
                 directives: [],
                 values: {
-                    "SIT": Component {
-                        origin: Definition,
-                        node: 20..23 @23 EnumValueDefinition {
-                            description: None,
-                            value: "SIT",
-                            directives: [],
-                        },
+                    "SIT": 20..23 @23 EnumValueDefinition {
+                        description: None,
+                        value: "SIT",
+                        directives: [],
                     },
-                    "HEEL": Component {
-                        origin: Definition,
-                        node: 26..30 @23 EnumValueDefinition {
-                            description: None,
-                            value: "HEEL",
-                            directives: [],
-                        },
+                    "HEEL": 26..30 @23 EnumValueDefinition {
+                        description: None,
+                        value: "HEEL",
+                        directives: [],
                     },
                 },
             },
@@ -68,27 +62,24 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "doesKnowCommand": Component {
-                        origin: Definition,
-                        node: 47..95 @23 FieldDefinition {
-                            description: None,
-                            name: "doesKnowCommand",
-                            arguments: [
-                                63..85 @23 InputValueDefinition {
-                                    description: None,
-                                    name: "dogCommand",
-                                    ty: 75..85 @23 Named(
-                                        "DogCommand",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "doesKnowCommand": 47..95 @23 FieldDefinition {
+                        description: None,
+                        name: "doesKnowCommand",
+                        arguments: [
+                            63..85 @23 InputValueDefinition {
+                                description: None,
+                                name: "dogCommand",
+                                ty: 75..85 @23 Named(
+                                    "DogCommand",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -100,17 +91,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "pet": Component {
-                        origin: Definition,
-                        node: 114..122 @23 FieldDefinition {
-                            description: None,
-                            name: "pet",
-                            arguments: [],
-                            ty: Named(
-                                "Dog",
-                            ),
-                            directives: [],
-                        },
+                    "pet": 114..122 @23 FieldDefinition {
+                        description: None,
+                        name: "pet",
+                        arguments: [],
+                        ty: Named(
+                            "Dog",
+                        ),
+                        directives: [],
                     },
                 },
             },

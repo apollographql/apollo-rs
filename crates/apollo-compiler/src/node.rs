@@ -2,8 +2,6 @@ use crate::parser::FileId;
 use crate::parser::LineColumn;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
-use crate::schema::Component;
-use crate::schema::ComponentOrigin;
 use std::fmt;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -177,13 +175,6 @@ impl<T: ?Sized> Node<T> {
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
     pub fn same_location<U>(&self, node: U) -> Node<U> {
         Node::new_opt_location(node, self.0.header.location)
-    }
-
-    pub fn to_component(&self, origin: ComponentOrigin) -> Component<T> {
-        Component {
-            origin,
-            node: self.clone(),
-        }
     }
 
     // `Arc` APIs

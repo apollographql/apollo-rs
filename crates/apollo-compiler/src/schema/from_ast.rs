@@ -467,20 +467,12 @@ impl SchemaDefinition {
     ) -> Node<Self> {
         let mut root = Self {
             description: definition.description.clone(),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
             query: None,
             mutation: None,
             subscription: None,
         };
-        root.add_root_operations(
-            errors,
-            ComponentOrigin::Definition,
-            &definition.root_operations,
-        );
+        root.add_root_operations(errors, None, &definition.root_operations);
         for ext in extensions {
             root.extend_ast(errors, ext)
         }
@@ -488,20 +480,20 @@ impl SchemaDefinition {
     }
 
     fn extend_ast(&mut self, errors: &mut DiagnosticList, extension: &Node<ast::SchemaExtension>) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
-        self.add_root_operations(errors, origin, &extension.root_operations)
+        self.add_root_operations(errors, Some(extension_id), &extension.root_operations)
     }
 
     fn add_root_operations(
         &mut self,
         errors: &mut DiagnosticList,
-        origin: ComponentOrigin,
+        extension_id: Option<ExtensionId>,
         root_operations: &[Node<(OperationType, Name)>],
     ) {
         for op in root_operations {
@@ -512,7 +504,7 @@ impl SchemaDefinition {
                 OperationType::Subscription => &mut self.subscription,
             };
             match entry {
-                None => *entry = Some(object_type_name.to_node(origin.extension_id().cloned())),
+                None => *entry = Some(object_type_name.to_node(extension_id.clone())),
                 Some(previous) => errors.push(
                     op.location(),
                     BuildError::DuplicateRootOperation {
@@ -534,11 +526,7 @@ impl ScalarType {
         let mut ty = Self {
             description: definition.description.clone(),
             name: definition.name.clone(),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
         };
         for def in &extensions {
             if let ast::Definition::ScalarTypeExtension(ext) = def {
@@ -553,12 +541,12 @@ impl ScalarType {
         _errors: &mut DiagnosticList,
         extension: &Node<ast::ScalarTypeExtension>,
     ) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
     }
 }
@@ -587,16 +575,12 @@ impl ObjectType {
                     )
                 },
             ),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
             fields: collect_sticky(
                 definition
                     .fields
                     .iter()
-                    .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
+                    .map(|field| (&field.name, field.clone())),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -621,19 +605,19 @@ impl ObjectType {
         errors: &mut DiagnosticList,
         extension: &Node<ast::ObjectTypeExtension>,
     ) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
         extend_sticky_set(
             &mut self.implements_interfaces,
             extension
                 .implements_interfaces
                 .iter()
-                .map(|name| name.to_node(origin.extension_id().cloned())),
+                .map(|name| name.to_node(Some(extension_id.clone()))),
             |prev, dup| {
                 errors.push(
                     dup.location(),
@@ -649,7 +633,7 @@ impl ObjectType {
             extension
                 .fields
                 .iter()
-                .map(|field| (&field.name, field.to_component(origin.clone()))),
+                .map(|field| (&field.name, field.with_extension_id(extension_id.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
@@ -687,16 +671,12 @@ impl InterfaceType {
                     )
                 },
             ),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
             fields: collect_sticky(
                 definition
                     .fields
                     .iter()
-                    .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
+                    .map(|field| (&field.name, field.clone())),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -721,19 +701,19 @@ impl InterfaceType {
         errors: &mut DiagnosticList,
         extension: &Node<ast::InterfaceTypeExtension>,
     ) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
         extend_sticky_set(
             &mut self.implements_interfaces,
             extension
                 .implements_interfaces
                 .iter()
-                .map(|name| name.to_node(origin.extension_id().cloned())),
+                .map(|name| name.to_node(Some(extension_id.clone()))),
             |prev, dup| {
                 errors.push(
                     dup.location(),
@@ -749,7 +729,7 @@ impl InterfaceType {
             extension
                 .fields
                 .iter()
-                .map(|field| (&field.name, field.to_component(origin.clone()))),
+                .map(|field| (&field.name, field.with_extension_id(extension_id.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
@@ -772,11 +752,7 @@ impl UnionType {
         let mut ty = Self {
             description: definition.description.clone(),
             name: definition.name.clone(),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
             members: collect_sticky_set(
                 definition.members.iter().map(|name| name.to_node(None)),
                 |prev, dup| {
@@ -803,19 +779,19 @@ impl UnionType {
         errors: &mut DiagnosticList,
         extension: &Node<ast::UnionTypeExtension>,
     ) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
         extend_sticky_set(
             &mut self.members,
             extension
                 .members
                 .iter()
-                .map(|name| name.to_node(origin.extension_id().cloned())),
+                .map(|name| name.to_node(Some(extension_id.clone()))),
             |prev, dup| {
                 errors.push(
                     dup.location(),
@@ -838,18 +814,12 @@ impl EnumType {
         let mut ty = Self {
             description: definition.description.clone(),
             name: definition.name.clone(),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
             values: collect_sticky(
-                definition.values.iter().map(|value_def| {
-                    (
-                        &value_def.value,
-                        value_def.to_component(ComponentOrigin::Definition),
-                    )
-                }),
+                definition
+                    .values
+                    .iter()
+                    .map(|value_def| (&value_def.value, value_def.clone())),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -874,19 +844,21 @@ impl EnumType {
         errors: &mut DiagnosticList,
         extension: &Node<ast::EnumTypeExtension>,
     ) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
         extend_sticky(
             &mut self.values,
-            extension
-                .values
-                .iter()
-                .map(|value_def| (&value_def.value, value_def.to_component(origin.clone()))),
+            extension.values.iter().map(|value_def| {
+                (
+                    &value_def.value,
+                    value_def.with_extension_id(extension_id.clone()),
+                )
+            }),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),
@@ -909,16 +881,12 @@ impl InputObjectType {
         let mut ty = Self {
             description: definition.description.clone(),
             name: definition.name.clone(),
-            directives: definition
-                .directives
-                .iter()
-                .map(|d| d.to_component(ComponentOrigin::Definition))
-                .collect(),
+            directives: definition.directives.iter().cloned().collect(),
             fields: collect_sticky(
                 definition
                     .fields
                     .iter()
-                    .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
+                    .map(|field| (&field.name, field.clone())),
                 |prev_key, dup_value| {
                     errors.push(
                         dup_value.location(),
@@ -943,19 +911,19 @@ impl InputObjectType {
         errors: &mut DiagnosticList,
         extension: &Node<ast::InputObjectTypeExtension>,
     ) {
-        let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
+        let extension_id = ExtensionId::new(extension);
         self.directives.extend(
             extension
                 .directives
                 .iter()
-                .map(|d| d.to_component(origin.clone())),
+                .map(|d| d.with_extension_id(extension_id.clone())),
         );
         extend_sticky(
             &mut self.fields,
             extension
                 .fields
                 .iter()
-                .map(|field| (&field.name, field.to_component(origin.clone()))),
+                .map(|field| (&field.name, field.with_extension_id(extension_id.clone()))),
             |prev_key, dup_value| {
                 errors.push(
                     dup_value.location(),

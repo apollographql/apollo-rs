@@ -300,7 +300,7 @@ impl SelectionSet {
             match selection {
                 ast::Selection::Field(ast) => {
                     let field_def_result = if let Some(s) = schema {
-                        s.type_field(&self.ty, &ast.name).map(|c| c.node.clone())
+                        s.type_field(&self.ty, &ast.name).cloned()
                     } else {
                         Ok(Node::new(ast::FieldDefinition {
                             description: None,

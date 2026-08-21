@@ -43,17 +43,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "pet": Component {
-                        origin: Definition,
-                        node: 15..23 @22 FieldDefinition {
-                            description: None,
-                            name: "pet",
-                            arguments: [],
-                            ty: Named(
-                                "Dog",
-                            ),
-                            directives: [],
-                        },
+                    "pet": 15..23 @22 FieldDefinition {
+                        description: None,
+                        name: "pet",
+                        arguments: [],
+                        ty: Named(
+                            "Dog",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -65,29 +62,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "nickname": Component {
-                        origin: Definition,
-                        node: 40..56 @22 FieldDefinition {
-                            description: None,
-                            name: "nickname",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "nickname": 40..56 @22 FieldDefinition {
+                        description: None,
+                        name: "nickname",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "name": Component {
-                        origin: Definition,
-                        node: 59..72 @22 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 59..72 @22 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

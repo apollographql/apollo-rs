@@ -143,7 +143,7 @@ pub(crate) fn validate_input_object_definition(
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
-        input_object.directives.iter_ast(),
+        input_object.directives.iter(),
         ast::DirectiveLocation::InputObject,
         // input objects don't use variables
         Default::default(),
@@ -191,7 +191,7 @@ pub(crate) fn validate_input_object_definition(
     // https://spec.graphql.org/September2025/#sec-Input-Object-Extensions
     for directive in &input_object.directives.0 {
         if directive.name == "oneOf" {
-            if let Some(ext_id) = directive.origin.extension_id() {
+            if let Some(ext_id) = directive.extension_id() {
                 diagnostics.push(
                     directive.location(),
                     DiagnosticData::OneOfDirectiveOnExtension {
@@ -238,11 +238,7 @@ pub(crate) fn validate_input_object_definition(
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Definition error.
-    let fields: Vec<_> = input_object
-        .fields
-        .values()
-        .map(|c| c.node.clone())
-        .collect();
+    let fields: Vec<_> = input_object.fields.values().cloned().collect();
     validate_input_value_definitions(
         diagnostics,
         schema,

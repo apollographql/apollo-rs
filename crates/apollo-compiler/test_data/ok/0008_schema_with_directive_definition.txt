@@ -64,17 +64,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "literature": Component {
-                        origin: Definition,
-                        node: 17..33 @10 FieldDefinition {
-                            description: None,
-                            name: "literature",
-                            arguments: [],
-                            ty: Named(
-                                "Book",
-                            ),
-                            directives: [],
-                        },
+                    "literature": 17..33 @10 FieldDefinition {
+                        description: None,
+                        name: "literature",
+                        arguments: [],
+                        ty: Named(
+                            "Book",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -85,47 +82,38 @@ Schema {
                 name: "Book",
                 implements_interfaces: {},
                 directives: [
-                    Component {
-                        origin: Definition,
-                        node: 121..154 @10 Directive {
-                            name: "delegateField",
-                            arguments: [
-                                136..153 @10 Argument {
-                                    name: "name",
-                                    value: 142..153 @10 String(
-                                        "pageCount",
-                                    ),
-                                },
-                            ],
-                        },
+                    121..154 @10 Directive {
+                        name: "delegateField",
+                        arguments: [
+                            136..153 @10 Argument {
+                                name: "name",
+                                value: 142..153 @10 String(
+                                    "pageCount",
+                                ),
+                            },
+                        ],
                     },
-                    Component {
-                        origin: Definition,
-                        node: 155..185 @10 Directive {
-                            name: "delegateField",
-                            arguments: [
-                                170..184 @10 Argument {
-                                    name: "name",
-                                    value: 176..184 @10 String(
-                                        "author",
-                                    ),
-                                },
-                            ],
-                        },
+                    155..185 @10 Directive {
+                        name: "delegateField",
+                        arguments: [
+                            170..184 @10 Argument {
+                                name: "name",
+                                value: 176..184 @10 String(
+                                    "author",
+                                ),
+                            },
+                        ],
                     },
                 ],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 190..197 @10 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 190..197 @10 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "ID",
+                        ),
+                        directives: [],
                     },
                 },
             },

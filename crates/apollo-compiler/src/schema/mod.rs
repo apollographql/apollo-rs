@@ -9,11 +9,12 @@
 //!
 //! * Everything from [type system extensions] is stored
 //!   together with corresponding “main” definitions,
-//!   while still preserving extension origins with [`Component<_>`].
 //!   so that most consumers don’t need to care about extensions at all,
+//!   while still preserving extension origins in each [`Node<_>`]’s
+//!   [`origin`][Node::origin].
 //!   (For example, some directives can be applied to an object type extensions to affect
 //!   fields defined in the same extension but not other fields of the object type.)
-//!   See [`Component`].
+//!   See [`ExtensionId`].
 //!
 //! [type system extensions]: https://spec.graphql.org/September2025/#sec-Type-System-Extensions
 //!
@@ -34,9 +35,9 @@
 //!
 //! ## Structural sharing and mutation
 //!
-//! Many parts of a `Schema` are reference-counted with [`Node`] (like in AST) or [`Component`].
+//! Many parts of a `Schema` are reference-counted with [`Node`] (like in AST).
 //! This allows sharing nodes between documents without cloning entire subtrees.
-//! To modify a node or component,
+//! To modify a node,
 //! the [`make_mut`][Node::make_mut] method provides copy-on-write semantics.
 //!
 //! ## Validation
@@ -78,18 +79,14 @@ use crate::Node;
 use std::path::Path;
 use std::sync::OnceLock;
 
-mod component;
 mod from_ast;
 mod serialize;
 pub(crate) mod validation;
 
-pub use self::component::Component;
-pub use self::component::ComponentName;
-pub use self::component::ComponentOrigin;
-pub use self::component::ExtensionId;
 pub use self::from_ast::SchemaBuilder;
 pub use crate::ast::Directive;
 pub use crate::ast::DirectiveDefinition;
+pub use crate::ast::DirectiveList;
 pub use crate::ast::DirectiveLocation;
 pub use crate::ast::EnumValueDefinition;
 pub use crate::ast::FieldDefinition;
@@ -97,6 +94,7 @@ pub use crate::ast::InputValueDefinition;
 pub use crate::ast::NamedType;
 pub use crate::ast::Type;
 pub use crate::ast::Value;
+pub use crate::node::ExtensionId;
 
 /// High-level representation of a GraphQL type system document a.k.a. schema.
 #[derive(Clone)]
@@ -151,18 +149,6 @@ pub struct SchemaDefinition {
     pub subscription: Option<Node<Name>>,
 }
 
-/// The list of [_Directives_](https://spec.graphql.org/September2025/#Directives)
-/// of a GraphQL type or `schema`, each either from the “main” definition or from an extension.
-///
-/// Like [`ast::DirectiveList`] (a different Rust type with the same name),
-/// except items are [`Component`]s instead of just [`Node`]s in order to track extension origin.
-///
-/// Confusingly, [`ast::DirectiveList`] is also used in other parts of a [`Schema`],
-/// for example for the directives applied to a field definition.
-/// (The field definition as a whole is already a [`Component`] to keep track of its origin.)
-#[derive(Clone, Eq, PartialEq, Hash, Default)]
-pub struct DirectiveList(pub Vec<Component<Directive>>);
-
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The source location is that of the "main" definition.
@@ -198,7 +184,7 @@ pub struct ObjectType {
     ///
     /// When looking up a definition,
     /// consider using [`Schema::type_field`] instead to include meta-fields.
-    pub fields: IndexMap<Name, Component<FieldDefinition>>,
+    pub fields: IndexMap<Name, Node<FieldDefinition>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -213,7 +199,7 @@ pub struct InterfaceType {
     ///
     /// When looking up a definition,
     /// consider using [`Schema::type_field`] instead to include meta-fields.
-    pub fields: IndexMap<Name, Component<FieldDefinition>>,
+    pub fields: IndexMap<Name, Node<FieldDefinition>>,
 }
 
 /// The definition of an [union type](https://spec.graphql.org/September2025/#sec-Unions),
@@ -237,7 +223,7 @@ pub struct EnumType {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
-    pub values: IndexMap<Name, Component<EnumValueDefinition>>,
+    pub values: IndexMap<Name, Node<EnumValueDefinition>>,
 }
 
 /// The definition of an [input object type](https://spec.graphql.org/September2025/#sec-Input-Objects),
@@ -247,7 +233,7 @@ pub struct InputObjectType {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub directives: DirectiveList,
-    pub fields: IndexMap<Name, Component<InputValueDefinition>>,
+    pub fields: IndexMap<Name, Node<InputValueDefinition>>,
 }
 
 /// The names of all types that implement a given interface.
@@ -524,7 +510,7 @@ impl Schema {
         &self,
         type_name: &str,
         field_name: &str,
-    ) -> Result<&Component<FieldDefinition>, FieldLookupError<'_>> {
+    ) -> Result<&Node<FieldDefinition>, FieldLookupError<'_>> {
         use ExtendedType::*;
         let (ty_def_name, ty_def) = self
             .types
@@ -663,14 +649,14 @@ impl SchemaDefinition {
         .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
     }
 
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| dir.origin.extension_id())
+            .map(|dir| dir.extension_id())
             .chain(self.query.iter().map(|name| name.extension_id()))
             .chain(self.mutation.iter().map(|name| name.extension_id()))
             .chain(self.subscription.iter().map(|name| name.extension_id()))
@@ -857,7 +843,7 @@ impl ExtendedType {
         }
     }
 
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
@@ -872,7 +858,7 @@ impl ExtendedType {
         }
     }
 
-    /// Collect type extensions that contribute any component
+    /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
@@ -884,12 +870,12 @@ impl ExtendedType {
 }
 
 impl ScalarType {
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
-        self.directives.iter().map(|dir| dir.origin.extension_id())
+        self.directives.iter().map(|dir| dir.extension_id())
     }
 
     /// Collect scalar type extensions that contribute any component
@@ -904,24 +890,20 @@ impl ScalarType {
 }
 
 impl ObjectType {
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| dir.origin.extension_id())
+            .map(|dir| dir.extension_id())
             .chain(
                 self.implements_interfaces
                     .iter()
-                    .map(|name| name.extension_id()),
+                    .map(|component| component.extension_id()),
             )
-            .chain(
-                self.fields
-                    .values()
-                    .map(|field| field.origin.extension_id()),
-            )
+            .chain(self.fields.values().map(|field| field.extension_id()))
     }
 
     /// Collect object type extensions that contribute any component
@@ -936,24 +918,20 @@ impl ObjectType {
 }
 
 impl InterfaceType {
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| dir.origin.extension_id())
+            .map(|dir| dir.extension_id())
             .chain(
                 self.implements_interfaces
                     .iter()
-                    .map(|name| name.extension_id()),
+                    .map(|component| component.extension_id()),
             )
-            .chain(
-                self.fields
-                    .values()
-                    .map(|field| field.origin.extension_id()),
-            )
+            .chain(self.fields.values().map(|field| field.extension_id()))
     }
 
     /// Collect interface type extensions that contribute any component
@@ -968,15 +946,16 @@ impl InterfaceType {
 }
 
 impl UnionType {
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
-        self.directives
-            .iter()
-            .map(|dir| dir.origin.extension_id())
-            .chain(self.members.iter().map(|name| name.extension_id()))
+        self.directives.iter().map(|dir| dir.extension_id()).chain(
+            self.members
+                .iter()
+                .map(|component| component.extension_id()),
+        )
     }
 
     /// Collect union type extensions that contribute any component
@@ -991,19 +970,15 @@ impl UnionType {
 }
 
 impl EnumType {
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| dir.origin.extension_id())
-            .chain(
-                self.values
-                    .values()
-                    .map(|value| value.origin.extension_id()),
-            )
+            .map(|dir| dir.extension_id())
+            .chain(self.values.values().map(|value| value.extension_id()))
     }
 
     /// Collect enum type extensions that contribute any component
@@ -1023,19 +998,15 @@ impl InputObjectType {
         self.directives.get("oneOf").is_some()
     }
 
-    /// Iterate over the extension IDs of all components
+    /// Iterate over the `origins` of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| dir.origin.extension_id())
-            .chain(
-                self.fields
-                    .values()
-                    .map(|field| field.origin.extension_id()),
-            )
+            .map(|dir| dir.extension_id())
+            .chain(self.fields.values().map(|field| field.extension_id()))
     }
 
     /// Collect input object type extensions that contribute any component
@@ -1047,106 +1018,6 @@ impl InputObjectType {
     }
 
     serialize_method!();
-}
-
-impl DirectiveList {
-    pub const fn new() -> Self {
-        Self(Vec::new())
-    }
-
-    /// Returns an iterator of directives with the given name.
-    ///
-    /// This method is best for repeatable directives.
-    /// See also [`get`][Self::get] for non-repeatable directives.
-    pub fn get_all<'def: 'name, 'name>(
-        &'def self,
-        name: &'name str,
-    ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
-        self.0.iter().filter(move |dir| dir.name == name)
-    }
-
-    /// Returns the first directive with the given name, if any.
-    ///
-    /// This method is best for non-repeatable directives.
-    /// See also [`get_all`][Self::get_all] for repeatable directives.
-    pub fn get(&self, name: &str) -> Option<&Component<Directive>> {
-        self.get_all(name).next()
-    }
-
-    /// Returns whether there is a directive with the given name
-    pub fn has(&self, name: &str) -> bool {
-        self.get(name).is_some()
-    }
-
-    pub(crate) fn iter_ast(&self) -> impl Iterator<Item = &Node<ast::Directive>> {
-        self.0.iter().map(|component| &component.node)
-    }
-
-    /// Accepts either [`Component<Directive>`], [`Node<Directive>`], or [`Directive`].
-    pub fn push(&mut self, directive: impl Into<Component<Directive>>) {
-        self.0.push(directive.into());
-    }
-
-    serialize_method!();
-}
-
-impl std::fmt::Debug for DirectiveList {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl std::ops::Deref for DirectiveList {
-    type Target = Vec<Component<Directive>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for DirectiveList {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl IntoIterator for DirectiveList {
-    type Item = Component<Directive>;
-
-    type IntoIter = std::vec::IntoIter<Component<Directive>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
-
-impl<'a> IntoIterator for &'a DirectiveList {
-    type Item = &'a Component<Directive>;
-
-    type IntoIter = std::slice::Iter<'a, Component<Directive>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
-    }
-}
-
-impl<'a> IntoIterator for &'a mut DirectiveList {
-    type Item = &'a mut Component<Directive>;
-
-    type IntoIter = std::slice::IterMut<'a, Component<Directive>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter_mut()
-    }
-}
-
-impl<D> FromIterator<D> for DirectiveList
-where
-    D: Into<Component<Directive>>,
-{
-    fn from_iter<T: IntoIterator<Item = D>>(iter: T) -> Self {
-        Self(iter.into_iter().map(Into::into).collect())
-    }
 }
 
 impl Eq for Schema {}
@@ -1301,9 +1172,9 @@ impl std::fmt::Debug for DebugTypes<'_> {
 }
 
 struct MetaFieldDefinitions {
-    __typename: Component<FieldDefinition>,
-    __schema: Component<FieldDefinition>,
-    __type: Component<FieldDefinition>,
+    __typename: Node<FieldDefinition>,
+    __schema: Node<FieldDefinition>,
+    __type: Node<FieldDefinition>,
 }
 
 impl MetaFieldDefinitions {
@@ -1311,7 +1182,7 @@ impl MetaFieldDefinitions {
         static DEFS: OnceLock<MetaFieldDefinitions> = OnceLock::new();
         DEFS.get_or_init(|| Self {
             // __typename: String!
-            __typename: Component::new(FieldDefinition {
+            __typename: Node::new(FieldDefinition {
                 description: None,
                 name: name!("__typename"),
                 arguments: Vec::new(),
@@ -1319,7 +1190,7 @@ impl MetaFieldDefinitions {
                 directives: ast::DirectiveList::new(),
             }),
             // __schema: __Schema!
-            __schema: Component::new(FieldDefinition {
+            __schema: Node::new(FieldDefinition {
                 description: None,
                 name: name!("__schema"),
                 arguments: Vec::new(),
@@ -1327,7 +1198,7 @@ impl MetaFieldDefinitions {
                 directives: ast::DirectiveList::new(),
             }),
             // __type(name: String!): __Type
-            __type: Component::new(FieldDefinition {
+            __type: Node::new(FieldDefinition {
                 description: None,
                 name: name!("__type"),
                 arguments: vec![InputValueDefinition {

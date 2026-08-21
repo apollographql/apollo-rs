@@ -12,7 +12,7 @@ pub(crate) fn validate_enum_definition(
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
-        enum_def.directives.iter_ast(),
+        enum_def.directives.iter(),
         ast::DirectiveLocation::Enum,
         // enums don't use variables
         Default::default(),

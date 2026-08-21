@@ -44,17 +44,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "dog": Component {
-                        origin: Definition,
-                        node: 245..253 @18 FieldDefinition {
-                            description: None,
-                            name: "dog",
-                            arguments: [],
-                            ty: Named(
-                                "Dog",
-                            ),
-                            directives: [],
-                        },
+                    "dog": 245..253 @18 FieldDefinition {
+                        description: None,
+                        name: "dog",
+                        arguments: [],
+                        ty: Named(
+                            "Dog",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -66,63 +63,51 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 270..283 @18 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 270..283 @18 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "nickname": Component {
-                        origin: Definition,
-                        node: 286..302 @18 FieldDefinition {
-                            description: None,
-                            name: "nickname",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "nickname": 286..302 @18 FieldDefinition {
+                        description: None,
+                        name: "nickname",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "barkVolume": Component {
-                        origin: Definition,
-                        node: 305..320 @18 FieldDefinition {
-                            description: None,
-                            name: "barkVolume",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "barkVolume": 305..320 @18 FieldDefinition {
+                        description: None,
+                        name: "barkVolume",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "isHouseTrained": Component {
-                        origin: Definition,
-                        node: 323..370 @18 FieldDefinition {
-                            description: None,
-                            name: "isHouseTrained",
-                            arguments: [
-                                338..359 @18 InputValueDefinition {
-                                    description: None,
-                                    name: "atOtherHomes",
-                                    ty: 352..359 @18 Named(
-                                        "Boolean",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "isHouseTrained": 323..370 @18 FieldDefinition {
+                        description: None,
+                        name: "isHouseTrained",
+                        arguments: [
+                            338..359 @18 InputValueDefinition {
+                                description: None,
+                                name: "atOtherHomes",
+                                ty: 352..359 @18 Named(
+                                    "Boolean",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
