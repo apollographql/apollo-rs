@@ -16,13 +16,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [x.x.x] (unreleased) - 2026-mm-dd
+# [0.9.0-beta.0](https://crates.io/crates/apollo-parser/0.9.0-beta.0) - 2026-08-21
 
 > Important: 1 breaking change below, indicated by **BREAKING**
 
 ## BREAKING
 
-- **Rename the `VariableDefinitions` CST node to `VariablesDefinition`**
+- **Rename the `VariableDefinitions` CST node to `VariablesDefinition` - [tninesling], [pull/1080]**
 
   The September 2025 specification renamed the `VariableDefinitions` grammar
   production to `VariablesDefinition`. The CST follows suit:
@@ -38,7 +38,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **September 2025 string and source character support**
+- **September 2025 string and source character support - [tninesling], [pull/1086]**
 
   * String values now support variable-width Unicode escape sequences
     (`"\u{1F4A9}"`) and legacy surrogate pairs, per the updated
@@ -59,6 +59,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   A description on a query shorthand (bare braced selection set) raises a
   parse error.
 
+[pull/1080]: https://github.com/apollographql/apollo-rs/pull/1080
+[pull/1086]: https://github.com/apollographql/apollo-rs/pull/1086
 [graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/974]: https://github.com/apollographql/apollo-rs/pull/974
