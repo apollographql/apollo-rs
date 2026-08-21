@@ -35,7 +35,7 @@ Or add this to your `Cargo.toml` for a manual installation:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-parser = "0.8.6"
+apollo-parser = "0.9.0-beta.0"
 ```
 
 ## Rust versions
