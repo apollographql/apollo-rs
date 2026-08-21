@@ -13,10 +13,7 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "SearchQuery",
-            },
+            18..29 @8 "SearchQuery",
         ),
         mutation: None,
         subscription: None,
@@ -46,14 +43,8 @@ Schema {
                 name: "SearchResult",
                 directives: [],
                 members: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Photo",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Person",
-                    },
+                    54..59 @8 "Photo",
+                    62..68 @8 "Person",
                 },
             },
         ),

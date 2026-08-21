@@ -46,8 +46,8 @@ impl Node<SchemaDefinition> {
         let extensions = self.extensions();
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
             self.iter_root_operations()
-                .filter(|(_, op)| op.origin.extension_id() == ext)
-                .map(|(ty, op)| (ty, op.name.clone()).into())
+                .filter(|(_, op)| op.extension_id() == ext)
+                .map(|(ty, op)| (ty, op.as_ref().clone()).into())
                 .collect()
         };
         let orphan_extensions = root_ops(None).is_empty();
@@ -73,7 +73,7 @@ impl Node<SchemaDefinition> {
                     .get(&default_type_name).is_some_and(|def| def.is_object());
                 let implicit_root_operation = has_object.then_some(&default_type_name);
                 // What we have
-                let actual_root_operation = root_operation.as_ref().map(|r| &r.name);
+                let actual_root_operation = root_operation.as_ref().map(|r| r.as_ref());
                 // Only allow an implicit `schema` definition if they match
                 actual_root_operation == implicit_root_operation
             })
@@ -305,11 +305,11 @@ fn components<'a, T: 'a>(
         .collect()
 }
 
-fn names(names: &IndexSet<ComponentName>, ext: Option<&ExtensionId>) -> Vec<Name> {
+fn names(names: &IndexSet<Node<Name>>, ext: Option<&ExtensionId>) -> Vec<Name> {
     names
         .iter()
-        .filter(|component| component.origin.extension_id() == ext)
-        .map(|component| component.name.clone())
+        .filter(|component| component.extension_id() == ext)
+        .map(|component| component.as_ref().clone())
         .collect()
 }
 

@@ -13,17 +13,11 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Query",
-            },
+            "Query",
         ),
         mutation: None,
         subscription: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Subscription",
-            },
+            "Subscription",
         ),
     },
     directive_definitions: {

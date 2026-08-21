@@ -13,22 +13,13 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "customPetQuery",
-            },
+            18..32 @5 "customPetQuery",
         ),
         mutation: Some(
-            ComponentName {
-                origin: Definition,
-                name: "customPetMutation",
-            },
+            84..101 @5 "customPetMutation",
         ),
         subscription: Some(
-            ComponentName {
-                origin: Definition,
-                name: "customPetSubscription",
-            },
+            50..71 @5 "customPetSubscription",
         ),
     },
     directive_definitions: {

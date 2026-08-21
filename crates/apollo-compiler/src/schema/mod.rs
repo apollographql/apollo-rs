@@ -142,13 +142,13 @@ pub struct SchemaDefinition {
     pub directives: DirectiveList,
 
     /// Name of the object type for the `query` root operation
-    pub query: Option<ComponentName>,
+    pub query: Option<Node<Name>>,
 
     /// Name of the object type for the `mutation` root operation
-    pub mutation: Option<ComponentName>,
+    pub mutation: Option<Node<Name>>,
 
     /// Name of the object type for the `subscription` root operation
-    pub subscription: Option<ComponentName>,
+    pub subscription: Option<Node<Name>>,
 }
 
 /// The list of [_Directives_](https://spec.graphql.org/September2025/#Directives)
@@ -191,7 +191,7 @@ pub struct ScalarType {
 pub struct ObjectType {
     pub description: Option<Node<str>>,
     pub name: Name,
-    pub implements_interfaces: IndexSet<ComponentName>,
+    pub implements_interfaces: IndexSet<Node<Name>>,
     pub directives: DirectiveList,
 
     /// Explicit field definitions.
@@ -205,7 +205,7 @@ pub struct ObjectType {
 pub struct InterfaceType {
     pub description: Option<Node<str>>,
     pub name: Name,
-    pub implements_interfaces: IndexSet<ComponentName>,
+    pub implements_interfaces: IndexSet<Node<Name>>,
 
     pub directives: DirectiveList,
 
@@ -227,7 +227,7 @@ pub struct UnionType {
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
-    pub members: IndexSet<ComponentName>,
+    pub members: IndexSet<Node<Name>>,
 }
 
 /// The definition of an [enum type](https://spec.graphql.org/September2025/#sec-Enums),
@@ -516,7 +516,7 @@ impl Schema {
             ast::OperationType::Subscription => &self.schema_definition.subscription,
         }
         .as_ref()
-        .map(|component| &component.name)
+        .map(|component| component.as_ref())
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -572,7 +572,7 @@ impl Schema {
             match ty {
                 ExtendedType::Object(def) => {
                     for interface in &def.implements_interfaces {
-                        map.entry(interface.name.clone())
+                        map.entry(interface.as_ref().clone())
                             .or_default()
                             .objects
                             .insert(ty_name.clone());
@@ -580,7 +580,7 @@ impl Schema {
                 }
                 ExtendedType::Interface(def) => {
                     for interface in &def.implements_interfaces {
-                        map.entry(interface.name.clone())
+                        map.entry(interface.as_ref().clone())
                             .or_default()
                             .interfaces
                             .insert(ty_name.clone());
@@ -653,9 +653,7 @@ impl Schema {
 }
 
 impl SchemaDefinition {
-    pub fn iter_root_operations(
-        &self,
-    ) -> impl Iterator<Item = (ast::OperationType, &ComponentName)> {
+    pub fn iter_root_operations(&self) -> impl Iterator<Item = (ast::OperationType, &Node<Name>)> {
         [
             (ast::OperationType::Query, &self.query),
             (ast::OperationType::Mutation, &self.mutation),
@@ -665,17 +663,17 @@ impl SchemaDefinition {
         .filter_map(|(ty, maybe_op)| maybe_op.as_ref().map(|op| (ty, op)))
     }
 
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| &dir.origin)
-            .chain(self.query.iter().map(|name| &name.origin))
-            .chain(self.mutation.iter().map(|name| &name.origin))
-            .chain(self.subscription.iter().map(|name| &name.origin))
+            .map(|dir| dir.origin.extension_id())
+            .chain(self.query.iter().map(|name| name.extension_id()))
+            .chain(self.mutation.iter().map(|name| name.extension_id()))
+            .chain(self.subscription.iter().map(|name| name.extension_id()))
     }
 
     /// Collect `schema` extensions that contribute any component
@@ -683,9 +681,7 @@ impl SchemaDefinition {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 }
 
@@ -861,41 +857,39 @@ impl ExtendedType {
         }
     }
 
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         match self {
-            Self::Scalar(ty) => Box::new(ty.iter_origins()) as Box<dyn Iterator<Item = _>>,
-            Self::Object(ty) => Box::new(ty.iter_origins()),
-            Self::Interface(ty) => Box::new(ty.iter_origins()),
-            Self::Union(ty) => Box::new(ty.iter_origins()),
-            Self::Enum(ty) => Box::new(ty.iter_origins()),
-            Self::InputObject(ty) => Box::new(ty.iter_origins()),
+            Self::Scalar(ty) => Box::new(ty.iter_extension_ids()) as Box<dyn Iterator<Item = _>>,
+            Self::Object(ty) => Box::new(ty.iter_extension_ids()),
+            Self::Interface(ty) => Box::new(ty.iter_extension_ids()),
+            Self::Union(ty) => Box::new(ty.iter_extension_ids()),
+            Self::Enum(ty) => Box::new(ty.iter_extension_ids()),
+            Self::InputObject(ty) => Box::new(ty.iter_extension_ids()),
         }
     }
 
-    /// Collect `schema` extensions that contribute any component
+    /// Collect type extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
 }
 
 impl ScalarType {
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
-        self.directives.iter().map(|dir| &dir.origin)
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
+        self.directives.iter().map(|dir| dir.origin.extension_id())
     }
 
     /// Collect scalar type extensions that contribute any component
@@ -903,29 +897,31 @@ impl ScalarType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
 }
 
 impl ObjectType {
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| &dir.origin)
+            .map(|dir| dir.origin.extension_id())
             .chain(
                 self.implements_interfaces
                     .iter()
-                    .map(|component| &component.origin),
+                    .map(|name| name.extension_id()),
             )
-            .chain(self.fields.values().map(|field| &field.origin))
+            .chain(
+                self.fields
+                    .values()
+                    .map(|field| field.origin.extension_id()),
+            )
     }
 
     /// Collect object type extensions that contribute any component
@@ -933,29 +929,31 @@ impl ObjectType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
 }
 
 impl InterfaceType {
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| &dir.origin)
+            .map(|dir| dir.origin.extension_id())
             .chain(
                 self.implements_interfaces
                     .iter()
-                    .map(|component| &component.origin),
+                    .map(|name| name.extension_id()),
             )
-            .chain(self.fields.values().map(|field| &field.origin))
+            .chain(
+                self.fields
+                    .values()
+                    .map(|field| field.origin.extension_id()),
+            )
     }
 
     /// Collect interface type extensions that contribute any component
@@ -963,24 +961,22 @@ impl InterfaceType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
 }
 
 impl UnionType {
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| &dir.origin)
-            .chain(self.members.iter().map(|component| &component.origin))
+            .map(|dir| dir.origin.extension_id())
+            .chain(self.members.iter().map(|name| name.extension_id()))
     }
 
     /// Collect union type extensions that contribute any component
@@ -988,24 +984,26 @@ impl UnionType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
 }
 
 impl EnumType {
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| &dir.origin)
-            .chain(self.values.values().map(|value| &value.origin))
+            .map(|dir| dir.origin.extension_id())
+            .chain(
+                self.values
+                    .values()
+                    .map(|value| value.origin.extension_id()),
+            )
     }
 
     /// Collect enum type extensions that contribute any component
@@ -1013,9 +1011,7 @@ impl EnumType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();
@@ -1027,15 +1023,19 @@ impl InputObjectType {
         self.directives.get("oneOf").is_some()
     }
 
-    /// Iterate over the `origins` of all components
+    /// Iterate over the extension IDs of all components
     ///
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
-    pub fn iter_origins(&self) -> impl Iterator<Item = &ComponentOrigin> {
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
         self.directives
             .iter()
-            .map(|dir| &dir.origin)
-            .chain(self.fields.values().map(|field| &field.origin))
+            .map(|dir| dir.origin.extension_id())
+            .chain(
+                self.fields
+                    .values()
+                    .map(|field| field.origin.extension_id()),
+            )
     }
 
     /// Collect input object type extensions that contribute any component
@@ -1043,9 +1043,7 @@ impl InputObjectType {
     /// The order of the returned set is unspecified but deterministic
     /// for a given apollo-compiler version.
     pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.iter_origins()
-            .filter_map(|origin| origin.extension_id())
-            .collect()
+        self.iter_extension_ids().flatten().collect()
     }
 
     serialize_method!();

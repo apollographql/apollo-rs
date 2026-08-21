@@ -113,13 +113,19 @@ pub struct ComponentName {
 
 impl From<&Name> for ComponentName {
     fn from(value: &Name) -> Self {
-        value.to_component(ComponentOrigin::Definition)
+        Self {
+            origin: ComponentOrigin::Definition,
+            name: value.clone(),
+        }
     }
 }
 
 impl From<Name> for ComponentName {
     fn from(value: Name) -> Self {
-        value.to_component(ComponentOrigin::Definition)
+        Self {
+            origin: ComponentOrigin::Definition,
+            name: value,
+        }
     }
 }
 

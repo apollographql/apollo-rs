@@ -191,7 +191,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
                     .members
                     .get_index(idx)
                     .expect("choose_index returned valid index");
-                Ok(&member.name)
+                Ok(member.as_ref())
             }
             Some(ExtendedType::Interface(_)) => {
                 let count = self
@@ -236,7 +236,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
                 Some(ExtendedType::Object(obj)) if obj.implements_interfaces.contains(cond)
             ),
             Some(ExtendedType::Union(union_ty)) => {
-                union_ty.members.iter().any(|m| m.name == *concrete)
+                union_ty.members.iter().any(|m| **m == *concrete)
             }
             _ => false,
         }
