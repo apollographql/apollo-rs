@@ -4,11 +4,56 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [x.x.x] (unreleased)
+# [2.0.0-beta.0](https://crates.io/crates/apollo-compiler/2.0.0-beta.0) - 2026-08-21
+
+> Important: 3 breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Rename APIs to follow September 2025 specification terminology - [tninesling], [pull/1080]**
+
+  * `executable::Field::response_key()` is now `response_name()`, following
+    the spec’s "response key" → "response name" rename.
+  * `resolvers::FieldError` is now `resolvers::ExecutionError`, following the
+    spec’s "field error" → "execution error" rename.
+
+- **Add `description` fields to executable definition types - [goto-bus-stop], [pull/974]**
+
+  Descriptions on operation definitions, fragment definitions, and variable
+  definitions are now parsed and serialized, as described by the latest
+  GraphQL spec draft ([graphql-spec#1170]). New fields:
+
+  - `apollo_compiler::ast::OperationDefinition::description`
+  - `apollo_compiler::ast::FragmentDefinition::description`
+  - `apollo_compiler::ast::VariableDefinition::description`
+  - `apollo_compiler::executable::Operation::description`
+  - `apollo_compiler::executable::Fragment::description`
+
+  Code that constructs these structures directly needs to add
+  `description: None` (or a description!). A description on a query shorthand
+  (bare braced selection set) is a parse error.
+
+- **September 2025 validation and execution rules - [tninesling], [pull/1082], [pull/1087]**
+
+  * Default values of arguments and input object fields are now validated
+    against their type’s input coercion rules ([issue/928]), and
+    `InputObjectDefaultValueHasCycle` rejects cyclic default values.
+    `SchemaBuilder::validate_default_values(bool)` allows opting out for
+    schemas with known mistyped defaults.
+  * `@deprecated` must not appear on required (non-null without a default)
+    arguments or input object fields.
+  * `IsValidImplementation`: an implementing field must not be deprecated when
+    the interface field it implements is not deprecated.
+  * At execution time, default values are coerced (applying defaults of nested
+    input object fields) instead of being used verbatim.
+  * `ID` results that are numeric are serialized as strings.
+
+[issue/928]: https://github.com/apollographql/apollo-rs/issues/928
 
 ## Features
 
-- **Implement `@oneOf` input objects - [abernix], [issue/882], [pull/1030].**
+- **Implement `@oneOf` input objects - [abernix], [issue/882], [pull/1030]**
+
   Adds full support for the [`@oneOf` RFC](https://github.com/graphql/graphql-spec/pull/825)
   as defined in the GraphQL draft specification (§3.10.1 OneOf Input Objects).
 
@@ -28,70 +73,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     "exactly one non-null field" invariant for `@oneOf` types.
   - `InputObjectType::is_one_of() -> bool` convenience method added.
 
-## Fixes
-
-- **Apply spec rule 5.8.5 to nested variable usages - [abernix], [pull/1030].**
-  `value_of_correct_type` previously compared only inner named types for
-  nested variables — nullability and list-shape mismatches at list-value
-  entries and input-object-field positions were silently accepted.  Now the
-  full [`is_variable_usage_allowed`](https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed)
-  check runs against the innermost position, and mismatches surface as
-  `DisallowedVariableUsage` with argument/field context.
-
-  Note: operations that previously passed validation but violated this rule
-  will now report errors.
-
-[abernix]: https://github.com/abernix
-[issue/882]: https://github.com/apollographql/apollo-rs/issues/882
-[pull/1030]: https://github.com/apollographql/apollo-rs/pull/1030
-
-# [x.x.x] (unreleased) - 2026-mm-dd
-
-> Important: 3 breaking changes below, indicated by **BREAKING**
-
-## BREAKING
-
-- **Rename APIs to follow September 2025 specification terminology**
-
-  * `executable::Field::response_key()` is now `response_name()`, following
-    the spec's "response key" → "response name" rename.
-  * `resolvers::FieldError` is now `resolvers::ExecutionError`, following the
-    spec's "field error" → "execution error" rename.
-
-- **Add `description` fields to executable definition types - [goto-bus-stop], [pull/974]**
-
-  Descriptions on operation definitions, fragment definitions, and variable
-  definitions are now parsed and serialized, as described by the latest
-  GraphQL spec draft ([graphql-spec#1170]). New fields:
-
-  - `apollo_compiler::ast::OperationDefinition::description`
-  - `apollo_compiler::ast::FragmentDefinition::description`
-  - `apollo_compiler::ast::VariableDefinition::description`
-  - `apollo_compiler::executable::Operation::description`
-  - `apollo_compiler::executable::Fragment::description`
-
-  Code that constructs these structures directly needs to add
-  `description: None` (or a description!). A description on a query shorthand
-  (bare braced selection set) is a parse error.
-
-- **September 2025 validation and execution rules**
-
-  * Default values of arguments and input object fields are now validated
-    against their type's input coercion rules ([issue/928]), and
-    `InputObjectDefaultValueHasCycle` rejects cyclic default values.
-  * `@deprecated` must not appear on required (non-null without a default)
-    arguments or input object fields.
-  * `IsValidImplementation`: an implementing field must not be deprecated when
-    the interface field it implements is not deprecated.
-  * At execution time, default values are coerced (applying defaults of nested
-    input object fields) instead of being used verbatim.
-  * `ID` results that are numeric are serialized as strings.
-
-[issue/928]: https://github.com/apollographql/apollo-rs/issues/928
-
-## Features
-
-- **Built-in schema follows the September 2025 specification**
+- **Built-in schema follows the September 2025 specification - [tninesling], [pull/1080]**
 
   * `includeDeprecated` introspection arguments are now non-null
     `Boolean! = false`.
@@ -107,7 +89,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ([graphql-spec#1110]). apollo-compiler previously had no `@defer` validation,
   so operations the spec forbids passed silently.
 
-  Three rules are validated, matching graphql-js's `specifiedRules`:
+  Three rules are validated, matching graphql-js’s `specifiedRules`:
 
   - Every `@defer(label:)` value must be a static string (not a variable) and
     unique across the document.
@@ -121,6 +103,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   must declare the directive. `@stream` is out of scope.
 
 ## Fixes
+
+- **Apply spec rule 5.8.5 to nested variable usages - [abernix], [pull/1030]**
+
+  `value_of_correct_type` previously compared only inner named types for
+  nested variables — nullability and list-shape mismatches at list-value
+  entries and input-object-field positions were silently accepted.  Now the
+  full [`is_variable_usage_allowed`](https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed)
+  check runs against the innermost position, and mismatches surface as
+  `DisallowedVariableUsage` with argument/field context.
+
+  Note: operations that previously passed validation but violated this rule
+  will now report errors.
 
 - **Align resolver-based execution and input coercion with the GraphQL spec - [duckki], [pull/1089]**
 
@@ -152,12 +146,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   canceled when an execution error propagates through a non-null position,
   matching graphql-js.
 
-[graphql-spec#1110]: https://github.com/graphql/graphql-spec/pull/1110
-[graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
+- **Validate that root operations use different types - [tninesling], [pull/1071]**
+
+  The schema validator now rejects schemas where multiple root operation types
+  (query, mutation, subscription) resolve to the same object type.
+
+- **Preserve source location for adopted orphan type extensions - [dariuszkuc], [pull/1041]**
+
+  When `adopt_orphan_extensions` synthesized a type from orphan extensions,
+  the resulting node had no source location. The synthesized type now uses
+  the first extension’s source location.
+
+[abernix]: https://github.com/abernix
+[dariuszkuc]: https://github.com/dariuszkuc
 [duckki]: https://github.com/duckki
 [goto-bus-stop]: https://github.com/goto-bus-stop
-[pull/1069]: https://github.com/apollographql/apollo-rs/pull/1069
+[tninesling]: https://github.com/tninesling
+[graphql-spec#1110]: https://github.com/graphql/graphql-spec/pull/1110
+[graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
+[issue/882]: https://github.com/apollographql/apollo-rs/issues/882
+[issue/928]: https://github.com/apollographql/apollo-rs/issues/928
 [pull/974]: https://github.com/apollographql/apollo-rs/pull/974
+[pull/1030]: https://github.com/apollographql/apollo-rs/pull/1030
+[pull/1041]: https://github.com/apollographql/apollo-rs/pull/1041
+[pull/1069]: https://github.com/apollographql/apollo-rs/pull/1069
+[pull/1071]: https://github.com/apollographql/apollo-rs/pull/1071
+[pull/1080]: https://github.com/apollographql/apollo-rs/pull/1080
+[pull/1082]: https://github.com/apollographql/apollo-rs/pull/1082
+[pull/1087]: https://github.com/apollographql/apollo-rs/pull/1087
 [pull/1089]: https://github.com/apollographql/apollo-rs/pull/1089
 
 # [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
