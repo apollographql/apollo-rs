@@ -13,6 +13,7 @@ use apollo_compiler::Node;
 use apollo_compiler::Schema;
 use indexmap::IndexMap;
 use serde_json_bytes::json;
+use serde_json_bytes::ByteString;
 use serde_json_bytes::Map;
 use serde_json_bytes::Value;
 
@@ -42,6 +43,7 @@ pub struct ResponseBuilder<'a, 'doc, 'schema, R: RandomProvider> {
     max_list_size: usize,
     null_ratio: Option<(u32, u32)>,
     operation_name: Option<&'doc str>,
+    partial_data: Option<Value>,
 }
 
 impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R> {
@@ -60,6 +62,7 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
             max_list_size: 5,
             null_ratio: None,
             operation_name: None,
+            partial_data: None,
         }
     }
 
@@ -106,25 +109,56 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
         self
     }
 
+    /// Provide partial response data that the generated response must include verbatim.
+    ///
+    /// The value is a response-shaped fragment, matched against the operation's selection
+    /// set from the root. Wherever the partial data covers a requested field (matched by
+    /// response key — the alias if present, otherwise the field name), its value takes
+    /// precedence over random generation:
+    ///
+    /// - **Leaf positions** echo the partial value verbatim (never nulled by
+    ///   [`with_null_ratio`][Self::with_null_ratio]).
+    /// - **Object positions** recurse: covered sub-fields echo, uncovered sub-fields are
+    ///   generated as usual. A `__typename` entry in the partial object pins the concrete
+    ///   type used for abstract (union/interface) positions; an unknown `__typename`
+    ///   produces `null` for that position.
+    /// - **List positions** take their length and order from the partial array, recursing
+    ///   into each element.
+    ///
+    /// Fields not covered by the partial data are generated as usual. Custom
+    /// [`Generator`]s are not consulted for object positions covered by partial data.
+    pub fn with_partial_data(mut self, data: Value) -> Self {
+        self.partial_data = Some(data);
+        self
+    }
+
     /// Builds a complete GraphQL response `Value` with a `data` key, matching the shape of `self.doc`.
     pub fn build(mut self) -> Result<Value, ResponseError> {
-        if let Ok(operation) = self.doc.operations.get(self.operation_name) {
-            let data = self.selection_set(&operation.selection_set)?;
-            Ok(json!({ "data": data }))
-        } else {
-            Ok(json!({ "data": null }))
-        }
+        let data = self.build_data()?;
+        Ok(json!({ "data": data }))
     }
 
     /// Builds just the data portion of the response (without the `{ "data": ... }` wrapper).
     ///
     /// This is useful if you need to manipulate the response data before wrapping it into JSON.
     pub fn build_data(&mut self) -> Result<Value, ResponseError> {
-        if let Ok(operation) = self.doc.operations.get(self.operation_name) {
-            self.selection_set(&operation.selection_set)
-        } else {
-            Ok(Value::Null)
-        }
+        let Ok(operation) = self.doc.operations.get(self.operation_name) else {
+            return Ok(Value::Null);
+        };
+
+        // Take the partial data out of `self` so the overlay walk can borrow it while
+        // generating through `&mut self`, then restore it for any subsequent build.
+        let partial_data = self.partial_data.take();
+        let result = match &partial_data {
+            Some(Value::Object(overlay)) => {
+                let selection_set = &operation.selection_set;
+                let concrete = self.concrete_type(&selection_set.ty)?.clone();
+                self.overlaid_object(selection_set, &concrete, overlay)
+            }
+            _ => self.selection_set(&operation.selection_set),
+        };
+        self.partial_data = partial_data;
+        result
     }
 
     /// Collect fields from a selection set, grouping by response key (alias or field name).
@@ -315,6 +349,97 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
             values.push(self.selection_set(selection_set)?);
         }
         Ok(Value::Array(values))
+    }
+
+    /// Like [`selection_set`][Self::selection_set], but with a fixed concrete type and an
+    /// overlay object whose values take precedence over generated ones. Requested fields
+    /// covered by the overlay (matched by response key) echo the overlay's value; the
+    /// rest are generated as usual.
+    fn overlaid_object(
+        &mut self,
+        selection_set: &SelectionSet,
+        concrete: &Name,
+        overlay: &Map<ByteString, Value>,
+    ) -> Result<Value, ResponseError> {
+        let grouped_fields = self.collect_fields(selection_set, concrete);
+
+        let mut result = Map::new();
+
+        for (key, fields) in grouped_fields {
+            let meta_field = &fields[0];
+
+            let val = if meta_field.name == TYPENAME {
+                Value::String(concrete.to_string().into())
+            } else if let Some(overlay_value) = overlay.get(key.as_str()) {
+                self.overlaid_value(&fields, meta_field, overlay_value)?
+            } else if !meta_field.ty().is_non_null() && self.should_be_null()? {
+                Value::Null
+            } else {
+                self.generate_field_value(&fields, meta_field)?
+            };
+
+            result.insert(key, val);
+        }
+
+        Ok(Value::Object(result))
+    }
+
+    /// Produce the value for a field covered by an overlay. Leaf values are echoed
+    /// verbatim; composite values recurse with the overlay's corresponding object so
+    /// that sub-selections not present in the overlay are still generated.
+    fn overlaid_value(
+        &mut self,
+        fields: &[Node<Field>],
+        meta_field: &Node<Field>,
+        overlay_value: &Value,
+    ) -> Result<Value, ResponseError> {
+        if meta_field.selection_set.is_empty() {
+            return Ok(overlay_value.clone());
+        }
+
+        let mut merged_selections = Vec::new();
+        for field in fields {
+            merged_selections.extend_from_slice(&field.selection_set.selections);
+        }
+        let full_selection_set = SelectionSet {
+            ty: meta_field.selection_set.ty.clone(),
+            selections: merged_selections,
+        };
+
+        if meta_field.ty().is_list() {
+            if let Some(items) = overlay_value.as_array() {
+                let mut values = Vec::with_capacity(items.len());
+                for item in items {
+                    values.push(self.overlaid_composite(&full_selection_set, item)?);
+                }
+                Ok(Value::Array(values))
+            } else {
+                Ok(overlay_value.clone())
+            }
+        } else {
+            self.overlaid_composite(&full_selection_set, overlay_value)
+        }
+    }
+
+    /// Recurse into a composite overlay value: objects are walked with
+    /// [`overlaid_object`][Self::overlaid_object] (concrete type from the object's
+    /// `__typename` when present), anything else is echoed verbatim.
+    fn overlaid_composite(
+        &mut self,
+        selection_set: &SelectionSet,
+        overlay_value: &Value,
+    ) -> Result<Value, ResponseError> {
+        let Some(overlay) = overlay_value.as_object() else {
+            return Ok(overlay_value.clone());
+        };
+        let concrete = match overlay.get(TYPENAME).and_then(|value| value.as_str()) {
+            Some(type_name) => match Name::new(type_name) {
+                Ok(name) if self.schema.types.contains_key(&name) => name,
+                _ => return Ok(Value::Null),
+            },
+            None => self.concrete_type(&selection_set.ty)?.clone(),
+        };
+        self.overlaid_object(selection_set, &concrete, overlay)
     }
 
     fn leaf_field(&mut self, type_name: &Name) -> Result<Value, ResponseError> {
@@ -881,5 +1006,200 @@ mod tests {
         let name = user.get("name").unwrap().as_str().unwrap();
         assert!((1..=10).contains(&name.len()));
         assert!(name.chars().all(|c| c.is_ascii_alphanumeric()));
+    }
+
+    /// Helper: build a response with partial data provided.
+    fn build_with_partial_data(schema_sdl: &str, query: &str, partial: Value) -> Value {
+        let schema = Schema::parse_and_validate(schema_sdl, "schema.graphql").unwrap();
+        let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+        let mut rng = RandProvider(rand::rng());
+        ResponseBuilder::new(&mut rng, &doc, &schema)
+            .with_null_ratio(0, 1)
+            .with_min_list_size(1)
+            .with_partial_data(partial)
+            .build()
+            .unwrap()
+    }
+
+    #[test]
+    fn partial_data_echoes_covered_fields_and_generates_the_rest() {
+        let response = build_with_partial_data(
+            SIMPLE_SCHEMA,
+            r#"query { user(id: "1") { id name email } }"#,
+            json!({ "user": { "id": "user-1", "name": "Alice" } }),
+        );
+        let user = response.get("data").unwrap().get("user").unwrap();
+        assert_eq!(user.get("id").unwrap().as_str().unwrap(), "user-1");
+        assert_eq!(user.get("name").unwrap().as_str().unwrap(), "Alice");
+        assert!(
+            user.get("email").unwrap().is_string(),
+            "uncovered field should be generated"
+        );
+    }
+
+    #[test]
+    fn partial_data_pins_list_length_and_order() {
+        let response = build_with_partial_data(
+            SIMPLE_SCHEMA,
+            "query { posts { id title views } }",
+            json!({ "posts": [{ "id": "p-1" }, { "id": "p-2" }, { "id": "p-3" }] }),
+        );
+        let posts = response
+            .get("data")
+            .unwrap()
+            .get("posts")
+            .unwrap()
+            .as_array()
+            .unwrap();
+        assert_eq!(posts.len(), 3, "list length must match the partial array");
+        for (i, post) in posts.iter().enumerate() {
+            assert_eq!(
+                post.get("id").unwrap().as_str().unwrap(),
+                format!("p-{}", i + 1),
+                "list order must match the partial array"
+            );
+            assert!(post.get("title").unwrap().is_string());
+            assert!(post.get("views").unwrap().is_number());
+        }
+    }
+
+    #[test]
+    fn partial_data_recurses_into_nested_objects() {
+        let response = build_with_partial_data(
+            SIMPLE_SCHEMA,
+            r#"query { user(id: "1") { id address { city state } } }"#,
+            json!({ "user": { "id": "user-1", "address": { "city": "Cleveland" } } }),
+        );
+        let user = response.get("data").unwrap().get("user").unwrap();
+        let address = user.get("address").unwrap();
+        assert_eq!(address.get("city").unwrap().as_str().unwrap(), "Cleveland");
+        assert!(
+            address.get("state").unwrap().is_string(),
+            "uncovered nested field should be generated"
+        );
+    }
+
+    #[test]
+    fn partial_data_typename_pins_abstract_types() {
+        let query = r#"
+            query {
+                user(id: "1") {
+                    content {
+                        __typename
+                        ... on Post { title views }
+                        ... on Article { title citations }
+                    }
+                }
+            }
+        "#;
+        let response = build_with_partial_data(
+            UNION_SCHEMA,
+            query,
+            json!({
+                "user": {
+                    "content": [
+                        { "__typename": "Post", "title": "pinned post" },
+                        { "__typename": "Article" },
+                    ],
+                },
+            }),
+        );
+        let content = response
+            .get("data")
+            .unwrap()
+            .get("user")
+            .unwrap()
+            .get("content")
+            .unwrap()
+            .as_array()
+            .unwrap();
+        assert_eq!(content.len(), 2);
+
+        let post = &content[0];
+        assert_eq!(post.get("__typename").unwrap().as_str().unwrap(), "Post");
+        assert_eq!(post.get("title").unwrap().as_str().unwrap(), "pinned post");
+        assert!(post.get("views").unwrap().is_number());
+        assert!(post.get("citations").is_none());
+
+        let article = &content[1];
+        assert_eq!(
+            article.get("__typename").unwrap().as_str().unwrap(),
+            "Article"
+        );
+        assert!(article.get("title").unwrap().is_string());
+        assert!(article.get("citations").unwrap().is_array());
+        assert!(article.get("views").is_none());
+    }
+
+    #[test]
+    fn partial_data_unknown_typename_produces_null() {
+        let query = r#"
+            query {
+                user(id: "1") {
+                    content {
+                        __typename
+                        ... on Post { title }
+                    }
+                }
+            }
+        "#;
+        let response = build_with_partial_data(
+            UNION_SCHEMA,
+            query,
+            json!({
+                "user": {
+                    "content": [{ "__typename": "NoSuchType" }],
+                },
+            }),
+        );
+        let content = response
+            .get("data")
+            .unwrap()
+            .get("user")
+            .unwrap()
+            .get("content")
+            .unwrap()
+            .as_array()
+            .unwrap();
+        assert_eq!(content.len(), 1);
+        assert!(content[0].is_null());
+    }
+
+    #[test]
+    fn partial_data_matches_by_response_key() {
+        let response = build_with_partial_data(
+            SIMPLE_SCHEMA,
+            r#"query { user(id: "1") { userId: id name } }"#,
+            json!({ "user": { "userId": "user-1" } }),
+        );
+        let user = response.get("data").unwrap().get("user").unwrap();
+        assert_eq!(user.get("userId").unwrap().as_str().unwrap(), "user-1");
+    }
+
+    #[test]
+    fn partial_data_is_never_nulled() {
+        let schema_sdl = r#"
+            type Query {
+                user: User
+            }
+            type User {
+                id: ID
+                name: String
+            }
+        "#;
+        let schema = Schema::parse_and_validate(schema_sdl, "schema.graphql").unwrap();
+        let query = "query { user { id name } }";
+        let doc = ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+        let mut rng = RandProvider(rand::rng());
+        let response = ResponseBuilder::new(&mut rng, &doc, &schema)
+            // Every nullable generated field becomes null...
+            .with_null_ratio(1, 1)
+            .with_partial_data(json!({ "user": { "id": "user-1" } }))
+            .build()
+            .unwrap();
+        let user = response.get("data").unwrap().get("user").unwrap();
+        // ...but the covered field is echoed, not nulled.
+        assert_eq!(user.get("id").unwrap().as_str().unwrap(), "user-1");
+        assert!(user.get("name").unwrap().is_null());
     }
 }
