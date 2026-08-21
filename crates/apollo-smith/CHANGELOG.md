@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [x.x.x] (unreleased) - 2026-mm-dd
+# [0.17.0-beta.0](https://crates.io/crates/apollo-smith/0.17.0-beta.0) - 2026-08-21
 
 ## Features
 
@@ -28,7 +28,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   description, matching the latest GraphQL spec draft ([graphql-spec#1170]).
   Descriptions are preserved when converting from parsed documents.
 
-- **Generate `@oneOf` input objects during structure-aware fuzzing. - [abernix], [pull/1030]**
+- **Generate `@oneOf` input objects during structure-aware fuzzing - [abernix], [pull/1030]**
 
   `DocumentBuilder::input_object_type_definition` now has a ~1-in-5 chance
   of applying `@oneOf` to a generated input type.  When it does, every field
@@ -36,11 +36,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   always satisfies the spec invariants.  A new `Ty::as_nullable` helper strips
   the outermost `NonNull` wrapper from an arbitrary type.
 
+## Fixes
+
+- **Choose different types for schema roots - [tninesling], [pull/1072]**
+
+  The document builder now ensures query, mutation, and subscription root
+  operation types are distinct, matching the spec requirement.
+
+- **Generate correctly shaped default values based on type being filled - [tninesling], [pull/1075]**
+
+  Default value generation now produces values that match the declared type
+  of the field or argument being filled.
+
 [graphql-spec#1170]: https://github.com/graphql/graphql-spec/pull/1170
-[goto-bus-stop]: https://github.com/goto-bus-stop
 [abernix]: https://github.com/abernix
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[tninesling]: https://github.com/tninesling
 [pull/974]: https://github.com/apollographql/apollo-rs/pull/974
 [pull/1030]: https://github.com/apollographql/apollo-rs/pull/1030
+[pull/1072]: https://github.com/apollographql/apollo-rs/pull/1072
+[pull/1075]: https://github.com/apollographql/apollo-rs/pull/1075
 
 # [0.16.0](https://crates.io/crates/apollo-smith/0.16.0) - 2026-07-21
 
