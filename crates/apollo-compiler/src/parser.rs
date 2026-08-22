@@ -286,6 +286,16 @@ impl Parser {
         let mut errors = DiagnosticList::new(Default::default());
         let ast = self.parse_ast_inner(source_text, path, FileId::new(), &mut errors);
         let document = ast.to_executable_inner(schema, &mut errors);
+        // Build errors can carry labels that point into the schema, such as the
+        // definition of a type a selection does not match, and those are only
+        // renderable if the schema's sources are reachable from this list.
+        //
+        // Extended here rather than seeded at construction: `parse_ast_inner`
+        // copies this map into the returned document, whose `sources` field is
+        // public, so seeding would make a document report the schema's files as
+        // its own.
+        Arc::make_mut(&mut errors.sources)
+            .extend(schema.sources.iter().map(|(k, v)| (*k, v.clone())));
         (document, errors)
     }
 
