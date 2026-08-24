@@ -55,7 +55,9 @@ use crate::collections::IndexSet;
 use crate::parser::SourceMap;
 use crate::Name;
 use crate::Node;
+use std::hash::DefaultHasher;
 use std::hash::Hash;
+use std::hash::Hasher;
 
 pub(crate) mod from_cst;
 pub(crate) mod impls;
@@ -139,7 +141,7 @@ pub struct FragmentDefinition {
 
 /// Type system AST for a `directive @foo`
 /// [_DirectiveDefinition_](https://spec.graphql.org/September2025/#DirectiveDefinition).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DirectiveDefinition {
     pub description: Option<Node<str>>,
     pub name: Name,
@@ -148,33 +150,21 @@ pub struct DirectiveDefinition {
     pub locations: IndexSet<DirectiveLocation>,
 }
 
-impl PartialEq for DirectiveDefinition {
-    fn eq(&self, other: &Self) -> bool {
-        self.description == other.description
-            && self.name == other.name
-            && self.repeatable == other.repeatable
-            && self.locations == other.locations
-            && input_value_definitions_eq(&self.arguments, &other.arguments)
-    }
-}
-
-impl Eq for DirectiveDefinition {}
-
-impl std::hash::Hash for DirectiveDefinition {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+impl Hash for DirectiveDefinition {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         self.description.hash(state);
         self.name.hash(state);
+        self.arguments.hash(state);
         self.repeatable.hash(state);
         // IndexSet: order-independent hash via commutative XOR
         self.locations.len().hash(state);
         let mut locations_hash = 0u64;
         for loc in &self.locations {
-            let mut h = std::hash::DefaultHasher::new();
+            let mut h = DefaultHasher::new();
             loc.hash(&mut h);
-            locations_hash ^= std::hash::Hasher::finish(&h);
+            locations_hash ^= h.finish();
         }
         locations_hash.hash(state);
-        input_value_definitions_hash(&self.arguments, state);
     }
 }
 
@@ -330,25 +320,10 @@ pub struct Argument {
 pub struct DirectiveList(pub Vec<Node<Directive>>);
 
 /// AST for a [_Directive_](https://spec.graphql.org/September2025/#Directive) application.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Directive {
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
-}
-
-impl PartialEq for Directive {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && arguments_eq(&self.arguments, &other.arguments)
-    }
-}
-
-impl Eq for Directive {}
-
-impl std::hash::Hash for Directive {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-        arguments_hash(&self.arguments, state);
-    }
 }
 
 /// AST for the [_OperationType_](https://spec.graphql.org/September2025/#OperationType)
@@ -416,35 +391,13 @@ pub enum Type {
 
 /// Type system AST for a [_FieldDefinition_](https://spec.graphql.org/September2025/#FieldDefinition)
 /// in an object type or interface type defintion or extension.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FieldDefinition {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub ty: Type,
     pub directives: DirectiveList,
-}
-
-impl PartialEq for FieldDefinition {
-    fn eq(&self, other: &Self) -> bool {
-        self.description == other.description
-            && self.name == other.name
-            && self.ty == other.ty
-            && self.directives == other.directives
-            && input_value_definitions_eq(&self.arguments, &other.arguments)
-    }
-}
-
-impl Eq for FieldDefinition {}
-
-impl std::hash::Hash for FieldDefinition {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.description.hash(state);
-        self.name.hash(state);
-        self.ty.hash(state);
-        self.directives.hash(state);
-        input_value_definitions_hash(&self.arguments, state);
-    }
 }
 
 /// Type system AST for an
@@ -480,35 +433,13 @@ pub enum Selection {
 
 /// Executable AST for a [_Field_](https://spec.graphql.org/September2025/#Field) selection
 /// in a selection set.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
     pub directives: DirectiveList,
     pub selection_set: Vec<Selection>,
-}
-
-impl PartialEq for Field {
-    fn eq(&self, other: &Self) -> bool {
-        self.alias == other.alias
-            && self.name == other.name
-            && self.directives == other.directives
-            && self.selection_set == other.selection_set
-            && arguments_eq(&self.arguments, &other.arguments)
-    }
-}
-
-impl Eq for Field {}
-
-impl std::hash::Hash for Field {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.alias.hash(state);
-        self.name.hash(state);
-        self.directives.hash(state);
-        self.selection_set.hash(state);
-        arguments_hash(&self.arguments, state);
-    }
 }
 
 /// Executable AST for a
@@ -592,85 +523,4 @@ pub enum ArgumentByNameError {
     /// The argument is required (does not define a default value and has non-null type)
     /// but not specified
     RequiredArgumentNotSpecified,
-}
-
-/// Order-independent equality for argument lists.
-///
-/// Uses multiset matching to handle duplicate names correctly in
-/// invalid-but-parseable documents.
-pub(crate) fn arguments_eq(a: &[Node<Argument>], b: &[Node<Argument>]) -> bool {
-    if a.len() != b.len() {
-        return false;
-    }
-    let mut matched = vec![false; b.len()];
-    a.iter().all(|arg_a| {
-        b.iter()
-            .enumerate()
-            .find(|(i, arg_b)| {
-                !matched[*i] && arg_a.name == arg_b.name && arg_a.value == arg_b.value
-            })
-            .map(|(i, _)| {
-                matched[i] = true;
-                true
-            })
-            .unwrap_or(false)
-    })
-}
-
-/// Order-independent hash for argument lists.
-pub(crate) fn arguments_hash<H: std::hash::Hasher>(args: &[Node<Argument>], state: &mut H) {
-    args.len().hash(state);
-    let mut combined = 0u64;
-    for arg in args {
-        let mut h = std::hash::DefaultHasher::new();
-        arg.name.hash(&mut h);
-        arg.value.hash(&mut h);
-        combined ^= std::hash::Hasher::finish(&h);
-    }
-    combined.hash(state);
-}
-
-/// Order-independent equality for input value definition lists.
-fn input_value_definitions_eq(
-    a: &[Node<InputValueDefinition>],
-    b: &[Node<InputValueDefinition>],
-) -> bool {
-    if a.len() != b.len() {
-        return false;
-    }
-    let mut matched = vec![false; b.len()];
-    a.iter().all(|def_a| {
-        b.iter()
-            .enumerate()
-            .find(|(i, def_b)| {
-                !matched[*i]
-                    && def_a.name == def_b.name
-                    && def_a.ty == def_b.ty
-                    && def_a.default_value == def_b.default_value
-                    && def_a.directives == def_b.directives
-            })
-            .map(|(i, _)| {
-                matched[i] = true;
-                true
-            })
-            .unwrap_or(false)
-    })
-}
-
-/// Order-independent hash for input value definition lists.
-fn input_value_definitions_hash<H: std::hash::Hasher>(
-    defs: &[Node<InputValueDefinition>],
-    state: &mut H,
-) {
-    defs.len().hash(state);
-    let mut combined = 0u64;
-    for def in defs {
-        let mut h = std::hash::DefaultHasher::new();
-        def.name.hash(&mut h);
-        def.ty.hash(&mut h);
-        def.default_value.hash(&mut h);
-        def.directives.hash(&mut h);
-        combined ^= std::hash::Hasher::finish(&h);
-    }
-    combined.hash(state);
 }
