@@ -51,11 +51,11 @@
 //! assert_eq!(doc.serialize().no_indent().to_string(), "query @dir { field }")
 //! ```
 
+use crate::collections::hash_unordered;
 use crate::collections::IndexSet;
 use crate::parser::SourceMap;
 use crate::Name;
 use crate::Node;
-use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 
@@ -156,15 +156,7 @@ impl Hash for DirectiveDefinition {
         self.name.hash(state);
         self.arguments.hash(state);
         self.repeatable.hash(state);
-        // IndexSet: order-independent hash via commutative XOR
-        self.locations.len().hash(state);
-        let mut locations_hash = 0u64;
-        for loc in &self.locations {
-            let mut h = DefaultHasher::new();
-            loc.hash(&mut h);
-            locations_hash ^= h.finish();
-        }
-        locations_hash.hash(state);
+        hash_unordered(self.locations.iter(), state, self.locations.len());
     }
 }
 
