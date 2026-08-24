@@ -255,7 +255,7 @@ pub(crate) fn value_of_correct_type(
             schema::ExtendedType::InputObject(input_obj) => {
                 let undefined_field = obj
                     .iter()
-                    .find(|(name, ..)| !input_obj.fields.contains_key(name));
+                    .find(|(name, ..)| !input_obj.fields.contains_key(name.as_str()));
 
                 // Add a diagnostic if a value does not exist on the input
                 // object type
@@ -291,10 +291,9 @@ pub(crate) fn value_of_correct_type(
 
                 input_obj.fields.iter().for_each(|(input_name, f)| {
                     let ty = &f.ty;
-                    let is_missing = !obj.iter().any(|(value_name, ..)| input_name == value_name);
-                    let is_null = obj
-                        .iter()
-                        .any(|(name, value)| input_name == name && value.is_null());
+                    let used_val = obj.get(input_name.as_str());
+                    let is_missing = used_val.is_none();
+                    let is_null = used_val.is_some_and(|v| v.is_null());
 
                     // If the input object field type is non_null, and no
                     // default value is provided, or if the value provided
@@ -315,7 +314,7 @@ pub(crate) fn value_of_correct_type(
                         );
                     }
 
-                    let used_val = obj.iter().find(|(obj_name, ..)| obj_name == input_name);
+                    let used_val = obj.get_key_value(input_name.as_str());
 
                     if let Some((_, v)) = used_val {
                         let field_position = VariablePosition {

@@ -743,11 +743,26 @@ impl Value {
                 value.serialize_impl(state)
             }),
             Value::Object(value) => {
-                comma_separated(state, "{", "}", value, |state, (name, value)| {
+                state.write("{")?;
+                let mut iter = value.iter();
+                if let Some((name, val)) = iter.next() {
+                    state.indent()?;
                     state.write(name)?;
                     state.write(": ")?;
-                    value.serialize_impl(state)
-                })
+                    val.serialize_impl(state)?;
+                    for (name, val) in iter {
+                        state.write(",")?;
+                        state.new_line_or_space()?;
+                        state.write(name)?;
+                        state.write(": ")?;
+                        val.serialize_impl(state)?;
+                    }
+                    if state.newlines_enabled() {
+                        state.write(",")?;
+                    }
+                    state.dedent()?;
+                }
+                state.write("}")
             }
         }
     }

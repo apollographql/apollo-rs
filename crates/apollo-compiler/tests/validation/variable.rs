@@ -235,7 +235,7 @@ fn variables_in_const_contexts() {
         let Value::Object(fields) = value.make_mut() else {
             panic!("expected object")
         };
-        let Value::List(items) = fields[0].1.make_mut() else {
+        let Value::List(items) = fields.get_index_mut(0).unwrap().1.make_mut() else {
             panic!("expected list")
         };
         mutate_string_value(&mut items[0])

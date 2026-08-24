@@ -22,7 +22,7 @@ ahash = "0.8.11"
 apollo-parser = { path = "../apollo-parser", version = "0.9.0-beta.0" }
 ariadne = { version = "0.6.0", features = ["auto-color"] }
 futures = "0.3"
-indexmap = "2.0.0"
+indexmap = { version = "2.0.0", features = ["serde"] }
 rowan = "0.16.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json_bytes = { version = "0.2.2", features = ["preserve_order"] }

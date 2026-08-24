@@ -737,7 +737,7 @@ impl Convert for cst::Value {
             C::ObjectValue(v) => A::Object(
                 v.object_fields()
                     .filter_map(|x| x.convert(file_id))
-                    .collect(),
+                    .collect::<crate::collections::IndexMap<_, _>>(),
             ),
         })
     }

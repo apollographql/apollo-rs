@@ -517,7 +517,7 @@ fn coerce_argument_value(
             if let Some(object) = value.as_object() {
                 if let Some((key, _value)) = object
                     .iter()
-                    .find(|(key, _value)| !ty_def.fields.contains_key(key))
+                    .find(|(key, _value)| !ty_def.fields.contains_key(key.as_str()))
                 {
                     ctx.errors.push(GraphQLError::execution_error(
                         format!("input object has key {key} not in type {ty_name}",),
@@ -533,7 +533,7 @@ fn coerce_argument_value(
                 if ty_def.is_one_of() {
                     let provided_count = object
                         .iter()
-                        .filter(|(k, _)| ty_def.fields.contains_key(k))
+                        .filter(|(k, _)| ty_def.fields.contains_key(k.as_str()))
                         .count();
                     if provided_count != 1 {
                         ctx.errors.push(GraphQLError::execution_error(

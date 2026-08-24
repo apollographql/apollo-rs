@@ -1108,7 +1108,7 @@ impl Value {
         }
     }
 
-    pub fn as_object(&self) -> Option<&[(Name, Node<Value>)]> {
+    pub fn as_object(&self) -> Option<&crate::collections::IndexMap<Name, Node<Value>>> {
         if let Value::Object(value) = self {
             Some(value)
         } else {

@@ -206,14 +206,10 @@ fn same_value(left: &ast::Value, right: &ast::Value) -> bool {
             .zip(right.iter())
             .all(|(left, right)| same_value(left, right)),
         (ast::Value::Object(left), ast::Value::Object(right)) if left.len() == right.len() => {
-            // This check could miss out on keys that exist in `right`, but not in `left`, if `left` contains duplicate keys.
-            // We assume that that doesn't happen. GraphQL does not support duplicate keys and
-            // that is checked elsewhere in validation.
             left.iter().all(|(key, value)| {
                 right
-                    .iter()
-                    .find(|(other_key, _)| key == other_key)
-                    .is_some_and(|(_, other_value)| same_value(value, other_value))
+                    .get(key)
+                    .is_some_and(|other_value| same_value(value, other_value))
             })
         }
         _ => false,

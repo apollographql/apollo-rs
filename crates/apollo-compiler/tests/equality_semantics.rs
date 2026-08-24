@@ -361,11 +361,14 @@ fn selection_sets_are_order_dependent() {
 }
 
 // ---------------------------------------------------------------------------
-// Mismatches fixed: order-independent equality for arguments and locations
+// Mismatches: these tests document the EXPECTED behavior per the spec.
+// Tests that assert order-independence will initially fail because the
+// current data structures use Vec with derived PartialEq.
 // ---------------------------------------------------------------------------
 
 #[test]
 fn directive_definition_locations_are_order_independent() {
+    // Spec: directive locations are a set, order is not significant.
     let schema_a = Schema::parse_and_validate(
         r#"
         type Query { field: String }
@@ -395,6 +398,7 @@ fn directive_definition_locations_are_order_independent() {
 
 #[test]
 fn directive_definition_arguments_are_order_independent() {
+    // Spec: argument definitions are a named set, order is not significant.
     let schema_a = Schema::parse_and_validate(
         r#"
         type Query { field: String }
@@ -424,6 +428,7 @@ fn directive_definition_arguments_are_order_independent() {
 
 #[test]
 fn field_definition_arguments_are_order_independent() {
+    // Spec: argument definitions on fields are a named set.
     let schema_a = Schema::parse_and_validate(
         r#"
         type Query {
@@ -462,6 +467,8 @@ fn field_definition_arguments_are_order_independent() {
 
 #[test]
 fn applied_directive_arguments_are_order_independent() {
+    // Spec: "identical sets of arguments" — order does not matter for
+    // directive arguments.
     let schema_a = Schema::parse_and_validate(
         r#"
         type Query { field: String }
@@ -508,7 +515,92 @@ fn applied_directive_arguments_are_order_independent() {
 }
 
 #[test]
+fn input_object_values_are_order_independent() {
+    // Spec: input object literals are "unordered maps".
+    let schema = Schema::parse_and_validate(
+        r#"
+        type Query {
+            search(filter: Filter): String
+        }
+        input Filter {
+            name: String
+            age: Int
+        }
+        "#,
+        "schema.graphql",
+    )
+    .unwrap();
+
+    let doc_a = ExecutableDocument::parse_and_validate(
+        &schema,
+        r#"{ search(filter: {name: "Alice", age: 30}) }"#,
+        "a.graphql",
+    )
+    .unwrap();
+
+    let doc_b = ExecutableDocument::parse_and_validate(
+        &schema,
+        r#"{ search(filter: {age: 30, name: "Alice"}) }"#,
+        "b.graphql",
+    )
+    .unwrap();
+
+    let op_a = doc_a.operations.anonymous.as_ref().unwrap();
+    let op_b = doc_b.operations.anonymous.as_ref().unwrap();
+
+    assert_eq!(
+        op_a.selection_set, op_b.selection_set,
+        "input object value field order should not affect equality"
+    );
+}
+
+#[test]
+fn nested_input_object_values_are_order_independent() {
+    // Nested input objects should also be order-independent recursively.
+    let schema = Schema::parse_and_validate(
+        r#"
+        type Query {
+            search(filter: Filter): String
+        }
+        input Filter {
+            name: String
+            nested: NestedFilter
+        }
+        input NestedFilter {
+            x: Int
+            y: Int
+        }
+        "#,
+        "schema.graphql",
+    )
+    .unwrap();
+
+    let doc_a = ExecutableDocument::parse_and_validate(
+        &schema,
+        r#"{ search(filter: {name: "Alice", nested: {x: 1, y: 2}}) }"#,
+        "a.graphql",
+    )
+    .unwrap();
+
+    let doc_b = ExecutableDocument::parse_and_validate(
+        &schema,
+        r#"{ search(filter: {nested: {y: 2, x: 1}, name: "Alice"}) }"#,
+        "b.graphql",
+    )
+    .unwrap();
+
+    let op_a = doc_a.operations.anonymous.as_ref().unwrap();
+    let op_b = doc_b.operations.anonymous.as_ref().unwrap();
+
+    assert_eq!(
+        op_a.selection_set, op_b.selection_set,
+        "nested input object value order should not affect equality"
+    );
+}
+
+#[test]
 fn executable_field_arguments_are_order_independent() {
+    // Spec: "identical sets of arguments" for field selections.
     let schema = Schema::parse_and_validate(
         r#"
         type Query {

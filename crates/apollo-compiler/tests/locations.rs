@@ -119,7 +119,7 @@ mod directive_inputs {
     fn field_within_complex() {
         let schema = schema();
         let arg = input_for_field(&schema, "field", "complex");
-        let (name, value) = &arg.as_object().unwrap()[0];
+        let (name, value) = arg.as_object().unwrap().get_index(0).unwrap();
         assert_eq!(name, "field");
         assert_eq!(
             value.line_column_range(&schema.sources).unwrap(),

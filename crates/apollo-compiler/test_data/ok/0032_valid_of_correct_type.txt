@@ -3241,14 +3241,11 @@ ExecutableDocument {
                                                     4161..4196 @33 Argument {
                                                         name: "complexArg",
                                                         value: 4173..4196 @33 Object(
-                                                            [
-                                                                (
-                                                                    "requiredField",
-                                                                    4190..4194 @33 Boolean(
-                                                                        true,
-                                                                    ),
+                                                            {
+                                                                "requiredField": 4190..4194 @33 Boolean(
+                                                                    true,
                                                                 ),
-                                                            ],
+                                                            },
                                                         ),
                                                     },
                                                 ],
@@ -3322,14 +3319,11 @@ ExecutableDocument {
                                                     4290..4326 @33 Argument {
                                                         name: "complexArg",
                                                         value: 4302..4326 @33 Object(
-                                                            [
-                                                                (
-                                                                    "requiredField",
-                                                                    4319..4324 @33 Boolean(
-                                                                        false,
-                                                                    ),
+                                                            {
+                                                                "requiredField": 4319..4324 @33 Boolean(
+                                                                    false,
                                                                 ),
-                                                            ],
+                                                            },
                                                         ),
                                                     },
                                                 ],
@@ -3403,20 +3397,14 @@ ExecutableDocument {
                                                     4414..4462 @33 Argument {
                                                         name: "complexArg",
                                                         value: 4426..4462 @33 Object(
-                                                            [
-                                                                (
-                                                                    "requiredField",
-                                                                    4443..4447 @33 Boolean(
-                                                                        true,
-                                                                    ),
+                                                            {
+                                                                "requiredField": 4443..4447 @33 Boolean(
+                                                                    true,
                                                                 ),
-                                                                (
-                                                                    "intField",
-                                                                    4459..4460 @33 Int(
-                                                                        4,
-                                                                    ),
+                                                                "intField": 4459..4460 @33 Int(
+                                                                    4,
                                                                 ),
-                                                            ],
+                                                            },
                                                         ),
                                                     },
                                                 ],
@@ -3490,45 +3478,30 @@ ExecutableDocument {
                                                     4530..4686 @33 Argument {
                                                         name: "complexArg",
                                                         value: 4542..4686 @33 Object(
-                                                            [
-                                                                (
-                                                                    "requiredField",
-                                                                    4565..4569 @33 Boolean(
-                                                                        true,
-                                                                    ),
+                                                            {
+                                                                "requiredField": 4565..4569 @33 Boolean(
+                                                                    true,
                                                                 ),
-                                                                (
-                                                                    "intField",
-                                                                    4587..4588 @33 Int(
-                                                                        4,
-                                                                    ),
+                                                                "intField": 4587..4588 @33 Int(
+                                                                    4,
                                                                 ),
-                                                                (
-                                                                    "stringField",
-                                                                    4609..4614 @33 String(
-                                                                        "foo",
-                                                                    ),
+                                                                "stringField": 4609..4614 @33 String(
+                                                                    "foo",
                                                                 ),
-                                                                (
-                                                                    "booleanField",
-                                                                    4636..4641 @33 Boolean(
-                                                                        false,
-                                                                    ),
+                                                                "booleanField": 4636..4641 @33 Boolean(
+                                                                    false,
                                                                 ),
-                                                                (
-                                                                    "stringListField",
-                                                                    4666..4680 @33 List(
-                                                                        [
-                                                                            4667..4672 @33 String(
-                                                                                "one",
-                                                                            ),
-                                                                            4674..4679 @33 String(
-                                                                                "two",
-                                                                            ),
-                                                                        ],
-                                                                    ),
+                                                                "stringListField": 4666..4680 @33 List(
+                                                                    [
+                                                                        4667..4672 @33 String(
+                                                                            "one",
+                                                                        ),
+                                                                        4674..4679 @33 String(
+                                                                            "two",
+                                                                        ),
+                                                                    ],
                                                                 ),
-                                                            ],
+                                                            },
                                                         ),
                                                     },
                                                 ],
@@ -3602,45 +3575,30 @@ ExecutableDocument {
                                                     4780..4937 @33 Argument {
                                                         name: "complexArg",
                                                         value: 4792..4937 @33 Object(
-                                                            [
-                                                                (
-                                                                    "stringListField",
-                                                                    4817..4831 @33 List(
-                                                                        [
-                                                                            4818..4823 @33 String(
-                                                                                "one",
-                                                                            ),
-                                                                            4825..4830 @33 String(
-                                                                                "two",
-                                                                            ),
-                                                                        ],
-                                                                    ),
+                                                            {
+                                                                "stringListField": 4817..4831 @33 List(
+                                                                    [
+                                                                        4818..4823 @33 String(
+                                                                            "one",
+                                                                        ),
+                                                                        4825..4830 @33 String(
+                                                                            "two",
+                                                                        ),
+                                                                    ],
                                                                 ),
-                                                                (
-                                                                    "booleanField",
-                                                                    4853..4858 @33 Boolean(
-                                                                        false,
-                                                                    ),
+                                                                "booleanField": 4853..4858 @33 Boolean(
+                                                                    false,
                                                                 ),
-                                                                (
-                                                                    "requiredField",
-                                                                    4881..4885 @33 Boolean(
-                                                                        true,
-                                                                    ),
+                                                                "requiredField": 4881..4885 @33 Boolean(
+                                                                    true,
                                                                 ),
-                                                                (
-                                                                    "stringField",
-                                                                    4906..4911 @33 String(
-                                                                        "foo",
-                                                                    ),
+                                                                "stringField": 4906..4911 @33 String(
+                                                                    "foo",
                                                                 ),
-                                                                (
-                                                                    "intField",
-                                                                    4929..4930 @33 Int(
-                                                                        4,
-                                                                    ),
+                                                                "intField": 4929..4930 @33 Int(
+                                                                    4,
                                                                 ),
-                                                            ],
+                                                            },
                                                         ),
                                                     },
                                                 ],
@@ -3853,20 +3811,14 @@ ExecutableDocument {
                         ),
                         default_value: Some(
                             5173..5209 @33 Object(
-                                [
-                                    (
-                                        "requiredField",
-                                        5190..5194 @33 Boolean(
-                                            true,
-                                        ),
+                                {
+                                    "requiredField": 5190..5194 @33 Boolean(
+                                        true,
                                     ),
-                                    (
-                                        "intField",
-                                        5206..5207 @33 Int(
-                                            3,
-                                        ),
+                                    "intField": 5206..5207 @33 Int(
+                                        3,
                                     ),
-                                ],
+                                },
                             ),
                         ),
                         directives: [],
@@ -4052,18 +4004,12 @@ ExecutableDocument {
                         ),
                         default_value: Some(
                             5437..5476 @33 Object(
-                                [
-                                    (
-                                        "requiredField",
-                                        5454..5458 @33 Boolean(
-                                            true,
-                                        ),
+                                {
+                                    "requiredField": 5454..5458 @33 Boolean(
+                                        true,
                                     ),
-                                    (
-                                        "intField",
-                                        5470..5474 @33 Null,
-                                    ),
-                                ],
+                                    "intField": 5470..5474 @33 Null,
+                                },
                             ),
                         ),
                         directives: [],
@@ -4652,14 +4598,11 @@ ExecutableDocument {
                                                     6230..6258 @33 Argument {
                                                         name: "customScalar",
                                                         value: 6244..6258 @33 Object(
-                                                            [
-                                                                (
-                                                                    "as",
-                                                                    6250..6256 @33 String(
-                                                                        "@key",
-                                                                    ),
+                                                            {
+                                                                "as": 6250..6256 @33 String(
+                                                                    "@key",
                                                                 ),
-                                                            ],
+                                                            },
                                                         ),
                                                     },
                                                 ],

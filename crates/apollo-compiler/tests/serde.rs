@@ -48,125 +48,92 @@ fn test_serde_value() {
     let json = serde_json::to_string_pretty(&value).unwrap();
     let expected_json = expect![[r#"
         {
-          "Object": [
-            [
-              "null_field",
-              "Null"
-            ],
-            [
-              "enum_field",
-              {
-                "Enum": "EXAMPLE"
-              }
-            ],
-            [
-              "var_field",
-              {
-                "Variable": "var"
-              }
-            ],
-            [
-              "string_field",
-              {
-                "String": "example"
-              }
-            ],
-            [
-              "float_field",
-              {
-                "Float": "1.5"
-              }
-            ],
-            [
-              "int_field",
-              {
-                "Int": "47"
-              }
-            ],
-            [
-              "list_field",
-              {
-                "List": [
-                  {
-                    "Int": "1"
-                  },
-                  {
-                    "Int": "2"
-                  },
-                  {
-                    "Int": "3"
-                  }
-                ]
-              }
-            ]
-          ]
+          "Object": {
+            "null_field": "Null",
+            "enum_field": {
+              "Enum": "EXAMPLE"
+            },
+            "var_field": {
+              "Variable": "var"
+            },
+            "string_field": {
+              "String": "example"
+            },
+            "float_field": {
+              "Float": "1.5"
+            },
+            "int_field": {
+              "Int": "47"
+            },
+            "list_field": {
+              "List": [
+                {
+                  "Int": "1"
+                },
+                {
+                  "Int": "2"
+                },
+                {
+                  "Int": "3"
+                }
+              ]
+            }
+          }
         }"#]];
     expected_json.assert_eq(&json);
-    let enum_value = value.as_object().unwrap()[1].1.as_enum().unwrap();
+    let enum_value = value
+        .as_object()
+        .unwrap()
+        .get("enum_field")
+        .unwrap()
+        .as_enum()
+        .unwrap();
     assert!(enum_value.location().is_some());
 
     let value_deserialized: ast::Value = serde_json::from_str(&json).unwrap();
     let expected_debug = expect![[r#"
         Object(
-            [
-                (
-                    "null_field",
-                    Null,
+            {
+                "null_field": Null,
+                "enum_field": Enum(
+                    "EXAMPLE",
                 ),
-                (
-                    "enum_field",
-                    Enum(
-                        "EXAMPLE",
-                    ),
+                "var_field": Variable(
+                    "var",
                 ),
-                (
-                    "var_field",
-                    Variable(
-                        "var",
-                    ),
+                "string_field": String(
+                    "example",
                 ),
-                (
-                    "string_field",
-                    String(
-                        "example",
-                    ),
+                "float_field": Float(
+                    1.5,
                 ),
-                (
-                    "float_field",
-                    Float(
-                        1.5,
-                    ),
+                "int_field": Int(
+                    47,
                 ),
-                (
-                    "int_field",
-                    Int(
-                        47,
-                    ),
+                "list_field": List(
+                    [
+                        Int(
+                            1,
+                        ),
+                        Int(
+                            2,
+                        ),
+                        Int(
+                            3,
+                        ),
+                    ],
                 ),
-                (
-                    "list_field",
-                    List(
-                        [
-                            Int(
-                                1,
-                            ),
-                            Int(
-                                2,
-                            ),
-                            Int(
-                                3,
-                            ),
-                        ],
-                    ),
-                ),
-            ],
+            },
         )
     "#]];
     expected_debug.assert_debug_eq(&value_deserialized);
     assert_eq!(*value, value_deserialized);
     assert_eq!(graphql, value_deserialized.to_string());
-    let enum_value = value_deserialized.as_object().unwrap()[1]
-        .1
+    let enum_value = value_deserialized
+        .as_object()
+        .unwrap()
+        .get("enum_field")
+        .unwrap()
         .as_enum()
         .unwrap();
     // Locations are not preserved through serialization

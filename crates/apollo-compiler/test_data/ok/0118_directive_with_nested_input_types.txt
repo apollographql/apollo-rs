@@ -106,27 +106,18 @@ Schema {
                                 140..187 @47 Argument {
                                     name: "input",
                                     value: 147..187 @47 Object(
-                                        [
-                                            (
-                                                "name",
-                                                154..161 @47 String(
-                                                    "hello",
-                                                ),
+                                        {
+                                            "name": 154..161 @47 String(
+                                                "hello",
                                             ),
-                                            (
-                                                "nested",
-                                                171..186 @47 Object(
-                                                    [
-                                                        (
-                                                            "name",
-                                                            178..185 @47 String(
-                                                                "hello",
-                                                            ),
-                                                        ),
-                                                    ],
-                                                ),
+                                            "nested": 171..186 @47 Object(
+                                                {
+                                                    "name": 178..185 @47 String(
+                                                        "hello",
+                                                    ),
+                                                },
                                             ),
-                                        ],
+                                        },
                                     ),
                                 },
                             ],

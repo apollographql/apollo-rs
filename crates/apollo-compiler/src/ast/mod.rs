@@ -51,6 +51,7 @@
 //! assert_eq!(doc.serialize().no_indent().to_string(), "query @dir { field }")
 //! ```
 
+use crate::collections::IndexMap;
 use crate::collections::IndexSet;
 use crate::parser::SourceMap;
 use crate::Name;
@@ -526,7 +527,7 @@ pub struct InlineFragment {
 }
 
 /// Executable AST for a literal GraphQL [_Value_](https://spec.graphql.org/September2025/#Value).
-#[derive(Clone, Debug, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Value {
     /// A [_NullValue_](https://spec.graphql.org/September2025/#NullValue)
     Null,
@@ -556,8 +557,38 @@ pub enum Value {
     /// A [_ListValue_](https://spec.graphql.org/September2025/#ListValue)
     List(Vec<Node<Value>>),
 
-    /// An [_ObjectValue_](https://spec.graphql.org/September2025/#ObjectValue)
-    Object(Vec<(Name, Node<Value>)>),
+    /// An [_ObjectValue_](https://spec.graphql.org/September2025/#ObjectValue).
+    ///
+    /// Per the spec, input object literals are unordered maps.
+    Object(IndexMap<Name, Node<Value>>),
+}
+
+impl std::hash::Hash for Value {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::mem::discriminant(self).hash(state);
+        match self {
+            Value::Null => {}
+            Value::Enum(v) => v.hash(state),
+            Value::Variable(v) => v.hash(state),
+            Value::String(v) => v.hash(state),
+            Value::Float(v) => v.hash(state),
+            Value::Int(v) => v.hash(state),
+            Value::Boolean(v) => v.hash(state),
+            Value::List(v) => v.hash(state),
+            Value::Object(map) => {
+                map.len().hash(state);
+                // Order-independent hash: combine via commutative XOR
+                let mut object_hash = 0u64;
+                for (k, v) in map {
+                    let mut h = std::hash::DefaultHasher::new();
+                    k.hash(&mut h);
+                    v.hash(&mut h);
+                    object_hash ^= std::hash::Hasher::finish(&h);
+                }
+                object_hash.hash(state);
+            }
+        }
+    }
 }
 
 /// An [_IntValue_](https://spec.graphql.org/September2025/#IntValue),
@@ -589,10 +620,13 @@ pub enum ArgumentByNameError {
     RequiredArgumentNotSpecified,
 }
 
-/// Order-independent equality for argument lists.
+/// Order-independent equality for argument lists, compared by name.
 ///
-/// Uses multiset matching to handle duplicate names correctly in
-/// invalid-but-parseable documents.
+/// When all names are unique (the valid case per the spec), this compares
+/// arguments as an unordered set keyed by name. When duplicate names exist
+/// (invalid but representable in the AST), it falls back to checking that
+/// each argument in `a` has a matching argument in `b` with the same
+/// name and value, consuming matches to handle duplicates correctly.
 pub(crate) fn arguments_eq(a: &[Node<Argument>], b: &[Node<Argument>]) -> bool {
     if a.len() != b.len() {
         return false;
@@ -625,7 +659,7 @@ pub(crate) fn arguments_hash<H: std::hash::Hasher>(args: &[Node<Argument>], stat
     combined.hash(state);
 }
 
-/// Order-independent equality for input value definition lists.
+/// Order-independent equality for input value definition lists, compared by name.
 fn input_value_definitions_eq(
     a: &[Node<InputValueDefinition>],
     b: &[Node<InputValueDefinition>],
