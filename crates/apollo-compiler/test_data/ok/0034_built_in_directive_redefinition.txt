@@ -58,13 +58,13 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "FIELD_DEFINITION",
                 "ARGUMENT_DEFINITION",
                 "INPUT_FIELD_DEFINITION",
                 "ENUM_VALUE",
                 "SCHEMA",
-            ],
+            },
         },
         "oneOf": built_in_directive!("oneOf"),
         "specifiedBy": built_in_directive!("specifiedBy"),

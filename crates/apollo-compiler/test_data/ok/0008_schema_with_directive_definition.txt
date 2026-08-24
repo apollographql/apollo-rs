@@ -42,10 +42,10 @@ Schema {
                 },
             ],
             repeatable: true,
-            locations: [
+            locations: {
                 "OBJECT",
                 "INTERFACE",
-            ],
+            },
         },
     },
     types: {

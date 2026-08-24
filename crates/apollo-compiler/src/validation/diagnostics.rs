@@ -12,7 +12,7 @@ use std::fmt;
 use thiserror::Error;
 
 /// Structured data about a diagnostic.
-#[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub(crate) enum DiagnosticData {
     #[error("the variable `${name}` is declared multiple times")]
@@ -229,7 +229,7 @@ pub(crate) enum DiagnosticData {
         /// The location where the directive is attempted to be used
         location: DirectiveLocation,
         /// Locations that *are* valid for this directive
-        valid_locations: Vec<DirectiveLocation>,
+        valid_locations: crate::collections::IndexSet<DirectiveLocation>,
         /// The source location where the directive that's being used was defined.
         definition_location: Option<SourceSpan>,
     },

@@ -52,11 +52,11 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "QUERY",
                 "MUTATION",
                 "SUBSCRIPTION",
-            ],
+            },
         },
         "z": 57..104 @43 DirectiveDefinition {
             description: None,
@@ -73,9 +73,9 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "FRAGMENT_DEFINITION",
-            ],
+            },
         },
     },
     types: {

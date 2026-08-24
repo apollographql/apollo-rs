@@ -42,9 +42,9 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "FIELD_DEFINITION",
-            ],
+            },
         },
     },
     types: {

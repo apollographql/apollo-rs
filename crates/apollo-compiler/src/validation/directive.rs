@@ -1,7 +1,6 @@
 use super::CycleError;
 use crate::ast;
 use crate::collections::HashMap;
-use crate::collections::HashSet;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
 use crate::schema;
@@ -276,9 +275,7 @@ pub(crate) fn validate_directives<'dir>(
         }
 
         if let Some((schema, directive_definition)) = directive_definition {
-            let allowed_loc: HashSet<ast::DirectiveLocation> =
-                HashSet::from_iter(directive_definition.locations.iter().cloned());
-            if !allowed_loc.contains(&dir_loc) {
+            if !directive_definition.locations.contains(&dir_loc) {
                 diagnostics.push(
                     loc,
                     DiagnosticData::UnsupportedLocation {

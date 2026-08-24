@@ -46,9 +46,9 @@ Schema {
             name: "dir",
             arguments: [],
             repeatable: false,
-            locations: [
+            locations: {
                 "SCHEMA",
-            ],
+            },
         },
     },
     types: {
