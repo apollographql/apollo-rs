@@ -161,7 +161,7 @@ pub enum Selection {
 
 /// A [_Field_](https://spec.graphql.org/September2025/#Field) selection,
 /// linked to the corresponding field definition in the schema.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone)]
 pub struct Field {
     /// The definition of this field in an object type or interface type definition in the schema
     pub definition: Node<schema::FieldDefinition>,
@@ -170,6 +170,30 @@ pub struct Field {
     pub arguments: Vec<Node<Argument>>,
     pub directives: DirectiveList,
     pub selection_set: SelectionSet,
+}
+
+impl PartialEq for Field {
+    fn eq(&self, other: &Self) -> bool {
+        self.definition == other.definition
+            && self.alias == other.alias
+            && self.name == other.name
+            && self.directives == other.directives
+            && self.selection_set == other.selection_set
+            && crate::ast::arguments_eq(&self.arguments, &other.arguments)
+    }
+}
+
+impl Eq for Field {}
+
+impl std::hash::Hash for Field {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.definition.hash(state);
+        self.alias.hash(state);
+        self.name.hash(state);
+        self.directives.hash(state);
+        self.selection_set.hash(state);
+        crate::ast::arguments_hash(&self.arguments, state);
+    }
 }
 
 /// A [_FragmentSpread_](https://spec.graphql.org/September2025/#FragmentSpread)

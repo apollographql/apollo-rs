@@ -29,18 +29,18 @@ Schema {
             name: "repeatable",
             arguments: [],
             repeatable: true,
-            locations: [
+            locations: {
                 "FIELD",
-            ],
+            },
         },
         "unique": 42..68 @26 DirectiveDefinition {
             description: None,
             name: "unique",
             arguments: [],
             repeatable: false,
-            locations: [
+            locations: {
                 "FIELD",
-            ],
+            },
         },
     },
     types: {

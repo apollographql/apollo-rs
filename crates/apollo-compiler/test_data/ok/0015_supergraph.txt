@@ -64,9 +64,9 @@ Schema {
                 },
             ],
             repeatable: true,
-            locations: [
+            locations: {
                 "SCHEMA",
-            ],
+            },
         },
         "join__field": 210..324 @17 DirectiveDefinition {
             description: None,
@@ -101,9 +101,9 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "FIELD_DEFINITION",
-            ],
+            },
         },
         "join__type": 325..421 @17 DirectiveDefinition {
             description: None,
@@ -129,10 +129,10 @@ Schema {
                 },
             ],
             repeatable: true,
-            locations: [
+            locations: {
                 "OBJECT",
                 "INTERFACE",
-            ],
+            },
         },
         "join__owner": 422..487 @17 DirectiveDefinition {
             description: None,
@@ -149,10 +149,10 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "OBJECT",
                 "INTERFACE",
-            ],
+            },
         },
         "join__graph": 488..553 @17 DirectiveDefinition {
             description: None,
@@ -178,18 +178,18 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "ENUM_VALUE",
-            ],
+            },
         },
         "stream": 554..580 @17 DirectiveDefinition {
             description: None,
             name: "stream",
             arguments: [],
             repeatable: false,
-            locations: [
+            locations: {
                 "FIELD",
-            ],
+            },
         },
         "transform": 581..625 @17 DirectiveDefinition {
             description: None,
@@ -206,9 +206,9 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "FIELD",
-            ],
+            },
         },
     },
     types: {

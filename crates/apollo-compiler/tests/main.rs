@@ -1,3 +1,4 @@
+mod equality_semantics;
 mod error_formatting;
 mod executable;
 mod extensions;
