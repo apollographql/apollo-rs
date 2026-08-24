@@ -392,21 +392,15 @@ impl std::borrow::Borrow<str> for Node<Name> {
     }
 }
 
-impl PartialEq<Name> for Node<Name> {
-    fn eq(&self, other: &Name) -> bool {
-        self.as_ref() == other
-    }
-}
-
 impl PartialEq<str> for Node<Name> {
     fn eq(&self, other: &str) -> bool {
         self.as_str() == other
     }
 }
 
-impl PartialEq<&'_ str> for Node<Name> {
-    fn eq(&self, other: &&str) -> bool {
-        self.as_str() == *other
+impl<T: AsRef<str>> PartialEq<T> for Node<Name> {
+    fn eq(&self, other: &T) -> bool {
+        self.as_str() == other.as_ref()
     }
 }
 
