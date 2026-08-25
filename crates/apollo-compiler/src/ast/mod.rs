@@ -51,6 +51,7 @@
 //! assert_eq!(doc.serialize().no_indent().to_string(), "query @dir { field }")
 //! ```
 
+use crate::collections::eq_unique_by_name;
 use crate::collections::hash_unordered;
 use crate::collections::IndexSet;
 use crate::parser::SourceMap;
@@ -141,7 +142,7 @@ pub struct FragmentDefinition {
 
 /// Type system AST for a `directive @foo`
 /// [_DirectiveDefinition_](https://spec.graphql.org/September2025/#DirectiveDefinition).
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq)]
 pub struct DirectiveDefinition {
     pub description: Option<Node<str>>,
     pub name: Name,
@@ -150,11 +151,21 @@ pub struct DirectiveDefinition {
     pub locations: IndexSet<DirectiveLocation>,
 }
 
+impl PartialEq for DirectiveDefinition {
+    fn eq(&self, other: &Self) -> bool {
+        self.description == other.description
+            && self.name == other.name
+            && eq_unique_by_name(&self.arguments, &other.arguments, |a| &a.name)
+            && self.repeatable == other.repeatable
+            && self.locations == other.locations
+    }
+}
+
 impl Hash for DirectiveDefinition {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.description.hash(state);
         self.name.hash(state);
-        self.arguments.hash(state);
+        hash_unordered(self.arguments.iter(), state, self.arguments.len());
         self.repeatable.hash(state);
         hash_unordered(self.locations.iter(), state, self.locations.len());
     }
@@ -312,10 +323,23 @@ pub struct Argument {
 pub struct DirectiveList(pub Vec<Node<Directive>>);
 
 /// AST for a [_Directive_](https://spec.graphql.org/September2025/#Directive) application.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq)]
 pub struct Directive {
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
+}
+
+impl PartialEq for Directive {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && eq_unique_by_name(&self.arguments, &other.arguments, |a| &a.name)
+    }
+}
+
+impl Hash for Directive {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        hash_unordered(self.arguments.iter(), state, self.arguments.len());
+    }
 }
 
 /// AST for the [_OperationType_](https://spec.graphql.org/September2025/#OperationType)
@@ -383,13 +407,33 @@ pub enum Type {
 
 /// Type system AST for a [_FieldDefinition_](https://spec.graphql.org/September2025/#FieldDefinition)
 /// in an object type or interface type defintion or extension.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq)]
 pub struct FieldDefinition {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub ty: Type,
     pub directives: DirectiveList,
+}
+
+impl PartialEq for FieldDefinition {
+    fn eq(&self, other: &Self) -> bool {
+        self.description == other.description
+            && self.name == other.name
+            && eq_unique_by_name(&self.arguments, &other.arguments, |a| &a.name)
+            && self.ty == other.ty
+            && self.directives == other.directives
+    }
+}
+
+impl Hash for FieldDefinition {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.description.hash(state);
+        self.name.hash(state);
+        hash_unordered(self.arguments.iter(), state, self.arguments.len());
+        self.ty.hash(state);
+        self.directives.hash(state);
+    }
 }
 
 /// Type system AST for an
@@ -425,13 +469,33 @@ pub enum Selection {
 
 /// Executable AST for a [_Field_](https://spec.graphql.org/September2025/#Field) selection
 /// in a selection set.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq)]
 pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
     pub directives: DirectiveList,
     pub selection_set: Vec<Selection>,
+}
+
+impl PartialEq for Field {
+    fn eq(&self, other: &Self) -> bool {
+        self.alias == other.alias
+            && self.name == other.name
+            && eq_unique_by_name(&self.arguments, &other.arguments, |a| &a.name)
+            && self.directives == other.directives
+            && self.selection_set == other.selection_set
+    }
+}
+
+impl Hash for Field {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.alias.hash(state);
+        self.name.hash(state);
+        hash_unordered(self.arguments.iter(), state, self.arguments.len());
+        self.directives.hash(state);
+        self.selection_set.hash(state);
+    }
 }
 
 /// Executable AST for a

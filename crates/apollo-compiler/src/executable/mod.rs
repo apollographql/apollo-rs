@@ -49,6 +49,8 @@
 //! and also implements `Display` and `ToString`.
 
 use crate::ast;
+use crate::collections::eq_unique_by_name;
+use crate::collections::hash_unordered;
 use crate::collections::IndexMap;
 use crate::coordinate::FieldArgumentCoordinate;
 use crate::coordinate::TypeAttributeCoordinate;
@@ -161,7 +163,7 @@ pub enum Selection {
 
 /// A [_Field_](https://spec.graphql.org/September2025/#Field) selection,
 /// linked to the corresponding field definition in the schema.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Eq)]
 pub struct Field {
     /// The definition of this field in an object type or interface type definition in the schema
     pub definition: Node<schema::FieldDefinition>,
@@ -170,6 +172,28 @@ pub struct Field {
     pub arguments: Vec<Node<Argument>>,
     pub directives: DirectiveList,
     pub selection_set: SelectionSet,
+}
+
+impl PartialEq for Field {
+    fn eq(&self, other: &Self) -> bool {
+        self.definition == other.definition
+            && self.alias == other.alias
+            && self.name == other.name
+            && eq_unique_by_name(&self.arguments, &other.arguments, |a| &a.name)
+            && self.directives == other.directives
+            && self.selection_set == other.selection_set
+    }
+}
+
+impl std::hash::Hash for Field {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.definition.hash(state);
+        self.alias.hash(state);
+        self.name.hash(state);
+        hash_unordered(self.arguments.iter(), state, self.arguments.len());
+        self.directives.hash(state);
+        self.selection_set.hash(state);
+    }
 }
 
 /// A [_FragmentSpread_](https://spec.graphql.org/September2025/#FragmentSpread)
