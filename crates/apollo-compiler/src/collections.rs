@@ -17,6 +17,25 @@ pub type HashMap<K, V> = std::collections::HashMap<K, V, ahash::RandomState>;
 /// [`std::collections::HashSet`] configured with a specific hasher
 pub type HashSet<T> = std::collections::HashSet<T, ahash::RandomState>;
 
+/// Order-independent equality for collections of uniquely-named items
+/// (e.g. arguments, input value definitions). Assumes names are unique per the
+/// GraphQL spec; behavior is unspecified for duplicate names.
+pub(crate) fn eq_unique_by_name<T: PartialEq>(
+    a: &[crate::Node<T>],
+    b: &[crate::Node<T>],
+    get_name: impl Fn(&T) -> &crate::Name,
+) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    a.iter().all(|item_a| {
+        let name = get_name(item_a);
+        b.iter()
+            .filter(|item_b| get_name(item_b) == name)
+            .any(|item_b| item_a == item_b)
+    })
+}
+
 /// Order-independent hash for collections whose `PartialEq` is order-independent
 /// (e.g. `IndexMap`, `IndexSet`). Uses commutative XOR of per-element hashes.
 pub(crate) fn hash_unordered<H: Hasher, T: Hash>(
