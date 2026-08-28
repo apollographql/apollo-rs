@@ -23,13 +23,13 @@ pub(crate) fn validate_union_definition(
         let member_location = union_member.location();
         // TODO: (?) A Union type must include one or more unique member types.
 
-        match schema.types.get(&union_member.name) {
+        match schema.types.get(union_member.as_ref()) {
             None => {
                 // Union member must be defined.
                 diagnostics.push(
                     member_location,
                     DiagnosticData::UndefinedDefinition {
-                        name: union_member.name.clone(),
+                        name: union_member.as_ref().clone(),
                     },
                 );
             }
@@ -39,7 +39,7 @@ pub(crate) fn validate_union_definition(
                 diagnostics.push(
                     member_location,
                     DiagnosticData::UnionMemberObjectType {
-                        name: union_member.name.clone(),
+                        name: union_member.as_ref().clone(),
                         describe_type: ty.describe(),
                     },
                 );

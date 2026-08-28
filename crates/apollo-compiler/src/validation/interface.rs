@@ -7,7 +7,6 @@ use crate::collections::IndexSet;
 use crate::parser::SourceSpan;
 use crate::schema::validation::BuiltInScalars;
 use crate::schema::Component;
-use crate::schema::ComponentName;
 use crate::schema::InterfaceType;
 use crate::schema::Name;
 use crate::validation::diagnostics::DiagnosticData;
@@ -50,7 +49,7 @@ pub(crate) fn validate_interface_definition(
             diagnostics.push(
                 implements_interface.location(),
                 DiagnosticData::RecursiveInterfaceDefinition {
-                    name: implements_interface.name.clone(),
+                    name: implements_interface.as_ref().clone(),
                 },
             );
         }
@@ -101,7 +100,7 @@ pub(crate) fn validate_interface_definition(
                     DiagnosticData::MissingInterfaceField {
                         name: interface.name.clone(),
                         implements_location: implements_interface.location(),
-                        interface: implements_interface.name.clone(),
+                        interface: implements_interface.as_ref().clone(),
                         field: super_field.name.clone(),
                         field_location: super_field.location(),
                     },
@@ -136,7 +135,7 @@ pub(crate) fn validate_implements_interfaces(
     schema: &crate::Schema,
     implementor_name: &Name,
     implementor_location: Option<SourceSpan>,
-    implements_interfaces: &IndexSet<ComponentName>,
+    implements_interfaces: &IndexSet<Node<Name>>,
 ) {
     let interface_definitions = implements_interfaces
         .iter()
@@ -160,7 +159,7 @@ pub(crate) fn validate_implements_interfaces(
         diagnostics.push(
             loc,
             DiagnosticData::UndefinedDefinition {
-                name: interface_name.name.clone(),
+                name: interface_name.as_ref().clone(),
             },
         );
     }
@@ -173,7 +172,7 @@ pub(crate) fn validate_implements_interfaces(
         interface
             .implements_interfaces
             .iter()
-            .map(|component| &component.name)
+            .map(|component| component.as_ref())
             .zip(std::iter::repeat(name))
     });
     for (transitive_interface, via_interface) in transitive_interfaces {
@@ -186,7 +185,7 @@ pub(crate) fn validate_implements_interfaces(
             implementor_location,
             DiagnosticData::TransitiveImplementedInterfaces {
                 interface: implementor_name.clone(),
-                via_interface: via_interface.name.clone(),
+                via_interface: via_interface.as_ref().clone(),
                 missing_interface: transitive_interface.clone(),
                 transitive_interface_location: transitive_loc,
             },
@@ -237,7 +236,7 @@ pub(crate) fn validate_implementation_field_types(
     schema: &crate::Schema,
     implementor_name: &Name,
     implementor_fields: &IndexMap<Name, Component<FieldDefinition>>,
-    implements_interfaces: &IndexSet<ComponentName>,
+    implements_interfaces: &IndexSet<Node<Name>>,
 ) {
     for interface_name in implements_interfaces {
         let Some(interface) = schema.get_interface(interface_name) else {
@@ -252,7 +251,7 @@ pub(crate) fn validate_implementation_field_types(
                     impl_field.location(),
                     DiagnosticData::InvalidImplementationFieldType {
                         name: implementor_name.clone(),
-                        interface: interface_name.name.clone(),
+                        interface: interface_name.as_ref().clone(),
                         field: field_name.clone(),
                         interface_type: Type::clone(&interface_field.ty),
                         actual_type: Type::clone(&impl_field.ty),
@@ -270,7 +269,7 @@ pub(crate) fn validate_implementation_field_types(
                     impl_field.location(),
                     DiagnosticData::DeprecatedImplementationField {
                         name: implementor_name.clone(),
-                        interface: interface_name.name.clone(),
+                        interface: interface_name.as_ref().clone(),
                         field: field_name.clone(),
                         field_location: impl_field.location(),
                         interface_field_location: interface_field.location(),
@@ -295,7 +294,7 @@ pub(crate) fn validate_implementation_field_arguments(
     schema: &crate::Schema,
     implementor_name: &Name,
     implementor_fields: &IndexMap<Name, Component<FieldDefinition>>,
-    implements_interfaces: &IndexSet<ComponentName>,
+    implements_interfaces: &IndexSet<Node<Name>>,
 ) {
     for interface_name in implements_interfaces {
         let Some(interface) = schema.get_interface(interface_name) else {
@@ -320,7 +319,7 @@ pub(crate) fn validate_implementation_field_arguments(
                             impl_field.location(),
                             DiagnosticData::MissingInterfaceFieldArgument {
                                 name: implementor_name.clone(),
-                                interface: interface_name.name.clone(),
+                                interface: interface_name.as_ref().clone(),
                                 field: field_name.clone(),
                                 argument: iface_arg.name.clone(),
                                 field_location: impl_field.location(),
@@ -334,7 +333,7 @@ pub(crate) fn validate_implementation_field_arguments(
                                 impl_arg.location(),
                                 DiagnosticData::InvalidImplementationFieldArgumentType {
                                     name: implementor_name.clone(),
-                                    interface: interface_name.name.clone(),
+                                    interface: interface_name.as_ref().clone(),
                                     field: field_name.clone(),
                                     argument: iface_arg.name.clone(),
                                     interface_type: iface_arg.ty.clone(),
@@ -359,7 +358,7 @@ pub(crate) fn validate_implementation_field_arguments(
                         impl_arg.location(),
                         DiagnosticData::ExtraRequiredImplementationFieldArgument {
                             name: implementor_name.clone(),
-                            interface: interface_name.name.clone(),
+                            interface: interface_name.as_ref().clone(),
                             field: field_name.clone(),
                             argument: impl_arg.name.clone(),
                             argument_location: impl_arg.location(),

@@ -28,10 +28,7 @@ Schema {
             },
         ],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Query",
-            },
+            191..196 @35 "Query",
         ),
         mutation: None,
         subscription: None,

@@ -13,10 +13,7 @@ Schema {
         description: None,
         directives: [],
         query: Some(
-            ComponentName {
-                origin: Definition,
-                name: "Query",
-            },
+            "Query",
         ),
         mutation: None,
         subscription: None,
@@ -46,10 +43,7 @@ Schema {
                 description: None,
                 name: "Query",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Node",
-                    },
+                    22..26 @9 "Node",
                 },
                 directives: [],
                 fields: {
@@ -95,10 +89,7 @@ Schema {
                 description: None,
                 name: "Resource",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Node",
-                    },
+                    104..108 @9 "Node",
                 },
                 directives: [],
                 fields: {
@@ -146,14 +137,8 @@ Schema {
                 description: None,
                 name: "Image",
                 implements_interfaces: {
-                    ComponentName {
-                        origin: Definition,
-                        name: "Resource",
-                    },
-                    ComponentName {
-                        origin: Definition,
-                        name: "Node",
-                    },
+                    178..186 @9 "Resource",
+                    189..193 @9 "Node",
                 },
                 directives: [],
                 fields: {
