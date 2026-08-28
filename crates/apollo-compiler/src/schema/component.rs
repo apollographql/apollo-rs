@@ -1,11 +1,27 @@
-use crate::parser::SourceSpan;
+pub use crate::node::ExtensionId;
 use crate::Name;
 use crate::Node;
+
+/// The origin of a [`Component`]: either a "main" definition like `schema` or `type ExampleObj`,
+/// or an extension like `extend schema` or `extend type ExampleObj`.
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum ComponentOrigin {
+    Definition,
+    Extension(ExtensionId),
+}
+
+impl ComponentOrigin {
+    pub fn extension_id(&self) -> Option<&ExtensionId> {
+        match self {
+            ComponentOrigin::Definition => None,
+            ComponentOrigin::Extension(id) => Some(id),
+        }
+    }
+}
 use std::fmt;
 use std::hash;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use triomphe::Arc;
 
 /// A component of a type or `schema`, for example a field of an object type.
 ///
@@ -19,62 +35,6 @@ use triomphe::Arc;
 pub struct Component<T: ?Sized> {
     pub origin: ComponentOrigin,
     pub node: Node<T>,
-}
-
-/// The origin of a [`Component`]: either a “main” definition like `schema` or `type ExampleObj`,
-/// or an extension like `extend schema` or `extend type ExampleObj`.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum ComponentOrigin {
-    Definition,
-    Extension(ExtensionId),
-}
-
-/// Represents the identity of a schema extension or type extension.
-///
-/// Compares equal to its clones but not to other `ExtensionId`s created separately,
-/// even if they contain the same source location.
-#[derive(Debug, Clone, Eq)]
-pub struct ExtensionId {
-    arc: Arc<Option<SourceSpan>>,
-}
-
-impl ExtensionId {
-    pub fn new<T>(extension: &Node<T>) -> Self {
-        Self {
-            arc: Arc::new(extension.location()),
-        }
-    }
-
-    /// If this extension was parsed from a source file, returns the file ID and source span
-    /// (start and end byte offsets) within that file.
-    pub fn location(&self) -> Option<SourceSpan> {
-        *self.arc
-    }
-
-    pub fn same_location<T>(&self, node: T) -> Node<T> {
-        Node::new_opt_location(node, self.location())
-    }
-}
-
-impl PartialEq for ExtensionId {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.arc, &other.arc)
-    }
-}
-
-impl hash::Hash for ExtensionId {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        Arc::as_ptr(&self.arc).hash(state);
-    }
-}
-
-impl ComponentOrigin {
-    pub fn extension_id(&self) -> Option<&ExtensionId> {
-        match self {
-            ComponentOrigin::Definition => None,
-            ComponentOrigin::Extension(id) => Some(id),
-        }
-    }
 }
 
 impl<T> Component<T> {

@@ -16,6 +16,10 @@ use triomphe::HeaderSlice;
 ///
 /// * In addition to `T`, contains an optional [`SourceSpan`].
 ///   This location notably allows diagnostics to point to relevant parts of parsed input files.
+/// * Also contains an optional [`ExtensionId`], tracking whether a node of a schema
+///   comes from an extension like `extend type ExampleObj`. Nodes from a “main”
+///   definition, created programmatically, or parsed outside of a schema definition
+///   have `None`.
 /// * Weak references are not supported.
 #[derive(serde::Deserialize)]
 #[serde(from = "T")]
@@ -24,6 +28,46 @@ pub struct Node<T: ?Sized>(triomphe::Arc<HeaderSlice<Header, T>>);
 #[derive(Clone)]
 struct Header {
     location: Option<SourceSpan>,
+    extension_id: Option<ExtensionId>,
+}
+
+/// Represents the identity of a schema extension or type extension.
+///
+/// Compares equal to its clones but not to other `ExtensionId`s created separately,
+/// even if they contain the same source location.
+#[derive(Debug, Clone, Eq)]
+pub struct ExtensionId {
+    arc: triomphe::Arc<Option<SourceSpan>>,
+}
+
+impl ExtensionId {
+    pub fn new<T>(extension: &Node<T>) -> Self {
+        Self {
+            arc: triomphe::Arc::new(extension.location()),
+        }
+    }
+
+    /// If this extension was parsed from a source file, returns the file ID and source span
+    /// (start and end byte offsets) within that file.
+    pub fn location(&self) -> Option<SourceSpan> {
+        *self.arc
+    }
+
+    pub fn same_location<T>(&self, node: T) -> Node<T> {
+        Node::new_opt_location(node, self.location())
+    }
+}
+
+impl PartialEq for ExtensionId {
+    fn eq(&self, other: &Self) -> bool {
+        triomphe::Arc::ptr_eq(&self.arc, &other.arc)
+    }
+}
+
+impl Hash for ExtensionId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        triomphe::Arc::as_ptr(&self.arc).hash(state);
+    }
 }
 
 impl<T> Node<T> {
@@ -40,9 +84,40 @@ impl<T> Node<T> {
 
     pub(crate) fn new_opt_location(node: T, location: Option<SourceSpan>) -> Self {
         Self(triomphe::Arc::new(HeaderSlice {
-            header: Header { location },
+            header: Header {
+                location,
+                extension_id: None,
+            },
             slice: node,
         }))
+    }
+
+    /// Returns a new `Node` containing a clone of `T` with the specified
+    /// extension origin, keeping the source location of `self`.
+    pub fn with_extension_id(&self, id: ExtensionId) -> Self
+    where
+        T: Clone,
+    {
+        Self(triomphe::Arc::new(HeaderSlice {
+            header: Header {
+                location: self.location(),
+                extension_id: Some(id),
+            },
+            slice: self.0.slice.clone(),
+        }))
+    }
+
+    /// Sets the extension origin of this node.
+    ///
+    /// If the origin actually changes and this `Node` is not uniquely owned,
+    /// this clones `T` (like [`make_mut`][Self::make_mut] does).
+    pub fn set_extension_id(&mut self, id: ExtensionId)
+    where
+        T: Clone,
+    {
+        if self.extension_id() != Some(&id) {
+            triomphe::Arc::make_mut(&mut self.0).header.extension_id = Some(id);
+        }
     }
 }
 
@@ -60,7 +135,10 @@ impl Node<str> {
 
     pub(crate) fn new_str_opt_location(node: &str, location: Option<SourceSpan>) -> Self {
         Self(triomphe::Arc::from_header_and_str(
-            Header { location },
+            Header {
+                location,
+                extension_id: None,
+            },
             node,
         ))
     }
@@ -75,6 +153,14 @@ impl<T: ?Sized> Node<T> {
     /// (start and end byte offsets) within that file.
     pub fn location(&self) -> Option<SourceSpan> {
         self.0.header.location
+    }
+
+    /// If this node comes from a schema extension, returns its [`ExtensionId`].
+    ///
+    /// Returns `None` for nodes from a main definition, nodes created
+    /// programmatically, or nodes in executable documents.
+    pub fn extension_id(&self) -> Option<&ExtensionId> {
+        self.0.header.extension_id.as_ref()
     }
 
     /// Whether this node is located in `FileId::BUILT_IN`,
@@ -160,6 +246,12 @@ impl<T: ?Sized + fmt::Debug> fmt::Debug for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(location) = self.location() {
             write!(f, "{location:?} ")?
+        }
+        if let Some(id) = self.extension_id() {
+            match id.location() {
+                Some(location) => write!(f, "(extension {location:?}) ")?,
+                None => write!(f, "(extension) ")?,
+            }
         }
         self.0.slice.fmt(f)
     }
