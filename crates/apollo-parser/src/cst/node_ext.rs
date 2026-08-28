@@ -637,6 +637,7 @@ mod string_tests {
             ("a\\".to_string(), vec![])
         );
     }
+
 }
 
 #[cfg(test)]
