@@ -18,6 +18,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.17.0-beta.1](https://crates.io/crates/apollo-smith/0.17.0-beta.1) - 2026-08-28
+
+## BREAKING
+
+- **Update `Component<T>` to `Node<T>` following apollo-compiler changes - [tninesling], [pull/1091]**
+
+  Adapts to the compiler's removal of `ComponentName` in favor of `Node<Name>`.
+
+## Features
+
+- **Support partial response data in ResponseBuilder - [tninesling], [pull/1081]**
+
+  `ResponseBuilder::with_partial_data` accepts a response-shaped fragment that
+  the generated response must include verbatim. The builder walks the partial
+  data alongside the operation's selection set: leaf positions echo the partial
+  data exactly (never nulled by `with_null_ratio`), object positions recurse
+  with covered sub-fields echoed and uncovered sub-fields generated as usual,
+  and a `__typename` entry pins the concrete type at abstract positions.
+
+## Maintenance
+
+- **Bump `apollo-compiler` dependency to `2.0.0-beta.1` - [tninesling]**
+
+[pull/1081]: https://github.com/apollographql/apollo-rs/pull/1081
+[pull/1091]: https://github.com/apollographql/apollo-rs/pull/1091
+[tninesling]: https://github.com/tninesling
+
 # [0.17.0-beta.0](https://crates.io/crates/apollo-smith/0.17.0-beta.0) - 2026-08-21
 
 ## Features
