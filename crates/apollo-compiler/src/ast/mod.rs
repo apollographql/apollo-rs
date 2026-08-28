@@ -51,9 +51,13 @@
 //! assert_eq!(doc.serialize().no_indent().to_string(), "query @dir { field }")
 //! ```
 
+use crate::collections::hash_unordered;
+use crate::collections::IndexSet;
 use crate::parser::SourceMap;
 use crate::Name;
 use crate::Node;
+use std::hash::Hash;
+use std::hash::Hasher;
 
 pub(crate) mod from_cst;
 pub(crate) mod impls;
@@ -137,13 +141,23 @@ pub struct FragmentDefinition {
 
 /// Type system AST for a `directive @foo`
 /// [_DirectiveDefinition_](https://spec.graphql.org/September2025/#DirectiveDefinition).
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DirectiveDefinition {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub repeatable: bool,
-    pub locations: Vec<DirectiveLocation>,
+    pub locations: IndexSet<DirectiveLocation>,
+}
+
+impl Hash for DirectiveDefinition {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.description.hash(state);
+        self.name.hash(state);
+        self.arguments.hash(state);
+        self.repeatable.hash(state);
+        hash_unordered(self.locations.iter(), state, self.locations.len());
+    }
 }
 
 /// Type system AST for a `schema`

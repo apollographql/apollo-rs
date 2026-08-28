@@ -54,10 +54,10 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "FRAGMENT_SPREAD",
                 "INLINE_FRAGMENT",
-            ],
+            },
         },
     },
     types: {

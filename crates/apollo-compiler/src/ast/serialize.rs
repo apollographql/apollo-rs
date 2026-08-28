@@ -264,10 +264,11 @@ impl DirectiveDefinition {
         if *repeatable {
             state.write(" repeatable")?;
         }
-        if let Some((first, rest)) = locations.split_first() {
+        let mut loc_iter = locations.iter();
+        if let Some(first) = loc_iter.next() {
             state.write(" on ")?;
             state.write(first.name())?;
-            for location in rest {
+            for location in loc_iter {
                 state.write(" | ")?;
                 state.write(location.name())?;
             }

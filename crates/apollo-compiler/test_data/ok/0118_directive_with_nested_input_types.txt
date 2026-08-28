@@ -39,10 +39,10 @@ Schema {
                 },
             ],
             repeatable: false,
-            locations: [
+            locations: {
                 "OBJECT",
                 "INTERFACE",
-            ],
+            },
         },
     },
     types: {

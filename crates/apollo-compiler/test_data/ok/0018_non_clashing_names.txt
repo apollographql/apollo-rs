@@ -29,9 +29,9 @@ Schema {
             name: "A",
             arguments: [],
             repeatable: false,
-            locations: [
+            locations: {
                 "OBJECT",
-            ],
+            },
         },
     },
     types: {
