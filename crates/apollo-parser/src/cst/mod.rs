@@ -104,13 +104,13 @@
 //! [GraphQL grammar]: https://spec.graphql.org/September2025/#sec-Document-Syntax
 mod generated;
 mod node_ext;
-
 pub use crate::parser::SyntaxNodePtr;
 use crate::SyntaxKind;
 pub use crate::SyntaxNode;
 use crate::SyntaxNodeChildren;
 use crate::SyntaxToken;
 pub use generated::nodes::*;
+pub use node_ext::unescape_string_with_offsets;
 use std::marker::PhantomData;
 
 /// The main trait to go from untyped `SyntaxNode`  to a typed CST. The
