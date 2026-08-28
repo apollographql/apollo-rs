@@ -1,6 +1,6 @@
 [package]
 name = "apollo-smith"
-version = "0.17.0-beta.0" # When bumping, also update README.md
+version = "0.17.0-beta.1" # When bumping, also update README.md
 edition = "2021"
 authors = ["Benjamin Coenen <benjamin.coenen@apollographql.com>"]
 license = "MIT OR Apache-2.0"
@@ -22,7 +22,7 @@ categories = [
 ]
 
 [dependencies]
-apollo-compiler = { path = "../apollo-compiler", version = "2.0.0-beta.0" }
+apollo-compiler = { path = "../apollo-compiler", version = "2.0.0-beta.1" }
 apollo-parser = { path = "../apollo-parser", version = "0.9.0-beta.0" }
 arbitrary = { version = "1.4.0", features = ["derive"] }
 indexmap = "2.0.0"
