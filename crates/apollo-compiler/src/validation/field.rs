@@ -5,7 +5,6 @@ use crate::coordinate::TypeAttributeCoordinate;
 use crate::executable;
 use crate::schema;
 use crate::schema::validation::BuiltInScalars;
-use crate::schema::Component;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::DiagnosticList;
 use crate::validation::OperationValidationContext;
@@ -168,7 +167,7 @@ pub(crate) fn validate_field_definitions(
     diagnostics: &mut DiagnosticList,
     schema: &crate::Schema,
     built_in_scalars: &mut BuiltInScalars,
-    fields: &IndexMap<Name, Component<ast::FieldDefinition>>,
+    fields: &IndexMap<Name, Node<ast::FieldDefinition>>,
 ) {
     for field in fields.values() {
         validate_field_definition(diagnostics, schema, built_in_scalars, field);

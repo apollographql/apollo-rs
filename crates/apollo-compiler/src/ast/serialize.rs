@@ -1048,7 +1048,6 @@ impl_display! {
     Value
     crate::Schema
     crate::ExecutableDocument
-    schema::DirectiveList
     schema::ExtendedType
     schema::ScalarType
     schema::ObjectType

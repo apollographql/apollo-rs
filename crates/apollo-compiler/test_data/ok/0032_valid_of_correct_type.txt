@@ -46,404 +46,359 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "intArgField": Component {
-                        origin: Definition,
-                        node: 75..107 @33 FieldDefinition {
-                            description: None,
-                            name: "intArgField",
-                            arguments: [
-                                87..98 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "intArg",
-                                    ty: 95..98 @33 Named(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "intArgField": 75..107 @33 FieldDefinition {
+                        description: None,
+                        name: "intArgField",
+                        arguments: [
+                            87..98 @33 InputValueDefinition {
+                                description: None,
+                                name: "intArg",
+                                ty: 95..98 @33 Named(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "nonNullIntArgField": Component {
-                        origin: Definition,
-                        node: 110..157 @33 FieldDefinition {
-                            description: None,
-                            name: "nonNullIntArgField",
-                            arguments: [
-                                129..148 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "nonNullIntArg",
-                                    ty: 144..148 @33 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "nonNullIntArgField": 110..157 @33 FieldDefinition {
+                        description: None,
+                        name: "nonNullIntArgField",
+                        arguments: [
+                            129..148 @33 InputValueDefinition {
+                                description: None,
+                                name: "nonNullIntArg",
+                                ty: 144..148 @33 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "stringArgField": Component {
-                        origin: Definition,
-                        node: 160..201 @33 FieldDefinition {
-                            description: None,
-                            name: "stringArgField",
-                            arguments: [
-                                175..192 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "stringArg",
-                                    ty: 186..192 @33 Named(
+                    "stringArgField": 160..201 @33 FieldDefinition {
+                        description: None,
+                        name: "stringArgField",
+                        arguments: [
+                            175..192 @33 InputValueDefinition {
+                                description: None,
+                                name: "stringArg",
+                                ty: 186..192 @33 Named(
+                                    "String",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                    "booleanArgField": 204..248 @33 FieldDefinition {
+                        description: None,
+                        name: "booleanArgField",
+                        arguments: [
+                            220..239 @33 InputValueDefinition {
+                                description: None,
+                                name: "booleanArg",
+                                ty: 232..239 @33 Named(
+                                    "Boolean",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                    "enumArgField": 251..290 @33 FieldDefinition {
+                        description: None,
+                        name: "enumArgField",
+                        arguments: [
+                            264..281 @33 InputValueDefinition {
+                                description: None,
+                                name: "enumArg",
+                                ty: 273..281 @33 Named(
+                                    "FurColor",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                    "floatArgField": 293..331 @33 FieldDefinition {
+                        description: None,
+                        name: "floatArgField",
+                        arguments: [
+                            307..322 @33 InputValueDefinition {
+                                description: None,
+                                name: "floatArg",
+                                ty: 317..322 @33 Named(
+                                    "Float",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                    "idArgField": 334..363 @33 FieldDefinition {
+                        description: None,
+                        name: "idArgField",
+                        arguments: [
+                            345..354 @33 InputValueDefinition {
+                                description: None,
+                                name: "idArg",
+                                ty: 352..354 @33 Named(
+                                    "ID",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                    "stringListArgField": 366..417 @33 FieldDefinition {
+                        description: None,
+                        name: "stringListArgField",
+                        arguments: [
+                            385..408 @33 InputValueDefinition {
+                                description: None,
+                                name: "stringListArg",
+                                ty: 400..408 @33 List(
+                                    Named(
                                         "String",
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "booleanArgField": Component {
-                        origin: Definition,
-                        node: 204..248 @33 FieldDefinition {
-                            description: None,
-                            name: "booleanArgField",
-                            arguments: [
-                                220..239 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "booleanArg",
-                                    ty: 232..239 @33 Named(
-                                        "Boolean",
+                    "stringListNonNullArgField": 420..486 @33 FieldDefinition {
+                        description: None,
+                        name: "stringListNonNullArgField",
+                        arguments: [
+                            446..477 @33 InputValueDefinition {
+                                description: None,
+                                name: "stringListNonNullArg",
+                                ty: 468..477 @33 List(
+                                    NonNullNamed(
+                                        "String",
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "enumArgField": Component {
-                        origin: Definition,
-                        node: 251..290 @33 FieldDefinition {
-                            description: None,
-                            name: "enumArgField",
-                            arguments: [
-                                264..281 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "enumArg",
-                                    ty: 273..281 @33 Named(
-                                        "FurColor",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "customScalar": 489..531 @33 FieldDefinition {
+                        description: None,
+                        name: "customScalar",
+                        arguments: [
+                            502..522 @33 InputValueDefinition {
+                                description: None,
+                                name: "customScalar",
+                                ty: 516..522 @33 Named(
+                                    "Custom",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "floatArgField": Component {
-                        origin: Definition,
-                        node: 293..331 @33 FieldDefinition {
-                            description: None,
-                            name: "floatArgField",
-                            arguments: [
-                                307..322 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "floatArg",
-                                    ty: 317..322 @33 Named(
-                                        "Float",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "complexArgField": 534..583 @33 FieldDefinition {
+                        description: None,
+                        name: "complexArgField",
+                        arguments: [
+                            550..574 @33 InputValueDefinition {
+                                description: None,
+                                name: "complexArg",
+                                ty: 562..574 @33 Named(
+                                    "ComplexInput",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "idArgField": Component {
-                        origin: Definition,
-                        node: 334..363 @33 FieldDefinition {
-                            description: None,
-                            name: "idArgField",
-                            arguments: [
-                                345..354 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "idArg",
-                                    ty: 352..354 @33 Named(
-                                        "ID",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "multipleReqs": 586..630 @33 FieldDefinition {
+                        description: None,
+                        name: "multipleReqs",
+                        arguments: [
+                            599..609 @33 InputValueDefinition {
+                                description: None,
+                                name: "req1",
+                                ty: 605..609 @33 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                            611..621 @33 InputValueDefinition {
+                                description: None,
+                                name: "req2",
+                                ty: 617..621 @33 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "stringListArgField": Component {
-                        origin: Definition,
-                        node: 366..417 @33 FieldDefinition {
-                            description: None,
-                            name: "stringListArgField",
-                            arguments: [
-                                385..408 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "stringListArg",
-                                    ty: 400..408 @33 List(
-                                        Named(
-                                            "String",
-                                        ),
+                    "nonNullFieldWithDefault": 633..679 @33 FieldDefinition {
+                        description: None,
+                        name: "nonNullFieldWithDefault",
+                        arguments: [
+                            657..670 @33 InputValueDefinition {
+                                description: None,
+                                name: "arg",
+                                ty: 662..666 @33 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    669..670 @33 Int(
+                                        0,
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "stringListNonNullArgField": Component {
-                        origin: Definition,
-                        node: 420..486 @33 FieldDefinition {
-                            description: None,
-                            name: "stringListNonNullArgField",
-                            arguments: [
-                                446..477 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "stringListNonNullArg",
-                                    ty: 468..477 @33 List(
-                                        NonNullNamed(
-                                            "String",
-                                        ),
+                    "multipleOpts": 682..732 @33 FieldDefinition {
+                        description: None,
+                        name: "multipleOpts",
+                        arguments: [
+                            695..708 @33 InputValueDefinition {
+                                description: None,
+                                name: "opt1",
+                                ty: 701..704 @33 Named(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    707..708 @33 Int(
+                                        0,
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                            710..723 @33 InputValueDefinition {
+                                description: None,
+                                name: "opt2",
+                                ty: 716..719 @33 Named(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    722..723 @33 Int(
+                                        0,
+                                    ),
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "customScalar": Component {
-                        origin: Definition,
-                        node: 489..531 @33 FieldDefinition {
-                            description: None,
-                            name: "customScalar",
-                            arguments: [
-                                502..522 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "customScalar",
-                                    ty: 516..522 @33 Named(
-                                        "Custom",
+                    "multipleOptAndReq": 735..814 @33 FieldDefinition {
+                        description: None,
+                        name: "multipleOptAndReq",
+                        arguments: [
+                            753..763 @33 InputValueDefinition {
+                                description: None,
+                                name: "req1",
+                                ty: 759..763 @33 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                            765..775 @33 InputValueDefinition {
+                                description: None,
+                                name: "req2",
+                                ty: 771..775 @33 NonNullNamed(
+                                    "Int",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                            777..790 @33 InputValueDefinition {
+                                description: None,
+                                name: "opt1",
+                                ty: 783..786 @33 Named(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    789..790 @33 Int(
+                                        0,
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "complexArgField": Component {
-                        origin: Definition,
-                        node: 534..583 @33 FieldDefinition {
-                            description: None,
-                            name: "complexArgField",
-                            arguments: [
-                                550..574 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "complexArg",
-                                    ty: 562..574 @33 Named(
-                                        "ComplexInput",
+                                ),
+                                directives: [],
+                            },
+                            792..805 @33 InputValueDefinition {
+                                description: None,
+                                name: "opt2",
+                                ty: 798..801 @33 Named(
+                                    "Int",
+                                ),
+                                default_value: Some(
+                                    804..805 @33 Int(
+                                        0,
                                     ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "multipleReqs": Component {
-                        origin: Definition,
-                        node: 586..630 @33 FieldDefinition {
-                            description: None,
-                            name: "multipleReqs",
-                            arguments: [
-                                599..609 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "req1",
-                                    ty: 605..609 @33 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                                611..621 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "req2",
-                                    ty: 617..621 @33 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "nonNullFieldWithDefault": Component {
-                        origin: Definition,
-                        node: 633..679 @33 FieldDefinition {
-                            description: None,
-                            name: "nonNullFieldWithDefault",
-                            arguments: [
-                                657..670 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "arg",
-                                    ty: 662..666 @33 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: Some(
-                                        669..670 @33 Int(
-                                            0,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "multipleOpts": Component {
-                        origin: Definition,
-                        node: 682..732 @33 FieldDefinition {
-                            description: None,
-                            name: "multipleOpts",
-                            arguments: [
-                                695..708 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "opt1",
-                                    ty: 701..704 @33 Named(
-                                        "Int",
-                                    ),
-                                    default_value: Some(
-                                        707..708 @33 Int(
-                                            0,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                                710..723 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "opt2",
-                                    ty: 716..719 @33 Named(
-                                        "Int",
-                                    ),
-                                    default_value: Some(
-                                        722..723 @33 Int(
-                                            0,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "multipleOptAndReq": Component {
-                        origin: Definition,
-                        node: 735..814 @33 FieldDefinition {
-                            description: None,
-                            name: "multipleOptAndReq",
-                            arguments: [
-                                753..763 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "req1",
-                                    ty: 759..763 @33 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                                765..775 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "req2",
-                                    ty: 771..775 @33 NonNullNamed(
-                                        "Int",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                                777..790 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "opt1",
-                                    ty: 783..786 @33 Named(
-                                        "Int",
-                                    ),
-                                    default_value: Some(
-                                        789..790 @33 Int(
-                                            0,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                                792..805 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "opt2",
-                                    ty: 798..801 @33 Named(
-                                        "Int",
-                                    ),
-                                    default_value: Some(
-                                        804..805 @33 Int(
-                                            0,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -453,19 +408,16 @@ Schema {
                 description: None,
                 name: "Custom",
                 directives: [
-                    Component {
-                        origin: Definition,
-                        node: 832..864 @33 Directive {
-                            name: "specifiedBy",
-                            arguments: [
-                                845..863 @33 Argument {
-                                    name: "url",
-                                    value: 850..863 @33 String(
-                                        "example.com",
-                                    ),
-                                },
-                            ],
-                        },
+                    832..864 @33 Directive {
+                        name: "specifiedBy",
+                        arguments: [
+                            845..863 @33 Argument {
+                                name: "url",
+                                value: 850..863 @33 String(
+                                    "example.com",
+                                ),
+                            },
+                        ],
                     },
                 ],
             },
@@ -476,53 +428,35 @@ Schema {
                 name: "FurColor",
                 directives: [],
                 values: {
-                    "BROWN": Component {
-                        origin: Definition,
-                        node: 884..889 @33 EnumValueDefinition {
-                            description: None,
-                            value: "BROWN",
-                            directives: [],
-                        },
+                    "BROWN": 884..889 @33 EnumValueDefinition {
+                        description: None,
+                        value: "BROWN",
+                        directives: [],
                     },
-                    "BLACK": Component {
-                        origin: Definition,
-                        node: 892..897 @33 EnumValueDefinition {
-                            description: None,
-                            value: "BLACK",
-                            directives: [],
-                        },
+                    "BLACK": 892..897 @33 EnumValueDefinition {
+                        description: None,
+                        value: "BLACK",
+                        directives: [],
                     },
-                    "TAN": Component {
-                        origin: Definition,
-                        node: 900..903 @33 EnumValueDefinition {
-                            description: None,
-                            value: "TAN",
-                            directives: [],
-                        },
+                    "TAN": 900..903 @33 EnumValueDefinition {
+                        description: None,
+                        value: "TAN",
+                        directives: [],
                     },
-                    "SPOTTED": Component {
-                        origin: Definition,
-                        node: 906..913 @33 EnumValueDefinition {
-                            description: None,
-                            value: "SPOTTED",
-                            directives: [],
-                        },
+                    "SPOTTED": 906..913 @33 EnumValueDefinition {
+                        description: None,
+                        value: "SPOTTED",
+                        directives: [],
                     },
-                    "NO_FUR": Component {
-                        origin: Definition,
-                        node: 916..922 @33 EnumValueDefinition {
-                            description: None,
-                            value: "NO_FUR",
-                            directives: [],
-                        },
+                    "NO_FUR": 916..922 @33 EnumValueDefinition {
+                        description: None,
+                        value: "NO_FUR",
+                        directives: [],
                     },
-                    "UNKNOWN": Component {
-                        origin: Definition,
-                        node: 925..932 @33 EnumValueDefinition {
-                            description: None,
-                            value: "UNKNOWN",
-                            directives: [],
-                        },
+                    "UNKNOWN": 925..932 @33 EnumValueDefinition {
+                        description: None,
+                        value: "UNKNOWN",
+                        directives: [],
                     },
                 },
             },
@@ -533,83 +467,65 @@ Schema {
                 name: "ComplexInput",
                 directives: [],
                 fields: {
-                    "requiredField": Component {
-                        origin: Definition,
-                        node: 959..982 @33 InputValueDefinition {
-                            description: None,
-                            name: "requiredField",
-                            ty: 974..982 @33 NonNullNamed(
-                                "Boolean",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "requiredField": 959..982 @33 InputValueDefinition {
+                        description: None,
+                        name: "requiredField",
+                        ty: 974..982 @33 NonNullNamed(
+                            "Boolean",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "nonNullField": Component {
-                        origin: Definition,
-                        node: 985..1015 @33 InputValueDefinition {
-                            description: None,
-                            name: "nonNullField",
-                            ty: 999..1007 @33 NonNullNamed(
-                                "Boolean",
+                    "nonNullField": 985..1015 @33 InputValueDefinition {
+                        description: None,
+                        name: "nonNullField",
+                        ty: 999..1007 @33 NonNullNamed(
+                            "Boolean",
+                        ),
+                        default_value: Some(
+                            1010..1015 @33 Boolean(
+                                false,
                             ),
-                            default_value: Some(
-                                1010..1015 @33 Boolean(
-                                    false,
-                                ),
-                            ),
-                            directives: [],
-                        },
+                        ),
+                        directives: [],
                     },
-                    "intField": Component {
-                        origin: Definition,
-                        node: 1018..1031 @33 InputValueDefinition {
-                            description: None,
-                            name: "intField",
-                            ty: 1028..1031 @33 Named(
-                                "Int",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "intField": 1018..1031 @33 InputValueDefinition {
+                        description: None,
+                        name: "intField",
+                        ty: 1028..1031 @33 Named(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "stringField": Component {
-                        origin: Definition,
-                        node: 1034..1053 @33 InputValueDefinition {
-                            description: None,
-                            name: "stringField",
-                            ty: 1047..1053 @33 Named(
+                    "stringField": 1034..1053 @33 InputValueDefinition {
+                        description: None,
+                        name: "stringField",
+                        ty: 1047..1053 @33 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                    "booleanField": 1056..1077 @33 InputValueDefinition {
+                        description: None,
+                        name: "booleanField",
+                        ty: 1070..1077 @33 Named(
+                            "Boolean",
+                        ),
+                        default_value: None,
+                        directives: [],
+                    },
+                    "stringListField": 1080..1105 @33 InputValueDefinition {
+                        description: None,
+                        name: "stringListField",
+                        ty: 1097..1105 @33 List(
+                            Named(
                                 "String",
                             ),
-                            default_value: None,
-                            directives: [],
-                        },
-                    },
-                    "booleanField": Component {
-                        origin: Definition,
-                        node: 1056..1077 @33 InputValueDefinition {
-                            description: None,
-                            name: "booleanField",
-                            ty: 1070..1077 @33 Named(
-                                "Boolean",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
-                    },
-                    "stringListField": Component {
-                        origin: Definition,
-                        node: 1080..1105 @33 InputValueDefinition {
-                            description: None,
-                            name: "stringListField",
-                            ty: 1097..1105 @33 List(
-                                Named(
-                                    "String",
-                                ),
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -620,29 +536,20 @@ Schema {
                 name: "DogCommand",
                 directives: [],
                 values: {
-                    "SIT": Component {
-                        origin: Definition,
-                        node: 1129..1132 @33 EnumValueDefinition {
-                            description: None,
-                            value: "SIT",
-                            directives: [],
-                        },
+                    "SIT": 1129..1132 @33 EnumValueDefinition {
+                        description: None,
+                        value: "SIT",
+                        directives: [],
                     },
-                    "HEEL": Component {
-                        origin: Definition,
-                        node: 1135..1139 @33 EnumValueDefinition {
-                            description: None,
-                            value: "HEEL",
-                            directives: [],
-                        },
+                    "HEEL": 1135..1139 @33 EnumValueDefinition {
+                        description: None,
+                        value: "HEEL",
+                        directives: [],
                     },
-                    "DOWN": Component {
-                        origin: Definition,
-                        node: 1142..1146 @33 EnumValueDefinition {
-                            description: None,
-                            value: "DOWN",
-                            directives: [],
-                        },
+                    "DOWN": 1142..1146 @33 EnumValueDefinition {
+                        description: None,
+                        value: "DOWN",
+                        directives: [],
                     },
                 },
             },
@@ -654,75 +561,66 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "doesKnowCommand": Component {
-                        origin: Definition,
-                        node: 1163..1211 @33 FieldDefinition {
-                            description: None,
-                            name: "doesKnowCommand",
-                            arguments: [
-                                1179..1201 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "dogCommand",
-                                    ty: 1191..1201 @33 Named(
-                                        "DogCommand",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                    "doesKnowCommand": 1163..1211 @33 FieldDefinition {
+                        description: None,
+                        name: "doesKnowCommand",
+                        arguments: [
+                            1179..1201 @33 InputValueDefinition {
+                                description: None,
+                                name: "dogCommand",
+                                ty: 1191..1201 @33 Named(
+                                    "DogCommand",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
-                    "name": Component {
-                        origin: Definition,
-                        node: 1214..1244 @33 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [
-                                1219..1235 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "surname",
-                                    ty: 1228..1235 @33 Named(
-                                        "Boolean",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 1214..1244 @33 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [
+                            1219..1235 @33 InputValueDefinition {
+                                description: None,
+                                name: "surname",
+                                ty: 1228..1235 @33 Named(
+                                    "Boolean",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "isHouseTrained": Component {
-                        origin: Definition,
-                        node: 1247..1300 @33 FieldDefinition {
-                            description: None,
-                            name: "isHouseTrained",
-                            arguments: [
-                                1262..1290 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "atOtherHomes",
-                                    ty: 1276..1283 @33 Named(
-                                        "Boolean",
+                    "isHouseTrained": 1247..1300 @33 FieldDefinition {
+                        description: None,
+                        name: "isHouseTrained",
+                        arguments: [
+                            1262..1290 @33 InputValueDefinition {
+                                description: None,
+                                name: "atOtherHomes",
+                                ty: 1276..1283 @33 Named(
+                                    "Boolean",
+                                ),
+                                default_value: Some(
+                                    1286..1290 @33 Boolean(
+                                        true,
                                     ),
-                                    default_value: Some(
-                                        1286..1290 @33 Boolean(
-                                            true,
-                                        ),
-                                    ),
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Boolean",
-                            ),
-                            directives: [],
-                        },
+                                ),
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Boolean",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -734,27 +632,24 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 1322..1352 @33 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [
-                                1327..1343 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "surname",
-                                    ty: 1336..1343 @33 Named(
-                                        "Boolean",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 1322..1352 @33 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [
+                            1327..1343 @33 InputValueDefinition {
+                                description: None,
+                                name: "surname",
+                                ty: 1336..1343 @33 Named(
+                                    "Boolean",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -766,51 +661,42 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "complicatedArgs": Component {
-                        origin: Definition,
-                        node: 1371..1403 @33 FieldDefinition {
-                            description: None,
-                            name: "complicatedArgs",
-                            arguments: [],
-                            ty: Named(
-                                "ComplicatedArgs",
-                            ),
-                            directives: [],
-                        },
+                    "complicatedArgs": 1371..1403 @33 FieldDefinition {
+                        description: None,
+                        name: "complicatedArgs",
+                        arguments: [],
+                        ty: Named(
+                            "ComplicatedArgs",
+                        ),
+                        directives: [],
                     },
-                    "dog": Component {
-                        origin: Definition,
-                        node: 1406..1414 @33 FieldDefinition {
-                            description: None,
-                            name: "dog",
-                            arguments: [],
-                            ty: Named(
-                                "Dog",
-                            ),
-                            directives: [],
-                        },
+                    "dog": 1406..1414 @33 FieldDefinition {
+                        description: None,
+                        name: "dog",
+                        arguments: [],
+                        ty: Named(
+                            "Dog",
+                        ),
+                        directives: [],
                     },
-                    "human": Component {
-                        origin: Definition,
-                        node: 1417..1437 @33 FieldDefinition {
-                            description: None,
-                            name: "human",
-                            arguments: [
-                                1423..1429 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "id",
-                                    ty: 1427..1429 @33 Named(
-                                        "ID",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "Human",
-                            ),
-                            directives: [],
-                        },
+                    "human": 1417..1437 @33 FieldDefinition {
+                        description: None,
+                        name: "human",
+                        arguments: [
+                            1423..1429 @33 InputValueDefinition {
+                                description: None,
+                                name: "id",
+                                ty: 1427..1429 @33 Named(
+                                    "ID",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "Human",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -822,55 +708,46 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 1456..1486 @33 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [
-                                1461..1477 @33 InputValueDefinition {
-                                    description: None,
-                                    name: "surname",
-                                    ty: 1470..1477 @33 Named(
-                                        "Boolean",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "pets": Component {
-                        origin: Definition,
-                        node: 1489..1500 @33 FieldDefinition {
-                            description: None,
-                            name: "pets",
-                            arguments: [],
-                            ty: List(
-                                Named(
-                                    "Pet",
+                    "name": 1456..1486 @33 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [
+                            1461..1477 @33 InputValueDefinition {
+                                description: None,
+                                name: "surname",
+                                ty: 1470..1477 @33 Named(
+                                    "Boolean",
                                 ),
-                            ),
-                            directives: [],
-                        },
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "relatives": Component {
-                        origin: Definition,
-                        node: 1503..1522 @33 FieldDefinition {
-                            description: None,
-                            name: "relatives",
-                            arguments: [],
-                            ty: NonNullList(
-                                Named(
-                                    "Human",
-                                ),
+                    "pets": 1489..1500 @33 FieldDefinition {
+                        description: None,
+                        name: "pets",
+                        arguments: [],
+                        ty: List(
+                            Named(
+                                "Pet",
                             ),
-                            directives: [],
-                        },
+                        ),
+                        directives: [],
+                    },
+                    "relatives": 1503..1522 @33 FieldDefinition {
+                        description: None,
+                        name: "relatives",
+                        arguments: [],
+                        ty: NonNullList(
+                            Named(
+                                "Human",
+                            ),
+                        ),
+                        directives: [],
                     },
                 },
             },

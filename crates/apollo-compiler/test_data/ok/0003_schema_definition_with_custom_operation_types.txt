@@ -47,21 +47,15 @@ Schema {
                 name: "PetType",
                 directives: [],
                 values: {
-                    "CAT": Component {
-                        origin: Definition,
-                        node: 122..125 @5 EnumValueDefinition {
-                            description: None,
-                            value: "CAT",
-                            directives: [],
-                        },
+                    "CAT": 122..125 @5 EnumValueDefinition {
+                        description: None,
+                        value: "CAT",
+                        directives: [],
                     },
-                    "DOG": Component {
-                        origin: Definition,
-                        node: 129..132 @5 EnumValueDefinition {
-                            description: None,
-                            value: "DOG",
-                            directives: [],
-                        },
+                    "DOG": 129..132 @5 EnumValueDefinition {
+                        description: None,
+                        value: "DOG",
+                        directives: [],
                     },
                 },
             },
@@ -73,29 +67,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 161..173 @5 FieldDefinition {
-                            description: None,
-                            name: "name",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "name": 161..173 @5 FieldDefinition {
+                        description: None,
+                        name: "name",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "age": Component {
-                        origin: Definition,
-                        node: 177..185 @5 FieldDefinition {
-                            description: None,
-                            name: "age",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "age": 177..185 @5 FieldDefinition {
+                        description: None,
+                        name: "age",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -107,17 +95,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "changeInPetHousehold": Component {
-                        origin: Definition,
-                        node: 220..248 @5 FieldDefinition {
-                            description: None,
-                            name: "changeInPetHousehold",
-                            arguments: [],
-                            ty: Named(
-                                "Result",
-                            ),
-                            directives: [],
-                        },
+                    "changeInPetHousehold": 220..248 @5 FieldDefinition {
+                        description: None,
+                        name: "changeInPetHousehold",
+                        arguments: [],
+                        ty: Named(
+                            "Result",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -129,36 +114,33 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "addPet": Component {
-                        origin: Definition,
-                        node: 279..328 @5 FieldDefinition {
-                            description: None,
-                            name: "addPet",
-                            arguments: [
-                                287..300 @5 InputValueDefinition {
-                                    description: None,
-                                    name: "name",
-                                    ty: 293..300 @5 NonNullNamed(
-                                        "String",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                                302..318 @5 InputValueDefinition {
-                                    description: None,
-                                    name: "petType",
-                                    ty: 311..318 @5 Named(
-                                        "PetType",
-                                    ),
-                                    default_value: None,
-                                    directives: [],
-                                },
-                            ],
-                            ty: NonNullNamed(
-                                "Result",
-                            ),
-                            directives: [],
-                        },
+                    "addPet": 279..328 @5 FieldDefinition {
+                        description: None,
+                        name: "addPet",
+                        arguments: [
+                            287..300 @5 InputValueDefinition {
+                                description: None,
+                                name: "name",
+                                ty: 293..300 @5 NonNullNamed(
+                                    "String",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                            302..318 @5 InputValueDefinition {
+                                description: None,
+                                name: "petType",
+                                ty: 311..318 @5 Named(
+                                    "PetType",
+                                ),
+                                default_value: None,
+                                directives: [],
+                            },
+                        ],
+                        ty: NonNullNamed(
+                            "Result",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -170,17 +152,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 348..358 @5 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "id": 348..358 @5 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

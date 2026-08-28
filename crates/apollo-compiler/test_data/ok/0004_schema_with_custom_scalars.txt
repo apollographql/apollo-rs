@@ -44,29 +44,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "website": Component {
-                        origin: Definition,
-                        node: 15..27 @6 FieldDefinition {
-                            description: None,
-                            name: "website",
-                            arguments: [],
-                            ty: Named(
-                                "URL",
-                            ),
-                            directives: [],
-                        },
+                    "website": 15..27 @6 FieldDefinition {
+                        description: None,
+                        name: "website",
+                        arguments: [],
+                        ty: Named(
+                            "URL",
+                        ),
+                        directives: [],
                     },
-                    "amount": Component {
-                        origin: Definition,
-                        node: 31..42 @6 FieldDefinition {
-                            description: None,
-                            name: "amount",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "amount": 31..42 @6 FieldDefinition {
+                        description: None,
+                        name: "amount",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -76,19 +70,16 @@ Schema {
                 description: None,
                 name: "URL",
                 directives: [
-                    Component {
-                        origin: Definition,
-                        node: 57..113 @6 Directive {
-                            name: "specifiedBy",
-                            arguments: [
-                                70..112 @6 Argument {
-                                    name: "url",
-                                    value: 75..112 @6 String(
-                                        "https://tools.ietf.org/html/rfc3986",
-                                    ),
-                                },
-                            ],
-                        },
+                    57..113 @6 Directive {
+                        name: "specifiedBy",
+                        arguments: [
+                            70..112 @6 Argument {
+                                name: "url",
+                                value: 75..112 @6 String(
+                                    "https://tools.ietf.org/html/rfc3986",
+                                ),
+                            },
+                        ],
                     },
                 ],
             },

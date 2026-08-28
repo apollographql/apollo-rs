@@ -14,7 +14,7 @@ pub(crate) fn validate_schema_definition(diagnostics: &mut DiagnosticList, schem
     super::directive::validate_directives(
         diagnostics,
         Some(schema),
-        schema.schema_definition.directives.iter_ast(),
+        schema.schema_definition.directives.iter(),
         ast::DirectiveLocation::Schema,
         // schemas don't use variables
         Default::default(),

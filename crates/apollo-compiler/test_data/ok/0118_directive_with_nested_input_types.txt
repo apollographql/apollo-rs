@@ -62,29 +62,23 @@ Schema {
                 name: "NestedInput",
                 directives: [],
                 fields: {
-                    "name": Component {
-                        origin: Definition,
-                        node: 83..95 @47 InputValueDefinition {
-                            description: None,
-                            name: "name",
-                            ty: 89..95 @47 Named(
-                                "String",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "name": 83..95 @47 InputValueDefinition {
+                        description: None,
+                        name: "name",
+                        ty: 89..95 @47 Named(
+                            "String",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
-                    "nested": Component {
-                        origin: Definition,
-                        node: 98..117 @47 InputValueDefinition {
-                            description: None,
-                            name: "nested",
-                            ty: 106..117 @47 Named(
-                                "NestedInput",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                    "nested": 98..117 @47 InputValueDefinition {
+                        description: None,
+                        name: "nested",
+                        ty: 106..117 @47 Named(
+                            "NestedInput",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -95,53 +89,47 @@ Schema {
                 name: "Query",
                 implements_interfaces: {},
                 directives: [
-                    Component {
-                        origin: Definition,
-                        node: 132..188 @47 Directive {
-                            name: "custom",
-                            arguments: [
-                                140..187 @47 Argument {
-                                    name: "input",
-                                    value: 147..187 @47 Object(
-                                        [
-                                            (
-                                                "name",
-                                                154..161 @47 String(
-                                                    "hello",
-                                                ),
+                    132..188 @47 Directive {
+                        name: "custom",
+                        arguments: [
+                            140..187 @47 Argument {
+                                name: "input",
+                                value: 147..187 @47 Object(
+                                    [
+                                        (
+                                            "name",
+                                            154..161 @47 String(
+                                                "hello",
                                             ),
-                                            (
-                                                "nested",
-                                                171..186 @47 Object(
-                                                    [
-                                                        (
-                                                            "name",
-                                                            178..185 @47 String(
-                                                                "hello",
-                                                            ),
+                                        ),
+                                        (
+                                            "nested",
+                                            171..186 @47 Object(
+                                                [
+                                                    (
+                                                        "name",
+                                                        178..185 @47 String(
+                                                            "hello",
                                                         ),
-                                                    ],
-                                                ),
+                                                    ),
+                                                ],
                                             ),
-                                        ],
-                                    ),
-                                },
-                            ],
-                        },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        ],
                     },
                 ],
                 fields: {
-                    "foo": Component {
-                        origin: Definition,
-                        node: 193..204 @47 FieldDefinition {
-                            description: None,
-                            name: "foo",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "foo": 193..204 @47 FieldDefinition {
+                        description: None,
+                        name: "foo",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },

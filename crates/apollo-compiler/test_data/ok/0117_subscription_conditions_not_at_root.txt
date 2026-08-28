@@ -45,17 +45,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "hello": Component {
-                        origin: Definition,
-                        node: 221..234 @46 FieldDefinition {
-                            description: None,
-                            name: "hello",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "hello": 221..234 @46 FieldDefinition {
+                        description: None,
+                        name: "hello",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -67,41 +64,32 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "username": Component {
-                        origin: Definition,
-                        node: 257..273 @46 FieldDefinition {
-                            description: None,
-                            name: "username",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "username": 257..273 @46 FieldDefinition {
+                        description: None,
+                        name: "username",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "text": Component {
-                        origin: Definition,
-                        node: 278..290 @46 FieldDefinition {
-                            description: None,
-                            name: "text",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "text": 278..290 @46 FieldDefinition {
+                        description: None,
+                        name: "text",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
-                    "avatar": Component {
-                        origin: Definition,
-                        node: 295..309 @46 FieldDefinition {
-                            description: None,
-                            name: "avatar",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "avatar": 295..309 @46 FieldDefinition {
+                        description: None,
+                        name: "avatar",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -113,17 +101,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "messages": Component {
-                        origin: Definition,
-                        node: 337..354 @46 FieldDefinition {
-                            description: None,
-                            name: "messages",
-                            arguments: [],
-                            ty: Named(
-                                "Message",
-                            ),
-                            directives: [],
-                        },
+                    "messages": 337..354 @46 FieldDefinition {
+                        description: None,
+                        name: "messages",
+                        arguments: [],
+                        ty: Named(
+                            "Message",
+                        ),
+                        directives: [],
                     },
                 },
             },

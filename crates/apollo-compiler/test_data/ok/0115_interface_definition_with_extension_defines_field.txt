@@ -43,17 +43,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "foo": Component {
-                        origin: Definition,
-                        node: 17..26 @44 FieldDefinition {
-                            description: None,
-                            name: "foo",
-                            arguments: [],
-                            ty: Named(
-                                "Node",
-                            ),
-                            directives: [],
-                        },
+                    "foo": 17..26 @44 FieldDefinition {
+                        description: None,
+                        name: "foo",
+                        arguments: [],
+                        ty: Named(
+                            "Node",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -65,23 +62,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "bar": Component {
-                        origin: Extension(
-                            ExtensionId {
-                                arc: Some(
-                                    46..87 @44,
-                                ),
-                            },
+                    "bar": 74..85 @44 (extension 46..87 @44) FieldDefinition {
+                        description: None,
+                        name: "bar",
+                        arguments: [],
+                        ty: Named(
+                            "String",
                         ),
-                        node: 74..85 @44 FieldDefinition {
-                            description: None,
-                            name: "bar",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                        directives: [],
                     },
                 },
             },

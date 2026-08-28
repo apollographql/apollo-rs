@@ -42,25 +42,16 @@ Schema {
                 description: None,
                 name: "Scalar",
                 directives: [
-                    Component {
-                        origin: Extension(
-                            ExtensionId {
-                                arc: Some(
-                                    152..219 @21,
+                    173..219 @21 (extension 152..219 @21) Directive {
+                        name: "specifiedBy",
+                        arguments: [
+                            186..218 @21 Argument {
+                                name: "url",
+                                value: 191..218 @21 String(
+                                    "https://apollographql.com",
                                 ),
                             },
-                        ),
-                        node: 173..219 @21 Directive {
-                            name: "specifiedBy",
-                            arguments: [
-                                186..218 @21 Argument {
-                                    name: "url",
-                                    value: 191..218 @21 String(
-                                        "https://apollographql.com",
-                                    ),
-                                },
-                            ],
-                        },
+                        ],
                     },
                 ],
             },
@@ -74,35 +65,23 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 47..57 @21 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "field2": Component {
-                        origin: Extension(
-                            ExtensionId {
-                                arc: Some(
-                                    264..304 @21,
-                                ),
-                            },
+                    "field": 47..57 @21 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
                         ),
-                        node: 287..301 @21 FieldDefinition {
-                            description: None,
-                            name: "field2",
-                            arguments: [],
-                            ty: Named(
-                                "Scalar",
-                            ),
-                            directives: [],
-                        },
+                        directives: [],
+                    },
+                    "field2": 287..301 @21 (extension 264..304 @21) FieldDefinition {
+                        description: None,
+                        name: "field2",
+                        arguments: [],
+                        ty: Named(
+                            "Scalar",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -114,35 +93,23 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 81..91 @21 FieldDefinition {
-                            description: None,
-                            name: "field",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
-                    },
-                    "field2": Component {
-                        origin: Extension(
-                            ExtensionId {
-                                arc: Some(
-                                    220..263 @21,
-                                ),
-                            },
+                    "field": 81..91 @21 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
                         ),
-                        node: 246..260 @21 FieldDefinition {
-                            description: None,
-                            name: "field2",
-                            arguments: [],
-                            ty: Named(
-                                "Scalar",
-                            ),
-                            directives: [],
-                        },
+                        directives: [],
+                    },
+                    "field2": 246..260 @21 (extension 220..263 @21) FieldDefinition {
+                        description: None,
+                        name: "field2",
+                        arguments: [],
+                        ty: Named(
+                            "Scalar",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -153,35 +120,23 @@ Schema {
                 name: "Input",
                 directives: [],
                 fields: {
-                    "field": Component {
-                        origin: Definition,
-                        node: 112..123 @21 InputValueDefinition {
-                            description: None,
-                            name: "field",
-                            ty: 119..123 @21 Named(
-                                "Enum",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
-                    },
-                    "field2": Component {
-                        origin: Extension(
-                            ExtensionId {
-                                arc: Some(
-                                    338..375 @21,
-                                ),
-                            },
+                    "field": 112..123 @21 InputValueDefinition {
+                        description: None,
+                        name: "field",
+                        ty: 119..123 @21 Named(
+                            "Enum",
                         ),
-                        node: 361..372 @21 InputValueDefinition {
-                            description: None,
-                            name: "field2",
-                            ty: 369..372 @21 Named(
-                                "Int",
-                            ),
-                            default_value: None,
-                            directives: [],
-                        },
+                        default_value: None,
+                        directives: [],
+                    },
+                    "field2": 361..372 @21 (extension 338..375 @21) InputValueDefinition {
+                        description: None,
+                        name: "field2",
+                        ty: 369..372 @21 Named(
+                            "Int",
+                        ),
+                        default_value: None,
+                        directives: [],
                     },
                 },
             },
@@ -192,27 +147,15 @@ Schema {
                 name: "Enum",
                 directives: [],
                 values: {
-                    "MEMBER": Component {
-                        origin: Definition,
-                        node: 141..147 @21 EnumValueDefinition {
-                            description: None,
-                            value: "MEMBER",
-                            directives: [],
-                        },
+                    "MEMBER": 141..147 @21 EnumValueDefinition {
+                        description: None,
+                        value: "MEMBER",
+                        directives: [],
                     },
-                    "MEMBER_2": Component {
-                        origin: Extension(
-                            ExtensionId {
-                                arc: Some(
-                                    305..337 @21,
-                                ),
-                            },
-                        ),
-                        node: 326..334 @21 EnumValueDefinition {
-                            description: None,
-                            value: "MEMBER_2",
-                            directives: [],
-                        },
+                    "MEMBER_2": 326..334 @21 (extension 305..337 @21) EnumValueDefinition {
+                        description: None,
+                        value: "MEMBER_2",
+                        directives: [],
                     },
                 },
             },
@@ -224,17 +167,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "object": Component {
-                        origin: Definition,
-                        node: 392..406 @21 FieldDefinition {
-                            description: None,
-                            name: "object",
-                            arguments: [],
-                            ty: Named(
-                                "Object",
-                            ),
-                            directives: [],
-                        },
+                    "object": 392..406 @21 FieldDefinition {
+                        description: None,
+                        name: "object",
+                        arguments: [],
+                        ty: Named(
+                            "Object",
+                        ),
+                        directives: [],
                     },
                 },
             },

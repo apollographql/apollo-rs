@@ -295,13 +295,13 @@ impl InputObjectType {
 }
 
 fn components<'a, T: 'a>(
-    components: impl IntoIterator<Item = &'a Component<T>>,
+    components: impl IntoIterator<Item = &'a Node<T>>,
     ext: Option<&ExtensionId>,
 ) -> Vec<Node<T>> {
     components
         .into_iter()
-        .filter(|def| def.origin.extension_id() == ext)
-        .map(|def| def.node.clone())
+        .filter(|def| def.extension_id() == ext)
+        .cloned()
         .collect()
 }
 
@@ -311,14 +311,4 @@ fn names(names: &IndexSet<Node<Name>>, ext: Option<&ExtensionId>) -> Vec<Name> {
         .filter(|component| component.extension_id() == ext)
         .map(|component| component.as_ref().clone())
         .collect()
-}
-
-impl DirectiveList {
-    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
-        for directive in self.iter() {
-            state.write(" ")?;
-            directive.serialize_impl(state)?;
-        }
-        Ok(())
-    }
 }

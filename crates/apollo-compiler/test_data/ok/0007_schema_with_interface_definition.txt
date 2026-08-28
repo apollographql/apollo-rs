@@ -47,17 +47,14 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 33..40 @9 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 33..40 @9 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "ID",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -69,17 +66,14 @@ Schema {
                 implements_interfaces: {},
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 63..70 @9 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 63..70 @9 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "ID",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -93,41 +87,32 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 113..120 @9 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 113..120 @9 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "ID",
+                        ),
+                        directives: [],
                     },
-                    "width": Component {
-                        origin: Definition,
-                        node: 123..133 @9 FieldDefinition {
-                            description: None,
-                            name: "width",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "width": 123..133 @9 FieldDefinition {
+                        description: None,
+                        name: "width",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "height": Component {
-                        origin: Definition,
-                        node: 136..147 @9 FieldDefinition {
-                            description: None,
-                            name: "height",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "height": 136..147 @9 FieldDefinition {
+                        description: None,
+                        name: "height",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
                 },
             },
@@ -142,53 +127,41 @@ Schema {
                 },
                 directives: [],
                 fields: {
-                    "id": Component {
-                        origin: Definition,
-                        node: 198..205 @9 FieldDefinition {
-                            description: None,
-                            name: "id",
-                            arguments: [],
-                            ty: NonNullNamed(
-                                "ID",
-                            ),
-                            directives: [],
-                        },
+                    "id": 198..205 @9 FieldDefinition {
+                        description: None,
+                        name: "id",
+                        arguments: [],
+                        ty: NonNullNamed(
+                            "ID",
+                        ),
+                        directives: [],
                     },
-                    "width": Component {
-                        origin: Definition,
-                        node: 208..218 @9 FieldDefinition {
-                            description: None,
-                            name: "width",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "width": 208..218 @9 FieldDefinition {
+                        description: None,
+                        name: "width",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "height": Component {
-                        origin: Definition,
-                        node: 221..232 @9 FieldDefinition {
-                            description: None,
-                            name: "height",
-                            arguments: [],
-                            ty: Named(
-                                "Int",
-                            ),
-                            directives: [],
-                        },
+                    "height": 221..232 @9 FieldDefinition {
+                        description: None,
+                        name: "height",
+                        arguments: [],
+                        ty: Named(
+                            "Int",
+                        ),
+                        directives: [],
                     },
-                    "thumbnail": Component {
-                        origin: Definition,
-                        node: 235..252 @9 FieldDefinition {
-                            description: None,
-                            name: "thumbnail",
-                            arguments: [],
-                            ty: Named(
-                                "String",
-                            ),
-                            directives: [],
-                        },
+                    "thumbnail": 235..252 @9 FieldDefinition {
+                        description: None,
+                        name: "thumbnail",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
                     },
                 },
             },
