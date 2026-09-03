@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2026-mm-dd
+# [1.33.0](https://crates.io/crates/apollo-compiler/1.33.0) - 2026-09-03
 
 ## Features
 
@@ -43,6 +43,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [graphql-spec#1110]: https://github.com/graphql/graphql-spec/pull/1110
 [duckki]: https://github.com/duckki
 [pull/1069]: https://github.com/apollographql/apollo-rs/pull/1069
+
+## Fixes
+
+- **Validate that root operations use different types - [tninesling], [pull/1071]**
+
+  The GraphQL spec requires the query, mutation, and subscription root
+  operations of a schema to use distinct Object types. Schemas that reused a
+  type across root operations previously validated successfully; they are now
+  rejected.
+
+## Maintenance
+
+- **Update `serial_test` dev-dependency to v4 - [pull/1073]**
+
+  Dev-dependency only; no effect on library consumers. Note that building the
+  apollo-rs test suite now requires rustc 1.93.1 or newer.
+
+[tninesling]: https://github.com/tninesling
+[pull/1071]: https://github.com/apollographql/apollo-rs/pull/1071
+[pull/1073]: https://github.com/apollographql/apollo-rs/pull/1073
 
 # [1.32.0](https://crates.io/crates/apollo-compiler/1.32.0) - 2026-05-14
 
