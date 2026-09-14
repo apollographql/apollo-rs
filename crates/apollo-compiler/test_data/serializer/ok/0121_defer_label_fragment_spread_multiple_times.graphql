@@ -1,0 +1,25 @@
+query Q {
+  me {
+    ...ItemFragment
+  }
+  friend {
+    ...ItemFragment
+  }
+}
+
+fragment ItemFragment on User {
+  ... @defer(label: "ItemFragment") {
+    id
+  }
+}
+
+directive @defer(if: Boolean! = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+type Query {
+  me: User
+  friend: User
+}
+
+type User {
+  id: ID
+}
