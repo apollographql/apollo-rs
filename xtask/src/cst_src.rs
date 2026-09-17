@@ -63,6 +63,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         "ENUM_VALUE",
         "INPUT_OBJECT",
         "INPUT_FIELD_DEFINITION",
+        "DIRECTIVE_DEFINITION",
     ],
     literals: &["INT", "FLOAT", "STRING"],
     tokens: &["IDENT", "WHITESPACE", "COMMENT", "ERROR"],

@@ -49,6 +49,10 @@ pub(crate) fn directive_definition(p: &mut Parser) {
         p.expect(T![')'], S![')']);
     }
 
+    if let Some(T![@]) = p.peek() {
+        directives(p, Constness::Const);
+    }
+
     if let Some(node) = p.peek_data() {
         if node == "repeatable" {
             p.bump(SyntaxKind::repeatable_KW);
@@ -161,6 +165,10 @@ fn directive_location(p: &mut Parser) {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::INPUT_FIELD_DEFINITION_KW);
             }
+            "DIRECTIVE_DEFINITION" => {
+                let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
+                p.bump(SyntaxKind::DIRECTIVE_DEFINITION_KW);
+            }
             _ => {
                 p.err("expected valid Directive Location");
             }
@@ -226,6 +234,99 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
                 assert_eq!(
                     dir_def.repeatable_token().unwrap().kind(),
                     SyntaxKind::repeatable_KW
+                );
+                return;
+            }
+        }
+        panic!("Expected CST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_can_access_directive_application_on_directive_definition() {
+        let schema = r#"
+directive @example(isTreat: Boolean, treatKind: String) @onDirective on FIELD | MUTATION
+"#;
+        let parser = Parser::new(schema);
+        let cst = parser.parse();
+
+        assert!(cst.errors.is_empty());
+
+        let document = cst.document();
+        for definition in document.definitions() {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
+                assert_eq!(
+                    dir_def
+                        .directives()
+                        .unwrap()
+                        .directives()
+                        .next()
+                        .unwrap()
+                        .name()
+                        .unwrap()
+                        .text(),
+                    "onDirective"
+                );
+                return;
+            }
+        }
+        panic!("Expected CST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_can_access_directive_application_with_argument_on_directive_definition() {
+        let schema = r#"
+directive @example(isTreat: Boolean, treatKind: String) @deprecated(reason: "no longer supported") on FIELD | MUTATION
+        "#;
+        let parser = Parser::new(schema);
+        let cst = parser.parse();
+
+        assert!(cst.errors.is_empty());
+
+        let document = cst.document();
+        for definition in document.definitions() {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
+                assert_eq!(
+                    dir_def
+                        .directives()
+                        .unwrap()
+                        .directives()
+                        .next()
+                        .unwrap()
+                        .name()
+                        .unwrap()
+                        .text(),
+                    "deprecated"
+                );
+                return;
+            }
+        }
+        panic!("Expected CST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_can_access_directive_application_with_argument_and_repeatable_on_directive_definition() {
+        let schema = r#"
+directive @example(isTreat: Boolean, treatKind: String) @deprecated(reason: "no longer supported") repeatable on FIELD | MUTATION
+        "#;
+        let parser = Parser::new(schema);
+        let cst = parser.parse();
+
+        assert!(cst.errors.is_empty());
+
+        let document = cst.document();
+        for definition in document.definitions() {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
+                assert_eq!(
+                    dir_def
+                        .directives()
+                        .unwrap()
+                        .directives()
+                        .next()
+                        .unwrap()
+                        .name()
+                        .unwrap()
+                        .text(),
+                    "deprecated"
                 );
                 return;
             }

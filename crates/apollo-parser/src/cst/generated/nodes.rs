@@ -95,6 +95,9 @@ impl DirectiveDefinition {
     pub fn arguments_definition(&self) -> Option<ArgumentsDefinition> {
         support::child(&self.syntax)
     }
+    pub fn directives(&self) -> Option<Directives> {
+        support::child(&self.syntax)
+    }
     pub fn repeatable_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![repeatable])
     }
@@ -1029,6 +1032,9 @@ impl DirectiveLocation {
     }
     pub fn input_field_definition_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![INPUT_FIELD_DEFINITION])
+    }
+    pub fn directive_definition_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![DIRECTIVE_DEFINITION])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
