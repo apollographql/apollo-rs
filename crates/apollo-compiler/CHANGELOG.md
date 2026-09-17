@@ -4,6 +4,72 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+> Important: 2 breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Support directives on directive definitions - [TylerBloom], [pull/1111]**
+
+  The September 2026 specification allows directives to be applied to directive
+  definitions themselves ([graphql-spec#1206]):
+
+  ```graphql
+  directive @example @deprecated(reason: "no longer supported") on FIELD
+  ```
+
+  - `ast::DirectiveDefinition` gains a `directives: DirectiveList` field. Code
+    that constructs this struct with a literal must add it.
+  - `ast::DirectiveLocation` gains a `DirectiveDefinition` variant, so
+    exhaustive matches on that enum must be updated.
+
+  Applied directives are validated against the `DIRECTIVE_DEFINITION` location,
+  and are included in the recursive-directive-definition cycle check.
+  The built-in `@deprecated` definition now allows `DIRECTIVE_DEFINITION`.
+
+- **Add `ast::DirectiveExtension` - [TylerBloom], [pull/1111]**
+
+  The September 2026 specification adds a directive extension ([graphql-spec#1206]):
+
+  ```graphql
+  extend directive @example @deprecated(reason: "no longer supported")
+  ```
+
+  `ast::Definition` gains a `DirectiveExtension(Node<DirectiveExtension>)`
+  variant, so exhaustive matches on that enum must be updated.
+
+  A directive extension's directives are merged into the matching directive
+  definition, tracking their origin through `Node`'s `ExtensionId` the same way
+  type extensions do. The extension may appear before the definition it extends.
+  Extending a directive that is never defined is a new build error,
+  `directive extension for undefined directive`. Unlike other extension kinds,
+  this is an error even under `SchemaBuilder::adopt_orphan_extensions()`: a
+  directive definition's locations are mandatory, so there is no
+  empty-but-valid definition to adopt the extension into.
+
+## Features
+
+- **Introspect directive deprecation - [TylerBloom], [pull/1111]**
+
+  Following Appendix D of the September 2026 specification:
+
+  - `__Directive` gains `isDeprecated: Boolean!` and `deprecationReason: String`.
+  - `__Schema.directives` gains an `includeDeprecated: Boolean! = false`
+    argument, and now excludes deprecated directives unless it is set.
+  - `__DirectiveLocation` gains a `DIRECTIVE_DEFINITION` value.
+
+## Fixes
+
+- **`ast::Definition::directives()` returns a directive definition's directives - [TylerBloom], [pull/1111]**
+
+  It previously always returned an empty list for
+  `Definition::DirectiveDefinition`.
+
+[pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
+[graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
+[TylerBloom]: https://github.com/TylerBloom
+
 # [2.0.0-beta.1](https://crates.io/crates/apollo-compiler/2.0.0-beta.1) - 2026-08-28
 
 > Important: 2 breaking changes below, indicated by **BREAKING**
