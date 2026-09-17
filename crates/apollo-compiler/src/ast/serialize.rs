@@ -255,11 +255,13 @@ impl DirectiveDefinition {
             arguments,
             repeatable,
             locations,
+            directives,
         } = self;
         serialize_description(state, description)?;
         state.write("directive @")?;
         state.write(name)?;
         serialize_arguments_definition(state, arguments)?;
+        directives.serialize_impl(state)?;
 
         if *repeatable {
             state.write(" repeatable")?;

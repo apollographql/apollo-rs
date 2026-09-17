@@ -162,6 +162,157 @@ fn test() {
 }
 
 #[test]
+fn directive_on_directive_definition() {
+    let schema = r#"
+        type Query {
+            id: ID
+        }
+
+        directive @custom @deprecated(reason: "old") on DIRECTIVE_DEFINITION | FIELD
+    "#;
+    let schema = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+
+    let introspect = |query| {
+        let document =
+            ExecutableDocument::parse_and_validate(&schema, query, "query.graphql").unwrap();
+        let operation = document.operations.get(None).unwrap();
+        let variables = coerce_variable_values(&schema, operation, &JsonMap::new()).unwrap();
+        let response = introspection::partial_execute(
+            &schema,
+            &schema.implementers_map(),
+            &document,
+            operation,
+            &variables,
+        )
+        .unwrap();
+        serde_json::to_string_pretty(&response).unwrap()
+    };
+
+    let query = r#"
+        {
+            __schema {
+                directives {
+                    name
+                    isDeprecated
+                    deprecationReason
+                    locations
+                }
+            }
+        }
+    "#;
+    let expected = expect!([r#"
+        {
+          "data": {
+            "__schema": {
+              "directives": [
+                {
+                  "name": "skip",
+                  "isDeprecated": false,
+                  "deprecationReason": null,
+                  "locations": [
+                    "FIELD",
+                    "FRAGMENT_SPREAD",
+                    "INLINE_FRAGMENT"
+                  ]
+                },
+                {
+                  "name": "include",
+                  "isDeprecated": false,
+                  "deprecationReason": null,
+                  "locations": [
+                    "FIELD",
+                    "FRAGMENT_SPREAD",
+                    "INLINE_FRAGMENT"
+                  ]
+                },
+                {
+                  "name": "deprecated",
+                  "isDeprecated": false,
+                  "deprecationReason": null,
+                  "locations": [
+                    "FIELD_DEFINITION",
+                    "ARGUMENT_DEFINITION",
+                    "INPUT_FIELD_DEFINITION",
+                    "ENUM_VALUE",
+                    "DIRECTIVE_DEFINITION"
+                  ]
+                },
+                {
+                  "name": "oneOf",
+                  "isDeprecated": false,
+                  "deprecationReason": null,
+                  "locations": [
+                    "INPUT_OBJECT"
+                  ]
+                },
+                {
+                  "name": "specifiedBy",
+                  "isDeprecated": false,
+                  "deprecationReason": null,
+                  "locations": [
+                    "SCALAR"
+                  ]
+                }
+              ]
+            }
+          }
+        }"#]);
+    expected.assert_eq(&introspect(query));
+
+    let query = r#"
+        {
+            __schema {
+                directives(includeDeprecated: true) {
+                    name
+                    isDeprecated
+                    deprecationReason
+                }
+            }
+        }
+    "#;
+    let expected = expect!([r#"
+        {
+          "data": {
+            "__schema": {
+              "directives": [
+                {
+                  "name": "skip",
+                  "isDeprecated": false,
+                  "deprecationReason": null
+                },
+                {
+                  "name": "include",
+                  "isDeprecated": false,
+                  "deprecationReason": null
+                },
+                {
+                  "name": "deprecated",
+                  "isDeprecated": false,
+                  "deprecationReason": null
+                },
+                {
+                  "name": "oneOf",
+                  "isDeprecated": false,
+                  "deprecationReason": null
+                },
+                {
+                  "name": "specifiedBy",
+                  "isDeprecated": false,
+                  "deprecationReason": null
+                },
+                {
+                  "name": "custom",
+                  "isDeprecated": true,
+                  "deprecationReason": "old"
+                }
+              ]
+            }
+          }
+        }"#]);
+    expected.assert_eq(&introspect(query));
+}
+
+#[test]
 fn built_in_scalars() {
     // Initially a `Schema` contains all built-in types
     let schema = Schema::new();

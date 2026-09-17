@@ -32,6 +32,7 @@ Schema {
             locations: {
                 "FIELD",
             },
+            directives: [],
         },
         "unique": 42..68 @26 DirectiveDefinition {
             description: None,
@@ -41,6 +42,7 @@ Schema {
             locations: {
                 "FIELD",
             },
+            directives: [],
         },
     },
     types: {

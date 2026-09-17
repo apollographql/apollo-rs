@@ -32,6 +32,7 @@ Schema {
             locations: {
                 "OBJECT",
             },
+            directives: [],
         },
     },
     types: {

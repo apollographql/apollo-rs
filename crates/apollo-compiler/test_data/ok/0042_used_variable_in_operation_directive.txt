@@ -48,6 +48,7 @@ Schema {
                 "MUTATION",
                 "SUBSCRIPTION",
             },
+            directives: [],
         },
         "z": 57..104 @43 DirectiveDefinition {
             description: None,
@@ -67,6 +68,7 @@ Schema {
             locations: {
                 "FRAGMENT_DEFINITION",
             },
+            directives: [],
         },
     },
     types: {

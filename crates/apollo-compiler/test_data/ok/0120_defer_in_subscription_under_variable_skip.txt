@@ -58,6 +58,7 @@ Schema {
                 "FRAGMENT_SPREAD",
                 "INLINE_FRAGMENT",
             },
+            directives: [],
         },
     },
     types: {

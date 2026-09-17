@@ -42,6 +42,7 @@ Schema {
             locations: {
                 "FIELD_DEFINITION",
             },
+            directives: [],
         },
     },
     types: {

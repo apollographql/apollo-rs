@@ -43,6 +43,7 @@ Schema {
                 "OBJECT",
                 "INTERFACE",
             },
+            directives: [],
         },
     },
     types: {

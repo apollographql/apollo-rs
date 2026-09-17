@@ -790,6 +790,7 @@ impl DirectiveLocation {
             DirectiveLocation::EnumValue => "ENUM_VALUE",
             DirectiveLocation::InputObject => "INPUT_OBJECT",
             DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION",
+            DirectiveLocation::DirectiveDefinition => "DIRECTIVE_DEFINITION",
         }
     }
 }

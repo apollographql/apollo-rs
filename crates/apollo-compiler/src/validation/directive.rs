@@ -1,5 +1,6 @@
 use super::CycleError;
 use crate::ast;
+use crate::ast::DirectiveLocation;
 use crate::collections::HashMap;
 use crate::coordinate::DirectiveArgumentCoordinate;
 use crate::coordinate::DirectiveCoordinate;
@@ -164,6 +165,8 @@ impl FindRecursiveDirective<'_> {
             self.input_value(directive_guard, type_guard, input_value)?;
         }
 
+        self.directives(directive_guard, type_guard, &def.directives)?;
+
         Ok(())
     }
 
@@ -196,6 +199,14 @@ pub(crate) fn validate_directive_definition(
         built_in_scalars,
         &def.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
+    );
+
+    validate_directives(
+        diagnostics,
+        Some(schema),
+        def.directives.iter(),
+        DirectiveLocation::DirectiveDefinition,
+        &[],
     );
 
     let head_location = SourceSpan::recompose(def.location(), def.name.location());

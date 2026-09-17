@@ -149,6 +149,7 @@ pub struct DirectiveDefinition {
     pub arguments: Vec<Node<InputValueDefinition>>,
     pub repeatable: bool,
     pub locations: IndexSet<DirectiveLocation>,
+    pub directives: DirectiveList,
 }
 
 impl PartialEq for DirectiveDefinition {
@@ -158,6 +159,7 @@ impl PartialEq for DirectiveDefinition {
             && eq_unique_by_name(&self.arguments, &other.arguments, |a| &a.name)
             && self.repeatable == other.repeatable
             && self.locations == other.locations
+            && self.directives == other.directives
     }
 }
 
@@ -168,6 +170,7 @@ impl Hash for DirectiveDefinition {
         hash_unordered(self.arguments.iter(), state, self.arguments.len());
         self.repeatable.hash(state);
         hash_unordered(self.locations.iter(), state, self.locations.len());
+        hash_unordered(self.directives.iter(), state, self.directives.len());
     }
 }
 
@@ -374,6 +377,7 @@ pub enum DirectiveLocation {
     EnumValue,
     InputObject,
     InputFieldDefinition,
+    DirectiveDefinition,
 }
 
 /// Executable AST for a [_VariableDefinition_](https://spec.graphql.org/September2025/#VariableDefinition)

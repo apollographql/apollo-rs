@@ -37,6 +37,7 @@ Schema {
             locations: {
                 "SCHEMA",
             },
+            directives: [],
         },
     },
     types: {

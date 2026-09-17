@@ -67,6 +67,7 @@ Schema {
             locations: {
                 "SCHEMA",
             },
+            directives: [],
         },
         "join__field": 210..324 @17 DirectiveDefinition {
             description: None,
@@ -104,6 +105,7 @@ Schema {
             locations: {
                 "FIELD_DEFINITION",
             },
+            directives: [],
         },
         "join__type": 325..421 @17 DirectiveDefinition {
             description: None,
@@ -133,6 +135,7 @@ Schema {
                 "OBJECT",
                 "INTERFACE",
             },
+            directives: [],
         },
         "join__owner": 422..487 @17 DirectiveDefinition {
             description: None,
@@ -153,6 +156,7 @@ Schema {
                 "OBJECT",
                 "INTERFACE",
             },
+            directives: [],
         },
         "join__graph": 488..553 @17 DirectiveDefinition {
             description: None,
@@ -181,6 +185,7 @@ Schema {
             locations: {
                 "ENUM_VALUE",
             },
+            directives: [],
         },
         "stream": 554..580 @17 DirectiveDefinition {
             description: None,
@@ -190,6 +195,7 @@ Schema {
             locations: {
                 "FIELD",
             },
+            directives: [],
         },
         "transform": 581..625 @17 DirectiveDefinition {
             description: None,
@@ -209,6 +215,7 @@ Schema {
             locations: {
                 "FIELD",
             },
+            directives: [],
         },
     },
     types: {

@@ -44,10 +44,10 @@ Error: the required argument `@skip(if:)` is not provided
      │         ──┬──  
      │           ╰──── missing value for argument `if`
      │
-     ├─[ built_in.graphql:141:3 ]
+     ├─[ built_in.graphql:145:3 ]
      │
- 141 │ ╭─▶   "Skipped when true."
- 142 │ ├─▶   if: Boolean!
+ 145 │ ╭─▶   "Skipped when true."
+ 146 │ ├─▶   if: Boolean!
      │ │                    
      │ ╰──────────────────── argument defined here
 ─────╯
@@ -58,10 +58,10 @@ Error: the required argument `@include(if:)` is not provided
      │               ───────────┬──────────  
      │                          ╰──────────── missing value for argument `if`
      │
-     ├─[ built_in.graphql:147:3 ]
+     ├─[ built_in.graphql:151:3 ]
      │
- 147 │ ╭─▶   "Included when true."
- 148 │ ├─▶   if: Boolean!
+ 151 │ ╭─▶   "Included when true."
+ 152 │ ├─▶   if: Boolean!
      │ │                    
      │ ╰──────────────────── argument defined here
 ─────╯
