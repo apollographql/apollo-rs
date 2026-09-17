@@ -40,6 +40,7 @@ impl From<DirectiveDef> for ast::Definition {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
+            directives: Default::default(),
         }
         .into()
     }

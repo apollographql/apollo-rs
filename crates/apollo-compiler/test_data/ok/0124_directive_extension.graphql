@@ -1,0 +1,9 @@
+type Query {
+    field: String
+}
+
+directive @dir on FIELD | DIRECTIVE_DEFINITION
+
+directive @custom on FIELD
+
+extend directive @custom @dir

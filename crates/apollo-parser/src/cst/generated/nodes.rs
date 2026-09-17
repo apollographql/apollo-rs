@@ -286,6 +286,27 @@ impl SchemaExtension {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DirectiveExtension {
+    pub(crate) syntax: SyntaxNode,
+}
+impl DirectiveExtension {
+    pub fn extend_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![extend])
+    }
+    pub fn directive_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![directive])
+    }
+    pub fn at_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![@])
+    }
+    pub fn name(&self) -> Option<Name> {
+        support::child(&self.syntax)
+    }
+    pub fn directives(&self) -> Option<Directives> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1050,6 +1071,7 @@ pub enum Definition {
     EnumTypeDefinition(EnumTypeDefinition),
     InputObjectTypeDefinition(InputObjectTypeDefinition),
     SchemaExtension(SchemaExtension),
+    DirectiveExtension(DirectiveExtension),
     ScalarTypeExtension(ScalarTypeExtension),
     ObjectTypeExtension(ObjectTypeExtension),
     InterfaceTypeExtension(InterfaceTypeExtension),
@@ -1264,6 +1286,21 @@ impl CstNode for InputObjectTypeDefinition {
 impl CstNode for SchemaExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == SCHEMA_EXTENSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+}
+impl CstNode for DirectiveExtension {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == DIRECTIVE_EXTENSION
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
@@ -2066,6 +2103,11 @@ impl From<InputObjectTypeExtension> for Definition {
         Definition::InputObjectTypeExtension(node)
     }
 }
+impl From<DirectiveExtension> for Definition {
+    fn from(node: DirectiveExtension) -> Definition {
+        Definition::DirectiveExtension(node)
+    }
+}
 impl CstNode for Definition {
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(
@@ -2081,6 +2123,7 @@ impl CstNode for Definition {
                 | ENUM_TYPE_DEFINITION
                 | INPUT_OBJECT_TYPE_DEFINITION
                 | SCHEMA_EXTENSION
+                | DIRECTIVE_EXTENSION
                 | SCALAR_TYPE_EXTENSION
                 | OBJECT_TYPE_EXTENSION
                 | INTERFACE_TYPE_EXTENSION
@@ -2112,6 +2155,7 @@ impl CstNode for Definition {
                 Definition::InputObjectTypeDefinition(InputObjectTypeDefinition { syntax })
             }
             SCHEMA_EXTENSION => Definition::SchemaExtension(SchemaExtension { syntax }),
+            DIRECTIVE_EXTENSION => Definition::DirectiveExtension(DirectiveExtension { syntax }),
             SCALAR_TYPE_EXTENSION => {
                 Definition::ScalarTypeExtension(ScalarTypeExtension { syntax })
             }
@@ -2143,6 +2187,7 @@ impl CstNode for Definition {
             Definition::EnumTypeDefinition(it) => it.syntax(),
             Definition::InputObjectTypeDefinition(it) => it.syntax(),
             Definition::SchemaExtension(it) => it.syntax(),
+            Definition::DirectiveExtension(it) => it.syntax(),
             Definition::ScalarTypeExtension(it) => it.syntax(),
             Definition::ObjectTypeExtension(it) => it.syntax(),
             Definition::InterfaceTypeExtension(it) => it.syntax(),

@@ -213,6 +213,27 @@ pub(crate) fn directives(p: &mut Parser, constness: Constness) {
     });
 }
 
+/// See: https://spec.graphql.org/draft/#DirectiveExtension
+///
+/// *DirectiveExtension*:
+///     **extend** **directive** **@** Name Directives[Const]
+pub(crate) fn directive_extension(p: &mut Parser) {
+    let _g = p.start_node(SyntaxKind::DIRECTIVE_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::directive_KW);
+
+    match p.peek() {
+        Some(T![@]) => p.bump(S![@]),
+        _ => p.err("expected @ symbol"),
+    }
+    name::name(p);
+
+    match p.peek() {
+        Some(T![@]) => directives(p, Constness::Const),
+        _ => p.err("expected Directives"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

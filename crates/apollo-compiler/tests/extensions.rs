@@ -167,6 +167,54 @@ fn test_orphan_schema_extension_with_directive_application() {
 }
 
 #[test]
+fn test_orphan_directive_extension() {
+    let input = r#"
+        type Query { x: Int }
+        extend directive @custom @dir
+        directive @dir on DIRECTIVE_DEFINITION
+    "#;
+
+    // Extending a directive that's never defined anywhere is always an error: unlike other
+    // extension kinds, a directive's `on <Locations>` clause is mandatory, so there is no
+    // empty-but-valid definition to adopt the extension into.
+    let invalid = Schema::parse_and_validate(input, "schema.graphql").unwrap_err();
+    assert!(!invalid.partial.directive_definitions.contains_key("custom"));
+    let err = invalid.errors.to_string();
+    assert!(
+        err.contains("directive extension for undefined directive `@custom`"),
+        "{err}"
+    );
+
+    // `adopt_orphan_extensions` doesn't change that:
+    let invalid = Schema::builder()
+        .adopt_orphan_extensions()
+        .parse(input, "schema.graphql")
+        .build()
+        .unwrap_err();
+    let err = invalid.errors.to_string();
+    assert!(
+        err.contains("directive extension for undefined directive `@custom`"),
+        "{err}"
+    );
+}
+
+#[test]
+fn test_directive_extension_extends_matching_definition() {
+    let input = r#"
+        type Query { x: Int }
+        directive @custom on FIELD
+        directive @dir on DIRECTIVE_DEFINITION
+        extend directive @custom @dir
+    "#;
+
+    let schema = Schema::parse_and_validate(input, "schema.graphql")
+        .unwrap()
+        .into_inner();
+    assert!(schema.directive_definitions["custom"].directives.has("dir"));
+    validate_schema(schema);
+}
+
+#[test]
 fn test_orphan_extensions_kind_mismatch() {
     let input = r#"
     extend type T @dir

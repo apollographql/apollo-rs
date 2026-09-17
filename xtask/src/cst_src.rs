@@ -121,6 +121,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         "SCHEMA_DEFINITION",
         "TYPE_DEFINITION",
         "DIRECTIVE_DEFINITION",
+        "DIRECTIVE_EXTENSION",
         "SCHEMA_EXTENSION",
         "TYPE_EXTENSION",
         "ROOT_OPERATION_TYPE_DEFINITION",

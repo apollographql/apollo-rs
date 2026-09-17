@@ -109,6 +109,7 @@ pub enum Definition {
     EnumTypeDefinition(Node<EnumTypeDefinition>),
     InputObjectTypeDefinition(Node<InputObjectTypeDefinition>),
     SchemaExtension(Node<SchemaExtension>),
+    DirectiveExtension(Node<DirectiveExtension>),
     ScalarTypeExtension(Node<ScalarTypeExtension>),
     ObjectTypeExtension(Node<ObjectTypeExtension>),
     InterfaceTypeExtension(Node<InterfaceTypeExtension>),
@@ -250,6 +251,14 @@ pub struct InputObjectTypeDefinition {
 pub struct SchemaExtension {
     pub directives: DirectiveList,
     pub root_operations: Vec<Node<(OperationType, NamedType)>>,
+}
+
+/// Type system AST for an `extend directive @foo`
+/// [_DirectiveExtension_](https://spec.graphql.org/draft/#DirectiveExtension).
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct DirectiveExtension {
+    pub name: Name,
+    pub directives: DirectiveList,
 }
 
 /// Type system AST for an `extend scalar FooS`

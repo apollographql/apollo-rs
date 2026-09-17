@@ -300,6 +300,9 @@ pub(crate) enum BuildError {
     #[error("type extension for undefined type `{name}`")]
     OrphanTypeExtension { name: Name },
 
+    #[error("directive extension for undefined directive `@{name}`")]
+    OrphanDirectiveExtension { name: Name },
+
     #[error("adding {describe_ext}, but `{name}` is {describe_def}")]
     TypeExtensionKindMismatch {
         name: Name,

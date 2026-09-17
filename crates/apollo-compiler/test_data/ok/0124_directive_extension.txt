@@ -1,0 +1,102 @@
+Schema {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        53: SourceFile {
+            path: "0124_directive_extension.graphql",
+            source_text: "type Query {\n    field: String\n}\n\ndirective @dir on FIELD | DIRECTIVE_DEFINITION\n\ndirective @custom on FIELD\n\nextend directive @custom @dir\n",
+        },
+    },
+    schema_definition: SchemaDefinition {
+        description: None,
+        directives: [],
+        query: Some(
+            "Query",
+        ),
+        mutation: None,
+        subscription: None,
+    },
+    directive_definitions: {
+        "skip": built_in_directive!("skip"),
+        "include": built_in_directive!("include"),
+        "deprecated": built_in_directive!("deprecated"),
+        "oneOf": built_in_directive!("oneOf"),
+        "specifiedBy": built_in_directive!("specifiedBy"),
+        "dir": 34..80 @53 DirectiveDefinition {
+            description: None,
+            name: "dir",
+            arguments: [],
+            repeatable: false,
+            locations: {
+                "FIELD",
+                "DIRECTIVE_DEFINITION",
+            },
+            directives: [],
+        },
+        "custom": 82..108 @53 DirectiveDefinition {
+            description: None,
+            name: "custom",
+            arguments: [],
+            repeatable: false,
+            locations: {
+                "FIELD",
+            },
+            directives: [
+                135..139 @53 (extension 110..139 @53) Directive {
+                    name: "dir",
+                    arguments: [],
+                },
+            ],
+        },
+    },
+    types: {
+        "__Schema": built_in_type!("__Schema"),
+        "__Type": built_in_type!("__Type"),
+        "__TypeKind": built_in_type!("__TypeKind"),
+        "__Field": built_in_type!("__Field"),
+        "__InputValue": built_in_type!("__InputValue"),
+        "__EnumValue": built_in_type!("__EnumValue"),
+        "__Directive": built_in_type!("__Directive"),
+        "__DirectiveLocation": built_in_type!("__DirectiveLocation"),
+        "String": built_in_type!("String"),
+        "Boolean": built_in_type!("Boolean"),
+        "Query": Object(
+            0..32 @53 ObjectType {
+                description: None,
+                name: "Query",
+                implements_interfaces: {},
+                directives: [],
+                fields: {
+                    "field": 17..30 @53 FieldDefinition {
+                        description: None,
+                        name: "field",
+                        arguments: [],
+                        ty: Named(
+                            "String",
+                        ),
+                        directives: [],
+                    },
+                },
+            },
+        ),
+    },
+}
+ExecutableDocument {
+    sources: {
+        1: SourceFile {
+            path: "built_in.graphql",
+            source_text: include_str!("built_in.graphql"),
+        },
+        53: SourceFile {
+            path: "0124_directive_extension.graphql",
+            source_text: "type Query {\n    field: String\n}\n\ndirective @dir on FIELD | DIRECTIVE_DEFINITION\n\ndirective @custom on FIELD\n\nextend directive @custom @dir\n",
+        },
+    },
+    operations: OperationMap {
+        anonymous: None,
+        named: {},
+    },
+    fragments: {},
+}

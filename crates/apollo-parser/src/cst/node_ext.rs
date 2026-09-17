@@ -98,6 +98,7 @@ impl cst::Definition {
             Self::EnumTypeDefinition(it) => it.name(),
             Self::InputObjectTypeDefinition(it) => it.name(),
             Self::SchemaExtension(_) => None,
+            Self::DirectiveExtension(it) => it.name(),
             Self::ScalarTypeExtension(it) => it.name(),
             Self::ObjectTypeExtension(it) => it.name(),
             Self::InterfaceTypeExtension(it) => it.name(),
@@ -120,6 +121,7 @@ impl cst::Definition {
             cst::Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition",
             cst::Definition::SchemaDefinition(_) => "SchemaDefinition",
             cst::Definition::SchemaExtension(_) => "SchemaExtension",
+            cst::Definition::DirectiveExtension(_) => "DirectiveExtension",
             cst::Definition::ScalarTypeExtension(_) => "ScalarTypeExtension",
             cst::Definition::ObjectTypeExtension(_) => "ObjectTypeExtension",
             cst::Definition::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
@@ -140,6 +142,7 @@ impl cst::Definition {
         matches!(
             self,
             Self::SchemaExtension(_)
+                | Self::DirectiveExtension(_)
                 | Self::ScalarTypeExtension(_)
                 | Self::ObjectTypeExtension(_)
                 | Self::InterfaceTypeExtension(_)
