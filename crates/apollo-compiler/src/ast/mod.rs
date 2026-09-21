@@ -171,7 +171,7 @@ impl Hash for DirectiveDefinition {
         hash_unordered(self.arguments.iter(), state, self.arguments.len());
         self.repeatable.hash(state);
         hash_unordered(self.locations.iter(), state, self.locations.len());
-        hash_unordered(self.directives.iter(), state, self.directives.len());
+        self.directives.hash(state);
     }
 }
 
