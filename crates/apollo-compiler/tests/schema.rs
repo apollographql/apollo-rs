@@ -59,10 +59,22 @@ fn test_schema_reserialize() {
         }
 
         directive @customDirective on OBJECT
+
+        directive @extended on FIELD
+
+        directive @onDirective on DIRECTIVE_DEFINITION
+
+        extend directive @extended @onDirective
     "#;
     // Order is mostly not preserved
     let expected = expect_test::expect![[r#"
         directive @customDirective on OBJECT
+
+        directive @extended on FIELD
+
+        extend directive @extended @onDirective
+
+        directive @onDirective on DIRECTIVE_DEFINITION
 
         type Query {
           int: Int

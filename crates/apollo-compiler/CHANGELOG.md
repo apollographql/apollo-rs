@@ -41,7 +41,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   A directive extension's directives are merged into the matching directive
   definition, tracking their origin through `Node`'s `ExtensionId` the same way
-  type extensions do. The extension may appear before the definition it extends.
+  type extensions do. `DirectiveDefinition` gains `extensions()` and
+  `iter_extension_ids()` accessors for that origin, matching the other
+  extendable schema types, and serializing a `Schema` re-emits
+  `extend directive` blocks instead of folding them into the definition.
+  The extension may appear before the definition it extends.
   Extending a directive that is never defined is a new build error,
   `directive extension for undefined directive`. Unlike other extension kinds,
   this is an error even under `SchemaBuilder::adopt_orphan_extensions()`: a
