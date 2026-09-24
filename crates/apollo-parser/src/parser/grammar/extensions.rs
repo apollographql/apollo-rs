@@ -1,3 +1,4 @@
+use crate::parser::grammar::directive;
 use crate::parser::grammar::enum_;
 use crate::parser::grammar::input;
 use crate::parser::grammar::interface;
@@ -12,6 +13,7 @@ pub(crate) fn extensions(p: &mut Parser) {
     // to figure out which type system extension to apply.
     match p.peek_data_n(2) {
         Some("schema") => schema::schema_extension(p),
+        Some("directive") => directive::directive_extension(p),
         Some("scalar") => scalar::scalar_type_extension(p),
         Some("type") => object::object_type_extension(p),
         Some("interface") => interface::interface_type_extension(p),
@@ -33,6 +35,7 @@ mod test {
 extend schema {
     mutation: MyMutationType
 }
+extend directive @custom @deprecated(reason: "no longer supported")
 extend scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
 extend type Business implements NamedEntity
 extend interface NamedEntity {
@@ -64,6 +67,20 @@ extend input First @include(if: "first")
                         root_operation_type.as_slice(),
                         ["MyMutationType".to_string()]
                     )
+                }
+                cst::Definition::DirectiveExtension(dir_ext) => {
+                    assert_eq!(
+                        dir_ext
+                            .directives()
+                            .expect("Cannot get directive extension directives.")
+                            .directives()
+                            .next()
+                            .unwrap()
+                            .name()
+                            .unwrap()
+                            .text(),
+                        "deprecated"
+                    );
                 }
                 cst::Definition::ScalarTypeExtension(scalar_ext) => {
                     assert_eq!(

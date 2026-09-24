@@ -59,6 +59,7 @@ Schema {
                 "ENUM_VALUE",
                 "SCHEMA",
             },
+            directives: [],
         },
         "oneOf": built_in_directive!("oneOf"),
         "specifiedBy": built_in_directive!("specifiedBy"),

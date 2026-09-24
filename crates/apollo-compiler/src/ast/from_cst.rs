@@ -105,6 +105,7 @@ impl Convert for cst::Definition {
             C::EnumTypeDefinition(def) => A::EnumTypeDefinition(r!(def)),
             C::InputObjectTypeDefinition(def) => A::InputObjectTypeDefinition(r!(def)),
             C::SchemaExtension(def) => A::SchemaExtension(r!(def)),
+            C::DirectiveExtension(def) => A::DirectiveExtension(r!(def)),
             C::ScalarTypeExtension(def) => A::ScalarTypeExtension(r!(def)),
             C::ObjectTypeExtension(def) => A::ObjectTypeExtension(r!(def)),
             C::InterfaceTypeExtension(def) => A::InterfaceTypeExtension(r!(def)),
@@ -186,6 +187,9 @@ impl Convert for cst::DirectiveDefinition {
                         .collect()
                 })
                 .unwrap_or_default(),
+            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -325,6 +329,19 @@ impl Convert for cst::SchemaExtension {
                 .root_operation_type_definitions()
                 .filter_map(|x| x.convert(file_id))
                 .collect(),
+        })
+    }
+}
+
+impl Convert for cst::DirectiveExtension {
+    type Target = ast::DirectiveExtension;
+
+    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
+        Some(Self::Target {
+            name: self.name()?.convert(file_id)?,
+            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -496,6 +513,7 @@ impl Convert for cst::DirectiveLocation {
             S![ENUM_VALUE] => Some(ast::DirectiveLocation::EnumValue),
             S![INPUT_OBJECT] => Some(ast::DirectiveLocation::InputObject),
             S![INPUT_FIELD_DEFINITION] => Some(ast::DirectiveLocation::InputFieldDefinition),
+            S![DIRECTIVE_DEFINITION] => Some(ast::DirectiveLocation::DirectiveDefinition),
             _ => None, // TODO: unreachable?
         }
     }

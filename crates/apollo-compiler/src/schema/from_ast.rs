@@ -12,6 +12,7 @@ pub struct SchemaBuilder {
     pub(crate) schema: Schema,
     schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
+    orphan_directive_extensions: IndexMap<Name, Vec<Node<ast::DirectiveExtension>>>,
     pub(crate) errors: DiagnosticList,
 }
 
@@ -54,6 +55,7 @@ impl SchemaBuilder {
                     orphan_extensions: Vec::new(),
                 },
                 orphan_type_extensions: IndexMap::with_hasher(Default::default()),
+                orphan_directive_extensions: IndexMap::with_hasher(Default::default()),
                 errors: DiagnosticList::new(Default::default()),
             };
             let input = include_str!("../built_in_types.graphql").to_owned();
@@ -76,6 +78,10 @@ impl SchemaBuilder {
     /// Configure the builder so that “orphan” schema extensions and type extensions
     /// (without a corresponding definition) are “adopted”:
     /// accepted as if extending an empty definition instead of being rejected as errors.
+    ///
+    /// This does not apply to directive extensions: a directive definition's locations are
+    /// mandatory, so there is no empty-but-valid definition to adopt an orphan directive
+    /// extension into. Those are always rejected as errors.
     pub fn adopt_orphan_extensions(mut self) -> Self {
         self.adopt_orphan_extensions = true;
         self
@@ -231,6 +237,39 @@ impl SchemaBuilder {
                             }
                         }
                     }
+                    if let Some(extensions) =
+                        self.orphan_directive_extensions.shift_remove(&def.name)
+                    {
+                        let target = self
+                            .schema
+                            .directive_definitions
+                            .get_mut(&def.name)
+                            .expect("directive definition was just inserted")
+                            .make_mut();
+                        for ext in &extensions {
+                            let extension_id = ExtensionId::new(ext);
+                            target.directives.extend(
+                                ext.directives
+                                    .iter()
+                                    .map(|d| d.with_extension_id(extension_id.clone())),
+                            );
+                        }
+                    }
+                }
+                ast::Definition::DirectiveExtension(ext) => {
+                    if let Some(def) = self.schema.directive_definitions.get_mut(&ext.name) {
+                        let extension_id = ExtensionId::new(ext);
+                        def.make_mut().directives.extend(
+                            ext.directives
+                                .iter()
+                                .map(|d| d.with_extension_id(extension_id.clone())),
+                        );
+                    } else {
+                        self.orphan_directive_extensions
+                            .entry(ext.name.clone())
+                            .or_default()
+                            .push(ext.clone());
+                    }
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
                     type_definition!(def, ScalarType, is_scalar = true)
@@ -300,6 +339,7 @@ impl SchemaBuilder {
             mut schema,
             schema_definition,
             orphan_type_extensions,
+            orphan_directive_extensions,
             mut errors,
         } = self;
         schema.validate_default_values = validate_default_values;
@@ -319,6 +359,22 @@ impl SchemaBuilder {
                     let name = ext.name().unwrap().clone();
                     errors.push(name.location(), BuildError::OrphanTypeExtension { name })
                 }
+            }
+        }
+
+        // Unlike other extensions, a directive definition's `on <Locations>` clause is
+        // mandatory, so there is no empty-but-valid definition to adopt an orphan directive
+        // extension into (it could never be serialized back to parseable SDL). So, unlike
+        // other extension kinds, this case is always an error, regardless of
+        // `adopt_orphan_extensions`.
+        for extensions in orphan_directive_extensions.values() {
+            for ext in extensions {
+                errors.push(
+                    ext.name.location(),
+                    BuildError::OrphanDirectiveExtension {
+                        name: ext.name.clone(),
+                    },
+                )
             }
         }
 

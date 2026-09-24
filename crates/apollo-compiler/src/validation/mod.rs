@@ -795,6 +795,9 @@ impl ToCliReport for DiagnosticData {
                 SchemaBuildError::OrphanTypeExtension { .. } => {
                     report.with_label_opt(self.location, "extension here")
                 }
+                SchemaBuildError::OrphanDirectiveExtension { .. } => {
+                    report.with_label_opt(self.location, "extension here")
+                }
                 SchemaBuildError::TypeExtensionKindMismatch { def_location, .. } => {
                     report.with_label_opt(*def_location, "type definition");
                     report.with_label_opt(self.location, "extension here")

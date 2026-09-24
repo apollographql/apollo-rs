@@ -1,0 +1,8 @@
+Error: directive extension for undefined directive `@undefined`
+   ╭─[ 0137_directive_extension_of_undefined_directive.graphql:7:19 ]
+   │
+ 7 │ extend directive @undefined @dir
+   │                   ────┬────  
+   │                       ╰────── extension here
+───╯
+

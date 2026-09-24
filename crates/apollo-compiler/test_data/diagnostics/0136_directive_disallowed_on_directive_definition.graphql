@@ -1,0 +1,7 @@
+type Query {
+    field: String
+}
+
+directive @notAllowedHere on FIELD
+
+directive @custom @notAllowedHere on FIELD

@@ -147,6 +147,9 @@ impl TryFrom<apollo_parser::cst::Document> for Document {
                 apollo_parser::cst::Definition::FragmentDefinition(fragment_def) => {
                     fragment_defs.push(FragmentDef::try_from(fragment_def)?)
                 }
+                // apollo-smith does not generate or model `extend directive`, so there is
+                // nothing to fuzz-round-trip it into; skip it if encountered in input.
+                apollo_parser::cst::Definition::DirectiveExtension(_) => {}
             }
         }
 

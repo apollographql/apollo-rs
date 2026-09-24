@@ -300,6 +300,9 @@ pub(crate) enum BuildError {
     #[error("type extension for undefined type `{name}`")]
     OrphanTypeExtension { name: Name },
 
+    #[error("directive extension for undefined directive `@{name}`")]
+    OrphanDirectiveExtension { name: Name },
+
     #[error("adding {describe_ext}, but `{name}` is {describe_def}")]
     TypeExtensionKindMismatch {
         name: Name,
@@ -867,6 +870,27 @@ impl ExtendedType {
     }
 
     serialize_method!();
+}
+
+impl DirectiveDefinition {
+    /// Iterate over the `origins` of all components
+    ///
+    /// Applied directives are the only part of a directive definition that an
+    /// `extend directive` can contribute.
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn iter_extension_ids(&self) -> impl Iterator<Item = Option<&ExtensionId>> {
+        self.directives.iter().map(|dir| dir.extension_id())
+    }
+
+    /// Collect directive extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.iter_extension_ids().flatten().collect()
+    }
 }
 
 impl ScalarType {

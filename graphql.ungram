@@ -30,6 +30,7 @@ Definition =
   | InputObjectTypeDefinition
   // Type System Extensions: we may possible want to group those in an enum outside of 'Definition'
   | SchemaExtension
+  | DirectiveExtension
   // Type Extensions
   | ScalarTypeExtension
   | ObjectTypeExtension
@@ -256,7 +257,10 @@ InputObjectTypeExtension =
   | 'extend' 'input' Name Directives?
 
 DirectiveDefinition =
-  Description? 'directive' '@' Name ArgumentsDefinition? 'repeatable'? 'on' DirectiveLocations
+  Description? 'directive' '@' Name ArgumentsDefinition? Directives? 'repeatable'? 'on' DirectiveLocations
+
+DirectiveExtension =
+  'extend' 'directive' '@' Name Directives
 
 // In the spec, DirectiveLocations is defined as an enum of:
 // DirectiveLocations
@@ -287,3 +291,4 @@ DirectiveLocation =
   | 'ENUM_VALUE'
   | 'INPUT_OBJECT'
   | 'INPUT_FIELD_DEFINITION'
+  | 'DIRECTIVE_DEFINITION'

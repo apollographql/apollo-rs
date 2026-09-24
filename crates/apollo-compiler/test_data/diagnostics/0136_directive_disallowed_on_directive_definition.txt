@@ -1,0 +1,16 @@
+Error: notAllowedHere directive is not supported for DIRECTIVE_DEFINITION location
+   ╭─[ 0136_directive_disallowed_on_directive_definition.graphql:7:19 ]
+   │
+ 7 │ directive @custom @notAllowedHere on FIELD
+   │                   ───────┬───────  
+   │                          ╰───────── directive cannot be used on DIRECTIVE_DEFINITION
+   │
+   ├─[ 0136_directive_disallowed_on_directive_definition.graphql:7:19 ]
+   │
+ 5 │ directive @notAllowedHere on FIELD
+   │ ─────────────────┬────────────────  
+   │                  ╰────────────────── directive defined here
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for: FIELD
+───╯
+

@@ -16,6 +16,44 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Parse directive extensions - [TylerBloom], [pull/1111]**
+
+  The September 2026 specification adds a directive extension ([graphql-spec#1206]):
+
+  ```graphql
+  extend directive @example @deprecated(reason: "no longer supported")
+  ```
+
+  `cst::Definition` gains a `DirectiveExtension` variant, so exhaustive matches
+  on that enum must be updated. The new `cst::DirectiveExtension` node has
+  `extend_token()`, `directive_token()`, `at_token()`, `name()` and
+  `directives()` accessors, and `SyntaxKind::DIRECTIVE_EXTENSION` identifies it.
+
+## Features
+
+- **Parse directives on directive definitions - [TylerBloom], [pull/1111]**
+
+  The September 2026 specification allows directives to be applied to directive
+  definitions themselves ([graphql-spec#1206]):
+
+  ```graphql
+  directive @example @deprecated(reason: "no longer supported") on FIELD
+  ```
+
+  `cst::DirectiveDefinition` gains a `directives()` accessor. `DIRECTIVE_DEFINITION`
+  is accepted as a directive location, lexed as
+  `SyntaxKind::DIRECTIVE_DEFINITION_KW`.
+
+[pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
+[graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
+[TylerBloom]: https://github.com/TylerBloom
+
 # [0.9.0-beta.0](https://crates.io/crates/apollo-parser/0.9.0-beta.0) - 2026-08-21
 
 > Important: 1 breaking change below, indicated by **BREAKING**

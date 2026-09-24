@@ -18,7 +18,7 @@ impl Schema {
                 self.directive_definitions
                     .values()
                     .filter(|def| !def.is_built_in())
-                    .map(|def| ast::Definition::DirectiveDefinition(def.clone())),
+                    .flat_map(|def| def.to_ast()),
             )
             .chain(self.types.values().flat_map(|def| {
                 let mut iter = def.to_ast();
@@ -101,6 +101,28 @@ impl Node<SchemaDefinition> {
             ast::Definition::SchemaExtension(ext.same_location(ast::SchemaExtension {
                 directives: ast::DirectiveList(components(&self.directives, Some(ext))),
                 root_operations: root_ops(Some(ext)),
+            }))
+        }))
+    }
+}
+
+impl Node<DirectiveDefinition> {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + use<'_> {
+        let def = ast::DirectiveDefinition {
+            description: self.description.clone(),
+            name: self.name.clone(),
+            arguments: self.arguments.clone(),
+            repeatable: self.repeatable,
+            locations: self.locations.clone(),
+            directives: ast::DirectiveList(components(&self.directives, None)),
+        };
+        std::iter::once(ast::Definition::DirectiveDefinition(
+            self.same_location(def),
+        ))
+        .chain(self.extensions().into_iter().map(move |ext| {
+            ast::Definition::DirectiveExtension(ext.same_location(ast::DirectiveExtension {
+                name: self.name.clone(),
+                directives: ast::DirectiveList(components(&self.directives, Some(ext))),
             }))
         }))
     }

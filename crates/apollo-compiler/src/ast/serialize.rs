@@ -180,6 +180,7 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => def.serialize_impl(state),
             Definition::InputObjectTypeDefinition(def) => def.serialize_impl(state),
             Definition::SchemaExtension(def) => def.serialize_impl(state),
+            Definition::DirectiveExtension(def) => def.serialize_impl(state),
             Definition::ScalarTypeExtension(def) => def.serialize_impl(state),
             Definition::ObjectTypeExtension(def) => def.serialize_impl(state),
             Definition::InterfaceTypeExtension(def) => def.serialize_impl(state),
@@ -255,11 +256,13 @@ impl DirectiveDefinition {
             arguments,
             repeatable,
             locations,
+            directives,
         } = self;
         serialize_description(state, description)?;
         state.write("directive @")?;
         state.write(name)?;
         serialize_arguments_definition(state, arguments)?;
+        directives.serialize_impl(state)?;
 
         if *repeatable {
             state.write(" repeatable")?;
@@ -477,6 +480,15 @@ impl SchemaExtension {
             })?;
         }
         Ok(())
+    }
+}
+
+impl DirectiveExtension {
+    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        let Self { name, directives } = self;
+        state.write("extend directive @")?;
+        state.write(name)?;
+        directives.serialize_impl(state)
     }
 }
 
@@ -1030,6 +1042,7 @@ impl_display! {
     EnumTypeDefinition
     InputObjectTypeDefinition
     SchemaExtension
+    DirectiveExtension
     ScalarTypeExtension
     ObjectTypeExtension
     InterfaceTypeExtension

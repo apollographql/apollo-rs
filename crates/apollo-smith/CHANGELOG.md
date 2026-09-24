@@ -18,6 +18,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Maintenance
+
+- **Adapt to directives on directive definitions - [TylerBloom], [pull/1111]**
+
+  Follows apollo-compiler's new `ast::DirectiveDefinition::directives` field.
+  Generated directive definitions leave it empty: apollo-smith does not yet
+  generate directives on directive definitions, nor directive extensions, and
+  skips `extend directive` when converting a parsed document.
+
+[pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
+[TylerBloom]: https://github.com/TylerBloom
+
 # [0.17.0-beta.1](https://crates.io/crates/apollo-smith/0.17.0-beta.1) - 2026-08-28
 
 ## BREAKING
