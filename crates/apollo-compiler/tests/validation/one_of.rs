@@ -339,6 +339,43 @@ fn invalid_recursive_oneof_mixed_with_nonnull() {
 }
 
 #[test]
+fn invalid_recursive_oneof_three_way_cycle() {
+    // Three @oneOf input objects where every field points at another member of
+    // the same cycle. No finite value can be constructed for any of them, so
+    // per `InputObjectHasUnbreakableCycle()` (added in
+    // https://github.com/graphql/graphql-spec/pull/1211) all three must be
+    // rejected.
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input X @oneOf {
+            y: Y
+            z: Z
+        }
+        input Y @oneOf {
+            x: X
+            z: Z
+        }
+        input Z @oneOf {
+            x: X
+            y: Y
+        }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("three-way @oneOf cycle with no escape field should fail")
+    .errors
+    .to_string();
+
+    for name in ["X", "Y", "Z"] {
+        assert!(
+            errors.contains(&format!("`{name}` input object cannot reference itself")),
+            "expected an error for `{name}`, got:\n{errors}"
+        );
+    }
+}
+
+#[test]
 fn valid_oneof_with_escape_field() {
     // A @oneOf input object with at least one non-recursive field can be
     // constructed, so it should be valid.
