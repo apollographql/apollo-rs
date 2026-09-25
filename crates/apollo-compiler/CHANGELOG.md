@@ -6,9 +6,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2026-mm-dd
 
-> Important: 2 breaking changes below, indicated by **BREAKING**
+> Important: 3 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
+
+- **`Name` is interned: equality and hashing use symbols; by-`&str` map lookups need `NameKey` - [tninesling]**
+
+  `Name` now interns its string in a process-global symbol table. Equality
+  is an integer comparison and `Hash` emits the 4-byte symbol instead of
+  hashing string bytes, which makes name-heavy workloads measurably faster:
+  executable validation against large production supergraphs improves
+  13-15%, and abstract-type-heavy validation up to 29%.
+
+  Consequences:
+
+  - `Name` and `Node<Name>` no longer implement `Borrow<str>`, so
+    `Name`-keyed `IndexMap`/`IndexSet` lookups by plain `&str` no longer
+    compile. Use the new `NameKey` wrapper: `map.get(&NameKey("Query"))`.
+    It probes the symbol table read-only, with no allocation.
+  - `name!()` can no longer be used to initialize `const` items (the lazy
+    symbol cache is interior-mutable); use `static` items instead.
+  - `Name` grows from 24 to 32 bytes.
+
+  Servers should call `apollo_compiler::freeze_interning()` after building
+  their schema(s) and before parsing untrusted executable documents: this
+  makes the table lookup-only, so its size is bounded by the schemas'
+  contents and hostile documents full of unique names cannot grow it.
+  Names absent from the frozen table transparently fall back to
+  string-based equality and hashing.
 
 - **Support directives on directive definitions - [TylerBloom], [pull/1111]**
 

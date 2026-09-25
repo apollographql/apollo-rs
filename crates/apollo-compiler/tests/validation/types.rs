@@ -2038,6 +2038,8 @@ mod input_field_default_values {
             .validate()
             .unwrap();
         // The schema is valid (no errors) even with a bad default
-        assert!(schema.types.contains_key("MyInput"));
+        assert!(schema
+            .types
+            .contains_key(&apollo_compiler::NameKey("MyInput")));
     }
 }

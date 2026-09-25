@@ -37,10 +37,13 @@ mod directive_inputs {
         field_name: &str,
         argument_name: &str,
     ) -> &'a Node<Value> {
-        let ExtendedType::Object(query) = &schema.types["Query"] else {
+        let ExtendedType::Object(query) = &schema.types[&apollo_compiler::NameKey("Query")] else {
             panic!("Query was not an object");
         };
-        let field = query.fields.get(field_name).unwrap();
+        let field = query
+            .fields
+            .get(&apollo_compiler::NameKey(field_name))
+            .unwrap();
         let directive = field.directives.get("withSomeArgs").unwrap();
         directive.specified_argument_by_name(argument_name).unwrap()
     }

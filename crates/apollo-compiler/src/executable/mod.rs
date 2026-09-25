@@ -516,7 +516,7 @@ impl OperationMap {
         if let Some(name) = name_request {
             // Honor the request
             self.named
-                .get(name)
+                .get(&crate::name::NameKey(name))
                 .ok_or_else(|| format!("No operation named '{name}'"))
         } else {
             // No name request (`operationName` unspecified or null)
@@ -546,7 +546,7 @@ impl OperationMap {
         if let Some(name) = name_request {
             // Honor the request
             self.named
-                .get_mut(name)
+                .get_mut(&crate::name::NameKey(name))
                 .ok_or_else(|| format!("No operation named '{name}'"))
         } else {
             // No name request (`operationName` unspecified or null)

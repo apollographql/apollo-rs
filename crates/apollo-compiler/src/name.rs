@@ -14,6 +14,8 @@ use std::mem::size_of;
 use std::mem::ManuallyDrop;
 use std::ops::Range;
 use std::ptr::NonNull;
+use std::sync::atomic::AtomicU32;
+use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
 /// Create a [`Name`] from a string literal or identifier, checked for validity at compile time.
@@ -63,6 +65,10 @@ pub struct Name {
     len: u32,
     start_offset: u32,            // zero if we don’t have a location
     tagged_file_id: TaggedFileId, // `.file_id() == FileId::NONE` means we don’t have a location
+    /// The string's global symbol (see `crate::symbol`); 0 = not yet
+    /// resolved (names from `const` contexts resolve lazily on first
+    /// eq/hash), `PROBED_MISS` = absent from the frozen table.
+    symbol: AtomicU32,
     phantom: PhantomData<UnpackedRepr>,
 }
 
@@ -84,10 +90,13 @@ pub struct InvalidNameError {
 const TAG_ARC: bool = true;
 const TAG_STATIC: bool = false;
 
+/// Cached-symbol sentinel: the string was probed against a frozen table and
+/// is not interned. Never a valid symbol (the table asserts `next < MAX`).
+const PROBED_MISS: u32 = u32::MAX;
+
 const _: () = {
-    // 20 "useful" bytes on 32-bit targets like wasm,
-    // but still padded to 24 for alignment of u64 file ID:
-    assert!(size_of::<Name>() == 24);
+    // 4 bytes of symbol on top of the former 24-byte layout, padded:
+    assert!(size_of::<Name>() == 32);
     assert!(size_of::<Name>() == size_of::<Option<Name>>());
 
     // The `unsafe impl`s below are sound since `(tag, ptr, len)` represents `UnpackedRepr`
@@ -125,6 +134,10 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
+        let symbol = AtomicU32::new(match crate::symbol::intern(&arc) {
+            Some(symbol) => symbol.get(),
+            None => PROBED_MISS, // table frozen and this string isn't in it
+        });
         let len = Self::new_len(&arc);
         let ptr = Arc::into_raw(arc).cast_mut().cast();
         // SAFETY: Arc always is non-null
@@ -134,6 +147,7 @@ impl Name {
             len,
             start_offset: 0,
             tagged_file_id: TaggedFileId::pack(TAG_ARC, FileId::NONE),
+            symbol,
             phantom: PhantomData,
         }
     }
@@ -152,8 +166,32 @@ impl Name {
             len: Self::new_len(value),
             start_offset: 0,
             tagged_file_id: TaggedFileId::pack(TAG_STATIC, FileId::NONE),
+            symbol: AtomicU32::new(0),
             phantom: PhantomData,
         }
+    }
+
+    /// The name's global symbol, resolving lazily for names created in
+    /// `const` contexts. Returns [`PROBED_MISS`] for names whose string is
+    /// not in the frozen table; such names use string-based equality and
+    /// hashing. With a frozen table, hit-or-miss is a pure function of the
+    /// string, so equal strings always agree.
+    #[inline]
+    fn symbol(&self) -> u32 {
+        match self.symbol.load(Relaxed) {
+            0 => self.symbol_slow(),
+            symbol => symbol,
+        }
+    }
+
+    #[cold]
+    fn symbol_slow(&self) -> u32 {
+        let symbol = match crate::symbol::intern(self.as_str()) {
+            Some(symbol) => symbol.get(),
+            None => PROBED_MISS,
+        };
+        self.symbol.store(symbol, Relaxed);
+        symbol
     }
 
     /// Modifies the given name to add its location in a parsed source file
@@ -307,7 +345,14 @@ impl Clone for Name {
             // Conceptually move ownership of this "new" pointer into the new clone
             // However it’s a `*const` and we already have a `NonNull` with the same address in `self`
         }
-        Self { ..*self }
+        Self {
+            ptr: self.ptr,
+            len: self.len,
+            start_offset: self.start_offset,
+            tagged_file_id: self.tagged_file_id,
+            symbol: AtomicU32::new(self.symbol.load(Relaxed)),
+            phantom: PhantomData,
+        }
     }
 }
 
@@ -323,7 +368,15 @@ impl Drop for Name {
 impl std::hash::Hash for Name {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.as_str().hash(state) // location not included
+        // Hash the 4-byte symbol, not the string. Consequence:
+        // `Borrow<str>` lookups are impossible (str hashes bytes).
+        // Names missing from a frozen table hash their string; equal
+        // strings always take the same branch (see `Self::symbol`).
+        // Location not included in either branch.
+        match self.symbol() {
+            PROBED_MISS => self.as_str().hash(state),
+            symbol => state.write_u32(symbol),
+        }
     }
 }
 
@@ -339,12 +392,6 @@ impl std::ops::Deref for Name {
 impl AsRef<str> for Name {
     #[inline]
     fn as_ref(&self) -> &str {
-        self.as_str()
-    }
-}
-
-impl std::borrow::Borrow<str> for Name {
-    fn borrow(&self) -> &str {
         self.as_str()
     }
 }
@@ -368,7 +415,16 @@ impl Eq for Name {}
 impl PartialEq for Name {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.as_str() == other.as_str() // don’t compare location
+        // don’t compare location
+        let (a, b) = (self.symbol(), other.symbol());
+        if a != b {
+            // Covers the mixed case too: a hit's string is in the frozen
+            // table, a miss's is not, so they can't be equal.
+            return false;
+        }
+        // Equal symbols mean equal strings, except that two names missing
+        // from the frozen table must fall back to their strings.
+        a != PROBED_MISS || self.as_str() == other.as_str()
     }
 }
 
@@ -534,5 +590,48 @@ impl ToCliReport for InvalidNameError {
 impl fmt::Debug for InvalidNameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
+    }
+}
+
+/// A borrowed key for looking up entries of [`Name`]-keyed
+/// [`IndexMap`s][crate::collections::IndexMap] by string.
+///
+/// `Name` compares and hashes by its interned symbol, so such maps cannot
+/// be queried with a plain `&str` (which hashes its bytes). `NameKey`
+/// probes the symbol table read-only — no allocation, no insertion — and
+/// hashes accordingly, making it the drop-in replacement for the former
+/// `Borrow<str>`-based lookups:
+///
+/// ```
+/// use apollo_compiler::NameKey;
+/// use apollo_compiler::Schema;
+///
+/// let schema = Schema::parse_and_validate("type Query { x: Int }", "s.graphql").unwrap();
+/// let ty = schema.types.get(&NameKey("Query")).unwrap();
+/// assert!(ty.is_object());
+/// ```
+pub struct NameKey<'a>(pub &'a str);
+
+impl std::hash::Hash for NameKey<'_> {
+    #[inline]
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match crate::symbol::get(self.0) {
+            Some(symbol) => state.write_u32(symbol.get()),
+            None => self.0.hash(state),
+        }
+    }
+}
+
+impl indexmap::Equivalent<Name> for NameKey<'_> {
+    #[inline]
+    fn equivalent(&self, key: &Name) -> bool {
+        self.0 == key.as_str()
+    }
+}
+
+impl indexmap::Equivalent<crate::Node<Name>> for NameKey<'_> {
+    #[inline]
+    fn equivalent(&self, key: &crate::Node<Name>) -> bool {
+        self.0 == key.as_str()
     }
 }

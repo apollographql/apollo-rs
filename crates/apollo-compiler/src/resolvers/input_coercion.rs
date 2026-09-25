@@ -186,10 +186,11 @@ fn coerce_variable_value(
         ExtendedType::InputObject(ty_def) => {
             // https://spec.graphql.org/September2025/#sec-Input-Objects.Input-Coercion
             if let Some(object) = value.as_object() {
-                if let Some(key) = object
-                    .keys()
-                    .find(|key| !ty_def.fields.contains_key(key.as_str()))
-                {
+                if let Some(key) = object.keys().find(|key| {
+                    !ty_def
+                        .fields
+                        .contains_key(&crate::name::NameKey(key.as_str()))
+                }) {
                     return Err(InputCoercionError::ValueError {
                         message: format!(
                             "Input object has key {} not in type {ty_name}",
@@ -204,7 +205,11 @@ fn coerce_variable_value(
                 if ty_def.is_one_of() {
                     let provided_count = object
                         .keys()
-                        .filter(|k| ty_def.fields.contains_key(k.as_str()))
+                        .filter(|k| {
+                            ty_def
+                                .fields
+                                .contains_key(&crate::name::NameKey(k.as_str()))
+                        })
                         .count();
                     if provided_count != 1 {
                         return Err(InputCoercionError::ValueError {

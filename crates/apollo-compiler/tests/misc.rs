@@ -515,7 +515,8 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let locations: Vec<_> = schema.directive_definitions["delegateField"]
+    let locations: Vec<_> = schema.directive_definitions
+        [&apollo_compiler::NameKey("delegateField")]
         .locations
         .iter()
         .map(|loc| loc.name())

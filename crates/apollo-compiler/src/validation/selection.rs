@@ -127,6 +127,7 @@ impl<'a> ArgumentLookup<'a> {
 }
 
 /// Check if two field selections from the overlapping types are the same, so the fields can be merged.
+#[allow(clippy::result_large_err)] // BuildError holds several 32-byte Names
 fn same_name_and_arguments(
     field_a: FieldSelection<'_>,
     field_b: FieldSelection<'_>,
@@ -220,6 +221,7 @@ fn same_value(left: &ast::Value, right: &ast::Value) -> bool {
     }
 }
 
+#[allow(clippy::result_large_err)] // BuildError holds several 32-byte Names
 fn same_output_type_shape(
     schema: &schema::Schema,
     selection_a: FieldSelection<'_>,

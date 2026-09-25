@@ -60,6 +60,11 @@ name = "fragments-validation"
 path = "benches/fragments_validation.rs"
 harness = false
 
+[[bench]]
+name = "large-supergraph"
+path = "benches/large_supergraph.rs"
+harness = false
+
 [[test]]
 name = "main"
 

@@ -316,11 +316,17 @@ fn directive_on_directive_definition() {
 fn built_in_scalars() {
     // Initially a `Schema` contains all built-in types
     let schema = Schema::new();
-    assert!(schema.types.contains_key("ID"));
-    assert!(schema.types.contains_key("Int"));
-    assert!(schema.types.contains_key("Float"));
-    assert!(schema.types.contains_key("String"));
-    assert!(schema.types.contains_key("Boolean"));
+    assert!(schema.types.contains_key(&apollo_compiler::NameKey("ID")));
+    assert!(schema.types.contains_key(&apollo_compiler::NameKey("Int")));
+    assert!(schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Float")));
+    assert!(schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("String")));
+    assert!(schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Boolean")));
 
     // Same when parsing
     let input = r"
@@ -328,11 +334,17 @@ fn built_in_scalars() {
       scalar Thing
     ";
     let schema = Schema::parse(input, "").unwrap();
-    assert!(schema.types.contains_key("ID"));
-    assert!(schema.types.contains_key("Int"));
-    assert!(schema.types.contains_key("Float"));
-    assert!(schema.types.contains_key("String"));
-    assert!(schema.types.contains_key("Boolean"));
+    assert!(schema.types.contains_key(&apollo_compiler::NameKey("ID")));
+    assert!(schema.types.contains_key(&apollo_compiler::NameKey("Int")));
+    assert!(schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Float")));
+    assert!(schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("String")));
+    assert!(schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Boolean")));
 
     // https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars
     // > When returning the set of types from the `__Schema` introspection type,
@@ -343,16 +355,27 @@ fn built_in_scalars() {
     // We reflect this behavior in the Rust API for `Valid<Schema>`:
     // validation removes unused definitions
     let valid_schema = schema.validate().unwrap();
-    assert!(!valid_schema.types.contains_key("ID"));
-    assert!(!valid_schema.types.contains_key("Int"));
-    assert!(!valid_schema.types.contains_key("Float"));
+    assert!(!valid_schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("ID")));
+    assert!(!valid_schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Int")));
+    assert!(!valid_schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Float")));
     // String and Boolean are still used in built-in directives and schema-introspection types
-    assert!(valid_schema.types.contains_key("String"));
-    assert!(valid_schema.types.contains_key("Boolean"));
+    assert!(valid_schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("String")));
+    assert!(valid_schema
+        .types
+        .contains_key(&apollo_compiler::NameKey("Boolean")));
 
     // The `Valid<_>` wrapper makes its contents immutable, but it can be unwraped
     let mut mutable_again = valid_schema.into_inner();
-    let ExtendedType::Object(query) = &mut mutable_again.types["Query"] else {
+    let ExtendedType::Object(query) = &mut mutable_again.types[&apollo_compiler::NameKey("Query")]
+    else {
         panic!("expected object")
     };
     query.make_mut().fields.insert(
@@ -376,11 +399,21 @@ fn built_in_scalars() {
     let valid_after_mutation = mutable_again.validate().unwrap();
 
     // Validation also adds/restores definitions as needed:
-    assert!(valid_after_mutation.types.contains_key("ID"));
-    assert!(!valid_after_mutation.types.contains_key("Int"));
-    assert!(valid_after_mutation.types.contains_key("Float"));
-    assert!(valid_after_mutation.types.contains_key("String"));
-    assert!(valid_after_mutation.types.contains_key("Boolean"));
+    assert!(valid_after_mutation
+        .types
+        .contains_key(&apollo_compiler::NameKey("ID")));
+    assert!(!valid_after_mutation
+        .types
+        .contains_key(&apollo_compiler::NameKey("Int")));
+    assert!(valid_after_mutation
+        .types
+        .contains_key(&apollo_compiler::NameKey("Float")));
+    assert!(valid_after_mutation
+        .types
+        .contains_key(&apollo_compiler::NameKey("String")));
+    assert!(valid_after_mutation
+        .types
+        .contains_key(&apollo_compiler::NameKey("Boolean")));
 }
 
 /// Both introspection and other concrete fields with custom resolvers

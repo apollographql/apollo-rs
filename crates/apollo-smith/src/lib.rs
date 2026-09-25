@@ -1,4 +1,8 @@
 #![doc = include_str!("../README.md")]
+// apollo-compiler Names lazily cache their interned symbol (AtomicU32);
+// the cache is a deterministic function of the string, so Eq/Hash never
+// change and Names remain sound map keys.
+#![allow(clippy::mutable_key_type)]
 
 pub(crate) mod argument;
 pub(crate) mod description;
