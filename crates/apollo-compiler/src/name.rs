@@ -364,21 +364,11 @@ impl std::hash::Hash for Name {
             TAG_STATIC => crate::symbol::intern(self.as_str()).map(str::as_ptr),
             _ => None,
         };
-        hash_interned_or_str(interned, self.as_str(), state)
-    }
-}
-
-/// Hashes the interned pointer when there is one, and the string otherwise.
-/// A string is either in the table or not, so equal names always agree.
-#[inline]
-fn hash_interned_or_str<H: std::hash::Hasher>(
-    interned: Option<*const u8>,
-    value: &str,
-    state: &mut H,
-) {
-    match interned {
-        Some(ptr) => state.write_usize(ptr as usize),
-        None => std::hash::Hash::hash(value, state),
+        // A string is either in the table or not, so equal names always agree.
+        match interned {
+            Some(ptr) => state.write_usize(ptr as usize),
+            None => self.as_str().hash(state),
+        }
     }
 }
 
@@ -582,45 +572,5 @@ impl ToCliReport for InvalidNameError {
 impl fmt::Debug for InvalidNameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
-    }
-}
-
-/// A borrowed key for looking up entries of [`Name`]-keyed
-/// [`IndexMap`s][crate::collections::IndexMap] by string.
-///
-/// Interned `Name`s hash their interned pointer, so such maps cannot be
-/// queried with a plain `&str` (which hashes its bytes). `NameKey` probes
-/// the intern table read-only, with no allocation or insertion, and hashes
-/// accordingly:
-///
-/// ```
-/// use apollo_compiler::NameKey;
-/// use apollo_compiler::Schema;
-///
-/// let schema = Schema::parse_and_validate("type Query { x: Int }", "s.graphql").unwrap();
-/// let ty = schema.types.get(&NameKey("Query")).unwrap();
-/// assert!(ty.is_object());
-/// ```
-pub struct NameKey<'a>(pub &'a str);
-
-impl std::hash::Hash for NameKey<'_> {
-    #[inline]
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        let interned = crate::symbol::lookup(self.0).map(str::as_ptr);
-        hash_interned_or_str(interned, self.0, state)
-    }
-}
-
-impl indexmap::Equivalent<Name> for NameKey<'_> {
-    #[inline]
-    fn equivalent(&self, key: &Name) -> bool {
-        self.0 == key.as_str()
-    }
-}
-
-impl indexmap::Equivalent<crate::Node<Name>> for NameKey<'_> {
-    #[inline]
-    fn equivalent(&self, key: &crate::Node<Name>) -> bool {
-        self.0 == key.as_str()
     }
 }

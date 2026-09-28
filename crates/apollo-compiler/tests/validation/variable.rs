@@ -282,7 +282,7 @@ fn variables_in_const_contexts() {
 
     let mut schema = schema.into_inner();
 
-    let dir_arg_def = schema.directive_definitions[&apollo_compiler::NameKey("dir")]
+    let dir_arg_def = schema.directive_definitions[&name!("dir")]
         .make_mut()
         .arguments[0]
         .make_mut();
@@ -294,14 +294,14 @@ fn variables_in_const_contexts() {
     mutate_dir_arg(&mut def.directives[0]);
     mutate_dir_arg(&mut def.directives[1]);
 
-    let ExtendedType::Scalar(def) = &mut schema.types[&apollo_compiler::NameKey("S")] else {
+    let ExtendedType::Scalar(def) = &mut schema.types[&name!("S")] else {
         panic!("expected scalar")
     };
     let def = def.make_mut();
     mutate_dir_arg(&mut def.directives[0]);
     mutate_dir_arg(&mut def.directives[1]);
 
-    let ExtendedType::Object(def) = &mut schema.types[&apollo_compiler::NameKey("Query")] else {
+    let ExtendedType::Object(def) = &mut schema.types[&name!("Query")] else {
         panic!("expected object")
     };
     let def = def.make_mut();
@@ -313,7 +313,7 @@ fn variables_in_const_contexts() {
     mutate_dir_arg(&mut field_arg.directives[0]);
     mutate_input_obj_value(field_arg.default_value.as_mut().unwrap());
 
-    let ExtendedType::Interface(def) = &mut schema.types[&apollo_compiler::NameKey("Inter")] else {
+    let ExtendedType::Interface(def) = &mut schema.types[&name!("Inter")] else {
         panic!("expected interface")
     };
     let def = def.make_mut();
@@ -325,32 +325,23 @@ fn variables_in_const_contexts() {
     mutate_dir_arg(&mut field_arg.directives[0]);
     mutate_input_obj_value(field_arg.default_value.as_mut().unwrap());
 
-    let ExtendedType::Union(def) = &mut schema.types[&apollo_compiler::NameKey("U")] else {
+    let ExtendedType::Union(def) = &mut schema.types[&name!("U")] else {
         panic!("expected union")
     };
     let def = def.make_mut();
     mutate_dir_arg(&mut def.directives[0]);
     mutate_dir_arg(&mut def.directives[1]);
 
-    let ExtendedType::Enum(def) = &mut schema.types[&apollo_compiler::NameKey("Maybe")] else {
+    let ExtendedType::Enum(def) = &mut schema.types[&name!("Maybe")] else {
         panic!("expected enum")
     };
     let def = def.make_mut();
     mutate_dir_arg(&mut def.directives[0]);
     mutate_dir_arg(&mut def.directives[1]);
-    mutate_dir_arg(
-        &mut def.values[&apollo_compiler::NameKey("YES")]
-            .make_mut()
-            .directives[0],
-    );
-    mutate_dir_arg(
-        &mut def.values[&apollo_compiler::NameKey("NO")]
-            .make_mut()
-            .directives[0],
-    );
+    mutate_dir_arg(&mut def.values[&name!("YES")].make_mut().directives[0]);
+    mutate_dir_arg(&mut def.values[&name!("NO")].make_mut().directives[0]);
 
-    let ExtendedType::InputObject(def) = &mut schema.types[&apollo_compiler::NameKey("InputObj")]
-    else {
+    let ExtendedType::InputObject(def) = &mut schema.types[&name!("InputObj")] else {
         panic!("expected input object")
     };
     let def = def.make_mut();

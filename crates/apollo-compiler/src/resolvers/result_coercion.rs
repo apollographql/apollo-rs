@@ -124,17 +124,17 @@ pub(crate) async fn complete_value<'a>(
             )
         }
         ExtendedType::Interface(_) | ExtendedType::Union(_) => {
-            let Some(object_def) = ctx.schema.get_object(resolved_type_name) else {
+            let Some(object_def) = ctx
+                .schema
+                .get_object(&crate::Name::new_unchecked(resolved_type_name))
+            else {
                 execution_error!(
                     "resolver returned an object of type {resolved_type_name} \
                      not defined in the schema"
                 )
             };
             if let ExtendedType::Union(union_def) = ty_def {
-                if !union_def
-                    .members
-                    .contains(&crate::name::NameKey(resolved_type_name))
-                {
+                if !union_def.members.contains(&object_def.name) {
                     execution_error!(
                         "resolver returned an object of type {resolved_type_name}, \
                          expected a member of union type {ty_name}"
@@ -269,10 +269,11 @@ fn complete_leaf_value(
         }
         ExtendedType::Enum(enum_def) => {
             // https://spec.graphql.org/September2025/#sec-Enums.Result-Coercion
-            if !json_value
-                .as_str()
-                .is_some_and(|str| enum_def.values.contains_key(&crate::name::NameKey(str)))
-            {
+            if !json_value.as_str().is_some_and(|str| {
+                enum_def
+                    .values
+                    .contains_key(&crate::Name::new_unchecked(str))
+            }) {
                 execution_error!("resolver returned {json_value}, expected enum {ty_name}")
             }
         }

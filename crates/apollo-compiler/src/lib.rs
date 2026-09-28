@@ -26,7 +26,6 @@ pub mod validation;
 pub use self::executable::ExecutableDocument;
 pub use self::name::InvalidNameError;
 pub use self::name::Name;
-pub use self::name::NameKey;
 pub use self::node::ExtensionId;
 
 /// Freezes the global name-interning table.

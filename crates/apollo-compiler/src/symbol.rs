@@ -4,7 +4,7 @@
 //! `Name`s point at that single copy. Two interned names are therefore
 //! equal exactly when their pointers are equal, and they hash the pointer
 //! instead of the string bytes. This rules out `Borrow<str>` map lookups,
-//! see [`NameKey`][crate::NameKey] for the replacement.
+//! so `Name`-keyed maps are queried with a `Name`.
 //!
 //! # Freezing
 //!
@@ -47,19 +47,6 @@ static SNAPSHOT: LazyLock<Table> = LazyLock::new(|| {
 /// See [`crate::freeze_interning`].
 pub(crate) fn freeze() {
     let _ = LazyLock::force(&SNAPSHOT);
-}
-
-/// Returns the table's copy of `value` if it is interned, without
-/// modifying the table.
-pub(crate) fn lookup(value: &str) -> Option<&'static str> {
-    if let Some(snapshot) = LazyLock::get(&SNAPSHOT) {
-        return snapshot.get(value).copied();
-    }
-    TABLE
-        .lock()
-        .unwrap_or_else(PoisonError::into_inner)
-        .get(value)
-        .copied()
 }
 
 /// Returns the table's copy of `value`, interning it if new. Once the

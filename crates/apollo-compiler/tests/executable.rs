@@ -1,4 +1,5 @@
 use apollo_compiler::diagnostic::ToCliReport;
+use apollo_compiler::name;
 use apollo_compiler::parser::Parser;
 use apollo_compiler::validation::DiagnosticList;
 use apollo_compiler::ExecutableDocument;
@@ -63,9 +64,7 @@ fn is_introspection_operation() {
     let (_, doc) = Parser::new()
         .parse_mixed_validate(query_input, "query.graphql")
         .unwrap();
-    assert!(
-        doc.operations.named[&apollo_compiler::NameKey("TypeIntrospect")].is_introspection(&doc)
-    );
+    assert!(doc.operations.named[&name!("TypeIntrospect")].is_introspection(&doc));
 }
 
 #[test]
@@ -105,13 +104,9 @@ fn is_not_introspection_operation() {
         .parse_mixed_validate(mutation_input, "mutation.graphql")
         .unwrap();
 
+    assert!(!query_doc.operations.named[&name!("CheckStock")].is_introspection(&query_doc));
     assert!(
-        !query_doc.operations.named[&apollo_compiler::NameKey("CheckStock")]
-            .is_introspection(&query_doc)
-    );
-    assert!(
-        !mutation_doc.operations.named[&apollo_compiler::NameKey("PurchaseBasket")]
-            .is_introspection(&mutation_doc)
+        !mutation_doc.operations.named[&name!("PurchaseBasket")].is_introspection(&mutation_doc)
     );
 }
 
@@ -197,12 +192,12 @@ fn is_introspection_deep() {
         .unwrap();
 
     assert!(
-        query_doc.operations.named[&apollo_compiler::NameKey("IntrospectDeepFragments")]
-            .is_introspection(&query_doc)
+        query_doc.operations.named[&name!("IntrospectDeepFragments")].is_introspection(&query_doc)
     );
-    assert!(!query_not_introspect_doc.operations.named
-        [&apollo_compiler::NameKey("IntrospectDeepFragments")]
-        .is_introspection(&query_not_introspect_doc));
+    assert!(
+        !query_not_introspect_doc.operations.named[&name!("IntrospectDeepFragments")]
+            .is_introspection(&query_not_introspect_doc)
+    );
 }
 
 #[test]
@@ -251,12 +246,14 @@ fn is_introspection_repeated_fragment() {
         .parse_mixed_validate(query_input_direct, "direct.graphql")
         .unwrap();
 
-    assert!(query_doc_indirect.operations.named
-        [&apollo_compiler::NameKey("IntrospectRepeatedIndirectFragment")]
-        .is_introspection(&query_doc_indirect));
-    assert!(query_doc_direct.operations.named
-        [&apollo_compiler::NameKey("IntrospectRepeatedDirectFragment")]
-        .is_introspection(&query_doc_direct));
+    assert!(
+        query_doc_indirect.operations.named[&name!("IntrospectRepeatedIndirectFragment")]
+            .is_introspection(&query_doc_indirect)
+    );
+    assert!(
+        query_doc_direct.operations.named[&name!("IntrospectRepeatedDirectFragment")]
+            .is_introspection(&query_doc_direct)
+    );
 }
 
 #[test]
@@ -339,14 +336,8 @@ fn builder_from_multiple_files() {
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 2);
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetUser")));
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetPost")));
+    assert!(doc.operations.named.contains_key(&name!("GetUser")));
+    assert!(doc.operations.named.contains_key(&name!("GetPost")));
 }
 
 #[test]
@@ -374,13 +365,8 @@ fn builder_with_fragments_from_multiple_files() {
 
     assert_eq!(doc.operations.named.len(), 1);
     assert_eq!(doc.fragments.len(), 1);
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetUser")));
-    assert!(doc
-        .fragments
-        .contains_key(&apollo_compiler::NameKey("UserFields")));
+    assert!(doc.operations.named.contains_key(&name!("GetUser")));
+    assert!(doc.fragments.contains_key(&name!("UserFields")));
 }
 
 #[test]
@@ -449,14 +435,8 @@ fn builder_without_schema() {
     assert!(errors.is_empty(), "Expected no errors, got: {}", errors);
 
     assert_eq!(doc.operations.named.len(), 2);
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetData")));
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetMore")));
+    assert!(doc.operations.named.contains_key(&name!("GetData")));
+    assert!(doc.operations.named.contains_key(&name!("GetMore")));
 }
 
 #[test]
@@ -560,12 +540,8 @@ fn builder_with_multiple_fragments_used_in_query() {
 
     assert_eq!(doc.operations.named.len(), 1);
     assert_eq!(doc.fragments.len(), 2);
-    assert!(doc
-        .fragments
-        .contains_key(&apollo_compiler::NameKey("ProfileFields")));
-    assert!(doc
-        .fragments
-        .contains_key(&apollo_compiler::NameKey("SettingsFields")));
+    assert!(doc.fragments.contains_key(&name!("ProfileFields")));
+    assert!(doc.fragments.contains_key(&name!("SettingsFields")));
 }
 
 #[test]
@@ -632,24 +608,14 @@ fn builder_accumulates_diagnostics_from_multiple_sources() {
     );
 
     assert_eq!(doc.operations.named.len(), 2);
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetUser")));
-    assert!(doc
-        .operations
-        .named
-        .contains_key(&apollo_compiler::NameKey("GetUserProfile")));
+    assert!(doc.operations.named.contains_key(&name!("GetUser")));
+    assert!(doc.operations.named.contains_key(&name!("GetUserProfile")));
 
     // Only 2 fragments should be present (UserFields once, UserName once)
     // The duplicate UserFields from fragment2 should not overwrite fragment1
     assert_eq!(doc.fragments.len(), 2, "Expected 2 unique fragments");
-    assert!(doc
-        .fragments
-        .contains_key(&apollo_compiler::NameKey("UserFields")));
-    assert!(doc
-        .fragments
-        .contains_key(&apollo_compiler::NameKey("UserName")));
+    assert!(doc.fragments.contains_key(&name!("UserFields")));
+    assert!(doc.fragments.contains_key(&name!("UserName")));
 
     // Verify source tracking is correct - we should have diagnostics from multiple files
     let diagnostic_sources: std::collections::HashSet<_> = errors

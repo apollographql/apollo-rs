@@ -35,7 +35,7 @@ pub(crate) fn validate_root_operation_definitions(
         // Root Operation Named Type must be of Object Type.
         //
         // Return a Object Type error if it's any other type definition.
-        let type_def = schema.types.get(&crate::name::NameKey(name.as_ref()));
+        let type_def = schema.types.get::<crate::Name>(name);
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
                 diagnostics.push(

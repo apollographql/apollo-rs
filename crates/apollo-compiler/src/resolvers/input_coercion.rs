@@ -189,7 +189,7 @@ fn coerce_variable_value(
                 if let Some(key) = object.keys().find(|key| {
                     !ty_def
                         .fields
-                        .contains_key(&crate::name::NameKey(key.as_str()))
+                        .contains_key(&crate::Name::new_unchecked(key.as_str()))
                 }) {
                     return Err(InputCoercionError::ValueError {
                         message: format!(
@@ -208,7 +208,7 @@ fn coerce_variable_value(
                         .filter(|k| {
                             ty_def
                                 .fields
-                                .contains_key(&crate::name::NameKey(k.as_str()))
+                                .contains_key(&crate::Name::new_unchecked(k.as_str()))
                         })
                         .count();
                     if provided_count != 1 {

@@ -1,5 +1,6 @@
 //! Test the locations of schema elements
 
+use apollo_compiler::name;
 use apollo_compiler::parser::LineColumn;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::schema::Value;
@@ -37,12 +38,12 @@ mod directive_inputs {
         field_name: &str,
         argument_name: &str,
     ) -> &'a Node<Value> {
-        let ExtendedType::Object(query) = &schema.types[&apollo_compiler::NameKey("Query")] else {
+        let ExtendedType::Object(query) = &schema.types[&name!("Query")] else {
             panic!("Query was not an object");
         };
         let field = query
             .fields
-            .get(&apollo_compiler::NameKey(field_name))
+            .get(&apollo_compiler::Name::new(field_name).expect("valid field name"))
             .unwrap();
         let directive = field.directives.get("withSomeArgs").unwrap();
         directive.specified_argument_by_name(argument_name).unwrap()
