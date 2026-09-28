@@ -54,8 +54,11 @@ static TABLE: LazyLock<Mutex<Table>> = LazyLock::new(|| Mutex::new(HashMap::defa
 
 /// Immutable snapshot of the table taken at freeze time. Once the snapshot is taken, the original
 /// table cache can not be updated.
-static SNAPSHOT: LazyLock<Table> =
-    LazyLock::new(|| std::mem::take(&mut *TABLE.lock().unwrap_or_else(PoisonError::into_inner)));
+static SNAPSHOT: LazyLock<Table> = LazyLock::new(|| {
+    let mut guard = TABLE.lock().unwrap_or_else(PoisonError::into_inner);
+    guard.shrink_to_fit();
+    std::mem::take(&mut *guard)
+});
 
 /// Cached-symbol sentinel: The symbol for statically-defined `Name`s can not be cached until
 /// runtime. Such names are initialized with this sentital value. When found, the cache (or
