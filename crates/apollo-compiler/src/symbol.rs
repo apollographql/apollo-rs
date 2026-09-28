@@ -90,7 +90,9 @@ pub(crate) fn get_symbol(value: &str) -> Option<NonZeroU32> {
 pub(crate) fn intern(value: &str) -> Option<(&'static str, NonZeroU32)> {
     // Lock-free fast path once frozen.
     if let Some(snapshot) = LazyLock::get(&SNAPSHOT) {
-        return snapshot.get_key_value(value).map(|(&name, &symbol)| (name, symbol));
+        return snapshot
+            .get_key_value(value)
+            .map(|(&name, &symbol)| (name, symbol));
     }
     let mut guard = TABLE.lock().unwrap_or_else(PoisonError::into_inner);
     if let Some((&name, &symbol)) = guard.get_key_value(value) {
@@ -99,16 +101,16 @@ pub(crate) fn intern(value: &str) -> Option<(&'static str, NonZeroU32)> {
     let symbol = (guard.len() as u32) + 1;
     assert!(symbol < u32::MAX, "interned name symbol space exhausted");
     let symbol = NonZeroU32::new(symbol).expect("NEXT_SYMBOL starts at 1");
-    let name =  Box::leak(Box::from(value));
+    let name = Box::leak(Box::from(value));
     guard.insert(name, symbol);
     Some((name, symbol))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{name, Name};
-
     use super::*;
+    use crate::name;
+    use crate::Name;
 
     fn table_len() -> usize {
         TABLE.lock().unwrap_or_else(PoisonError::into_inner).len()
