@@ -6,6 +6,8 @@ use crate::parser::LineColumn;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::parser::TaggedFileId;
+use crate::symbol::PROBED_MISS;
+use crate::symbol::UNINITIALIZED_SYMBOL;
 use crate::Node;
 use rowan::TextRange;
 use std::fmt;
@@ -90,10 +92,6 @@ pub struct InvalidNameError {
 const TAG_ARC: bool = true;
 const TAG_STATIC: bool = false;
 
-/// Cached-symbol sentinel: the string was probed against a frozen table and
-/// is not interned. Never a valid symbol (the table asserts `next < MAX`).
-const PROBED_MISS: u32 = u32::MAX;
-
 const _: () = {
     // 4 bytes of symbol on top of the former 24-byte layout, padded:
     assert!(size_of::<Name>() == 32);
@@ -177,9 +175,10 @@ impl Name {
     /// hashing. With a frozen table, hit-or-miss is a pure function of the
     /// string, so equal strings always agree.
     #[inline]
-    fn symbol(&self) -> u32 {
+    pub(crate) fn symbol(&self) -> u32 {
+        #[deny(non_snake_case)]
         match self.symbol.load(Relaxed) {
-            0 => self.symbol_slow(),
+            UNINITIALIZED_SYMBOL => self.symbol_slow(),
             symbol => symbol,
         }
     }
@@ -373,9 +372,10 @@ impl std::hash::Hash for Name {
         // Names missing from a frozen table hash their string; equal
         // strings always take the same branch (see `Self::symbol`).
         // Location not included in either branch.
+        #[deny(non_snake_case)]
         match self.symbol() {
+            symbol @ 0..u32::MAX => state.write_u32(symbol),
             PROBED_MISS => self.as_str().hash(state),
-            symbol => state.write_u32(symbol),
         }
     }
 }
@@ -615,7 +615,7 @@ pub struct NameKey<'a>(pub &'a str);
 impl std::hash::Hash for NameKey<'_> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match crate::symbol::get(self.0) {
+        match crate::symbol::get_symbol(self.0) {
             Some(symbol) => state.write_u32(symbol.get()),
             None => self.0.hash(state),
         }

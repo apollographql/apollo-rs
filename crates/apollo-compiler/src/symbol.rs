@@ -30,60 +30,55 @@
 
 use crate::collections::HashMap;
 use std::num::NonZeroU32;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::AtomicU32;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::OnceLock;
+use std::sync::LazyLock;
+use std::sync::Mutex;
 use std::sync::PoisonError;
-use std::sync::RwLock;
 
 /// The interning table. Uses the same hasher as the crate's public
 /// collections; it is only probed when a `Name` is constructed or first
 /// resolved, never on the eq/hash hot path.
-type Table = HashMap<Box<str>, NonZeroU32>;
+type Table = HashMap<&'static str, NonZeroU32>;
 
-/// Once frozen, the table only answers lookups; see the module docs.
-static FROZEN: AtomicBool = AtomicBool::new(false);
+/// The table to hold the cache while it is being updated. After the cache is frozen, this will
+/// no longer be accessed.
+///
+/// The value of a name's "symbol" identifier is derived from the size of the table. The symbol
+/// "0" is reserved as a sentinel for "not yet resolved" and `u32::MAX` stands in for a cache
+/// miss on a frozen table.
+///
+/// NOTE: A mutex is used over an `RwLock` as the critical sections are very small. With an
+/// `RwLock`, interning a new name requires getting two guards (a read and then a write), both
+/// of which require cross-core syncing. This is a lot of work for simply checking and possibly
+/// inserting something into the cache.
+static TABLE: LazyLock<Mutex<Table>> = LazyLock::new(|| Mutex::new(HashMap::default()));
 
-/// Immutable snapshot of the table taken at freeze time: the post-freeze
-/// read path uses it without taking any lock.
-static SNAPSHOT: OnceLock<Table> = OnceLock::new();
+/// Immutable snapshot of the table taken at freeze time. Once the snapshot is taken, the original
+/// table cache can not be updated.
+static SNAPSHOT: LazyLock<Table> =
+    LazyLock::new(|| std::mem::take(&mut *TABLE.lock().unwrap_or_else(PoisonError::into_inner)));
 
-/// Next symbol to allocate. Symbol 0 is `Name`'s "not yet resolved"
-/// sentinel and `u32::MAX` is its "probed a frozen table and missed"
-/// sentinel, so valid symbols are `1..u32::MAX`.
-static NEXT_SYMBOL: AtomicU32 = AtomicU32::new(1);
+/// Cached-symbol sentinel: The symbol for statically-defined `Name`s can not be cached until
+/// runtime. Such names are initialized with this sentital value. When found, the cache (or
+/// snapshot) is accessed to update the `Name`'s symbol.
+pub(crate) const UNINITIALIZED_SYMBOL: u32 = 0;
 
-fn table() -> &'static RwLock<Table> {
-    static TABLE: OnceLock<RwLock<Table>> = OnceLock::new();
-    TABLE.get_or_init(|| RwLock::new(HashMap::default()))
-}
-
-pub(crate) fn frozen() -> bool {
-    FROZEN.load(Relaxed)
-}
+/// Cached-symbol sentinel: the string was probed against a frozen table and
+/// is not interned. Never a valid symbol (the table asserts `next < MAX`).
+pub(crate) const PROBED_MISS: u32 = u32::MAX;
 
 /// See [`crate::freeze_interning`].
 pub(crate) fn freeze() {
-    FROZEN.store(true, Relaxed);
-    let snapshot = table()
-        .read()
-        .unwrap_or_else(PoisonError::into_inner)
-        .iter()
-        .map(|(k, &v)| (k.clone(), v))
-        .collect();
-    // First freeze wins; a subsequent freeze() is a no-op.
-    let _ = SNAPSHOT.set(snapshot);
+    let _ = LazyLock::force(&SNAPSHOT);
 }
 
 /// Returns the symbol for `value` if it is interned, without modifying
 /// the table.
-pub(crate) fn get(value: &str) -> Option<NonZeroU32> {
-    if let Some(snapshot) = SNAPSHOT.get() {
+pub(crate) fn get_symbol(value: &str) -> Option<NonZeroU32> {
+    if let Some(snapshot) = LazyLock::get(&SNAPSHOT) {
         return snapshot.get(value).copied();
     }
-    table()
-        .read()
+    TABLE
+        .lock()
         .unwrap_or_else(PoisonError::into_inner)
         .get(value)
         .copied()
@@ -92,37 +87,31 @@ pub(crate) fn get(value: &str) -> Option<NonZeroU32> {
 /// Returns the symbol for `value`, interning it if new — unless the table
 /// is frozen, in which case misses return `None` and the table is not
 /// modified.
-pub(crate) fn intern(value: &str) -> Option<NonZeroU32> {
+pub(crate) fn intern(value: &str) -> Option<(&'static str, NonZeroU32)> {
     // Lock-free fast path once frozen.
-    if let Some(snapshot) = SNAPSHOT.get() {
-        return snapshot.get(value).copied();
+    if let Some(snapshot) = LazyLock::get(&SNAPSHOT) {
+        return snapshot.get_key_value(value).map(|(&name, &symbol)| (name, symbol));
     }
-    {
-        let guard = table().read().unwrap_or_else(PoisonError::into_inner);
-        if let Some(&symbol) = guard.get(value) {
-            return Some(symbol);
-        }
+    let mut guard = TABLE.lock().unwrap_or_else(PoisonError::into_inner);
+    if let Some((&name, &symbol)) = guard.get_key_value(value) {
+        return Some((name, symbol));
     }
-    if frozen() {
-        return None;
-    }
-    let mut guard = table().write().unwrap_or_else(PoisonError::into_inner);
-    if let Some(&symbol) = guard.get(value) {
-        return Some(symbol);
-    }
-    let raw = NEXT_SYMBOL.fetch_add(1, Relaxed);
-    assert!(raw < u32::MAX, "interned name symbol space exhausted");
-    let symbol = NonZeroU32::new(raw).expect("NEXT_SYMBOL starts at 1");
-    guard.insert(value.into(), symbol);
-    Some(symbol)
+    let symbol = (guard.len() as u32) + 1;
+    assert!(symbol < u32::MAX, "interned name symbol space exhausted");
+    let symbol = NonZeroU32::new(symbol).expect("NEXT_SYMBOL starts at 1");
+    let name =  Box::leak(Box::from(value));
+    guard.insert(name, symbol);
+    Some((name, symbol))
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::{name, Name};
+
     use super::*;
 
     fn table_len() -> usize {
-        table().read().unwrap_or_else(PoisonError::into_inner).len()
+        TABLE.lock().unwrap_or_else(PoisonError::into_inner).len()
     }
 
     #[test]
@@ -131,7 +120,7 @@ mod tests {
         freeze();
         // Hits still resolve after freezing.
         assert_eq!(intern("freezeTestSchemaName"), Some(interned));
-        assert_eq!(get("freezeTestSchemaName"), Some(interned));
+        assert_eq!(get_symbol("freezeTestSchemaName"), Some(interned.1));
         // Misses no longer insert.
         let len_before = table_len();
         for i in 0..100 {
@@ -145,9 +134,9 @@ mod tests {
         let symbols: Vec<Vec<NonZeroU32>> = std::thread::scope(|scope| {
             let handles: Vec<_> = (0..8)
                 .map(|_| {
-                    scope.spawn(|| {
+                    scope.spawn(move || {
                         (0..64)
-                            .map(|i| intern(&format!("concurrentInternTest{i}")).unwrap())
+                            .map(|i| intern(&format!("concurrentInternTest{i}")).unwrap().1)
                             .collect()
                     })
                 })
@@ -158,5 +147,19 @@ mod tests {
         for other in &symbols[1..] {
             assert_eq!(&symbols[0], other);
         }
+    }
+
+    #[test]
+    fn cache_consistency_after_freeze() {
+        let name = name!("foo");
+        let mut index = HashMap::<Name, usize>::default();
+        // Hashing silently updates static name's symbol value.
+        index.insert(name.clone(), 42);
+        assert!(index.contains_key(&name));
+        super::freeze();
+        let name = name!("foo");
+        assert!(index.contains_key(&name));
+        let name = Name::new("foo").unwrap();
+        assert!(index.contains_key(&name));
     }
 }
