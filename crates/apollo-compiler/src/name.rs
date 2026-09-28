@@ -124,7 +124,29 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub fn new_unchecked(value: &str) -> Self {
-        Self::from_arc_unchecked(value.into())
+        match crate::symbol::intern(value) {
+            Some((name, symbol)) => {
+                let mut digest = Self::new_static_unchecked(name);
+                digest.symbol = AtomicU32::new(symbol.get());
+                digest
+            }
+            // table frozen and this string isn't in it
+            None => {
+                let arc: Arc<str> = Arc::from(value);
+                let len = Self::new_len(&arc);
+                let ptr = Arc::into_raw(arc).cast_mut().cast();
+                // SAFETY: Arc always is non-null
+                let ptr = unsafe { NonNull::new_unchecked(ptr) };
+                Self {
+                    ptr,
+                    len,
+                    start_offset: 0,
+                    tagged_file_id: TaggedFileId::pack(TAG_ARC, FileId::NONE),
+                    symbol: AtomicU32::new(PROBED_MISS),
+                    phantom: PhantomData,
+                }
+            }
+        }
     }
 
     /// Create a new `Name` from an `Arc`, without [validity checking][Self::is_valid_syntax].
@@ -133,7 +155,7 @@ impl Name {
     /// but not memory-safety issues.
     pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
         let symbol = AtomicU32::new(match crate::symbol::intern(&arc) {
-            Some(symbol) => symbol.get(),
+            Some(symbol) => symbol.1.get(),
             None => PROBED_MISS, // table frozen and this string isn't in it
         });
         let len = Self::new_len(&arc);
@@ -186,7 +208,7 @@ impl Name {
     #[cold]
     fn symbol_slow(&self) -> u32 {
         let symbol = match crate::symbol::intern(self.as_str()) {
-            Some(symbol) => symbol.get(),
+            Some(symbol) => symbol.1.get(),
             None => PROBED_MISS,
         };
         self.symbol.store(symbol, Relaxed);
