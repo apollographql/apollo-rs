@@ -94,7 +94,10 @@ const TAG_STATIC: bool = false;
 
 const _: () = {
     // 4 bytes of symbol on top of the former 24-byte layout, padded:
+    #[cfg(not(target_family = "wasm"))]
     assert!(size_of::<Name>() == 32);
+    #[cfg(target_family = "wasm")]
+    assert!(size_of::<Name>() == 24);
     assert!(size_of::<Name>() == size_of::<Option<Name>>());
 
     // The `unsafe impl`s below are sound since `(tag, ptr, len)` represents `UnpackedRepr`
