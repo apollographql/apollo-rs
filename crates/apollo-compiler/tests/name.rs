@@ -51,4 +51,36 @@ fn frozen_interning_name_semantics() {
     assert_eq!(map.get(&NameKey("frozenTestSchemaName")), Some(&1));
     assert_eq!(map.get(&NameKey("frozenTestNotInterned")), Some(&2));
     assert_eq!(map.get(&NameKey("frozenTestAbsent")), None);
+    // Literal names hash like the interned name with the same string.
+    assert_eq!(
+        map.get(&apollo_compiler::name!("frozenTestSchemaName")),
+        Some(&1)
+    );
+    assert_eq!(
+        map.get(&apollo_compiler::name!("frozenTestNotInterned")),
+        Some(&2)
+    );
+
+    // Literal names are not interned and compare by string with both kinds.
+    assert_eq!(apollo_compiler::name!("frozenTestSchemaName"), schema_name);
+    assert_eq!(apollo_compiler::name!("frozenTestNotInterned"), miss_a);
+
+    // An `Arc` whose string is already interned is swapped for the table's copy.
+    let from_arc = Name::try_from(std::sync::Arc::<str>::from("frozenTestSchemaName")).unwrap();
+    assert_eq!(from_arc.as_static_str(), schema_name.as_static_str());
+    assert!(from_arc.as_static_str().is_some());
+}
+
+#[test]
+fn node_name_set_lookup() {
+    use apollo_compiler::NameKey;
+    use apollo_compiler::Node;
+    // Enough entries that indexmap hashes instead of scanning linearly.
+    let mut set = apollo_compiler::collections::IndexSet::default();
+    for i in 0..16 {
+        set.insert(Node::new(Name::new(&format!("nodeSetLookup{i}")).unwrap()));
+    }
+    assert!(set.contains(&NameKey("nodeSetLookup3")));
+    assert!(set.contains(&Node::new(apollo_compiler::name!("nodeSetLookup3"))));
+    assert!(!set.contains(&NameKey("nodeSetLookup16")));
 }

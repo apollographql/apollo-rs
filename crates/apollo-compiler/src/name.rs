@@ -6,8 +6,6 @@ use crate::parser::LineColumn;
 use crate::parser::SourceMap;
 use crate::parser::SourceSpan;
 use crate::parser::TaggedFileId;
-use crate::symbol::PROBED_MISS;
-use crate::symbol::UNINITIALIZED_SYMBOL;
 use crate::Node;
 use rowan::TextRange;
 use std::fmt;
@@ -16,8 +14,6 @@ use std::mem::size_of;
 use std::mem::ManuallyDrop;
 use std::ops::Range;
 use std::ptr::NonNull;
-use std::sync::atomic::AtomicU32;
-use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Arc;
 
 /// Create a [`Name`] from a string literal or identifier, checked for validity at compile time.
@@ -57,20 +53,18 @@ macro_rules! name {
 /// and carries an optional source location.
 ///
 /// Internally, the string value is either an atomically-reference counted `Arc<str>`
-/// or a `&'static str` borrow that lives until the end of the program.
+/// or a `&'static str` borrow that lives until the end of the program. Names built
+/// at runtime borrow a process-global interned copy of their string when one is
+/// available, which makes equality and hashing between them pointer operations.
 //
 // Fields: equivalent to `(UnpackedRepr, Option<SourceSpan>)` but more compact
 pub struct Name {
     /// Data pointer of either `Arc<str>::into_raw` (if `tagged_file_id.tag() == TAG_ARC`)
-    /// or `&'static str` (if `TAG_STATIC`)
+    /// or `&'static str` (if `TAG_STATIC` or `TAG_INTERNED`)
     ptr: NonNull<u8>,
     len: u32,
     start_offset: u32,            // zero if we don’t have a location
     tagged_file_id: TaggedFileId, // `.file_id() == FileId::NONE` means we don’t have a location
-    /// The string's global symbol (see `crate::symbol`); 0 = not yet
-    /// resolved (names from `const` contexts resolve lazily on first
-    /// eq/hash), `PROBED_MISS` = absent from the frozen table.
-    symbol: AtomicU32,
     phantom: PhantomData<UnpackedRepr>,
 }
 
@@ -89,14 +83,15 @@ pub struct InvalidNameError {
     pub location: Option<SourceSpan>,
 }
 
-const TAG_ARC: bool = true;
-const TAG_STATIC: bool = false;
+const TAG_STATIC: u8 = 0;
+const TAG_ARC: u8 = 1;
+/// A `&'static str` owned by the intern table. Each string has at most one
+/// such pointer, so two interned names are equal if and only if their
+/// pointers are.
+const TAG_INTERNED: u8 = 2;
 
 const _: () = {
-    // 4 bytes of symbol on top of the former 24-byte layout, padded:
-    #[cfg(not(target_family = "wasm"))]
-    assert!(size_of::<Name>() == 32);
-    #[cfg(target_family = "wasm")]
+    // 20 bytes of fields on 32-bit targets, padded to the 8-byte alignment of `TaggedFileId`.
     assert!(size_of::<Name>() == 24);
     assert!(size_of::<Name>() == size_of::<Option<Name>>());
 
@@ -128,39 +123,19 @@ impl Name {
     /// but not memory-safety issues.
     pub fn new_unchecked(value: &str) -> Self {
         match crate::symbol::intern(value) {
-            Some((name, symbol)) => {
-                let mut digest = Self::new_static_unchecked(name);
-                digest.symbol = AtomicU32::new(symbol.get());
-                digest
-            }
+            Some(interned) => Self::from_interned(interned),
             // table frozen and this string isn't in it
-            None => {
-                let arc: Arc<str> = Arc::from(value);
-                let len = Self::new_len(&arc);
-                let ptr = Arc::into_raw(arc).cast_mut().cast();
-                // SAFETY: Arc always is non-null
-                let ptr = unsafe { NonNull::new_unchecked(ptr) };
-                Self {
-                    ptr,
-                    len,
-                    start_offset: 0,
-                    tagged_file_id: TaggedFileId::pack(TAG_ARC, FileId::NONE),
-                    symbol: AtomicU32::new(PROBED_MISS),
-                    phantom: PhantomData,
-                }
-            }
+            None => Self::from_arc_uninterned(Arc::from(value)),
         }
     }
 
-    /// Create a new `Name` from an `Arc`, without [validity checking][Self::is_valid_syntax].
-    ///
-    /// Constructing an invalid name may cause invalid document serialization
-    /// but not memory-safety issues.
-    pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
-        let symbol = AtomicU32::new(match crate::symbol::intern(&arc) {
-            Some(symbol) => symbol.1.get(),
-            None => PROBED_MISS, // table frozen and this string isn't in it
-        });
+    fn from_interned(interned: &'static str) -> Self {
+        let mut name = Self::new_static_unchecked(interned);
+        name.tagged_file_id = TaggedFileId::pack(TAG_INTERNED, FileId::NONE);
+        name
+    }
+
+    fn from_arc_uninterned(arc: Arc<str>) -> Self {
         let len = Self::new_len(&arc);
         let ptr = Arc::into_raw(arc).cast_mut().cast();
         // SAFETY: Arc always is non-null
@@ -170,8 +145,18 @@ impl Name {
             len,
             start_offset: 0,
             tagged_file_id: TaggedFileId::pack(TAG_ARC, FileId::NONE),
-            symbol,
             phantom: PhantomData,
+        }
+    }
+
+    /// Create a new `Name` from an `Arc`, without [validity checking][Self::is_valid_syntax].
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
+        match crate::symbol::intern(&arc) {
+            Some(interned) => Self::from_interned(interned),
+            None => Self::from_arc_uninterned(arc),
         }
     }
 
@@ -189,33 +174,13 @@ impl Name {
             len: Self::new_len(value),
             start_offset: 0,
             tagged_file_id: TaggedFileId::pack(TAG_STATIC, FileId::NONE),
-            symbol: AtomicU32::new(0),
             phantom: PhantomData,
         }
     }
 
-    /// The name's global symbol, resolving lazily for names created in
-    /// `const` contexts. Returns [`PROBED_MISS`] for names whose string is
-    /// not in the frozen table; such names use string-based equality and
-    /// hashing. With a frozen table, hit-or-miss is a pure function of the
-    /// string, so equal strings always agree.
     #[inline]
-    pub(crate) fn symbol(&self) -> u32 {
-        #[deny(non_snake_case)]
-        match self.symbol.load(Relaxed) {
-            UNINITIALIZED_SYMBOL => self.symbol_slow(),
-            symbol => symbol,
-        }
-    }
-
-    #[cold]
-    fn symbol_slow(&self) -> u32 {
-        let symbol = match crate::symbol::intern(self.as_str()) {
-            Some(symbol) => symbol.1.get(),
-            None => PROBED_MISS,
-        };
-        self.symbol.store(symbol, Relaxed);
-        symbol
+    fn is_interned(&self) -> bool {
+        self.tagged_file_id.tag() == TAG_INTERNED
     }
 
     /// Modifies the given name to add its location in a parsed source file
@@ -272,9 +237,9 @@ impl Name {
     ///
     /// Returns `Some` if and only if [`to_cloned_arc`][Self::to_cloned_arc] returns `None`.
     pub fn as_static_str(&self) -> Option<&'static str> {
-        if self.tagged_file_id.tag() == TAG_STATIC {
+        if self.tagged_file_id.tag() != TAG_ARC {
             let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
-            // SAFETY: the tag indicates `self.ptr` came from `Self::ptr_and_tag_from_static`,
+            // SAFETY: the tag indicates `self.ptr` came from a `&'static str`,
             // so it has the static lifetime and points to valid UTF-8 of the correct length.
             Some(unsafe { std::str::from_utf8_unchecked(raw_slice.as_ref()) })
         } else {
@@ -374,7 +339,6 @@ impl Clone for Name {
             len: self.len,
             start_offset: self.start_offset,
             tagged_file_id: self.tagged_file_id,
-            symbol: AtomicU32::new(self.symbol.load(Relaxed)),
             phantom: PhantomData,
         }
     }
@@ -392,16 +356,29 @@ impl Drop for Name {
 impl std::hash::Hash for Name {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        // Hash the 4-byte symbol, not the string. Consequence:
-        // `Borrow<str>` lookups are impossible (str hashes bytes).
-        // Names missing from a frozen table hash their string; equal
-        // strings always take the same branch (see `Self::symbol`).
-        // Location not included in either branch.
-        #[deny(non_snake_case)]
-        match self.symbol() {
-            symbol @ 0..u32::MAX => state.write_u32(symbol),
-            PROBED_MISS => self.as_str().hash(state),
-        }
+        // Location is not included. Static names equal an interned name
+        // with the same string, so they must look up its pointer to hash
+        // the same way.
+        let interned = match self.tagged_file_id.tag() {
+            TAG_INTERNED => Some(self.ptr.as_ptr().cast_const()),
+            TAG_STATIC => crate::symbol::intern(self.as_str()).map(str::as_ptr),
+            _ => None,
+        };
+        hash_interned_or_str(interned, self.as_str(), state)
+    }
+}
+
+/// Hashes the interned pointer when there is one, and the string otherwise.
+/// A string is either in the table or not, so equal names always agree.
+#[inline]
+fn hash_interned_or_str<H: std::hash::Hasher>(
+    interned: Option<*const u8>,
+    value: &str,
+    state: &mut H,
+) {
+    match interned {
+        Some(ptr) => state.write_usize(ptr as usize),
+        None => std::hash::Hash::hash(value, state),
     }
 }
 
@@ -441,15 +418,11 @@ impl PartialEq for Name {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         // don’t compare location
-        let (a, b) = (self.symbol(), other.symbol());
-        if a != b {
-            // Covers the mixed case too: a hit's string is in the frozen
-            // table, a miss's is not, so they can't be equal.
-            return false;
+        if self.is_interned() && other.is_interned() {
+            self.ptr == other.ptr
+        } else {
+            self.as_str() == other.as_str()
         }
-        // Equal symbols mean equal strings, except that two names missing
-        // from the frozen table must fall back to their strings.
-        a != PROBED_MISS || self.as_str() == other.as_str()
     }
 }
 
@@ -464,12 +437,6 @@ impl PartialOrd for Name {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-impl std::borrow::Borrow<str> for Node<Name> {
-    fn borrow(&self) -> &str {
-        self.as_str()
     }
 }
 
@@ -621,11 +588,10 @@ impl fmt::Debug for InvalidNameError {
 /// A borrowed key for looking up entries of [`Name`]-keyed
 /// [`IndexMap`s][crate::collections::IndexMap] by string.
 ///
-/// `Name` compares and hashes by its interned symbol, so such maps cannot
-/// be queried with a plain `&str` (which hashes its bytes). `NameKey`
-/// probes the symbol table read-only — no allocation, no insertion — and
-/// hashes accordingly, making it the drop-in replacement for the former
-/// `Borrow<str>`-based lookups:
+/// Interned `Name`s hash their interned pointer, so such maps cannot be
+/// queried with a plain `&str` (which hashes its bytes). `NameKey` probes
+/// the intern table read-only, with no allocation or insertion, and hashes
+/// accordingly:
 ///
 /// ```
 /// use apollo_compiler::NameKey;
@@ -640,10 +606,8 @@ pub struct NameKey<'a>(pub &'a str);
 impl std::hash::Hash for NameKey<'_> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match crate::symbol::get_symbol(self.0) {
-            Some(symbol) => state.write_u32(symbol.get()),
-            None => self.0.hash(state),
-        }
+        let interned = crate::symbol::lookup(self.0).map(str::as_ptr);
+        hash_interned_or_str(interned, self.0, state)
     }
 }
 

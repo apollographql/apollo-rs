@@ -492,13 +492,14 @@ impl std::fmt::Debug for FileId {
 static NEXT: AtomicU64 = AtomicU64::new(INITIAL);
 static INITIAL: u64 = 3;
 
-const TAG: u64 = 1 << 63;
+const TAG_SHIFT: u32 = 62;
+const TAG: u64 = 0b11 << TAG_SHIFT;
 const ID_MASK: u64 = !TAG;
 
 #[allow(clippy::assertions_on_constants)]
 const _: () = {
-    assert!(TAG == 0x8000_0000_0000_0000);
-    assert!(ID_MASK == 0x7FFF_FFFF_FFFF_FFFF);
+    assert!(TAG == 0xC000_0000_0000_0000);
+    assert!(ID_MASK == 0x3FFF_FFFF_FFFF_FFFF);
 };
 
 impl FileId {
@@ -518,7 +519,7 @@ impl FileId {
                     id: NonZeroU64::new(id).unwrap(),
                 };
             } else {
-                // Overflowing 63 bits is unlikely, but if it somehow happens
+                // Overflowing 62 bits is unlikely, but if it somehow happens
                 // reset the counter and try again.
                 //
                 // `TaggedFileId` behaving incorrectly would be a memory safety issue,
@@ -549,20 +550,19 @@ impl FileId {
 }
 
 impl TaggedFileId {
-    pub(crate) const fn pack(tag: bool, id: FileId) -> Self {
+    /// Packs a 2-bit `tag` into the high bits of `id`.
+    pub(crate) const fn pack(tag: u8, id: FileId) -> Self {
         debug_assert!((id.id.get() & TAG) == 0);
-        let tag_and_id = if tag {
-            let packed = id.id.get() | TAG;
-            // SAFETY: `id.id` was non-zero, so setting an additional bit is still non-zero
-            unsafe { NonZeroU64::new_unchecked(packed) }
-        } else {
-            id.id
-        };
+        debug_assert!(tag <= 0b11);
+        let packed = id.id.get() | ((tag as u64) << TAG_SHIFT);
+        // SAFETY: `id.id` was non-zero, so setting additional bits is still non-zero
+        let tag_and_id = unsafe { NonZeroU64::new_unchecked(packed) };
         Self { tag_and_id }
     }
 
-    pub(crate) fn tag(self) -> bool {
-        (self.tag_and_id.get() & TAG) != 0
+    #[inline]
+    pub(crate) fn tag(self) -> u8 {
+        (self.tag_and_id.get() >> TAG_SHIFT) as u8
     }
 
     pub(crate) fn file_id(self) -> FileId {
