@@ -1,3 +1,4 @@
+use apollo_compiler::name;
 use apollo_compiler::Name;
 
 /// cargo +nightly miri test --test main -- name::smoke_test
@@ -13,7 +14,6 @@ fn smoke_test() {
 
 #[test]
 fn frozen_interning_name_semantics() {
-    use apollo_compiler::NameKey;
     use std::collections::hash_map::DefaultHasher;
     use std::hash::Hash;
     use std::hash::Hasher;
@@ -42,13 +42,38 @@ fn frozen_interning_name_semantics() {
     // Mixed comparison: interned vs missed are never equal.
     assert_ne!(schema_name, miss_a);
 
-    // Maps keyed by both kinds of name work, including NameKey probes.
+    // Maps keyed by both kinds of name work.
     let mut map = apollo_compiler::collections::IndexMap::default();
     map.insert(schema_name.clone(), 1);
     map.insert(miss_a.clone(), 2);
     assert_eq!(map.get(&same), Some(&1));
     assert_eq!(map.get(&miss_b), Some(&2));
-    assert_eq!(map.get(&NameKey("frozenTestSchemaName")), Some(&1));
-    assert_eq!(map.get(&NameKey("frozenTestNotInterned")), Some(&2));
-    assert_eq!(map.get(&NameKey("frozenTestAbsent")), None);
+    assert_eq!(map.get(&name!("frozenTestSchemaName")), Some(&1));
+    assert_eq!(map.get(&name!("frozenTestNotInterned")), Some(&2));
+    assert_eq!(map.get(&name!("frozenTestAbsent")), None);
+    // Runtime strings look up through a new `Name`.
+    let dynamic = String::from("frozenTestNotInterned");
+    assert_eq!(map.get(&Name::new(&dynamic).unwrap()), Some(&2));
+
+    // Literal names are not interned and compare by string with both kinds.
+    assert_eq!(name!("frozenTestSchemaName"), schema_name);
+    assert_eq!(name!("frozenTestNotInterned"), miss_a);
+
+    // An `Arc` whose string is already interned is swapped for the table's copy.
+    let from_arc = Name::try_from(std::sync::Arc::<str>::from("frozenTestSchemaName")).unwrap();
+    assert_eq!(from_arc.as_static_str(), schema_name.as_static_str());
+    assert!(from_arc.as_static_str().is_some());
+}
+
+#[test]
+fn node_name_set_lookup() {
+    use apollo_compiler::Node;
+    // Enough entries that indexmap hashes instead of scanning linearly.
+    let mut set = apollo_compiler::collections::IndexSet::default();
+    for i in 0..16 {
+        set.insert(Node::new(Name::new(&format!("nodeSetLookup{i}")).unwrap()));
+    }
+    assert!(set.contains(&name!("nodeSetLookup3")));
+    assert!(set.contains(&Node::new(name!("nodeSetLookup3"))));
+    assert!(!set.contains(&name!("nodeSetLookup16")));
 }

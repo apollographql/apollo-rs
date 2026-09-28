@@ -434,7 +434,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let directives: Vec<_> = schema
-        .get_scalar("URL")
+        .get_scalar(&name!("URL"))
         .unwrap()
         .directives
         .iter()
@@ -459,7 +459,12 @@ enum Pet {
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let enum_values: Vec<_> = schema.get_enum("Pet").unwrap().values.keys().collect();
+    let enum_values: Vec<_> = schema
+        .get_enum(&name!("Pet"))
+        .unwrap()
+        .values
+        .keys()
+        .collect();
     assert_eq!(enum_values, ["CAT", "DOG", "FOX"]);
 }
 
@@ -489,11 +494,11 @@ type SearchQuery {
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let union_type = schema.get_union("SearchResult").unwrap();
+    let union_type = schema.get_union(&name!("SearchResult")).unwrap();
     let union_members: Vec<_> = union_type.members.iter().collect();
     assert_eq!(union_members, ["Photo", "Person"]);
 
-    let photo_object = schema.get_object("Person").unwrap();
+    let photo_object = schema.get_object(&name!("Person")).unwrap();
 
     let fields: Vec<_> = photo_object.fields.keys().collect();
     assert_eq!(fields, ["name", "age"])
@@ -515,8 +520,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let locations: Vec<_> = schema.directive_definitions
-        [&apollo_compiler::NameKey("delegateField")]
+    let locations: Vec<_> = schema.directive_definitions[&name!("delegateField")]
         .locations
         .iter()
         .map(|loc| loc.name())
@@ -544,7 +548,7 @@ input Point2D {
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
     let fields: Vec<_> = schema
-        .get_input_object("Point2D")
+        .get_input_object(&name!("Point2D"))
         .unwrap()
         .fields
         .keys()
@@ -570,7 +574,7 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let book_obj = schema.get_object("Book").unwrap();
+    let book_obj = schema.get_object(&name!("Book")).unwrap();
 
     let directive_names: Vec<_> = book_obj.directives.iter().map(|d| &d.name).collect();
     assert_eq!(directive_names, ["directiveA", "directiveB"]);
@@ -598,7 +602,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let person = schema.get_object("Person").unwrap();
+    let person = schema.get_object(&name!("Person")).unwrap();
 
     let field_ty_directive: Vec<_> = person
         .fields
@@ -647,7 +651,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
     let schema = Schema::parse_and_validate(input, "document.graphql").unwrap();
 
-    let person = schema.get_input_object("Person").unwrap();
+    let person = schema.get_input_object(&name!("Person")).unwrap();
 
     let field_ty_directive: Vec<_> = person
         .fields
@@ -774,7 +778,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
     let (result1, result2) = std::thread::scope(|scope| {
         let thread1 = scope.spawn(|| {
-            assert!(schema.get_object("Query").is_some());
+            assert!(schema.get_object(&name!("Query")).is_some());
         });
         let thread2 = scope.spawn(|| {
             assert_eq!(

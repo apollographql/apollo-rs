@@ -39,7 +39,7 @@ pub(crate) fn type_def<'a>(info: &'a ResolveInfo<'a>, name: &str) -> ResolvedVal
     ResolvedValue::nullable_object(
         info.schema()
             .types
-            .get(&crate::name::NameKey(name))
+            .get(&Name::new_unchecked(name))
             .map(|def| TypeDefResolver { def }),
     )
 }
@@ -126,7 +126,7 @@ impl ObjectValue for TypeDefResolver<'_> {
                 Ok(ResolvedValue::list($names.filter_map(move |name| {
                     schema
                         .types
-                        .get(&crate::name::NameKey(name.as_str()))
+                        .get::<Name>(name)
                         .map(move |def| ResolvedValue::object(TypeDefResolver { def }))
                 })))
             };

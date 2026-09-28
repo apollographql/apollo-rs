@@ -1,3 +1,4 @@
+use apollo_compiler::name;
 use apollo_compiler::Schema;
 
 fn validate_schema(schema: Schema) {
@@ -31,10 +32,7 @@ fn test_orphan_extensions() {
     // By default, orphan extensions are errors:
     let invalid = Schema::parse_and_validate(input, "schema.graphql").unwrap_err();
     assert!(!invalid.partial.schema_definition.directives.has("dir"));
-    assert!(!invalid
-        .partial
-        .types
-        .contains_key(&apollo_compiler::NameKey("Obj")));
+    assert!(!invalid.partial.types.contains_key(&name!("Obj")));
     let err = invalid.errors.to_string();
     assert!(
         err.contains("schema extension without a schema definition"),
@@ -52,9 +50,7 @@ fn test_orphan_extensions() {
         .build()
         .unwrap();
     assert!(schema2.schema_definition.directives.has("dir"));
-    assert!(schema2.types[&apollo_compiler::NameKey("Obj")]
-        .directives()
-        .has("dir"));
+    assert!(schema2.types[&name!("Obj")].directives().has("dir"));
     validate_schema(schema2);
 }
 
@@ -186,7 +182,7 @@ fn test_orphan_directive_extension() {
     assert!(!invalid
         .partial
         .directive_definitions
-        .contains_key(&apollo_compiler::NameKey("custom")));
+        .contains_key(&name!("custom")));
     let err = invalid.errors.to_string();
     assert!(
         err.contains("directive extension for undefined directive `@custom`"),
@@ -218,11 +214,9 @@ fn test_directive_extension_extends_matching_definition() {
     let schema = Schema::parse_and_validate(input, "schema.graphql")
         .unwrap()
         .into_inner();
-    assert!(
-        schema.directive_definitions[&apollo_compiler::NameKey("custom")]
-            .directives
-            .has("dir")
-    );
+    assert!(schema.directive_definitions[&name!("custom")]
+        .directives
+        .has("dir"));
     validate_schema(schema);
 }
 
@@ -239,7 +233,7 @@ fn test_orphan_extensions_kind_mismatch() {
         .parse(input, "schema.graphql")
         .build()
         .unwrap_err();
-    let type_def = &invalid.partial.types[&apollo_compiler::NameKey("T")];
+    let type_def = &invalid.partial.types[&name!("T")];
     assert!(type_def.is_object());
     assert_eq!(type_def.directives().get_all("dir").count(), 1);
     let err = invalid.errors.to_string();
@@ -262,7 +256,7 @@ fn test_orphan_extension_preserves_source_location() {
         .build()
         .unwrap();
 
-    let type_def = &schema.types[&apollo_compiler::NameKey("T")];
+    let type_def = &schema.types[&name!("T")];
     let apollo_compiler::schema::ExtendedType::Object(obj) = type_def else {
         panic!("expected object type");
     };
