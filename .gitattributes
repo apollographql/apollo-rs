@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto eol=lf
+
+# Treat fuzz corpora as binary files
+fuzz/corpus/** binary
