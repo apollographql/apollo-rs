@@ -6,6 +6,7 @@ mod one_of;
 mod operation;
 mod recursion;
 mod types;
+mod unbreakable_cycle;
 mod variable;
 
 use apollo_compiler::ast;

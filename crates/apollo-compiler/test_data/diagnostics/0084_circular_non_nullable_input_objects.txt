@@ -1,4 +1,4 @@
-Error: `First` input object cannot reference itself
+Error: `First` input object cannot be constructed because of an unbreakable cycle
     ╭─[ 0084_circular_non_nullable_input_objects.graphql:6:1 ]
     │
   6 │ ╭─▶ input First {
@@ -11,21 +11,21 @@ Error: `First` input object cannot reference itself
     │
   7 │   second: Second!
     │   ───────┬───────  
-    │          ╰───────── `First` references `second` here...
+    │          ╰───────── `First` references `Second` here...
     │ 
  12 │   third: Third!
     │   ──────┬──────  
-    │         ╰──────── `second` references `third` here...
+    │         ╰──────── `Second` references `Third` here...
     │ 
  17 │   fourth: Fourth!
     │   ───────┬───────  
-    │          ╰───────── `third` references `fourth` here...
+    │          ╰───────── `Third` references `Fourth` here...
     │ 
  22 │   first: First!
     │   ──────┬──────  
-    │         ╰──────── `fourth` circularly references `First` here
+    │         ╰──────── `Fourth` circularly references `First` here
 ────╯
-Error: `Second` input object cannot reference itself
+Error: `Second` input object cannot be constructed because of an unbreakable cycle
     ╭─[ 0084_circular_non_nullable_input_objects.graphql:11:1 ]
     │
  11 │ ╭─▶ input Second {
@@ -38,23 +38,23 @@ Error: `Second` input object cannot reference itself
     │
  12 │   third: Third!
     │   ──────┬──────  
-    │         ╰──────── `Second` references `third` here...
+    │         ╰──────── `Second` references `Third` here...
     │ 
  17 │   fourth: Fourth!
     │   ───────┬───────  
-    │          ╰───────── `third` references `fourth` here...
+    │          ╰───────── `Third` references `Fourth` here...
     │ 
  22 │   first: First!
     │   ──────┬──────  
-    │         ╰──────── `fourth` references `first` here...
+    │         ╰──────── `Fourth` references `First` here...
     │
     ├─[ 0084_circular_non_nullable_input_objects.graphql:11:1 ]
     │
   7 │   second: Second!
     │   ───────┬───────  
-    │          ╰───────── `first` circularly references `Second` here
+    │          ╰───────── `First` circularly references `Second` here
 ────╯
-Error: `Third` input object cannot reference itself
+Error: `Third` input object cannot be constructed because of an unbreakable cycle
     ╭─[ 0084_circular_non_nullable_input_objects.graphql:16:1 ]
     │
  16 │ ╭─▶ input Third {
@@ -67,23 +67,23 @@ Error: `Third` input object cannot reference itself
     │
  17 │   fourth: Fourth!
     │   ───────┬───────  
-    │          ╰───────── `Third` references `fourth` here...
+    │          ╰───────── `Third` references `Fourth` here...
     │ 
  22 │   first: First!
     │   ──────┬──────  
-    │         ╰──────── `fourth` references `first` here...
+    │         ╰──────── `Fourth` references `First` here...
     │
     ├─[ 0084_circular_non_nullable_input_objects.graphql:16:1 ]
     │
   7 │   second: Second!
     │   ───────┬───────  
-    │          ╰───────── `first` references `second` here...
+    │          ╰───────── `First` references `Second` here...
     │ 
  12 │   third: Third!
     │   ──────┬──────  
-    │         ╰──────── `second` circularly references `Third` here
+    │         ╰──────── `Second` circularly references `Third` here
 ────╯
-Error: `Fourth` input object cannot reference itself
+Error: `Fourth` input object cannot be constructed because of an unbreakable cycle
     ╭─[ 0084_circular_non_nullable_input_objects.graphql:21:1 ]
     │
  21 │ ╭─▶ input Fourth {
@@ -96,20 +96,20 @@ Error: `Fourth` input object cannot reference itself
     │
  22 │   first: First!
     │   ──────┬──────  
-    │         ╰──────── `Fourth` references `first` here...
+    │         ╰──────── `Fourth` references `First` here...
     │
     ├─[ 0084_circular_non_nullable_input_objects.graphql:21:1 ]
     │
   7 │   second: Second!
     │   ───────┬───────  
-    │          ╰───────── `first` references `second` here...
+    │          ╰───────── `First` references `Second` here...
     │ 
  12 │   third: Third!
     │   ──────┬──────  
-    │         ╰──────── `second` references `third` here...
+    │         ╰──────── `Second` references `Third` here...
     │ 
  17 │   fourth: Fourth!
     │   ───────┬───────  
-    │          ╰───────── `third` circularly references `Fourth` here
+    │          ╰───────── `Third` circularly references `Fourth` here
 ────╯
 

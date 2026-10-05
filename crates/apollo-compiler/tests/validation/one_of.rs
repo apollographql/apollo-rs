@@ -193,7 +193,7 @@ fn invalid_recursive_oneof_self_reference() {
     .errors;
 
     let expected = expect![[r#"
-        Error: `A` input object cannot reference itself
+        Error: `A` input object cannot be constructed because of an unbreakable cycle
            ╭─[ schema.graphql:3:9 ]
            │
          3 │ ╭─▶         input A @oneOf {
@@ -230,7 +230,7 @@ fn invalid_recursive_oneof_mutual_reference() {
     .errors;
 
     let expected = expect![[r#"
-        Error: `A` input object cannot reference itself
+        Error: `A` input object cannot be constructed because of an unbreakable cycle
            ╭─[ schema.graphql:3:9 ]
            │
          3 │ ╭─▶         input A @oneOf {
@@ -243,13 +243,13 @@ fn invalid_recursive_oneof_mutual_reference() {
            │
          4 │             b: B
            │             ──┬─  
-           │               ╰─── `A` references `b` here...
+           │               ╰─── `A` references `B` here...
            │ 
          7 │             a: A
            │             ──┬─  
-           │               ╰─── `b` circularly references `A` here
+           │               ╰─── `B` circularly references `A` here
         ───╯
-        Error: `B` input object cannot reference itself
+        Error: `B` input object cannot be constructed because of an unbreakable cycle
            ╭─[ schema.graphql:6:9 ]
            │
          6 │ ╭─▶         input B @oneOf {
@@ -262,13 +262,13 @@ fn invalid_recursive_oneof_mutual_reference() {
            │
          7 │             a: A
            │             ──┬─  
-           │               ╰─── `B` references `a` here...
+           │               ╰─── `B` references `A` here...
            │
            ├─[ schema.graphql:6:9 ]
            │
          4 │             b: B
            │             ──┬─  
-           │               ╰─── `a` circularly references `B` here
+           │               ╰─── `A` circularly references `B` here
         ───╯
     "#]];
     expected.assert_eq(&errors.to_string());
@@ -294,7 +294,7 @@ fn invalid_recursive_oneof_mixed_with_nonnull() {
     .errors;
 
     let expected = expect![[r#"
-        Error: `A` input object cannot reference itself
+        Error: `A` input object cannot be constructed because of an unbreakable cycle
            ╭─[ schema.graphql:3:9 ]
            │
          3 │ ╭─▶         input A @oneOf {
@@ -307,13 +307,13 @@ fn invalid_recursive_oneof_mixed_with_nonnull() {
            │
          4 │             b: B
            │             ──┬─  
-           │               ╰─── `A` references `b` here...
+           │               ╰─── `A` references `B` here...
            │ 
          7 │             a: A!
            │             ──┬──  
-           │               ╰──── `b` circularly references `A` here
+           │               ╰──── `B` circularly references `A` here
         ───╯
-        Error: `B` input object cannot reference itself
+        Error: `B` input object cannot be constructed because of an unbreakable cycle
            ╭─[ schema.graphql:6:9 ]
            │
          6 │ ╭─▶         input B {
@@ -326,13 +326,13 @@ fn invalid_recursive_oneof_mixed_with_nonnull() {
            │
          7 │             a: A!
            │             ──┬──  
-           │               ╰──── `B` references `a` here...
+           │               ╰──── `B` references `A` here...
            │
            ├─[ schema.graphql:6:9 ]
            │
          4 │             b: B
            │             ──┬─  
-           │               ╰─── `a` circularly references `B` here
+           │               ╰─── `A` circularly references `B` here
         ───╯
     "#]];
     expected.assert_eq(&errors.to_string());
@@ -369,35 +369,9 @@ fn invalid_recursive_oneof_three_way_cycle() {
 
     for name in ["X", "Y", "Z"] {
         assert!(
-            errors.contains(&format!("`{name}` input object cannot reference itself")),
-            "expected an error for `{name}`, got:\n{errors}"
-        );
-    }
-}
-
-#[test]
-fn invalid_oneof_leading_only_into_cycle_elsewhere() {
-    // `Entry` is not part of the cycle, but every field leads into the
-    // unbreakable `A <-> B` cycle, so no value of `Entry` can be constructed.
-    let errors = Schema::parse_and_validate(
-        r#"
-        type Query { f: String }
-        input Entry @oneOf {
-            a: A
-            b: B
-        }
-        input A { b: B! }
-        input B { a: A! }
-        "#,
-        "schema.graphql",
-    )
-    .expect_err("@oneOf with every field leading into a cycle should fail")
-    .errors
-    .to_string();
-
-    for name in ["Entry", "A", "B"] {
-        assert!(
-            errors.contains(&format!("`{name}` input object cannot reference itself")),
+            errors.contains(&format!(
+                "`{name}` input object cannot be constructed because of an unbreakable cycle"
+            )),
             "expected an error for `{name}`, got:\n{errors}"
         );
     }
