@@ -20,7 +20,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation -->
 # [x.x.x] (unreleased) - 2026-mm-dd
 
+## Features
+
+- **Generate empty selection sets - [tninesling], [pull/1118]**
+
+  The September 2026 specification allows empty selection sets
+  ([graphql-spec#1227]). Generated selection sets now have zero to five
+  selections, covering operations, fragments, inline fragments, and fields of
+  composite type. Subscription operations still get exactly one root field.
+
 ## Maintenance
+
+- **Adapt to optional field subselections - [tninesling], [pull/1116]**
+
+  Follows apollo-compiler's change of `Field.selection_set` to an `Option`.
+  The response builder returns `{}` for a field with an empty subselection.
 
 - **Adapt to directives on directive definitions - [TylerBloom], [pull/1111]**
 
@@ -30,7 +44,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   skips `extend directive` when converting a parsed document.
 
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
+[pull/1116]: https://github.com/apollographql/apollo-rs/pull/1116
+[pull/1118]: https://github.com/apollographql/apollo-rs/pull/1118
+[graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
+[tninesling]: https://github.com/tninesling
 
 # [0.17.0-beta.1](https://crates.io/crates/apollo-smith/0.17.0-beta.1) - 2026-08-28
 

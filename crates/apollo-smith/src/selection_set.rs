@@ -109,7 +109,7 @@ impl DocumentBuilder<'_> {
         let mut exclude_names = Vec::new();
         let selection_nb = self.stack.last().map(|o| o.fields_def().len()).unwrap_or(0);
 
-        let selections = (0..self.u.int_in_range(1..=5)?)
+        let selections = (0..self.u.int_in_range(0..=5)?)
             .map(|_| {
                 let index = self.u.int_in_range(0..=selection_nb)?;
                 self.selection(index, &mut exclude_names)
