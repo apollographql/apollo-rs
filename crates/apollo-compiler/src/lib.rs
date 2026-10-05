@@ -12,6 +12,7 @@ pub mod collections;
 pub mod coordinate;
 pub mod diagnostic;
 pub mod executable;
+mod intern;
 pub mod introspection;
 mod name;
 mod node;
@@ -20,7 +21,6 @@ pub mod request;
 pub mod resolvers;
 pub mod response;
 pub mod schema;
-mod symbol;
 pub mod validation;
 
 pub use self::executable::ExecutableDocument;
@@ -40,13 +40,13 @@ pub use self::node::ExtensionId;
 /// Servers should call this once after building their schema(s) and before
 /// parsing untrusted executable documents. This bounds the table's size by
 /// the schemas' contents: hostile documents full of unique names cannot
-/// grow it. The call must happen-before any untrusted parsing begins.
+/// grow it.
 ///
 /// Later schema changes degrade gracefully: names not in the frozen table
 /// use string-based semantics, at the same cost as before interning
 /// existed.
 pub fn freeze_interning() {
-    self::symbol::freeze()
+    self::intern::freeze()
 }
 pub use self::node::Node;
 pub use self::schema::Schema;

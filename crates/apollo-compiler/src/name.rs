@@ -122,7 +122,7 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub fn new_unchecked(value: &str) -> Self {
-        match crate::symbol::intern(value) {
+        match crate::intern::intern(value) {
             Some(interned) => Self::from_interned(interned),
             // table frozen and this string isn't in it
             None => Self::from_arc_uninterned(Arc::from(value)),
@@ -154,7 +154,7 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
-        match crate::symbol::intern(&arc) {
+        match crate::intern::intern(&arc) {
             Some(interned) => Self::from_interned(interned),
             None => Self::from_arc_uninterned(arc),
         }
@@ -361,7 +361,7 @@ impl std::hash::Hash for Name {
         // the same way.
         let interned = match self.tagged_file_id.tag() {
             TAG_INTERNED => Some(self.ptr.as_ptr().cast_const()),
-            TAG_STATIC => crate::symbol::intern(self.as_str()).map(str::as_ptr),
+            TAG_STATIC => crate::intern::intern(self.as_str()).map(str::as_ptr),
             _ => None,
         };
         // A string is either in the table or not, so equal names always agree.

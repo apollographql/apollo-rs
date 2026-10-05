@@ -25,42 +25,50 @@
 use crate::collections::HashSet;
 use std::sync::LazyLock;
 use std::sync::Mutex;
+use std::sync::MutexGuard;
+use std::sync::OnceLock;
 use std::sync::PoisonError;
 
 type Table = HashSet<&'static str>;
 
-/// The table while it can still grow. After freezing it is left empty and
-/// never accessed again.
-///
-/// A mutex is used over an `RwLock` because the critical sections are
-/// small, and an `RwLock` would need both a read and a write guard to
-/// insert a new name.
-static TABLE: LazyLock<Mutex<Table>> = LazyLock::new(|| Mutex::new(HashSet::default()));
+/// The table while it can still grow, or `None` once it has moved to `FROZEN`.
+static GROWING: LazyLock<Mutex<Option<Table>>> =
+    LazyLock::new(|| Mutex::new(Some(Table::default())));
 
-/// Immutable snapshot of the table taken at freeze time, read without locking.
-static SNAPSHOT: LazyLock<Table> = LazyLock::new(|| {
-    let mut guard = TABLE.lock().unwrap_or_else(PoisonError::into_inner);
-    guard.shrink_to_fit();
-    std::mem::take(&mut *guard)
-});
+/// The table after freezing, read without locking.
+static FROZEN: OnceLock<Table> = OnceLock::new();
+
+fn lock_growing() -> MutexGuard<'static, Option<Table>> {
+    GROWING.lock().unwrap_or_else(PoisonError::into_inner)
+}
 
 /// See [`crate::freeze_interning`].
 pub(crate) fn freeze() {
-    let _ = LazyLock::force(&SNAPSHOT);
+    let mut growing = lock_growing();
+    if let Some(mut table) = growing.take() {
+        table.shrink_to_fit();
+        // Publishing before the lock is released means a thread that finds
+        // `GROWING` empty can always find `FROZEN`.
+        let _ = FROZEN.set(table);
+    }
 }
 
 /// Returns the table's copy of `value`, interning it if new. Once the
 /// table is frozen, misses return `None` and the table is not modified.
 pub(crate) fn intern(value: &str) -> Option<&'static str> {
-    if let Some(snapshot) = LazyLock::get(&SNAPSHOT) {
-        return snapshot.get(value).copied();
+    if let Some(frozen) = FROZEN.get() {
+        return frozen.get(value).copied();
     }
-    let mut guard = TABLE.lock().unwrap_or_else(PoisonError::into_inner);
-    if let Some(&name) = guard.get(value) {
+    let mut growing = lock_growing();
+    let Some(table) = growing.as_mut() else {
+        // Frozen while we waited for the lock.
+        return FROZEN.get()?.get(value).copied();
+    };
+    if let Some(&name) = table.get(value) {
         return Some(name);
     }
     let name: &'static str = Box::leak(Box::from(value));
-    guard.insert(name);
+    table.insert(name);
     Some(name)
 }
 
@@ -68,23 +76,8 @@ pub(crate) fn intern(value: &str) -> Option<&'static str> {
 mod tests {
     use super::*;
 
-    fn table_len() -> usize {
-        TABLE.lock().unwrap_or_else(PoisonError::into_inner).len()
-    }
-
-    #[test]
-    fn freeze_stops_growth_but_keeps_hits() {
-        let interned = intern("freezeTestSchemaName").expect("not frozen yet");
-        freeze();
-        let hit = intern("freezeTestSchemaName").expect("interned before freeze");
-        assert!(std::ptr::eq(hit, interned));
-        let len_before = table_len();
-        for i in 0..100 {
-            assert_eq!(intern(&format!("freezeTestHostileAlias{i}")), None);
-        }
-        assert_eq!(table_len(), len_before);
-    }
-
+    // Freezing is tested in `tests/freeze.rs`, since it would affect every
+    // other test sharing this process.
     #[test]
     fn concurrent_interning_converges() {
         let ptrs: Vec<Vec<usize>> = std::thread::scope(|scope| {

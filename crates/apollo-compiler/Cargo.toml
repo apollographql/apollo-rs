@@ -71,3 +71,10 @@ name = "main"
 # These need to run in a process where no other test runs concurrently
 [[test]]
 name = "snapshot_tests"
+
+# Freezing interning is process-wide, so each of these gets its own process
+[[test]]
+name = "freeze_race"
+
+[[test]]
+name = "freeze_semantics"
