@@ -130,9 +130,7 @@ impl Name {
     }
 
     fn from_interned(interned: &'static str) -> Self {
-        let mut name = Self::new_static_unchecked(interned);
-        name.tagged_file_id = TaggedFileId::pack(TAG_INTERNED, FileId::NONE);
-        name
+        Self::from_static_with_tag(interned, TAG_INTERNED)
     }
 
     fn from_arc_uninterned(arc: Arc<str>) -> Self {
@@ -166,6 +164,10 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub const fn new_static_unchecked(value: &'static str) -> Self {
+        Self::from_static_with_tag(value, TAG_STATIC)
+    }
+
+    const fn from_static_with_tag(value: &'static str, tag: u8) -> Self {
         let ptr = value.as_ptr().cast_mut();
         // SAFETY: `&'static str` is always non-null
         let ptr = unsafe { NonNull::new_unchecked(ptr) };
@@ -173,7 +175,7 @@ impl Name {
             ptr,
             len: Self::new_len(value),
             start_offset: 0,
-            tagged_file_id: TaggedFileId::pack(TAG_STATIC, FileId::NONE),
+            tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
             phantom: PhantomData,
         }
     }
@@ -232,8 +234,9 @@ impl Name {
         unsafe { std::str::from_utf8_unchecked(slice.as_ref()) }
     }
 
-    /// If this `Name` was created with [`new_static`][Self::new_static]
-    /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
+    /// If this `Name` was created with [`new_static`][Self::new_static],
+    /// the [`name!`][crate::name!] macro, or from an interned string,
+    /// return the string with `'static` lifetime.
     ///
     /// Returns `Some` if and only if [`to_cloned_arc`][Self::to_cloned_arc] returns `None`.
     pub fn as_static_str(&self) -> Option<&'static str> {
@@ -356,15 +359,16 @@ impl Drop for Name {
 impl std::hash::Hash for Name {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        // Location is not included. Static names equal an interned name
-        // with the same string, so they must look up its pointer to hash
-        // the same way.
+        // Location is not included. Names that are equal must hash the same
+        // whatever their tag, so every name whose string is in the table
+        // hashes the table's pointer. `name!` literals can't be interned at
+        // construction because it is `const`, so they look it up here.
         let interned = match self.tagged_file_id.tag() {
             TAG_INTERNED => Some(self.ptr.as_ptr().cast_const()),
             TAG_STATIC => crate::intern::intern(self.as_str()).map(str::as_ptr),
+            // Only created for strings missing from the frozen table.
             _ => None,
         };
-        // A string is either in the table or not, so equal names always agree.
         match interned {
             Some(ptr) => state.write_usize(ptr as usize),
             None => self.as_str().hash(state),
