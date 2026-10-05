@@ -27,8 +27,11 @@ the 2-bit tag that already distinguished `Arc` from `&'static str`.
 - Measured on supergraph-smith's synthetic scale graphs (20-275
   subgraphs): composition -3 to -6%, planner construction -4 to -11%,
   per-operation planning flat on three of four graphs and +3 to +7% on the
-  largest. Hashing `name!` literals by string instead of by table pointer
-  measured the same on every graph.
+  largest. On its large cases (380-1300 object types, 27-188 subgraphs,
+  operations up to 250KB): composition -3%, planner construction -1 to
+  -5%, planning -1%, allocations unchanged (geomeans over 9 graphs and 80
+  plans). Hashing `name!` literals by string instead of by table pointer
+  measured within noise of pointer hashing throughout.
 
 Earlier candidates (the symbol table with a cached `AtomicU32` in `Name`,
 the arc-interner, and the `HashedName` migration) are recorded below.
