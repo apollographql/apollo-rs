@@ -310,47 +310,49 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Pet",
-                                    selections: [
-                                        FragmentSpread(
-                                            1795..1810 @32 FragmentSpread {
-                                                fragment_name: "dogFragment",
-                                                directives: [],
-                                            },
-                                        ),
-                                        FragmentSpread(
-                                            1815..1848 @32 FragmentSpread {
-                                                fragment_name: "interfaceWithinObjectFragment",
-                                                directives: [],
-                                            },
-                                        ),
-                                        FragmentSpread(
-                                            1853..1880 @32 FragmentSpread {
-                                                fragment_name: "unionWithObjectFragment",
-                                                directives: [],
-                                            },
-                                        ),
-                                        FragmentSpread(
-                                            1885..1900 @32 FragmentSpread {
-                                                fragment_name: "petFragment",
-                                                directives: [],
-                                            },
-                                        ),
-                                        FragmentSpread(
-                                            1905..1925 @32 FragmentSpread {
-                                                fragment_name: "catOrDogFragment",
-                                                directives: [],
-                                            },
-                                        ),
-                                        FragmentSpread(
-                                            1930..1952 @32 FragmentSpread {
-                                                fragment_name: "unionWithInterface",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Pet",
+                                        selections: [
+                                            FragmentSpread(
+                                                1795..1810 @32 FragmentSpread {
+                                                    fragment_name: "dogFragment",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            FragmentSpread(
+                                                1815..1848 @32 FragmentSpread {
+                                                    fragment_name: "interfaceWithinObjectFragment",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            FragmentSpread(
+                                                1853..1880 @32 FragmentSpread {
+                                                    fragment_name: "unionWithObjectFragment",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            FragmentSpread(
+                                                1885..1900 @32 FragmentSpread {
+                                                    fragment_name: "petFragment",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            FragmentSpread(
+                                                1905..1925 @32 FragmentSpread {
+                                                    fragment_name: "catOrDogFragment",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            FragmentSpread(
+                                                1930..1952 @32 FragmentSpread {
+                                                    fragment_name: "unionWithInterface",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                         Field(
@@ -368,63 +370,62 @@ ExecutableDocument {
                                 name: "resource",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Resource",
-                                    selections: [
-                                        FragmentSpread(
-                                            1974..1999 @32 FragmentSpread {
-                                                fragment_name: "interfaceWithInterface",
-                                                directives: [],
-                                            },
-                                        ),
-                                        InlineFragment(
-                                            2004..2062 @32 InlineFragment {
-                                                type_condition: None,
-                                                directives: [
-                                                    2008..2023 @32 Directive {
-                                                        name: "skip",
-                                                        arguments: [
-                                                            2014..2022 @32 Argument {
-                                                                name: "if",
-                                                                value: 2018..2022 @32 Boolean(
-                                                                    true,
-                                                                ),
-                                                            },
-                                                        ],
-                                                    },
-                                                ],
-                                                selection_set: SelectionSet {
-                                                    ty: "Resource",
-                                                    selections: [
-                                                        Field(
-                                                            2032..2056 @32 Field {
-                                                                definition: 1398..1409 @32 FieldDefinition {
-                                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Resource",
+                                        selections: [
+                                            FragmentSpread(
+                                                1974..1999 @32 FragmentSpread {
+                                                    fragment_name: "interfaceWithInterface",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            InlineFragment(
+                                                2004..2062 @32 InlineFragment {
+                                                    type_condition: None,
+                                                    directives: [
+                                                        2008..2023 @32 Directive {
+                                                            name: "skip",
+                                                            arguments: [
+                                                                2014..2022 @32 Argument {
+                                                                    name: "if",
+                                                                    value: 2018..2022 @32 Boolean(
+                                                                        true,
+                                                                    ),
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                    selection_set: SelectionSet {
+                                                        ty: "Resource",
+                                                        selections: [
+                                                            Field(
+                                                                2032..2056 @32 Field {
+                                                                    definition: 1398..1409 @32 FieldDefinition {
+                                                                        description: None,
+                                                                        name: "url",
+                                                                        arguments: [],
+                                                                        ty: Named(
+                                                                            "String",
+                                                                        ),
+                                                                        directives: [],
+                                                                    },
+                                                                    alias: Some(
+                                                                        "urlInInlineFragment",
+                                                                    ),
                                                                     name: "url",
                                                                     arguments: [],
-                                                                    ty: Named(
-                                                                        "String",
-                                                                    ),
                                                                     directives: [],
+                                                                    selection_set: None,
                                                                 },
-                                                                alias: Some(
-                                                                    "urlInInlineFragment",
-                                                                ),
-                                                                name: "url",
-                                                                arguments: [],
-                                                                directives: [],
-                                                                selection_set: SelectionSet {
-                                                                    ty: "String",
-                                                                    selections: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                    ],
+                                                            ),
+                                                        ],
+                                                    },
                                                 },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -464,10 +465,7 @@ ExecutableDocument {
                                             name: "barkVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -499,10 +497,7 @@ ExecutableDocument {
                             name: "name",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],
@@ -555,10 +550,7 @@ ExecutableDocument {
                                             name: "meowVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -606,10 +598,7 @@ ExecutableDocument {
                             name: "name",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                     InlineFragment(
@@ -636,10 +625,7 @@ ExecutableDocument {
                                             name: "barkVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -680,10 +666,7 @@ ExecutableDocument {
                                             name: "meowVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -740,10 +723,7 @@ ExecutableDocument {
                                             name: "barkVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -791,10 +771,7 @@ ExecutableDocument {
                             name: "url",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

@@ -87,7 +87,7 @@ impl From<Field> for ast::Field {
             name: x.name.into(),
             directives: Directive::to_ast(x.directives),
             arguments: x.args.into_iter().map(|x| Node::new(x.into())).collect(),
-            selection_set: x.selection_set.map(Into::into).unwrap_or_default(),
+            selection_set: x.selection_set.map(Into::into),
         }
     }
 }

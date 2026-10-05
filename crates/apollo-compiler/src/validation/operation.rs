@@ -296,7 +296,9 @@ where
         }
         match selection {
             executable::Selection::Field(field) => {
-                walk_defers_in_selection_set(&field.selection_set, f, guard.increment()?)?;
+                if let Some(selection_set) = &field.selection_set {
+                    walk_defers_in_selection_set(selection_set, f, guard.increment()?)?;
+                }
             }
             executable::Selection::InlineFragment(frag) => {
                 walk_defers_in_selection_set(&frag.selection_set, f, guard.increment()?)?;
@@ -390,13 +392,15 @@ fn forbid_unconditional_defer<'doc>(
         }
         match selection {
             executable::Selection::Field(field) => {
-                forbid_unconditional_defer(
-                    document,
-                    &field.selection_set,
-                    diagnostics,
-                    visited_fragments,
-                    guard.increment()?,
-                )?;
+                if let Some(selection_set) = &field.selection_set {
+                    forbid_unconditional_defer(
+                        document,
+                        selection_set,
+                        diagnostics,
+                        visited_fragments,
+                        guard.increment()?,
+                    )?;
+                }
             }
             executable::Selection::InlineFragment(inline) => {
                 forbid_unconditional_defer(

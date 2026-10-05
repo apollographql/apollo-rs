@@ -701,8 +701,7 @@ impl Convert for cst::Field {
             directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
                 x.directives()
             })),
-            // Use an empty Vec for a field without sub-selections
-            selection_set: self.selection_set().convert(file_id)?.unwrap_or_default(),
+            selection_set: self.selection_set().convert(file_id)?,
         })
     }
 }

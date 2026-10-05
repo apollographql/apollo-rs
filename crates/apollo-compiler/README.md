@@ -164,6 +164,8 @@ let in_stock_field = &get_product_op
     .find(|f| f.name == "topProducts")
     .expect("topProducts field does not exist")
     .selection_set
+    .as_ref()
+    .expect("topProducts has a subselection")
     .fields()
     .find(|f| f.name == "inStock")
     .expect("inStock field does not exist")

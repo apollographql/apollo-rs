@@ -309,7 +309,9 @@ pub(crate) fn validate_fragment_cycles(
                     detect_fragment_cycles(document, &inline.selection_set, path_from_root, seen)?;
                 }
                 executable::Selection::Field(field) => {
-                    detect_fragment_cycles(document, &field.selection_set, path_from_root, seen)?;
+                    if let Some(selection_set) = &field.selection_set {
+                        detect_fragment_cycles(document, selection_set, path_from_root, seen)?;
+                    }
                 }
             }
         }

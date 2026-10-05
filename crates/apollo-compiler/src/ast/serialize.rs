@@ -696,7 +696,7 @@ impl Field {
         state.write(name)?;
         serialize_arguments(state, arguments)?;
         directives.serialize_impl(state)?;
-        if !selection_set.is_empty() {
+        if let Some(selection_set) = selection_set {
             state.write(" ")?;
             curly_brackets_space_separated(state, selection_set, |state, sel| {
                 sel.serialize_impl(state)

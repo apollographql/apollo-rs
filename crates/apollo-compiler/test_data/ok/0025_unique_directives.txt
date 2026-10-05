@@ -124,10 +124,7 @@ ExecutableDocument {
                                         arguments: [],
                                     },
                                 ],
-                                selection_set: SelectionSet {
-                                    ty: "Int",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                         Field(
@@ -150,10 +147,7 @@ ExecutableDocument {
                                         arguments: [],
                                     },
                                 ],
-                                selection_set: SelectionSet {
-                                    ty: "Int",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                         Field(
@@ -176,10 +170,7 @@ ExecutableDocument {
                                         arguments: [],
                                     },
                                 ],
-                                selection_set: SelectionSet {
-                                    ty: "Int",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                     ],

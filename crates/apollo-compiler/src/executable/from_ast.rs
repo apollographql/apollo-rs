@@ -316,7 +316,7 @@ impl SelectionSet {
                         .push(ast.alias.clone().unwrap_or_else(|| ast.name.clone()));
                     match field_def_result {
                         Ok(field_def) => {
-                            let leaf = ast.selection_set.is_empty();
+                            let leaf = ast.selection_set.is_none();
                             let type_name = field_def.ty.inner_named_type();
                             match schema
                                 .as_ref()
@@ -344,10 +344,10 @@ impl SelectionSet {
                                             .with_opt_alias(ast.alias.clone())
                                             .with_arguments(ast.arguments.iter().cloned())
                                             .with_directives(ast.directives.iter().cloned())
-                                            .with_ast_selections(
+                                            .with_opt_ast_selections(
                                                 schema,
                                                 errors,
-                                                &ast.selection_set,
+                                                ast.selection_set.as_deref(),
                                             ),
                                     ),
                                 ),
@@ -411,14 +411,16 @@ impl SelectionSet {
 }
 
 impl Field {
-    fn with_ast_selections(
+    fn with_opt_ast_selections(
         mut self,
         schema: Option<&Schema>,
         errors: &mut BuildErrors,
-        ast_selections: &[ast::Selection],
+        ast_selections: Option<&[ast::Selection]>,
     ) -> Self {
-        self.selection_set
-            .extend_from_ast(schema, errors, ast_selections);
+        if let Some(ast_selections) = ast_selections {
+            self.selection_set_mut()
+                .extend_from_ast(schema, errors, ast_selections);
+        }
         self
     }
 }

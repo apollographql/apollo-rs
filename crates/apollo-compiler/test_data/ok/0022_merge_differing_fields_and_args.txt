@@ -285,17 +285,19 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Pet",
-                                    selections: [
-                                        FragmentSpread(
-                                            450..472 @24 FragmentSpread {
-                                                fragment_name: "safeDifferingFields",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Pet",
+                                        selections: [
+                                            FragmentSpread(
+                                                450..472 @24 FragmentSpread {
+                                                    fragment_name: "safeDifferingFields",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -327,17 +329,19 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Pet",
-                                    selections: [
-                                        FragmentSpread(
-                                            516..536 @24 FragmentSpread {
-                                                fragment_name: "safeDifferingArgs",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Pet",
+                                        selections: [
+                                            FragmentSpread(
+                                                516..536 @24 FragmentSpread {
+                                                    fragment_name: "safeDifferingArgs",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -369,17 +373,19 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Pet",
-                                    selections: [
-                                        FragmentSpread(
-                                            577..601 @24 FragmentSpread {
-                                                fragment_name: "safeDifferingArgOrder",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Pet",
+                                        selections: [
+                                            FragmentSpread(
+                                                577..601 @24 FragmentSpread {
+                                                    fragment_name: "safeDifferingArgOrder",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -421,10 +427,7 @@ ExecutableDocument {
                                             name: "barkVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -457,10 +460,7 @@ ExecutableDocument {
                                             name: "meowVolume",
                                             arguments: [],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -518,10 +518,7 @@ ExecutableDocument {
                                                 },
                                             ],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Boolean",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -569,10 +566,7 @@ ExecutableDocument {
                                                 },
                                             ],
                                             directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Boolean",
-                                                selections: [],
-                                            },
+                                            selection_set: None,
                                         },
                                     ),
                                 ],
@@ -636,10 +630,7 @@ ExecutableDocument {
                                 },
                             ],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                     Field(
@@ -689,10 +680,7 @@ ExecutableDocument {
                                 },
                             ],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

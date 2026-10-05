@@ -117,32 +117,31 @@ ExecutableDocument {
                                 name: "intf",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Intf",
-                                    selections: [
-                                        Field(
-                                            93..98 @45 Field {
-                                                definition: 47..57 @45 FieldDefinition {
-                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Intf",
+                                        selections: [
+                                            Field(
+                                                93..98 @45 Field {
+                                                    definition: 47..57 @45 FieldDefinition {
+                                                        description: None,
+                                                        name: "field",
+                                                        arguments: [],
+                                                        ty: Named(
+                                                            "Int",
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                    alias: None,
                                                     name: "field",
                                                     arguments: [],
-                                                    ty: Named(
-                                                        "Int",
-                                                    ),
                                                     directives: [],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "field",
-                                                arguments: [],
-                                                directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "Int",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -174,45 +173,44 @@ ExecutableDocument {
                                 name: "intf",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Intf",
-                                    selections: [
-                                        InlineFragment(
-                                            145..166 @45 InlineFragment {
-                                                type_condition: Some(
-                                                    "Intf",
-                                                ),
-                                                directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "Intf",
-                                                    selections: [
-                                                        Field(
-                                                            159..164 @45 Field {
-                                                                definition: 47..57 @45 FieldDefinition {
-                                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Intf",
+                                        selections: [
+                                            InlineFragment(
+                                                145..166 @45 InlineFragment {
+                                                    type_condition: Some(
+                                                        "Intf",
+                                                    ),
+                                                    directives: [],
+                                                    selection_set: SelectionSet {
+                                                        ty: "Intf",
+                                                        selections: [
+                                                            Field(
+                                                                159..164 @45 Field {
+                                                                    definition: 47..57 @45 FieldDefinition {
+                                                                        description: None,
+                                                                        name: "field",
+                                                                        arguments: [],
+                                                                        ty: Named(
+                                                                            "Int",
+                                                                        ),
+                                                                        directives: [],
+                                                                    },
+                                                                    alias: None,
                                                                     name: "field",
                                                                     arguments: [],
-                                                                    ty: Named(
-                                                                        "Int",
-                                                                    ),
                                                                     directives: [],
+                                                                    selection_set: None,
                                                                 },
-                                                                alias: None,
-                                                                name: "field",
-                                                                arguments: [],
-                                                                directives: [],
-                                                                selection_set: SelectionSet {
-                                                                    ty: "Int",
-                                                                    selections: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                    ],
+                                                            ),
+                                                        ],
+                                                    },
                                                 },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],

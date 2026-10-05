@@ -171,7 +171,9 @@ pub struct Field {
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
     pub directives: DirectiveList,
-    pub selection_set: SelectionSet,
+    /// `None` for a leaf field written without braces. `Some` for `field { ... }`,
+    /// including `field {}`, which the grammar allows since the September 2026 spec.
+    pub selection_set: Option<SelectionSet>,
 }
 
 impl PartialEq for Field {
@@ -797,9 +799,9 @@ impl SelectionSet {
             while let Some(selection_set_iter) = stack.last_mut() {
                 match selection_set_iter.next() {
                     Some(Selection::Field(field)) => {
-                        if !field.selection_set.is_empty() {
+                        if let Some(selection_set) = &field.selection_set {
                             // Will be considered for the next call
-                            stack.push(field.selection_set.selections.iter())
+                            stack.push(selection_set.selections.iter())
                         }
                         // Yield one item from the `all_fields()` iterator
                         return Some(field);
@@ -909,14 +911,13 @@ impl Field {
     ///
     /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
     pub fn new(name: Name, definition: Node<schema::FieldDefinition>) -> Self {
-        let selection_set = SelectionSet::new(definition.ty.inner_named_type().clone());
         Field {
             definition,
             alias: None,
             name,
             arguments: Vec::new(),
             directives: DirectiveList::new(),
-            selection_set,
+            selection_set: None,
         }
     }
 
@@ -953,17 +954,27 @@ impl Field {
         self
     }
 
+    /// Add a selection to this field's subselection, creating the subselection if needed.
     pub fn with_selection(mut self, selection: impl Into<Selection>) -> Self {
-        self.selection_set.push(selection);
+        self.selection_set_mut().push(selection);
         self
     }
 
+    /// Add selections to this field's subselection, creating the subselection if needed.
+    ///
+    /// An empty iterator still creates the subselection, which prints as `field {}`.
     pub fn with_selections(
         mut self,
         selections: impl IntoIterator<Item = impl Into<Selection>>,
     ) -> Self {
-        self.selection_set.extend(selections);
+        self.selection_set_mut().extend(selections);
         self
+    }
+
+    /// Returns this field's subselection, creating an empty one if the field has none.
+    pub fn selection_set_mut(&mut self) -> &mut SelectionSet {
+        self.selection_set
+            .get_or_insert_with(|| SelectionSet::new(self.definition.ty.inner_named_type().clone()))
     }
 
     /// Returns the response name for this field: the alias if there is one, or the name

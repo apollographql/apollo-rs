@@ -177,10 +177,7 @@ ExecutableDocument {
                                 name: "foo",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "String",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                     ],

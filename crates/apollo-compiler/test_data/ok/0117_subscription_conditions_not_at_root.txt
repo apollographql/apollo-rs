@@ -182,98 +182,91 @@ ExecutableDocument {
                                 name: "messages",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Message",
-                                    selections: [
-                                        Field(
-                                            110..118 @46 Field {
-                                                definition: 257..273 @46 FieldDefinition {
-                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Message",
+                                        selections: [
+                                            Field(
+                                                110..118 @46 Field {
+                                                    definition: 257..273 @46 FieldDefinition {
+                                                        description: None,
+                                                        name: "username",
+                                                        arguments: [],
+                                                        ty: Named(
+                                                            "String",
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                    alias: None,
                                                     name: "username",
                                                     arguments: [],
-                                                    ty: Named(
-                                                        "String",
-                                                    ),
                                                     directives: [],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "username",
-                                                arguments: [],
-                                                directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "String",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                        Field(
-                                            127..161 @46 Field {
-                                                definition: 278..290 @46 FieldDefinition {
-                                                    description: None,
+                                            ),
+                                            Field(
+                                                127..161 @46 Field {
+                                                    definition: 278..290 @46 FieldDefinition {
+                                                        description: None,
+                                                        name: "text",
+                                                        arguments: [],
+                                                        ty: Named(
+                                                            "String",
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                    alias: None,
                                                     name: "text",
                                                     arguments: [],
-                                                    ty: Named(
-                                                        "String",
-                                                    ),
-                                                    directives: [],
+                                                    directives: [
+                                                        132..161 @46 Directive {
+                                                            name: "include",
+                                                            arguments: [
+                                                                141..160 @46 Argument {
+                                                                    name: "if",
+                                                                    value: 145..160 @46 Variable(
+                                                                        "includeContent",
+                                                                    ),
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "text",
-                                                arguments: [],
-                                                directives: [
-                                                    132..161 @46 Directive {
-                                                        name: "include",
-                                                        arguments: [
-                                                            141..160 @46 Argument {
-                                                                name: "if",
-                                                                value: 145..160 @46 Variable(
-                                                                    "includeContent",
-                                                                ),
-                                                            },
-                                                        ],
+                                            ),
+                                            Field(
+                                                170..194 @46 Field {
+                                                    definition: 295..309 @46 FieldDefinition {
+                                                        description: None,
+                                                        name: "avatar",
+                                                        arguments: [],
+                                                        ty: Named(
+                                                            "String",
+                                                        ),
+                                                        directives: [],
                                                     },
-                                                ],
-                                                selection_set: SelectionSet {
-                                                    ty: "String",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                        Field(
-                                            170..194 @46 Field {
-                                                definition: 295..309 @46 FieldDefinition {
-                                                    description: None,
+                                                    alias: None,
                                                     name: "avatar",
                                                     arguments: [],
-                                                    ty: Named(
-                                                        "String",
-                                                    ),
-                                                    directives: [],
+                                                    directives: [
+                                                        177..194 @46 Directive {
+                                                            name: "skip",
+                                                            arguments: [
+                                                                183..193 @46 Argument {
+                                                                    name: "if",
+                                                                    value: 187..193 @46 Variable(
+                                                                        "small",
+                                                                    ),
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "avatar",
-                                                arguments: [],
-                                                directives: [
-                                                    177..194 @46 Directive {
-                                                        name: "skip",
-                                                        arguments: [
-                                                            183..193 @46 Argument {
-                                                                name: "if",
-                                                                value: 187..193 @46 Variable(
-                                                                    "small",
-                                                                ),
-                                                            },
-                                                        ],
-                                                    },
-                                                ],
-                                                selection_set: SelectionSet {
-                                                    ty: "String",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],

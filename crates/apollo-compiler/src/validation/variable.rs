@@ -113,13 +113,15 @@ pub(super) fn walk_selections_with_deduped_fragments<'doc>(
             f(selection);
             match selection {
                 executable::Selection::Field(field) => {
-                    walk_selections_inner(
-                        document,
-                        &field.selection_set,
-                        seen,
-                        guard.increment()?,
-                        f,
-                    )?;
+                    if let Some(selection_set) = &field.selection_set {
+                        walk_selections_inner(
+                            document,
+                            selection_set,
+                            seen,
+                            guard.increment()?,
+                            f,
+                        )?;
+                    }
                 }
                 executable::Selection::FragmentSpread(fragment) => {
                     let new = seen.insert(&fragment.fragment_name);

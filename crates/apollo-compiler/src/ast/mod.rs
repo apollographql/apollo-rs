@@ -488,7 +488,9 @@ pub struct Field {
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
     pub directives: DirectiveList,
-    pub selection_set: Vec<Selection>,
+    /// `None` for a leaf field written without braces. `Some` with an empty
+    /// list for `field {}`, which the grammar allows since the September 2026 spec.
+    pub selection_set: Option<Vec<Selection>>,
 }
 
 impl PartialEq for Field {
