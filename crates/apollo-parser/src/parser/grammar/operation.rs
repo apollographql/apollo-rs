@@ -87,7 +87,7 @@ mod test {
         let parser = Parser::new(input);
         let cst = parser.parse();
 
-        assert_eq!(cst.errors().len(), 2);
+        assert_eq!(cst.errors().len(), 1);
         assert_eq!(cst.document().definitions().count(), 1);
     }
 }

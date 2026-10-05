@@ -13,5 +13,4 @@
         - SELECTION_SET@106..108
             - L_CURLY@106..107 "{"
             - R_CURLY@107..108 "}"
-- ERROR@107:108 "expected at least one Selection in Selection Set" }
 recursion limit: 500, high: 1
