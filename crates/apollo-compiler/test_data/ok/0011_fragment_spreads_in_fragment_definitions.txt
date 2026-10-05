@@ -136,17 +136,19 @@ ExecutableDocument {
                                 name: "foo",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Foo",
-                                    selections: [
-                                        FragmentSpread(
-                                            39..45 @13 FragmentSpread {
-                                                fragment_name: "Bar",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Foo",
+                                        selections: [
+                                            FragmentSpread(
+                                                39..45 @13 FragmentSpread {
+                                                    fragment_name: "Bar",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -177,17 +179,19 @@ ExecutableDocument {
                             name: "baz",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Baz",
-                                selections: [
-                                    FragmentSpread(
-                                        87..94 @13 FragmentSpread {
-                                            fragment_name: "Quux",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
+                            selection_set: Some(
+                                SelectionSet {
+                                    ty: "Baz",
+                                    selections: [
+                                        FragmentSpread(
+                                            87..94 @13 FragmentSpread {
+                                                fragment_name: "Quux",
+                                                directives: [],
+                                            },
+                                        ),
+                                    ],
+                                },
+                            ),
                         },
                     ),
                 ],
@@ -215,10 +219,7 @@ ExecutableDocument {
                             name: "id",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "ID",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

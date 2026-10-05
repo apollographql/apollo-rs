@@ -6,9 +6,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2026-mm-dd
 
-> Important: 2 breaking changes below, indicated by **BREAKING**
+> Important: 3 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
+
+- **Support empty selection sets - [tninesling], [pull/1116]**
+
+  The September 2026 specification allows a selection set to be empty
+  ([graphql-spec#1227]), so `{ human {} }` is valid when `human` has a
+  composite type.
+
+  - `ast::Field.selection_set` is now `Option<Vec<Selection>>` and
+    `executable::Field.selection_set` is now `Option<SelectionSet>`. `None` is
+    a leaf field written without braces; `Some` with no selections is
+    `field {}`. Code that built leaf fields with an empty selection set must
+    use `None`, otherwise the field prints as `field {}`.
+  - `executable::Field::new` creates a field with no subselection.
+    `with_selection` and `with_selections` create the subselection on first
+    use, and the new `selection_set_mut` does the same for in-place edits.
+  - Validation checks whether a subselection is present rather than whether
+    it is empty: `human {}` on an object type is valid, `name {}` on a scalar
+    is an error.
+  - The serializer prints `{}` for a present but empty subselection, so
+    documents round-trip.
 
 - **Support directives on directive definitions - [TylerBloom], [pull/1111]**
 
@@ -87,8 +107,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
 [pull/1114]: https://github.com/apollographql/apollo-rs/pull/1114
+[pull/1116]: https://github.com/apollographql/apollo-rs/pull/1116
 [graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
 [graphql-spec#1211]: https://github.com/graphql/graphql-spec/pull/1211
+[graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
 [tninesling]: https://github.com/tninesling
 

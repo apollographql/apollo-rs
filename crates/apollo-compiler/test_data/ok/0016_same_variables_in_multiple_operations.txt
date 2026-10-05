@@ -213,49 +213,48 @@ ExecutableDocument {
                             name: "dog",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Dog",
-                                selections: [
-                                    Field(
-                                        179..222 @18 Field {
-                                            definition: 323..370 @18 FieldDefinition {
-                                                description: None,
+                            selection_set: Some(
+                                SelectionSet {
+                                    ty: "Dog",
+                                    selections: [
+                                        Field(
+                                            179..222 @18 Field {
+                                                definition: 323..370 @18 FieldDefinition {
+                                                    description: None,
+                                                    name: "isHouseTrained",
+                                                    arguments: [
+                                                        338..359 @18 InputValueDefinition {
+                                                            description: None,
+                                                            name: "atOtherHomes",
+                                                            ty: 352..359 @18 Named(
+                                                                "Boolean",
+                                                            ),
+                                                            default_value: None,
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: NonNullNamed(
+                                                        "Boolean",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
                                                 name: "isHouseTrained",
                                                 arguments: [
-                                                    338..359 @18 InputValueDefinition {
-                                                        description: None,
+                                                    194..221 @18 Argument {
                                                         name: "atOtherHomes",
-                                                        ty: 352..359 @18 Named(
-                                                            "Boolean",
+                                                        value: 208..221 @18 Variable(
+                                                            "atOtherHomes",
                                                         ),
-                                                        default_value: None,
-                                                        directives: [],
                                                     },
                                                 ],
-                                                ty: NonNullNamed(
-                                                    "Boolean",
-                                                ),
                                                 directives: [],
+                                                selection_set: None,
                                             },
-                                            alias: None,
-                                            name: "isHouseTrained",
-                                            arguments: [
-                                                194..221 @18 Argument {
-                                                    name: "atOtherHomes",
-                                                    value: 208..221 @18 Variable(
-                                                        "atOtherHomes",
-                                                    ),
-                                                },
-                                            ],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Boolean",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            },
+                                        ),
+                                    ],
+                                },
+                            ),
                         },
                     ),
                 ],

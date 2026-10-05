@@ -213,10 +213,7 @@ ExecutableDocument {
                                 name: "field",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Boolean",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                         FragmentSpread(
@@ -276,10 +273,7 @@ ExecutableDocument {
                                 name: "field",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Boolean",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                     ],
@@ -333,10 +327,7 @@ ExecutableDocument {
                                 name: "field",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Boolean",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                     ],
@@ -379,10 +370,7 @@ ExecutableDocument {
                             name: "field",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

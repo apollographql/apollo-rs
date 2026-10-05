@@ -24,7 +24,9 @@ fn get_field_directives(doc: &ExecutableDocument) -> Vec<&Node<Directive>> {
     // depth first search for nested fields with directives
     while let Some(field) = stack.pop() {
         directives.extend(field.definition.directives.iter());
-        stack.extend(field.selection_set.fields());
+        if let Some(selection_set) = &field.selection_set {
+            stack.extend(selection_set.fields());
+        }
     }
 
     directives

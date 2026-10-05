@@ -125,23 +125,25 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Dog",
-                                    selections: [
-                                        FragmentSpread(
-                                            108..131 @22 FragmentSpread {
-                                                fragment_name: "mergeIdenticalFields",
-                                                directives: [],
-                                            },
-                                        ),
-                                        FragmentSpread(
-                                            136..169 @22 FragmentSpread {
-                                                fragment_name: "mergeIdenticalAliasesAndFields",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Dog",
+                                        selections: [
+                                            FragmentSpread(
+                                                108..131 @22 FragmentSpread {
+                                                    fragment_name: "mergeIdenticalFields",
+                                                    directives: [],
+                                                },
+                                            ),
+                                            FragmentSpread(
+                                                136..169 @22 FragmentSpread {
+                                                    fragment_name: "mergeIdenticalAliasesAndFields",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -172,10 +174,7 @@ ExecutableDocument {
                             name: "name",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                     Field(
@@ -193,10 +192,7 @@ ExecutableDocument {
                             name: "name",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],
@@ -226,10 +222,7 @@ ExecutableDocument {
                             name: "name",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                     Field(
@@ -249,10 +242,7 @@ ExecutableDocument {
                             name: "name",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "String",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

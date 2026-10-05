@@ -167,7 +167,8 @@ pub(crate) async fn complete_value<'a>(
         resolved_obj,
         fields
             .iter()
-            .flat_map(|field| &field.selection_set.selections),
+            .filter_map(|field| field.selection_set.as_ref())
+            .flat_map(|selection_set| &selection_set.selections),
     ))
     .await
     .map(|map| Some(JsonValue::Object(map)))

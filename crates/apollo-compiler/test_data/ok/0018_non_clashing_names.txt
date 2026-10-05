@@ -132,17 +132,19 @@ ExecutableDocument {
                                 name: "a",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "A",
-                                    selections: [
-                                        FragmentSpread(
-                                            193..197 @20 FragmentSpread {
-                                                fragment_name: "A",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "A",
+                                        selections: [
+                                            FragmentSpread(
+                                                193..197 @20 FragmentSpread {
+                                                    fragment_name: "A",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -173,10 +175,7 @@ ExecutableDocument {
                             name: "a",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Int",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

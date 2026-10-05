@@ -131,10 +131,7 @@ ExecutableDocument {
                                 name: "name",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "String",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                         Field(
@@ -152,10 +149,7 @@ ExecutableDocument {
                                 name: "__typename",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "String",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                     ],

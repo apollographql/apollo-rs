@@ -312,3 +312,17 @@ fn float_variable_accepts_max_safe_integer_boundary() {
     coerce_variable_values(&schema, operation, values.as_object().unwrap())
         .expect_err("i64::MAX is not exactly representable as an IEEE 754 double");
 }
+
+#[test]
+fn empty_subselection_resolves_to_empty_object() {
+    let response = execute("{ nest {} }", json!({}));
+    assert!(response.errors.is_empty(), "{:?}", response.errors);
+    assert_eq!(data(&response), json!({ "nest": {} }));
+}
+
+#[test]
+fn empty_operation_selection_set_resolves_to_empty_object() {
+    let response = execute("query Empty {}", json!({}));
+    assert!(response.errors.is_empty(), "{:?}", response.errors);
+    assert_eq!(data(&response), json!({}));
+}

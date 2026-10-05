@@ -37,13 +37,15 @@ pub(crate) fn validate_field(
     // we still want to traverse into the nested selection set so that validations
     // that do not require a schema (like missing fragment detection) can run.
     let Some((schema, against_type)) = against_type else {
-        super::selection::validate_selection_set(
-            diagnostics,
-            document,
-            None,
-            &field.selection_set,
-            context,
-        );
+        if let Some(selection_set) = &field.selection_set {
+            super::selection::validate_selection_set(
+                diagnostics,
+                document,
+                None,
+                selection_set,
+                context,
+            );
+        }
         return;
     };
 
@@ -127,13 +129,15 @@ pub(crate) fn validate_field(
         )
         .is_ok()
         {
-            super::selection::validate_selection_set(
-                diagnostics,
-                document,
-                Some((schema, field_definition.ty.inner_named_type())),
-                &field.selection_set,
-                context,
-            )
+            if let Some(selection_set) = &field.selection_set {
+                super::selection::validate_selection_set(
+                    diagnostics,
+                    document,
+                    Some((schema, field_definition.ty.inner_named_type())),
+                    selection_set,
+                    context,
+                )
+            }
         }
     }
 }
@@ -209,7 +213,7 @@ pub(crate) fn validate_leaf_field_selection(
     field: &Node<executable::Field>,
     field_type: &ast::Type,
 ) -> Result<(), ()> {
-    let is_leaf = field.selection_set.is_empty();
+    let is_leaf = field.selection_set.is_none();
     let tname = field_type.inner_named_type();
     let fname = &field.name;
 

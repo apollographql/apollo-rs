@@ -165,7 +165,11 @@ union Union = Concrete
 
     let interface_field = fields.iter().find(|f| f.name == "interface").unwrap();
 
-    let interface_fields = interface_field.selection_set.fields();
+    let interface_fields = interface_field
+        .selection_set
+        .as_ref()
+        .expect("interface field has a subselection")
+        .fields();
     let interface_selection_fields_types: HashMap<_, _> = interface_fields
         .map(|f| (f.name.as_str(), f.ty().inner_named_type().as_str()))
         .collect();
@@ -176,6 +180,8 @@ union Union = Concrete
 
     let inline_fragments: Vec<_> = interface_field
         .selection_set
+        .as_ref()
+        .expect("field has a subselection")
         .selections
         .iter()
         .filter_map(|sel| sel.as_inline_fragment())
@@ -195,6 +201,8 @@ union Union = Concrete
 
     let union_inline_fragments: Vec<_> = union_field
         .selection_set
+        .as_ref()
+        .expect("field has a subselection")
         .selections
         .iter()
         .filter_map(|sel| sel.as_inline_fragment())
@@ -269,6 +277,8 @@ enum join__Graph {
         .find(|f| f.name == "topProducts")
         .unwrap()
         .selection_set
+        .as_ref()
+        .expect("topProducts has a subselection")
         .fields()
         .map(|f| f.ty().inner_named_type())
         .collect();
@@ -282,6 +292,8 @@ enum join__Graph {
         .find(|f| f.name == "topProducts")
         .unwrap()
         .selection_set
+        .as_ref()
+        .expect("topProducts has a subselection")
         .fields()
         .find(|f| f.name == "inStock")
         .unwrap()
@@ -373,6 +385,8 @@ fragment vipCustomer on User {
         .find(|field| field.name == "customer")
         .unwrap()
         .selection_set
+        .as_ref()
+        .expect("customer has a subselection")
         .selections
         .iter()
         .filter_map(|sel| sel.as_fragment_spread()?.fragment_def(&doc))

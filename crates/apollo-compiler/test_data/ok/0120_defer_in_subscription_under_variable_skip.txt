@@ -181,71 +181,70 @@ ExecutableDocument {
                                 name: "newMessage",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Message",
-                                    selections: [
-                                        InlineFragment(
-                                            61..153 @49 InlineFragment {
-                                                type_condition: None,
-                                                directives: [
-                                                    65..81 @49 Directive {
-                                                        name: "skip",
-                                                        arguments: [
-                                                            71..80 @49 Argument {
-                                                                name: "if",
-                                                                value: 75..80 @49 Variable(
-                                                                    "cond",
-                                                                ),
-                                                            },
-                                                        ],
-                                                    },
-                                                ],
-                                                selection_set: SelectionSet {
-                                                    ty: "Message",
-                                                    selections: [
-                                                        InlineFragment(
-                                                            96..143 @49 InlineFragment {
-                                                                type_condition: None,
-                                                                directives: [
-                                                                    100..106 @49 Directive {
-                                                                        name: "defer",
-                                                                        arguments: [],
-                                                                    },
-                                                                ],
-                                                                selection_set: SelectionSet {
-                                                                    ty: "Message",
-                                                                    selections: [
-                                                                        Field(
-                                                                            125..129 @49 Field {
-                                                                                definition: 366..378 @49 FieldDefinition {
-                                                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Message",
+                                        selections: [
+                                            InlineFragment(
+                                                61..153 @49 InlineFragment {
+                                                    type_condition: None,
+                                                    directives: [
+                                                        65..81 @49 Directive {
+                                                            name: "skip",
+                                                            arguments: [
+                                                                71..80 @49 Argument {
+                                                                    name: "if",
+                                                                    value: 75..80 @49 Variable(
+                                                                        "cond",
+                                                                    ),
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                    selection_set: SelectionSet {
+                                                        ty: "Message",
+                                                        selections: [
+                                                            InlineFragment(
+                                                                96..143 @49 InlineFragment {
+                                                                    type_condition: None,
+                                                                    directives: [
+                                                                        100..106 @49 Directive {
+                                                                            name: "defer",
+                                                                            arguments: [],
+                                                                        },
+                                                                    ],
+                                                                    selection_set: SelectionSet {
+                                                                        ty: "Message",
+                                                                        selections: [
+                                                                            Field(
+                                                                                125..129 @49 Field {
+                                                                                    definition: 366..378 @49 FieldDefinition {
+                                                                                        description: None,
+                                                                                        name: "body",
+                                                                                        arguments: [],
+                                                                                        ty: Named(
+                                                                                            "String",
+                                                                                        ),
+                                                                                        directives: [],
+                                                                                    },
+                                                                                    alias: None,
                                                                                     name: "body",
                                                                                     arguments: [],
-                                                                                    ty: Named(
-                                                                                        "String",
-                                                                                    ),
                                                                                     directives: [],
+                                                                                    selection_set: None,
                                                                                 },
-                                                                                alias: None,
-                                                                                name: "body",
-                                                                                arguments: [],
-                                                                                directives: [],
-                                                                                selection_set: SelectionSet {
-                                                                                    ty: "String",
-                                                                                    selections: [],
-                                                                                },
-                                                                            },
-                                                                        ),
-                                                                    ],
+                                                                            ),
+                                                                        ],
+                                                                    },
                                                                 },
-                                                            },
-                                                        ),
-                                                    ],
+                                                            ),
+                                                        ],
+                                                    },
                                                 },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],

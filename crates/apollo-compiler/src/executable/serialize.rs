@@ -100,7 +100,7 @@ impl Field {
             name: self.name.clone(),
             arguments: self.arguments.clone(),
             directives: self.directives.clone(),
-            selection_set: self.selection_set.to_ast(),
+            selection_set: self.selection_set.as_ref().map(SelectionSet::to_ast),
         }
     }
 

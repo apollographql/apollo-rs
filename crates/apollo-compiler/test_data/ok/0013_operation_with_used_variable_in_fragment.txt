@@ -232,32 +232,31 @@ ExecutableDocument {
                                 name: "topProducts",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Product",
-                                    selections: [
-                                        Field(
-                                            57..61 @15 Field {
-                                                definition: 357..369 @15 FieldDefinition {
-                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Product",
+                                        selections: [
+                                            Field(
+                                                57..61 @15 Field {
+                                                    definition: 357..369 @15 FieldDefinition {
+                                                        description: None,
+                                                        name: "name",
+                                                        arguments: [],
+                                                        ty: Named(
+                                                            "String",
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                    alias: None,
                                                     name: "name",
                                                     arguments: [],
-                                                    ty: Named(
-                                                        "String",
-                                                    ),
                                                     directives: [],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "name",
-                                                arguments: [],
-                                                directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "String",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                         FragmentSpread(
@@ -304,49 +303,48 @@ ExecutableDocument {
                             name: "topProducts",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Product",
-                                selections: [
-                                    Field(
-                                        131..157 @15 Field {
-                                            definition: 372..397 @15 FieldDefinition {
-                                                description: None,
+                            selection_set: Some(
+                                SelectionSet {
+                                    ty: "Product",
+                                    selections: [
+                                        Field(
+                                            131..157 @15 Field {
+                                                definition: 372..397 @15 FieldDefinition {
+                                                    description: None,
+                                                    name: "price",
+                                                    arguments: [
+                                                        378..391 @15 InputValueDefinition {
+                                                            description: None,
+                                                            name: "setPrice",
+                                                            ty: 388..391 @15 Named(
+                                                                "Int",
+                                                            ),
+                                                            default_value: None,
+                                                            directives: [],
+                                                        },
+                                                    ],
+                                                    ty: Named(
+                                                        "Int",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
                                                 name: "price",
                                                 arguments: [
-                                                    378..391 @15 InputValueDefinition {
-                                                        description: None,
+                                                    137..156 @15 Argument {
                                                         name: "setPrice",
-                                                        ty: 388..391 @15 Named(
-                                                            "Int",
+                                                        value: 147..156 @15 Variable(
+                                                            "variable",
                                                         ),
-                                                        default_value: None,
-                                                        directives: [],
                                                     },
                                                 ],
-                                                ty: Named(
-                                                    "Int",
-                                                ),
                                                 directives: [],
+                                                selection_set: None,
                                             },
-                                            alias: None,
-                                            name: "price",
-                                            arguments: [
-                                                137..156 @15 Argument {
-                                                    name: "setPrice",
-                                                    value: 147..156 @15 Variable(
-                                                        "variable",
-                                                    ),
-                                                },
-                                            ],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            },
+                                        ),
+                                    ],
+                                },
+                            ),
                         },
                     ),
                 ],

@@ -313,19 +313,10 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
         fields: &[Node<Field>],
         meta_field: &Node<Field>,
     ) -> Result<Value, ResponseError> {
-        let has_selection_set = !meta_field.selection_set.is_empty();
         let is_list = meta_field.ty().is_list();
 
-        if has_selection_set {
-            // Merge sub-selections from all occurrences of this field
-            let mut merged_selections = Vec::new();
-            for field in fields {
-                merged_selections.extend_from_slice(&field.selection_set.selections);
-            }
-            let full_selection_set = SelectionSet {
-                ty: meta_field.selection_set.ty.clone(),
-                selections: merged_selections,
-            };
+        if let Some(meta_selection_set) = &meta_field.selection_set {
+            let full_selection_set = merge_subselections(fields, meta_selection_set);
 
             if is_list {
                 self.repeated_selection_set(&full_selection_set)
@@ -393,18 +384,10 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
         meta_field: &Node<Field>,
         overlay_value: &Value,
     ) -> Result<Value, ResponseError> {
-        if meta_field.selection_set.is_empty() {
+        let Some(meta_selection_set) = &meta_field.selection_set else {
             return Ok(overlay_value.clone());
-        }
-
-        let mut merged_selections = Vec::new();
-        for field in fields {
-            merged_selections.extend_from_slice(&field.selection_set.selections);
-        }
-        let full_selection_set = SelectionSet {
-            ty: meta_field.selection_set.ty.clone(),
-            selections: merged_selections,
         };
+        let full_selection_set = merge_subselections(fields, meta_selection_set);
 
         if meta_field.ty().is_list() {
             if let Some(items) = overlay_value.as_array() {
@@ -483,6 +466,19 @@ impl<'a, 'doc, 'schema, R: RandomProvider> ResponseBuilder<'a, 'doc, 'schema, R>
         } else {
             Ok(false)
         }
+    }
+}
+
+/// Merge the subselections of every occurrence of a field into one selection set.
+fn merge_subselections(fields: &[Node<Field>], meta_selection_set: &SelectionSet) -> SelectionSet {
+    let selections = fields
+        .iter()
+        .filter_map(|field| field.selection_set.as_ref())
+        .flat_map(|selection_set| selection_set.selections.iter().cloned())
+        .collect();
+    SelectionSet {
+        ty: meta_selection_set.ty.clone(),
+        selections,
     }
 }
 

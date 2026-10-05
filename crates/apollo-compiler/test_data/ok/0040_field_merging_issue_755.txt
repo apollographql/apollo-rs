@@ -144,17 +144,19 @@ ExecutableDocument {
                                 name: "issue755",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Issue",
-                                    selections: [
-                                        FragmentSpread(
-                                            618..637 @41 FragmentSpread {
-                                                fragment_name: "topLevelFragment",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Issue",
+                                        selections: [
+                                            FragmentSpread(
+                                                618..637 @41 FragmentSpread {
+                                                    fragment_name: "topLevelFragment",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -188,38 +190,37 @@ ExecutableDocument {
                             name: "subselection",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Subselection",
-                                selections: [
-                                    Field(
-                                        372..381 @41 Field {
-                                            definition: 196..211 @41 FieldDefinition {
-                                                description: None,
+                            selection_set: Some(
+                                SelectionSet {
+                                    ty: "Subselection",
+                                    selections: [
+                                        Field(
+                                            372..381 @41 Field {
+                                                definition: 196..211 @41 FieldDefinition {
+                                                    description: None,
+                                                    name: "createdAt",
+                                                    arguments: [],
+                                                    ty: NonNullNamed(
+                                                        "Int",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
                                                 name: "createdAt",
                                                 arguments: [],
-                                                ty: NonNullNamed(
-                                                    "Int",
-                                                ),
+                                                directives: [],
+                                                selection_set: None,
+                                            },
+                                        ),
+                                        FragmentSpread(
+                                            386..409 @41 FragmentSpread {
+                                                fragment_name: "subselectionFragment",
                                                 directives: [],
                                             },
-                                            alias: None,
-                                            name: "createdAt",
-                                            arguments: [],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
-                                    FragmentSpread(
-                                        386..409 @41 FragmentSpread {
-                                            fragment_name: "subselectionFragment",
-                                            directives: [],
-                                        },
-                                    ),
-                                ],
-                            },
+                                        ),
+                                    ],
+                                },
+                            ),
                         },
                     ),
                     FragmentSpread(
@@ -255,32 +256,31 @@ ExecutableDocument {
                             name: "subselection",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Subselection",
-                                selections: [
-                                    Field(
-                                        514..523 @41 Field {
-                                            definition: 196..211 @41 FieldDefinition {
-                                                description: None,
+                            selection_set: Some(
+                                SelectionSet {
+                                    ty: "Subselection",
+                                    selections: [
+                                        Field(
+                                            514..523 @41 Field {
+                                                definition: 196..211 @41 FieldDefinition {
+                                                    description: None,
+                                                    name: "createdAt",
+                                                    arguments: [],
+                                                    ty: NonNullNamed(
+                                                        "Int",
+                                                    ),
+                                                    directives: [],
+                                                },
+                                                alias: None,
                                                 name: "createdAt",
                                                 arguments: [],
-                                                ty: NonNullNamed(
-                                                    "Int",
-                                                ),
                                                 directives: [],
+                                                selection_set: None,
                                             },
-                                            alias: None,
-                                            name: "createdAt",
-                                            arguments: [],
-                                            directives: [],
-                                            selection_set: SelectionSet {
-                                                ty: "Int",
-                                                selections: [],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            },
+                                        ),
+                                    ],
+                                },
+                            ),
                         },
                     ),
                 ],
@@ -308,10 +308,7 @@ ExecutableDocument {
                             name: "createdAt",
                             arguments: [],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Int",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

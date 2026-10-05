@@ -69,12 +69,14 @@ pub(super) fn check_selection_set<'doc>(
                         });
                     }
                 }
-                max_depth = max_depth.max(check_selection_set(
-                    document,
-                    fragment_depths,
-                    depth,
-                    &field.selection_set,
-                )?)
+                if let Some(selection_set) = &field.selection_set {
+                    max_depth = max_depth.max(check_selection_set(
+                        document,
+                        fragment_depths,
+                        depth,
+                        selection_set,
+                    )?)
+                }
             }
         }
     }

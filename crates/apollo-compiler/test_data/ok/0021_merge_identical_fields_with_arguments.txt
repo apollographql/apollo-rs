@@ -145,17 +145,19 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Dog",
-                                    selections: [
-                                        FragmentSpread(
-                                            158..198 @23 FragmentSpread {
-                                                fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Dog",
+                                        selections: [
+                                            FragmentSpread(
+                                                158..198 @23 FragmentSpread {
+                                                    fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -197,17 +199,19 @@ ExecutableDocument {
                                 name: "pet",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Dog",
-                                    selections: [
-                                        FragmentSpread(
-                                            268..310 @23 FragmentSpread {
-                                                fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
-                                                directives: [],
-                                            },
-                                        ),
-                                    ],
-                                },
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Dog",
+                                        selections: [
+                                            FragmentSpread(
+                                                268..310 @23 FragmentSpread {
+                                                    fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
+                                                    directives: [],
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -255,10 +259,7 @@ ExecutableDocument {
                                 },
                             ],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                     Field(
@@ -293,10 +294,7 @@ ExecutableDocument {
                                 },
                             ],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],
@@ -341,10 +339,7 @@ ExecutableDocument {
                                 },
                             ],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                     Field(
@@ -379,10 +374,7 @@ ExecutableDocument {
                                 },
                             ],
                             directives: [],
-                            selection_set: SelectionSet {
-                                ty: "Boolean",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

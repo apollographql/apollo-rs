@@ -359,7 +359,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
 
             let mut nested_selection_sets = fields_for_name
                 .iter()
-                .map(|selection| &selection.field.selection_set)
+                .filter_map(|selection| selection.field.selection_set.as_ref())
                 .filter(|set| !set.selections.is_empty())
                 .peekable();
             if nested_selection_sets.peek().is_some() {
@@ -405,7 +405,7 @@ impl<'alloc, 'doc> MergedFieldSet<'alloc, 'doc> {
 
                 let mut nested_selection_sets = fields_for_parents
                     .iter()
-                    .map(|selection| &selection.field.selection_set)
+                    .filter_map(|selection| selection.field.selection_set.as_ref())
                     .filter(|set| !set.selections.is_empty())
                     .peekable();
                 if nested_selection_sets.peek().is_some() {

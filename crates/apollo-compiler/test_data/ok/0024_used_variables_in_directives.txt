@@ -218,10 +218,7 @@ ExecutableDocument {
                                         ],
                                     },
                                 ],
-                                selection_set: SelectionSet {
-                                    ty: "Int",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                         FragmentSpread(
@@ -276,10 +273,7 @@ ExecutableDocument {
                                                 name: "inlineField",
                                                 arguments: [],
                                                 directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "Int",
-                                                    selections: [],
-                                                },
+                                                selection_set: None,
                                             },
                                         ),
                                     ],
@@ -327,10 +321,7 @@ ExecutableDocument {
                                     ],
                                 },
                             ],
-                            selection_set: SelectionSet {
-                                ty: "Int",
-                                selections: [],
-                            },
+                            selection_set: None,
                         },
                     ),
                 ],

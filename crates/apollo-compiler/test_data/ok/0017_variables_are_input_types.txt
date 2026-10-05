@@ -231,49 +231,48 @@ ExecutableDocument {
                                 name: "dog",
                                 arguments: [],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Dog",
-                                    selections: [
-                                        Field(
-                                            57..100 @19 Field {
-                                                definition: 380..427 @19 FieldDefinition {
-                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Dog",
+                                        selections: [
+                                            Field(
+                                                57..100 @19 Field {
+                                                    definition: 380..427 @19 FieldDefinition {
+                                                        description: None,
+                                                        name: "isHouseTrained",
+                                                        arguments: [
+                                                            395..416 @19 InputValueDefinition {
+                                                                description: None,
+                                                                name: "atOtherHomes",
+                                                                ty: 409..416 @19 Named(
+                                                                    "Boolean",
+                                                                ),
+                                                                default_value: None,
+                                                                directives: [],
+                                                            },
+                                                        ],
+                                                        ty: NonNullNamed(
+                                                            "Boolean",
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                    alias: None,
                                                     name: "isHouseTrained",
                                                     arguments: [
-                                                        395..416 @19 InputValueDefinition {
-                                                            description: None,
+                                                        72..99 @19 Argument {
                                                             name: "atOtherHomes",
-                                                            ty: 409..416 @19 Named(
-                                                                "Boolean",
+                                                            value: 86..99 @19 Variable(
+                                                                "atOtherHomes",
                                                             ),
-                                                            default_value: None,
-                                                            directives: [],
                                                         },
                                                     ],
-                                                    ty: NonNullNamed(
-                                                        "Boolean",
-                                                    ),
                                                     directives: [],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "isHouseTrained",
-                                                arguments: [
-                                                    72..99 @19 Argument {
-                                                        name: "atOtherHomes",
-                                                        value: 86..99 @19 Variable(
-                                                            "atOtherHomes",
-                                                        ),
-                                                    },
-                                                ],
-                                                directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "Boolean",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -332,32 +331,31 @@ ExecutableDocument {
                                     },
                                 ],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Dog",
-                                    selections: [
-                                        Field(
-                                            203..207 @19 Field {
-                                                definition: 327..340 @19 FieldDefinition {
-                                                    description: None,
+                                selection_set: Some(
+                                    SelectionSet {
+                                        ty: "Dog",
+                                        selections: [
+                                            Field(
+                                                203..207 @19 Field {
+                                                    definition: 327..340 @19 FieldDefinition {
+                                                        description: None,
+                                                        name: "name",
+                                                        arguments: [],
+                                                        ty: NonNullNamed(
+                                                            "String",
+                                                        ),
+                                                        directives: [],
+                                                    },
+                                                    alias: None,
                                                     name: "name",
                                                     arguments: [],
-                                                    ty: NonNullNamed(
-                                                        "String",
-                                                    ),
                                                     directives: [],
+                                                    selection_set: None,
                                                 },
-                                                alias: None,
-                                                name: "name",
-                                                arguments: [],
-                                                directives: [],
-                                                selection_set: SelectionSet {
-                                                    ty: "String",
-                                                    selections: [],
-                                                },
-                                            },
-                                        ),
-                                    ],
-                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
                             },
                         ),
                     ],
@@ -420,10 +418,7 @@ ExecutableDocument {
                                     },
                                 ],
                                 directives: [],
-                                selection_set: SelectionSet {
-                                    ty: "Boolean",
-                                    selections: [],
-                                },
+                                selection_set: None,
                             },
                         ),
                     ],
