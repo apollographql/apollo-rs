@@ -1,4 +1,4 @@
-query getName {}
+query getName { topProducts(first: ) { name } }
 
 type Query {
   topProducts(first: Int): Product,

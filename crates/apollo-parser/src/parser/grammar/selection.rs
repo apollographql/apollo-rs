@@ -54,8 +54,6 @@ pub(crate) fn field_set(p: &mut Parser) {
 ///     FragmentSpread
 ///     InlineFragment
 pub(crate) fn selection(p: &mut Parser) {
-    let mut has_selection = false;
-
     p.peek_while(|p, kind| match kind {
         T![...] => {
             let next_token = p.peek_token_n(2);
@@ -72,7 +70,6 @@ pub(crate) fn selection(p: &mut Parser) {
                         p.err("expected an Inline Fragment or a Fragment Spread");
                         p.bump(S![...]);
                     }
-                    has_selection = true;
                     ControlFlow::Continue(())
                 }
                 None => {
@@ -84,15 +81,10 @@ pub(crate) fn selection(p: &mut Parser) {
         T!['{'] => ControlFlow::Break(()),
         TokenKind::Name => {
             field::field(p);
-            has_selection = true;
             ControlFlow::Continue(())
         }
         _ => ControlFlow::Break(()),
     });
-
-    if !has_selection {
-        p.err("expected at least one Selection in Selection Set");
-    }
 }
 
 #[cfg(test)]
@@ -308,7 +300,7 @@ query SomeQuery(
     }
 
     #[test]
-    fn it_errors_when_selection_set_is_empty() {
+    fn it_accepts_empty_operation_selection_set() {
         let schema = r#"
         query($foo: Int) {}
         "#;
@@ -316,8 +308,25 @@ query SomeQuery(
 
         let cst = parser.parse();
 
-        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(cst.errors().len(), 0);
         assert_eq!(cst.document().definitions().count(), 1);
+    }
+
+    #[test]
+    fn it_accepts_empty_field_selection_set() {
+        let cst = Parser::new("{ human {} }").parse();
+        assert_eq!(cst.errors().len(), 0);
+
+        let cst::Definition::OperationDefinition(op) = cst.document().definitions().next().unwrap()
+        else {
+            panic!("expected an operation");
+        };
+        let cst::Selection::Field(human) = op.selection_set().unwrap().selections().next().unwrap()
+        else {
+            panic!("expected a field");
+        };
+        let sub = human.selection_set().expect("subselection is present");
+        assert_eq!(sub.selections().count(), 0);
     }
 
     #[test]
