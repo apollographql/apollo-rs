@@ -1,35 +1,37 @@
 # String Interning for the Schema Representation
 
-Status: **resolved — symbol-interned `Name` ships in 2.0**
-Branch: `tninesling/interned-names` (rebased onto `v2`; see "End state"
-below for what actually landed).
+Status: resolved, pointer-interned `Name` ships in 2.0
+Branch: `tninesling/interned-names-ptr` (see "End state" at the bottom).
 
 ## Outcome
 
-After building and measuring every design in this document, the decision
-landed on classic symbol interning with a freezable global table:
+`Name` interns runtime strings into a process-global table that owns one
+leaked copy of each string. Interned names point at that copy, so `Eq`
+between two interned names is a pointer comparison and `Hash` writes the
+pointer. `Name` stays 24 bytes, and the interned state is a third value of
+the 2-bit tag that already distinguished `Arc` from `&'static str`.
 
-- `Name` interns its string into a process-global symbol table; equality
-  is an integer comparison and `Hash` emits the 4-byte symbol. This is a
-  breaking change (`Borrow<str>` lookups become `NameKey` probes; `name!()`
-  in `const` items becomes `static`; `Name` grows 24→32 bytes).
-- **Measured on production supergraphs and real operation corpora: −15%
-  on the per-request parse+validate path** (up to −29 to −41% on
-  abstract-type-heavy validation microbenches), reproduced after rebasing
-  onto the `Node`/`Component` consolidation. `freeze_interning()` after
-  schema build makes the table lookup-only and the post-freeze read path
-  lock-free: hostile documents cannot grow it (0 bytes across 50k
-  unique-alias requests), and reloads degrade gracefully.
-- The complementary **shared-seed foldhash hasher swap** (−7 to −13% on
-  composition, −3% on the request path) is deliberately *not* part of this
-  branch, to keep it scoped to interning. It lives standalone on
-  `tninesling/collections-hasher` (off `main`, shippable on 1.x), and
-  composition can capture most of that win federation-side by using its
-  own foldhash-backed collection aliases instead of apollo-compiler's.
-- Earlier candidates — the arc-interner with pointer-equality
-  (`tninesling/string-interning-archive`) and the `HashedName` federation
-  migration — were built, measured, and rejected; their post-mortems are
-  in the findings below.
+- `Borrow<str>` is removed. `Name`-keyed maps are queried with a `Name`
+  (`name!` for literals). The earlier symbol design's `NameKey` probe key
+  is gone.
+- `freeze_interning()` makes the table lookup-only. Post-freeze misses
+  are `Arc`-backed and use string `Eq`/`Hash`. Whether a string is in the
+  frozen table is a function of the string alone, so equal names always
+  agree on how to hash.
+- `name!` literals are `const` and cannot be interned at construction.
+  They compare by string, and `Hash` looks them up in the table so they
+  hash the same as interned names with the same string.
+- Measured on a production supergraph: about -13% on per-request
+  parse+validate, about -6% on composition and planning, with
+  byte-identical supergraphs and plans.
+- Measured on supergraph-smith's synthetic scale graphs (20-275
+  subgraphs): composition -3 to -6%, planner construction -4 to -11%,
+  per-operation planning flat on three of four graphs and +3 to +7% on the
+  largest. Hashing `name!` literals by string instead of by table pointer
+  measured the same on every graph.
+
+Earlier candidates (the symbol table with a cached `AtomicU32` in `Name`,
+the arc-interner, and the `HashedName` migration) are recorded below.
 
 The rest of this document is the investigation record.
 
@@ -513,39 +515,15 @@ migration cost measured small (compiler ±350 lines, federation ±70,
 router ±40, all compile-time-guided). The breaking change now has a
 quantified case.
 
-### End state (2026-09-25)
+### End state
 
-What actually landed on `tninesling/interned-names`, rebased onto `v2`:
-
-- **`src/symbol.rs`, ~120 lines**: one
-  `RwLock<collections::HashMap<Box<str>, NonZeroU32>>` (ahash, same as the
-  public collections), an `AtomicU32` symbol counter, the freeze flag, and
-  an immutable `SNAPSHOT` captured at freeze time. Pre-freeze reads and
-  inserts take the lock; post-freeze probes read the snapshot with no lock
-  at all.
-- **Simplifications from the productionized draft**: the 16-shard table
-  and the internal foldhash hasher were removed before merge. The snapshot
-  already makes the post-freeze request path lock-free, so sharding only
-  served pre-freeze interning (schema builds, low contention); and the
-  table hasher is only touched when a `Name` is constructed or first
-  resolved, never on the eq/hash hot path, so foldhash there was a
-  speculative micro-optimization that conflated this branch with the
-  collections-hasher work. The branch is interning-only; foldhash is
-  perf-tested separately on `tninesling/collections-hasher`.
-- **`Name` (`src/name.rs`)**: the 24-byte struct grows to 32 with a
-  lazily-resolved `AtomicU32` symbol cache (0 = unresolved, for `const`
-  names; `u32::MAX` = probed a frozen table and missed). `Eq` is a symbol
-  compare with a string fallback for frozen-table misses; `Hash` emits the
-  symbol likewise. `Borrow<str>` is removed; `NameKey` is the no-alloc
-  probe key replacing it.
-- **Kept from the productionized draft**: the freeze contract (the DoS
-  answer), table-owned entries (no weak references or sweeps — without a
-  freeze, growth is bounded by the distinct names in schemas and documents
-  actually processed), and `NameKey`.
-
-The −13 to −14% reproduction above was measured with the sharded,
-foldhash-backed table; re-run the production corpus on the simplified
-table before merge to confirm the number holds.
+The symbol design that previously landed here (`AtomicU32` symbol cache,
+`Name` at 32 bytes, `NameKey` probes) was replaced by pointer interning,
+described in the Outcome section. `src/intern.rs` holds a growing
+`Mutex<Option<HashSet<&'static str>>>` and a frozen `OnceLock` copy that
+is read without locking. The frozen table is published while the mutex
+is held, so a thread that finds the growing table gone always finds the
+frozen one.
 
 ### Exit criteria
 
@@ -562,6 +540,6 @@ table before merge to confirm the number holds.
 | Interner lock contention on hot parse paths | Post-freeze reads use an immutable snapshot with no lock; pre-freeze interning happens during schema builds, where contention is low |
 | Unbounded interner growth from hostile input | Lookup-only mode on request paths — untrusted input structurally cannot insert; explicit DoS test |
 | Schema churn leaving dead entries | No reclamation: entries are table-owned and live for the process. Growth is bounded by the distinct names in schemas and documents actually processed (frozen after schema build on servers), so churn cannot grow the table the way request traffic could |
-| Breaking by-`&str` map lookups | Accepted and quantified (Follow-up 3): `NameKey` is the compile-time-guided migration; compiler ±350, federation ±70, router ±40 lines |
+| Breaking by-`&str` map lookups | Accepted: lookups take a `Name`, and the compiler flags every call site. Federation needed about 100 lines |
 | `unsafe` lifecycle bugs (drop/remove race) | Miri, concurrency stress tests, keep interner logic in one small module |
-| Semver | Breaking by design (`Borrow<str>` removed, `name!()` const → `static`, `Name` 24→32 bytes); lands in 2.0 |
+| Semver | Breaking by design (`Borrow<str>` removed, schema getters take `&Name`); lands in 2.0 |
