@@ -1,8 +1,8 @@
-Error: syntax error: expected at least one Selection in Selection Set
-   ╭─[ 0011_syntactic_errors_from_parser.graphql:1:16 ]
+Error: syntax error: expected a valid Value
+   ╭─[ 0011_syntactic_errors_from_parser.graphql:1:36 ]
    │
- 1 │ query getName {}
-   │                ┬  
-   │                ╰── expected at least one Selection in Selection Set
+ 1 │ query getName { topProducts(first: ) { name } }
+   │                                    ┬  
+   │                                    ╰── expected a valid Value
 ───╯
 

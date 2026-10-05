@@ -1,0 +1,54 @@
+- DOCUMENT@0..64
+    - OPERATION_DEFINITION@0..39
+        - SELECTION_SET@0..39
+            - L_CURLY@0..1 "{"
+            - WHITESPACE@1..4 "\n  "
+            - FIELD@4..12
+                - NAME@4..9
+                    - IDENT@4..9 "human"
+                - WHITESPACE@9..10 " "
+                - SELECTION_SET@10..12
+                    - L_CURLY@10..11 "{"
+                    - R_CURLY@11..12 "}"
+            - WHITESPACE@12..15 "\n  "
+            - INLINE_FRAGMENT@15..30
+                - SPREAD@15..18 "..."
+                - WHITESPACE@18..19 " "
+                - TYPE_CONDITION@19..27
+                    - on_KW@19..21 "on"
+                    - WHITESPACE@21..22 " "
+                    - NAMED_TYPE@22..27
+                        - NAME@22..27
+                            - IDENT@22..27 "Query"
+                - WHITESPACE@27..28 " "
+                - SELECTION_SET@28..30
+                    - L_CURLY@28..29 "{"
+                    - R_CURLY@29..30 "}"
+            - WHITESPACE@30..33 "\n  "
+            - FRAGMENT_SPREAD@33..37
+                - SPREAD@33..36 "..."
+                - FRAGMENT_NAME@36..37
+                    - NAME@36..37
+                        - IDENT@36..37 "F"
+            - WHITESPACE@37..38 "\n"
+            - R_CURLY@38..39 "}"
+    - WHITESPACE@39..41 "\n\n"
+    - FRAGMENT_DEFINITION@41..63
+        - fragment_KW@41..49 "fragment"
+        - WHITESPACE@49..50 " "
+        - FRAGMENT_NAME@50..51
+            - NAME@50..51
+                - IDENT@50..51 "F"
+        - WHITESPACE@51..52 " "
+        - TYPE_CONDITION@52..60
+            - on_KW@52..54 "on"
+            - WHITESPACE@54..55 " "
+            - NAMED_TYPE@55..60
+                - NAME@55..60
+                    - IDENT@55..60 "Query"
+        - WHITESPACE@60..61 " "
+        - SELECTION_SET@61..63
+            - L_CURLY@61..62 "{"
+            - R_CURLY@62..63 "}"
+    - WHITESPACE@63..64 "\n"
+recursion limit: 500, high: 2

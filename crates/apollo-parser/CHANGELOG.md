@@ -37,6 +37,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Accept empty selection sets - [tninesling], [pull/1115]**
+
+  The September 2026 specification changes the grammar to
+  `SelectionSet : { Selection* }` ([graphql-spec#1227]), so `query {}` and
+  `{ human {} }` no longer produce the
+  "expected at least one Selection in Selection Set" error. This also applies
+  to field sets, which share the selection set grammar.
+
 - **Parse directives on directive definitions - [TylerBloom], [pull/1111]**
 
   The September 2026 specification allows directives to be applied to directive
@@ -51,8 +59,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `SyntaxKind::DIRECTIVE_DEFINITION_KW`.
 
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
+[pull/1115]: https://github.com/apollographql/apollo-rs/pull/1115
 [graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
+[graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
+[tninesling]: https://github.com/tninesling
 
 # [0.9.0-beta.0](https://crates.io/crates/apollo-parser/0.9.0-beta.0) - 2026-08-21
 

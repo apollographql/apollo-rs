@@ -1,0 +1,7 @@
+{
+  human {}
+  ... on Query {}
+  ...F
+}
+
+fragment F on Query {}
