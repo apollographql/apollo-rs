@@ -6,6 +6,7 @@ use crate::schema::ScalarType;
 use crate::validation::diagnostics::DiagnosticData;
 use crate::validation::directive::validate_directive_definitions;
 use crate::validation::enum_::validate_enum_definition;
+use crate::validation::input_object::unconstructible_input_objects;
 use crate::validation::input_object::validate_input_object_definition;
 use crate::validation::interface::validate_interface_definition;
 use crate::validation::object::validate_object_type_definition;
@@ -22,6 +23,7 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &mut Schema) 
     let mut builtin_scalars = BuiltInScalars::new();
     validate_schema_definition(errors, schema);
     validate_directive_definitions(errors, schema, &mut builtin_scalars);
+    let unconstructible_input_objects = unconstructible_input_objects(schema);
     for (name, def) in &schema.types {
         validate_type_system_name(errors, name, def.describe());
         match def {
@@ -34,9 +36,13 @@ pub(crate) fn validate_schema(errors: &mut DiagnosticList, schema: &mut Schema) 
             }
             ExtendedType::Union(def) => validate_union_definition(errors, schema, def),
             ExtendedType::Enum(def) => validate_enum_definition(errors, schema, def),
-            ExtendedType::InputObject(def) => {
-                validate_input_object_definition(errors, schema, &mut builtin_scalars, def)
-            }
+            ExtendedType::InputObject(def) => validate_input_object_definition(
+                errors,
+                schema,
+                &mut builtin_scalars,
+                &unconstructible_input_objects,
+                def,
+            ),
         }
     }
     // Remove definitions of unused built-in scalars
