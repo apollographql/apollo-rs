@@ -1,0 +1,66 @@
+Error: `Entry` input object cannot be constructed because of an unbreakable cycle
+    ╭─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:5:1 ]
+    │
+  5 │ ╭─▶ input Entry @oneOf {
+    ┆ ┆   
+  8 │ ├─▶ }
+    │ │       
+    │ ╰─────── cyclical input object definition
+    │
+    ├─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:5:1 ]
+    │
+  7 │   b: B
+    │   ──┬─  
+    │     ╰─── `Entry` references `B` here...
+    │ 
+ 15 │   a: A!
+    │   ──┬──  
+    │     ╰──── `B` references `A` here...
+    │
+    ├─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:5:1 ]
+    │
+ 11 │   b: B!
+    │   ──┬──  
+    │     ╰──── `A` circularly references `B` here
+────╯
+Error: `A` input object cannot be constructed because of an unbreakable cycle
+    ╭─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:10:1 ]
+    │
+ 10 │ ╭─▶ input A {
+    ┆ ┆   
+ 12 │ ├─▶ }
+    │ │       
+    │ ╰─────── cyclical input object definition
+    │
+    ├─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:10:1 ]
+    │
+ 11 │   b: B!
+    │   ──┬──  
+    │     ╰──── `A` references `B` here...
+    │ 
+ 15 │   a: A!
+    │   ──┬──  
+    │     ╰──── `B` circularly references `A` here
+────╯
+Error: `B` input object cannot be constructed because of an unbreakable cycle
+    ╭─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:14:1 ]
+    │
+ 14 │ ╭─▶ input B {
+    ┆ ┆   
+ 16 │ ├─▶ }
+    │ │       
+    │ ╰─────── cyclical input object definition
+    │
+    ├─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:14:1 ]
+    │
+ 15 │   a: A!
+    │   ──┬──  
+    │     ╰──── `B` references `A` here...
+    │
+    ├─[ 0138_oneof_leading_into_unbreakable_cycle.graphql:14:1 ]
+    │
+ 11 │   b: B!
+    │   ──┬──  
+    │     ╰──── `A` circularly references `B` here
+────╯
+

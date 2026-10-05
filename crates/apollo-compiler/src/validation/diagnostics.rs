@@ -313,7 +313,7 @@ pub(crate) enum DiagnosticData {
     },
     #[error("interface {name} cannot implement itself")]
     RecursiveInterfaceDefinition { name: Name },
-    #[error("`{name}` input object cannot reference itself")]
+    #[error("`{name}` input object cannot be constructed because of an unbreakable cycle")]
     RecursiveInputObjectDefinition {
         name: Name,
         trace: Vec<Node<ast::InputValueDefinition>>,
@@ -541,7 +541,8 @@ impl DiagnosticData {
             }
             DiagnosticData::RecursiveInputObjectDefinition { name, trace } => {
                 report.with_label_opt(main_location, "cyclical input object definition");
-                label_recursive_trace(report, trace, name, |reference| &reference.name);
+                // The cycle is between types, so label each field with the type it requires.
+                label_recursive_trace(report, trace, name, |field| field.ty.inner_named_type());
             }
             DiagnosticData::RecursiveFragmentDefinition {
                 head_location,
@@ -1067,7 +1068,10 @@ fn label_recursive_trace<T>(
 
         report.with_label_opt(
             cyclical_application.location(),
-            format!("`{prev_name}` circularly references `{original_name}` here"),
+            format!(
+                "`{prev_name}` circularly references `{}` here",
+                get_name(cyclical_application)
+            ),
         );
     }
 }

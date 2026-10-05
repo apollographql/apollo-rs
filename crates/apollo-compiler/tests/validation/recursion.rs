@@ -295,16 +295,30 @@ fn not_long_enough_directive_chain_applies_correctly() {
 
 #[test]
 fn long_input_object_chains_do_not_overflow_stack() {
-    // Build a very deeply nested input object
-    // Validating it would take a lot of recursion and a lot of time
+    // The chain ends in a scalar field, so every input object in it can be constructed.
     let schema = build_input_object_chain(500);
 
-    let partial = apollo_compiler::Schema::parse_and_validate(schema, "input_objects.graphql")
-        .expect_err("must have recursion errors");
+    apollo_compiler::Schema::parse_and_validate(schema, "input_objects.graphql")
+        .expect("long chain without a cycle should be valid");
+}
 
-    // The final 199 input objects do not cause recursion errors because the chain is less than 200
-    // directives deep.
-    assert_eq!(partial.errors.len(), 469);
+#[test]
+fn branching_oneof_chain_into_cycle_is_not_exponential() {
+    // Every type has two fields into the next one, and the chain ends in a
+    // self-referencing @oneOf. A search that backtracks through each field
+    // would visit 2^64 paths.
+    let depth = 64;
+    let mut schema = String::from("type Query { f(arg: X0): Int }\n");
+    for i in 0..depth {
+        let next = i + 1;
+        schema.push_str(&format!("input X{i} @oneOf {{ a: X{next} b: X{next} }}\n"));
+    }
+    schema.push_str(&format!("input X{depth} @oneOf {{ a: X{depth} }}\n"));
+
+    let errors = Schema::parse_and_validate(schema, "schema.graphql")
+        .expect_err("chain into an unbreakable cycle should fail")
+        .errors;
+    assert_eq!(errors.len(), depth + 1);
 }
 
 #[test]
