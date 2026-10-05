@@ -13,9 +13,7 @@ fn gen(len: usize) -> String {
 #[test]
 fn snapshot_tests() {
     expect![[r#"
-        {
-          A0
-        }
+        {}
 
         schema {
           query: A2
@@ -49,9 +47,7 @@ fn snapshot_tests() {
     "#]]
     .assert_eq(&gen(0));
     expect![[r#"
-        {
-          A0
-        }
+        {}
 
         schema {
           query: A5
@@ -110,9 +106,7 @@ fn snapshot_tests() {
     "#]]
     .assert_eq(&gen(10));
     expect![[r#"
-        {
-          A0
-        }
+        {}
 
         schema {
           query: A5
@@ -179,9 +173,7 @@ fn snapshot_tests() {
     "#]]
     .assert_eq(&gen(100));
     expect![[r#"
-        {
-          A0
-        }
+        {}
 
         schema {
           query: A5
