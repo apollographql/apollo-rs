@@ -37,7 +37,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Accept empty selection sets - [tninesling], [pull/XXXX]**
+- **Accept empty selection sets - [tninesling], [pull/1115]**
 
   The September 2026 specification changes the grammar to
   `SelectionSet : { Selection* }` ([graphql-spec#1227]), so `query {}` and
@@ -59,7 +59,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `SyntaxKind::DIRECTIVE_DEFINITION_KW`.
 
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
-[pull/XXXX]: https://github.com/apollographql/apollo-rs/pull/XXXX
+[pull/1115]: https://github.com/apollographql/apollo-rs/pull/1115
 [graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
 [graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
