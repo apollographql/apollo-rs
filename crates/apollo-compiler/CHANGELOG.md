@@ -70,7 +70,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   It previously always returned an empty list for
   `Definition::DirectiveDefinition`.
 
-- **Reject input objects with unbreakable cycles through @oneOf - [tninesling]**
+- **Reject input objects with unbreakable cycles through @oneOf - [tninesling], [pull/1114]**
 
   Input object cycle validation now follows `InputObjectHasUnbreakableCycle()`
   from the September 2026 specification ([graphql-spec#1211]). Previously,
@@ -86,6 +86,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   nesting`, since the check no longer recurses.
 
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
+[pull/1114]: https://github.com/apollographql/apollo-rs/pull/1114
 [graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
 [graphql-spec#1211]: https://github.com/graphql/graphql-spec/pull/1211
 [TylerBloom]: https://github.com/TylerBloom
