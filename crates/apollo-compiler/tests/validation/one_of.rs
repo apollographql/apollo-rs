@@ -376,6 +376,34 @@ fn invalid_recursive_oneof_three_way_cycle() {
 }
 
 #[test]
+fn invalid_oneof_leading_only_into_cycle_elsewhere() {
+    // `Entry` is not part of the cycle, but every field leads into the
+    // unbreakable `A <-> B` cycle, so no value of `Entry` can be constructed.
+    let errors = Schema::parse_and_validate(
+        r#"
+        type Query { f: String }
+        input Entry @oneOf {
+            a: A
+            b: B
+        }
+        input A { b: B! }
+        input B { a: A! }
+        "#,
+        "schema.graphql",
+    )
+    .expect_err("@oneOf with every field leading into a cycle should fail")
+    .errors
+    .to_string();
+
+    for name in ["Entry", "A", "B"] {
+        assert!(
+            errors.contains(&format!("`{name}` input object cannot reference itself")),
+            "expected an error for `{name}`, got:\n{errors}"
+        );
+    }
+}
+
+#[test]
 fn valid_oneof_with_escape_field() {
     // A @oneOf input object with at least one non-recursive field can be
     // constructed, so it should be valid.

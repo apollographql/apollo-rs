@@ -12,94 +12,36 @@ use crate::validation::RecursionStack;
 use crate::Name;
 use crate::Node;
 
-// Implements [Circular References](https://spec.graphql.org/September2025/#sec-Input-Objects.Circular-References)
-// part of the input object validation spec.
-struct FindRecursiveInputValue<'a> {
+// Implements `InputObjectHasUnbreakableCycle()` from the Input Objects type
+// validation rules. An `Err(CycleError::Recursed)` means no finite value of the
+// input object can be constructed, and carries the field path that proves it.
+struct FindUnbreakableCycle<'a> {
     schema: &'a crate::Schema,
 }
 
-impl FindRecursiveInputValue<'_> {
-    fn input_value_definition(
+impl FindUnbreakableCycle<'_> {
+    fn input_field_type(
         &self,
         seen: &mut RecursionGuard<'_>,
         def: &Node<ast::InputValueDefinition>,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        match &*def.ty {
-            // NonNull type followed by Named type is the one that's not allowed
-            // to be cyclical, so this is only case we care about.
-            //
-            // Everything else may be a cyclical input value.
-            ast::Type::NonNullNamed(name) => {
-                if !seen.contains(name) {
-                    if let Some(object_def) = self.schema.get_input_object(name) {
-                        self.input_object_definition(seen.push(name)?, object_def)
-                            .map_err(|err| err.trace(def))?
-                    }
-                } else if seen.first() == Some(name) {
-                    return Err(CycleError::Recursed(vec![def.clone()]));
-                }
-
-                Ok(())
-            }
-            _ => Ok(()),
-        }
-    }
-
-    fn input_object_definition(
-        &self,
-        mut seen: RecursionGuard<'_>,
-        input_object: &InputObjectType,
-    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        for input_value in input_object.fields.values() {
-            self.input_value_definition(&mut seen, input_value)?;
-        }
-
-        Ok(())
-    }
-
-    fn check(
-        schema: &crate::Schema,
-        input_object: &InputObjectType,
-    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        let mut recursion_stack = RecursionStack::with_root(input_object.name.clone());
-        FindRecursiveInputValue { schema }
-            .input_object_definition(recursion_stack.guard(), input_object)
-    }
-}
-
-// Catches cycles involving @oneOf that FindRecursiveInputValue misses.
-//
-// A field is an "unbreakable link" if it's NonNull, or if its parent is @oneOf
-// (making it semantically non-null). For @oneOf types, a cycle is fatal only
-// when *every* field leads into it (you pick one, so one escape suffices).
-// For regular types, *any* single unbreakable link is fatal.
-struct FindOneOfCycle<'a> {
-    schema: &'a crate::Schema,
-}
-
-impl FindOneOfCycle<'_> {
-    fn input_value_definition(
-        &self,
-        seen: &mut RecursionGuard<'_>,
-        is_one_of: bool,
-        def: &Node<ast::InputValueDefinition>,
-    ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        let name = match &*def.ty {
-            ast::Type::NonNullNamed(name) => name,
-            ast::Type::Named(name) if is_one_of => name,
-            _ => return Ok(()),
+        // Lists can always be empty, so they break any cycle.
+        let (ast::Type::Named(name) | ast::Type::NonNullNamed(name)) = &*def.ty else {
+            return Ok(());
         };
 
-        if !seen.contains(name) {
-            if let Some(object_def) = self.schema.get_input_object(name) {
-                self.input_object_definition(seen.push(name)?, object_def)
-                    .map_err(|err| err.trace(def))?
-            }
-        } else if seen.first() == Some(name) {
+        // Any revisit is unbreakable, even when it does not return to the root
+        // type. The root still cannot be constructed if every way out of it
+        // ends in a cycle elsewhere.
+        if seen.contains(name) {
             return Err(CycleError::Recursed(vec![def.clone()]));
         }
-
-        Ok(())
+        match self.schema.get_input_object(name) {
+            Some(object_def) => self
+                .input_object_definition(seen.push(name)?, object_def)
+                .map_err(|err| err.trace(def)),
+            None => Ok(()),
+        }
     }
 
     fn input_object_definition(
@@ -107,19 +49,22 @@ impl FindOneOfCycle<'_> {
         mut seen: RecursionGuard<'_>,
         input_object: &InputObjectType,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
-        let is_one_of = input_object.is_one_of();
-        if is_one_of {
+        if input_object.is_one_of() {
+            // Only one field is provided, so a single breakable field is enough.
+            // An empty @oneOf is reported separately as an empty input object.
             let mut last_err = None;
             for field in input_object.fields.values() {
-                match self.input_value_definition(&mut seen, is_one_of, field) {
-                    Err(e) => last_err = Some(e),
+                match self.input_field_type(&mut seen, field) {
                     Ok(()) => return Ok(()),
+                    Err(err) => last_err = Some(err),
                 }
             }
             last_err.map_or(Ok(()), Err)
         } else {
             for field in input_object.fields.values() {
-                self.input_value_definition(&mut seen, is_one_of, field)?;
+                if field.ty.is_non_null() {
+                    self.input_field_type(&mut seen, field)?;
+                }
             }
             Ok(())
         }
@@ -130,7 +75,8 @@ impl FindOneOfCycle<'_> {
         input_object: &InputObjectType,
     ) -> Result<(), CycleError<ast::InputValueDefinition>> {
         let mut recursion_stack = RecursionStack::with_root(input_object.name.clone());
-        FindOneOfCycle { schema }.input_object_definition(recursion_stack.guard(), input_object)
+        FindUnbreakableCycle { schema }
+            .input_object_definition(recursion_stack.guard(), input_object)
     }
 }
 
@@ -149,26 +95,8 @@ pub(crate) fn validate_input_object_definition(
         Default::default(),
     );
 
-    match FindRecursiveInputValue::check(schema, input_object) {
-        Ok(_) => match FindOneOfCycle::check(schema, input_object) {
-            Ok(_) => {}
-            Err(CycleError::Recursed(trace)) => diagnostics.push(
-                input_object.location(),
-                DiagnosticData::RecursiveInputObjectDefinition {
-                    name: input_object.name.clone(),
-                    trace,
-                },
-            ),
-            Err(CycleError::Limit(_)) => {
-                diagnostics.push(
-                    input_object.location(),
-                    DiagnosticData::DeeplyNestedType {
-                        name: input_object.name.clone(),
-                        describe_type: "input object",
-                    },
-                );
-            }
-        },
+    match FindUnbreakableCycle::check(schema, input_object) {
+        Ok(_) => {}
         Err(CycleError::Recursed(trace)) => diagnostics.push(
             input_object.location(),
             DiagnosticData::RecursiveInputObjectDefinition {
