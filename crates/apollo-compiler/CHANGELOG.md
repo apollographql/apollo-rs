@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-- **Support empty selection sets - [tninesling], [pull/XXXX]**
+- **Support empty selection sets - [tninesling], [pull/1116]**
 
   The September 2026 specification allows a selection set to be empty
   ([graphql-spec#1227]), so `{ human {} }` is valid when `human` has a
@@ -91,7 +91,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `Definition::DirectiveDefinition`.
 
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
-[pull/XXXX]: https://github.com/apollographql/apollo-rs/pull/XXXX
+[pull/1116]: https://github.com/apollographql/apollo-rs/pull/1116
 [graphql-spec#1206]: https://github.com/graphql/graphql-spec/pull/1206
 [graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
