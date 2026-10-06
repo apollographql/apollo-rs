@@ -37,7 +37,7 @@ type Query {
   Trailing quote"
   """
   f15: Int
-  "   Leading whitespace on a single line to preserve"
+  """   Leading whitespace on a single line to preserve"""
   f16: Int
   """
      Leading whitespace in multi-line string to preserve

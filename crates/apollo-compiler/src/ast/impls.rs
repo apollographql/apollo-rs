@@ -1156,6 +1156,240 @@ impl Value {
     serialize_method!();
 }
 
+impl StringValue {
+    /// Constructs a string value that serializes with quoted string syntax (`"…"`).
+    ///
+    /// `From` and `Into` conversions from `String` and `&str` do the same.
+    pub fn new(value: impl Into<String>) -> Self {
+        Self {
+            value: value.into(),
+            block: false,
+        }
+    }
+
+    /// Constructs a string value that serializes with [block string] syntax (`"""…"""`)
+    /// whenever the value can be represented that way.
+    ///
+    /// [block string]: https://spec.graphql.org/September2025/#sec-String-Value.Block-Strings
+    pub fn new_block(value: impl Into<String>) -> Self {
+        Self {
+            value: value.into(),
+            block: true,
+        }
+    }
+
+    /// Returns the semantic Unicode text of this value,
+    /// after escape sequences and block string indentation were processed.
+    pub fn as_str(&self) -> &str {
+        &self.value
+    }
+
+    /// Converts into the semantic Unicode text of this value.
+    pub fn into_string(self) -> String {
+        self.value
+    }
+
+    /// Whether this value was written with (or should serialize with)
+    /// [block string] syntax (`"""…"""`).
+    ///
+    /// [block string]: https://spec.graphql.org/September2025/#sec-String-Value.Block-Strings
+    pub fn is_block(&self) -> bool {
+        self.block
+    }
+
+    /// Sets whether this value should serialize with block string syntax.
+    pub fn set_block(&mut self, block: bool) {
+        self.block = block
+    }
+}
+
+impl std::ops::Deref for StringValue {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.value
+    }
+}
+
+impl AsRef<str> for StringValue {
+    fn as_ref(&self) -> &str {
+        &self.value
+    }
+}
+
+impl std::borrow::Borrow<str> for StringValue {
+    fn borrow(&self) -> &str {
+        &self.value
+    }
+}
+
+/// Compares the text only: the block string flag is syntax metadata and is ignored.
+impl PartialEq for StringValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+
+impl Eq for StringValue {}
+
+/// Hashes the text only, consistently with `PartialEq`.
+impl hash::Hash for StringValue {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.value.hash(state)
+    }
+}
+
+impl PartialEq<str> for StringValue {
+    fn eq(&self, other: &str) -> bool {
+        self.value == other
+    }
+}
+
+impl PartialEq<&'_ str> for StringValue {
+    fn eq(&self, other: &&'_ str) -> bool {
+        self.value == *other
+    }
+}
+
+impl PartialEq<String> for StringValue {
+    fn eq(&self, other: &String) -> bool {
+        self.value == *other
+    }
+}
+
+impl PartialEq<StringValue> for str {
+    fn eq(&self, other: &StringValue) -> bool {
+        self == other.value
+    }
+}
+
+impl PartialEq<StringValue> for &'_ str {
+    fn eq(&self, other: &StringValue) -> bool {
+        *self == other.value
+    }
+}
+
+impl PartialEq<StringValue> for String {
+    fn eq(&self, other: &StringValue) -> bool {
+        *self == other.value
+    }
+}
+
+impl From<String> for StringValue {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&'_ str> for StringValue {
+    fn from(value: &'_ str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&'_ String> for StringValue {
+    fn from(value: &'_ String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<StringValue> for String {
+    fn from(value: StringValue) -> Self {
+        value.value
+    }
+}
+
+impl fmt::Display for StringValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.value.fmt(f)
+    }
+}
+
+/// Formats like `String`’s `Debug` for a non-block string,
+/// with a `block ` prefix for a block string.
+impl fmt::Debug for StringValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.block {
+            f.write_str("block ")?;
+        }
+        fmt::Debug::fmt(&self.value, f)
+    }
+}
+
+/// Serializes as a plain string for a non-block string,
+/// or as a map `{"value": …, "block": true}` for a block string.
+impl serde::Serialize for StringValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        if self.block {
+            use serde::ser::SerializeStruct;
+            let mut s = serializer.serialize_struct("StringValue", 2)?;
+            s.serialize_field("value", &self.value)?;
+            s.serialize_field("block", &self.block)?;
+            s.end()
+        } else {
+            self.value.serialize(serializer)
+        }
+    }
+}
+
+/// Accepts either a plain string (non-block)
+/// or a map `{"value": …, "block": …}` where `block` defaults to `false`.
+impl<'de> serde::Deserialize<'de> for StringValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const EXPECTING: &str = "a string, or a map with `value` and `block` entries";
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = StringValue;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str(EXPECTING)
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(StringValue::new(v))
+            }
+
+            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(StringValue::new(v))
+            }
+
+            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::MapAccess<'de>,
+            {
+                let mut value: Option<String> = None;
+                let mut block: Option<bool> = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "value" => value = Some(map.next_value()?),
+                        "block" => block = Some(map.next_value()?),
+                        _ => return Err(serde::de::Error::unknown_field(&key, FIELDS)),
+                    }
+                }
+                let value = value.ok_or_else(|| serde::de::Error::missing_field("value"))?;
+                Ok(StringValue {
+                    value,
+                    block: block.unwrap_or(false),
+                })
+            }
+        }
+        const FIELDS: &[&str] = &["value", "block"];
+        deserializer.deserialize_any(Visitor)
+    }
+}
+
 impl IntValue {
     /// Constructs from a string matching the [`IntValue`
     /// grammar specification](https://spec.graphql.org/September2025/#IntValue)
@@ -1662,6 +1896,12 @@ impl From<&'_ String> for Value {
 
 impl From<String> for Value {
     fn from(value: String) -> Self {
+        Value::String(value.into())
+    }
+}
+
+impl From<StringValue> for Value {
+    fn from(value: StringValue) -> Self {
         Value::String(value)
     }
 }

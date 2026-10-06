@@ -18,7 +18,7 @@ Schema {
                     26..175 @35 Argument {
                         name: "reason",
                         value: 34..175 @35 String(
-                            "The person who got promoted by shipping this product has moved on to another team.\nThe service will shut down next month.",
+                            block "The person who got promoted by shipping this product has moved on to another team.\nThe service will shut down next month.",
                         ),
                     },
                 ],

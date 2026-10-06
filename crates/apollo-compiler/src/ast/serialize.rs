@@ -24,6 +24,13 @@ pub(crate) struct State<'config, 'fmt, 'fmt2> {
     output: &'fmt mut fmt::Formatter<'fmt2>,
     /// Have we not written anything yet?
     output_empty: bool,
+    /// Non-zero inside `on_single_line`: line breaks between items are disabled,
+    /// but block strings may still span multiple lines.
+    single_line_depth: usize,
+    /// The indentation level when the outermost `on_single_line` started,
+    /// used for block strings inside it (like graphql-js, which indents
+    /// a multi-line argument value at the level of its field).
+    single_line_indent_level: usize,
 }
 
 impl<'a, T> Serialize<'a, T> {
@@ -98,7 +105,11 @@ impl State<'_, '_, '_> {
     }
 
     fn new_line_common(&mut self, space: bool) -> fmt::Result {
-        if let Some(prefix) = self.config.indent_prefix {
+        if let Some(prefix) = self
+            .config
+            .indent_prefix
+            .filter(|_| self.single_line_depth == 0)
+        {
             self.write("\n")?;
             for _ in 0..self.indent_level {
                 self.write(prefix)?;
@@ -109,27 +120,44 @@ impl State<'_, '_, '_> {
         Ok(())
     }
 
-    /// Panics if newlines are disabled
+    /// Writes a line break even inside `on_single_line`.
+    ///
+    /// Panics if indentation is disabled
     fn require_new_line(&mut self) -> fmt::Result {
         let prefix = self
             .config
             .indent_prefix
-            .expect("require_new_line called with newlines disabled");
+            .expect("require_new_line called with indentation disabled");
+        let indent_level = if self.single_line_depth > 0 {
+            self.single_line_indent_level
+        } else {
+            self.indent_level
+        };
         self.write("\n")?;
-        for _ in 0..self.indent_level {
+        for _ in 0..indent_level {
             self.write(prefix)?;
         }
         Ok(())
     }
 
     pub(crate) fn newlines_enabled(&self) -> bool {
+        self.config.indent_prefix.is_some() && self.single_line_depth == 0
+    }
+
+    /// Whether multi-line block strings can be written.
+    /// Unlike other line breaks they are allowed inside `on_single_line`
+    /// since they are part of a single value, as in graphql-js.
+    fn block_strings_enabled(&self) -> bool {
         self.config.indent_prefix.is_some()
     }
 
     pub(crate) fn on_single_line<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> R {
-        let indent_prefix = self.config.indent_prefix.take();
+        if self.single_line_depth == 0 {
+            self.single_line_indent_level = self.indent_level;
+        }
+        self.single_line_depth += 1;
         let result = f(self);
-        self.config.indent_prefix = indent_prefix;
+        self.single_line_depth -= 1;
         result
     }
 }
@@ -745,8 +773,8 @@ impl Value {
             Value::Boolean(false) => state.write("false"),
             Value::Enum(name) => state.write(name),
             Value::String(value) => {
-                let is_description = false;
-                serialize_string_value(state, is_description, value)
+                let prefer_block_string = value.is_block();
+                serialize_string_value(state, prefer_block_string, value)
             }
             Value::Variable(name) => display!(state, "${}", name),
             Value::Float(value) => display!(state, value),
@@ -845,11 +873,21 @@ pub(crate) fn curly_brackets_space_separated<T>(
     state.write("}")
 }
 
-fn serialize_string_value(state: &mut State, is_description: bool, mut str: &str) -> fmt::Result {
-    let contains_newline = str.contains('\n');
-    let prefer_block_string = is_description || contains_newline;
-    if state.newlines_enabled() && prefer_block_string && can_be_block_string(str) {
-        return serialize_block_string(state, contains_newline, str);
+/// Serialize with block string syntax if `prefer_block_string` is set
+/// (for descriptions, and for values written with block string syntax)
+/// or if the value contains a line terminator and we are not on a single line;
+/// and in either case only if indentation is enabled
+/// and `value` can be represented as a block string.
+/// Otherwise, serialize with quoted string syntax.
+fn serialize_string_value(
+    state: &mut State,
+    prefer_block_string: bool,
+    mut str: &str,
+) -> fmt::Result {
+    let prefer_block_string =
+        prefer_block_string || (state.newlines_enabled() && str.contains('\n'));
+    if state.block_strings_enabled() && prefer_block_string && can_be_block_string(str) {
+        return serialize_block_string(state, str);
     }
     state.write("\"")?;
     loop {
@@ -876,7 +914,14 @@ fn serialize_string_value(state: &mut State, is_description: bool, mut str: &str
     state.write("\"")
 }
 
-fn serialize_block_string(state: &mut State, contains_newline: bool, str: &str) -> fmt::Result {
+/// Follows the rules of graphql-js’ `printBlockString`
+/// (`packages/graphql/src/language/blockString.ts`, as of graphql 17.0.2),
+/// except that content lines are indented with the current indentation prefix
+/// and empty lines are written without trailing whitespace.
+/// Both preserve the value through `BlockStringValue`.
+///
+/// Callers must check `can_be_block_string` first.
+fn serialize_block_string(state: &mut State, str: &str) -> fmt::Result {
     const TRIPLE_QUOTE: &str = "\"\"\"";
     const ESCAPED_TRIPLE_QUOTE: &str = "\\\"\"\"";
     const _: () = assert!(TRIPLE_QUOTE.len() == 3);
@@ -891,28 +936,46 @@ fn serialize_block_string(state: &mut State, contains_newline: bool, str: &str) 
         state.write(line)
     }
 
-    let multi_line =
-        contains_newline || str.len() > 70 || str.ends_with('"') || str.ends_with('\\');
+    fn starts_with_whitespace(line: &str) -> bool {
+        line.starts_with([' ', '\t'])
+    }
+
+    // `can_be_block_string` excludes \r, so the only remaining line terminator is \n
+    let lines: Vec<&str> = str.split('\n').collect();
+    let is_single_line = lines.len() == 1;
+    // If common indentation is found we can fix some of those cases by adding a leading new line
+    let force_leading_newline = lines.len() > 1
+        && lines[1..]
+            .iter()
+            .all(|line| line.is_empty() || starts_with_whitespace(line));
+    let has_trailing_triple_quotes = str.ends_with(TRIPLE_QUOTE);
+    let has_trailing_quote = str.ends_with('"') && !has_trailing_triple_quotes;
+    let has_trailing_slash = str.ends_with('\\');
+    let force_trailing_newline = has_trailing_quote || has_trailing_slash;
+    // graphql-js compares the length in UTF-16 code units
+    let print_as_multiple_lines = !is_single_line
+        || str.encode_utf16().count() > 70
+        || force_trailing_newline
+        || force_leading_newline
+        || has_trailing_triple_quotes;
+    let skip_leading_newline = is_single_line && starts_with_whitespace(str);
+    let leading_newline =
+        (print_as_multiple_lines && !skip_leading_newline) || force_leading_newline;
 
     state.write(TRIPLE_QUOTE)?;
-    if !multi_line {
-        // """example""""
-        serialize_line(state, str)?
-    } else {
-        // """
-        // example
-        // """
-
-        // `can_be_block_string` excludes \r, so the only remaining line terminator is \n
-        for line in str.split('\n') {
+    for (i, line) in lines.iter().enumerate() {
+        if i > 0 || leading_newline {
             if line.is_empty() {
                 // Skip indentation which would be trailing whitespace
                 state.write("\n")?;
+                continue;
             } else {
                 state.require_new_line()?;
-                serialize_line(state, line)?;
             }
         }
+        serialize_line(state, line)?;
+    }
+    if print_as_multiple_lines || force_trailing_newline {
         state.require_new_line()?;
     }
     state.write(TRIPLE_QUOTE)
@@ -960,13 +1023,16 @@ fn can_be_block_string(value: &str) -> bool {
     };
     // If there is common indent `BlockStringValue` would remove it
     // and incorrectly round-trip to a different value.
-    common_indent == 0
+    // The first line of a block string does not count towards common indent,
+    // and `serialize_block_string` only keeps the first line of `value`
+    // on the same line as the opening `"""` when there is no other line.
+    common_indent == 0 || !value.contains('\n')
 }
 
 fn serialize_description(state: &mut State, description: &Option<Node<str>>) -> fmt::Result {
     if let Some(description) = description {
-        let is_description = true;
-        serialize_string_value(state, is_description, description)?;
+        let prefer_block_string = true;
+        serialize_string_value(state, prefer_block_string, description)?;
         state.new_line_or_space()?;
     }
     Ok(())
@@ -1013,6 +1079,8 @@ macro_rules! impl_display {
                         indent_level: self.config.initial_indent_level,
                         output: f,
                         output_empty: true,
+                        single_line_depth: 0,
+                        single_line_indent_level: 0,
                     };
                     // Indent the first line.
                     // Subsequent lines will be indented when writing a line break.

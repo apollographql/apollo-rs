@@ -545,11 +545,7 @@ pub enum Value {
     Variable(Name),
 
     /// A [_StringValue_](https://spec.graphql.org/September2025/#StringValue)
-    String(
-        /// The [semantic Unicode text](https://spec.graphql.org/September2025/#sec-String-Value.Static-Semantics)
-        /// that this value represents.
-        String,
-    ),
+    String(StringValue),
 
     /// A [_FloatValue_](https://spec.graphql.org/September2025/#FloatValue)
     Float(FloatValue),
@@ -565,6 +561,27 @@ pub enum Value {
 
     /// An [_ObjectValue_](https://spec.graphql.org/September2025/#ObjectValue)
     Object(Vec<(Name, Node<Value>)>),
+}
+
+/// A [_StringValue_](https://spec.graphql.org/September2025/#StringValue):
+/// the [semantic Unicode text](https://spec.graphql.org/September2025/#sec-String-Value.Static-Semantics)
+/// that a string literal represents,
+/// together with whether it was written with [block string] syntax (`"""…"""`).
+///
+/// The block flag is syntax metadata, like source locations:
+/// it is **ignored** by `PartialEq`, `Eq`, and `Hash`,
+/// so `"a"` and `"""a"""` are equal values.
+/// Serialization to GraphQL syntax honours it where the value can be represented
+/// as a block string, see [`Value`]’s `Display` implementation.
+///
+/// `StringValue` dereferences to `str`, so a value matched with `Value::String(s)`
+/// can be used wherever a `&str` is expected.
+///
+/// [block string]: https://spec.graphql.org/September2025/#sec-String-Value.Block-Strings
+#[derive(Clone)]
+pub struct StringValue {
+    value: String,
+    block: bool,
 }
 
 /// An [_IntValue_](https://spec.graphql.org/September2025/#IntValue),

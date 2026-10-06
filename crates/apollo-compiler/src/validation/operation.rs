@@ -259,16 +259,16 @@ fn check_defer_label(
             );
         }
         ast::Value::String(label) => {
-            if let Some(&prev) = seen.get(label) {
+            if let Some(&prev) = seen.get(label.as_str()) {
                 diagnostics.push(
                     label_arg.location(),
                     executable::BuildError::DuplicateDeferLabel {
-                        label: label.clone(),
+                        label: label.as_str().to_owned(),
                         original_location: prev,
                     },
                 );
             } else {
-                seen.insert(label.clone(), label_arg.location());
+                seen.insert(label.as_str().to_owned(), label_arg.location());
             }
         }
         // Non-string, non-variable values are rejected by argument coercion validation.
