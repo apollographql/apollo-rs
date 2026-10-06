@@ -1,3 +1,4 @@
+mod block_strings;
 mod empty_selection_set;
 mod equality_semantics;
 mod error_formatting;

@@ -742,7 +742,12 @@ impl Convert for cst::Value {
 
         Some(match self {
             C::Variable(v) => A::Variable(v.name()?.convert(file_id)?),
-            C::StringValue(v) => A::String(String::from(v)),
+            C::StringValue(v) => {
+                let block = v.syntax().first_token()?.text().starts_with("\"\"\"");
+                let mut value = ast::StringValue::new(String::from(v));
+                value.set_block(block);
+                A::String(value)
+            }
             C::FloatValue(v) => A::Float(ast::FloatValue::new_parsed(
                 v.syntax().first_token()?.text(),
             )),

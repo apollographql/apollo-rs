@@ -6,9 +6,54 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2026-mm-dd
 
-> Important: 3 breaking changes below, indicated by **BREAKING**
+> Important: 4 breaking changes below, indicated by **BREAKING**
 
 ## BREAKING
+
+- **Preserve block string syntax in `ast::Value::String` - [erneestoc], [issue/1120], [pull/1121]**
+
+  Like graphql-js, the AST now records whether a string literal was written
+  with block string syntax (`"""…"""`), and `Display` prints it back that way,
+  so that re-printed documents keep their original form. This matters for
+  tools that embed or hash the printed source, such as persisted query IDs.
+
+  - `ast::Value::String` now contains a new `ast::StringValue` type instead of
+    a `String`. `StringValue` dereferences to `str`, so most code matching
+    `Value::String(s)` keeps compiling when `s` is used as a `&str`.
+    Code that needs an owned `String` can use `s.as_str().to_owned()`,
+    `s.into_string()`, or `String::from(s)`.
+    Construct with `StringValue::new("…")`, `StringValue::new_block("…")`,
+    or `From`/`Into` conversions from `String` and `&str` (non-block);
+    `Value::from("…")` and `Value::from(String)` still work.
+  - `StringValue::is_block()` returns the flag and `set_block()` changes it.
+  - The block flag is syntax metadata, like source locations: it is ignored by
+    `PartialEq`, `Eq`, and `Hash`, so `"a"` and `"""a"""` are equal values
+    and validation (for example field merging) is unaffected.
+  - serde: a non-block string still serializes as a plain string
+    (`{"String": "example"}`); a block string serializes as
+    `{"String": {"value": "example", "block": true}}`.
+    Deserialization accepts both shapes.
+  - `Debug` prints a block string as `block "example"`.
+  - Serialization: a `Value::String` that was parsed from (or constructed as) a
+    block string is printed with block string syntax whenever its text can be
+    represented that way (as before, text with a leading or trailing blank line,
+    common indentation across lines, or carriage returns falls back to the quoted
+    form). Block strings now also appear inside arguments and variable
+    definitions, which were previously forced to the quoted form:
+    `field(arg: """\n  text\n  """)`. The content is indented at the level of
+    the enclosing field, like graphql-js. Non-block strings containing newlines
+    inside arguments still use the quoted form with `\n` escapes.
+  - Block strings follow the rules of graphql-js `printBlockString`
+    (graphql 17.0.2): `"""` is escaped as `\"""`, the long form is used for
+    multi-line text, text longer than 70 UTF-16 code units, text ending in `"`
+    or `\`, and text whose subsequent lines all start with whitespace; a single
+    line starting with whitespace keeps its first line on the opening `"""`.
+    The only deliberate difference is that empty lines are written without
+    indentation to avoid trailing whitespace.
+  - Descriptions already preferred block string syntax and are unchanged,
+    except that a single-line description starting with whitespace now prints
+    as `"""  text"""` instead of `"  text"`, and descriptions of variable
+    definitions now print as block strings too.
 
 - **Support empty selection sets - [tninesling], [pull/1116]**
 
@@ -113,6 +158,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
 [tninesling]: https://github.com/tninesling
+[erneestoc]: https://github.com/erneestoc
+[issue/1120]: https://github.com/apollographql/apollo-rs/issues/1120
+[pull/1121]: https://github.com/apollographql/apollo-rs/pull/1121
 
 # [2.0.0-beta.1](https://crates.io/crates/apollo-compiler/2.0.0-beta.1) - 2026-08-28
 
