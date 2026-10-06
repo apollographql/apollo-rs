@@ -1,0 +1,9 @@
+type Query {
+  foo: Node
+}
+
+interface Node
+
+extend interface Node {
+  bar: String
+}

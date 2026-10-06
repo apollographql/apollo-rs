@@ -1,0 +1,29 @@
+interface A implements B {
+  a: A
+  b: B
+}
+
+interface B implements A {
+  a: A
+  b: B
+}
+
+type C implements A & B {
+  a: A
+  b: B
+  value: Int!
+}
+
+type Query {
+  c: C
+}
+
+fragment b on C {
+  value
+}
+
+{
+  c {
+    ...b
+  }
+}

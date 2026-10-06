@@ -1,0 +1,12 @@
+mutation adoptAPetMutation {
+  addPet {
+    owner {
+      name
+    }
+  }
+}
+
+type Query {
+  name: String
+  age: Int
+}

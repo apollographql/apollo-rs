@@ -1,0 +1,26 @@
+interface Pet {
+  name: String
+}
+
+type Cat implements Pet {
+  name: String
+  nickname: String
+  meowVolume: Int
+}
+
+type Dog implements Pet {
+  name: String
+  nickname: String
+  barkVolume: Int
+}
+
+union CatOrDog = Cat | Pet
+
+type Human {
+  name: String
+  pets: [Pet]
+}
+
+type Query {
+  human: Human
+}

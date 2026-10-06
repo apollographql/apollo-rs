@@ -1,0 +1,13 @@
+subscription ConditionalInlineSub($condition: Boolean = true) {
+  ... {
+    ticker @include(if: $condition)
+  }
+}
+
+type Query {
+  hello: String
+}
+
+type Subscription {
+  ticker: String
+}

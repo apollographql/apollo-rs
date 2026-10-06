@@ -1,0 +1,111 @@
+"""
+The schema
+"""
+schema @link(url: "https://specs.apollo.dev/federation/v2.0") {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+"A scalar"
+scalar Date @specifiedBy(url: "https://example.com")
+
+scalar Plain
+
+"""
+A type
+"""
+type Query implements Node & Entity @key(fields: "id") {
+  "The id"
+  id: ID!
+  simple(arg: Int, other: String = "x" @deprecated): String
+  withDescribedArg(
+    "described argument"
+    arg: Int
+    other: String
+  ): String
+  longDefault(input: Input = {aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"}): String
+  list: [[Int!]]!
+  deprecated: String @deprecated(reason: "no")
+}
+
+type Mutation {
+  doIt: Boolean
+}
+
+type Subscription {
+  events: Int
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Entity implements Node @meta {
+  id: ID!
+  "entity name"
+  name: String
+}
+
+union SearchResult @meta = Query | Mutation
+
+union Empty
+
+enum Status @meta {
+  "active"
+  ACTIVE
+  INACTIVE @deprecated
+}
+
+"""
+An input
+"""
+input Input @meta {
+  aaaaaaaaaaaaaaaa: String = "default"
+  bbbbbbbbbbbbbbbbbbbb: String
+  list: [Int] = [1, 2, 3]
+  obj: Nested = {a: 1}
+}
+
+input Nested {
+  a: Int
+}
+
+directive @meta on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCALAR | SCHEMA
+
+"""
+A directive
+"""
+directive @key(fields: String!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+
+directive @described(
+  "the first arg"
+  first: Int
+  second: Int
+) on FIELD
+
+extend schema @link(url: "x") {
+  subscription: Subscription
+}
+
+extend scalar Date @meta
+
+extend type Query implements Other @meta {
+  extra: Int
+}
+
+extend type Query @meta
+
+extend interface Node @meta {
+  extra: Int
+}
+
+extend union SearchResult @meta = Subscription
+
+extend enum Status {
+  PENDING
+}
+
+extend input Input @meta {
+  extra: Int
+}

@@ -33,6 +33,41 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 //!
+//! ## graphql-js compatible serialization
+//!
+//! [`Document::to_graphql_js_string`] and the corresponding methods on node types
+//! serialize to GraphQL syntax formatted exactly like [graphql-js]'s `print()` function
+//! (as of graphql-js 17.0.2), so that tools which embed or hash the printed source
+//! can produce the same output as their JavaScript counterparts.
+//! The output has no trailing newline, separates definitions with a blank line,
+//! wraps field arguments, list values and object values onto separate lines
+//! when the single-line form would exceed 80 characters,
+//! and escapes string literals the way graphql-js does.
+//! The default [`Display`][std::fmt::Display] serialization is unchanged
+//! and makes no such compatibility guarantee.
+//!
+//! The AST does not record whether a string literal used block-string syntax,
+//! so string values are always printed in the quoted form
+//! and descriptions are printed as block strings when possible.
+//!
+//! ```
+//! use apollo_compiler::ast;
+//!
+//! let source = r#"
+//! query ($id: ID!) {
+//!   user(id: $id, options: {tabs: "\t", emoji: "👋"}) { name }
+//! }
+//! "#;
+//! let doc = ast::Document::parse(source, "example.graphql").unwrap();
+//! assert_eq!(doc.to_graphql_js_string(), r#"query ($id: ID!) {
+//!   user(id: $id, options: { tabs: "\t", emoji: "👋" }) {
+//!     name
+//!   }
+//! }"#);
+//! ```
+//!
+//! [graphql-js]: https://github.com/graphql/graphql-js
+//!
 //! ## Example
 //!
 //! ```
@@ -56,6 +91,7 @@ use crate::Name;
 use crate::Node;
 
 pub(crate) mod from_cst;
+pub(crate) mod graphql_js;
 pub(crate) mod impls;
 pub(crate) mod serialize;
 

@@ -1,0 +1,6 @@
+diagnostics/0011_syntactic_errors_from_parser.graphql: Syntax Error: Expected Name, found "}".
+diagnostics/0017_schema_with_unspecified_scalar.graphql: Syntax Error: Unexpected <EOF>.
+diagnostics/0018_schema_with_specified_scalar_missing_values.graphql: Syntax Error: Unexpected <EOF>.
+diagnostics/0020_enum_values_with_uncapitalised_values.graphql: Syntax Error: Unexpected <EOF>.
+diagnostics/0062_root_operation_with_list.graphql: Syntax Error: Expected Name, found "[".
+diagnostics/0111_const_value.graphql: Syntax Error: Unexpected variable "$var1" in constant value.

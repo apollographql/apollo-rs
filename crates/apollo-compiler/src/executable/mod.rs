@@ -47,6 +47,9 @@
 //! [`serialize`][ExecutableDocument::serialize] methods return a builder
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
+//! [`to_graphql_js_string`][ExecutableDocument::to_graphql_js_string] methods
+//! serialize with the exact formatting of graphql-js `print()`, see
+//! [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization].
 
 use crate::ast;
 use crate::collections::IndexMap;

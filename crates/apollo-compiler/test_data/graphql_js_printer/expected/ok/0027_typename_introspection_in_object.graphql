@@ -1,0 +1,12 @@
+type Query {
+  id: String
+  name: String
+  birthday: Date
+}
+
+scalar Date @specifiedBy(url: "datespec.com")
+
+{
+  name
+  __typename
+}

@@ -1,0 +1,21 @@
+mutation adoptAPetMutation {
+  undefinedMutationField
+}
+
+type Query {
+  name: String
+  age: Int
+}
+
+type Mutation {
+  addPet(name: String!, petType: PetType): Result!
+}
+
+type Result {
+  id: String
+}
+
+enum PetType {
+  CAT
+  DOG
+}

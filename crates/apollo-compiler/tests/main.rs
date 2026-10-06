@@ -3,6 +3,7 @@ mod executable;
 mod extensions;
 mod field_set;
 mod field_type;
+mod graphql_js_printer;
 mod introspection;
 mod introspection_max_depth;
 mod locations;

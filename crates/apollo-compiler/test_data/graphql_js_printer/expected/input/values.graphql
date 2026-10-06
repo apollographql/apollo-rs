@@ -1,0 +1,95 @@
+query Values(
+$v: Int
+$longDefault: Input = {
+  aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+}
+$other: Int = 1
+) {
+  scalars(
+    int: 1
+    negInt: -42
+    float: 1.5
+    expFloat: 1e10
+    negExp: -2.5E-3
+    bool: true
+    no: false
+    nothing: null
+    enumValue: ACTIVE
+    variable: $v
+  )
+  lists(
+    empty: []
+    one: [1]
+    many: [1, 2, 3]
+    nested: [[1, 2], [3]]
+    strings: ["a", "b"]
+  )
+  objects(
+    empty: {  }
+    one: { a: 1 }
+    many: { a: 1, b: "two", c: [THREE] }
+    nested: { a: { b: { c: 1 } } }
+  )
+  objectInList(items: [{ id: 1, name: "one" }, { id: 2, name: "two" }])
+  longList(
+    items: [
+      "aaaaaaaaaaaaaaaaaaaa"
+      "bbbbbbbbbbbbbbbbbbbb"
+      "cccccccccccccccccccc"
+      "dddddddddddddddddddd"
+    ]
+  )
+  longObject(
+    input: {
+      aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  )
+  longObjectsInList(
+    items: [
+      {
+        aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+      { c: 1 }
+    ]
+  )
+  nestedLongObject(
+    input: {
+      outer: {
+        aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+      other: 1
+    }
+  )
+  deep {
+    nested {
+      longObject(
+        input: {
+          aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ) @dir(x: {
+        aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+      })
+    }
+  }
+}
+
+query MultilineDefaults(
+$a: Input = {
+  aaaaaaaaaaaaaaaa: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  bbbbbbbbbbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbbbbb"
+}
+$b: [String] = [
+  "aaaaaaaaaaaaaaaaaaaa"
+  "bbbbbbbbbbbbbbbbbbbb"
+  "cccccccccccccccccccc"
+  "dddddddddddddddddddd"
+]
+) {
+  f
+}
