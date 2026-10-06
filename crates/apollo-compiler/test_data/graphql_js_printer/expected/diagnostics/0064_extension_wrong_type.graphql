@@ -1,0 +1,41 @@
+scalar Scalar @specifiedBy(url: "https://apollographql.com")
+
+interface Intf {
+  field: Int
+}
+
+type Object {
+  field: Int
+}
+
+union Union = Scalar | Object
+
+input Input {
+  field: Int
+}
+
+enum Enum {
+  MEMBER
+}
+
+extend union Scalar = String
+
+extend interface Object {
+  field2: Scalar
+}
+
+extend enum Intf {
+  MEMBER_2
+}
+
+extend type Input {
+  field2: Scalar
+}
+
+extend input Enum {
+  field2: Scalar
+}
+
+type Query {
+  x: Int
+}

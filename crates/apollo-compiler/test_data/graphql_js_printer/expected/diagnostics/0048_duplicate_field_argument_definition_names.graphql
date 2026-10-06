@@ -1,0 +1,8 @@
+interface Duplicate {
+  duplicate(arg: Boolean, arg: Boolean): Int
+}
+
+type Query implements Duplicate {
+  single(arg: Boolean): Int
+  duplicate(arg: Boolean, arg: Boolean): Int
+}

@@ -1,0 +1,11 @@
+type Query {
+  name: String
+}
+
+type Mutation {
+  add(name: String!): Result!
+}
+
+type Result {
+  id: String
+}

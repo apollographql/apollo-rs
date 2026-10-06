@@ -1,0 +1,8 @@
+schema {
+  query: SharedType
+  subscription: SharedType
+}
+
+type SharedType {
+  field: String
+}

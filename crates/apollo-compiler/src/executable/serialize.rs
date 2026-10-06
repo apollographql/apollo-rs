@@ -10,6 +10,14 @@ impl ExecutableDocument {
         self.to_ast().serialize_impl(state)
     }
 
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast().to_graphql_js_string()
+    }
+
     pub(crate) fn to_ast(&self) -> ast::Document {
         let mut doc = ast::Document::new();
         if let Some(operation) = &self.operations.anonymous {
@@ -40,6 +48,14 @@ impl Operation {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         self.to_ast(None).serialize_impl(state)
     }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast(None).to_graphql_js_string()
+    }
 }
 
 impl Fragment {
@@ -56,6 +72,14 @@ impl Fragment {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         self.to_ast(None).serialize_impl(state)
     }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast(None).to_graphql_js_string()
+    }
 }
 
 impl SelectionSet {
@@ -70,6 +94,14 @@ impl SelectionSet {
         curly_brackets_space_separated(state, &self.selections, |state, sel| {
             sel.serialize_impl(state)
         })
+    }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        crate::ast::graphql_js::print_selection_set(&self.to_ast())
     }
 }
 
@@ -89,6 +121,14 @@ impl Selection {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         self.to_ast().serialize_impl(state)
     }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast().to_graphql_js_string()
+    }
 }
 
 impl Field {
@@ -105,6 +145,14 @@ impl Field {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         self.to_ast().serialize_impl(state)
     }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast().to_graphql_js_string()
+    }
 }
 
 impl InlineFragment {
@@ -119,6 +167,14 @@ impl InlineFragment {
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         self.to_ast().serialize_impl(state)
     }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast().to_graphql_js_string()
+    }
 }
 
 impl FragmentSpread {
@@ -131,6 +187,14 @@ impl FragmentSpread {
 
     pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         self.to_ast().serialize_impl(state)
+    }
+
+    /// Serialize to GraphQL syntax formatted exactly like graphql-js `print()`.
+    ///
+    /// See [the `ast` module documentation][crate::ast#graphql-js-compatible-serialization]
+    /// for details.
+    pub fn to_graphql_js_string(&self) -> String {
+        self.to_ast().to_graphql_js_string()
     }
 }
 

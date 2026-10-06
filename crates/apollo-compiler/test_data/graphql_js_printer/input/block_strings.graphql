@@ -1,0 +1,20 @@
+query BlockStrings {
+  simple(s: """hello""")
+  multi(s: """
+    line one
+    line two
+  """)
+  escaped(s: """contains \""" triple""")
+  withQuote(s: """
+  ends with quote"
+  """)
+  withBackslash(s: """
+  ends with backslash\
+  """)
+  leadingSpace(s: """  leading space""")
+  allIndented(s: """
+  first
+    second
+  """)
+  inList(s: ["""block""", "plain"])
+}

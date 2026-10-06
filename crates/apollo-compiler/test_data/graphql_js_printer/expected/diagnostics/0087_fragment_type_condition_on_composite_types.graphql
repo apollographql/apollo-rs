@@ -1,0 +1,34 @@
+query Query {
+  products {
+    inStock
+    name
+    price {
+      ...fragOnScalar
+    }
+    ...inlineFragOnScalar
+    ... on Int {
+      name
+    }
+  }
+}
+
+type Query {
+  products: Product
+}
+
+type Product {
+  price: Int
+  inStock: Boolean
+  name: String
+}
+
+fragment fragOnScalar on Int {
+  name
+}
+
+fragment inlineFragOnScalar on Product {
+  ... on Int {
+    name
+  }
+  name
+}

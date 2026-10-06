@@ -1,0 +1,46 @@
+query mainPage {
+  name {
+    width
+  }
+}
+
+type Query {
+  name: mainInterface
+}
+
+interface mainInterface {
+  width: Int
+  img: Url
+  relationship: Person
+  entity: NamedEntity
+  depth: Number
+  result: SearchResult
+  permissions: Auth
+  coordinates: Point2D
+  main: mainPage
+}
+
+type Person {
+  name: String
+  age: Int
+}
+
+interface NamedEntity {
+  name: String
+}
+
+enum Number {
+  INT
+  FLOAT
+}
+
+union SearchResult = Photo | Person
+
+directive @Auth(username: String!) repeatable on OBJECT | INTERFACE
+
+input Point2D {
+  x: Float
+  y: Float
+}
+
+scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")

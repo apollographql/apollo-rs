@@ -17,6 +17,35 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Features
+
+- **Add a graphql-js compatible printer - [erneestoc], [issue/1119], [pull/1122]**
+
+  `ast::Document::to_graphql_js_string()`, and the same method on `ast` node
+  types and on `ExecutableDocument`, `Operation`, `Fragment`, `SelectionSet`
+  and selection types, serialize a document with exactly the formatting of
+  graphql-js's `print()` (as of graphql-js 17.0.2): no trailing newline, blank
+  line between definitions, two-space indentation, field arguments, list values
+  and object values wrapped onto separate lines when the single-line form would
+  exceed 80 characters, variable definitions wrapped when one of them is
+  multi-line, `{ a: 1 }` object values, and graphql-js string escaping
+  (`\t`, `\n`, `\r`, `\b`, `\f`, `\uXXXX` for other control characters).
+  Tools that embed or hash the printed source, such as persisted query
+  identifiers, can now get the same output as their graphql-js equivalents.
+  The default `Display` serialization is unchanged.
+
+  Because the AST does not record whether a string literal used block-string
+  syntax ([issue/1120]), string values are always printed in the quoted form
+  and descriptions are printed as block strings when graphql-js's
+  `isPrintableAsBlockString` would allow it.
+
+[erneestoc]: https://github.com/erneestoc
+[issue/1119]: https://github.com/apollographql/apollo-rs/issues/1119
+[issue/1120]: https://github.com/apollographql/apollo-rs/issues/1120
+[pull/1122]: https://github.com/apollographql/apollo-rs/pull/1122
+
 # [1.33.0](https://crates.io/crates/apollo-compiler/1.33.0) - 2026-09-03
 
 ## Features

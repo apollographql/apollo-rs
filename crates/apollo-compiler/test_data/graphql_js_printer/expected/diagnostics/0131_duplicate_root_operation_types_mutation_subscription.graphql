@@ -1,0 +1,13 @@
+schema {
+  query: Query
+  mutation: SharedType
+  subscription: SharedType
+}
+
+type Query {
+  field: String
+}
+
+type SharedType {
+  field: String
+}

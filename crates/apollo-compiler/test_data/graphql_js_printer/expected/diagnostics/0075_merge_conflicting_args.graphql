@@ -1,0 +1,68 @@
+enum DogCommand {
+  SIT
+  HEEL
+}
+
+type Dog {
+  doesKnowCommand(dogCommand: DogCommand): Boolean
+  isAtLocation(x: Int, y: Int): Boolean
+}
+
+type Query {
+  pet: Dog
+}
+
+query queryPupperA {
+  pet {
+    ...conflictingArgsOnValues
+  }
+}
+
+query queryPupperB($dogCommand: DogCommand) {
+  pet {
+    ...conflictingArgsValueAndVar
+  }
+}
+
+query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
+  pet {
+    ...conflictingArgsWithVars
+  }
+}
+
+query queryPupperD {
+  pet {
+    ...differingArgs
+  }
+}
+
+query queryPupperE {
+  pet {
+    ...conflictingArgs
+  }
+}
+
+fragment conflictingArgsOnValues on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand(dogCommand: HEEL)
+}
+
+fragment conflictingArgsValueAndVar on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand(dogCommand: $dogCommand)
+}
+
+fragment conflictingArgsWithVars on Dog {
+  doesKnowCommand(dogCommand: $varOne)
+  doesKnowCommand(dogCommand: $varTwo)
+}
+
+fragment differingArgs on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand
+}
+
+fragment conflictingArgs on Dog {
+  isAtLocation(x: 0)
+  isAtLocation(y: 0)
+}

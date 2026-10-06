@@ -1,0 +1,52 @@
+{
+  a
+  b
+}
+
+query {
+  shortForm
+}
+
+query ($id: ID!) {
+  node(id: $id) {
+    id
+  }
+}
+
+query @live {
+  a
+}
+
+mutation {
+  doIt
+}
+
+subscription {
+  events
+}
+
+query Named($id: ID!, $first: Int = 10, $after: String, $flag: Boolean! = true @deprecated(reason: "x")) @cached(ttl: 60) {
+  node(id: $id) {
+    ... on User {
+      friends(first: $first, after: $after) {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+    }
+  }
+}
+
+mutation CreateUser($input: CreateUserInput!) @transactional {
+  createUser(input: $input) {
+    id
+  }
+}
+
+subscription OnEvent($filter: EventFilter) {
+  event(filter: $filter) {
+    id
+  }
+}

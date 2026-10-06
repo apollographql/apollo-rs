@@ -1,0 +1,58 @@
+"""single line quoted"""
+type A {
+  """with "quotes" and \ backslash"""
+  a: Int
+  """
+  ends with quote"
+  """
+  b: Int
+  """
+  ends with backslash\
+  """
+  c: Int
+  """   leading whitespace"""
+  d: Int
+  "\nleading newline"
+  e: Int
+  "trailing newline\n"
+  f: Int
+  """with	tab"""
+  g: Int
+  "with \u0001 control"
+  h: Int
+  "with cr\r"
+  i: Int
+  """
+  block with
+    indented second line
+  """
+  j: Int
+  """
+  all lines indented
+  equally
+  """
+  k: Int
+  """
+  exactly seventy characters long xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  """
+  l: Int
+  """
+  seventy one characters long xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  """
+  m: Int
+  """contains \""" triple"""
+  n: Int
+  """
+  ends with triple quote \"""
+  """
+  o: Int
+  """
+  first line
+  
+  blank line above, indented below
+    indented
+  """
+  p: Int
+  """"""
+  q: Int
+}

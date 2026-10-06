@@ -1,0 +1,25 @@
+query Wrapping($var: String) {
+  short(a: 1, b: 2)
+  exactlyEighty(aaaaaaaaaa: "aaaaaaaaaaaaaaaaaa", bbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbb", c: 1)
+  exactlyEightyOne(aaaaaaaaaa: "aaaaaaaaaaaaaaaaaa", bbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbb", c: 1)
+  aliased: longArguments(first: 100, after: "YXJyYXljb25uZWN0aW9uOjEw", orderBy: {field: CREATED_AT, direction: DESC}, filter: $var)
+  parent {
+    nested {
+      deeper(first: 100, after: "YXJyYXljb25uZWN0aW9uOjEw", orderBy: {field: CREATED_AT, direction: DESC}, filter: $var) {
+        id
+        evenDeeper(longArgumentNameNumberOne: "value one", longArgumentNameNumberTwo: "value two") {
+          id
+        }
+      }
+    }
+  }
+  withDirective(a: 1) @include(if: true) @skip(if: false)
+  directiveWithManyArguments @custom(aaaaaaaaaa: "aaaaaaaaaaaaaaaaaa", bbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbb", c: 1, d: 2)
+  wrappedWithDirective(aaaaaaaaaa: "aaaaaaaaaaaaaaaaaa", bbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbb", c: 1) @include(if: true) {
+    id
+  }
+  ...spreadWithDirective @include(if: true) @custom(aaaaaaaaaa: "aaaaaaaaaaaaaaaaaa", bbbbbbbbbbbb: "bbbbbbbbbbbbbbbbbbbbbb", c: 1)
+  emoji(a: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀", b: "bbbbbbbbbbbb")
+  emojiOver(a: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀", b: "bbbbbbbbbbbbb")
+  accents(a: "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé", b: "bbbbb")
+}

@@ -1,0 +1,16 @@
+query Strings {
+  plain(s: "hello")
+  quotes(s: "say \"hi\"")
+  backslash(s: "C:\\path\\to")
+  tab(s: "a\tb")
+  newline(s: "line1\nline2")
+  cr(s: "a\rb")
+  bf(s: "\b\f")
+  controls(s: "\u0000\u0001\u001F\u007F\u0085\u009F")
+  unicodeEscape(s: "é中")
+  unicode(s: "éñ中文")
+  emoji(s: "👋🌍")
+  mixed(s: "tab\there \"quoted\" back\\slash\nnewline é 😀")
+  empty(s: "")
+  slashes(s: "a/b")
+}

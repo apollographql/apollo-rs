@@ -1,0 +1,25 @@
+query WithFragments {
+  ...NamedFragment
+  ...NamedFragment @include(if: true)
+  ... on User {
+    name
+  }
+  ... @include(if: true) {
+    inline
+  }
+  ... {
+    bare
+  }
+  ... on Admin @skip(if: false) @other {
+    level
+  }
+}
+
+fragment NamedFragment on User {
+  id
+  ...Nested
+}
+
+fragment Nested on User @directive(a: 1) @another {
+  name
+}
