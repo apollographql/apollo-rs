@@ -41,7 +41,7 @@ Or add this to your `Cargo.toml` for a manual installation:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-compiler = "1.33.0"
+apollo-compiler = "1.34.0"
 ```
 
 ## Rust versions
