@@ -262,3 +262,20 @@ extend type Mutation {
     assert!(schema.schema_definition.query.is_some());
     assert!(schema.schema_definition.mutation.is_some());
 }
+
+#[test]
+fn implicit_root_operation_uses_interned_type_name() {
+    let schema = Schema::parse("type Query { a: Int }", "schema.graphql").unwrap();
+    let (type_name, _) = schema
+        .types
+        .get_key_value(&name!("Query"))
+        .expect("Query type");
+    let root = schema
+        .schema_definition
+        .query
+        .as_ref()
+        .expect("implicit query root");
+    // Sharing the interned string makes hashing the root type a pointer write
+    // instead of a table lookup.
+    assert_eq!(root.as_str().as_ptr(), type_name.as_str().as_ptr());
+}
