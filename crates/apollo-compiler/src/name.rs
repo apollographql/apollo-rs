@@ -81,8 +81,8 @@ pub struct InvalidNameError {
     pub location: Option<SourceSpan>,
 }
 
-const TAG_ARC: bool = true;
-const TAG_STATIC: bool = false;
+const TAG_STATIC: u8 = 0;
+const TAG_ARC: u8 = 1;
 
 const _: () = {
     // 20 "useful" bytes on 32-bit targets like wasm,
