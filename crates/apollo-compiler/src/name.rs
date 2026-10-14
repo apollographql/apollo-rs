@@ -343,12 +343,6 @@ impl AsRef<str> for Name {
     }
 }
 
-impl std::borrow::Borrow<str> for Name {
-    fn borrow(&self) -> &str {
-        self.as_str()
-    }
-}
-
 impl std::fmt::Debug for Name {
     #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -383,12 +377,6 @@ impl PartialOrd for Name {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-impl std::borrow::Borrow<str> for Node<Name> {
-    fn borrow(&self) -> &str {
-        self.as_str()
     }
 }
 

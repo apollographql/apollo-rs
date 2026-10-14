@@ -444,7 +444,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a scalar type
-    pub fn get_scalar(&self, name: &str) -> Option<&Node<ScalarType>> {
+    pub fn get_scalar(&self, name: &Name) -> Option<&Node<ScalarType>> {
         if let Some(ExtendedType::Scalar(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -453,7 +453,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a object type
-    pub fn get_object(&self, name: &str) -> Option<&Node<ObjectType>> {
+    pub fn get_object(&self, name: &Name) -> Option<&Node<ObjectType>> {
         if let Some(ExtendedType::Object(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -462,7 +462,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a interface type
-    pub fn get_interface(&self, name: &str) -> Option<&Node<InterfaceType>> {
+    pub fn get_interface(&self, name: &Name) -> Option<&Node<InterfaceType>> {
         if let Some(ExtendedType::Interface(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -471,7 +471,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a union type
-    pub fn get_union(&self, name: &str) -> Option<&Node<UnionType>> {
+    pub fn get_union(&self, name: &Name) -> Option<&Node<UnionType>> {
         if let Some(ExtendedType::Union(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -480,7 +480,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a enum type
-    pub fn get_enum(&self, name: &str) -> Option<&Node<EnumType>> {
+    pub fn get_enum(&self, name: &Name) -> Option<&Node<EnumType>> {
         if let Some(ExtendedType::Enum(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -489,7 +489,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a input object type
-    pub fn get_input_object(&self, name: &str) -> Option<&Node<InputObjectType>> {
+    pub fn get_input_object(&self, name: &Name) -> Option<&Node<InputObjectType>> {
         if let Some(ExtendedType::InputObject(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -511,8 +511,8 @@ impl Schema {
     /// Returns the definition of a type’s explicit field or meta-field.
     pub fn type_field(
         &self,
-        type_name: &str,
-        field_name: &str,
+        type_name: &Name,
+        field_name: &Name,
     ) -> Result<&Node<FieldDefinition>, FieldLookupError<'_>> {
         use ExtendedType::*;
         let (ty_def_name, ty_def) = self
@@ -538,7 +538,7 @@ impl Schema {
             .as_ref()
             .is_some_and(|query_type| query_type == type_name)
         {
-            match field_name {
+            match field_name.as_str() {
                 "__schema" => return Ok(&meta.__schema),
                 "__type" => return Ok(&meta.__type),
                 _ => {}
@@ -588,7 +588,7 @@ impl Schema {
     ///
     /// * `maybe_subtype` implements the interface `abstract_type`
     /// * `maybe_subtype` is a member of the union type `abstract_type`
-    pub fn is_subtype(&self, abstract_type: &str, maybe_subtype: &str) -> bool {
+    pub fn is_subtype(&self, abstract_type: &Name, maybe_subtype: &Name) -> bool {
         self.types.get(abstract_type).is_some_and(|ty| match ty {
             ExtendedType::Interface(_) => self.types.get(maybe_subtype).is_some_and(|ty2| {
                 match ty2 {

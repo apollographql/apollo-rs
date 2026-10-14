@@ -1,4 +1,5 @@
 use apollo_compiler::executable;
+use apollo_compiler::name;
 use apollo_compiler::parser::Parser;
 use apollo_compiler::Node;
 use std::fs;
@@ -26,14 +27,14 @@ fn compile_query() -> Option<Node<executable::Fragment>> {
     let operation_variables: Vec<&str> = document
         .operations
         .named
-        .get("ExampleQuery")?
+        .get(&name!("ExampleQuery"))?
         .variables
         .iter()
         .map(|var| var.name.as_str())
         .collect();
 
     assert_eq!(operation_variables, ["definedVariable"]);
-    document.fragments.get("vipCustomer").cloned()
+    document.fragments.get(&name!("vipCustomer")).cloned()
 }
 
 fn main() -> Result<(), ()> {
