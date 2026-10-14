@@ -376,7 +376,10 @@ fn add_implicit_root_types(
     ] {
         let name = operation_type.default_type_name();
         if types.get(&name).is_some_and(|def| def.is_object()) {
-            *root_operation = Some(name.into());
+            // Root types are hashed on every operation. The `name!` literal
+            // would need an intern table lookup for each hash, while the
+            // interned copy hashes its pointer.
+            *root_operation = Some(Name::new_unchecked(&name).into());
             has_implicit_root_operation = true
         }
     }

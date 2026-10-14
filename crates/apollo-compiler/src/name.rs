@@ -53,12 +53,14 @@ macro_rules! name {
 /// and carries an optional source location.
 ///
 /// Internally, the string value is either an atomically-reference counted `Arc<str>`
-/// or a `&'static str` borrow that lives until the end of the program.
+/// or a `&'static str` borrow that lives until the end of the program. Names built
+/// at runtime borrow a process-global interned copy of their string when one is
+/// available, which makes equality and hashing between them pointer operations.
 //
 // Fields: equivalent to `(UnpackedRepr, Option<SourceSpan>)` but more compact
 pub struct Name {
     /// Data pointer of either `Arc<str>::into_raw` (if `tagged_file_id.tag() == TAG_ARC`)
-    /// or `&'static str` (if `TAG_STATIC`)
+    /// or `&'static str` (if `TAG_STATIC` or `TAG_INTERNED`)
     ptr: NonNull<u8>,
     len: u32,
     start_offset: u32,            // zero if we don’t have a location
@@ -83,10 +85,13 @@ pub struct InvalidNameError {
 
 const TAG_STATIC: u8 = 0;
 const TAG_ARC: u8 = 1;
+/// A `&'static str` owned by the intern table. Each string has at most one
+/// such pointer, so two interned names are equal if and only if their
+/// pointers are.
+const TAG_INTERNED: u8 = 2;
 
 const _: () = {
-    // 20 "useful" bytes on 32-bit targets like wasm,
-    // but still padded to 24 for alignment of u64 file ID:
+    // 20 bytes of fields on 32-bit targets, padded to the 8-byte alignment of `TaggedFileId`.
     assert!(size_of::<Name>() == 24);
     assert!(size_of::<Name>() == size_of::<Option<Name>>());
 
@@ -117,14 +122,18 @@ impl Name {
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub fn new_unchecked(value: &str) -> Self {
-        Self::from_arc_unchecked(value.into())
+        match crate::intern::intern(value) {
+            Some(interned) => Self::from_interned(interned),
+            // table frozen and this string isn't in it
+            None => Self::from_arc_uninterned(Arc::from(value)),
+        }
     }
 
-    /// Create a new `Name` from an `Arc`, without [validity checking][Self::is_valid_syntax].
-    ///
-    /// Constructing an invalid name may cause invalid document serialization
-    /// but not memory-safety issues.
-    pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
+    fn from_interned(interned: &'static str) -> Self {
+        Self::from_static_with_tag(interned, TAG_INTERNED)
+    }
+
+    fn from_arc_uninterned(arc: Arc<str>) -> Self {
         let len = Self::new_len(&arc);
         let ptr = Arc::into_raw(arc).cast_mut().cast();
         // SAFETY: Arc always is non-null
@@ -138,12 +147,27 @@ impl Name {
         }
     }
 
+    /// Create a new `Name` from an `Arc`, without [validity checking][Self::is_valid_syntax].
+    ///
+    /// Constructing an invalid name may cause invalid document serialization
+    /// but not memory-safety issues.
+    pub fn from_arc_unchecked(arc: Arc<str>) -> Self {
+        match crate::intern::intern(&arc) {
+            Some(interned) => Self::from_interned(interned),
+            None => Self::from_arc_uninterned(arc),
+        }
+    }
+
     /// Create a new `Name` from a string with static lifetime,
     /// without [validity checking][Self::is_valid_syntax].
     ///
     /// Constructing an invalid name may cause invalid document serialization
     /// but not memory-safety issues.
     pub const fn new_static_unchecked(value: &'static str) -> Self {
+        Self::from_static_with_tag(value, TAG_STATIC)
+    }
+
+    const fn from_static_with_tag(value: &'static str, tag: u8) -> Self {
         let ptr = value.as_ptr().cast_mut();
         // SAFETY: `&'static str` is always non-null
         let ptr = unsafe { NonNull::new_unchecked(ptr) };
@@ -151,9 +175,14 @@ impl Name {
             ptr,
             len: Self::new_len(value),
             start_offset: 0,
-            tagged_file_id: TaggedFileId::pack(TAG_STATIC, FileId::NONE),
+            tagged_file_id: TaggedFileId::pack(tag, FileId::NONE),
             phantom: PhantomData,
         }
+    }
+
+    #[inline]
+    fn is_interned(&self) -> bool {
+        self.tagged_file_id.tag() == TAG_INTERNED
     }
 
     /// Modifies the given name to add its location in a parsed source file
@@ -205,14 +234,15 @@ impl Name {
         unsafe { std::str::from_utf8_unchecked(slice.as_ref()) }
     }
 
-    /// If this `Name` was created with [`new_static`][Self::new_static]
-    /// or the [`name!`][crate::name!] macro, return the string with `'static` lifetime.
+    /// If this `Name` was created with [`new_static`][Self::new_static],
+    /// the [`name!`][crate::name!] macro, or from an interned string,
+    /// return the string with `'static` lifetime.
     ///
     /// Returns `Some` if and only if [`to_cloned_arc`][Self::to_cloned_arc] returns `None`.
     pub fn as_static_str(&self) -> Option<&'static str> {
-        if self.tagged_file_id.tag() == TAG_STATIC {
+        if self.tagged_file_id.tag() != TAG_ARC {
             let raw_slice = NonNull::slice_from_raw_parts(self.ptr, self.len());
-            // SAFETY: the tag indicates `self.ptr` came from `Self::ptr_and_tag_from_static`,
+            // SAFETY: the tag indicates `self.ptr` came from a `&'static str`,
             // so it has the static lifetime and points to valid UTF-8 of the correct length.
             Some(unsafe { std::str::from_utf8_unchecked(raw_slice.as_ref()) })
         } else {
@@ -307,7 +337,13 @@ impl Clone for Name {
             // Conceptually move ownership of this "new" pointer into the new clone
             // However it’s a `*const` and we already have a `NonNull` with the same address in `self`
         }
-        Self { ..*self }
+        Self {
+            ptr: self.ptr,
+            len: self.len,
+            start_offset: self.start_offset,
+            tagged_file_id: self.tagged_file_id,
+            phantom: PhantomData,
+        }
     }
 }
 
@@ -323,7 +359,20 @@ impl Drop for Name {
 impl std::hash::Hash for Name {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.as_str().hash(state) // location not included
+        // Location is not included. Names that are equal must hash the same
+        // whatever their tag, so every name whose string is in the table
+        // hashes the table's pointer. `name!` literals can't be interned at
+        // construction because it is `const`, so they look it up here.
+        let interned = match self.tagged_file_id.tag() {
+            TAG_INTERNED => Some(self.ptr.as_ptr().cast_const()),
+            TAG_STATIC => crate::intern::intern(self.as_str()).map(str::as_ptr),
+            // Only created for strings missing from the frozen table.
+            _ => None,
+        };
+        match interned {
+            Some(ptr) => state.write_usize(ptr as usize),
+            None => self.as_str().hash(state),
+        }
     }
 }
 
@@ -362,7 +411,12 @@ impl Eq for Name {}
 impl PartialEq for Name {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.as_str() == other.as_str() // don’t compare location
+        // don’t compare location
+        if self.is_interned() && other.is_interned() {
+            self.ptr == other.ptr
+        } else {
+            self.as_str() == other.as_str()
+        }
     }
 }
 
