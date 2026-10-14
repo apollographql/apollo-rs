@@ -22,6 +22,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate interface, union, and custom scalar field types - [tninesling]**
+
+  Output fields could previously only be typed as objects, enums, and built-in
+  scalars. Any existing interface, union, or custom scalar can now be chosen
+  too. Selecting into a union or custom scalar field, including from a schema
+  passed to `with_document`, no longer panics. Selections on unions use
+  `__typename` and inline fragments on member types, and selections in one
+  operation or fragment are kept mergeable per the field selection merging
+  rules.
+
 - **Generate empty selection sets - [tninesling], [pull/1118]**
 
   The September 2026 specification allows empty selection sets

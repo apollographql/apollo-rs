@@ -111,6 +111,9 @@ pub struct DocumentBuilder<'a> {
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field on a specific type
     pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
+    // Fields selected so far in each operation or fragment definition being
+    // generated, so later selections stay mergeable with earlier ones
+    pub(crate) response_scopes: Vec<selection_set::ResponseScopeFrame>,
     pub(crate) used_type_names: HashSet<String>,
     // Maximum number of generated definitions per kind
     max_scalar_types: usize,
@@ -159,6 +162,7 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph: implements_graph::ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
+            response_scopes: Vec::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -341,6 +345,7 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph,
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
+            response_scopes: Vec::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -412,15 +417,16 @@ impl<'a> DocumentBuilder<'a> {
         {
             self.stack.push(Box::new(itf_type));
             true
-        } else if let Some(_enum_ty) = self
-            .enum_type_defs
-            .iter()
-            .find(|object_ty_def| &object_ty_def.name == type_name)
-            .cloned()
+        } else if self.union_type_defs.iter().any(|u| &u.name == type_name) {
+            let union_ty = self.merged_union(type_name);
+            self.stack.push(Box::new(union_ty));
+            true
+        } else if self.enum_type_defs.iter().any(|e| &e.name == type_name)
+            || self.scalar_type_defs.iter().any(|s| &s.name == type_name)
         {
             false
         } else {
-            todo!("'{:?}' need to implement for union, scalar, ...", type_name);
+            panic!("'{type_name:?}' is not a known output type");
         }
     }
 

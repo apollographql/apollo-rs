@@ -145,7 +145,7 @@ impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#TypeCondition).
 #[derive(Debug, Clone)]
 pub struct TypeCondition {
-    name: Name,
+    pub(crate) name: Name,
 }
 
 impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
@@ -164,7 +164,7 @@ impl DocumentBuilder<'_> {
         let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
-        let selection_set = self.selection_set()?;
+        let selection_set = self.with_response_scope(|b| b.selection_set())?;
         let type_condition = self.type_condition()?;
         self.stack.pop();
 
@@ -189,6 +189,7 @@ impl DocumentBuilder<'_> {
             .filter(|f| {
                 !excludes.contains(&f.name)
                     && self.fragment_spread_possible(&f.type_condition.name, current_type.as_ref())
+                    && self.can_merge_fragment(f)
             })
             .collect();
 
@@ -198,6 +199,7 @@ impl DocumentBuilder<'_> {
             self.u.choose(&available_fragment)?.name.clone()
         };
         let directives = self.directives(DirectiveLocation::FragmentSpread)?;
+        self.record_fragment(&name);
         excludes.push(name.clone());
 
         Ok(Some(FragmentSpread { name, directives }))
@@ -205,6 +207,21 @@ impl DocumentBuilder<'_> {
 
     /// Create an arbitrary `InlineFragment`
     pub fn inline_fragment(&mut self) -> ArbitraryResult<InlineFragment> {
+        if let Some(member) = self.choose_union_member()? {
+            let type_condition = TypeCondition {
+                name: member.clone(),
+            };
+            self.stack_ty(&Ty::Named(member));
+            let selection_set = self.selection_set();
+            self.stack.pop();
+            let directives = self.directives(DirectiveLocation::InlineFragment)?;
+            return Ok(InlineFragment {
+                type_condition: Some(type_condition),
+                directives,
+                selection_set: selection_set?,
+            });
+        }
+
         let type_condition = self
             .u
             .arbitrary()
@@ -219,6 +236,22 @@ impl DocumentBuilder<'_> {
             directives,
             selection_set,
         })
+    }
+
+    /// When selecting on a union, usually pick one of its members to narrow
+    /// to, since `__typename` is the only field a union itself offers.
+    fn choose_union_member(&mut self) -> ArbitraryResult<Option<Name>> {
+        let Some(current) = self.stack.last().map(|e| e.name().clone()) else {
+            return Ok(None);
+        };
+        if !self.union_type_defs.iter().any(|u| u.name == current) {
+            return Ok(None);
+        }
+        let members: Vec<Name> = self.merged_union(&current).members.into_iter().collect();
+        if members.is_empty() || self.u.ratio(1, 4)? {
+            return Ok(None);
+        }
+        Ok(Some(self.u.choose(&members)?.clone()))
     }
 
     /// Whether a fragment with `fragment_type` can be spread inside a

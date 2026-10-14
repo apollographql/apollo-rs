@@ -1,8 +1,10 @@
 use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
+use crate::field::FieldDef;
 use crate::name::Name;
 use crate::DocumentBuilder;
+use crate::StackedEntity;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
@@ -167,5 +169,34 @@ impl DocumentBuilder<'_> {
             directives,
             extend,
         })
+    }
+
+    /// Combine a union's base definition and extensions so selections can
+    /// narrow to any member, not only those listed on the base definition.
+    pub(crate) fn merged_union(&self, name: &Name) -> UnionTypeDef {
+        UnionTypeDef {
+            name: name.clone(),
+            description: None,
+            members: self
+                .union_type_defs
+                .iter()
+                .filter(|u| &u.name == name)
+                .flat_map(|u| u.members.iter().cloned())
+                .collect(),
+            directives: IndexMap::new(),
+            extend: false,
+        }
+    }
+}
+
+// Unions declare no fields, so selections on them are limited to
+// `__typename` and fragments on their members.
+impl StackedEntity for UnionTypeDef {
+    fn name(&self) -> &Name {
+        &self.name
+    }
+
+    fn fields_def(&self) -> &[FieldDef] {
+        &[]
     }
 }
