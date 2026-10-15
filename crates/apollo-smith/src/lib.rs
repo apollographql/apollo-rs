@@ -436,15 +436,12 @@ impl<'a> DocumentBuilder<'a> {
         {
             self.stack.push(Box::new(itf_type));
             true
-        } else if let Some(_enum_ty) = self
-            .enum_type_defs
-            .iter()
-            .find(|object_ty_def| &object_ty_def.name == type_name)
-            .cloned()
+        } else if self.enum_type_defs.iter().any(|e| &e.name == type_name)
+            || self.scalar_type_defs.iter().any(|s| &s.name == type_name)
         {
             false
         } else {
-            todo!("'{:?}' need to implement for union, scalar, ...", type_name);
+            todo!("'{:?}' need to implement for union, ...", type_name);
         }
     }
 

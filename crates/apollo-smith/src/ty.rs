@@ -172,15 +172,27 @@ impl DocumentBuilder<'_> {
         Ok(ty)
     }
 
-    /// List all existing (already created) `Ty`
+    /// List the existing types that are valid in output positions (field
+    /// types), apart from unions. Built-in scalars are added separately by
+    /// `choose_ty`.
     pub(crate) fn list_existing_types(&self) -> Vec<Ty> {
         self.object_type_defs
             .iter()
             .map(|o| Ty::Named(o.name.clone()))
             .chain(
+                self.interface_type_defs
+                    .iter()
+                    .map(|i| Ty::Named(i.name.clone())),
+            )
+            .chain(
                 self.enum_type_defs
                     .iter()
                     .map(|e| Ty::Named(e.name.clone())),
+            )
+            .chain(
+                self.scalar_type_defs
+                    .iter()
+                    .map(|s| Ty::Named(s.name.clone())),
             )
             .collect()
     }
