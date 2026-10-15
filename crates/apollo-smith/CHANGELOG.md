@@ -34,6 +34,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate operation variables - [tninesling]**
+
+  Operations never defined variables. Field arguments in an operation now
+  sometimes pass a variable instead of a literal. A variable is defined the
+  first time it's used, with the argument's type and an optional default
+  value, and later arguments reuse it where its type is allowed. Fragments
+  are shared between operations, so their arguments stay literal.
+
 - **Generate union field types - [tninesling]**
 
   Fields can now be typed as any existing union, and selecting into a union
