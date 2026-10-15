@@ -152,45 +152,66 @@ pub(crate) struct SelectedField {
     pub(crate) args: Vec<Argument>,
 }
 
-/// Every field selected in one selection set, keyed by response name.
-/// Same-named fields merge their subselections, so each name also keeps
-/// one child scope shared by all of their subselections.
+/// The fields already selected in a selection set, grouped by the response
+/// name they appear under, so that new selections can be checked against
+/// the field selection merging rules before they're added.
+///
+/// GraphQL merges every selection with the same response name, including
+/// their subselections. Given
+///
+/// ```graphql
+/// { u { ... on A { shared } }  u { ... on B { shared } } }
+/// ```
+///
+/// both `shared` fields end up in one merged `u`, so they must be
+/// compatible even though they're in different `u` selections. Each
+/// response name therefore keeps one record of its merged subselections,
+/// shared by every field selected under that name.
 #[derive(Debug, Clone, Default)]
-pub(crate) struct ResponseScope {
-    entries: IndexMap<Name, ResponseEntry>,
+pub(crate) struct SelectionsByResponseName {
+    by_name: IndexMap<Name, SelectionsUnderName>,
 }
 
 #[derive(Debug, Clone, Default)]
-struct ResponseEntry {
+struct SelectionsUnderName {
     fields: Vec<SelectedField>,
-    children: ResponseScope,
+    merged_subselections: SelectionsByResponseName,
 }
 
-impl ResponseScope {
-    fn descend(&self, path: &[Name]) -> Option<&ResponseScope> {
-        path.iter().try_fold(self, |scope, name| {
-            scope.entries.get(name).map(|e| &e.children)
+impl SelectionsByResponseName {
+    fn at(&self, response_path: &[Name]) -> Option<&SelectionsByResponseName> {
+        response_path.iter().try_fold(self, |selections, name| {
+            selections
+                .by_name
+                .get(name)
+                .map(|under_name| &under_name.merged_subselections)
         })
     }
 
-    fn descend_mut(&mut self, path: &[Name]) -> &mut ResponseScope {
-        path.iter().fold(self, |scope, name| {
-            &mut scope.entries.entry(name.clone()).or_default().children
+    fn at_mut(&mut self, response_path: &[Name]) -> &mut SelectionsByResponseName {
+        response_path.iter().fold(self, |selections, name| {
+            &mut selections
+                .by_name
+                .entry(name.clone())
+                .or_default()
+                .merged_subselections
         })
     }
 
-    fn merge(&mut self, other: &ResponseScope) {
-        for (name, entry) in &other.entries {
-            let dst = self.entries.entry(name.clone()).or_default();
-            for field in &entry.fields {
-                dst.add(field.clone());
+    fn merge(&mut self, other: &SelectionsByResponseName) {
+        for (name, other_under_name) in &other.by_name {
+            let under_name = self.by_name.entry(name.clone()).or_default();
+            for field in &other_under_name.fields {
+                under_name.add(field.clone());
             }
-            dst.children.merge(&entry.children);
+            under_name
+                .merged_subselections
+                .merge(&other_under_name.merged_subselections);
         }
     }
 }
 
-impl ResponseEntry {
+impl SelectionsUnderName {
     // Merge checks compare against every field under a name, so repeats of
     // the same field would only make them slower.
     fn add(&mut self, field: SelectedField) {
@@ -200,77 +221,81 @@ impl ResponseEntry {
     }
 }
 
-/// The scope tree for one operation or fragment definition, plus the path
-/// of response names leading to the selection set being generated.
+/// What one operation or fragment definition has selected so far, and the
+/// response names leading from its root to the selection set currently
+/// being generated.
 #[derive(Debug, Default)]
-pub(crate) struct ResponseScopeFrame {
-    root: ResponseScope,
-    path: Vec<Name>,
+pub(crate) struct MergeTracking {
+    selections: SelectionsByResponseName,
+    response_path: Vec<Name>,
 }
 
 impl DocumentBuilder<'_> {
-    /// Run `f` with a fresh scope tree and return what it selected.
-    /// Operations and fragment definitions each start one, since they are
-    /// validated independently.
-    pub(crate) fn with_response_scope<T>(
+    /// Run `f` while recording what it selects, and return that record.
+    /// Operations and fragment definitions each start their own, since they
+    /// are validated independently.
+    pub(crate) fn tracking_merges<T>(
         &mut self,
         f: impl FnOnce(&mut Self) -> T,
-    ) -> (T, ResponseScope) {
-        self.response_scopes.push(ResponseScopeFrame::default());
+    ) -> (T, SelectionsByResponseName) {
+        self.merge_tracking.push(MergeTracking::default());
         let res = f(self);
-        let frame = self
-            .response_scopes
+        let tracking = self
+            .merge_tracking
             .pop()
-            .expect("the frame pushed above is still on the stack");
-        (res, frame.root)
+            .expect("the tracking pushed above is still on the stack");
+        (res, tracking.selections)
     }
 
-    /// Run `f` in the scope shared by subselections of every field selected
-    /// as `response_name` in the current scope.
-    pub(crate) fn with_child_scope<T>(
+    /// Run `f` to generate the subselection of a field selected as
+    /// `response_name`. Its selections are checked against, and recorded
+    /// with, the subselections of every other field selected under that
+    /// name here, since GraphQL merges them.
+    pub(crate) fn in_merged_subselection<T>(
         &mut self,
         response_name: &Name,
         f: impl FnOnce(&mut Self) -> T,
     ) -> T {
-        if let Some(frame) = self.response_scopes.last_mut() {
-            frame.path.push(response_name.clone());
+        if let Some(tracking) = self.merge_tracking.last_mut() {
+            tracking.response_path.push(response_name.clone());
         }
         let res = f(self);
-        if let Some(frame) = self.response_scopes.last_mut() {
-            frame.path.pop();
+        if let Some(tracking) = self.merge_tracking.last_mut() {
+            tracking.response_path.pop();
         }
         res
     }
 
-    fn current_scope(&self) -> Option<&ResponseScope> {
-        let frame = self.response_scopes.last()?;
-        frame.root.descend(&frame.path)
+    /// What's already selected in the selection set being generated.
+    fn selections_here(&self) -> Option<&SelectionsByResponseName> {
+        let tracking = self.merge_tracking.last()?;
+        tracking.selections.at(&tracking.response_path)
     }
 
-    /// Whether `field` can share `response_name` with every field already
-    /// selected under that name in the current scope.
+    /// Whether `field`, with its arguments chosen, can be selected as
+    /// `response_name` alongside what's already selected here.
     pub(crate) fn can_merge(&self, response_name: &Name, field: &SelectedField) -> bool {
-        self.current_scope()
-            .is_none_or(|scope| self.can_merge_into(scope, response_name, field))
+        self.selections_here()
+            .is_none_or(|selections| self.can_merge_into(selections, response_name, field))
     }
 
     /// Requiring identical types is stricter than the spec's
     /// SameResponseShape, but it keeps the check local to one level, with
-    /// subselections checked through the shared child scope. Unless the
+    /// subselections checked through their merged record. Unless the
     /// parents are distinct object types, the fields must also be the same
     /// field with the same arguments, which only aliases can break.
     ///
     /// See <https://spec.graphql.org/September2025/#sec-Field-Selection-Merging>.
     fn can_merge_into(
         &self,
-        scope: &ResponseScope,
+        selections: &SelectionsByResponseName,
         response_name: &Name,
         field: &SelectedField,
     ) -> bool {
-        let Some(entry) = scope.entries.get(response_name) else {
+        let Some(under_name) = selections.by_name.get(response_name) else {
             return true;
         };
-        entry.fields.iter().all(|other| {
+        under_name.fields.iter().all(|other| {
             self.compatible(
                 other,
                 &field.parent,
@@ -289,10 +314,10 @@ impl DocumentBuilder<'_> {
         field_name: &Name,
         ty: &Ty,
     ) -> bool {
-        self.current_scope()
-            .and_then(|scope| scope.entries.get(response_name))
-            .is_none_or(|entry| {
-                entry
+        self.selections_here()
+            .and_then(|selections| selections.by_name.get(response_name))
+            .is_none_or(|under_name| {
+                under_name
                     .fields
                     .iter()
                     .all(|other| self.compatible(other, parent, field_name, ty, None))
@@ -320,17 +345,17 @@ impl DocumentBuilder<'_> {
     /// Whether `response_name` is already selected where the current
     /// selection is being generated.
     pub(crate) fn has_response_name(&self, response_name: &Name) -> bool {
-        self.current_scope()
-            .is_some_and(|scope| scope.entries.contains_key(response_name))
+        self.selections_here()
+            .is_some_and(|selections| selections.by_name.contains_key(response_name))
     }
 
     /// Response names already selected where the current selection is
     /// being generated, leaving out reserved introspection names.
     pub(crate) fn current_response_names(&self) -> Vec<Name> {
-        self.current_scope()
-            .map(|scope| {
-                scope
-                    .entries
+        self.selections_here()
+            .map(|selections| {
+                selections
+                    .by_name
                     .keys()
                     .filter(|name| !name.name.starts_with("__"))
                     .cloned()
@@ -340,80 +365,102 @@ impl DocumentBuilder<'_> {
     }
 
     pub(crate) fn record_selection(&mut self, response_name: Name, field: SelectedField) {
-        if let Some(frame) = self.response_scopes.last_mut() {
-            let scope = frame.root.descend_mut(&frame.path);
-            scope.entries.entry(response_name).or_default().add(field);
+        if let Some(tracking) = self.merge_tracking.last_mut() {
+            let selections = tracking.selections.at_mut(&tracking.response_path);
+            selections
+                .by_name
+                .entry(response_name)
+                .or_default()
+                .add(field);
         }
     }
 
-    /// Whether everything a fragment selects, at every depth, can merge into
-    /// the current scope.
+    /// Whether everything a fragment selects, at every depth, can merge with
+    /// what's already selected here.
     pub(crate) fn can_merge_fragment(&self, fragment_name: &Name) -> bool {
-        let Some(selections) = self.fragment_scopes.get(fragment_name) else {
+        let Some(fragment_selections) = self.fragment_selections.get(fragment_name) else {
             return false;
         };
-        self.current_scope()
-            .is_none_or(|scope| self.can_merge_scope(scope, selections))
+        self.selections_here()
+            .is_none_or(|selections| self.can_merge_selections(selections, fragment_selections))
     }
 
-    fn can_merge_scope(&self, scope: &ResponseScope, incoming: &ResponseScope) -> bool {
-        incoming.entries.iter().all(|(name, entry)| {
-            entry
+    fn can_merge_selections(
+        &self,
+        selections: &SelectionsByResponseName,
+        incoming: &SelectionsByResponseName,
+    ) -> bool {
+        incoming.by_name.iter().all(|(name, incoming_under_name)| {
+            incoming_under_name
                 .fields
                 .iter()
-                .all(|f| self.can_merge_into(scope, name, f))
-                && scope.entries.get(name).is_none_or(|existing| {
-                    self.can_merge_scope(&existing.children, &entry.children)
+                .all(|f| self.can_merge_into(selections, name, f))
+                && selections.by_name.get(name).is_none_or(|under_name| {
+                    self.can_merge_selections(
+                        &under_name.merged_subselections,
+                        &incoming_under_name.merged_subselections,
+                    )
                 })
         })
     }
 
     pub(crate) fn record_fragment(&mut self, fragment_name: &Name) {
-        let Some(selections) = self.fragment_scopes.get(fragment_name) else {
+        let Some(fragment_selections) = self.fragment_selections.get(fragment_name) else {
             return;
         };
-        if let Some(frame) = self.response_scopes.last_mut() {
-            frame.root.descend_mut(&frame.path).merge(selections);
+        if let Some(tracking) = self.merge_tracking.last_mut() {
+            tracking
+                .selections
+                .at_mut(&tracking.response_path)
+                .merge(fragment_selections);
         }
     }
 
-    /// Fragments generated by the builder capture their scope as they are
-    /// generated. This derives it for fragments passed to `with_document`,
-    /// returning `None` until the scopes of fragments it spreads are known.
-    pub(crate) fn fragment_scope(&self, fragment: &FragmentDef) -> Option<ResponseScope> {
-        self.scope_of(&fragment.type_condition.name, &fragment.selection_set)
+    /// Fragments generated by the builder record their selections as they
+    /// are generated. This derives them for fragments passed to
+    /// `with_document`, returning `None` until the selections of fragments
+    /// it spreads are known.
+    pub(crate) fn selections_of_fragment(
+        &self,
+        fragment: &FragmentDef,
+    ) -> Option<SelectionsByResponseName> {
+        self.selections_of(&fragment.type_condition.name, &fragment.selection_set)
     }
 
-    fn scope_of(&self, parent: &Name, selection_set: &SelectionSet) -> Option<ResponseScope> {
-        let mut scope = ResponseScope::default();
+    fn selections_of(
+        &self,
+        parent: &Name,
+        selection_set: &SelectionSet,
+    ) -> Option<SelectionsByResponseName> {
+        let mut selections = SelectionsByResponseName::default();
         for selection in &selection_set.selections {
             match selection {
                 Selection::Field(field) => {
                     let ty = self.output_field_ty(parent, &field.name)?;
-                    let children = match &field.selection_set {
-                        Some(inner) => self.scope_of(ty.name(), inner)?,
-                        None => ResponseScope::default(),
+                    let subselections = match &field.selection_set {
+                        Some(inner) => self.selections_of(ty.name(), inner)?,
+                        None => SelectionsByResponseName::default(),
                     };
                     let response_name = field.alias.clone().unwrap_or_else(|| field.name.clone());
-                    let entry = scope.entries.entry(response_name).or_default();
-                    entry.add(SelectedField {
+                    let under_name = selections.by_name.entry(response_name).or_default();
+                    under_name.add(SelectedField {
                         parent: parent.clone(),
                         field_name: field.name.clone(),
                         ty,
                         args: field.args.clone(),
                     });
-                    entry.children.merge(&children);
+                    under_name.merged_subselections.merge(&subselections);
                 }
                 Selection::InlineFragment(inline) => {
                     let parent = inline.type_condition.as_ref().map_or(parent, |tc| &tc.name);
-                    scope.merge(&self.scope_of(parent, &inline.selection_set)?);
+                    selections.merge(&self.selections_of(parent, &inline.selection_set)?);
                 }
                 Selection::FragmentSpread(spread) => {
-                    scope.merge(self.fragment_scopes.get(&spread.name)?);
+                    selections.merge(self.fragment_selections.get(&spread.name)?);
                 }
             }
         }
-        Some(scope)
+        Some(selections)
     }
 
     fn output_field_ty(&self, parent: &Name, field_name: &Name) -> Option<Ty> {
@@ -491,11 +538,11 @@ mod tests {
             ty: Ty::Named(Name::new(String::from("Int"))),
             args: Vec::new(),
         };
-        let (_, scope) = builder.with_response_scope(|b| {
+        let (_, selections) = builder.tracking_merges(|b| {
             for _ in 0..3 {
                 b.record_selection(name.clone(), field.clone());
             }
         });
-        assert_eq!(scope.entries[&name].fields, vec![field]);
+        assert_eq!(selections.by_name[&name].fields, vec![field]);
     }
 }

@@ -8,6 +8,7 @@ use crate::selection_set::SelectedField;
 use crate::selection_set::SelectionSet;
 use crate::ty::Ty;
 use crate::DocumentBuilder;
+use crate::StackedEntity;
 use apollo_compiler::ast;
 use apollo_compiler::coordinate::TypeAttributeCoordinate;
 use apollo_compiler::Node;
@@ -166,26 +167,36 @@ impl DocumentBuilder<'_> {
             .collect()
     }
 
-    /// Whether selecting `def` under its own name could merge with what's
-    /// already selected. Arguments are compared only when they're cached,
-    /// since otherwise they're generated after the field is chosen.
-    fn could_merge(&self, parent: &Name, def: &FieldDef) -> bool {
-        let coord = TypeAttributeCoordinate {
-            ty: parent.clone().into(),
-            attribute: def.name.clone().into(),
-        };
-        let Some(args) = self.cached_arguments(&coord) else {
-            return self.can_merge_ignoring_args(&def.name, parent, &def.name, &def.ty);
-        };
-        self.can_merge(
-            &def.name,
-            &SelectedField {
-                parent: parent.clone(),
-                field_name: def.name.clone(),
-                ty: def.ty.clone(),
-                args: args.clone(),
-            },
-        )
+    /// The parent's field definitions that can be selected under their own
+    /// name without conflicting with what's already selected here. This is a
+    /// first pass before arguments are generated, so arguments are compared
+    /// only when they're cached. `can_merge` makes the final check.
+    fn mergeable_field_defs(&self, parent: &dyn StackedEntity) -> Vec<FieldDef> {
+        parent
+            .fields_def()
+            .iter()
+            .filter(|def| {
+                let coord = TypeAttributeCoordinate {
+                    ty: parent.name().clone().into(),
+                    attribute: def.name.clone().into(),
+                };
+                match self.cached_arguments(&coord) {
+                    Some(args) => self.can_merge(
+                        &def.name,
+                        &SelectedField {
+                            parent: parent.name().clone(),
+                            field_name: def.name.clone(),
+                            ty: def.ty.clone(),
+                            args: args.clone(),
+                        },
+                    ),
+                    None => {
+                        self.can_merge_ignoring_args(&def.name, parent.name(), &def.name, &def.ty)
+                    }
+                }
+            })
+            .cloned()
+            .collect()
     }
 
     /// Sometimes alias a field, often to a response name already selected
@@ -233,12 +244,7 @@ impl DocumentBuilder<'_> {
         let parent_name = parent.name().clone();
         // Picking only fields that can merge with what's already selected
         // keeps conflicts from turning most selections into `__typename`.
-        let candidates: Vec<FieldDef> = parent
-            .fields_def()
-            .iter()
-            .filter(|def| self.could_merge(&parent_name, def))
-            .cloned()
-            .collect();
+        let candidates = self.mergeable_field_defs(parent.as_ref());
         if candidates.is_empty() {
             return Ok(self.typename_field());
         }
@@ -280,7 +286,7 @@ impl DocumentBuilder<'_> {
         let selection_set = if !chosen_field_def.ty.is_builtin() {
             // Put current ty on the stack
             if self.stack_ty(&chosen_field_def.ty) {
-                let res = self.with_child_scope(&response_name, |b| b.selection_set());
+                let res = self.in_merged_subselection(&response_name, |b| b.selection_set());
                 self.stack.pop();
                 Some(res?)
             } else {
