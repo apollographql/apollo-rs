@@ -166,6 +166,27 @@ impl DocumentBuilder<'_> {
             .collect()
     }
 
+    /// Whether selecting `def` under its own name could merge with what's
+    /// already selected. Arguments are compared only when they're cached,
+    /// since otherwise they're generated after the field is chosen.
+    fn could_merge(&self, parent: &Name, def: &FieldDef) -> bool {
+        let coord = TypeAttributeCoordinate {
+            ty: parent.clone().into(),
+            attribute: def.name.clone().into(),
+        };
+        let Some(args) = self.chosen_arguments.get(&coord) else {
+            return self.can_merge_ignoring_args(&def.name, &def.ty);
+        };
+        self.can_merge(
+            &def.name,
+            &SelectedField {
+                parent: parent.clone(),
+                ty: def.ty.clone(),
+                args: args.clone(),
+            },
+        )
+    }
+
     /// Create an arbitrary `Field` on the composite type at the top of the stack
     pub fn field(&mut self, _index: usize) -> ArbitraryResult<Field> {
         let parent = self
@@ -173,12 +194,19 @@ impl DocumentBuilder<'_> {
             .last()
             .expect("a composite type must be added on the stack");
         let parent_name = parent.name().clone();
-        let fields_defs = parent.fields_def();
-        if fields_defs.is_empty() {
+        // Picking only fields that can merge with what's already selected
+        // keeps conflicts from turning most selections into `__typename`.
+        let candidates: Vec<FieldDef> = parent
+            .fields_def()
+            .iter()
+            .filter(|def| self.could_merge(&parent_name, def))
+            .cloned()
+            .collect();
+        if candidates.is_empty() {
             return Ok(self.typename_field());
         }
 
-        let chosen_field_def = self.u.choose(fields_defs)?.clone();
+        let chosen_field_def = self.u.choose(&candidates)?.clone();
 
         let name = chosen_field_def.name.clone();
         let coord = TypeAttributeCoordinate {

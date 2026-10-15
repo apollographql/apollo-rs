@@ -140,12 +140,7 @@ impl DocumentBuilder<'_> {
         // invalid as members.
         //
         // See <https://spec.graphql.org/September2025/#sec-Unions>.
-        let existing_members: IndexSet<Name> = self
-            .union_type_defs
-            .iter()
-            .filter(|u| u.name == name)
-            .flat_map(|u| u.members.iter().cloned())
-            .collect();
+        let existing_members = self.merged_union(&name).members;
         let object_types: Vec<_> = self
             .list_existing_object_types()
             .into_iter()

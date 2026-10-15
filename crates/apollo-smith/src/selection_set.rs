@@ -276,6 +276,13 @@ impl DocumentBuilder<'_> {
         })
     }
 
+    /// Like `can_merge`, for a field whose arguments aren't chosen yet.
+    pub(crate) fn can_merge_ignoring_args(&self, response_name: &Name, ty: &Ty) -> bool {
+        self.current_scope()
+            .and_then(|scope| scope.entries.get(response_name))
+            .is_none_or(|entry| entry.fields.iter().all(|other| &other.ty == ty))
+    }
+
     pub(crate) fn record_selection(&mut self, response_name: Name, field: SelectedField) {
         if let Some(frame) = self.response_scopes.last_mut() {
             let scope = frame.root.descend_mut(&frame.path);

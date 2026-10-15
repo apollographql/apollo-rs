@@ -275,8 +275,8 @@ impl DocumentBuilder<'_> {
         if self.object_type_defs.iter().any(|o| &o.name == type_name) {
             return IndexSet::from([type_name.clone()]);
         }
-        if let Some(u) = self.union_type_defs.iter().find(|u| &u.name == type_name) {
-            return u.members.clone();
+        if self.union_type_defs.iter().any(|u| &u.name == type_name) {
+            return self.merged_union(type_name).members;
         }
         // Interface: collect every object whose implements closure includes it
         self.object_type_defs
