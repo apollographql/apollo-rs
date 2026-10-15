@@ -147,6 +147,7 @@ impl DocumentBuilder<'_> {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct SelectedField {
     pub(crate) parent: Name,
+    pub(crate) field_name: Name,
     pub(crate) ty: Ty,
     pub(crate) args: Vec<Argument>,
 }
@@ -255,8 +256,9 @@ impl DocumentBuilder<'_> {
 
     /// Requiring identical types is stricter than the spec's
     /// SameResponseShape, but it keeps the check local to one level, with
-    /// subselections checked through the shared child scope. Arguments must
-    /// match unless the parents are distinct object types.
+    /// subselections checked through the shared child scope. Unless the
+    /// parents are distinct object types, the fields must also be the same
+    /// field with the same arguments, which only aliases can break.
     ///
     /// See <https://spec.graphql.org/September2025/#sec-Field-Selection-Merging>.
     fn can_merge_into(
@@ -272,15 +274,45 @@ impl DocumentBuilder<'_> {
             let distinct_objects = other.parent != field.parent
                 && self.is_object_type(&other.parent)
                 && self.is_object_type(&field.parent);
-            other.ty == field.ty && (distinct_objects || other.args == field.args)
+            other.ty == field.ty
+                && (distinct_objects
+                    || (other.field_name == field.field_name && other.args == field.args))
         })
     }
 
     /// Like `can_merge`, for a field whose arguments aren't chosen yet.
-    pub(crate) fn can_merge_ignoring_args(&self, response_name: &Name, ty: &Ty) -> bool {
+    pub(crate) fn can_merge_ignoring_args(
+        &self,
+        response_name: &Name,
+        parent: &Name,
+        field_name: &Name,
+        ty: &Ty,
+    ) -> bool {
         self.current_scope()
             .and_then(|scope| scope.entries.get(response_name))
-            .is_none_or(|entry| entry.fields.iter().all(|other| &other.ty == ty))
+            .is_none_or(|entry| {
+                entry.fields.iter().all(|other| {
+                    let distinct_objects = &other.parent != parent
+                        && self.is_object_type(&other.parent)
+                        && self.is_object_type(parent);
+                    &other.ty == ty && (distinct_objects || &other.field_name == field_name)
+                })
+            })
+    }
+
+    /// Response names already selected where the current selection is
+    /// being generated, leaving out reserved introspection names.
+    pub(crate) fn current_response_names(&self) -> Vec<Name> {
+        self.current_scope()
+            .map(|scope| {
+                scope
+                    .entries
+                    .keys()
+                    .filter(|name| !name.name.starts_with("__"))
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     pub(crate) fn record_selection(&mut self, response_name: Name, field: SelectedField) {
@@ -342,6 +374,7 @@ impl DocumentBuilder<'_> {
                     let entry = scope.entries.entry(response_name).or_default();
                     entry.add(SelectedField {
                         parent: parent.clone(),
+                        field_name: field.name.clone(),
                         ty,
                         args: field.args.clone(),
                     });
@@ -397,6 +430,7 @@ impl DocumentBuilder<'_> {
             name.clone(),
             SelectedField {
                 parent,
+                field_name: name.clone(),
                 ty: typename_ty(),
                 args: Vec::new(),
             },
@@ -429,6 +463,7 @@ mod tests {
         let name = Name::new(String::from("f"));
         let field = SelectedField {
             parent: Name::new(String::from("T")),
+            field_name: name.clone(),
             ty: Ty::Named(Name::new(String::from("Int"))),
             args: Vec::new(),
         };

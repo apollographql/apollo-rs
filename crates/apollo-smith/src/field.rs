@@ -175,20 +175,34 @@ impl DocumentBuilder<'_> {
             attribute: def.name.clone().into(),
         };
         let Some(args) = self.cached_arguments(&coord) else {
-            return self.can_merge_ignoring_args(&def.name, &def.ty);
+            return self.can_merge_ignoring_args(&def.name, parent, &def.name, &def.ty);
         };
         self.can_merge(
             &def.name,
             &SelectedField {
                 parent: parent.clone(),
+                field_name: def.name.clone(),
                 ty: def.ty.clone(),
                 args: args.clone(),
             },
         )
     }
 
+    /// Sometimes alias a field, often to a response name already selected
+    /// alongside it so that field merging gets exercised.
+    fn alias(&mut self, index: usize) -> ArbitraryResult<Option<Name>> {
+        if !self.u.ratio(1, 4)? {
+            return Ok(None);
+        }
+        let existing = self.current_response_names();
+        if !existing.is_empty() && self.u.arbitrary()? {
+            return Ok(Some(self.u.choose(&existing)?.clone()));
+        }
+        Ok(Some(self.name_with_index(index)?))
+    }
+
     /// Create an arbitrary `Field` on the composite type at the top of the stack
-    pub fn field(&mut self, _index: usize) -> ArbitraryResult<Field> {
+    pub fn field(&mut self, index: usize) -> ArbitraryResult<Field> {
         let parent = self
             .stack
             .last()
@@ -226,10 +240,17 @@ impl DocumentBuilder<'_> {
         };
         let selected = SelectedField {
             parent: parent_name,
+            field_name: name.clone(),
             ty: chosen_field_def.ty.clone(),
             args: args.clone(),
         };
-        if !self.can_merge(&name, &selected) {
+        // An alias that can't merge with what's already selected under it
+        // falls back to the field's own name.
+        let alias = self
+            .alias(index)?
+            .filter(|alias| self.can_merge(alias, &selected));
+        let response_name = alias.clone().unwrap_or_else(|| name.clone());
+        if !self.can_merge(&response_name, &selected) {
             // Variables first used by these arguments would be left unused
             self.rollback_variables(variables);
             return Ok(self.typename_field());
@@ -237,13 +258,13 @@ impl DocumentBuilder<'_> {
         if cached_args.is_none() {
             self.cache_arguments(coord, args.clone());
         }
-        self.record_selection(name.clone(), selected);
+        self.record_selection(response_name.clone(), selected);
         let directives = self.directives(DirectiveLocation::Field)?;
 
         let selection_set = if !chosen_field_def.ty.is_builtin() {
             // Put current ty on the stack
             if self.stack_ty(&chosen_field_def.ty) {
-                let res = self.with_child_scope(&name, |b| b.selection_set());
+                let res = self.with_child_scope(&response_name, |b| b.selection_set());
                 self.stack.pop();
                 Some(res?)
             } else {
@@ -253,13 +274,8 @@ impl DocumentBuilder<'_> {
             None
         };
 
-        // TODO: Reintroduce alias generation logic which respects aliases on other fields
-        // or fragments. For now, we will not generate aliases to avoid conflicts.
-        // See <https://spec.graphql.org/September2025/#sec-Field-Selection-Merging> for merge
-        // requirements.
-
         Ok(Field {
-            alias: None,
+            alias,
             name,
             args,
             directives,
