@@ -109,6 +109,18 @@ impl DocumentBuilder<'_> {
         Ok(name)
     }
 
+    /// Arguments chosen earlier for a field, preferring those of the current
+    /// operation, which may pass its variables.
+    pub(crate) fn cached_arguments(
+        &self,
+        coord: &TypeAttributeCoordinate,
+    ) -> Option<&Vec<Argument>> {
+        self.operation_variables
+            .as_ref()
+            .and_then(|vars| vars.arguments.get(coord))
+            .or_else(|| self.chosen_arguments.get(coord))
+    }
+
     /// Arguments that pass variables only make sense within the current
     /// operation, so they aren't reused by other operations or fragments.
     pub(crate) fn cache_arguments(&mut self, coord: TypeAttributeCoordinate, args: Vec<Argument>) {

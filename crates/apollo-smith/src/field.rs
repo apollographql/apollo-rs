@@ -174,7 +174,7 @@ impl DocumentBuilder<'_> {
             ty: parent.clone().into(),
             attribute: def.name.clone().into(),
         };
-        let Some(args) = self.chosen_arguments.get(&coord) else {
+        let Some(args) = self.cached_arguments(&coord) else {
             return self.can_merge_ignoring_args(&def.name, &def.ty);
         };
         self.can_merge(
@@ -214,12 +214,7 @@ impl DocumentBuilder<'_> {
             attribute: name.clone().into(),
         };
         // Reusing arguments per field makes same-named selections mergeable
-        let cached_args = self
-            .operation_variables
-            .as_ref()
-            .and_then(|vars| vars.arguments.get(&coord))
-            .or_else(|| self.chosen_arguments.get(&coord))
-            .cloned();
+        let cached_args = self.cached_arguments(&coord).cloned();
         let variable_count = self
             .operation_variables
             .as_ref()
