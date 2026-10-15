@@ -145,7 +145,7 @@ impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#TypeCondition).
 #[derive(Debug, Clone)]
 pub struct TypeCondition {
-    name: Name,
+    pub(crate) name: Name,
 }
 
 impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
@@ -164,7 +164,9 @@ impl DocumentBuilder<'_> {
         let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
-        let selection_set = self.selection_set()?;
+        let (selection_set, selections) = self.tracking_merges(|b| b.selection_set());
+        let selection_set = selection_set?;
+        self.fragment_selections.insert(name.clone(), selections);
         let type_condition = self.type_condition()?;
         self.stack.pop();
 
@@ -189,6 +191,7 @@ impl DocumentBuilder<'_> {
             .filter(|f| {
                 !excludes.contains(&f.name)
                     && self.fragment_spread_possible(&f.type_condition.name, current_type.as_ref())
+                    && self.can_merge_fragment(&f.name)
             })
             .collect();
 
@@ -198,6 +201,7 @@ impl DocumentBuilder<'_> {
             self.u.choose(&available_fragment)?.name.clone()
         };
         let directives = self.directives(DirectiveLocation::FragmentSpread)?;
+        self.record_fragment(&name);
         excludes.push(name.clone());
 
         Ok(Some(FragmentSpread { name, directives }))

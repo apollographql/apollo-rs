@@ -111,6 +111,12 @@ pub struct DocumentBuilder<'a> {
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field on a specific type
     pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
+    // Fields selected so far in each operation or fragment definition being
+    // generated, so later selections stay mergeable with earlier ones
+    pub(crate) merge_tracking: Vec<selection_set::MergeTracking>,
+    // What each fragment definition selects, captured once since fragments
+    // don't change after they are generated
+    pub(crate) fragment_selections: IndexMap<Name, selection_set::SelectionsByResponseName>,
     pub(crate) used_type_names: HashSet<String>,
     // Maximum number of generated definitions per kind
     max_scalar_types: usize,
@@ -159,6 +165,8 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph: implements_graph::ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
+            merge_tracking: Vec::new(),
+            fragment_selections: IndexMap::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -341,6 +349,8 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph,
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
+            merge_tracking: Vec::new(),
+            fragment_selections: IndexMap::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -380,6 +390,20 @@ impl<'a> DocumentBuilder<'a> {
             if let Some(name) = &def.name {
                 builder.used_type_names.insert(name.name.clone());
             }
+        }
+        // A fragment's selections include those of the fragments it spreads,
+        // so resolve them in passes until none are left that can be resolved.
+        loop {
+            let resolved: Vec<_> = builder
+                .fragment_defs
+                .iter()
+                .filter(|f| !builder.fragment_selections.contains_key(&f.name))
+                .filter_map(|f| Some((f.name.clone(), builder.selections_of_fragment(f)?)))
+                .collect();
+            if resolved.is_empty() {
+                break;
+            }
+            builder.fragment_selections.extend(resolved);
         }
 
         Ok(builder)

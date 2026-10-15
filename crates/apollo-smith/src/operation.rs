@@ -173,19 +173,22 @@ impl DocumentBuilder<'_> {
         // Stack
         self.stack_ty(chosen_ty);
 
-        let selection_set = if matches!(operation_type, OperationType::Subscription) {
-            // Subscription operations must have exactly one root field
-            // per <https://spec.graphql.org/September2025/#sec-Single-Root-Field>.
-            // We generate exactly one field to satisfy that condition. The 0-index
-            // is sometimes used to create an alias for the field.
-            SelectionSet {
-                selections: vec![Selection::Field(self.field(0)?)],
+        let (selection_set, _) = self.tracking_merges(|b| {
+            if matches!(operation_type, OperationType::Subscription) {
+                // Subscription operations must have exactly one root field
+                // per <https://spec.graphql.org/September2025/#sec-Single-Root-Field>.
+                // We generate exactly one field to satisfy that condition. The 0-index
+                // is sometimes used to create an alias for the field.
+                Ok(SelectionSet {
+                    selections: vec![Selection::Field(b.field(0)?)],
+                })
+            } else {
+                b.selection_set()
             }
-        } else {
-            self.selection_set()?
-        };
+        });
 
         self.stack.pop();
+        let selection_set = selection_set?;
         assert!(
             self.stack.is_empty(),
             "the stack must be empty at the end of an operation definition"

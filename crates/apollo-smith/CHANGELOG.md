@@ -20,6 +20,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation -->
 # [x.x.x] (unreleased) - 2026-mm-dd
 
+## Fixes
+
+- **Keep generated selections mergeable - [tninesling]**
+
+  Selections were generated without checking the field selection merging
+  rules, so with an interface field from a schema passed to
+  `with_document`, an operation could select it with different arguments
+  than a spread fragment on an implementer. The generator now records what
+  each operation and fragment selects under each response name, picks only
+  fields that can merge, and only spreads fragments whose selections can
+  merge. Fields that can't merge fall back to `__typename`.
+
 ## Features
 
 - **Generate empty selection sets - [tninesling], [pull/1118]**
