@@ -213,19 +213,24 @@ impl DocumentBuilder<'_> {
             ty: parent_name.clone().into(),
             attribute: name.clone().into(),
         };
-        // To not have same selection with different arguments
-        let args = match self.chosen_arguments.get(&coord) {
+        // Reusing arguments per field makes same-named selections mergeable
+        let cached_args = self
+            .operation_variables
+            .as_ref()
+            .and_then(|vars| vars.arguments.get(&coord))
+            .or_else(|| self.chosen_arguments.get(&coord))
+            .cloned();
+        let variable_count = self
+            .operation_variables
+            .as_ref()
+            .map(|v| v.definitions.len());
+        let args = match &cached_args {
             Some(args) => args.clone(),
-            None => {
-                let args = chosen_field_def
-                    .arguments_definition
-                    .clone()
-                    .map(|args_def| self.arguments_with_def(&args_def))
-                    .unwrap_or_else(|| Ok(vec![]))?;
-                self.chosen_arguments.insert(coord, args.clone());
-
-                args
-            }
+            None => chosen_field_def
+                .arguments_definition
+                .as_ref()
+                .map(|args_def| self.field_arguments(args_def))
+                .unwrap_or_else(|| Ok(vec![]))?,
         };
         let selected = SelectedField {
             parent: parent_name,
@@ -233,7 +238,14 @@ impl DocumentBuilder<'_> {
             args: args.clone(),
         };
         if !self.can_merge(&name, &selected) {
+            // Variables first used by these arguments would be left unused
+            if let (Some(vars), Some(count)) = (&mut self.operation_variables, variable_count) {
+                vars.definitions.truncate(count);
+            }
             return Ok(self.typename_field());
+        }
+        if cached_args.is_none() {
+            self.cache_arguments(coord, args.clone());
         }
         self.record_selection(name.clone(), selected);
         let directives = self.directives(DirectiveLocation::Field)?;
