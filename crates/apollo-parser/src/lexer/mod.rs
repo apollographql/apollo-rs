@@ -38,7 +38,24 @@ pub struct Lexer<'a> {
 enum State {
     Start,
     Ident,
-    StringLiteralEscapedUnicode(usize),
+    /// Fixed-width `\uXXXX` escape sequence.
+    /// `pair_trail` is set when this escape must encode the trailing surrogate
+    /// of a surrogate pair.
+    StringLiteralEscapedUnicode {
+        remaining: usize,
+        value: u32,
+        pair_trail: bool,
+    },
+    /// Variable-width `\u{HexDigits}` escape sequence.
+    /// `start` is the source offset of the opening `{`.
+    StringLiteralEscapedUnicodeVariable {
+        value: u32,
+        start: usize,
+    },
+    /// A leading surrogate escape was just lexed; a `\uXXXX` trailing
+    /// surrogate escape must follow immediately.
+    StringLiteralLeadSurrogate,
+    StringLiteralLeadSurrogateBackslash,
     StringLiteral,
     StringLiteralStart,
     BlockStringLiteral,
@@ -252,7 +269,11 @@ impl<'a> Cursor<'a> {
                         continue;
                     }
                 },
-                State::StringLiteralEscapedUnicode(remaining) => match c {
+                State::StringLiteralEscapedUnicode {
+                    remaining,
+                    value,
+                    pair_trail,
+                } => match c {
                     '"' => {
                         self.add_err(Error::with_loc(
                             "incomplete unicode escape sequence",
@@ -261,6 +282,12 @@ impl<'a> Cursor<'a> {
                         ));
                         token.data = self.current_str();
                         return self.done(token);
+                    }
+                    '{' if remaining == 4 && !pair_trail => {
+                        state = State::StringLiteralEscapedUnicodeVariable {
+                            value: 0,
+                            start: self.offset,
+                        };
                     }
                     c if !c.is_ascii_hexdigit() => {
                         self.add_err(Error::with_loc(
@@ -273,31 +300,131 @@ impl<'a> Cursor<'a> {
                         continue;
                     }
                     _ => {
-                        if remaining <= 1 {
-                            state = State::StringLiteral;
-                            let hex_end = self.offset + 1;
-                            let hex_start = hex_end - 4;
-                            let hex = &self.source[hex_start..hex_end];
-                            // `is_ascii_hexdigit()` checks in previous iterations ensures
-                            // this `unwrap()` does not panic:
-                            let code_point = u32::from_str_radix(hex, 16).unwrap();
-                            if char::from_u32(code_point).is_none() {
-                                // TODO: https://github.com/apollographql/apollo-rs/issues/657 needs
-                                // changes both here and in `ast/node_ext.rs`
-                                let escape_sequence_start = hex_start - 2; // include "\u"
+                        // `is_ascii_hexdigit()` check above ensures this `unwrap()`
+                        // does not panic:
+                        let value = (value << 4) + c.to_digit(16).unwrap();
+                        if remaining > 1 {
+                            state = State::StringLiteralEscapedUnicode {
+                                remaining: remaining - 1,
+                                value,
+                                pair_trail,
+                            };
+                            continue;
+                        }
+
+                        // https://spec.graphql.org/September2025/#EscapedUnicode
+                        // A leading surrogate escape must be immediately followed by a
+                        // trailing surrogate escape; together they encode one code point.
+                        // Lone surrogate escapes are a lexing error.
+                        let hex_end = self.offset + 1;
+                        if pair_trail {
+                            if !(0xDC00..=0xDFFF).contains(&value) {
+                                let escape_sequence_start = hex_end - 12; // include both escapes
                                 let escape_sequence = &self.source[escape_sequence_start..hex_end];
                                 self.add_err(Error::with_loc(
-                                    "surrogate code point is invalid in unicode escape sequence \
-                                     (paired surrogate not supported yet: \
-                                     https://github.com/apollographql/apollo-rs/issues/657)",
+                                    "unpaired surrogate in unicode escape sequence",
                                     escape_sequence.to_owned(),
                                     0,
                                 ));
                             }
-                            continue;
+                            state = State::StringLiteral;
+                        } else if (0xD800..=0xDBFF).contains(&value) {
+                            state = State::StringLiteralLeadSurrogate;
+                        } else if (0xDC00..=0xDFFF).contains(&value) {
+                            let escape_sequence_start = hex_end - 6; // include "\u"
+                            let escape_sequence = &self.source[escape_sequence_start..hex_end];
+                            self.add_err(Error::with_loc(
+                                "unpaired surrogate in unicode escape sequence",
+                                escape_sequence.to_owned(),
+                                0,
+                            ));
+                            state = State::StringLiteral;
+                        } else {
+                            state = State::StringLiteral;
                         }
-
-                        state = State::StringLiteralEscapedUnicode(remaining - 1)
+                    }
+                },
+                State::StringLiteralEscapedUnicodeVariable { value, start } => match c {
+                    '}' => {
+                        let has_digits = self.offset > start + 1;
+                        // `char::from_u32` rejects surrogate code points and
+                        // values above U+10FFFF, i.e. non-scalar values.
+                        if !has_digits || char::from_u32(value).is_none() {
+                            let escape_sequence = &self.source[start - 2..=self.offset];
+                            self.add_err(Error::with_loc(
+                                "unicode escape sequence must specify a Unicode scalar value",
+                                escape_sequence.to_owned(),
+                                0,
+                            ));
+                        }
+                        state = State::StringLiteral;
+                    }
+                    '"' => {
+                        self.add_err(Error::with_loc(
+                            "incomplete unicode escape sequence",
+                            c.to_string(),
+                            token.index,
+                        ));
+                        token.data = self.current_str();
+                        return self.done(token);
+                    }
+                    c if c.is_ascii_hexdigit() => {
+                        // Saturate instead of overflowing on absurdly long sequences;
+                        // any saturated value is out of range and rejected at `}`.
+                        // `is_ascii_hexdigit()` check ensures this `unwrap()` does not panic:
+                        state = State::StringLiteralEscapedUnicodeVariable {
+                            value: value
+                                .saturating_mul(16)
+                                .saturating_add(c.to_digit(16).unwrap()),
+                            start,
+                        };
+                    }
+                    _ => {
+                        self.add_err(Error::with_loc(
+                            "invalid unicode escape sequence",
+                            c.to_string(),
+                            0,
+                        ));
+                        state = State::StringLiteral;
+                    }
+                },
+                State::StringLiteralLeadSurrogate => match c {
+                    '\\' => {
+                        state = State::StringLiteralLeadSurrogateBackslash;
+                    }
+                    '"' => {
+                        self.add_err(Error::with_loc(
+                            "unpaired surrogate in unicode escape sequence",
+                            c.to_string(),
+                            token.index,
+                        ));
+                        token.data = self.current_str();
+                        return self.done(token);
+                    }
+                    _ => {
+                        self.add_err(Error::with_loc(
+                            "unpaired surrogate in unicode escape sequence",
+                            c.to_string(),
+                            0,
+                        ));
+                        state = State::StringLiteral;
+                    }
+                },
+                State::StringLiteralLeadSurrogateBackslash => match c {
+                    'u' => {
+                        state = State::StringLiteralEscapedUnicode {
+                            remaining: 4,
+                            value: 0,
+                            pair_trail: true,
+                        };
+                    }
+                    _ => {
+                        self.add_err(Error::with_loc(
+                            "unpaired surrogate in unicode escape sequence",
+                            c.to_string(),
+                            0,
+                        ));
+                        state = State::StringLiteral;
                     }
                 },
                 State::StringLiteral => match c {
@@ -343,7 +470,11 @@ impl<'a> Cursor<'a> {
                         state = State::StringLiteral;
                     }
                     'u' => {
-                        state = State::StringLiteralEscapedUnicode(4);
+                        state = State::StringLiteralEscapedUnicode {
+                            remaining: 4,
+                            value: 0,
+                            pair_trail: false,
+                        };
                     }
                     _ => {
                         self.add_err(Error::with_loc(
@@ -530,7 +661,10 @@ impl<'a> Cursor<'a> {
             }
             State::StringLiteral
             | State::BlockStringLiteral
-            | State::StringLiteralEscapedUnicode(_)
+            | State::StringLiteralEscapedUnicode { .. }
+            | State::StringLiteralEscapedUnicodeVariable { .. }
+            | State::StringLiteralLeadSurrogate
+            | State::StringLiteralLeadSurrogateBackslash
             | State::BlockStringLiteralBackslash
             | State::StringLiteralBackslash => {
                 let curr = self.drain();
@@ -599,22 +733,22 @@ impl<'a> Cursor<'a> {
 }
 
 /// Ignored tokens other than comments and commas are assimilated to whitespace
-/// <https://spec.graphql.org/October2021/#Ignored>
+/// <https://spec.graphql.org/September2025/#Ignored>
 fn is_whitespace_assimilated(c: char) -> bool {
     matches!(
         c,
-        // https://spec.graphql.org/October2021/#WhiteSpace
+        // https://spec.graphql.org/September2025/#Whitespace
         '\u{0009}'   // \t
         | '\u{0020}' // space
-        // https://spec.graphql.org/October2021/#LineTerminator
+        // https://spec.graphql.org/September2025/#LineTerminator
         | '\u{000A}' // \n
         | '\u{000D}' // \r
-        // https://spec.graphql.org/October2021/#UnicodeBOM
+        // https://spec.graphql.org/September2025/#UnicodeBOM
         | '\u{FEFF}' // Unicode BOM (Byte Order Mark)
     )
 }
 
-/// <https://spec.graphql.org/October2021/#NameContinue>
+/// <https://spec.graphql.org/September2025/#NameContinue>
 fn is_name_continue(c: char) -> bool {
     matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_')
 }

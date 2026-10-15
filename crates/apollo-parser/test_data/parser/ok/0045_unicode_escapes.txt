@@ -1,0 +1,22 @@
+- DOCUMENT@0..46
+    - OPERATION_DEFINITION@0..45
+        - SELECTION_SET@0..45
+            - L_CURLY@0..1 "{"
+            - WHITESPACE@1..2 " "
+            - FIELD@2..43
+                - NAME@2..7
+                    - IDENT@2..7 "field"
+                - ARGUMENTS@7..43
+                    - L_PAREN@7..8 "("
+                    - ARGUMENT@8..42
+                        - NAME@8..11
+                            - IDENT@8..11 "arg"
+                        - COLON@11..12 ":"
+                        - WHITESPACE@12..13 " "
+                        - STRING_VALUE@13..42
+                            - STRING@13..42 "\"\\u{1F4A9} \\uD83D\\uDCA9 💩\""
+                    - R_PAREN@42..43 ")"
+            - WHITESPACE@43..44 " "
+            - R_CURLY@44..45 "}"
+    - WHITESPACE@45..46 "\n"
+recursion limit: 500, high: 1

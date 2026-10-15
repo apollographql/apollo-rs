@@ -16,6 +16,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.8.7](https://crates.io/crates/apollo-parser/0.8.7) - 2026-10-15
+
+## Features
+
+- **September 2025 string and source character support**
+
+  * String values now support variable-width Unicode escape sequences
+    (`"\u{1F4A9}"`) and legacy surrogate pairs, per the updated
+    [String Value](https://spec.graphql.org/September2025/#sec-String-Value)
+    grammar. Escapes that do not encode a Unicode scalar value (such as
+    `"\u{110000}"` or a lone surrogate `"\uD800"`) are lexing errors.
+  * Source text follows the September 2025 `SourceCharacter` definition: any
+    Unicode scalar value, including control characters, is accepted inside
+    strings and comments.
+
 # [0.8.6](https://crates.io/crates/apollo-parser/0.8.6) - 2026-05-14
 
 ## Fixes
