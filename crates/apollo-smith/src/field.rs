@@ -227,12 +227,18 @@ impl DocumentBuilder<'_> {
             ty: parent_name.clone().into(),
             attribute: name.clone().into(),
         };
-        // Reusing arguments per field makes same-named selections mergeable
+        let alias = self.alias(index)?;
+        // Reusing arguments per field makes same-named selections mergeable,
+        // but a field under a new alias has nothing to merge with, so it can
+        // pass different arguments.
+        let fresh_alias = alias
+            .as_ref()
+            .is_some_and(|alias| !self.current_response_names().contains(alias));
         let cached_args = self.cached_arguments(&coord).cloned();
         let variables = self.variable_checkpoint();
         let args = match &cached_args {
-            Some(args) => args.clone(),
-            None => chosen_field_def
+            Some(args) if !fresh_alias => args.clone(),
+            _ => chosen_field_def
                 .arguments_definition
                 .as_ref()
                 .map(|args_def| self.field_arguments(args_def))
@@ -246,9 +252,7 @@ impl DocumentBuilder<'_> {
         };
         // An alias that can't merge with what's already selected under it
         // falls back to the field's own name.
-        let alias = self
-            .alias(index)?
-            .filter(|alias| self.can_merge(alias, &selected));
+        let alias = alias.filter(|alias| self.can_merge(alias, &selected));
         let response_name = alias.clone().unwrap_or_else(|| name.clone());
         if !self.can_merge(&response_name, &selected) {
             // Variables first used by these arguments would be left unused

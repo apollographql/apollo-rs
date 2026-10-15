@@ -69,3 +69,69 @@ fn aliased_selections_stay_mergeable() {
     }
     assert!(aliases > 0, "no field was aliased");
 }
+
+// Counts selection sets that select field `c` more than once with different
+// arguments, which is only valid under different aliases.
+fn differing_c_arguments(selections: &[Selection]) -> usize {
+    let args: Vec<String> = selections
+        .iter()
+        .filter_map(|s| match s {
+            Selection::Field(f) if f.name == "c" => Some(
+                f.arguments
+                    .iter()
+                    .map(|a| format!("{}: {}", a.name, a.value.serialize().no_indent()))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            ),
+            _ => None,
+        })
+        .collect();
+    let here = args.iter().any(|a| a != &args[0]) as usize;
+    let nested: usize = selections
+        .iter()
+        .map(|s| match s {
+            Selection::Field(f) => f.selection_set.as_deref().map_or(0, differing_c_arguments),
+            Selection::InlineFragment(i) => differing_c_arguments(&i.selection_set),
+            Selection::FragmentSpread(_) => 0,
+        })
+        .sum();
+    here + nested
+}
+
+#[test]
+fn aliases_select_a_field_with_different_arguments() {
+    let schema = "schema { query: Query }
+        type Query { c(x: Int): String, d: String }";
+    let mut differing = 0;
+    for seed in 1..=300u64 {
+        let data = bytes(seed, 512);
+        let mut u = Unstructured::new(&data);
+        let doc = apollo_parser::Parser::new(schema)
+            .parse()
+            .document()
+            .try_into()
+            .expect("schema converts to a smith document");
+        let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
+        let Some(op) = builder
+            .operation_definition()
+            .expect("operation generation")
+        else {
+            continue;
+        };
+        let op: String = op.into();
+        let full = format!("{schema}\n{op}");
+        let ast = AstDocument::parse(&full, "smith.graphql").expect("smith output must parse");
+        if let Err(errors) = ast.to_mixed_validate() {
+            panic!("seed={seed}\n{full}\n{errors}");
+        }
+        for def in &ast.definitions {
+            if let apollo_compiler::ast::Definition::OperationDefinition(op) = def {
+                differing += differing_c_arguments(&op.selection_set);
+            }
+        }
+    }
+    assert!(
+        differing > 0,
+        "no selection set selected `c` with different arguments"
+    );
+}
