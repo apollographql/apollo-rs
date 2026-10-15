@@ -175,7 +175,7 @@ impl DocumentBuilder<'_> {
         self.stack_ty(chosen_ty);
         self.operation_variables = Some(OperationVariables::default());
 
-        let (selection_set, _) = self.with_response_scope(|b| {
+        let (selection_set, _) = self.tracking_merges(|b| {
             if matches!(operation_type, OperationType::Subscription) {
                 // Subscription operations must have exactly one root field
                 // per <https://spec.graphql.org/September2025/#sec-Single-Root-Field>.

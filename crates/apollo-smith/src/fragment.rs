@@ -164,9 +164,9 @@ impl DocumentBuilder<'_> {
         let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
-        let (selection_set, scope) = self.with_response_scope(|b| b.selection_set());
+        let (selection_set, selections) = self.tracking_merges(|b| b.selection_set());
         let selection_set = selection_set?;
-        self.fragment_scopes.insert(name.clone(), scope);
+        self.fragment_selections.insert(name.clone(), selections);
         let type_condition = self.type_condition()?;
         self.stack.pop();
 
