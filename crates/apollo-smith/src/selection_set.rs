@@ -271,12 +271,13 @@ impl DocumentBuilder<'_> {
             return true;
         };
         entry.fields.iter().all(|other| {
-            let distinct_objects = other.parent != field.parent
-                && self.is_object_type(&other.parent)
-                && self.is_object_type(&field.parent);
-            other.ty == field.ty
-                && (distinct_objects
-                    || (other.field_name == field.field_name && other.args == field.args))
+            self.compatible(
+                other,
+                &field.parent,
+                &field.field_name,
+                &field.ty,
+                Some(&field.args),
+            )
         })
     }
 
@@ -291,13 +292,36 @@ impl DocumentBuilder<'_> {
         self.current_scope()
             .and_then(|scope| scope.entries.get(response_name))
             .is_none_or(|entry| {
-                entry.fields.iter().all(|other| {
-                    let distinct_objects = &other.parent != parent
-                        && self.is_object_type(&other.parent)
-                        && self.is_object_type(parent);
-                    &other.ty == ty && (distinct_objects || &other.field_name == field_name)
-                })
+                entry
+                    .fields
+                    .iter()
+                    .all(|other| self.compatible(other, parent, field_name, ty, None))
             })
+    }
+
+    /// Whether a field can share a response name with `other`, comparing
+    /// arguments only when they're known.
+    fn compatible(
+        &self,
+        other: &SelectedField,
+        parent: &Name,
+        field_name: &Name,
+        ty: &Ty,
+        args: Option<&[Argument]>,
+    ) -> bool {
+        let distinct_objects = &other.parent != parent
+            && self.is_object_type(&other.parent)
+            && self.is_object_type(parent);
+        &other.ty == ty
+            && (distinct_objects
+                || (&other.field_name == field_name && args.is_none_or(|args| other.args == args)))
+    }
+
+    /// Whether `response_name` is already selected where the current
+    /// selection is being generated.
+    pub(crate) fn has_response_name(&self, response_name: &Name) -> bool {
+        self.current_scope()
+            .is_some_and(|scope| scope.entries.contains_key(response_name))
     }
 
     /// Response names already selected where the current selection is

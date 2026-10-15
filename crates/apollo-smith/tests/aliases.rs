@@ -4,20 +4,9 @@
 
 use apollo_compiler::ast::Document as AstDocument;
 use apollo_compiler::ast::Selection;
-use apollo_smith::DocumentBuilder;
-use arbitrary::Unstructured;
+use common::operation_for_schema;
 
-fn bytes(seed: u64, len: usize) -> Vec<u8> {
-    let mut x = seed.wrapping_mul(0x9E3779B97F4A7C15) | 1;
-    (0..len)
-        .map(|_| {
-            x ^= x << 13;
-            x ^= x >> 7;
-            x ^= x << 17;
-            x as u8
-        })
-        .collect()
-}
+mod common;
 
 fn count_aliases(selections: &[Selection]) -> usize {
     selections
@@ -41,21 +30,9 @@ fn aliased_selections_stay_mergeable() {
         union U = O | P";
     let mut aliases = 0;
     for seed in 1..=200u64 {
-        let data = bytes(seed, 512);
-        let mut u = Unstructured::new(&data);
-        let doc = apollo_parser::Parser::new(schema)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
-        let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
-        let Some(op) = builder
-            .operation_definition()
-            .expect("operation generation")
-        else {
+        let Some(op) = operation_for_schema(schema, seed) else {
             continue;
         };
-        let op: String = op.into();
         let full = format!("{schema}\n{op}");
         let ast = AstDocument::parse(&full, "smith.graphql").expect("smith output must parse");
         if let Err(errors) = ast.to_mixed_validate() {
@@ -104,21 +81,9 @@ fn aliases_select_a_field_with_different_arguments() {
         type Query { c(x: Int): String, d: String }";
     let mut differing = 0;
     for seed in 1..=300u64 {
-        let data = bytes(seed, 512);
-        let mut u = Unstructured::new(&data);
-        let doc = apollo_parser::Parser::new(schema)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
-        let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
-        let Some(op) = builder
-            .operation_definition()
-            .expect("operation generation")
-        else {
+        let Some(op) = operation_for_schema(schema, seed) else {
             continue;
         };
-        let op: String = op.into();
         let full = format!("{schema}\n{op}");
         let ast = AstDocument::parse(&full, "smith.graphql").expect("smith output must parse");
         if let Err(errors) = ast.to_mixed_validate() {

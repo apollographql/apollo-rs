@@ -201,6 +201,29 @@ impl DocumentBuilder<'_> {
         Ok(Some(self.name_with_index(index)?))
     }
 
+    /// Arguments for a selection of `def`, and whether any were already
+    /// cached for it. Reusing cached arguments keeps same-named selections
+    /// mergeable, but a field under a new alias has nothing to merge with,
+    /// so it gets new arguments.
+    fn arguments_for(
+        &mut self,
+        coord: &TypeAttributeCoordinate,
+        def: &FieldDef,
+        fresh_alias: bool,
+    ) -> ArbitraryResult<(Vec<Argument>, bool)> {
+        let cached_args = self.cached_arguments(coord).cloned();
+        let cached = cached_args.is_some();
+        let args = match cached_args {
+            Some(args) if !fresh_alias => args,
+            _ => def
+                .arguments_definition
+                .as_ref()
+                .map(|args_def| self.field_arguments(args_def))
+                .unwrap_or_else(|| Ok(vec![]))?,
+        };
+        Ok((args, cached))
+    }
+
     /// Create an arbitrary `Field` on the composite type at the top of the stack
     pub fn field(&mut self, index: usize) -> ArbitraryResult<Field> {
         let parent = self
@@ -228,22 +251,11 @@ impl DocumentBuilder<'_> {
             attribute: name.clone().into(),
         };
         let alias = self.alias(index)?;
-        // Reusing arguments per field makes same-named selections mergeable,
-        // but a field under a new alias has nothing to merge with, so it can
-        // pass different arguments.
         let fresh_alias = alias
             .as_ref()
-            .is_some_and(|alias| !self.current_response_names().contains(alias));
-        let cached_args = self.cached_arguments(&coord).cloned();
+            .is_some_and(|alias| !self.has_response_name(alias));
         let variables = self.variable_checkpoint();
-        let args = match &cached_args {
-            Some(args) if !fresh_alias => args.clone(),
-            _ => chosen_field_def
-                .arguments_definition
-                .as_ref()
-                .map(|args_def| self.field_arguments(args_def))
-                .unwrap_or_else(|| Ok(vec![]))?,
-        };
+        let (args, cached) = self.arguments_for(&coord, &chosen_field_def, fresh_alias)?;
         let selected = SelectedField {
             parent: parent_name,
             field_name: name.clone(),
@@ -259,7 +271,7 @@ impl DocumentBuilder<'_> {
             self.rollback_variables(variables);
             return Ok(self.typename_field());
         }
-        if cached_args.is_none() {
+        if !cached {
             self.cache_arguments(coord, args.clone());
         }
         self.record_selection(response_name.clone(), selected);
