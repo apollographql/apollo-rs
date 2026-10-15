@@ -164,7 +164,9 @@ impl DocumentBuilder<'_> {
         let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
-        let selection_set = self.with_response_scope(|b| b.selection_set())?;
+        let (selection_set, scope) = self.with_response_scope(|b| b.selection_set());
+        let selection_set = selection_set?;
+        self.fragment_scopes.insert(name.clone(), scope);
         let type_condition = self.type_condition()?;
         self.stack.pop();
 
@@ -189,7 +191,7 @@ impl DocumentBuilder<'_> {
             .filter(|f| {
                 !excludes.contains(&f.name)
                     && self.fragment_spread_possible(&f.type_condition.name, current_type.as_ref())
-                    && self.can_merge_fragment(f)
+                    && self.can_merge_fragment(&f.name)
             })
             .collect();
 

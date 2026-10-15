@@ -114,6 +114,9 @@ pub struct DocumentBuilder<'a> {
     // Fields selected so far in each operation or fragment definition being
     // generated, so later selections stay mergeable with earlier ones
     pub(crate) response_scopes: Vec<selection_set::ResponseScopeFrame>,
+    // What each fragment definition selects, captured once since fragments
+    // don't change after they are generated
+    pub(crate) fragment_scopes: IndexMap<Name, selection_set::ResponseScope>,
     pub(crate) used_type_names: HashSet<String>,
     // Maximum number of generated definitions per kind
     max_scalar_types: usize,
@@ -163,6 +166,7 @@ impl<'a> DocumentBuilder<'a> {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             response_scopes: Vec::new(),
+            fragment_scopes: IndexMap::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -346,6 +350,7 @@ impl<'a> DocumentBuilder<'a> {
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
             response_scopes: Vec::new(),
+            fragment_scopes: IndexMap::new(),
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -385,6 +390,20 @@ impl<'a> DocumentBuilder<'a> {
             if let Some(name) = &def.name {
                 builder.used_type_names.insert(name.name.clone());
             }
+        }
+        // A fragment's scope includes those of the fragments it spreads, so
+        // resolve them in passes until none are left that can be resolved.
+        loop {
+            let resolved: Vec<_> = builder
+                .fragment_defs
+                .iter()
+                .filter(|f| !builder.fragment_scopes.contains_key(&f.name))
+                .filter_map(|f| Some((f.name.clone(), builder.fragment_scope(f)?)))
+                .collect();
+            if resolved.is_empty() {
+                break;
+            }
+            builder.fragment_scopes.extend(resolved);
         }
 
         Ok(builder)
