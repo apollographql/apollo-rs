@@ -1,8 +1,10 @@
 use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
+use crate::field::FieldDef;
 use crate::name::Name;
 use crate::DocumentBuilder;
+use crate::StackedEntity;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
@@ -138,12 +140,7 @@ impl DocumentBuilder<'_> {
         // invalid as members.
         //
         // See <https://spec.graphql.org/September2025/#sec-Unions>.
-        let existing_members: IndexSet<Name> = self
-            .union_type_defs
-            .iter()
-            .filter(|u| u.name == name)
-            .flat_map(|u| u.members.iter().cloned())
-            .collect();
+        let existing_members = self.union_members(&name);
         let object_types: Vec<_> = self
             .list_existing_object_types()
             .into_iter()
@@ -167,5 +164,28 @@ impl DocumentBuilder<'_> {
             directives,
             extend,
         })
+    }
+
+    /// Members of a union across its base definition and extensions, so
+    /// selections can narrow to any member, not only those listed on the
+    /// base definition.
+    pub(crate) fn union_members(&self, name: &Name) -> IndexSet<Name> {
+        self.union_type_defs
+            .iter()
+            .filter(|u| &u.name == name)
+            .flat_map(|u| u.members.iter().cloned())
+            .collect()
+    }
+}
+
+// Unions declare no fields, so selections on them are limited to
+// `__typename` and fragments on their members.
+impl StackedEntity for UnionTypeDef {
+    fn name(&self) -> &Name {
+        &self.name
+    }
+
+    fn fields_def(&self) -> &[FieldDef] {
+        &[]
     }
 }

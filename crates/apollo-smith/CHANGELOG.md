@@ -34,6 +34,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate union field types - [tninesling]**
+
+  Fields can now be typed as any existing union, and selecting into a union
+  field, including from a schema passed to `with_document`, no longer
+  panics. Selections on a union are `__typename`, fragment spreads, and
+  inline fragments narrowed to its members, including members added by
+  `extend union`.
+
 - **Generate interface and custom scalar field types - [tninesling]**
 
   Output fields could only be typed as objects, enums, and built-in

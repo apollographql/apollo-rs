@@ -436,12 +436,21 @@ impl<'a> DocumentBuilder<'a> {
         {
             self.stack.push(Box::new(itf_type));
             true
+        } else if self.union_type_defs.iter().any(|u| &u.name == type_name) {
+            self.stack.push(Box::new(UnionTypeDef {
+                name: type_name.clone(),
+                description: None,
+                members: self.union_members(type_name),
+                directives: IndexMap::new(),
+                extend: false,
+            }));
+            true
         } else if self.enum_type_defs.iter().any(|e| &e.name == type_name)
             || self.scalar_type_defs.iter().any(|s| &s.name == type_name)
         {
             false
         } else {
-            todo!("'{:?}' need to implement for union, ...", type_name);
+            panic!("'{type_name:?}' is not a known output type");
         }
     }
 
