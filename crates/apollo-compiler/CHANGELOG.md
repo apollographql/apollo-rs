@@ -17,11 +17,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [1.34.0](https://crates.io/crates/apollo-compiler/1.34.0) - 2026-10-13
+# [1.33.1](https://crates.io/crates/apollo-compiler/1.33.1) - 2026-10-15
 
 ## Maintenance
 
-- **Require apollo-parser 0.9.0**
+- **Require apollo-parser 0.8.7**
 
   Picks up [September 2025](https://spec.graphql.org/September2025/#sec-String-Value)
   string support: variable-width `\u{...}` escapes and surrogate pairs.

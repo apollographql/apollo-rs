@@ -18,14 +18,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.17.0](https://crates.io/crates/apollo-smith/0.17.0) - 2026-10-13
-
-## BREAKING
-
-- **Require apollo-parser 0.9.0**
-
-  The `TryFrom<apollo_parser::cst::*>` conversions now take apollo-parser 0.9 CST types.
-
 # [0.16.0](https://crates.io/crates/apollo-smith/0.16.0) - 2026-07-21
 
 Important: 6 breaking changes below, indicated by **BREAKING**
