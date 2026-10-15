@@ -189,3 +189,28 @@ impl StackedEntity for UnionTypeDef {
         &[]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query }
+        directive @d(x: Int, y: [String!]!) on UNION
+        type Query { u: U }
+        union U = A | B
+        type A { a: Int }
+        type B { b: Int }
+        type C { c: Int }";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.union_type_definition().map(Some)) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+}

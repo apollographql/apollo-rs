@@ -209,3 +209,61 @@ impl DocumentBuilder<'_> {
         }))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use crate::DocumentBuilder;
+    use apollo_compiler::ast;
+    use arbitrary::Unstructured;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query, mutation: Mutation, subscription: Subscription }
+        directive @d(x: Int, y: [String!]!) on QUERY | MUTATION | SUBSCRIPTION | FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT | VARIABLE_DEFINITION
+        type Query { a: Int, q: Query }
+        type Mutation { m(x: Int): Query }
+        type Subscription { s: Query, t: Int }";
+
+    // A small schema generated from `data`, without its operations.
+    fn generated_schema(data: &[u8]) -> Option<String> {
+        let mut u = Unstructured::new(data);
+        let doc: String = DocumentBuilder::new(&mut u)
+            .max_scalar_types(2)
+            .max_enum_types(2)
+            .max_interface_types(2)
+            .max_object_types(3)
+            .max_union_types(2)
+            .max_input_object_types(2)
+            .max_fragment_definitions(2)
+            .max_directive_definitions(2)
+            .build()
+            .ok()?
+            .into();
+        let mut ast = ast::Document::parse(doc, "smith.graphql").expect("smith output must parse");
+        ast.definitions
+            .retain(|d| d.as_operation_definition().is_none());
+        Some(ast.to_string())
+    }
+
+    proptest! {
+        #[test]
+        fn generates_valid_operations(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.operation_definition()) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+
+        #[test]
+        fn generates_valid_operations_against_generated_schemas(
+            schema_data in input(),
+            data in input(),
+        ) {
+            let schema = generated_schema(&schema_data);
+            if let Some(doc) = schema.and_then(|s| generate(&s, &data, |b| b.operation_definition())) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+}

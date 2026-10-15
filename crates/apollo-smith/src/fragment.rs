@@ -341,6 +341,10 @@ pub(crate) fn reachable_fragment_names(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
 
     fn parse(src: &str) -> (Vec<OperationDef>, Vec<FragmentDef>) {
         let cst = apollo_parser::Parser::new(src).parse();
@@ -436,5 +440,23 @@ mod tests {
         );
         let result = reachable_fragment_names(&ops, &frags);
         assert_eq!(result, names(&["A", "B"]));
+    }
+
+    const SCHEMA: &str = "schema { query: Query }
+        directive @d(x: Int, y: [String!]!) on FRAGMENT_DEFINITION | FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+        type Query { i: I, u: U }
+        interface I { x: Int }
+        type A implements I { x: Int, a: A }
+        type B { b: Int }
+        union U = A | B
+        fragment FA on A { x }";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.fragment_definition().map(Some)) {
+                prop_assert_valid(&doc)?;
+            }
+        }
     }
 }

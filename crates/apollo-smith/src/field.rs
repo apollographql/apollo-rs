@@ -305,3 +305,79 @@ impl DocumentBuilder<'_> {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::selection_set::SelectedField;
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use crate::DocumentBuilder;
+    use arbitrary::Unstructured;
+    use proptest::prelude::*;
+
+    // Fields that aliases can collide with: the same names across types,
+    // arguments, and a union whose members share field names.
+    const ALIASES: &str = "schema { query: Query }
+        type Query { a: Int, b: Int, c(x: Int): String, d: String, o: O, u: U }
+        type O { a: Int, b: String, o: O }
+        type P { a: String, b: String }
+        union U = O | P";
+
+    // One field with an argument, so it's often selected with different
+    // arguments under different aliases.
+    const ARGUMENTS: &str = "schema { query: Query }
+        type Query { c(x: Int): String, d: String }";
+
+    proptest! {
+        #[test]
+        fn aliased_selections_stay_mergeable(
+            schema in prop::sample::select(&[ALIASES, ARGUMENTS][..]),
+            data in input(),
+        ) {
+            if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+
+    // Once `B.x` is selected as a `String`, `A.x` can't share its response
+    // name, so only `y` is offered.
+    #[test]
+    fn offers_only_fields_that_merge_with_earlier_selections() {
+        let schema = "schema { query: Query }
+            type Query { u: U }
+            union U = A | B
+            type A { x: Int, y: Int }
+            type B { x: String, y: Int }";
+        let doc = apollo_parser::Parser::new(schema)
+            .parse()
+            .document()
+            .try_into()
+            .expect("schema converts to a smith document");
+        let mut u = Unstructured::new(&[]);
+        let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
+        let a = builder
+            .object_type_defs
+            .iter()
+            .find(|o| o.name.name == "A")
+            .cloned()
+            .expect("schema defines A");
+        let x = Name::new("x".to_string());
+        let (offered, _) = builder.tracking_merges(|b| {
+            b.record_selection(
+                x.clone(),
+                SelectedField {
+                    parent: Name::new("B".to_string()),
+                    field_name: x.clone(),
+                    ty: Ty::Named(Name::new("String".to_string())),
+                    args: Vec::new(),
+                },
+            );
+            b.mergeable_field_defs(&a)
+        });
+        let offered: Vec<&str> = offered.iter().map(|f| f.name.name.as_str()).collect();
+        assert_eq!(offered, ["y"]);
+    }
+}

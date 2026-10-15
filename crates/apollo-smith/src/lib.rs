@@ -21,7 +21,7 @@ pub(crate) mod scalar;
 pub(crate) mod schema;
 pub(crate) mod selection_set;
 #[cfg(test)]
-pub(crate) mod snapshot_tests;
+pub(crate) mod test_support;
 pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
@@ -475,4 +475,44 @@ impl<'a> DocumentBuilder<'a> {
 pub(crate) trait StackedEntity {
     fn name(&self) -> &Name;
     fn fields_def(&self) -> &[FieldDef];
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::prop_assert_valid;
+    use crate::DocumentBuilder;
+    use arbitrary::Unstructured;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn builds_valid_documents(data in prop::collection::vec(any::<u8>(), 0..=4096)) {
+            let mut u = Unstructured::new(&data);
+            if let Ok(doc) = DocumentBuilder::new(&mut u).build() {
+                prop_assert_valid(&String::from(doc))?;
+            }
+        }
+
+        // Few definitions of each kind leave input for the later stages of
+        // build(), such as inheriting interface fields and operations.
+        #[test]
+        fn builds_valid_documents_with_few_definitions(
+            data in prop::collection::vec(any::<u8>(), 0..=16384),
+        ) {
+            let mut u = Unstructured::new(&data);
+            let doc = DocumentBuilder::new(&mut u)
+                .max_scalar_types(2)
+                .max_enum_types(2)
+                .max_interface_types(3)
+                .max_object_types(3)
+                .max_union_types(2)
+                .max_input_object_types(2)
+                .max_fragment_definitions(2)
+                .max_directive_definitions(2)
+                .build();
+            if let Ok(doc) = doc {
+                prop_assert_valid(&String::from(doc))?;
+            }
+        }
+    }
 }
