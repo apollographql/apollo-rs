@@ -215,10 +215,7 @@ impl DocumentBuilder<'_> {
         };
         // Reusing arguments per field makes same-named selections mergeable
         let cached_args = self.cached_arguments(&coord).cloned();
-        let variable_count = self
-            .operation_variables
-            .as_ref()
-            .map(|v| v.definitions.len());
+        let variables = self.variable_checkpoint();
         let args = match &cached_args {
             Some(args) => args.clone(),
             None => chosen_field_def
@@ -234,9 +231,7 @@ impl DocumentBuilder<'_> {
         };
         if !self.can_merge(&name, &selected) {
             // Variables first used by these arguments would be left unused
-            if let (Some(vars), Some(count)) = (&mut self.operation_variables, variable_count) {
-                vars.definitions.truncate(count);
-            }
+            self.rollback_variables(variables);
             return Ok(self.typename_field());
         }
         if cached_args.is_none() {

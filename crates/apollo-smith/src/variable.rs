@@ -60,15 +60,14 @@ impl DocumentBuilder<'_> {
             .input_value_definitions
             .iter()
             .map(|def| {
-                let value = if self.operation_variables.is_some() && self.u.ratio(1, 3)? {
-                    InputValue::Variable(self.variable_for(&def.ty)?)
+                if self.operation_variables.is_some() && self.u.ratio(1, 3)? {
+                    Ok(Argument {
+                        name: def.name.clone(),
+                        value: InputValue::Variable(self.variable_for(&def.ty)?),
+                    })
                 } else {
-                    self.input_value_for_type(&def.ty)?
-                };
-                Ok(Argument {
-                    name: def.name.clone(),
-                    value,
-                })
+                    self.argument_with_def(def)
+                }
             })
             .collect()
     }
@@ -107,6 +106,22 @@ impl DocumentBuilder<'_> {
             });
         }
         Ok(name)
+    }
+
+    /// How many variables the current operation has defined, so variables
+    /// defined after this point can be dropped with `rollback_variables`.
+    pub(crate) fn variable_checkpoint(&self) -> Option<usize> {
+        self.operation_variables
+            .as_ref()
+            .map(|vars| vars.definitions.len())
+    }
+
+    /// Drop variables defined since `checkpoint`, for arguments that end up
+    /// unused.
+    pub(crate) fn rollback_variables(&mut self, checkpoint: Option<usize>) {
+        if let (Some(vars), Some(count)) = (&mut self.operation_variables, checkpoint) {
+            vars.definitions.truncate(count);
+        }
     }
 
     /// Arguments chosen earlier for a field, preferring those of the current
