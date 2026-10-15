@@ -140,7 +140,7 @@ impl DocumentBuilder<'_> {
         // invalid as members.
         //
         // See <https://spec.graphql.org/September2025/#sec-Unions>.
-        let existing_members = self.merged_union(&name).members;
+        let existing_members = self.union_members(&name);
         let object_types: Vec<_> = self
             .list_existing_object_types()
             .into_iter()
@@ -166,21 +166,15 @@ impl DocumentBuilder<'_> {
         })
     }
 
-    /// Combine a union's base definition and extensions so selections can
-    /// narrow to any member, not only those listed on the base definition.
-    pub(crate) fn merged_union(&self, name: &Name) -> UnionTypeDef {
-        UnionTypeDef {
-            name: name.clone(),
-            description: None,
-            members: self
-                .union_type_defs
-                .iter()
-                .filter(|u| &u.name == name)
-                .flat_map(|u| u.members.iter().cloned())
-                .collect(),
-            directives: IndexMap::new(),
-            extend: false,
-        }
+    /// Members of a union across its base definition and extensions, so
+    /// selections can narrow to any member, not only those listed on the
+    /// base definition.
+    pub(crate) fn union_members(&self, name: &Name) -> IndexSet<Name> {
+        self.union_type_defs
+            .iter()
+            .filter(|u| &u.name == name)
+            .flat_map(|u| u.members.iter().cloned())
+            .collect()
     }
 }
 

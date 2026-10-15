@@ -249,7 +249,7 @@ impl DocumentBuilder<'_> {
         if !self.union_type_defs.iter().any(|u| u.name == current) {
             return Ok(None);
         }
-        let members: Vec<Name> = self.merged_union(&current).members.into_iter().collect();
+        let members: Vec<Name> = self.union_members(&current).into_iter().collect();
         if members.is_empty() || self.u.ratio(1, 4)? {
             return Ok(None);
         }
@@ -276,7 +276,7 @@ impl DocumentBuilder<'_> {
             return IndexSet::from([type_name.clone()]);
         }
         if self.union_type_defs.iter().any(|u| &u.name == type_name) {
-            return self.merged_union(type_name).members;
+            return self.union_members(type_name);
         }
         // Interface: collect every object whose implements closure includes it
         self.object_type_defs

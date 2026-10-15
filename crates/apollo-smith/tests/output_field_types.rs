@@ -8,18 +8,10 @@ use apollo_compiler::ast::Document as AstDocument;
 use apollo_compiler::ast::Selection;
 use apollo_smith::DocumentBuilder;
 use arbitrary::Unstructured;
+use common::bytes;
+use common::operation_for_schema;
 
-fn bytes(seed: u64, len: usize) -> Vec<u8> {
-    let mut x = seed.wrapping_mul(0x9E3779B97F4A7C15) | 1;
-    (0..len)
-        .map(|_| {
-            x ^= x << 13;
-            x ^= x >> 7;
-            x ^= x << 17;
-            x as u8
-        })
-        .collect()
-}
+mod common;
 
 // Objects that declare the same interface more than once are a separate,
 // known generator bug, so they are filtered out here.
@@ -35,46 +27,25 @@ fn unexpected_errors(doc: &str) -> Vec<String> {
     }
 }
 
-fn operations_for_schema(schema: &str) {
-    for seed in 1..=200u64 {
-        let data = bytes(seed, 512);
-        let mut u = Unstructured::new(&data);
-        let doc = apollo_parser::Parser::new(schema)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
-        let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
-        let Some(op) = builder
-            .operation_definition()
-            .expect("operation generation")
-        else {
-            continue;
-        };
-        let op: String = op.into();
-        let full = format!("{schema}\n{op}");
-        let errors = unexpected_errors(&full);
-        assert!(errors.is_empty(), "seed={seed}\n{full}\n{errors:#?}");
-    }
-}
-
 #[test]
 fn selects_into_union_typed_fields() {
-    operations_for_schema(
+    operations(
         "schema { query: Query }
         type Query { u: U }
         union U = A | B
         type A { a: Int, shared: Int }
         type B { b: String, shared: String }",
+        200,
     );
 }
 
 #[test]
 fn selects_into_custom_scalar_typed_fields() {
-    operations_for_schema(
+    operations(
         "schema { query: Query }
         type Query { s: Custom, i: Int }
         scalar Custom",
+        200,
     );
 }
 
@@ -118,22 +89,12 @@ fn generates_interface_and_custom_scalar_field_types() {
     );
 }
 
+/// Operations generated against `schema` for each seed, after checking
+/// that each one is valid.
 fn operations(schema: &str, seeds: u64) -> Vec<(u64, AstDocument)> {
     (1..=seeds)
         .filter_map(|seed| {
-            let data = bytes(seed, 512);
-            let mut u = Unstructured::new(&data);
-            let doc = apollo_parser::Parser::new(schema)
-                .parse()
-                .document()
-                .try_into()
-                .expect("schema converts to a smith document");
-            let mut builder =
-                DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
-            let op: String = builder
-                .operation_definition()
-                .expect("operation generation")?
-                .into();
+            let op = operation_for_schema(schema, seed)?;
             let full = format!("{schema}\n{op}");
             let errors = unexpected_errors(&full);
             assert!(errors.is_empty(), "seed={seed}\n{full}\n{errors:#?}");
@@ -182,21 +143,9 @@ fn spreads_fragments_on_members_added_by_union_extensions() {
         fragment FB on B { b }";
     let mut spreads = 0;
     for seed in 1..=200u64 {
-        let data = bytes(seed, 512);
-        let mut u = Unstructured::new(&data);
-        let doc = apollo_parser::Parser::new(schema)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
-        let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
-        let Some(op) = builder
-            .operation_definition()
-            .expect("operation generation")
-        else {
+        let Some(op) = operation_for_schema(schema, seed) else {
             continue;
         };
-        let op: String = op.into();
         // FB is only used when this operation happens to spread it
         let full = format!("{schema}\n{op}");
         let ast = AstDocument::parse(&full, "smith.graphql").expect("parse");
