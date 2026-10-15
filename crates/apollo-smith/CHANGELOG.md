@@ -34,6 +34,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate interface and custom scalar field types - [tninesling]**
+
+  Output fields could only be typed as objects, enums, and built-in
+  scalars. They can now also be typed as any existing interface or custom
+  scalar, and selecting into a custom scalar field, including from a
+  schema passed to `with_document`, no longer panics.
+
 - **Generate empty selection sets - [tninesling], [pull/1118]**
 
   The September 2026 specification allows empty selection sets

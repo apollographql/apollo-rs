@@ -22,8 +22,8 @@ fn snapshot_tests() {
         scalar A
 
         type A2 {
-          A0: A0
-          A1: A0
+          A0: A1
+          A1: A1
         }
 
         interface A1 {
@@ -56,8 +56,8 @@ fn snapshot_tests() {
         scalar CD
 
         type A5 {
-          A0: IJAAAAAA
-          A1: IJAAAAAA
+          A0: A4
+          A1: A4
         }
 
         interface A4 {
@@ -115,8 +115,8 @@ fn snapshot_tests() {
         scalar CD
 
         type A5 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: A4
+          A1: A4
         }
 
         interface A4 {
@@ -182,8 +182,8 @@ fn snapshot_tests() {
         scalar CD
 
         type A5 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         "9ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_\n\r	"
@@ -221,33 +221,33 @@ fn snapshot_tests() {
         }
 
         interface A {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         interface A0 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         interface A1 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         interface A2 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         interface A3 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         interface A4 {
-          A0: IJKLMNOP
-          A1: IJKLMNOP
+          A0: Jdefghi
+          A1: Jdefghi
         }
 
         union A6 = A5
