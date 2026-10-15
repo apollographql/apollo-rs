@@ -42,6 +42,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate `@skip` and `@include` in operations - [tninesling]**
+
+  Fields, fragment spreads, and inline fragments in operations now
+  sometimes get `@skip`, `@include`, or both. The condition usually passes a
+  `Boolean!` variable, so planners see conditions they can't resolve up
+  front, and fragment definitions use literal conditions since they're
+  shared between operations. The root field of a subscription is never
+  conditional.
+
 - **Generate field aliases - [tninesling]**
 
   Alias generation was disabled because aliases could put different fields

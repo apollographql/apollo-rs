@@ -182,7 +182,7 @@ impl DocumentBuilder<'_> {
                 // We generate exactly one field to satisfy that condition. The 0-index
                 // is sometimes used to create an alias for the field.
                 Ok(SelectionSet {
-                    selections: vec![Selection::Field(b.field(0)?)],
+                    selections: vec![Selection::Field(b.field_with_conditions(0, false)?)],
                 })
             } else {
                 b.selection_set()

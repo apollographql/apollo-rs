@@ -200,7 +200,7 @@ impl DocumentBuilder<'_> {
         } else {
             self.u.choose(&available_fragment)?.name.clone()
         };
-        let directives = self.directives(DirectiveLocation::FragmentSpread)?;
+        let directives = self.selection_directives(DirectiveLocation::FragmentSpread, true)?;
         self.record_fragment(&name);
         excludes.push(name.clone());
 
@@ -216,7 +216,7 @@ impl DocumentBuilder<'_> {
             self.stack_ty(&Ty::Named(member));
             let selection_set = self.selection_set();
             self.stack.pop();
-            let directives = self.directives(DirectiveLocation::InlineFragment)?;
+            let directives = self.selection_directives(DirectiveLocation::InlineFragment, true)?;
             return Ok(InlineFragment {
                 type_condition: Some(type_condition),
                 directives,
@@ -231,7 +231,7 @@ impl DocumentBuilder<'_> {
             .then(|| self.type_condition())
             .transpose()?;
         let selection_set = self.selection_set()?;
-        let directives = self.directives(DirectiveLocation::InlineFragment)?;
+        let directives = self.selection_directives(DirectiveLocation::InlineFragment, true)?;
 
         Ok(InlineFragment {
             type_condition,

@@ -22,8 +22,8 @@ use indexmap::IndexMap;
 #[derive(Debug, Clone)]
 pub struct VariableDef {
     description: Option<Description>,
-    name: Name,
-    ty: Ty,
+    pub(crate) name: Name,
+    pub(crate) ty: Ty,
     default_value: Option<InputValue>,
     directives: IndexMap<Name, Directive>,
 }
@@ -73,7 +73,7 @@ impl DocumentBuilder<'_> {
     }
 
     /// Pick or define a variable that can be passed where `ty` is expected.
-    fn variable_for(&mut self, ty: &Ty) -> ArbitraryResult<Name> {
+    pub(crate) fn variable_for(&mut self, ty: &Ty) -> ArbitraryResult<Name> {
         // A variable can be passed where its own type, or the nullable form
         // of it, is expected.
         let non_null = Ty::NonNull(Box::new(ty.clone()));
