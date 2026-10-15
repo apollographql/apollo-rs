@@ -34,6 +34,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate field aliases - [tninesling]**
+
+  Alias generation was disabled because aliases could put different fields
+  under the same response name. Fields are aliased again, often to a
+  response name already selected alongside them, and an alias is only kept
+  when the selection still follows the field selection merging rules.
+
 - **Generate operation variables - [tninesling]**
 
   Operations never defined variables. Field arguments in an operation now

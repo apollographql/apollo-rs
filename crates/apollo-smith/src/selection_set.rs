@@ -147,6 +147,7 @@ impl DocumentBuilder<'_> {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct SelectedField {
     pub(crate) parent: Name,
+    pub(crate) field_name: Name,
     pub(crate) ty: Ty,
     pub(crate) args: Vec<Argument>,
 }
@@ -280,8 +281,9 @@ impl DocumentBuilder<'_> {
 
     /// Requiring identical types is stricter than the spec's
     /// SameResponseShape, but it keeps the check local to one level, with
-    /// subselections checked through their merged record. Arguments must
-    /// match unless the parents are distinct object types.
+    /// subselections checked through their merged record. Unless the
+    /// parents are distinct object types, the fields must also be the same
+    /// field with the same arguments, which only aliases can break.
     ///
     /// See <https://spec.graphql.org/September2025/#sec-Field-Selection-Merging>.
     fn can_merge_into(
@@ -294,18 +296,72 @@ impl DocumentBuilder<'_> {
             return true;
         };
         under_name.fields.iter().all(|other| {
-            let distinct_objects = other.parent != field.parent
-                && self.is_object_type(&other.parent)
-                && self.is_object_type(&field.parent);
-            other.ty == field.ty && (distinct_objects || other.args == field.args)
+            self.compatible(
+                other,
+                &field.parent,
+                &field.field_name,
+                &field.ty,
+                Some(&field.args),
+            )
         })
     }
 
     /// Like `can_merge`, for a field whose arguments aren't chosen yet.
-    pub(crate) fn can_merge_ignoring_args(&self, response_name: &Name, ty: &Ty) -> bool {
+    pub(crate) fn can_merge_ignoring_args(
+        &self,
+        response_name: &Name,
+        parent: &Name,
+        field_name: &Name,
+        ty: &Ty,
+    ) -> bool {
         self.selections_here()
             .and_then(|selections| selections.by_name.get(response_name))
-            .is_none_or(|under_name| under_name.fields.iter().all(|other| &other.ty == ty))
+            .is_none_or(|under_name| {
+                under_name
+                    .fields
+                    .iter()
+                    .all(|other| self.compatible(other, parent, field_name, ty, None))
+            })
+    }
+
+    /// Whether a field can share a response name with `other`, comparing
+    /// arguments only when they're known.
+    fn compatible(
+        &self,
+        other: &SelectedField,
+        parent: &Name,
+        field_name: &Name,
+        ty: &Ty,
+        args: Option<&[Argument]>,
+    ) -> bool {
+        let distinct_objects = &other.parent != parent
+            && self.is_object_type(&other.parent)
+            && self.is_object_type(parent);
+        &other.ty == ty
+            && (distinct_objects
+                || (&other.field_name == field_name && args.is_none_or(|args| other.args == args)))
+    }
+
+    /// Whether `response_name` is already selected where the current
+    /// selection is being generated.
+    pub(crate) fn has_response_name(&self, response_name: &Name) -> bool {
+        self.selections_here()
+            .is_some_and(|selections| selections.by_name.contains_key(response_name))
+    }
+
+    /// Response names already selected where the current selection is
+    /// being generated, leaving out reserved introspection names.
+    pub(crate) fn current_response_names(&self) -> Vec<Name> {
+        self.selections_here()
+            .map(|selections| {
+                selections
+                    .by_name
+                    .keys()
+                    .filter(|name| !name.name.starts_with("__"))
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     pub(crate) fn record_selection(&mut self, response_name: Name, field: SelectedField) {
@@ -389,6 +445,7 @@ impl DocumentBuilder<'_> {
                     let under_name = selections.by_name.entry(response_name).or_default();
                     under_name.add(SelectedField {
                         parent: parent.clone(),
+                        field_name: field.name.clone(),
                         ty,
                         args: field.args.clone(),
                     });
@@ -444,6 +501,7 @@ impl DocumentBuilder<'_> {
             name.clone(),
             SelectedField {
                 parent,
+                field_name: name.clone(),
                 ty: typename_ty(),
                 args: Vec::new(),
             },
@@ -476,6 +534,7 @@ mod tests {
         let name = Name::new(String::from("f"));
         let field = SelectedField {
             parent: Name::new(String::from("T")),
+            field_name: name.clone(),
             ty: Ty::Named(Name::new(String::from("Int"))),
             args: Vec::new(),
         };
