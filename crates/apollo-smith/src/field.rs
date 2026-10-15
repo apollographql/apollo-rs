@@ -4,9 +4,11 @@ use crate::description::Description;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
+use crate::selection_set::SelectedField;
 use crate::selection_set::SelectionSet;
 use crate::ty::Ty;
 use crate::DocumentBuilder;
+use crate::StackedEntity;
 use apollo_compiler::ast;
 use apollo_compiler::coordinate::TypeAttributeCoordinate;
 use apollo_compiler::Node;
@@ -165,19 +167,54 @@ impl DocumentBuilder<'_> {
             .collect()
     }
 
-    /// Create an arbitrary `Field` given an object type
+    /// The parent's field definitions that can be selected under their own
+    /// name without conflicting with what's already selected here. This is a
+    /// first pass before arguments are generated, so arguments are compared
+    /// only when they're cached. `can_merge` makes the final check.
+    fn mergeable_field_defs(&self, parent: &dyn StackedEntity) -> Vec<FieldDef> {
+        parent
+            .fields_def()
+            .iter()
+            .filter(|def| {
+                let coord = TypeAttributeCoordinate {
+                    ty: parent.name().clone().into(),
+                    attribute: def.name.clone().into(),
+                };
+                match self.chosen_arguments.get(&coord) {
+                    Some(args) => self.can_merge(
+                        &def.name,
+                        &SelectedField {
+                            parent: parent.name().clone(),
+                            ty: def.ty.clone(),
+                            args: args.clone(),
+                        },
+                    ),
+                    None => self.can_merge_ignoring_args(&def.name, &def.ty),
+                }
+            })
+            .cloned()
+            .collect()
+    }
+
+    /// Create an arbitrary `Field` on the composite type at the top of the stack
     pub fn field(&mut self, _index: usize) -> ArbitraryResult<Field> {
-        let fields_defs = self
+        let parent = self
             .stack
             .last()
-            .expect("an object type must be added on the stack")
-            .fields_def();
+            .expect("a composite type must be added on the stack");
+        let parent_name = parent.name().clone();
+        // Picking only fields that can merge with what's already selected
+        // keeps conflicts from turning most selections into `__typename`.
+        let candidates = self.mergeable_field_defs(parent.as_ref());
+        if candidates.is_empty() {
+            return Ok(self.typename_field());
+        }
 
-        let chosen_field_def = self.u.choose(fields_defs)?.clone();
+        let chosen_field_def = self.u.choose(&candidates)?.clone();
 
         let name = chosen_field_def.name.clone();
         let coord = TypeAttributeCoordinate {
-            ty: self.stack.last().unwrap().name().clone().into(),
+            ty: parent_name.clone().into(),
             attribute: name.clone().into(),
         };
         // To not have same selection with different arguments
@@ -194,14 +231,23 @@ impl DocumentBuilder<'_> {
                 args
             }
         };
+        let selected = SelectedField {
+            parent: parent_name,
+            ty: chosen_field_def.ty.clone(),
+            args: args.clone(),
+        };
+        if !self.can_merge(&name, &selected) {
+            return Ok(self.typename_field());
+        }
+        self.record_selection(name.clone(), selected);
         let directives = self.directives(DirectiveLocation::Field)?;
 
         let selection_set = if !chosen_field_def.ty.is_builtin() {
             // Put current ty on the stack
             if self.stack_ty(&chosen_field_def.ty) {
-                let res = Some(self.selection_set()?);
+                let res = self.in_merged_subselection(&name, |b| b.selection_set());
                 self.stack.pop();
-                res
+                Some(res?)
             } else {
                 None
             }
