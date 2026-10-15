@@ -111,6 +111,8 @@ pub struct DocumentBuilder<'a> {
     pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field on a specific type
     pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
+    // Set while generating an operation, which may define variables
+    pub(crate) operation_variables: Option<variable::OperationVariables>,
     // Fields selected so far in each operation or fragment definition being
     // generated, so later selections stay mergeable with earlier ones
     pub(crate) merge_tracking: Vec<selection_set::MergeTracking>,
@@ -165,6 +167,7 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph: implements_graph::ImplementsGraph::new(),
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
+            operation_variables: None,
             merge_tracking: Vec::new(),
             fragment_selections: IndexMap::new(),
             used_type_names: HashSet::new(),
@@ -349,6 +352,7 @@ impl<'a> DocumentBuilder<'a> {
             implements_graph,
             stack: Vec::new(),
             chosen_arguments: IndexMap::new(),
+            operation_variables: None,
             merge_tracking: Vec::new(),
             fragment_selections: IndexMap::new(),
             used_type_names: HashSet::new(),

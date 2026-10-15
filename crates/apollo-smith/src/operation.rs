@@ -4,6 +4,7 @@ use crate::directive::DirectiveLocation;
 use crate::name::Name;
 use crate::selection_set::Selection;
 use crate::selection_set::SelectionSet;
+use crate::variable::OperationVariables;
 use crate::variable::VariableDef;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
@@ -172,6 +173,7 @@ impl DocumentBuilder<'_> {
 
         // Stack
         self.stack_ty(chosen_ty);
+        self.operation_variables = Some(OperationVariables::default());
 
         let (selection_set, _) = self.tracking_merges(|b| {
             if matches!(operation_type, OperationType::Subscription) {
@@ -188,14 +190,14 @@ impl DocumentBuilder<'_> {
         });
 
         self.stack.pop();
+        let variables = self.operation_variables.take().unwrap_or_default();
         let selection_set = selection_set?;
         assert!(
             self.stack.is_empty(),
             "the stack must be empty at the end of an operation definition"
         );
 
-        // TODO
-        let variable_definitions = vec![];
+        let variable_definitions = variables.definitions;
 
         Ok(Some(OperationDef {
             description: None,
