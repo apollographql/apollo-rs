@@ -216,6 +216,10 @@ impl DocumentBuilder<'_> {
     }
 
     pub fn input_value_for_type(&mut self, ty: &Ty) -> ArbitraryResult<InputValue> {
+        self.input_value_at_depth(ty, 0)
+    }
+
+    fn input_value_at_depth(&mut self, ty: &Ty, depth: usize) -> ArbitraryResult<InputValue> {
         let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> ArbitraryResult<InputValue> {
             if ty.is_builtin() {
                 match ty.name().name.as_str() {
@@ -237,24 +241,12 @@ impl DocumentBuilder<'_> {
                 Ok(InputValue::Enum(
                     doc_builder.arbitrary_variant(&enum_)?.clone(),
                 ))
-            } else if let Some(input_object_ty) = doc_builder
+            } else if doc_builder
                 .input_object_type_defs
                 .iter()
-                .find(|io| &io.name == ty.name())
-                .cloned()
+                .any(|io| &io.name == ty.name())
             {
-                Ok(InputValue::Object(
-                    input_object_ty
-                        .fields
-                        .iter()
-                        .map(|field_def| {
-                            Ok((
-                                field_def.name.clone(),
-                                doc_builder.input_value_for_type(&field_def.ty)?,
-                            ))
-                        })
-                        .collect::<ArbitraryResult<Vec<_>>>()?,
-                ))
+                doc_builder.input_object_value(ty.name(), depth)
             } else if doc_builder
                 .scalar_type_defs
                 .iter()
@@ -281,6 +273,40 @@ impl DocumentBuilder<'_> {
         };
 
         Ok(val)
+    }
+
+    /// Build a value for an input object from its base definition and
+    /// extensions. A @oneOf input object gets exactly one field.
+    ///
+    /// Base definitions only reference input types created before them, so
+    /// their fields can't form a cycle, but extension fields can. Extensions
+    /// only add nullable fields, so dropping them past a small depth keeps
+    /// the value valid and finite.
+    fn input_object_value(&mut self, name: &Name, depth: usize) -> ArbitraryResult<InputValue> {
+        const MAX_DEPTH_WITH_EXTENSIONS: usize = 3;
+        let fields: Vec<InputValueDef> = self
+            .input_object_type_defs
+            .iter()
+            .filter(|io| &io.name == name)
+            .filter(|io| !io.extend || depth < MAX_DEPTH_WITH_EXTENSIONS)
+            .flat_map(|io| io.fields.iter().cloned())
+            .collect();
+        let fields = if self.is_one_of_input(name) {
+            vec![self.u.choose(&fields)?.clone()]
+        } else {
+            fields
+        };
+        Ok(InputValue::Object(
+            fields
+                .iter()
+                .map(|field_def| {
+                    Ok((
+                        field_def.name.clone(),
+                        self.input_value_at_depth(&field_def.ty, depth + 1)?,
+                    ))
+                })
+                .collect::<ArbitraryResult<Vec<_>>>()?,
+        ))
     }
 
     /// Create an arbitrary list of `InputValueDef`. The caller passes
@@ -389,10 +415,21 @@ mod tests {
         input Outer { first: [Inner] }
         input Inner { value: String }";
 
+    // Values need exactly one field for `One`, and the field added by the
+    // extension for `Extended`.
+    const ONE_OF_AND_EXTENDED: &str = "schema { query: Query }
+        type Query { f(one: One, extended: Extended): Int }
+        input One @oneOf { a: Int, b: String }
+        input Extended { a: Int }
+        extend input Extended { b: String! }";
+
     proptest! {
         #[test]
-        fn operation_values_respect_input_object_definitions(data in input()) {
-            if let Some(doc) = generate(NESTED, &data, |b| b.operation_definition()) {
+        fn operation_values_respect_input_object_definitions(
+            schema in prop::sample::select(&[NESTED, ONE_OF_AND_EXTENDED][..]),
+            data in input(),
+        ) {
+            if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
                 prop_assert_valid(&doc)?;
             }
         }

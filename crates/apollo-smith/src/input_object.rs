@@ -117,6 +117,12 @@ impl TryFrom<apollo_parser::cst::InputObjectTypeExtension> for InputObjectTypeDe
 }
 
 impl DocumentBuilder<'_> {
+    pub(crate) fn is_one_of_input(&self, name: &Name) -> bool {
+        self.input_object_type_defs
+            .iter()
+            .any(|io| &io.name == name && io.directives.keys().any(|d| d.name == "oneOf"))
+    }
+
     /// Create an arbitrary `InputObjectTypeDef`
     pub fn input_object_type_definition(&mut self) -> ArbitraryResult<InputObjectTypeDef> {
         let extend = !self.input_object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
@@ -149,18 +155,24 @@ impl DocumentBuilder<'_> {
             .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
             .collect();
 
-        // Randomly apply @oneOf to this input object (~1-in-5 chance).  When
+        // Randomly apply @oneOf to a base definition (~1-in-5 chance). When
         // we do, enforce the spec constraints on every field: all must be
-        // nullable and none may carry a default value.
-        let is_one_of: bool = self.u.int_in_range(0..=4usize).unwrap_or(1) == 0;
+        // nullable and none may carry a default value. Extensions may not
+        // add @oneOf, but must follow its constraints when the base has it.
+        let is_one_of = !extend && self.u.ratio(1, 5)?;
+        let extends_one_of = extend && self.is_one_of_input(&name);
         let mut fields = self.input_values_def(
             DirectiveLocation::InputFieldDefinition,
             &exclude_fields,
             Some(&name),
         )?;
-        if is_one_of {
-            for field in &mut fields {
+        for field in &mut fields {
+            // Values of this type may already have been generated from
+            // earlier definitions, so extensions only add nullable fields.
+            if is_one_of || extend {
                 field.ty = field.ty.clone().into_nullable();
+            }
+            if is_one_of || extends_one_of {
                 field.default_value = None;
             }
         }
@@ -187,5 +199,31 @@ impl DocumentBuilder<'_> {
             extend,
             fields,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
+
+    // Extensions of these must keep existing values valid and follow
+    // @oneOf's rules.
+    const SCHEMA: &str = "schema { query: Query }
+        directive @d(x: Int, y: [String!]!) on INPUT_OBJECT | INPUT_FIELD_DEFINITION
+        type Query { f(i: In, one: One): Int }
+        input In { a: Int, b: String! }
+        input Other { in: In, c: [Int] }
+        input One @oneOf { a: Int, b: String }";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.input_object_type_definition().map(Some)) {
+                prop_assert_valid(&doc)?;
+            }
+        }
     }
 }
