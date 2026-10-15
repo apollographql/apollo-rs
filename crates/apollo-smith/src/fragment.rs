@@ -209,6 +209,21 @@ impl DocumentBuilder<'_> {
 
     /// Create an arbitrary `InlineFragment`
     pub fn inline_fragment(&mut self) -> ArbitraryResult<InlineFragment> {
+        if let Some(member) = self.choose_union_member()? {
+            let type_condition = TypeCondition {
+                name: member.clone(),
+            };
+            self.stack_ty(&Ty::Named(member));
+            let selection_set = self.selection_set();
+            self.stack.pop();
+            let directives = self.directives(DirectiveLocation::InlineFragment)?;
+            return Ok(InlineFragment {
+                type_condition: Some(type_condition),
+                directives,
+                selection_set: selection_set?,
+            });
+        }
+
         let type_condition = self
             .u
             .arbitrary()
@@ -223,6 +238,22 @@ impl DocumentBuilder<'_> {
             directives,
             selection_set,
         })
+    }
+
+    /// When selecting on a union, usually pick one of its members to narrow
+    /// to, since `__typename` is the only field a union itself offers.
+    fn choose_union_member(&mut self) -> ArbitraryResult<Option<Name>> {
+        let Some(current) = self.stack.last().map(|e| e.name().clone()) else {
+            return Ok(None);
+        };
+        if !self.union_type_defs.iter().any(|u| u.name == current) {
+            return Ok(None);
+        }
+        let members: Vec<Name> = self.union_members(&current).into_iter().collect();
+        if members.is_empty() || self.u.ratio(1, 4)? {
+            return Ok(None);
+        }
+        Ok(Some(self.u.choose(&members)?.clone()))
     }
 
     /// Whether a fragment with `fragment_type` can be spread inside a
@@ -244,8 +275,8 @@ impl DocumentBuilder<'_> {
         if self.object_type_defs.iter().any(|o| &o.name == type_name) {
             return IndexSet::from([type_name.clone()]);
         }
-        if let Some(u) = self.union_type_defs.iter().find(|u| &u.name == type_name) {
-            return u.members.clone();
+        if self.union_type_defs.iter().any(|u| &u.name == type_name) {
+            return self.union_members(type_name);
         }
         // Interface: collect every object whose implements closure includes it
         self.object_type_defs
