@@ -1,4 +1,5 @@
 use crate::description::Description;
+use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::input_value::InputValueDef;
@@ -177,7 +178,13 @@ impl DocumentBuilder<'_> {
             }
         }
 
-        let mut directives = self.directives(DirectiveLocation::InputObject)?;
+        let applied = applied_directives(
+            self.input_object_type_defs
+                .iter()
+                .filter(|def| def.name == name)
+                .map(|def| &def.directives),
+        );
+        let mut directives = self.type_directives(DirectiveLocation::InputObject, &applied)?;
         if is_one_of {
             directives.insert(
                 Name::new(String::from("oneOf")),
@@ -214,7 +221,7 @@ mod tests {
     const SCHEMA: &str = "schema { query: Query }
         directive @d(x: Int, y: [String!]!) on INPUT_OBJECT | INPUT_FIELD_DEFINITION
         type Query { f(i: In, one: One): Int }
-        input In { a: Int, b: String! }
+        input In @d(y: []) { a: Int, b: String! }
         input Other { in: In, c: [Int] }
         input One @oneOf { a: Int, b: String }";
 

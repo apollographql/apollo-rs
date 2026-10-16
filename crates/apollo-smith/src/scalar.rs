@@ -1,4 +1,5 @@
 use crate::description::Description;
+use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
@@ -104,7 +105,13 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let directives = self.directives(DirectiveLocation::Scalar)?;
+        let applied = applied_directives(
+            self.scalar_type_defs
+                .iter()
+                .filter(|def| def.name == name)
+                .map(|def| &def.directives),
+        );
+        let directives = self.type_directives(DirectiveLocation::Scalar, &applied)?;
 
         // A scalar extension must add at least one directive. If we picked the extend path
         // but have no directives to add, fall back to a fresh unique scalar instead of
@@ -133,7 +140,7 @@ mod tests {
     const SCHEMA: &str = "schema { query: Query }
         directive @d(x: Int, y: [String!]!) on SCALAR
         type Query { s: S }
-        scalar S
+        scalar S @d(y: [])
         scalar T @specifiedBy(url: \"https://example.com\")";
 
     proptest! {

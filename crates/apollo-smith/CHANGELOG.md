@@ -32,6 +32,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
+- **Don't repeat directives across type extensions - [tninesling]**
+
+  A type extension could apply a non-repeatable directive that the type's
+  definition or another extension already had, which counts as using it
+  twice in one location. Extensions now leave those directives out.
+
 - **Limit the size of generated String and list values - [tninesling]**
 
   String values are now at most 32 characters and list values at most 3

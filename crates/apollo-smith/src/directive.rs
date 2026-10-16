@@ -157,6 +157,25 @@ impl DocumentBuilder<'_> {
         Ok(directives)
     }
 
+    /// Directives for a type definition or extension. A type and its
+    /// extensions count as one location, so non-repeatable directives in
+    /// `applied` are left out.
+    pub(crate) fn type_directives(
+        &mut self,
+        directive_location: DirectiveLocation,
+        applied: &IndexSet<Name>,
+    ) -> ArbitraryResult<IndexMap<Name, Directive>> {
+        let mut directives = self.directives(directive_location)?;
+        directives.retain(|name, _| !applied.contains(name) || self.is_repeatable(name));
+        Ok(directives)
+    }
+
+    fn is_repeatable(&self, name: &Name) -> bool {
+        self.directive_defs
+            .iter()
+            .any(|def| &def.name == name && def.repeatable)
+    }
+
     /// Directives for a field, fragment spread, or inline fragment in an
     /// executable document, adding `@skip` and `@include` when `conditional`
     /// is set. The root field of a subscription can't be conditional.
@@ -377,6 +396,14 @@ impl From<String> for DirectiveLocation {
             ),
         }
     }
+}
+
+/// Names of the directives applied across a type's definition and
+/// extensions.
+pub(crate) fn applied_directives<'a>(
+    directives: impl Iterator<Item = &'a IndexMap<Name, Directive>>,
+) -> IndexSet<Name> {
+    directives.flat_map(|d| d.keys().cloned()).collect()
 }
 
 #[cfg(test)]

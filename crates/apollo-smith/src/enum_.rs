@@ -1,4 +1,5 @@
 use crate::description::Description;
+use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::name::Name;
@@ -194,7 +195,13 @@ impl DocumentBuilder<'_> {
             .flat_map(|e| e.enum_values_def.iter().map(|v| v.value.clone()))
             .collect();
         let enum_values_def = self.enum_values_definition(&existing_values)?;
-        let directives = self.directives(DirectiveLocation::Enum)?;
+        let applied = applied_directives(
+            self.enum_type_defs
+                .iter()
+                .filter(|def| def.name == name)
+                .map(|def| &def.directives),
+        );
+        let directives = self.type_directives(DirectiveLocation::Enum, &applied)?;
 
         if extend && directives.is_empty() && enum_values_def.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);
@@ -271,7 +278,7 @@ mod tests {
     const SCHEMA: &str = "schema { query: Query }
         directive @d(x: Int, y: [String!]!) on ENUM | ENUM_VALUE
         type Query { e: E }
-        enum E { A B }
+        enum E @d(y: []) { A B }
         enum F { C }";
 
     proptest! {

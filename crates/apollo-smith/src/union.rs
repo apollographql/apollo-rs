@@ -1,4 +1,5 @@
 use crate::description::Description;
+use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::field::FieldDef;
@@ -134,7 +135,13 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let directives = self.directives(DirectiveLocation::Union)?;
+        let applied = applied_directives(
+            self.union_type_defs
+                .iter()
+                .filter(|def| def.name == name)
+                .map(|def| &def.directives),
+        );
+        let directives = self.type_directives(DirectiveLocation::Union, &applied)?;
         // Union members must be Object base types — built-in scalars,
         // other unions, interfaces, enums, and input objects are all
         // invalid as members.
@@ -200,7 +207,7 @@ mod tests {
     const SCHEMA: &str = "schema { query: Query }
         directive @d(x: Int, y: [String!]!) on UNION
         type Query { u: U }
-        union U = A | B
+        union U @d(y: []) = A | B
         type A { a: Int }
         type B { b: Int }
         type C { c: Int }";

@@ -1,4 +1,5 @@
 use crate::description::Description;
+use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::field::FieldDef;
@@ -166,7 +167,13 @@ impl DocumentBuilder<'_> {
         let interfaces = self.additional_implements(&existing_field_signatures, Some(&name))?;
         let fields_def =
             self.fields_implementing(&name, &interfaces, &existing_field_signatures)?;
-        let directives = self.directives(DirectiveLocation::Interface)?;
+        let applied = applied_directives(
+            self.interface_type_defs
+                .iter()
+                .filter(|def| def.name == name)
+                .map(|def| &def.directives),
+        );
+        let directives = self.type_directives(DirectiveLocation::Interface, &applied)?;
 
         if extend && directives.is_empty() && fields_def.is_empty() && interfaces.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);
@@ -434,7 +441,8 @@ mod tests {
         type Query { i: I }
         interface I { x: Int }
         interface J implements I { x: Int, y: String }
-        type A implements I & J { x: Int, y: String }";
+        type A implements I & J { x: Int, y: String }
+        interface K @d(y: []) { z: Int }";
 
     proptest! {
         #[test]
