@@ -161,13 +161,15 @@ impl DocumentBuilder<'_> {
         exclude: &IndexSet<Name>,
         available_types: &[Ty],
     ) -> ArbitraryResult<Vec<FieldDef>> {
-        let num_fields = self.u.int_in_range(2..=50usize)?;
-        let mut fields_names = IndexSet::with_capacity(num_fields);
-
-        for i in 0..num_fields {
-            let name = self.name_with_index(i)?;
+        // Types need at least one field, and most end up with a few.
+        let mut fields_names = IndexSet::new();
+        loop {
+            let name = self.name_with_index(fields_names.len())?;
             if !exclude.contains(&name) {
                 fields_names.insert(name);
+            }
+            if self.u.is_empty() || !self.u.ratio(3, 4)? {
+                break;
             }
         }
 
@@ -175,12 +177,7 @@ impl DocumentBuilder<'_> {
             .into_iter()
             .map(|field_name| {
                 Ok(FieldDef {
-                    description: self
-                        .u
-                        .arbitrary()
-                        .unwrap_or(false)
-                        .then(|| self.description())
-                        .transpose()?,
+                    description: self.optional_description()?,
                     name: field_name,
                     arguments_definition: self
                         .u
@@ -448,5 +445,17 @@ mod tests {
         let a = Name::new("A".to_string());
         let b = Ty::Named(Name::new("B".to_string()));
         assert!(builder.output_field_types(&a).contains(&b));
+    }
+
+    // Each field after the first costs input, so a type built from
+    // exhausted input stops at one.
+    #[test]
+    fn exhausted_input_generates_one_field() {
+        let mut u = Unstructured::new(&[]);
+        let mut builder = builder_for(&mut u, "schema { query: Query } type Query { a: Int }");
+        let fields = builder
+            .fields_definition(&IndexSet::new())
+            .expect("fields from exhausted input");
+        assert_eq!(fields.len(), 1);
     }
 }

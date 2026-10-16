@@ -171,12 +171,7 @@ impl DocumentBuilder<'_> {
     /// Create an arbitrary `EnumTypeDef`
     pub fn enum_type_definition(&mut self) -> Result<EnumTypeDef> {
         let extend = !self.enum_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let name = if extend {
             let available_enums: Vec<&Name> = self
                 .enum_type_defs
@@ -253,12 +248,7 @@ impl DocumentBuilder<'_> {
     ) -> Result<IndexSet<EnumValueDefinition>> {
         let mut enum_values_def = IndexSet::with_capacity(self.u.int_in_range(2..=10usize)?);
         for i in 0..self.u.int_in_range(2..=10usize)? {
-            let description = self
-                .u
-                .arbitrary()
-                .unwrap_or(false)
-                .then(|| self.description())
-                .transpose()?;
+            let description = self.optional_description()?;
             let value = self.name_with_index(i)?;
             let directives = self.directives(DirectiveLocation::EnumValue)?;
 

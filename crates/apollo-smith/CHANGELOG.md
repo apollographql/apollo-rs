@@ -44,6 +44,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
+- **Generate fewer fields and descriptions - [tninesling]**
+
+  Objects and interfaces had 2 to 50 fields, and half of all definitions
+  had a description, so each object or interface used about 3KB of input.
+  Most types now have a few fields and one in eight definitions has a
+  description, bringing objects and interfaces to about 550 bytes.
+
 - **Keep directives applied to types valid - [tninesling]**
 
   Type extensions no longer repeat a non-repeatable directive the type

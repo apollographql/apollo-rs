@@ -147,12 +147,7 @@ impl DocumentBuilder<'_> {
             .map(|itf| itf.name.clone())
             .collect();
         let extend = !extendable.is_empty() && self.u.arbitrary().unwrap_or(false);
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let name = if extend {
             self.u.choose(&extendable)?.clone()
         } else {

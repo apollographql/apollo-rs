@@ -125,12 +125,7 @@ impl TryFrom<apollo_parser::cst::SchemaExtension> for SchemaDef {
 impl DocumentBuilder<'_> {
     /// Create an arbitrary `SchemaDef`
     pub fn schema_definition(&mut self) -> ArbitraryResult<SchemaDef> {
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let directives = self.directives(DirectiveLocation::Schema)?;
         let mut named_types: Vec<Ty> = self
             .list_existing_object_types()

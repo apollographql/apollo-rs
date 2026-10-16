@@ -278,12 +278,7 @@ impl DocumentBuilder<'_> {
         }
 
         for i in 0..arbitrary_iv_num {
-            let description = self
-                .u
-                .arbitrary()
-                .unwrap_or(false)
-                .then(|| self.description())
-                .transpose()?;
+            let description = self.optional_description()?;
             let name = self.name_with_index(i)?;
             let mut ty = self.choose_ty(&available_types)?;
             // Prevent required self-referential input object fields, which
@@ -321,12 +316,7 @@ impl DocumentBuilder<'_> {
         &mut self,
         directive_location: DirectiveLocation,
     ) -> ArbitraryResult<InputValueDef> {
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let name = self.name()?;
         let ty = self.choose_ty(&self.list_existing_input_types())?;
         let directives = self.directives(directive_location)?;
