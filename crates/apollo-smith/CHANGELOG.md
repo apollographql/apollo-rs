@@ -32,6 +32,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   fields that can merge, and only spreads fragments whose selections can
   merge. Fields that can't merge fall back to `__typename`.
 
+- **Generate valid input object values - [tninesling]**
+
+  Values of input object type, such as argument default values, only used
+  the base definition's fields and ignored `@oneOf`. They now include fields
+  from extensions and give `@oneOf` input objects exactly one field.
+  Extensions no longer declare `@oneOf`, and only add nullable fields so
+  values generated before the extension stay valid.
+
 ## Features
 
 - **Generate field aliases - [tninesling]**

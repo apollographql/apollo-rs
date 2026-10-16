@@ -61,13 +61,8 @@ fn is_expected(message: &str) -> bool {
     // Objects can declare the same interface twice, once on the definition
     // and again on an extension.
     let known_bug = message.contains("implements interface") && message.contains("more than once");
-    // Input object values ignore @oneOf and fields added by extensions, and
-    // extensions can declare @oneOf.
-    let input_object_bug = message.contains("oneOf")
-        || message.contains("must not have a default value")
-        || (message.contains("required field") && message.contains("is not provided"));
     // A test generates one definition, so fragments in its schema are only
     // used when that definition happens to spread them.
     let unused_fragment = message.contains("must be used in an operation");
-    known_bug || input_object_bug || unused_fragment
+    known_bug || unused_fragment
 }
