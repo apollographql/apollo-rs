@@ -31,17 +31,8 @@ pub(crate) fn generate<D: Into<ast::Definition>>(
     Some(format!("{schema}\n{generated}"))
 }
 
-/// Fail the current case when `doc` has validation errors, other than those
-/// from known generator bugs.
+/// Fail the current case when `doc` has validation errors.
 pub(crate) fn prop_assert_valid(doc: &str) -> std::result::Result<(), TestCaseError> {
-    prop_assert_valid_ignoring(doc, |_| false)
-}
-
-/// Like `prop_assert_valid`, also ignoring errors matched by `ignore`.
-pub(crate) fn prop_assert_valid_ignoring(
-    doc: &str,
-    ignore: impl Fn(&str) -> bool,
-) -> std::result::Result<(), TestCaseError> {
     let errors: Vec<String> = match ast::Document::parse(doc, "smith.graphql")
         .expect("smith output must parse")
         .to_mixed_validate()
@@ -50,19 +41,11 @@ pub(crate) fn prop_assert_valid_ignoring(
         Err(errors) => errors
             .iter()
             .map(|e| e.error.to_string())
-            .filter(|m| !is_expected(m) && !ignore(m))
+            // A test generates one definition, so fragments in its schema
+            // are only used when that definition happens to spread them.
+            .filter(|m| !m.contains("must be used in an operation"))
             .collect(),
     };
     prop_assert!(errors.is_empty(), "{doc}\n{errors:#?}");
     Ok(())
-}
-
-fn is_expected(message: &str) -> bool {
-    // Objects can declare the same interface twice, once on the definition
-    // and again on an extension.
-    let known_bug = message.contains("implements interface") && message.contains("more than once");
-    // A test generates one definition, so fragments in its schema are only
-    // used when that definition happens to spread them.
-    let unused_fragment = message.contains("must be used in an operation");
-    known_bug || unused_fragment
 }

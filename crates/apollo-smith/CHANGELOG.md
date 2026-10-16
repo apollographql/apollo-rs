@@ -40,6 +40,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Extensions no longer declare `@oneOf`, and only add nullable fields so
   values generated before the extension stay valid.
 
+- **Generate interfaces and objects with their inherited fields - [tninesling]**
+
+  Interfaces and objects only received the fields of the interfaces they
+  implement in a pass at the end of `build()`, so definitions generated
+  from a builder made with `with_document` could miss them. Extending an
+  interface could also add fields or interfaces its existing implementers
+  lacked, and object extensions could repeat an interface the object
+  already implemented. Definitions now copy inherited fields when they're
+  generated, only interfaces nothing implements yet are extended, and
+  object extensions skip interfaces already implemented.
+
 ## Features
 
 - **Generate `@skip` and `@include` in operations - [tninesling]**

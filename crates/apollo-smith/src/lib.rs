@@ -258,7 +258,6 @@ impl<'a> DocumentBuilder<'a> {
             }
             self.interface_type_defs.push(def);
         }
-        self.backfill_inherited_interface_fields();
 
         for _ in 0..self.u.int_in_range(1..=self.max_object_types)? {
             let def = self.object_type_definition()?;
@@ -268,7 +267,6 @@ impl<'a> DocumentBuilder<'a> {
             }
             self.object_type_defs.push(def);
         }
-        self.backfill_inherited_object_fields();
 
         for _ in 0..self.u.int_in_range(1..=self.max_union_types)? {
             let union_type_def = self.union_type_definition()?;
