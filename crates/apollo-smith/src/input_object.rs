@@ -1,5 +1,4 @@
 use crate::description::Description;
-use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::input_value::InputValueDef;
@@ -176,15 +175,17 @@ impl DocumentBuilder<'_> {
             if is_one_of || extends_one_of {
                 field.default_value = None;
             }
+            self.drop_directives_reaching(&mut field.directives, &name);
         }
 
-        let applied = applied_directives(
-            self.input_object_type_defs
-                .iter()
-                .filter(|def| def.name == name)
-                .map(|def| &def.directives),
-        );
+        let applied: IndexSet<Name> = self
+            .input_object_type_defs
+            .iter()
+            .filter(|def| def.name == name)
+            .flat_map(|def| def.directives.keys().cloned())
+            .collect();
         let mut directives = self.type_directives(DirectiveLocation::InputObject, &applied)?;
+        self.drop_directives_reaching(&mut directives, &name);
         if is_one_of {
             directives.insert(
                 Name::new(String::from("oneOf")),
@@ -219,7 +220,7 @@ mod tests {
     // Extensions of these must keep existing values valid and follow
     // @oneOf's rules.
     const SCHEMA: &str = "schema { query: Query }
-        directive @d(x: Int, y: [String!]!) on INPUT_OBJECT | INPUT_FIELD_DEFINITION
+        directive @d(x: Int, y: [String!]!, one: One) on INPUT_OBJECT | INPUT_FIELD_DEFINITION
         type Query { f(i: In, one: One): Int }
         input In @d(y: []) { a: Int, b: String! }
         input Other { in: In, c: [Int] }

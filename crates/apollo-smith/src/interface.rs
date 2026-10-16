@@ -1,5 +1,4 @@
 use crate::description::Description;
-use crate::directive::applied_directives;
 use crate::directive::Directive;
 use crate::directive::DirectiveLocation;
 use crate::field::FieldDef;
@@ -167,12 +166,12 @@ impl DocumentBuilder<'_> {
         let interfaces = self.additional_implements(&existing_field_signatures, Some(&name))?;
         let fields_def =
             self.fields_implementing(&name, &interfaces, &existing_field_signatures)?;
-        let applied = applied_directives(
-            self.interface_type_defs
-                .iter()
-                .filter(|def| def.name == name)
-                .map(|def| &def.directives),
-        );
+        let applied: IndexSet<Name> = self
+            .interface_type_defs
+            .iter()
+            .filter(|def| def.name == name)
+            .flat_map(|def| def.directives.keys().cloned())
+            .collect();
         let directives = self.type_directives(DirectiveLocation::Interface, &applied)?;
 
         if extend && directives.is_empty() && fields_def.is_empty() && interfaces.is_empty() {
