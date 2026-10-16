@@ -237,6 +237,16 @@ impl DocumentBuilder<'_> {
 
     /// Create an arbitrary `Field` on the composite type at the top of the stack
     pub fn field(&mut self, index: usize) -> ArbitraryResult<Field> {
+        self.field_with_conditions(index, true)
+    }
+
+    /// Like `field`, without `@skip` or `@include` on the field itself when
+    /// `conditional` is unset, for the root field of a subscription.
+    pub(crate) fn field_with_conditions(
+        &mut self,
+        index: usize,
+        conditional: bool,
+    ) -> ArbitraryResult<Field> {
         let parent = self
             .stack
             .last()
@@ -281,7 +291,7 @@ impl DocumentBuilder<'_> {
             self.cache_arguments(coord, args.clone());
         }
         self.record_selection(response_name.clone(), selected);
-        let directives = self.directives(DirectiveLocation::Field)?;
+        let directives = self.selection_directives(DirectiveLocation::Field, conditional)?;
 
         let selection_set = if !chosen_field_def.ty.is_builtin() {
             // Put current ty on the stack

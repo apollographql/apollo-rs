@@ -1,7 +1,9 @@
 use crate::argument::Argument;
 use crate::argument::ArgumentsDef;
 use crate::description::Description;
+use crate::input_value::InputValue;
 use crate::name::Name;
+use crate::ty::Ty;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use apollo_compiler::Node;
@@ -153,6 +155,59 @@ impl DocumentBuilder<'_> {
             .collect();
 
         Ok(directives)
+    }
+
+    /// Directives for a field, fragment spread, or inline fragment in an
+    /// executable document, adding `@skip` and `@include` when `conditional`
+    /// is set. The root field of a subscription can't be conditional.
+    pub(crate) fn selection_directives(
+        &mut self,
+        location: DirectiveLocation,
+        conditional: bool,
+    ) -> ArbitraryResult<IndexMap<Name, Directive>> {
+        let mut directives = self.directives(location)?;
+        if conditional {
+            directives.extend(self.conditional_directives()?);
+        }
+        Ok(directives)
+    }
+
+    /// Sometimes `@skip`, sometimes `@include`, and sometimes both.
+    fn conditional_directives(&mut self) -> ArbitraryResult<IndexMap<Name, Directive>> {
+        let mut directives = IndexMap::new();
+        for name in ["skip", "include"] {
+            // Asking whether to leave the directive out keeps exhausted
+            // input, where every ratio is true, from making every selection
+            // conditional.
+            if self.u.ratio(3, 4)? {
+                continue;
+            }
+            let name = Name::new(name.to_string());
+            let condition = Argument {
+                name: Name::new("if".to_string()),
+                value: self.condition()?,
+            };
+            directives.insert(
+                name.clone(),
+                Directive {
+                    name,
+                    arguments: vec![condition],
+                },
+            );
+        }
+        Ok(directives)
+    }
+
+    /// Query planners have to handle conditions they can't resolve up front,
+    /// so within an operation the condition usually comes from a variable.
+    /// Fragment definitions are shared between operations, so they get a
+    /// literal.
+    fn condition(&mut self) -> ArbitraryResult<InputValue> {
+        if self.operation_variables.is_some() && self.u.ratio(2, 3)? {
+            let ty = Ty::NonNull(Box::new(Ty::Named(Name::new("Boolean".to_string()))));
+            return Ok(InputValue::Variable(self.variable_for(&ty)?));
+        }
+        Ok(InputValue::Boolean(self.u.arbitrary()?))
     }
 
     /// Create an arbitrary `Directive` given a directive location
@@ -326,20 +381,61 @@ impl From<String> for DirectiveLocation {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::test_support::generate;
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
+    use crate::variable::OperationVariables;
+    use crate::DocumentBuilder;
+    use arbitrary::Unstructured;
     use proptest::prelude::*;
 
     const SCHEMA: &str = "schema { query: Query }
         type Query { a: Int }
         directive @d(x: Int, y: [String!]!) on FIELD_DEFINITION | OBJECT | ARGUMENT_DEFINITION";
 
+    // A subscription's root field can't be conditional.
+    const CONDITIONS: &str = "schema { query: Query, subscription: Subscription }
+        type Query { a(x: Int): Int, b: B, c: Int }
+        type Subscription { s: B, t: Int }
+        type B { d: Int, e(y: String): String }";
+
     proptest! {
         #[test]
         fn generates_valid_definitions(data in input()) {
             if let Some(doc) = generate(SCHEMA, &data, |b| b.directive_def().map(Some)) {
                 prop_assert_valid(&doc)?;
+            }
+        }
+
+        #[test]
+        fn conditional_selections_stay_valid(data in input()) {
+            if let Some(doc) = generate(CONDITIONS, &data, |b| b.operation_definition()) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+
+        #[test]
+        fn conditions_are_literals_or_defined_boolean_variables(data in input()) {
+            let mut u = Unstructured::new(&data);
+            let mut builder = DocumentBuilder::new(&mut u);
+            builder.operation_variables = Some(OperationVariables::default());
+            let directives = builder.conditional_directives().expect("conditions");
+            let defined = builder.operation_variables.take().expect("variables").definitions;
+            let boolean = Ty::NonNull(Box::new(Ty::Named(Name::new("Boolean".to_string()))));
+            for (name, directive) in &directives {
+                prop_assert!(name.name == "skip" || name.name == "include", "{name:?}");
+                prop_assert_eq!(directive.arguments.len(), 1);
+                let condition = &directive.arguments[0];
+                prop_assert_eq!(condition.name.name.as_str(), "if");
+                match &condition.value {
+                    InputValue::Boolean(_) => {}
+                    InputValue::Variable(variable) => prop_assert!(
+                        defined.iter().any(|d| &d.name == variable && d.ty == boolean),
+                        "{variable:?} isn't a defined Boolean! variable"
+                    ),
+                    other => prop_assert!(false, "unexpected condition {other:?}"),
+                }
             }
         }
     }
