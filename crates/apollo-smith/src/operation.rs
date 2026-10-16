@@ -229,18 +229,7 @@ mod tests {
     // A small schema generated from `data`, without its operations.
     fn generated_schema(data: &[u8]) -> Option<String> {
         let mut u = Unstructured::new(data);
-        let doc: String = DocumentBuilder::new(&mut u)
-            .max_scalar_types(2)
-            .max_enum_types(2)
-            .max_interface_types(2)
-            .max_object_types(3)
-            .max_union_types(2)
-            .max_input_object_types(2)
-            .max_fragment_definitions(2)
-            .max_directive_definitions(2)
-            .build()
-            .ok()?
-            .into();
+        let doc: String = DocumentBuilder::new(&mut u).build().ok()?.into();
         let mut ast = ast::Document::parse(doc, "smith.graphql").expect("smith output must parse");
         ast.definitions
             .retain(|d| d.as_operation_definition().is_none());

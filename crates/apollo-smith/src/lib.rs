@@ -73,7 +73,18 @@ pub use serde_json_bytes::Value;
 use ty::Ty;
 pub use union::UnionTypeDef;
 
-const DEFAULT_MAX: usize = 50;
+#[derive(Debug, Clone, Copy)]
+enum DefinitionKind {
+    Scalar,
+    Enum,
+    Interface,
+    Object,
+    Union,
+    InputObject,
+    Directive,
+    Fragment,
+    Operation,
+}
 
 /// DocumentBuilder is a struct to build an arbitrary valid GraphQL document
 ///
@@ -124,16 +135,6 @@ pub struct DocumentBuilder<'a> {
     // How many selection sets deep the selection being generated is
     pub(crate) selection_depth: usize,
     pub(crate) used_type_names: HashSet<String>,
-    // Maximum number of generated definitions per kind
-    max_scalar_types: usize,
-    max_enum_types: usize,
-    max_interface_types: usize,
-    max_object_types: usize,
-    max_union_types: usize,
-    max_input_object_types: usize,
-    max_fragment_definitions: usize,
-    max_directive_definitions: usize,
-    max_operation_definitions: usize,
 }
 
 impl Debug for DocumentBuilder<'_> {
@@ -177,136 +178,30 @@ impl<'a> DocumentBuilder<'a> {
             fragment_depths: IndexMap::new(),
             selection_depth: 0,
             used_type_names: HashSet::new(),
-            max_scalar_types: DEFAULT_MAX,
-            max_enum_types: DEFAULT_MAX,
-            max_interface_types: DEFAULT_MAX,
-            max_object_types: DEFAULT_MAX,
-            max_union_types: DEFAULT_MAX,
-            max_input_object_types: DEFAULT_MAX,
-            max_fragment_definitions: DEFAULT_MAX,
-            max_directive_definitions: DEFAULT_MAX,
-            max_operation_definitions: DEFAULT_MAX,
         }
     }
 
-    /// Set the maximum number of scalar type definitions (default 50).
-    pub fn max_scalar_types(mut self, max: usize) -> Self {
-        self.max_scalar_types = max;
-        self
-    }
-
-    /// Set the maximum number of enum type definitions (default 50).
-    pub fn max_enum_types(mut self, max: usize) -> Self {
-        self.max_enum_types = max;
-        self
-    }
-
-    /// Set the maximum number of interface type definitions (default 50).
-    pub fn max_interface_types(mut self, max: usize) -> Self {
-        self.max_interface_types = max;
-        self
-    }
-
-    /// Set the maximum number of object type definitions (default 50).
-    pub fn max_object_types(mut self, max: usize) -> Self {
-        self.max_object_types = max;
-        self
-    }
-
-    /// Set the maximum number of union type definitions (default 50).
-    pub fn max_union_types(mut self, max: usize) -> Self {
-        self.max_union_types = max;
-        self
-    }
-
-    /// Set the maximum number of input object type definitions (default 50).
-    pub fn max_input_object_types(mut self, max: usize) -> Self {
-        self.max_input_object_types = max;
-        self
-    }
-
-    /// Set the maximum number of fragment definitions (default 50).
-    pub fn max_fragment_definitions(mut self, max: usize) -> Self {
-        self.max_fragment_definitions = max;
-        self
-    }
-
-    /// Set the maximum number of directive definitions (default 50).
-    pub fn max_directive_definitions(mut self, max: usize) -> Self {
-        self.max_directive_definitions = max;
-        self
-    }
-
-    /// Set the maximum number of operation definitions (default 50).
-    pub fn max_operation_definitions(mut self, max: usize) -> Self {
-        self.max_operation_definitions = max;
-        self
-    }
-
-    /// Generate random definitions according to the configured maximums
-    /// and return the resulting [`Document`].
+    /// Generate random definitions and return the resulting [`Document`].
     pub fn build(mut self) -> Result<Document> {
-        for _ in 0..self.u.int_in_range(1..=self.max_scalar_types)? {
-            let scalar_type_def = self.scalar_type_definition()?;
-            self.scalar_type_defs.push(scalar_type_def);
-        }
-
-        for _ in 0..self.u.int_in_range(1..=self.max_enum_types)? {
-            let enum_type_def = self.enum_type_definition()?;
-            self.enum_type_defs.push(enum_type_def);
-        }
-
-        for _ in 0..self.u.int_in_range(1..=self.max_interface_types)? {
-            let def = self.interface_type_definition()?;
-            self.implements_graph.node_for(&def.name);
-            for parent in &def.interfaces {
-                self.implements_graph.add_edge(&def.name, parent);
+        while !self.u.is_empty() {
+            let kinds = self.available_definition_kinds();
+            let kind = *self.u.choose(&kinds)?;
+            let Err(e) = self.definition(kind) else {
+                continue;
+            };
+            // Some definitions can't be built from the current state, such as
+            // an extension with nothing left to add, so that turn is skipped.
+            if !matches!(e, arbitrary::Error::IncorrectFormat) {
+                return Err(e);
             }
-            self.interface_type_defs.push(def);
         }
 
-        for _ in 0..self.u.int_in_range(1..=self.max_object_types)? {
-            let def = self.object_type_definition()?;
-            self.implements_graph.node_for(&def.name);
-            for parent in &def.implements_interfaces {
-                self.implements_graph.add_edge(&def.name, parent);
-            }
-            self.object_type_defs.push(def);
+        // A schema needs a query root, and a document an operation.
+        if self.object_type_defs.is_empty() {
+            self.definition(DefinitionKind::Object)?;
         }
-
-        for _ in 0..self.u.int_in_range(1..=self.max_union_types)? {
-            let union_type_def = self.union_type_definition()?;
-            self.union_type_defs.push(union_type_def);
-        }
-
-        for _ in 0..self.u.int_in_range(1..=self.max_input_object_types)? {
-            let input_object_type_def = self.input_object_type_definition()?;
-            self.input_object_type_defs.push(input_object_type_def);
-        }
-
-        for _ in 0..self.u.int_in_range(1..=self.max_fragment_definitions)? {
-            let fragment_def = self.fragment_definition()?;
-            self.fragment_defs.push(fragment_def);
-        }
-
-        for _ in 0..self.u.int_in_range(1..=self.max_directive_definitions)? {
-            let directive_def = self.directive_def()?;
-            self.directive_defs.push(directive_def);
-        }
-
-        let schema_def = self.schema_definition()?;
-        self.schema_def = Some(schema_def);
-
-        // An anonymous operation may only exist as the sole operation
-        // in a document, so any time we're producing more than one,
-        // every operation must be named.
-        let num_ops = self.u.int_in_range(1..=self.max_operation_definitions)?;
-        let require_named = num_ops > 1;
-        for _ in 0..num_ops {
-            let operation_def = self.operation_definition_in_document(require_named)?;
-            if let Some(operation_def) = operation_def {
-                self.operation_defs.push(operation_def);
-            }
+        if self.operation_defs.is_empty() {
+            self.definition(DefinitionKind::Operation)?;
         }
 
         self.prune_unused_fragments();
@@ -362,15 +257,6 @@ impl<'a> DocumentBuilder<'a> {
             fragment_depths: IndexMap::new(),
             selection_depth: 0,
             used_type_names: HashSet::new(),
-            max_scalar_types: DEFAULT_MAX,
-            max_enum_types: DEFAULT_MAX,
-            max_interface_types: DEFAULT_MAX,
-            max_object_types: DEFAULT_MAX,
-            max_union_types: DEFAULT_MAX,
-            max_input_object_types: DEFAULT_MAX,
-            max_fragment_definitions: DEFAULT_MAX,
-            max_directive_definitions: DEFAULT_MAX,
-            max_operation_definitions: DEFAULT_MAX,
         };
         for def in &builder.object_type_defs {
             builder.used_type_names.insert(def.name.name.clone());
@@ -424,6 +310,93 @@ impl<'a> DocumentBuilder<'a> {
         }
 
         Ok(builder)
+    }
+
+    fn available_definition_kinds(&self) -> Vec<DefinitionKind> {
+        let has_objects = !self.object_type_defs.is_empty();
+        [
+            (DefinitionKind::Scalar, true),
+            (DefinitionKind::Enum, true),
+            (DefinitionKind::Interface, true),
+            (DefinitionKind::Object, true),
+            (DefinitionKind::Union, has_objects),
+            (DefinitionKind::InputObject, true),
+            (DefinitionKind::Directive, true),
+            (DefinitionKind::Fragment, has_objects),
+            (DefinitionKind::Operation, has_objects),
+        ]
+        .into_iter()
+        .filter_map(|(kind, available)| available.then_some(kind))
+        .collect()
+    }
+
+    fn definition(&mut self, kind: DefinitionKind) -> Result<()> {
+        match kind {
+            DefinitionKind::Scalar => {
+                let def = self.scalar_type_definition()?;
+                self.scalar_type_defs.push(def);
+            }
+            DefinitionKind::Enum => {
+                let def = self.enum_type_definition()?;
+                self.enum_type_defs.push(def);
+            }
+            DefinitionKind::Interface => {
+                let def = self.interface_type_definition()?;
+                self.implements_graph.node_for(&def.name);
+                for parent in &def.interfaces {
+                    self.implements_graph.add_edge(&def.name, parent);
+                }
+                self.interface_type_defs.push(def);
+            }
+            DefinitionKind::Object => {
+                let def = self.object_type_definition()?;
+                self.implements_graph.node_for(&def.name);
+                for parent in &def.implements_interfaces {
+                    self.implements_graph.add_edge(&def.name, parent);
+                }
+                self.object_type_defs.push(def);
+            }
+            DefinitionKind::Union => {
+                let def = self.union_type_definition()?;
+                self.union_type_defs.push(def);
+            }
+            DefinitionKind::InputObject => {
+                let def = self.input_object_type_definition()?;
+                self.input_object_type_defs.push(def);
+            }
+            DefinitionKind::Directive => {
+                let def = self.directive_def()?;
+                self.directive_defs.push(def);
+            }
+            DefinitionKind::Fragment => {
+                let def = self.fragment_definition()?;
+                self.fragment_defs.push(def);
+            }
+            DefinitionKind::Operation => self.document_operation()?,
+        }
+        Ok(())
+    }
+
+    /// Add an operation, generating the schema definition first if this is
+    /// the first operation. An anonymous operation must be the only one in a
+    /// document, so an anonymous first operation is named once a second one
+    /// is added.
+    fn document_operation(&mut self) -> Result<()> {
+        if self.schema_def.is_none() {
+            self.schema_def = Some(self.schema_definition()?);
+        }
+        let require_named = !self.operation_defs.is_empty();
+        let Some(operation) = self.operation_definition_in_document(require_named)? else {
+            return Ok(());
+        };
+        if let [first] = self.operation_defs.as_slice() {
+            if first.name.is_none() {
+                let name = self.type_name()?;
+                self.operation_defs[0].name = Some(name);
+            }
+        }
+        self.operation_defs.push(operation);
+        Ok(())
     }
 
     /// Returns whether the provided `Unstructured` is now empty
@@ -499,33 +472,44 @@ mod tests {
 
     proptest! {
         #[test]
-        fn builds_valid_documents(data in prop::collection::vec(any::<u8>(), 0..=4096)) {
+        fn builds_valid_documents(data in prop::collection::vec(any::<u8>(), 0..=16384)) {
             let mut u = Unstructured::new(&data);
             if let Ok(doc) = DocumentBuilder::new(&mut u).build() {
                 prop_assert_valid(&String::from(doc))?;
             }
         }
+    }
 
-        // Few definitions of each kind leave input for the later stages of
-        // build(), such as inheriting interface fields and operations.
-        #[test]
-        fn builds_valid_documents_with_few_definitions(
-            data in prop::collection::vec(any::<u8>(), 0..=16384),
-        ) {
-            let mut u = Unstructured::new(&data);
-            let doc = DocumentBuilder::new(&mut u)
-                .max_scalar_types(2)
-                .max_enum_types(2)
-                .max_interface_types(3)
-                .max_object_types(3)
-                .max_union_types(2)
-                .max_input_object_types(2)
-                .max_fragment_definitions(2)
-                .max_directive_definitions(2)
-                .build();
-            if let Ok(doc) = doc {
-                prop_assert_valid(&String::from(doc))?;
-            }
-        }
+    // With no input to choose from, a document still gets a query root and
+    // an operation selecting from it.
+    #[test]
+    fn exhausted_input_builds_a_minimal_valid_document() {
+        let doc = DocumentBuilder::new(&mut Unstructured::new(&[]))
+            .build()
+            .expect("document from exhausted input");
+        assert_eq!(doc.object_type_definitions.len(), 1);
+        assert!(doc.schema_definition.is_some());
+        assert_eq!(doc.operation_definitions.len(), 1);
+        let doc = String::from(doc);
+        let errors = apollo_compiler::ast::Document::parse(&doc, "smith.graphql")
+            .expect("smith output must parse")
+            .to_mixed_validate();
+        assert!(errors.is_ok(), "{doc}");
+    }
+
+    // An anonymous operation must be the only one in a document.
+    #[test]
+    fn anonymous_operation_is_named_once_another_is_added() {
+        let schema = apollo_parser::Parser::new("schema { query: Query } type Query { a: Int }")
+            .parse()
+            .document()
+            .try_into()
+            .expect("schema converts to a smith document");
+        let mut u = Unstructured::new(&[]);
+        let mut builder = DocumentBuilder::with_document(&mut u, schema).expect("builder");
+        builder.document_operation().expect("first operation");
+        assert!(builder.operation_defs[0].name.is_none());
+        builder.document_operation().expect("second operation");
+        assert!(builder.operation_defs.iter().all(|op| op.name.is_some()));
     }
 }

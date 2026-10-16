@@ -22,6 +22,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
+- **Let the input choose the order of generated definitions - [tninesling]**
+
+  `build()` generated each kind of definition in a fixed order, so the
+  first kinds used most of the input and operations were usually empty.
+  The input now chooses which kind comes next until it runs out.
+
+  The `max_*` builder methods are removed, and input length sets the size
+  of the document instead. To bound it, truncate the input or set
+  libFuzzer's `-max_len`. A document is only guaranteed a query root
+  object, a schema definition, and an operation, so small inputs may leave
+  out other kinds.
+
 - **Remove untyped value and argument generation - [tninesling]**
 
   `DocumentBuilder::input_value`, `argument`, and `arguments` generated
