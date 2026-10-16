@@ -167,6 +167,9 @@ impl DocumentBuilder<'_> {
         let (selection_set, selections) = self.tracking_merges(|b| b.selection_set());
         let selection_set = selection_set?;
         self.fragment_selections.insert(name.clone(), selections);
+        if let Some(depth) = self.nesting_depth(&selection_set) {
+            self.fragment_depths.insert(name.clone(), depth);
+        }
         let type_condition = self.type_condition()?;
         self.stack.pop();
 
@@ -192,6 +195,7 @@ impl DocumentBuilder<'_> {
                 !excludes.contains(&f.name)
                     && self.fragment_spread_possible(&f.type_condition.name, current_type.as_ref())
                     && self.can_merge_fragment(&f.name)
+                    && self.fragment_fits_depth(&f.name)
             })
             .collect();
 

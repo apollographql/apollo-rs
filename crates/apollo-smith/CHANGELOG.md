@@ -51,7 +51,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   generated, only interfaces nothing implements yet are extended, and
   object extensions skip interfaces already implemented.
 
+- **Limit how deeply selections nest - [tninesling]**
+
+  Selection sets could nest as deeply as the input allowed, which on
+  recursive schemas overflowed the stack, or nested deeper than
+  apollo-compiler checks field merging for. Selection sets now stop at the
+  deepest nesting apollo-compiler validates, 129 selection sets, and
+  fragments are only spread where they still fit.
+
 ## Features
+
+- **Generate recursive output field types - [tninesling]**
+
+  Fields of objects and interfaces can now have the type being defined,
+  such as `type User { friends: [User] }`, rather than only types defined
+  before it.
 
 - **Generate `@skip` and `@include` in operations - [tninesling]**
 
