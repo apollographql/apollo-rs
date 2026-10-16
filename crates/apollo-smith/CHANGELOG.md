@@ -61,6 +61,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Generate fragments on interfaces and unions - [tninesling]**
+
+  Fragment definitions were only generated on object types. Their type
+  condition can now also be an interface or a union, such as
+  `fragment F on SearchResult { __typename ... on User { id } }`.
+
 - **Generate recursive output field types - [tninesling]**
 
   Fields of objects and interfaces can now have the type being defined,
