@@ -10,6 +10,7 @@ use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use itertools::Itertools;
 
 /// The __fragmentDef type represents a fragment definition
 ///
@@ -159,9 +160,9 @@ impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
 impl DocumentBuilder<'_> {
     /// Create an arbitrary `FragmentDef`
     pub fn fragment_definition(&mut self) -> ArbitraryResult<FragmentDef> {
-        // TODO: also choose between enum/scalars/object
-        let selected_object_type_name = self.u.choose(&self.object_type_defs)?.name.clone();
-        let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
+        let type_conditions = self.fragment_type_conditions();
+        let type_condition = self.u.choose(&type_conditions)?.clone();
+        let _ = self.stack_ty(&Ty::Named(type_condition));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
         let (selection_set, selections) = self.tracking_merges(|b| b.selection_set());
@@ -180,6 +181,20 @@ impl DocumentBuilder<'_> {
             directives,
             selection_set,
         })
+    }
+
+    /// Types a fragment can be defined on. Fragments select fields, so leaf
+    /// types are left out.
+    pub(crate) fn fragment_type_conditions(&self) -> Vec<Name> {
+        let objects = self.object_type_defs.iter().map(|o| &o.name);
+        let interfaces = self.interface_type_defs.iter().map(|i| &i.name);
+        let unions = self.union_type_defs.iter().map(|u| &u.name);
+        objects
+            .chain(interfaces)
+            .chain(unions)
+            .unique()
+            .cloned()
+            .collect()
     }
 
     /// Create an arbitrary `FragmentSpread`, returns `None` if no fragment definition was previously created
@@ -462,5 +477,20 @@ mod tests {
                 prop_assert_valid(&doc)?;
             }
         }
+    }
+
+    #[test]
+    fn fragments_can_be_defined_on_objects_interfaces_and_unions() {
+        let schema = apollo_parser::Parser::new(SCHEMA)
+            .parse()
+            .document()
+            .try_into()
+            .expect("schema converts to a smith document");
+        let mut u = arbitrary::Unstructured::new(&[]);
+        let builder =
+            crate::DocumentBuilder::with_document(&mut u, schema).expect("builder from schema");
+        let candidates = builder.fragment_type_conditions();
+        let names: Vec<&str> = candidates.iter().map(|n| n.name.as_str()).collect();
+        assert_eq!(names, ["Query", "A", "B", "I", "U"]);
     }
 }
