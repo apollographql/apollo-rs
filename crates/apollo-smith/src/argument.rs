@@ -1,5 +1,4 @@
 use crate::directive::DirectiveLocation;
-use crate::input_value::Constness;
 use crate::input_value::InputValue;
 use crate::input_value::InputValueDef;
 use crate::name::Name;
@@ -77,16 +76,6 @@ impl TryFrom<apollo_parser::cst::Argument> for Argument {
 }
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary vector of `Argument`
-    pub fn arguments(&mut self, constness: Constness) -> ArbitraryResult<Vec<Argument>> {
-        let num_arguments = self.u.int_in_range(0..=4)?;
-        let arguments = (0..num_arguments)
-            .map(|_| self.argument(constness))
-            .collect::<ArbitraryResult<Vec<_>>>()?;
-
-        Ok(arguments)
-    }
-
     /// Create an arbitrary vector of `Argument` given ArgumentsDef
     pub fn arguments_with_def(
         &mut self,
@@ -99,14 +88,6 @@ impl DocumentBuilder<'_> {
             .collect::<ArbitraryResult<Vec<_>>>()?;
 
         Ok(arguments)
-    }
-
-    /// Create an arbitrary `Argument`
-    pub fn argument(&mut self, constness: Constness) -> ArbitraryResult<Argument> {
-        let name = self.name()?;
-        let value = self.input_value(constness)?;
-
-        Ok(Argument { name, value })
     }
 
     /// Create an arbitrary `Argument`

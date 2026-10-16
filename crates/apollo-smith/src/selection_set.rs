@@ -129,7 +129,7 @@ impl DocumentBuilder<'_> {
             .map(|_| {
                 let index = self.u.int_in_range(0..=selection_nb)?;
                 self.selection(index, &mut exclude_names)
-            }) // TODO do not generate duplication variable name
+            })
             .collect::<ArbitraryResult<Vec<_>>>()?;
         Ok(SelectionSet { selections })
     }
