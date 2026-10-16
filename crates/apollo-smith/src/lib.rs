@@ -465,6 +465,7 @@ pub(crate) trait StackedEntity {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_support::documents;
     use crate::test_support::prop_assert_valid;
     use crate::DocumentBuilder;
     use arbitrary::Unstructured;
@@ -472,10 +473,11 @@ mod tests {
 
     proptest! {
         #[test]
-        fn builds_valid_documents(data in prop::collection::vec(any::<u8>(), 0..=16384)) {
-            let mut u = Unstructured::new(&data);
-            if let Ok(doc) = DocumentBuilder::new(&mut u).build() {
-                prop_assert_valid(&String::from(doc))?;
+        fn builds_valid_documents(
+            case in documents(prop::collection::vec(any::<u8>(), 0..=16384)),
+        ) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

@@ -360,8 +360,7 @@ pub(crate) fn reachable_fragment_names(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_support::generate;
-    use crate::test_support::input;
+    use crate::test_support::generated;
     use crate::test_support::prop_assert_valid;
     use proptest::prelude::*;
 
@@ -472,9 +471,9 @@ mod tests {
 
     proptest! {
         #[test]
-        fn generates_valid_definitions(data in input()) {
-            if let Some(doc) = generate(SCHEMA, &data, |b| b.fragment_definition().map(Some)) {
-                prop_assert_valid(&doc)?;
+        fn generates_valid_definitions(case in generated(SCHEMA, |b| b.fragment_definition().map(Some))) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

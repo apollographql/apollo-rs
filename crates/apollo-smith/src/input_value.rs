@@ -349,7 +349,7 @@ impl DocumentBuilder<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_support::generate;
+    use crate::test_support::generated_against_any;
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
     use arbitrary::Unstructured;
@@ -383,11 +383,13 @@ mod tests {
     proptest! {
         #[test]
         fn operation_values_respect_input_object_definitions(
-            schema in prop::sample::select(&[NESTED, ONE_OF_AND_EXTENDED][..]),
-            data in input(),
+            case in generated_against_any(
+                &[NESTED, ONE_OF_AND_EXTENDED],
+                |b| b.operation_definition(),
+            ),
         ) {
-            if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

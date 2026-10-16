@@ -4,4 +4,4 @@
 #
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
-cc 9472bfd2aef5e19f64a6570909d6ef0503e490334597a8f03c838bc2eee83b54 # shrinks to schema = "schema { query: Query }\n        type Query { f(one: One, extended: Extended): Int }\n        input One @oneOf { a: Int, b: String }\n        input Extended { a: Int }\n        extend input Extended { b: String! }", data = [0, 1, 0, 2, 0, 13, 0, 0, 141, 0, 30, 0, 0, 1, 0, 0, 0, 0, 0]
+cc 9472bfd2aef5e19f64a6570909d6ef0503e490334597a8f03c838bc2eee83b54 # case = schema { query: Query } type Query { f(one: One, extended: Extended): Int } input One @oneOf { a: Int b: String } input Extended { a: Int } extend input Extended { b: String! } query($rD_L0oNl: Extended = {a: -314479139, b: "GEoHiedaQ"}, $PvFZAurBXRwrvDPsyqWNLebgrgCrc: Boolean! = true, $PQt897ryvvvXKqO: Boolean!) { f(one: {a: -1848769489}, extended: $rD_L0oNl) @skip(if: $PvFZAurBXRwrvDPsyqWNLebgrgCrc) @include(if: $PQt897ryvvvXKqO) }

@@ -183,8 +183,7 @@ impl DocumentBuilder<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::generate;
-    use crate::test_support::input;
+    use crate::test_support::generated;
     use crate::test_support::prop_assert_valid;
     use proptest::prelude::*;
 
@@ -193,9 +192,9 @@ mod tests {
 
     proptest! {
         #[test]
-        fn operations_use_valid_variables(data in input()) {
-            if let Some(doc) = generate(SCHEMA, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+        fn operations_use_valid_variables(case in generated(SCHEMA, |b| b.operation_definition())) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

@@ -570,7 +570,8 @@ fn typename_ty() -> Ty {
 mod tests {
     use super::*;
     use crate::test_support::generate;
-    use crate::test_support::input;
+    use crate::test_support::generated_against_any;
+    use crate::test_support::generated_from;
     use crate::test_support::prop_assert_valid;
     use apollo_compiler::ast;
     use arbitrary::Unstructured;
@@ -675,10 +676,14 @@ mod tests {
     proptest! {
         #[test]
         fn recursive_selections_stay_within_validation_depth(
-            data in prop::collection::vec(any::<u8>(), 0..=16384),
+            case in generated_from(
+                prop::collection::vec(any::<u8>(), 0..=16384),
+                RECURSIVE,
+                |b| b.operation_definition(),
+            ),
         ) {
-            if let Some(doc) = generate(RECURSIVE, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }
@@ -686,17 +691,13 @@ mod tests {
     proptest! {
         #[test]
         fn selections_stay_mergeable(
-            schema in prop::sample::select(&[
-                INTERFACE_FRAGMENT,
-                UNION,
-                EXTENDED_UNION,
-                CUSTOM_SCALAR,
-                CONFLICTING_MEMBERS,
-            ][..]),
-            data in input(),
+            case in generated_against_any(
+                &[INTERFACE_FRAGMENT, UNION, EXTENDED_UNION, CUSTOM_SCALAR, CONFLICTING_MEMBERS],
+                |b| b.operation_definition(),
+            ),
         ) {
-            if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

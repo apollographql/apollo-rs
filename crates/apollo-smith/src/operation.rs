@@ -212,11 +212,14 @@ impl DocumentBuilder<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::generate;
+    use crate::test_support::generate_definition;
+    use crate::test_support::generated;
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
-    use crate::DocumentBuilder;
+    use crate::test_support::Generated;
+    use crate::Document;
     use apollo_compiler::ast;
+    use arbitrary::Arbitrary;
     use arbitrary::Unstructured;
     use proptest::prelude::*;
 
@@ -226,32 +229,41 @@ mod tests {
         type Mutation { m(x: Int): Query }
         type Subscription { s: Query, t: Int }";
 
-    // A small schema generated from `data`, without its operations.
-    fn generated_schema(data: &[u8]) -> Option<String> {
-        let mut u = Unstructured::new(data);
-        let doc: String = DocumentBuilder::new(&mut u).build().ok()?.into();
-        let mut ast = ast::Document::parse(doc, "smith.graphql").expect("smith output must parse");
-        ast.definitions
-            .retain(|d| d.as_operation_definition().is_none());
-        Some(ast.to_string())
+    // An operation generated from `data` against a schema generated from
+    // `schema_data`, without the schema's own operations. Shown with the
+    // schema, since it differs between cases.
+    fn operation_against_generated_schema(schema_data: &[u8], data: &[u8]) -> Generated {
+        let schema = Document::arbitrary_take_rest(Unstructured::new(schema_data))
+            .ok()
+            .map(|doc| {
+                let mut ast = ast::Document::from(doc);
+                ast.definitions
+                    .retain(|d| d.as_operation_definition().is_none());
+                ast.to_string()
+            });
+        let document = schema.and_then(|schema| {
+            let operation = generate_definition(&schema, data, |b| b.operation_definition())?;
+            Some(format!("{schema}\n{operation}"))
+        });
+        Generated::new(document.clone(), document)
     }
 
     proptest! {
         #[test]
-        fn generates_valid_operations(data in input()) {
-            if let Some(doc) = generate(SCHEMA, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+        fn generates_valid_operations(case in generated(SCHEMA, |b| b.operation_definition())) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
 
         #[test]
         fn generates_valid_operations_against_generated_schemas(
-            schema_data in input(),
-            data in input(),
+            case in (input(), input()).prop_map(|(schema_data, data)| {
+                operation_against_generated_schema(&schema_data, &data)
+            }),
         ) {
-            let schema = generated_schema(&schema_data);
-            if let Some(doc) = schema.and_then(|s| generate(&s, &data, |b| b.operation_definition())) {
-                prop_assert_valid(&doc)?;
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

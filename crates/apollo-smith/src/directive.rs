@@ -505,7 +505,7 @@ enum Reference<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_support::generate;
+    use crate::test_support::generated;
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
     use crate::variable::OperationVariables;
@@ -525,16 +525,16 @@ mod tests {
 
     proptest! {
         #[test]
-        fn generates_valid_definitions(data in input()) {
-            if let Some(doc) = generate(SCHEMA, &data, |b| b.directive_def().map(Some)) {
-                prop_assert_valid(&doc)?;
+        fn generates_valid_definitions(case in generated(SCHEMA, |b| b.directive_def().map(Some))) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
 
         #[test]
-        fn conditional_selections_stay_valid(data in input()) {
-            if let Some(doc) = generate(CONDITIONS, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+        fn conditional_selections_stay_valid(case in generated(CONDITIONS, |b| b.operation_definition())) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
 
