@@ -130,6 +130,37 @@ impl DocumentBuilder<'_> {
         &mut self,
         exclude: &IndexSet<Name>,
     ) -> ArbitraryResult<Vec<FieldDef>> {
+        let available_types = self.list_existing_types();
+        self.fields_of_types(exclude, &available_types)
+    }
+
+    /// Fields for the definition of `owner`, which may also reference
+    /// `owner` itself.
+    pub(crate) fn fields_definition_for(
+        &mut self,
+        owner: &Name,
+        exclude: &IndexSet<Name>,
+    ) -> ArbitraryResult<Vec<FieldDef>> {
+        let available_types = self.output_field_types(owner);
+        self.fields_of_types(exclude, &available_types)
+    }
+
+    /// Types a field of `owner` can have. `owner` isn't an existing type
+    /// yet while its first definition is being generated, so it's added.
+    pub(crate) fn output_field_types(&self, owner: &Name) -> Vec<Ty> {
+        let mut types = self.list_existing_types();
+        let own = Ty::Named(owner.clone());
+        if !types.contains(&own) {
+            types.push(own);
+        }
+        types
+    }
+
+    fn fields_of_types(
+        &mut self,
+        exclude: &IndexSet<Name>,
+        available_types: &[Ty],
+    ) -> ArbitraryResult<Vec<FieldDef>> {
         let num_fields = self.u.int_in_range(2..=50usize)?;
         let mut fields_names = IndexSet::with_capacity(num_fields);
 
@@ -139,9 +170,6 @@ impl DocumentBuilder<'_> {
                 fields_names.insert(name);
             }
         }
-
-        // TODO add mechanism to add own type for recursive type
-        let available_types: Vec<Ty> = self.list_existing_types();
 
         fields_names
             .into_iter()
@@ -160,7 +188,7 @@ impl DocumentBuilder<'_> {
                         .unwrap_or(false)
                         .then(|| self.arguments_definition())
                         .transpose()?,
-                    ty: self.choose_ty(&available_types)?,
+                    ty: self.choose_ty(available_types)?,
                     directives: self.directives(DirectiveLocation::FieldDefinition)?,
                 })
             })
@@ -389,5 +417,36 @@ mod tests {
         });
         let offered: Vec<&str> = offered.iter().map(|f| f.name.name.as_str()).collect();
         assert_eq!(offered, ["y"]);
+    }
+
+    fn builder_for<'a>(u: &'a mut Unstructured<'a>, schema: &str) -> DocumentBuilder<'a> {
+        let doc = apollo_parser::Parser::new(schema)
+            .parse()
+            .document()
+            .try_into()
+            .expect("schema converts to a smith document");
+        DocumentBuilder::with_document(u, doc).expect("builder from schema")
+    }
+
+    #[test]
+    fn offers_the_type_being_defined_as_a_field_type() {
+        let mut u = Unstructured::new(&[]);
+        let builder = builder_for(&mut u, "schema { query: Query } type Query { a: Int }");
+        let user = Ty::Named(Name::new("User".to_string()));
+        assert!(builder.output_field_types(user.name()).contains(&user));
+    }
+
+    // An extension of `A` generated after `B` can reference it, while `B`
+    // already references `A`.
+    #[test]
+    fn extensions_offer_types_defined_after_the_extended_type() {
+        let mut u = Unstructured::new(&[]);
+        let builder = builder_for(
+            &mut u,
+            "schema { query: Query } type Query { a: A } type A { x: Int } type B { a: A }",
+        );
+        let a = Name::new("A".to_string());
+        let b = Ty::Named(Name::new("B".to_string()));
+        assert!(builder.output_field_types(&a).contains(&b));
     }
 }

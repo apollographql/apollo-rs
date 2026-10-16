@@ -164,7 +164,8 @@ impl DocumentBuilder<'_> {
         // enforces all three given the existing signatures.
         let existing_field_signatures = field_signatures_for(&self.interface_type_defs, &name);
         let interfaces = self.additional_implements(&existing_field_signatures, Some(&name))?;
-        let fields_def = self.fields_implementing(&interfaces, &existing_field_signatures)?;
+        let fields_def =
+            self.fields_implementing(&name, &interfaces, &existing_field_signatures)?;
         let directives = self.directives(DirectiveLocation::Interface)?;
 
         if extend && directives.is_empty() && fields_def.is_empty() && interfaces.is_empty() {
@@ -252,6 +253,7 @@ impl DocumentBuilder<'_> {
     /// fields of its own.
     pub(crate) fn fields_implementing(
         &mut self,
+        owner: &Name,
         interfaces: &IndexSet<Name>,
         declared: &IndexMap<String, FieldDef>,
     ) -> ArbitraryResult<Vec<FieldDef>> {
@@ -262,7 +264,7 @@ impl DocumentBuilder<'_> {
             .chain(inherited.keys())
             .map(|k| Name::new(k.clone()))
             .collect();
-        let own = self.fields_definition(&exclude_fields)?;
+        let own = self.fields_definition_for(owner, &exclude_fields)?;
         Ok(inherited.into_values().chain(own).collect())
     }
 

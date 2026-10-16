@@ -174,7 +174,7 @@ impl DocumentBuilder<'_> {
         let implements_interfaces =
             self.additional_implements(&existing_field_signatures, Some(&name))?;
         let fields_def =
-            self.fields_implementing(&implements_interfaces, &existing_field_signatures)?;
+            self.fields_implementing(&name, &implements_interfaces, &existing_field_signatures)?;
         let directives = self.directives(DirectiveLocation::Object)?;
 
         if extend

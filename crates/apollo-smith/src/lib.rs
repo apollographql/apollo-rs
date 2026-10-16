@@ -119,6 +119,10 @@ pub struct DocumentBuilder<'a> {
     // What each fragment definition selects, captured once since fragments
     // don't change after they are generated
     pub(crate) fragment_selections: IndexMap<Name, selection_set::SelectionsByResponseName>,
+    // How many selection sets deep each fragment definition nests
+    pub(crate) fragment_depths: IndexMap<Name, usize>,
+    // How many selection sets deep the selection being generated is
+    pub(crate) selection_depth: usize,
     pub(crate) used_type_names: HashSet<String>,
     // Maximum number of generated definitions per kind
     max_scalar_types: usize,
@@ -170,6 +174,8 @@ impl<'a> DocumentBuilder<'a> {
             operation_variables: None,
             merge_tracking: Vec::new(),
             fragment_selections: IndexMap::new(),
+            fragment_depths: IndexMap::new(),
+            selection_depth: 0,
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -353,6 +359,8 @@ impl<'a> DocumentBuilder<'a> {
             operation_variables: None,
             merge_tracking: Vec::new(),
             fragment_selections: IndexMap::new(),
+            fragment_depths: IndexMap::new(),
+            selection_depth: 0,
             used_type_names: HashSet::new(),
             max_scalar_types: DEFAULT_MAX,
             max_enum_types: DEFAULT_MAX,
@@ -400,12 +408,19 @@ impl<'a> DocumentBuilder<'a> {
                 .fragment_defs
                 .iter()
                 .filter(|f| !builder.fragment_selections.contains_key(&f.name))
-                .filter_map(|f| Some((f.name.clone(), builder.selections_of_fragment(f)?)))
+                .filter_map(|f| {
+                    let selections = builder.selections_of_fragment(f)?;
+                    let depth = builder.nesting_depth(&f.selection_set)?;
+                    Some((f.name.clone(), selections, depth))
+                })
                 .collect();
             if resolved.is_empty() {
                 break;
             }
-            builder.fragment_selections.extend(resolved);
+            for (name, selections, depth) in resolved {
+                builder.fragment_selections.insert(name.clone(), selections);
+                builder.fragment_depths.insert(name, depth);
+            }
         }
 
         Ok(builder)
