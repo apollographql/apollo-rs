@@ -138,7 +138,15 @@ impl TryFrom<apollo_parser::cst::InterfaceTypeExtension> for InterfaceTypeDef {
 impl DocumentBuilder<'_> {
     /// Create an arbitrary `InterfaceTypeDef`
     pub fn interface_type_definition(&mut self) -> ArbitraryResult<InterfaceTypeDef> {
-        let extend = !self.interface_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        // Types that implement an interface already declare its fields, so
+        // only interfaces nothing implements yet can gain fields or parents.
+        let extendable: Vec<Name> = self
+            .interface_type_defs
+            .iter()
+            .filter(|itf| !itf.extend && !self.is_implemented(&itf.name))
+            .map(|itf| itf.name.clone())
+            .collect();
+        let extend = !extendable.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
             .arbitrary()
@@ -146,12 +154,7 @@ impl DocumentBuilder<'_> {
             .then(|| self.description())
             .transpose()?;
         let name = if extend {
-            let available_itfs: Vec<&Name> = self
-                .interface_type_defs
-                .iter()
-                .filter_map(|itf| if itf.extend { None } else { Some(&itf.name) })
-                .collect();
-            (*self.u.choose(&available_itfs)?).clone()
+            self.u.choose(&extendable)?.clone()
         } else {
             self.type_name()?
         };
@@ -161,11 +164,7 @@ impl DocumentBuilder<'_> {
         // enforces all three given the existing signatures.
         let existing_field_signatures = field_signatures_for(&self.interface_type_defs, &name);
         let interfaces = self.additional_implements(&existing_field_signatures, Some(&name))?;
-        let exclude_fields: IndexSet<Name> = existing_field_signatures
-            .keys()
-            .map(|k| Name::new(k.clone()))
-            .collect();
-        let fields_def = self.fields_definition(&exclude_fields)?;
+        let fields_def = self.fields_implementing(&interfaces, &existing_field_signatures)?;
         let directives = self.directives(DirectiveLocation::Interface)?;
 
         if extend && directives.is_empty() && fields_def.is_empty() && interfaces.is_empty() {
@@ -248,73 +247,46 @@ impl DocumentBuilder<'_> {
         Ok(accepted)
     }
 
-    /// Reconcile each interface's `implements` clause and fields once
-    /// every interface is generated. Topological order means each
-    /// child reads only its direct parents — those parents already
-    /// hold their own inherited fields, so transitive fields flow
-    /// down without re-walking the closure per child.
-    pub(crate) fn backfill_inherited_interface_fields(&mut self) {
-        let order = self.implements_graph.topo_order_parents_first();
-        for name in order {
-            let Some(base_idx) = base_def_index(&self.interface_type_defs, &name) else {
-                continue;
-            };
-            self.expand_transitive_interface_implementations(&name, base_idx);
-
-            let parents = self.implements_graph.direct_parents(&name);
-            let mut inherited_fields = parent_fields_from_defs(&parents, &self.interface_type_defs);
-            // Rewrite child-declared fields to the parent's signature so a
-            // child's locally-picked type/args don't drift from the
-            // interface contract (covariance + matching args).
-            for i in def_indices_with_name(&self.interface_type_defs, &name) {
-                for f in self.interface_type_defs[i].fields_def.iter_mut() {
-                    if let Some(parent_fdef) = inherited_fields.shift_remove(&f.name.name) {
-                        *f = parent_fdef;
-                    }
-                }
-            }
-            // Append the parent fields the child never declared.
-            self.interface_type_defs[base_idx]
-                .fields_def
-                .extend(inherited_fields.into_values());
-        }
+    /// Fields for a definition that newly implements `interfaces`: copies
+    /// of the inherited fields it doesn't already declare, followed by
+    /// fields of its own.
+    pub(crate) fn fields_implementing(
+        &mut self,
+        interfaces: &IndexSet<Name>,
+        declared: &IndexMap<String, FieldDef>,
+    ) -> ArbitraryResult<Vec<FieldDef>> {
+        let mut inherited = parent_fields_from_defs(interfaces, &self.interface_type_defs);
+        inherited.retain(|name, _| !declared.contains_key(name));
+        let exclude_fields: IndexSet<Name> = declared
+            .keys()
+            .chain(inherited.keys())
+            .map(|k| Name::new(k.clone()))
+            .collect();
+        let own = self.fields_definition(&exclude_fields)?;
+        Ok(inherited.into_values().chain(own).collect())
     }
 
-    /// Write `name`'s transitive implementations onto its base def, skipping any already declared by an extension.
-    fn expand_transitive_interface_implementations(&mut self, name: &Name, base_idx: usize) {
-        let mut all_implemented_interfaces = self.implements_graph.closure(name);
-        // Closure includes `name`, but we don't want to write `interface X implements X`
-        all_implemented_interfaces.shift_remove(name);
-
-        let interfaces_declared_by_extensions: IndexSet<Name> = self
-            .interface_type_defs
+    fn is_implemented(&self, name: &Name) -> bool {
+        self.interface_type_defs
             .iter()
-            .filter(|i| i.extend && &i.name == name)
-            .flat_map(|i| i.interfaces.iter().cloned())
-            .collect();
-        let interfaces_to_add = all_implemented_interfaces
-            .into_iter()
-            .filter(|p| !interfaces_declared_by_extensions.contains(p));
-        self.interface_type_defs[base_idx]
-            .interfaces
-            .extend(interfaces_to_add);
+            .any(|itf| itf.interfaces.contains(name))
+            || self
+                .object_type_defs
+                .iter()
+                .any(|obj| obj.implements_interfaces.contains(name))
     }
 }
 
-/// Defs with a name and field list. Used by the backfill helpers so
-/// both `InterfaceTypeDef` and `ObjectTypeDef` can share them.
+/// Defs with a name and field list, so `InterfaceTypeDef` and
+/// `ObjectTypeDef` can share the field helpers.
 pub(crate) trait NamedDef {
     fn name(&self) -> &Name;
-    fn is_extend(&self) -> bool;
     fn fields(&self) -> &[FieldDef];
 }
 
 impl NamedDef for InterfaceTypeDef {
     fn name(&self) -> &Name {
         &self.name
-    }
-    fn is_extend(&self) -> bool {
-        self.extend
     }
     fn fields(&self) -> &[FieldDef] {
         &self.fields_def
@@ -324,9 +296,6 @@ impl NamedDef for InterfaceTypeDef {
 impl NamedDef for crate::ObjectTypeDef {
     fn name(&self) -> &Name {
         &self.name
-    }
-    fn is_extend(&self) -> bool {
-        self.extend
     }
     fn fields(&self) -> &[FieldDef] {
         &self.fields_def
@@ -403,22 +372,6 @@ pub(crate) fn unique_names<T: NamedDef>(defs: &[T]) -> Vec<Name> {
     seen.into_iter().collect()
 }
 
-/// Index of the base def for `name` (`extend: false`), falling back to
-/// the first matching def when no base exists.
-pub(crate) fn base_def_index<T: NamedDef>(defs: &[T], name: &Name) -> Option<usize> {
-    defs.iter()
-        .position(|d| !d.is_extend() && d.name() == name)
-        .or_else(|| defs.iter().position(|d| d.name() == name))
-}
-
-/// Positions of every def (base + extensions) sharing the given name.
-pub(crate) fn def_indices_with_name<T: NamedDef>(defs: &[T], name: &Name) -> Vec<usize> {
-    defs.iter()
-        .enumerate()
-        .filter_map(|(i, d)| (d.name() == name).then_some(i))
-        .collect()
-}
-
 /// First-wins union of every field signature across `name`'s base +
 /// prior extensions. An extension picking new implements consults this
 /// so it doesn't accept a parent whose fields would overwrite anything
@@ -438,9 +391,8 @@ pub(crate) fn field_signatures_for<T: NamedDef>(
     out
 }
 
-/// Current (first-wins) union of every parent's fields, read live from
-/// `defs`. Used by the backfill so a child sees its parent's
-/// post-backfill signature rather than a stale snapshot.
+/// First-wins union of the fields of every def named in `parents`,
+/// including extensions.
 pub(crate) fn parent_fields_from_defs<T: NamedDef>(
     parents: &IndexSet<Name>,
     defs: &[T],
@@ -472,7 +424,7 @@ impl StackedEntity for InterfaceTypeDef {
 mod tests {
     use crate::test_support::generate;
     use crate::test_support::input;
-    use crate::test_support::prop_assert_valid_ignoring;
+    use crate::test_support::prop_assert_valid;
     use proptest::prelude::*;
 
     const SCHEMA: &str = "schema { query: Query }
@@ -486,9 +438,7 @@ mod tests {
         #[test]
         fn generates_valid_definitions(data in input()) {
             if let Some(doc) = generate(SCHEMA, &data, |b| b.interface_type_definition().map(Some)) {
-                // Extending an interface adds fields its existing
-                // implementers don't have.
-                prop_assert_valid_ignoring(&doc, |m| m.contains("does not satisfy interface"))?;
+                prop_assert_valid(&doc)?;
             }
         }
     }

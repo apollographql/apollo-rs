@@ -1,10 +1,8 @@
 use crate::name::Name;
 use indexmap::IndexSet;
-use petgraph::algo::toposort;
 use petgraph::graph::DiGraph;
 use petgraph::graph::NodeIndex;
 use petgraph::visit::Bfs;
-use petgraph::visit::Reversed;
 use std::collections::HashMap;
 
 /// Directed graph of `implements` edges (`X implements Y` ⇒ edge `X →
@@ -51,20 +49,6 @@ impl ImplementsGraph {
             .neighbors(idx)
             .map(|n| self.graph[n].clone())
             .collect()
-    }
-
-    /// Names ordered with every parent before its children, so a pass
-    /// reading only direct parents sees them already reconciled. Falls
-    /// back to insertion order on cycle (which shouldn't happen — picks
-    /// reject candidates whose closure would loop back).
-    pub(crate) fn topo_order_parents_first(&self) -> Vec<Name> {
-        match toposort(&Reversed(&self.graph), None) {
-            Ok(order) => order
-                .into_iter()
-                .map(|idx| self.graph[idx].clone())
-                .collect(),
-            Err(_) => self.by_name.keys().cloned().collect(),
-        }
     }
 
     pub(crate) fn node_for(&mut self, name: &Name) -> NodeIndex {
