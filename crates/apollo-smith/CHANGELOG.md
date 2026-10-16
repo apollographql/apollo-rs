@@ -32,6 +32,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
+- **Limit the size of generated String and list values - [tninesling]**
+
+  String values are now at most 32 characters and list values at most 3
+  elements. A single `[String]` default value used to average about 6KB of
+  input.
+
 - **Keep generated selections mergeable - [tninesling]**
 
   Selections were generated without checking the field selection merging

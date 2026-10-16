@@ -158,6 +158,11 @@ impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
     }
 }
 
+// Long strings and lists don't add coverage, and used to consume most of
+// the input, starving the definitions generated after them.
+const MAX_STRING_VALUE_LEN: usize = 32;
+const MAX_LIST_VALUE_LEN: usize = 3;
+
 impl DocumentBuilder<'_> {
     pub fn input_value_for_type(&mut self, ty: &Ty) -> ArbitraryResult<InputValue> {
         self.input_value_at_depth(ty, 0)
@@ -167,7 +172,9 @@ impl DocumentBuilder<'_> {
         let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> ArbitraryResult<InputValue> {
             if ty.is_builtin() {
                 match ty.name().name.as_str() {
-                    "String" => Ok(InputValue::String(doc_builder.limited_string(1000)?)),
+                    "String" => Ok(InputValue::String(
+                        doc_builder.limited_string(MAX_STRING_VALUE_LEN)?,
+                    )),
                     "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
                     "Float" => Ok(InputValue::Float(doc_builder.finite_f64()?)),
                     "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
@@ -205,7 +212,7 @@ impl DocumentBuilder<'_> {
         let val = match ty {
             Ty::Named(_) => gen_val(self)?,
             Ty::List(_) => {
-                let nb_elt = self.u.int_in_range(1..=25usize)?;
+                let nb_elt = self.u.int_in_range(0..=MAX_LIST_VALUE_LEN)?;
                 InputValue::List(
                     (0..nb_elt)
                         .map(|_| gen_val(self))
@@ -347,10 +354,23 @@ impl DocumentBuilder<'_> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::test_support::generate;
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
+    use arbitrary::Unstructured;
     use proptest::prelude::*;
+
+    fn longest_string_and_list(value: &InputValue) -> (usize, usize) {
+        match value {
+            InputValue::String(s) => (s.len(), 0),
+            InputValue::List(items) => items
+                .iter()
+                .map(longest_string_and_list)
+                .fold((0, items.len()), |(s, l), (si, li)| (s.max(si), l.max(li))),
+            _ => (0, 0),
+        }
+    }
 
     // Values nest lists inside input objects inside lists.
     const NESTED: &str = "schema { query: Query }
@@ -375,6 +395,20 @@ mod tests {
             if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
                 prop_assert_valid(&doc)?;
             }
+        }
+    }
+
+    proptest! {
+        #[test]
+        fn string_and_list_values_stay_short(data in input()) {
+            let mut u = Unstructured::new(&data);
+            let mut builder = DocumentBuilder::new(&mut u);
+            let string = Ty::Named(Name::new("String".to_string()));
+            let ty = Ty::List(Box::new(Ty::List(Box::new(string))));
+            let value = builder.input_value_for_type(&ty).expect("value for a builtin type");
+            let (string_len, list_len) = longest_string_and_list(&value);
+            prop_assert!(string_len <= MAX_STRING_VALUE_LEN, "{value:?}");
+            prop_assert!(list_len <= MAX_LIST_VALUE_LEN, "{value:?}");
         }
     }
 }
