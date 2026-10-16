@@ -10,12 +10,6 @@ use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 
-#[derive(Debug, Clone, Copy)]
-pub enum Constness {
-    Const,
-    NonConst,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum InputValue {
     Variable(Name),
@@ -165,56 +159,6 @@ impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
 }
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `InputValue`
-    pub fn input_value(&mut self, constness: Constness) -> ArbitraryResult<InputValue> {
-        let index = match constness {
-            Constness::Const => self.u.int_in_range(0..=7usize)?,
-            Constness::NonConst => self.u.int_in_range(0..=8usize)?,
-        };
-        let val = match index {
-            // Int
-            0 => InputValue::Int(self.u.arbitrary()?),
-            // Float
-            1 => InputValue::Float(self.finite_f64()?),
-            // String
-            2 => InputValue::String(self.limited_string(40)?),
-            // Boolean
-            3 => InputValue::Boolean(self.u.arbitrary()?),
-            // Null
-            4 => InputValue::Null,
-            // Enum
-            5 => {
-                if !self.enum_type_defs.is_empty() {
-                    // TODO get rid of this clone
-                    let enum_choosed = self.choose_enum()?.clone();
-                    InputValue::Enum(self.arbitrary_variant(&enum_choosed)?.clone())
-                } else {
-                    self.input_value(constness)?
-                }
-            }
-            // List
-            6 => {
-                // FIXME: it's semantically wrong it should always be the same type inside
-                InputValue::List(
-                    (0..self.u.int_in_range(2..=4usize)?)
-                        .map(|_| self.input_value(constness))
-                        .collect::<ArbitraryResult<Vec<_>>>()?,
-                )
-            }
-            // Object
-            7 => InputValue::Object(
-                (0..self.u.int_in_range(2..=4usize)?)
-                    .map(|_| Ok((self.name()?, self.input_value(constness)?)))
-                    .collect::<ArbitraryResult<Vec<_>>>()?,
-            ),
-            // Variable TODO: only generate valid variable name (existing variables)
-            8 => InputValue::Variable(self.name()?),
-            _ => unreachable!(),
-        };
-
-        Ok(val)
-    }
-
     pub fn input_value_for_type(&mut self, ty: &Ty) -> ArbitraryResult<InputValue> {
         self.input_value_at_depth(ty, 0)
     }
@@ -232,14 +176,13 @@ impl DocumentBuilder<'_> {
                         unreachable!("{} is not a builtin", other);
                     }
                 }
-            } else if let Some(enum_) = doc_builder
+            } else if let Some(enum_index) = doc_builder
                 .enum_type_defs
                 .iter()
-                .find(|e| &e.name == ty.name())
-                .cloned()
+                .position(|e| &e.name == ty.name())
             {
                 Ok(InputValue::Enum(
-                    doc_builder.arbitrary_variant(&enum_)?.clone(),
+                    doc_builder.arbitrary_value_of_enum(enum_index)?,
                 ))
             } else if doc_builder
                 .input_object_type_defs

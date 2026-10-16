@@ -20,6 +20,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation -->
 # [x.x.x] (unreleased) - 2026-mm-dd
 
+## BREAKING
+
+- **Remove untyped value and argument generation - [tninesling]**
+
+  `DocumentBuilder::input_value`, `argument`, and `arguments` generated
+  values that weren't valid for any type or definition: lists mixed
+  element types, and variables weren't defined anywhere. They're removed,
+  along with the `Constness` they took. Use `input_value_for_type`,
+  `argument_with_def`, and `arguments_with_def` instead.
+
 ## Fixes
 
 - **Keep generated selections mergeable - [tninesling]**

@@ -53,10 +53,10 @@ impl From<Name> for apollo_compiler::Name {
 
 impl From<&'_ Name> for apollo_compiler::Name {
     fn from(value: &'_ Name) -> Self {
-        // FIXME: falliable instead of unwrap?
-        // Names from `DocumentBuilder` do have valid syntax,
-        // but the `new` constructor accepts any string
-        apollo_compiler::Name::new(&value.name).unwrap()
+        // `Name::new` accepts any string, but `DocumentBuilder` only creates
+        // names with valid syntax, and names parsed from a document were
+        // already valid there.
+        apollo_compiler::Name::new(&value.name).expect("smith names have valid GraphQL syntax")
     }
 }
 

@@ -1,4 +1,3 @@
-use crate::input_value::InputValue;
 use crate::name::Name;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
@@ -228,10 +227,5 @@ impl DocumentBuilder<'_> {
             .iter()
             .map(|o| Ty::Named(o.name.clone()))
             .collect()
-    }
-
-    #[allow(dead_code)]
-    pub(crate) fn generate_value_for_type(&mut self, _ty: &Ty) -> InputValue {
-        todo!()
     }
 }

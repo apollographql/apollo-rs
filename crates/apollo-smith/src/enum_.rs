@@ -225,6 +225,13 @@ impl DocumentBuilder<'_> {
             .expect("cannot get variant"))
     }
 
+    /// An arbitrary value of the enum at `enum_index`, borrowing the enum
+    /// rather than cloning it to choose from.
+    pub(crate) fn arbitrary_value_of_enum(&mut self, enum_index: usize) -> Result<Name> {
+        let values = &self.enum_type_defs[enum_index].enum_values_def;
+        Ok(self.u.choose_iter(values)?.value.clone())
+    }
+
     /// Create an arbitrary `EnumValueDefinition`
     pub fn enum_values_definition(
         &mut self,
