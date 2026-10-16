@@ -378,72 +378,23 @@ impl DocumentBuilder<'_> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::InputObjectTypeDef;
-    use arbitrary::Unstructured;
-    use indexmap::IndexMap;
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
 
-    #[test]
-    fn test_input_value_for_type() {
-        let data: Vec<u8> = (0..=5000usize).map(|n| (n % 255) as u8).collect();
-        let mut u = Unstructured::new(&data);
-        let mut document_builder = DocumentBuilder::new(&mut u);
-        let my_nested_type = InputObjectTypeDef {
-            description: None,
-            name: Name {
-                name: String::from("my_nested_object"),
-            },
-            directives: IndexMap::new(),
-            fields: vec![InputValueDef {
-                description: None,
-                name: Name {
-                    name: String::from("value"),
-                },
-                ty: Ty::Named(Name {
-                    name: String::from("String"),
-                }),
-                default_value: None,
-                directives: IndexMap::new(),
-            }],
-            extend: false,
-        };
+    // Values nest lists inside input objects inside lists.
+    const NESTED: &str = "schema { query: Query }
+        type Query { f(outer: [Outer]): Int }
+        input Outer { first: [Inner] }
+        input Inner { value: String }";
 
-        let my_object_type = InputObjectTypeDef {
-            description: None,
-            name: Name {
-                name: String::from("my_object"),
-            },
-            directives: IndexMap::new(),
-            fields: vec![InputValueDef {
-                description: None,
-                name: Name {
-                    name: String::from("first"),
-                },
-                ty: Ty::List(Box::new(Ty::Named(Name {
-                    name: String::from("my_nested_object"),
-                }))),
-                default_value: None,
-                directives: IndexMap::new(),
-            }],
-            extend: false,
-        };
-        document_builder.input_object_type_defs.push(my_nested_type);
-        document_builder.input_object_type_defs.push(my_object_type);
-
-        let input_val = document_builder
-            .input_value_for_type(&Ty::List(Box::new(Ty::Named(Name {
-                name: String::from("my_object"),
-            }))))
-            .unwrap();
-
-        let input_val_str = apollo_compiler::ast::Value::from(input_val)
-            .serialize()
-            .no_indent()
-            .to_string();
-
-        assert_eq!(
-            input_val_str.as_str(),
-            "[{first: [{value: \"EFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCABCDEFGHIJ\"}, {value: \"MNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789ABCDEFGHIJK\"}]}]"
-        );
+    proptest! {
+        #[test]
+        fn operation_values_respect_input_object_definitions(data in input()) {
+            if let Some(doc) = generate(NESTED, &data, |b| b.operation_definition()) {
+                prop_assert_valid(&doc)?;
+            }
+        }
     }
 }

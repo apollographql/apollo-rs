@@ -180,3 +180,23 @@ impl DocumentBuilder<'_> {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query }
+        type Query { f(a: Int, b: String!, c: [Int!]): Int, g(a: Int!): Query }";
+
+    proptest! {
+        #[test]
+        fn operations_use_valid_variables(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.operation_definition()) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+}

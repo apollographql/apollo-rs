@@ -323,3 +323,24 @@ impl From<String> for DirectiveLocation {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query }
+        type Query { a: Int }
+        directive @d(x: Int, y: [String!]!) on FIELD_DEFINITION | OBJECT | ARGUMENT_DEFINITION";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.directive_def().map(Some)) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+}

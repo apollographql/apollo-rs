@@ -525,7 +525,12 @@ fn typename_ty() -> Ty {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use apollo_compiler::ast;
     use arbitrary::Unstructured;
+    use proptest::prelude::*;
 
     #[test]
     fn repeated_selections_are_recorded_once() {
@@ -544,5 +549,78 @@ mod tests {
             }
         });
         assert_eq!(selections.by_name[&name].fields, vec![field]);
+    }
+
+    // Exhausted input picks the minimum selection count, which is zero.
+    #[test]
+    fn exhausted_input_generates_valid_empty_selection_sets() {
+        let schema = "schema { query: Query } type Query { id: ID }";
+        let doc =
+            generate(schema, &[], |b| b.operation_definition()).expect("schema has a query root");
+        let ast = ast::Document::parse(&doc, "smith.graphql").expect("smith output parses");
+        let op = ast
+            .definitions
+            .iter()
+            .find_map(|d| d.as_operation_definition())
+            .expect("document contains the generated operation");
+        assert!(op.selection_set.is_empty(), "{doc}");
+        ast.to_mixed_validate()
+            .expect("empty selection set validates");
+    }
+
+    // An implementer's fragment selects `f` with a fixed argument, while the
+    // generator picks its own arguments for `I.f`. Selecting both in one
+    // interface selection set would conflict, since one parent isn't an
+    // object.
+    const INTERFACE_FRAGMENT: &str = "schema { query: Query }
+        type Query { i: I, j: I }
+        interface I { f(x: Int): Int, g: Int }
+        type A implements I { f(x: Int): Int, g: Int }
+        fragment FA on A { f(x: 1) g }";
+
+    // Members share a field name with different types.
+    const UNION: &str = "schema { query: Query }
+        type Query { u: U }
+        union U = A | B
+        type A { a: Int, shared: Int }
+        type B { b: String, shared: String }";
+
+    // A member added by an extension, with a fragment on it.
+    const EXTENDED_UNION: &str = "schema { query: Query }
+        type Query { u: U }
+        union U = A
+        extend union U = B
+        type A { a: Int }
+        type B { b: Int }
+        fragment FB on B { b }";
+
+    const CUSTOM_SCALAR: &str = "schema { query: Query }
+        type Query { s: Custom, i: Int }
+        scalar Custom";
+
+    // Members reuse field names with different types, so some fields can't
+    // merge.
+    const CONFLICTING_MEMBERS: &str = "schema { query: Query }
+        type Query { u: U }
+        union U = A | B
+        type A { x: Int, y: Int }
+        type B { x: String, y: Int }";
+
+    proptest! {
+        #[test]
+        fn selections_stay_mergeable(
+            schema in prop::sample::select(&[
+                INTERFACE_FRAGMENT,
+                UNION,
+                EXTENDED_UNION,
+                CUSTOM_SCALAR,
+                CONFLICTING_MEMBERS,
+            ][..]),
+            data in input(),
+        ) {
+            if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
+                prop_assert_valid(&doc)?;
+            }
+        }
     }
 }

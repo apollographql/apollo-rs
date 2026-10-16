@@ -467,3 +467,29 @@ impl StackedEntity for InterfaceTypeDef {
         &self.fields_def
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid_ignoring;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query }
+        directive @d(x: Int, y: [String!]!) on INTERFACE | FIELD_DEFINITION | ARGUMENT_DEFINITION
+        type Query { i: I }
+        interface I { x: Int }
+        interface J implements I { x: Int, y: String }
+        type A implements I & J { x: Int, y: String }";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.interface_type_definition().map(Some)) {
+                // Extending an interface adds fields its existing
+                // implementers don't have.
+                prop_assert_valid_ignoring(&doc, |m| m.contains("does not satisfy interface"))?;
+            }
+        }
+    }
+}

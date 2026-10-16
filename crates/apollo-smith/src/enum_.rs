@@ -253,3 +253,26 @@ impl DocumentBuilder<'_> {
         Ok(enum_values_def)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query }
+        directive @d(x: Int, y: [String!]!) on ENUM | ENUM_VALUE
+        type Query { e: E }
+        enum E { A B }
+        enum F { C }";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.enum_type_definition().map(Some)) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+}

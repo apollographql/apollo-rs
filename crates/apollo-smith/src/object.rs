@@ -263,3 +263,27 @@ impl StackedEntity for ObjectTypeDef {
         &self.fields_def
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::generate;
+    use crate::test_support::input;
+    use crate::test_support::prop_assert_valid;
+    use proptest::prelude::*;
+
+    const SCHEMA: &str = "schema { query: Query }
+        directive @d(x: Int, y: [String!]!) on OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION
+        interface I { x: Int }
+        type Query { a: A }
+        type A implements I { x: Int, a: A }
+        type B { y(z: Int): String }";
+
+    proptest! {
+        #[test]
+        fn generates_valid_definitions(data in input()) {
+            if let Some(doc) = generate(SCHEMA, &data, |b| b.object_type_definition().map(Some)) {
+                prop_assert_valid(&doc)?;
+            }
+        }
+    }
+}
