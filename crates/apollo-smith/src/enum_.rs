@@ -193,8 +193,22 @@ impl DocumentBuilder<'_> {
             .filter(|e| e.name == name)
             .flat_map(|e| e.enum_values_def.iter().map(|v| v.value.clone()))
             .collect();
-        let enum_values_def = self.enum_values_definition(&existing_values)?;
-        let directives = self.directives(DirectiveLocation::Enum)?;
+        let enum_values_def: IndexSet<EnumValueDefinition> = self
+            .enum_values_definition(&existing_values)?
+            .into_iter()
+            .map(|mut value| {
+                self.drop_directives_reaching(&mut value.directives, &name);
+                value
+            })
+            .collect();
+        let applied: IndexSet<Name> = self
+            .enum_type_defs
+            .iter()
+            .filter(|def| def.name == name)
+            .flat_map(|def| def.directives.keys().cloned())
+            .collect();
+        let mut directives = self.type_directives(DirectiveLocation::Enum, &applied)?;
+        self.drop_directives_reaching(&mut directives, &name);
 
         if extend && directives.is_empty() && enum_values_def.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);
@@ -269,9 +283,9 @@ mod tests {
     use proptest::prelude::*;
 
     const SCHEMA: &str = "schema { query: Query }
-        directive @d(x: Int, y: [String!]!) on ENUM | ENUM_VALUE
+        directive @d(x: Int, y: [String!]!, f: F) on ENUM | ENUM_VALUE
         type Query { e: E }
-        enum E { A B }
+        enum E @d(y: []) { A B }
         enum F { C }";
 
     proptest! {

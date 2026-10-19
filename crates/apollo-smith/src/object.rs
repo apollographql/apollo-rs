@@ -175,7 +175,13 @@ impl DocumentBuilder<'_> {
             self.additional_implements(&existing_field_signatures, Some(&name))?;
         let fields_def =
             self.fields_implementing(&name, &implements_interfaces, &existing_field_signatures)?;
-        let directives = self.directives(DirectiveLocation::Object)?;
+        let applied: IndexSet<Name> = self
+            .object_type_defs
+            .iter()
+            .filter(|def| def.name == name)
+            .flat_map(|def| def.directives.keys().cloned())
+            .collect();
+        let directives = self.type_directives(DirectiveLocation::Object, &applied)?;
 
         if extend
             && directives.is_empty()
@@ -218,7 +224,7 @@ mod tests {
         interface I { x: Int }
         interface J { y(z: Int): String }
         type Query { a: A }
-        type A implements I { x: Int, a: A }
+        type A implements I @d(y: []) { x: Int, a: A }
         type B { y(z: Int): String }";
 
     proptest! {

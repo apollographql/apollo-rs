@@ -6,6 +6,7 @@ use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 /// Represents scalar types such as Int, String, and Boolean.
 /// Scalars cannot have fields.
@@ -104,7 +105,14 @@ impl DocumentBuilder<'_> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let directives = self.directives(DirectiveLocation::Scalar)?;
+        let applied: IndexSet<Name> = self
+            .scalar_type_defs
+            .iter()
+            .filter(|def| def.name == name)
+            .flat_map(|def| def.directives.keys().cloned())
+            .collect();
+        let mut directives = self.type_directives(DirectiveLocation::Scalar, &applied)?;
+        self.drop_directives_reaching(&mut directives, &name);
 
         // A scalar extension must add at least one directive. If we picked the extend path
         // but have no directives to add, fall back to a fresh unique scalar instead of
@@ -131,9 +139,9 @@ mod tests {
     use proptest::prelude::*;
 
     const SCHEMA: &str = "schema { query: Query }
-        directive @d(x: Int, y: [String!]!) on SCALAR
+        directive @d(x: Int, y: [String!]!, t: T) on SCALAR
         type Query { s: S }
-        scalar S
+        scalar S @d(y: [])
         scalar T @specifiedBy(url: \"https://example.com\")";
 
     proptest! {

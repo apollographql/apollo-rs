@@ -32,6 +32,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
+- **Keep directives applied to types valid - [tninesling]**
+
+  Type extensions no longer repeat a non-repeatable directive the type
+  already has, and directives are no longer applied where they would end
+  up referencing themselves, such as `directive @d(arg: S)` with
+  `extend scalar S @d`.
+
 - **Limit the size of generated String and list values - [tninesling]**
 
   String values are now at most 32 characters and list values at most 3

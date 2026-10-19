@@ -272,6 +272,10 @@ impl DocumentBuilder<'_> {
     ) -> ArbitraryResult<Vec<InputValueDef>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
+        let mut available_types = self.list_existing_input_types();
+        if let Some(owner) = self_name {
+            available_types.retain(|ty| !self.input_field_type_would_cycle(owner, ty.name()));
+        }
 
         for i in 0..arbitrary_iv_num {
             let description = self
@@ -281,7 +285,7 @@ impl DocumentBuilder<'_> {
                 .then(|| self.description())
                 .transpose()?;
             let name = self.name_with_index(i)?;
-            let mut ty = self.choose_ty(&self.list_existing_input_types())?;
+            let mut ty = self.choose_ty(&available_types)?;
             // Prevent required self-referential input object fields, which
             // would make the type impossible to construct.
             if self_name.is_some_and(|n| ty.name() == n) {

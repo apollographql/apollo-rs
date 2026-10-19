@@ -11,6 +11,7 @@ use arbitrary::Arbitrary;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use std::collections::HashSet;
 
 /// The `__DirectiveDef` type represents a Directive definition.
 ///
@@ -155,6 +156,127 @@ impl DocumentBuilder<'_> {
             .collect();
 
         Ok(directives)
+    }
+
+    /// Directives for a type definition or extension. A type and its
+    /// extensions count as one location, so non-repeatable directives in
+    /// `applied` are left out.
+    pub(crate) fn type_directives(
+        &mut self,
+        directive_location: DirectiveLocation,
+        applied: &IndexSet<Name>,
+    ) -> ArbitraryResult<IndexMap<Name, Directive>> {
+        let mut directives = self.directives(directive_location)?;
+        directives.retain(|name, _| !applied.contains(name) || self.is_repeatable(name));
+        Ok(directives)
+    }
+
+    /// Drop directives that would make their own definition reference
+    /// itself if applied to `ty` or within it. apollo-compiler follows a
+    /// directive's argument types, and the directives on those types, their
+    /// enum values, and their input fields.
+    pub(crate) fn drop_directives_reaching(
+        &self,
+        directives: &mut IndexMap<Name, Directive>,
+        ty: &Name,
+    ) {
+        directives.retain(|directive, _| !self.directive_reaches_type(directive, ty));
+    }
+
+    fn directive_reaches_type(&self, directive: &Name, ty: &Name) -> bool {
+        self.reaches(vec![directive.clone()], Vec::new(), Reference::Type(ty))
+    }
+
+    /// Whether giving the input object `owner` a field of type `field_type`
+    /// would make some directive's definition reference itself, because the
+    /// directive already reaches `owner` and `field_type` reaches it.
+    pub(crate) fn input_field_type_would_cycle(&self, owner: &Name, field_type: &Name) -> bool {
+        self.directive_defs.iter().any(|def| {
+            self.directive_reaches_type(&def.name, owner)
+                && self.reaches(
+                    Vec::new(),
+                    vec![field_type.clone()],
+                    Reference::Directive(&def.name),
+                )
+        })
+    }
+
+    /// Whether `target` can be reached from `directives` and `types` by
+    /// following what apollo-compiler follows when checking a directive
+    /// definition for references to itself.
+    fn reaches(
+        &self,
+        mut directives: Vec<Name>,
+        mut types: Vec<Name>,
+        target: Reference<'_>,
+    ) -> bool {
+        let mut seen_directives = HashSet::new();
+        let mut seen_types = HashSet::new();
+        loop {
+            if let Some(directive) = directives.pop() {
+                if target == Reference::Directive(&directive) {
+                    return true;
+                }
+                if seen_directives.insert(directive.clone()) {
+                    self.directive_references(&directive, &mut directives, &mut types);
+                }
+            } else if let Some(ty) = types.pop() {
+                if target == Reference::Type(&ty) {
+                    return true;
+                }
+                if seen_types.insert(ty.clone()) {
+                    self.input_type_references(&ty, &mut directives, &mut types);
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /// Directives and types that `directive`'s arguments reference.
+    fn directive_references(
+        &self,
+        directive: &Name,
+        directives: &mut Vec<Name>,
+        types: &mut Vec<Name>,
+    ) {
+        let arguments = self
+            .directive_defs
+            .iter()
+            .filter(|def| &def.name == directive)
+            .filter_map(|def| def.arguments_definition.as_ref())
+            .flat_map(|args| &args.input_value_definitions);
+        for argument in arguments {
+            directives.extend(argument.directives.keys().cloned());
+            types.push(argument.ty.name().clone());
+        }
+    }
+
+    /// Directives and types that the scalar, enum, or input object `ty`
+    /// references, across its definition and extensions.
+    fn input_type_references(&self, ty: &Name, directives: &mut Vec<Name>, types: &mut Vec<Name>) {
+        for scalar in self.scalar_type_defs.iter().filter(|s| &s.name == ty) {
+            directives.extend(scalar.directives.keys().cloned());
+        }
+        for enum_ in self.enum_type_defs.iter().filter(|e| &e.name == ty) {
+            directives.extend(enum_.directives.keys().cloned());
+            for value in &enum_.enum_values_def {
+                directives.extend(value.directives.keys().cloned());
+            }
+        }
+        for input in self.input_object_type_defs.iter().filter(|i| &i.name == ty) {
+            directives.extend(input.directives.keys().cloned());
+            for field in &input.fields {
+                directives.extend(field.directives.keys().cloned());
+                types.push(field.ty.name().clone());
+            }
+        }
+    }
+
+    fn is_repeatable(&self, name: &Name) -> bool {
+        self.directive_defs
+            .iter()
+            .any(|def| &def.name == name && def.repeatable)
     }
 
     /// Directives for a field, fragment spread, or inline fragment in an
@@ -377,6 +499,12 @@ impl From<String> for DirectiveLocation {
             ),
         }
     }
+}
+
+#[derive(PartialEq)]
+enum Reference<'a> {
+    Directive(&'a Name),
+    Type(&'a Name),
 }
 
 #[cfg(test)]
