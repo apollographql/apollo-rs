@@ -10,6 +10,11 @@ use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 
+// Long strings and lists don't add coverage, and used to consume most of
+// the input, starving the definitions generated after them.
+const MAX_STRING_VALUE_LEN: usize = 32;
+const MAX_LIST_VALUE_LEN: usize = 3;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum InputValue {
     Variable(Name),
@@ -157,11 +162,6 @@ impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
         })
     }
 }
-
-// Long strings and lists don't add coverage, and used to consume most of
-// the input, starving the definitions generated after them.
-const MAX_STRING_VALUE_LEN: usize = 32;
-const MAX_LIST_VALUE_LEN: usize = 3;
 
 impl DocumentBuilder<'_> {
     pub fn input_value_for_type(&mut self, ty: &Ty) -> ArbitraryResult<InputValue> {
