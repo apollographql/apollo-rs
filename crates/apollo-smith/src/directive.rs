@@ -362,12 +362,7 @@ impl DocumentBuilder<'_> {
 
     /// Create an arbitrary `DirectiveDef`
     pub fn directive_def(&mut self) -> ArbitraryResult<DirectiveDef> {
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let name = self.type_name()?;
         let arguments_definition = self
             .u

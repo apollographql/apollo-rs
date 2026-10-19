@@ -128,12 +128,7 @@ impl DocumentBuilder<'_> {
         } else {
             self.type_name()?
         };
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let applied: IndexSet<Name> = self
             .union_type_defs
             .iter()

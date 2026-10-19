@@ -142,12 +142,7 @@ impl DocumentBuilder<'_> {
         } else {
             self.type_name()?
         };
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let exclude_fields: IndexSet<Name> = self
             .input_object_type_defs
             .iter()

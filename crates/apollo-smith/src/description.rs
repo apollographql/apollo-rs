@@ -56,6 +56,13 @@ impl DocumentBuilder<'_> {
     pub fn description(&mut self) -> ArbitraryResult<Description> {
         self.u.arbitrary()
     }
+
+    pub(crate) fn optional_description(&mut self) -> ArbitraryResult<Option<Description>> {
+        if self.u.ratio(7, 8)? {
+            return Ok(None);
+        }
+        Ok(Some(self.description()?))
+    }
 }
 
 fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> ArbitraryResult<String> {

@@ -144,12 +144,7 @@ impl DocumentBuilder<'_> {
     /// Create an arbitrary `ObjectTypeDef`
     pub fn object_type_definition(&mut self) -> ArbitraryResult<ObjectTypeDef> {
         let extend = !self.object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
-        let description = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.description())
-            .transpose()?;
+        let description = self.optional_description()?;
         let name = if extend {
             let available_objects: Vec<&Name> = self
                 .object_type_defs
