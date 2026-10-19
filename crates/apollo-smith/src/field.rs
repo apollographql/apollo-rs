@@ -345,8 +345,7 @@ impl DocumentBuilder<'_> {
 mod tests {
     use super::*;
     use crate::selection_set::SelectedField;
-    use crate::test_support::generate;
-    use crate::test_support::input;
+    use crate::test_support::generated_against_any;
     use crate::test_support::prop_assert_valid;
     use crate::DocumentBuilder;
     use arbitrary::Unstructured;
@@ -368,11 +367,10 @@ mod tests {
     proptest! {
         #[test]
         fn aliased_selections_stay_mergeable(
-            schema in prop::sample::select(&[ALIASES, ARGUMENTS][..]),
-            data in input(),
+            case in generated_against_any(&[ALIASES, ARGUMENTS], |b| b.operation_definition()),
         ) {
-            if let Some(doc) = generate(schema, &data, |b| b.operation_definition()) {
-                prop_assert_valid(&doc)?;
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

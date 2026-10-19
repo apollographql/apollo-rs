@@ -207,8 +207,7 @@ impl DocumentBuilder<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_support::generate;
-    use crate::test_support::input;
+    use crate::test_support::generated;
     use crate::test_support::prop_assert_valid;
     use proptest::prelude::*;
 
@@ -223,9 +222,9 @@ mod tests {
 
     proptest! {
         #[test]
-        fn generates_valid_definitions(data in input()) {
-            if let Some(doc) = generate(SCHEMA, &data, |b| b.input_object_type_definition().map(Some)) {
-                prop_assert_valid(&doc)?;
+        fn generates_valid_definitions(case in generated(SCHEMA, |b| b.input_object_type_definition().map(Some))) {
+            if let Some(doc) = &case.document {
+                prop_assert_valid(doc)?;
             }
         }
     }

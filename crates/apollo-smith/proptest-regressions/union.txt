@@ -4,4 +4,4 @@
 #
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
-cc d7401dd04ab79c401ce9c13b17f01b07cd2237b6b54a320b6f8c41ce5ccaad89 # shrinks to data = [125, 20, 133]
+cc d7401dd04ab79c401ce9c13b17f01b07cd2237b6b54a320b6f8c41ce5ccaad89 # shrinks to case = extend union U @d(x: 0, y: "A") = Query

@@ -103,6 +103,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
+- **Implement `Arbitrary` for `Document` - [tninesling]**
+
+  `Document::arbitrary` builds a document from the rest of the input, the
+  same as `DocumentBuilder::new(u).build()`, so fuzz targets can take a
+  `Document` directly.
+
 - **Generate fragments on interfaces and unions - [tninesling]**
 
   Fragment definitions were only generated on object types. Their type
