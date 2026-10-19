@@ -57,15 +57,11 @@ impl DocumentBuilder<'_> {
         self.u.arbitrary()
     }
 
-    /// Sometimes a description. They cost input without changing how a
-    /// document composes or plans, so most definitions go without one.
     pub(crate) fn optional_description(&mut self) -> ArbitraryResult<Option<Description>> {
-        // Asking whether to leave it out keeps exhausted input, where every
-        // ratio is true, from adding descriptions.
         if self.u.ratio(7, 8)? {
             return Ok(None);
         }
-        self.description().map(Some)
+        Ok(Some(self.description()?))
     }
 }
 
