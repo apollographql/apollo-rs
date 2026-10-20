@@ -1,0 +1,7 @@
+STRING_VALUE@0:60 "\"variable width escapes \\u{0} \\u{2708} \\u{1F4A9} \\u{10FFFF}\""
+WHITESPACE@60:61 "\n"
+STRING_VALUE@61:117 "\"surrogate pairs \\uD83D\\uDCA9 \\uD800\\uDC00 \\uDBFF\\uDFFF\""
+WHITESPACE@117:118 "\n"
+STRING_VALUE@118:154 "\"unescaped supplementary plane 💩\""
+WHITESPACE@154:155 "\n"
+EOF@155:155

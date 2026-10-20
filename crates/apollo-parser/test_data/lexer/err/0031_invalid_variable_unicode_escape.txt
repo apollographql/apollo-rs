@@ -1,0 +1,11 @@
+ERROR@0:25 "unicode escape sequence must specify a Unicode scalar value" "Out of range \u{110000}"
+WHITESPACE@25:26 "\n"
+ERROR@26:51 "unicode escape sequence must specify a Unicode scalar value" "Lead surrogate \u{D800}"
+WHITESPACE@51:52 "\n"
+ERROR@52:78 "unicode escape sequence must specify a Unicode scalar value" "Trail surrogate \u{DCA9}"
+WHITESPACE@78:79 "\n"
+ERROR@79:91 "unicode escape sequence must specify a Unicode scalar value" "Empty \u{}"
+WHITESPACE@91:92 "\n"
+ERROR@92:115 "incomplete unicode escape sequence" "Unterminated \u{1F4A9"
+WHITESPACE@115:116 "\n"
+EOF@116:116

@@ -160,6 +160,14 @@ impl From<cst::StringValue> for String {
 ///
 /// Panics on invalid escape sequences. Those should be rejected in the lexer already.
 fn unescape_string(input: &str) -> String {
+    /// Read the 4 hexadecimal digits of a fixed-width `\uXXXX` escape sequence.
+    fn hex4(iter: &mut std::str::Chars<'_>) -> u32 {
+        iter.by_ref().take(4).fold(0, |acc, c| {
+            let digit = c.to_digit(16).unwrap();
+            (acc << 4) + digit
+        })
+    }
+
     let mut output = String::with_capacity(input.len());
 
     let mut iter = input.chars();
@@ -171,16 +179,34 @@ fn unescape_string(input: &str) -> String {
                     break;
                 };
 
-                // TODO: https://github.com/apollographql/apollo-rs/issues/657 needs
-                // changes both here and in `lexer/mod.rs`
+                // https://spec.graphql.org/September2025/#EscapedUnicode
                 let mut unicode = || {
-                    // 1. Let value be the 16-bit hexadecimal value represented
-                    // by the sequence of hexadecimal digits within EscapedUnicode.
-                    let value = iter.by_ref().take(4).fold(0, |acc, c| {
-                        let digit = c.to_digit(16).unwrap();
-                        (acc << 4) + digit
-                    });
-                    // 2. Return the code point value.
+                    let value = if iter.clone().next() == Some('{') {
+                        // Variable-width `\u{HexDigits}` escape sequence.
+                        iter.next(); // consume '{'
+                        let mut value = 0;
+                        loop {
+                            let c = iter.next().unwrap();
+                            if c == '}' {
+                                break;
+                            }
+                            value = (value << 4) + c.to_digit(16).unwrap();
+                        }
+                        value
+                    } else {
+                        let value = hex4(&mut iter);
+                        if (0xD800..=0xDBFF).contains(&value) {
+                            // A leading surrogate: the lexer guarantees it is followed
+                            // by a `\uXXXX` trailing surrogate escape; combine the pair
+                            // into a single code point.
+                            iter.next(); // consume '\'
+                            iter.next(); // consume 'u'
+                            let trail = hex4(&mut iter);
+                            (value - 0xD800) * 0x400 + (trail - 0xDC00) + 0x10000
+                        } else {
+                            value
+                        }
+                    };
                     char::from_u32(value).unwrap()
                 };
 
@@ -272,17 +298,17 @@ fn replace_into(input: &str, pattern: &str, replace: &str, output: &mut String) 
 /// indents and newline normalization, this also handles escape sequences (strictly not part of
 /// BlockStringValue in the spec, but more efficient to do it at the same time).
 ///
-/// Spec: https://spec.graphql.org/October2021/#BlockStringValue()
+/// Spec: https://spec.graphql.org/September2025/#BlockStringValue()
 fn unescape_block_string(raw_value: &str) -> String {
-    /// WhiteSpace :: Horizontal Tab (U+0009) Space (U+0020)
+    /// Whitespace :: Horizontal Tab (U+0009) Space (U+0020)
     fn is_whitespace(c: char) -> bool {
         matches!(c, ' ' | '\t')
     }
-    /// Check if a string is all WhiteSpace. This expects a single line of input.
+    /// Check if a string is all Whitespace. This expects a single line of input.
     fn is_whitespace_line(line: &str) -> bool {
         line.chars().all(is_whitespace)
     }
-    /// Count the indentation of a single line (how many WhiteSpace characters are at the start).
+    /// Count the indentation of a single line (how many Whitespace characters are at the start).
     fn count_indent(line: &str) -> usize {
         line.chars().take_while(|&c| is_whitespace(c)).count()
     }
@@ -298,7 +324,7 @@ fn unescape_block_string(raw_value: &str) -> String {
             // We will compare this byte length to a character length below, but
             // `count_indent` only ever counts one-byte characters, so it's equivalent.
             let length = line.len();
-            // 3.c. Let indent be the number of leading consecutive WhiteSpace characters in line.
+            // 3.c. Let indent be the number of leading consecutive Whitespace characters in line.
             let indent = count_indent(line);
             // 3.d. If indent is less than length:
             (indent < length).then_some(indent)
@@ -318,7 +344,7 @@ fn unescape_block_string(raw_value: &str) -> String {
                 &line[common_indent.min(line.len())..]
             }
         })
-        // 5. While the first item line in lines contains only WhiteSpace:
+        // 5. While the first item line in lines contains only Whitespace:
         // 5.a. Remove the first item from lines.
         .skip_while(|line| is_whitespace_line(line));
 
@@ -349,7 +375,7 @@ fn unescape_block_string(raw_value: &str) -> String {
         }
     }
 
-    // 6. Implemented differently: remove WhiteSpace-only lines from the end.
+    // 6. Implemented differently: remove Whitespace-only lines from the end.
     formatted.truncate(final_char_index);
 
     // 9. Return formatted.
@@ -475,6 +501,18 @@ mod string_tests {
         assert_eq!(
             unescape_string(r"unicode \u1234\u5678\u90AB\uCDEF"),
             "unicode \u{1234}\u{5678}\u{90AB}\u{CDEF}"
+        );
+        assert_eq!(
+            unescape_string(r"variable width \u{0} \u{2708} \u{1F4A9} \u{10FFFF}"),
+            "variable width \u{0} \u{2708} \u{1F4A9} \u{10FFFF}"
+        );
+        assert_eq!(
+            unescape_string(r"surrogate pair \uD83D\uDCA9"),
+            "surrogate pair \u{1F4A9}"
+        );
+        assert_eq!(
+            unescape_string(r"extremes \uD800\uDC00 \uDBFF\uDFFF"),
+            "extremes \u{10000} \u{10FFFF}"
         );
     }
 }
