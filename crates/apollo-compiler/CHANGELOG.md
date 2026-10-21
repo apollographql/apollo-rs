@@ -105,6 +105,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Long acyclic chains of input objects no longer report `contains too much
   nesting`, since the check no longer recurses.
 
+## Maintenance
+
+- **Update `serial_test` dev-dependency to v4 - [pull/1073]**
+
+  Dev-dependency only; no effect on library consumers. Note that building the
+  apollo-rs test suite now requires rustc 1.93.1 or newer.
+
+[pull/1073]: https://github.com/apollographql/apollo-rs/pull/1073
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
 [pull/1114]: https://github.com/apollographql/apollo-rs/pull/1114
 [pull/1116]: https://github.com/apollographql/apollo-rs/pull/1116
