@@ -20,6 +20,9 @@ fn common_schema() -> Valid<Schema> {
 fn test_valid_field_sets() {
     let schema = common_schema();
 
+    let input = "";
+    FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql").unwrap();
+
     let input = "id";
     FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql").unwrap();
 
@@ -52,6 +55,16 @@ fn test_invalid_field_sets() {
     );
     assert!(
         errors.contains("`Query.organization` is an object type `Org` and must select fields"),
+        "{errors}"
+    );
+
+    let input = ":id";
+    let errors = FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql")
+        .unwrap_err()
+        .errors
+        .to_string();
+    assert!(
+        errors.contains("expected at least one Selection in Selection Set"),
         "{errors}"
     );
 

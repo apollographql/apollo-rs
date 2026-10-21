@@ -42,8 +42,20 @@ pub(crate) fn field_set(p: &mut Parser) {
             p.limit_err("parser recursion limit reached");
             return;
         }
-        selection(p);
+        let has_selection = selection(p);
         p.recursion_limit.decrement();
+
+        // Inside braces, the missing `}` is reported instead. Without braces, an empty
+        // input is an empty field set, but any other token means nothing was parsed.
+        if !has_selection && !matches!(p.peek(), None | Some(TokenKind::Eof)) {
+            p.err("expected at least one Selection in Selection Set");
+        }
+    }
+
+    // A field set is the whole input, so leftover tokens are invalid. This is skipped
+    // when an error was already reported, so one problem doesn't produce two errors.
+    if p.errors.is_empty() && !matches!(p.peek(), None | Some(TokenKind::Eof)) {
+        p.err("expected the end of the field set");
     }
 }
 
@@ -53,7 +65,9 @@ pub(crate) fn field_set(p: &mut Parser) {
 ///     Field
 ///     FragmentSpread
 ///     InlineFragment
-pub(crate) fn selection(p: &mut Parser) {
+pub(crate) fn selection(p: &mut Parser) -> bool {
+    let mut has_selection = false;
+
     p.peek_while(|p, kind| match kind {
         T![...] => {
             let next_token = p.peek_token_n(2);
@@ -70,6 +84,7 @@ pub(crate) fn selection(p: &mut Parser) {
                         p.err("expected an Inline Fragment or a Fragment Spread");
                         p.bump(S![...]);
                     }
+                    has_selection = true;
                     ControlFlow::Continue(())
                 }
                 None => {
@@ -81,10 +96,13 @@ pub(crate) fn selection(p: &mut Parser) {
         T!['{'] => ControlFlow::Break(()),
         TokenKind::Name => {
             field::field(p);
+            has_selection = true;
             ControlFlow::Continue(())
         }
         _ => ControlFlow::Break(()),
     });
+
+    has_selection
 }
 
 #[cfg(test)]
@@ -327,6 +345,20 @@ query SomeQuery(
         };
         let sub = human.selection_set().expect("subselection is present");
         assert_eq!(sub.selections().count(), 0);
+    }
+
+    #[test]
+    fn it_reports_one_error_for_an_invalid_token_in_braces() {
+        let cst = Parser::new("{ : }").parse();
+        let errors: Vec<_> = cst.errors().map(|err| err.message()).collect();
+        assert_eq!(
+            errors,
+            [
+                "expected R_CURLY, got :",
+                "expected a StringValue, Name or OperationDefinition",
+                "expected a StringValue, Name or OperationDefinition",
+            ]
+        );
     }
 
     #[test]

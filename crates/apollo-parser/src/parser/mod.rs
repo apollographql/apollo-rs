@@ -966,6 +966,60 @@ mod tests {
         });
     }
 
+    fn field_set_errors(source: &str) -> Vec<String> {
+        Parser::new(source)
+            .parse_selection_set()
+            .errors()
+            .map(|err| err.message().to_string())
+            .collect()
+    }
+
+    #[test]
+    fn field_set_without_braces_may_be_empty() {
+        assert!(field_set_errors("").is_empty());
+        assert!(field_set_errors("  ").is_empty());
+    }
+
+    #[test]
+    fn field_set_without_braces_rejects_invalid_selection() {
+        let cst = Parser::new(":f").parse_selection_set();
+        let errors: Vec<_> = cst.errors().collect();
+        assert_eq!(errors.len(), 1);
+        assert_eq!(
+            errors[0].message(),
+            "expected at least one Selection in Selection Set"
+        );
+        assert_eq!(errors[0].data(), ":");
+        assert_eq!(errors[0].index(), 0);
+    }
+
+    #[test]
+    fn field_set_errors_on_leftover_tokens() {
+        assert_eq!(
+            field_set_errors("a )"),
+            ["expected the end of the field set"]
+        );
+        assert_eq!(
+            field_set_errors("{ a } b"),
+            ["expected the end of the field set"]
+        );
+        assert_eq!(
+            field_set_errors("a }"),
+            ["expected the end of the field set"]
+        );
+    }
+
+    #[test]
+    fn field_set_with_nested_braces_errors() {
+        assert_eq!(field_set_errors("{{f}}"), ["expected R_CURLY, got {"]);
+    }
+
+    #[test]
+    fn field_set_with_empty_braces_is_valid() {
+        assert!(field_set_errors("{}").is_empty());
+        assert!(field_set_errors("a {}").is_empty());
+    }
+
     #[test]
     fn no_infinite_loop() {
         let source = r#"{ ..."#;
