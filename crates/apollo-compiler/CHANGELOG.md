@@ -4,7 +4,7 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [x.x.x] (unreleased) - 2026-mm-dd
+# [2.0.0-beta.2](https://crates.io/crates/apollo-compiler/2.0.0-beta.2) - 2026-10-21
 
 > Important: 3 breaking changes below, indicated by **BREAKING**
 
