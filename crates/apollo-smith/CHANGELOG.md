@@ -18,11 +18,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [x.x.x] (unreleased) - 2026-mm-dd
+# [0.17.0-beta.2](https://crates.io/crates/apollo-smith/0.17.0-beta.2) - 2026-10-21
 
 ## BREAKING
 
-- **Let the input choose the order of generated definitions - [tninesling]**
+- **Let the input choose the order of generated definitions - [tninesling], [pull/1145]**
 
   `build()` generated each kind of definition in a fixed order, so the
   first kinds used most of the input and operations were usually empty.
@@ -34,7 +34,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   object, a schema definition, and an operation, so small inputs may leave
   out other kinds.
 
-- **Remove untyped value and argument generation - [tninesling]**
+- **Remove untyped value and argument generation - [tninesling], [pull/1141]**
 
   `DocumentBuilder::input_value`, `argument`, and `arguments` generated
   values that weren't valid for any type or definition: lists mixed
@@ -44,27 +44,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Generate fewer fields and descriptions - [tninesling]**
+- **Generate fewer fields and descriptions - [tninesling], [pull/1146]**
 
   Objects and interfaces had 2 to 50 fields, and half of all definitions
   had a description, so each object or interface used about 3KB of input.
   Most types now have a few fields and one in eight definitions has a
   description, bringing objects and interfaces to about 550 bytes.
 
-- **Keep directives applied to types valid - [tninesling]**
+- **Keep directives applied to types valid - [tninesling], [pull/1144]**
 
   Type extensions no longer repeat a non-repeatable directive the type
   already has, and directives are no longer applied where they would end
   up referencing themselves, such as `directive @d(arg: S)` with
   `extend scalar S @d`.
 
-- **Limit the size of generated String and list values - [tninesling]**
+- **Limit the size of generated String and list values - [tninesling], [pull/1143]**
 
   String values are now at most 32 characters and list values at most 3
   elements. A single `[String]` default value used to average about 6KB of
   input.
 
-- **Keep generated selections mergeable - [tninesling]**
+- **Keep generated selections mergeable - [tninesling], [pull/1128]**
 
   Selections were generated without checking the field selection merging
   rules, so with an interface field from a schema passed to
@@ -74,7 +74,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   fields that can merge, and only spreads fragments whose selections can
   merge. Fields that can't merge fall back to `__typename`.
 
-- **Generate valid input object values - [tninesling]**
+- **Generate valid input object values - [tninesling], [pull/1135]**
 
   Values of input object type, such as argument default values, only used
   the base definition's fields and ignored `@oneOf`. They now include fields
@@ -82,7 +82,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Extensions no longer declare `@oneOf`, and only add nullable fields so
   values generated before the extension stay valid.
 
-- **Generate interfaces and objects with their inherited fields - [tninesling]**
+- **Generate interfaces and objects with their inherited fields - [tninesling], [pull/1138]**
 
   Interfaces and objects only received the fields of the interfaces they
   implement in a pass at the end of `build()`, so definitions generated
@@ -93,7 +93,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   generated, only interfaces nothing implements yet are extended, and
   object extensions skip interfaces already implemented.
 
-- **Limit how deeply selections nest - [tninesling]**
+- **Limit how deeply selections nest - [tninesling], [pull/1139]**
 
   Selection sets could nest as deeply as the input allowed, which on
   recursive schemas overflowed the stack, or nested deeper than
@@ -103,25 +103,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Implement `Arbitrary` for `Document` - [tninesling]**
+- **Implement `Arbitrary` for `Document` - [tninesling], [pull/1147]**
 
   `Document::arbitrary` builds a document from the rest of the input, the
   same as `DocumentBuilder::new(u).build()`, so fuzz targets can take a
   `Document` directly.
 
-- **Generate fragments on interfaces and unions - [tninesling]**
+- **Generate fragments on interfaces and unions - [tninesling], [pull/1140]**
 
   Fragment definitions were only generated on object types. Their type
   condition can now also be an interface or a union, such as
   `fragment F on SearchResult { __typename ... on User { id } }`.
 
-- **Generate recursive output field types - [tninesling]**
+- **Generate recursive output field types - [tninesling], [pull/1139]**
 
   Fields of objects and interfaces can now have the type being defined,
   such as `type User { friends: [User] }`, rather than only types defined
   before it.
 
-- **Generate `@skip` and `@include` in operations - [tninesling]**
+- **Generate `@skip` and `@include` in operations - [tninesling], [pull/1136]**
 
   Fields, fragment spreads, and inline fragments in operations now
   sometimes get `@skip`, `@include`, or both. The condition usually passes a
@@ -130,14 +130,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   shared between operations. The root field of a subscription is never
   conditional.
 
-- **Generate field aliases - [tninesling]**
+- **Generate field aliases - [tninesling], [pull/1132]**
 
   Alias generation was disabled because aliases could put different fields
   under the same response name. Fields are aliased again, often to a
   response name already selected alongside them, and an alias is only kept
   when the selection still follows the field selection merging rules.
 
-- **Generate operation variables - [tninesling]**
+- **Generate operation variables - [tninesling], [pull/1131]**
 
   Operations never defined variables. Field arguments in an operation now
   sometimes pass a variable instead of a literal. A variable is defined the
@@ -145,7 +145,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   value, and later arguments reuse it where its type is allowed. Fragments
   are shared between operations, so their arguments stay literal.
 
-- **Generate union field types - [tninesling]**
+- **Generate union field types - [tninesling], [pull/1130]**
 
   Fields can now be typed as any existing union, and selecting into a union
   field, including from a schema passed to `with_document`, no longer
@@ -153,7 +153,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   inline fragments narrowed to its members, including members added by
   `extend union`.
 
-- **Generate interface and custom scalar field types - [tninesling]**
+- **Generate interface and custom scalar field types - [tninesling], [pull/1129]**
 
   Output fields could only be typed as objects, enums, and built-in
   scalars. They can now also be typed as any existing interface or custom
@@ -184,6 +184,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [pull/1111]: https://github.com/apollographql/apollo-rs/pull/1111
 [pull/1116]: https://github.com/apollographql/apollo-rs/pull/1116
 [pull/1118]: https://github.com/apollographql/apollo-rs/pull/1118
+[pull/1128]: https://github.com/apollographql/apollo-rs/pull/1128
+[pull/1129]: https://github.com/apollographql/apollo-rs/pull/1129
+[pull/1130]: https://github.com/apollographql/apollo-rs/pull/1130
+[pull/1131]: https://github.com/apollographql/apollo-rs/pull/1131
+[pull/1132]: https://github.com/apollographql/apollo-rs/pull/1132
+[pull/1135]: https://github.com/apollographql/apollo-rs/pull/1135
+[pull/1136]: https://github.com/apollographql/apollo-rs/pull/1136
+[pull/1138]: https://github.com/apollographql/apollo-rs/pull/1138
+[pull/1139]: https://github.com/apollographql/apollo-rs/pull/1139
+[pull/1140]: https://github.com/apollographql/apollo-rs/pull/1140
+[pull/1141]: https://github.com/apollographql/apollo-rs/pull/1141
+[pull/1143]: https://github.com/apollographql/apollo-rs/pull/1143
+[pull/1144]: https://github.com/apollographql/apollo-rs/pull/1144
+[pull/1145]: https://github.com/apollographql/apollo-rs/pull/1145
+[pull/1146]: https://github.com/apollographql/apollo-rs/pull/1146
+[pull/1147]: https://github.com/apollographql/apollo-rs/pull/1147
 [graphql-spec#1227]: https://github.com/graphql/graphql-spec/pull/1227
 [TylerBloom]: https://github.com/TylerBloom
 [tninesling]: https://github.com/tninesling
