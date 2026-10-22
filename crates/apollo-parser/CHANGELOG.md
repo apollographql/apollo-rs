@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Report invalid tokens in field sets - [tninesling]**
+- **Report invalid tokens in field sets - [tninesling], [pull/1155]**
 
   A field set must now be parsed up to the end of its input. Tokens left over
   after it report "expected the end of the field set". This is new: earlier
@@ -30,6 +30,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   "expected at least one Selection in Selection Set". It is now rejected with
   the new error. Empty field sets, `""` and `{}`, are still accepted.
 
+[pull/1155]: https://github.com/apollographql/apollo-rs/pull/1155
 [tninesling]: https://github.com/tninesling
 
 # [0.9.0-beta.1](https://crates.io/crates/apollo-parser/0.9.0-beta.1) - 2026-10-21
