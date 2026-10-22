@@ -16,6 +16,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Fixes
+
+- **Report invalid tokens in field sets - [tninesling], [pull/1155]**
+
+  A field set must now be parsed up to the end of its input. Tokens left over
+  after it report "expected the end of the field set". This is new: earlier
+  versions, including 0.8.x, accepted field sets such as `id }` or `{ id } :f`
+  (for example `@key(fields: "id }")`). 0.9.0-beta.1 also accepted `":f"` with
+  no errors, which 0.9.0-beta.0 rejected with
+  "expected at least one Selection in Selection Set". It is now rejected with
+  the new error. Empty field sets, `""` and `{}`, are still accepted.
+
+[pull/1155]: https://github.com/apollographql/apollo-rs/pull/1155
+[tninesling]: https://github.com/tninesling
+
 # [0.9.0-beta.1](https://crates.io/crates/apollo-parser/0.9.0-beta.1) - 2026-10-21
 
 > Important: 1 breaking change below, indicated by **BREAKING**

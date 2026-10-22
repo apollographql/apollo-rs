@@ -45,6 +45,12 @@ pub(crate) fn field_set(p: &mut Parser) {
         selection(p);
         p.recursion_limit.decrement();
     }
+
+    // A field set is the whole input, so leftover tokens are invalid. This is skipped
+    // when an error was already reported, so one problem doesn't produce two errors.
+    if p.errors.is_empty() && !matches!(p.peek(), None | Some(TokenKind::Eof)) {
+        p.err("expected the end of the field set");
+    }
 }
 
 /// See: https://spec.graphql.org/September2025/#Selection
@@ -327,6 +333,20 @@ query SomeQuery(
         };
         let sub = human.selection_set().expect("subselection is present");
         assert_eq!(sub.selections().count(), 0);
+    }
+
+    #[test]
+    fn it_reports_one_error_for_an_invalid_token_in_braces() {
+        let cst = Parser::new("{ : }").parse();
+        let errors: Vec<_> = cst.errors().map(|err| err.message()).collect();
+        assert_eq!(
+            errors,
+            [
+                "expected R_CURLY, got :",
+                "expected a StringValue, Name or OperationDefinition",
+                "expected a StringValue, Name or OperationDefinition",
+            ]
+        );
     }
 
     #[test]
