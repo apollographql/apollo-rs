@@ -64,7 +64,7 @@ fn test_invalid_field_sets() {
         .errors
         .to_string();
     assert!(
-        errors.contains("expected at least one Selection in Selection Set"),
+        errors.contains("expected the end of the field set"),
         "{errors}"
     );
 

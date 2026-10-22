@@ -985,10 +985,7 @@ mod tests {
         let cst = Parser::new(":f").parse_selection_set();
         let errors: Vec<_> = cst.errors().collect();
         assert_eq!(errors.len(), 1);
-        assert_eq!(
-            errors[0].message(),
-            "expected at least one Selection in Selection Set"
-        );
+        assert_eq!(errors[0].message(), "expected the end of the field set");
         assert_eq!(errors[0].data(), ":");
         assert_eq!(errors[0].index(), 0);
     }
@@ -1007,6 +1004,21 @@ mod tests {
             field_set_errors("a }"),
             ["expected the end of the field set"]
         );
+        assert_eq!(
+            field_set_errors("{ f } :g"),
+            ["expected the end of the field set"]
+        );
+    }
+
+    #[test]
+    fn field_set_alias_is_not_a_leftover_token() {
+        let cst = Parser::new("f :g").parse_selection_set();
+        assert_eq!(cst.errors().len(), 0);
+        let cst::Selection::Field(field) = cst.field_set().selections().next().unwrap() else {
+            panic!("expected a field");
+        };
+        assert_eq!(field.alias().unwrap().name().unwrap().text(), "f");
+        assert_eq!(field.name().unwrap().text(), "g");
     }
 
     #[test]

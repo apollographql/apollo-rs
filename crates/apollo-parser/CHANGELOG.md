@@ -22,14 +22,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - **Report invalid tokens in field sets - [tninesling]**
 
-  0.9.0-beta.1 accepted a field set such as `":f"` with no errors. It now
-  reports "expected at least one Selection in Selection Set" at the `:`, as
-  0.9.0-beta.0 did. Empty field sets, `""` and `{}`, are still accepted.
-
-  Tokens left over after a field set are now an error in every case. This is
-  new: earlier versions, including 0.8.x, accepted field sets such as `id }`
-  (for example `@key(fields: "id }")`), and these now report
-  "expected the end of the field set".
+  A field set must now be parsed up to the end of its input. Tokens left over
+  after it report "expected the end of the field set". This is new: earlier
+  versions, including 0.8.x, accepted field sets such as `id }` or `{ id } :f`
+  (for example `@key(fields: "id }")`). 0.9.0-beta.1 also accepted `":f"` with
+  no errors, which 0.9.0-beta.0 rejected with
+  "expected at least one Selection in Selection Set". It is now rejected with
+  the new error. Empty field sets, `""` and `{}`, are still accepted.
 
 [tninesling]: https://github.com/tninesling
 
