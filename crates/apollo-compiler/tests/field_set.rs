@@ -78,3 +78,36 @@ fn test_invalid_field_sets() {
         "{errors}"
     );
 }
+
+#[test]
+fn test_field_set_with_leftover_tokens() {
+    let schema = common_schema();
+
+    let errors = |input| {
+        FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql")
+            .unwrap_err()
+            .errors
+            .to_string()
+    };
+
+    expect_test::expect![[r#"
+        Error: syntax error: expected the end of the field set
+           ╭─[ field_set.graphql:1:4 ]
+           │
+         1 │ id }
+           │    ┬  
+           │    ╰── expected the end of the field set
+        ───╯
+    "#]]
+    .assert_eq(&errors("id }"));
+    expect_test::expect![[r#"
+        Error: syntax error: expected the end of the field set
+           ╭─[ field_set.graphql:1:1 ]
+           │
+         1 │ :id
+           │ ┬  
+           │ ╰── expected the end of the field set
+        ───╯
+    "#]]
+    .assert_eq(&errors(":id"));
+}
