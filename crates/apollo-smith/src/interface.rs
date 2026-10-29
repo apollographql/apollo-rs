@@ -1,150 +1,25 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::field::FieldDef;
-use crate::name::Name;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
-use crate::StackedEntity;
 use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::FieldDefinition;
+use apollo_compiler::Name;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use std::collections::HashMap;
 
-/// InterfaceTypeDef is an abstract type where there are common fields declared.
-///
-/// Any type that implements an interface must define all the fields with names
-/// and types exactly matching. The implementations of this interface are
-/// explicitly listed out in possibleTypes.
-///
-/// *InterfaceTypeDefinition*:
-///     Description? **interface** Name ImplementsInterfaces? Directives?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#InterfaceTypeDefinition).
-#[derive(Debug, Clone)]
-pub struct InterfaceTypeDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) name: Name,
-    pub(crate) interfaces: IndexSet<Name>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) fields_def: Vec<FieldDef>,
-    pub(crate) extend: bool,
-}
-
-impl From<InterfaceTypeDef> for ast::Definition {
-    fn from(x: InterfaceTypeDef) -> Self {
-        if x.extend {
-            ast::InterfaceTypeExtension {
-                name: x.name.into(),
-                implements_interfaces: x.interfaces.into_iter().map(Into::into).collect(),
-                directives: Directive::to_ast(x.directives),
-                fields: x
-                    .fields_def
-                    .into_iter()
-                    .map(|x| Node::new(x.into()))
-                    .collect(),
-            }
-            .into()
-        } else {
-            ast::InterfaceTypeDefinition {
-                description: x.description.map(Into::into),
-                name: x.name.into(),
-                implements_interfaces: x.interfaces.into_iter().map(Into::into).collect(),
-                directives: Directive::to_ast(x.directives),
-                fields: x
-                    .fields_def
-                    .into_iter()
-                    .map(|x| Node::new(x.into()))
-                    .collect(),
-            }
-            .into()
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::InterfaceTypeDefinition> for InterfaceTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(
-        interface_def: apollo_parser::cst::InterfaceTypeDefinition,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: interface_def
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: interface_def.description().map(Description::from),
-            directives: interface_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: false,
-            fields_def: interface_def
-                .fields_definition()
-                .expect("object type definition must have fields definition")
-                .field_definitions()
-                .map(FieldDef::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-            interfaces: interface_def
-                .implements_interfaces()
-                .map(|itfs| {
-                    itfs.named_types()
-                        .map(|named_type| named_type.name().unwrap().into())
-                        .collect()
-                })
-                .unwrap_or_default(),
-        })
-    }
-}
-
-impl TryFrom<apollo_parser::cst::InterfaceTypeExtension> for InterfaceTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(
-        interface_def: apollo_parser::cst::InterfaceTypeExtension,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: interface_def
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: None,
-            directives: interface_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: true,
-            fields_def: interface_def
-                .fields_definition()
-                .expect("object type definition must have fields definition")
-                .field_definitions()
-                .map(FieldDef::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-            interfaces: interface_def
-                .implements_interfaces()
-                .map(|itfs| {
-                    itfs.named_types()
-                        .map(|named_type| named_type.name().unwrap().into())
-                        .collect()
-                })
-                .unwrap_or_default(),
-        })
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `InterfaceTypeDef`
-    pub fn interface_type_definition(&mut self) -> ArbitraryResult<InterfaceTypeDef> {
+    /// Generate an interface definition or extension.
+    pub fn interface_type_definition(&mut self) -> ArbitraryResult<ast::Definition> {
         // Types that implement an interface already declare its fields, so
         // only interfaces nothing implements yet can gain fields or parents.
         let extendable: Vec<Name> = self
             .interface_type_defs
             .iter()
-            .filter(|itf| !itf.extend && !self.is_implemented(&itf.name))
-            .map(|itf| itf.name.clone())
+            .filter(|itf| !itf.is_extension_definition() && !self.is_implemented(itf.type_name()))
+            .map(|itf| itf.type_name().clone())
             .collect();
         let extend = !extendable.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self.optional_description()?;
@@ -164,8 +39,12 @@ impl DocumentBuilder<'_> {
         let applied: IndexSet<Name> = self
             .interface_type_defs
             .iter()
-            .filter(|def| def.name == name)
-            .flat_map(|def| def.directives.keys().cloned())
+            .filter(|def| def.type_name() == &name)
+            .flat_map(|def| {
+                def.directives()
+                    .iter()
+                    .map(|directive| directive.name.clone())
+            })
             .collect();
         let directives = self.type_directives(DirectiveLocation::Interface, &applied)?;
 
@@ -173,13 +52,23 @@ impl DocumentBuilder<'_> {
             return Err(arbitrary::Error::IncorrectFormat);
         }
 
-        Ok(InterfaceTypeDef {
-            description,
-            name,
-            fields_def,
-            directives,
-            extend,
-            interfaces,
+        Ok(if extend {
+            ast::InterfaceTypeExtension {
+                name,
+                directives,
+                implements_interfaces: interfaces.into_iter().collect(),
+                fields: fields_def,
+            }
+            .into()
+        } else {
+            ast::InterfaceTypeDefinition {
+                description,
+                name,
+                directives,
+                implements_interfaces: interfaces.into_iter().collect(),
+                fields: fields_def,
+            }
+            .into()
         })
     }
 
@@ -203,7 +92,7 @@ impl DocumentBuilder<'_> {
     /// parents.
     pub(crate) fn additional_implements(
         &mut self,
-        existing_field_signatures: &IndexMap<String, FieldDef>,
+        existing_field_signatures: &IndexMap<Name, Node<FieldDefinition>>,
         self_name: Option<&Name>,
     ) -> ArbitraryResult<IndexSet<Name>> {
         if self.interface_type_defs.is_empty() {
@@ -234,7 +123,11 @@ impl DocumentBuilder<'_> {
         }
 
         for _ in 0..num_itf {
-            let candidate = self.u.choose(&self.interface_type_defs)?.name.clone();
+            let candidate = self
+                .u
+                .choose(&self.interface_type_defs)?
+                .type_name()
+                .clone();
             try_accept_candidate(
                 &candidate,
                 &self.implements_graph,
@@ -256,52 +149,27 @@ impl DocumentBuilder<'_> {
         &mut self,
         owner: &Name,
         interfaces: &IndexSet<Name>,
-        declared: &IndexMap<String, FieldDef>,
-    ) -> ArbitraryResult<Vec<FieldDef>> {
+        declared: &IndexMap<Name, Node<FieldDefinition>>,
+    ) -> ArbitraryResult<Vec<Node<FieldDefinition>>> {
         let mut inherited = parent_fields_from_defs(interfaces, &self.interface_type_defs);
         inherited.retain(|name, _| !declared.contains_key(name));
-        let exclude_fields: IndexSet<Name> = declared
-            .keys()
-            .chain(inherited.keys())
-            .map(|k| Name::new(k.clone()))
-            .collect();
+        let exclude_fields: IndexSet<Name> =
+            declared.keys().chain(inherited.keys()).cloned().collect();
         let own = self.fields_definition_for(owner, &exclude_fields)?;
-        Ok(inherited.into_values().chain(own).collect())
+        Ok(inherited
+            .into_values()
+            .chain(own.into_iter().map(Node::new))
+            .collect())
     }
 
     fn is_implemented(&self, name: &Name) -> bool {
         self.interface_type_defs
             .iter()
-            .any(|itf| itf.interfaces.contains(name))
+            .any(|itf| itf.interfaces().contains(name))
             || self
                 .object_type_defs
                 .iter()
-                .any(|obj| obj.implements_interfaces.contains(name))
-    }
-}
-
-/// Defs with a name and field list, so `InterfaceTypeDef` and
-/// `ObjectTypeDef` can share the field helpers.
-pub(crate) trait NamedDef {
-    fn name(&self) -> &Name;
-    fn fields(&self) -> &[FieldDef];
-}
-
-impl NamedDef for InterfaceTypeDef {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-    fn fields(&self) -> &[FieldDef] {
-        &self.fields_def
-    }
-}
-
-impl NamedDef for crate::ObjectTypeDef {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-    fn fields(&self) -> &[FieldDef] {
-        &self.fields_def
+                .any(|obj| obj.interfaces().contains(name))
     }
 }
 
@@ -316,9 +184,9 @@ impl NamedDef for crate::ObjectTypeDef {
 fn try_accept_candidate(
     candidate: &Name,
     graph: &crate::implements_graph::ImplementsGraph,
-    fields_by_type_name: &HashMap<Name, IndexMap<String, FieldDef>>,
+    fields_by_type_name: &HashMap<Name, IndexMap<Name, Node<FieldDefinition>>>,
     accepted: &mut IndexSet<Name>,
-    accumulated_signatures: &mut IndexMap<String, FieldDef>,
+    accumulated_signatures: &mut IndexMap<Name, Node<FieldDefinition>>,
     self_name: Option<&Name>,
 ) {
     let closure = graph.closure(candidate);
@@ -331,8 +199,7 @@ fn try_accept_candidate(
             .flatten()
             .any(|(fname, fdef)| {
                 accumulated_signatures.get(fname).is_some_and(|existing| {
-                    existing.ty != fdef.ty
-                        || existing.arguments_definition != fdef.arguments_definition
+                    existing.ty != fdef.ty || existing.arguments != fdef.arguments
                 })
             })
     });
@@ -354,9 +221,9 @@ fn try_accept_candidate(
 
 /// Union of every def's fields by type name, merging base + extensions.
 /// First occurrence of each field name wins.
-pub(crate) fn fields_from_all_definitions<T: NamedDef>(
-    defs: &[T],
-) -> HashMap<Name, IndexMap<String, FieldDef>> {
+pub(crate) fn fields_from_all_definitions(
+    defs: &[ast::Definition],
+) -> HashMap<Name, IndexMap<Name, Node<FieldDefinition>>> {
     unique_names(defs)
         .into_iter()
         .map(|n| {
@@ -367,10 +234,10 @@ pub(crate) fn fields_from_all_definitions<T: NamedDef>(
 }
 
 /// Distinct names across base + extensions, in first-occurrence order.
-pub(crate) fn unique_names<T: NamedDef>(defs: &[T]) -> Vec<Name> {
+pub(crate) fn unique_names(defs: &[ast::Definition]) -> Vec<Name> {
     let mut seen: IndexSet<Name> = IndexSet::new();
     for d in defs {
-        seen.insert(d.name().clone());
+        seen.insert(d.type_name().clone());
     }
     seen.into_iter().collect()
 }
@@ -379,15 +246,15 @@ pub(crate) fn unique_names<T: NamedDef>(defs: &[T]) -> Vec<Name> {
 /// prior extensions. An extension picking new implements consults this
 /// so it doesn't accept a parent whose fields would overwrite anything
 /// the type already declares.
-pub(crate) fn field_signatures_for<T: NamedDef>(
-    defs: &[T],
+pub(crate) fn field_signatures_for(
+    defs: &[ast::Definition],
     name: &Name,
-) -> IndexMap<String, FieldDef> {
-    let mut out: IndexMap<String, FieldDef> = IndexMap::new();
+) -> IndexMap<Name, Node<FieldDefinition>> {
+    let mut out: IndexMap<Name, Node<FieldDefinition>> = IndexMap::new();
     for def in defs {
-        if def.name() == name {
+        if def.type_name() == name {
             for f in def.fields() {
-                out.entry(f.name.name.clone()).or_insert_with(|| f.clone());
+                out.entry(f.name.clone()).or_insert_with(|| f.clone());
             }
         }
     }
@@ -396,16 +263,16 @@ pub(crate) fn field_signatures_for<T: NamedDef>(
 
 /// First-wins union of the fields of every def named in `parents`,
 /// including extensions.
-pub(crate) fn parent_fields_from_defs<T: NamedDef>(
+pub(crate) fn parent_fields_from_defs(
     parents: &IndexSet<Name>,
-    defs: &[T],
-) -> IndexMap<String, FieldDef> {
-    let mut out: IndexMap<String, FieldDef> = IndexMap::new();
+    defs: &[ast::Definition],
+) -> IndexMap<Name, Node<FieldDefinition>> {
+    let mut out: IndexMap<Name, Node<FieldDefinition>> = IndexMap::new();
     for parent in parents {
         for def in defs {
-            if def.name() == parent {
+            if def.type_name() == parent {
                 for f in def.fields() {
-                    out.entry(f.name.name.clone()).or_insert_with(|| f.clone());
+                    out.entry(f.name.clone()).or_insert_with(|| f.clone());
                 }
             }
         }
@@ -413,21 +280,38 @@ pub(crate) fn parent_fields_from_defs<T: NamedDef>(
     out
 }
 
-impl StackedEntity for InterfaceTypeDef {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-
-    fn fields_def(&self) -> &[FieldDef] {
-        &self.fields_def
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::test_support::generated;
     use crate::test_support::prop_assert_valid;
+    use crate::DocumentBuilder;
+    use apollo_compiler::ast;
+    use apollo_compiler::name;
+    use arbitrary::Unstructured;
+    use indexmap::IndexMap;
+    use indexmap::IndexSet;
     use proptest::prelude::*;
+
+    #[test]
+    fn inherited_fields_keep_their_nodes() {
+        let document = ast::Document::parse(
+            "type Query { f: Int } interface I { id: ID }",
+            "schema.graphql",
+        )
+        .expect("parse schema");
+        let field = document.definitions[1]
+            .as_interface_type_definition()
+            .unwrap()
+            .fields[0]
+            .clone();
+        let mut u = Unstructured::new(&[]);
+        let mut builder = DocumentBuilder::with_document(&mut u, document).expect("builder");
+        let fields = builder
+            .fields_implementing(&name!(O), &IndexSet::from([name!(I)]), &IndexMap::new())
+            .expect("fields");
+        assert!(fields[0].ptr_eq(&field));
+        assert_eq!(fields[0].location(), field.location());
+    }
 
     const SCHEMA: &str = "schema { query: Query }
         directive @d(x: Int, y: [String!]!) on INTERFACE | FIELD_DEFINITION | ARGUMENT_DEFINITION

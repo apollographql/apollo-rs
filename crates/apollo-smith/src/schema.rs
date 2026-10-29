@@ -1,136 +1,19 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::name::Name;
-use crate::ty::Ty;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::Type;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
-
-/// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
-///
-/// *SchemaDefinition*:
-///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Schema).
-#[derive(Debug, Clone)]
-pub struct SchemaDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) query: Option<Ty>,
-    pub(crate) mutation: Option<Ty>,
-    pub(crate) subscription: Option<Ty>,
-    pub(crate) extend: bool,
-}
-
-impl From<SchemaDef> for ast::Definition {
-    fn from(x: SchemaDef) -> Self {
-        let root_operations = [
-            (ast::OperationType::Query, x.query),
-            (ast::OperationType::Mutation, x.mutation),
-            (ast::OperationType::Subscription, x.subscription),
-        ]
-        .into_iter()
-        .flat_map(|(ty, name)| name.map(|n| Node::new((ty, n.name().into()))))
-        .collect();
-        if x.extend {
-            ast::SchemaExtension {
-                directives: Directive::to_ast(x.directives),
-                root_operations,
-            }
-            .into()
-        } else {
-            ast::SchemaDefinition {
-                description: x.description.map(Into::into),
-                directives: Directive::to_ast(x.directives),
-                root_operations,
-            }
-            .into()
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::SchemaDefinition> for SchemaDef {
-    type Error = crate::FromError;
-
-    fn try_from(schema_def: apollo_parser::cst::SchemaDefinition) -> Result<Self, Self::Error> {
-        let mut query = None;
-        let mut mutation = None;
-        let mut subcription = None;
-        for root_op in schema_def.root_operation_type_definitions() {
-            let op_type = root_op.operation_type().unwrap();
-            let named_type = root_op.named_type().unwrap();
-            if op_type.query_token().is_some() {
-                query = named_type.into();
-            } else if op_type.mutation_token().is_some() {
-                mutation = named_type.into();
-            } else if op_type.subscription_token().is_some() {
-                subcription = named_type.into();
-            } else {
-                panic!("operation type must be one of query|mutation|subscription");
-            }
-        }
-        Ok(Self {
-            description: schema_def.description().map(Description::from),
-            directives: schema_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            query: query.map(Ty::from),
-            mutation: mutation.map(Ty::from),
-            subscription: subcription.map(Ty::from),
-            extend: false,
-        })
-    }
-}
-
-impl TryFrom<apollo_parser::cst::SchemaExtension> for SchemaDef {
-    type Error = crate::FromError;
-
-    fn try_from(schema_def: apollo_parser::cst::SchemaExtension) -> Result<Self, Self::Error> {
-        let mut query = None;
-        let mut mutation = None;
-        let mut subcription = None;
-        for root_op in schema_def.root_operation_type_definitions() {
-            let op_type = root_op.operation_type().unwrap();
-            let named_type = root_op.named_type().unwrap();
-            if op_type.query_token().is_some() {
-                query = named_type.into();
-            } else if op_type.mutation_token().is_some() {
-                mutation = named_type.into();
-            } else if op_type.subscription_token().is_some() {
-                subcription = named_type.into();
-            } else {
-                panic!("operation type must be one of query|mutation|subscription");
-            }
-        }
-        Ok(Self {
-            description: None,
-            directives: schema_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            query: query.map(Ty::from),
-            mutation: mutation.map(Ty::from),
-            subscription: subcription.map(Ty::from),
-            extend: true,
-        })
-    }
-}
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `SchemaDef`
-    pub fn schema_definition(&mut self) -> ArbitraryResult<SchemaDef> {
+    /// Generate a compiler schema definition.
+    pub fn schema_definition(&mut self) -> ArbitraryResult<ast::SchemaDefinition> {
         let description = self.optional_description()?;
         let directives = self.directives(DirectiveLocation::Schema)?;
-        let mut named_types: Vec<Ty> = self
+        let mut named_types: Vec<Type> = self
             .list_existing_object_types()
             .into_iter()
-            .filter(|ty| ty.is_named() && !ty.is_builtin())
+            .filter(|ty| ty.is_named() && !crate::ty::is_builtin(ty))
             .collect();
 
         // Every schema must declare a `query` root operation type, even
@@ -159,19 +42,19 @@ impl DocumentBuilder<'_> {
             None
         };
 
-        Ok(SchemaDef {
+        Ok(ast::SchemaDefinition {
             description,
             directives,
-            query,
-            mutation,
-            subscription,
-            // A schema extension is only valid alongside a base schema
-            // definition. The builder only ever generates one schema
-            // node, so rendering it as an extension would produce an
-            // orphan `extend schema` block.
-            //
-            // See <https://spec.graphql.org/September2025/#sec-Schema-Extension>.
-            extend: false,
+            root_operations: [
+                (ast::OperationType::Query, query),
+                (ast::OperationType::Mutation, mutation),
+                (ast::OperationType::Subscription, subscription),
+            ]
+            .into_iter()
+            .filter_map(|(operation, ty)| {
+                ty.map(|ty| Node::new((operation, ty.inner_named_type().clone())))
+            })
+            .collect(),
         })
     }
 }

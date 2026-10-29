@@ -1,135 +1,24 @@
-use crate::argument::Argument;
-use crate::argument::ArgumentsDef;
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::name::Name;
+use crate::definition::TypeDefinition;
 use crate::selection_set::SelectedField;
-use crate::selection_set::SelectionSet;
-use crate::ty::Ty;
 use crate::DocumentBuilder;
-use crate::StackedEntity;
 use apollo_compiler::ast;
+use apollo_compiler::ast::Argument;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::Field;
+use apollo_compiler::ast::FieldDefinition;
+use apollo_compiler::ast::Type;
 use apollo_compiler::coordinate::TypeAttributeCoordinate;
+use apollo_compiler::Name;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
 
-/// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
-///
-/// *FieldDefinition*:
-///     Description? Name ArgumentsDefinition? **:** Type Directives?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#FieldDefinition).
-#[derive(Debug, Clone)]
-pub struct FieldDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) name: Name,
-    pub(crate) arguments_definition: Option<ArgumentsDef>,
-    pub(crate) ty: Ty,
-    pub(crate) directives: IndexMap<Name, Directive>,
-}
-
-impl From<FieldDef> for ast::FieldDefinition {
-    fn from(x: FieldDef) -> Self {
-        Self {
-            description: x.description.map(Into::into),
-            name: x.name.into(),
-            directives: Directive::to_ast(x.directives),
-            arguments: x.arguments_definition.map(Into::into).unwrap_or_default(),
-            ty: x.ty.into(),
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::FieldDefinition> for FieldDef {
-    type Error = crate::FromError;
-
-    fn try_from(field_def: apollo_parser::cst::FieldDefinition) -> Result<Self, Self::Error> {
-        Ok(Self {
-            description: field_def.description().map(Description::from),
-            name: field_def
-                .name()
-                .expect("field definition must have a name")
-                .into(),
-            arguments_definition: field_def
-                .arguments_definition()
-                .map(ArgumentsDef::try_from)
-                .transpose()?,
-            ty: field_def.ty().unwrap().into(),
-            directives: field_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-        })
-    }
-}
-
-/// The __Field type represents each field in an Object or Interface type.
-///
-/// *Field*:
-///     Alias? Name Arguments? Directives? SelectionSet?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Fields).
-#[derive(Debug, Clone)]
-pub struct Field {
-    pub(crate) alias: Option<Name>,
-    pub(crate) name: Name,
-    pub(crate) args: Vec<Argument>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) selection_set: Option<SelectionSet>,
-}
-
-impl From<Field> for ast::Field {
-    fn from(x: Field) -> Self {
-        Self {
-            alias: x.alias.map(Into::into),
-            name: x.name.into(),
-            directives: Directive::to_ast(x.directives),
-            arguments: x.args.into_iter().map(|x| Node::new(x.into())).collect(),
-            selection_set: x.selection_set.map(Into::into),
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::Field> for Field {
-    type Error = crate::FromError;
-
-    fn try_from(field: apollo_parser::cst::Field) -> Result<Self, Self::Error> {
-        Ok(Self {
-            alias: field.alias().map(|alias| alias.name().unwrap().into()),
-            name: field.name().unwrap().into(),
-            args: field
-                .arguments()
-                .map(|arguments| {
-                    arguments
-                        .arguments()
-                        .map(Argument::try_from)
-                        .collect::<Result<_, _>>()
-                })
-                .transpose()?
-                .unwrap_or_default(),
-            directives: field
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            selection_set: field
-                .selection_set()
-                .map(SelectionSet::try_from)
-                .transpose()?,
-        })
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary list of `FieldDef`
+    /// Create an arbitrary list of `FieldDefinition`
     pub fn fields_definition(
         &mut self,
         exclude: &IndexSet<Name>,
-    ) -> ArbitraryResult<Vec<FieldDef>> {
+    ) -> ArbitraryResult<Vec<FieldDefinition>> {
         let available_types = self.list_existing_types();
         self.fields_of_types(exclude, &available_types)
     }
@@ -140,16 +29,16 @@ impl DocumentBuilder<'_> {
         &mut self,
         owner: &Name,
         exclude: &IndexSet<Name>,
-    ) -> ArbitraryResult<Vec<FieldDef>> {
+    ) -> ArbitraryResult<Vec<FieldDefinition>> {
         let available_types = self.output_field_types(owner);
         self.fields_of_types(exclude, &available_types)
     }
 
     /// Types a field of `owner` can have. `owner` isn't an existing type
     /// yet while its first definition is being generated, so it's added.
-    pub(crate) fn output_field_types(&self, owner: &Name) -> Vec<Ty> {
+    pub(crate) fn output_field_types(&self, owner: &Name) -> Vec<Type> {
         let mut types = self.list_existing_types();
-        let own = Ty::Named(owner.clone());
+        let own = Type::Named(owner.clone());
         if !types.contains(&own) {
             types.push(own);
         }
@@ -159,8 +48,8 @@ impl DocumentBuilder<'_> {
     fn fields_of_types(
         &mut self,
         exclude: &IndexSet<Name>,
-        available_types: &[Ty],
-    ) -> ArbitraryResult<Vec<FieldDef>> {
+        available_types: &[Type],
+    ) -> ArbitraryResult<Vec<FieldDefinition>> {
         // Types need at least one field, and most end up with a few.
         let mut fields_names = IndexSet::new();
         loop {
@@ -176,15 +65,16 @@ impl DocumentBuilder<'_> {
         fields_names
             .into_iter()
             .map(|field_name| {
-                Ok(FieldDef {
+                Ok(FieldDefinition {
                     description: self.optional_description()?,
                     name: field_name,
-                    arguments_definition: self
+                    arguments: self
                         .u
                         .arbitrary()
                         .unwrap_or(false)
                         .then(|| self.arguments_definition())
-                        .transpose()?,
+                        .transpose()?
+                        .unwrap_or_default(),
                     ty: self.choose_ty(available_types)?,
                     directives: self.directives(DirectiveLocation::FieldDefinition)?,
                 })
@@ -196,31 +86,34 @@ impl DocumentBuilder<'_> {
     /// name without conflicting with what's already selected here. This is a
     /// first pass before arguments are generated, so arguments are compared
     /// only when they're cached. `can_merge` makes the final check.
-    fn mergeable_field_defs(&self, parent: &dyn StackedEntity) -> Vec<FieldDef> {
+    fn mergeable_field_defs(&self, parent: &ast::Definition) -> Vec<FieldDefinition> {
         parent
-            .fields_def()
+            .fields()
             .iter()
             .filter(|def| {
                 let coord = TypeAttributeCoordinate {
-                    ty: parent.name().clone().into(),
-                    attribute: def.name.clone().into(),
+                    ty: parent.type_name().clone(),
+                    attribute: def.name.clone(),
                 };
                 match self.cached_arguments(&coord) {
                     Some(args) => self.can_merge(
                         &def.name,
                         &SelectedField {
-                            parent: parent.name().clone(),
+                            parent: parent.type_name().clone(),
                             field_name: def.name.clone(),
                             ty: def.ty.clone(),
                             args: args.clone(),
                         },
                     ),
-                    None => {
-                        self.can_merge_ignoring_args(&def.name, parent.name(), &def.name, &def.ty)
-                    }
+                    None => self.can_merge_ignoring_args(
+                        &def.name,
+                        parent.type_name(),
+                        &def.name,
+                        &def.ty,
+                    ),
                 }
             })
-            .cloned()
+            .map(|definition| (**definition).clone())
             .collect()
     }
 
@@ -244,18 +137,14 @@ impl DocumentBuilder<'_> {
     fn arguments_for(
         &mut self,
         coord: &TypeAttributeCoordinate,
-        def: &FieldDef,
+        def: &FieldDefinition,
         fresh_alias: bool,
     ) -> ArbitraryResult<(Vec<Argument>, bool)> {
         let cached_args = self.cached_arguments(coord).cloned();
         let cached = cached_args.is_some();
         let args = match cached_args {
             Some(args) if !fresh_alias => args,
-            _ => def
-                .arguments_definition
-                .as_ref()
-                .map(|args_def| self.field_arguments(args_def))
-                .unwrap_or_else(|| Ok(vec![]))?,
+            _ => self.field_arguments(&def.arguments)?,
         };
         Ok((args, cached))
     }
@@ -276,10 +165,10 @@ impl DocumentBuilder<'_> {
             .stack
             .last()
             .expect("a composite type must be added on the stack");
-        let parent_name = parent.name().clone();
+        let parent_name = parent.type_name().clone();
         // Picking only fields that can merge with what's already selected
         // keeps conflicts from turning most selections into `__typename`.
-        let candidates = self.mergeable_field_defs(parent.as_ref());
+        let candidates = self.mergeable_field_defs(parent);
         if candidates.is_empty() {
             return Ok(self.typename_field());
         }
@@ -288,8 +177,8 @@ impl DocumentBuilder<'_> {
 
         let name = chosen_field_def.name.clone();
         let coord = TypeAttributeCoordinate {
-            ty: parent_name.clone().into(),
-            attribute: name.clone().into(),
+            ty: parent_name.clone(),
+            attribute: name.clone(),
         };
         let alias = self.alias(index)?;
         let fresh_alias = alias
@@ -318,7 +207,7 @@ impl DocumentBuilder<'_> {
         self.record_selection(response_name.clone(), selected);
         let directives = self.selection_directives(DirectiveLocation::Field, conditional)?;
 
-        let selection_set = if !chosen_field_def.ty.is_builtin() {
+        let selection_set = if !crate::ty::is_builtin(&chosen_field_def.ty) {
             // Put current ty on the stack
             if self.stack_ty(&chosen_field_def.ty) {
                 let res = self.in_merged_subselection(&response_name, |b| b.selection_set());
@@ -334,7 +223,7 @@ impl DocumentBuilder<'_> {
         Ok(Field {
             alias,
             name,
-            args,
+            arguments: args.into_iter().map(Node::new).collect(),
             directives,
             selection_set,
         })
@@ -348,6 +237,8 @@ mod tests {
     use crate::test_support::generated_against_any;
     use crate::test_support::prop_assert_valid;
     use crate::DocumentBuilder;
+    use apollo_compiler::name;
+    use apollo_compiler::ty;
     use arbitrary::Unstructured;
     use proptest::prelude::*;
 
@@ -384,42 +275,36 @@ mod tests {
             union U = A | B
             type A { x: Int, y: Int }
             type B { x: String, y: Int }";
-        let doc = apollo_parser::Parser::new(schema)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
+        let doc = apollo_compiler::ast::Document::parse(schema, "schema.graphql")
+            .expect("parse compiler document");
         let mut u = Unstructured::new(&[]);
         let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
         let a = builder
             .object_type_defs
             .iter()
-            .find(|o| o.name.name == "A")
+            .find(|o| o.type_name() == "A")
             .cloned()
             .expect("schema defines A");
-        let x = Name::new("x".to_string());
+        let x = name!(x);
         let (offered, _) = builder.tracking_merges(|b| {
             b.record_selection(
                 x.clone(),
                 SelectedField {
-                    parent: Name::new("B".to_string()),
+                    parent: name!(B),
                     field_name: x.clone(),
-                    ty: Ty::Named(Name::new("String".to_string())),
+                    ty: ty!(String),
                     args: Vec::new(),
                 },
             );
             b.mergeable_field_defs(&a)
         });
-        let offered: Vec<&str> = offered.iter().map(|f| f.name.name.as_str()).collect();
+        let offered: Vec<&str> = offered.iter().map(|f| f.name.as_str()).collect();
         assert_eq!(offered, ["y"]);
     }
 
     fn builder_for<'a>(u: &'a mut Unstructured<'a>, schema: &str) -> DocumentBuilder<'a> {
-        let doc = apollo_parser::Parser::new(schema)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
+        let doc = apollo_compiler::ast::Document::parse(schema, "schema.graphql")
+            .expect("parse compiler document");
         DocumentBuilder::with_document(u, doc).expect("builder from schema")
     }
 
@@ -427,8 +312,10 @@ mod tests {
     fn offers_the_type_being_defined_as_a_field_type() {
         let mut u = Unstructured::new(&[]);
         let builder = builder_for(&mut u, "schema { query: Query } type Query { a: Int }");
-        let user = Ty::Named(Name::new("User".to_string()));
-        assert!(builder.output_field_types(user.name()).contains(&user));
+        let user = ty!(User);
+        assert!(builder
+            .output_field_types(user.inner_named_type())
+            .contains(&user));
     }
 
     // An extension of `A` generated after `B` can reference it, while `B`
@@ -440,8 +327,8 @@ mod tests {
             &mut u,
             "schema { query: Query } type Query { a: A } type A { x: Int } type B { a: A }",
         );
-        let a = Name::new("A".to_string());
-        let b = Ty::Named(Name::new("B".to_string()));
+        let a = name!(A);
+        let b = ty!(B);
         assert!(builder.output_field_types(&a).contains(&b));
     }
 

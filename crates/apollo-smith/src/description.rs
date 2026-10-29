@@ -1,5 +1,4 @@
 use crate::DocumentBuilder;
-use arbitrary::Arbitrary;
 use arbitrary::Result as ArbitraryResult;
 use arbitrary::Unstructured;
 use std::fmt::Write as _;
@@ -7,57 +6,19 @@ use std::fmt::Write as _;
 const CHARSET: &[u8] =
     b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_\n\r\t/$#!.-+='";
 
-/// The `__Description` type represents a description
-///
-/// *Description*:
-///     "string"
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Descriptions).
-///
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Description(String);
-
-impl From<Description> for String {
-    fn from(desc: Description) -> Self {
-        desc.0
-    }
-}
-
-impl From<Description> for apollo_compiler::Node<str> {
-    fn from(desc: Description) -> Self {
-        desc.0.into()
-    }
-}
-
-impl From<apollo_parser::cst::Description> for Description {
-    fn from(desc: apollo_parser::cst::Description) -> Self {
-        Description(desc.string_value().map(|s| s.into()).unwrap_or_default())
-    }
-}
-
-impl From<String> for Description {
-    fn from(desc: String) -> Self {
-        Description(desc)
-    }
-}
-
-impl Arbitrary<'_> for Description {
-    fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> ArbitraryResult<Self> {
-        let mut arbitrary_str = limited_string_desc(u, 100)?;
-        if arbitrary_str.trim_matches('"').is_empty() {
-            let _ = write!(arbitrary_str, "{}", u.arbitrary::<usize>()?);
-        }
-        Ok(Self(arbitrary_str))
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `Description`
-    pub fn description(&mut self) -> ArbitraryResult<Description> {
-        self.u.arbitrary()
+    /// Create an arbitrary description.
+    pub fn description(&mut self) -> ArbitraryResult<apollo_compiler::Node<str>> {
+        let mut description = limited_string_desc(self.u, 100)?;
+        if description.trim_matches('"').is_empty() {
+            let _ = write!(description, "{}", self.u.arbitrary::<usize>()?);
+        }
+        Ok(description.into())
     }
 
-    pub(crate) fn optional_description(&mut self) -> ArbitraryResult<Option<Description>> {
+    pub(crate) fn optional_description(
+        &mut self,
+    ) -> ArbitraryResult<Option<apollo_compiler::Node<str>>> {
         if self.u.ratio(7, 8)? {
             return Ok(None);
         }
@@ -76,33 +37,4 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> ArbitraryRe
     .unwrap();
 
     Ok(gen_str)
-}
-
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    fn convert_description_from_parser() {
-        use crate::description::Description;
-        use apollo_parser::cst::Definition;
-        use apollo_parser::Parser;
-
-        let schema = r#"
-"Description for the schema"
-schema {}
-        "#;
-        let parser = Parser::new(schema);
-        let cst = parser.parse();
-        let document = cst.document();
-        if let Definition::SchemaDefinition(def) = document.definitions().next().unwrap() {
-            let parser_description = def.description().unwrap();
-            let smith_description = Description::from(parser_description);
-            assert_eq!(
-                smith_description,
-                Description::from("Description for the schema".to_string())
-            );
-        } else {
-            unreachable!();
-        }
-    }
 }

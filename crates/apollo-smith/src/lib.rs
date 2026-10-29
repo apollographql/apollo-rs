@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 pub(crate) mod argument;
+pub(crate) mod definition;
 pub(crate) mod description;
 pub(crate) mod directive;
 pub(crate) mod document;
@@ -26,31 +27,21 @@ pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
 
-use indexmap::IndexMap;
-use std::collections::HashSet;
-use std::fmt::Debug;
-
-#[derive(Debug, Clone, thiserror::Error)]
-pub enum FromError {
-    #[error("parse tree is missing a node")]
-    MissingNode,
-    #[error("invalid i32")]
-    ParseIntError(#[from] std::num::ParseIntError),
-    #[error("invalid f64")]
-    ParseFloatError(#[from] std::num::ParseFloatError),
-    #[error("invalid boolean")]
-    ParseBoolError(#[from] std::str::ParseBoolError),
-}
-
+use crate::definition::TypeDefinition;
+use apollo_compiler::ast;
+use apollo_compiler::ast::Argument;
+use apollo_compiler::ast::DirectiveDefinition;
+use apollo_compiler::ast::Document;
+use apollo_compiler::ast::FragmentDefinition;
+use apollo_compiler::ast::OperationDefinition;
+use apollo_compiler::ast::Type;
 use apollo_compiler::coordinate::TypeAttributeCoordinate;
+use apollo_compiler::parser::SourceMap;
+use apollo_compiler::Name;
+use apollo_compiler::Node;
 pub use arbitrary::Result;
 pub use arbitrary::Unstructured;
-use argument::Argument;
-pub use directive::DirectiveDef;
-pub use document::Document;
-pub use enum_::EnumTypeDef;
-use field::FieldDef;
-pub use fragment::FragmentDef;
+pub use document::ArbitraryDocument;
 pub use generators::BooleanGenerator;
 pub use generators::FloatGenerator;
 pub use generators::Generator;
@@ -58,20 +49,14 @@ pub use generators::Generators;
 pub use generators::IdGenerator;
 pub use generators::IntGenerator;
 pub use generators::StringGenerator;
-pub use input_object::InputObjectTypeDef;
-pub use interface::InterfaceTypeDef;
-use name::Name;
-pub use object::ObjectTypeDef;
-pub use operation::OperationDef;
+use indexmap::IndexMap;
 pub use random::RandProvider;
 pub use random::RandomProvider;
 pub use random::ResponseError;
 pub use response::ResponseBuilder;
-pub use scalar::ScalarTypeDef;
-pub use schema::SchemaDef;
 pub use serde_json_bytes::Value;
-use ty::Ty;
-pub use union::UnionTypeDef;
+use std::collections::HashSet;
+use std::fmt::Debug;
 
 #[derive(Debug, Clone, Copy)]
 enum DefinitionKind {
@@ -88,38 +73,41 @@ enum DefinitionKind {
 
 /// DocumentBuilder is a struct to build an arbitrary valid GraphQL document
 ///
-/// ```compile_fail
+/// ```ignore
 /// // fuzz/fuzz_targets/my_apollo_smith_fuzz_target.rs
 /// #![no_main]
 ///
+/// use apollo_smith::{DocumentBuilder, Unstructured};
 /// use libfuzzer_sys::fuzz_target;
-/// use arbitrary::Unstructured;
-/// use apollo_smith::DocumentBuilder;
 ///
 /// fuzz_target!(|input: &[u8]| {
 ///     let mut u = Unstructured::new(input);
-///     let document = DocumentBuilder::new(&mut u).build()?;
-///     let document_str = String::from(document);
+///     let Ok(document) = DocumentBuilder::new(&mut u).build() else {
+///         return;
+///     };
+///     let document_str = document.to_string();
 ///
 ///     // Your code here...
 /// });
 /// ```
 pub struct DocumentBuilder<'a> {
     pub(crate) u: &'a mut Unstructured<'a>,
-    pub(crate) input_object_type_defs: Vec<InputObjectTypeDef>,
-    pub(crate) object_type_defs: Vec<ObjectTypeDef>,
-    pub(crate) interface_type_defs: Vec<InterfaceTypeDef>,
-    pub(crate) union_type_defs: Vec<UnionTypeDef>,
-    pub(crate) enum_type_defs: Vec<EnumTypeDef>,
-    pub(crate) scalar_type_defs: Vec<ScalarTypeDef>,
-    pub(crate) schema_def: Option<SchemaDef>,
-    pub(crate) directive_defs: Vec<DirectiveDef>,
-    pub(crate) operation_defs: Vec<OperationDef>,
-    pub(crate) fragment_defs: Vec<FragmentDef>,
+    pub(crate) input_object_type_defs: Vec<ast::Definition>,
+    pub(crate) object_type_defs: Vec<ast::Definition>,
+    pub(crate) interface_type_defs: Vec<ast::Definition>,
+    pub(crate) union_type_defs: Vec<ast::Definition>,
+    pub(crate) enum_type_defs: Vec<ast::Definition>,
+    pub(crate) scalar_type_defs: Vec<ast::Definition>,
+    pub(crate) schema_def: Option<Node<ast::SchemaDefinition>>,
+    sources: SourceMap,
+    definitions: Vec<ast::Definition>,
+    pub(crate) directive_defs: Vec<Node<DirectiveDefinition>>,
+    pub(crate) operation_defs: Vec<Node<OperationDefinition>>,
+    pub(crate) fragment_defs: Vec<Node<FragmentDefinition>>,
     // A graph with edges representing the "implements" relationship between types
     pub(crate) implements_graph: implements_graph::ImplementsGraph,
-    // A stack to set current ObjectTypeDef
-    pub(crate) stack: Vec<Box<dyn StackedEntity>>,
+    // Composite definitions being selected while generating an operation or fragment
+    pub(crate) stack: Vec<ast::Definition>,
     // Useful to keep the same arguments for a specific field on a specific type
     pub(crate) chosen_arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
     // Set while generating an operation, which may define variables
@@ -163,6 +151,8 @@ impl<'a> DocumentBuilder<'a> {
             interface_type_defs: Vec::new(),
             enum_type_defs: Vec::new(),
             schema_def: None,
+            sources: SourceMap::default(),
+            definitions: Vec::new(),
             directive_defs: Vec::new(),
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
@@ -206,110 +196,136 @@ impl<'a> DocumentBuilder<'a> {
 
         self.prune_unused_fragments();
 
+        // Adding another operation may have named an earlier anonymous operation.
+        for (definition, operation) in self
+            .definitions
+            .iter_mut()
+            .filter_map(|definition| match definition {
+                ast::Definition::OperationDefinition(operation) => Some(operation),
+                _ => None,
+            })
+            .zip(self.operation_defs)
+        {
+            *definition = operation;
+        }
         Ok(Document {
-            schema_definition: self.schema_def,
-            object_type_definitions: self.object_type_defs,
-            interface_type_definitions: self.interface_type_defs,
-            enum_type_definitions: self.enum_type_defs,
-            directive_definitions: self.directive_defs,
-            operation_definitions: self.operation_defs,
-            fragment_definitions: self.fragment_defs,
-            scalar_type_definitions: self.scalar_type_defs,
-            union_type_definitions: self.union_type_defs,
-            input_object_type_definitions: self.input_object_type_defs,
+            sources: self.sources,
+            definitions: self.definitions,
         })
     }
 
-    /// Create an instance of `DocumentBuilder` given a `Document` to be able to call
-    /// methods on DocumentBuilder and generate valid entities like for example an operation
+    /// Seed generation with a compiler document, including its extensions.
     pub fn with_document(u: &'a mut Unstructured<'a>, document: Document) -> Result<Self> {
-        let mut implements_graph = implements_graph::ImplementsGraph::new();
-        for itf in &document.interface_type_definitions {
-            implements_graph.node_for(&itf.name);
-            for parent in &itf.interfaces {
-                implements_graph.add_edge(&itf.name, parent);
+        let mut builder = Self::new(u);
+        builder.sources = document.sources;
+        for definition in document.definitions {
+            builder.add_definition(definition);
+        }
+        builder.resolve_fragments();
+        Ok(builder)
+    }
+
+    fn add_definition(&mut self, definition: ast::Definition) {
+        self.definitions.push(definition.clone());
+        if let Some(name) = definition.name() {
+            self.used_type_names.insert(name.to_string());
+        }
+        if matches!(
+            definition,
+            ast::Definition::ObjectTypeDefinition(_)
+                | ast::Definition::ObjectTypeExtension(_)
+                | ast::Definition::InterfaceTypeDefinition(_)
+                | ast::Definition::InterfaceTypeExtension(_)
+        ) {
+            self.implements_graph.node_for(definition.type_name());
+            for parent in definition.interfaces() {
+                self.implements_graph
+                    .add_edge(definition.type_name(), parent);
             }
         }
-        for obj in &document.object_type_definitions {
-            implements_graph.node_for(&obj.name);
-            for parent in &obj.implements_interfaces {
-                implements_graph.add_edge(&obj.name, parent);
+        match definition {
+            ast::Definition::OperationDefinition(d) => self.operation_defs.push(d),
+            ast::Definition::FragmentDefinition(d) => self.fragment_defs.push(d),
+            ast::Definition::DirectiveDefinition(d) => self.directive_defs.push(d),
+            ast::Definition::SchemaDefinition(d) => self.schema_def = Some(d),
+            d @ (ast::Definition::ScalarTypeDefinition(_)
+            | ast::Definition::ScalarTypeExtension(_)) => self.scalar_type_defs.push(d),
+            d @ (ast::Definition::ObjectTypeDefinition(_)
+            | ast::Definition::ObjectTypeExtension(_)) => self.object_type_defs.push(d),
+            d @ (ast::Definition::InterfaceTypeDefinition(_)
+            | ast::Definition::InterfaceTypeExtension(_)) => self.interface_type_defs.push(d),
+            d @ (ast::Definition::UnionTypeDefinition(_)
+            | ast::Definition::UnionTypeExtension(_)) => self.union_type_defs.push(d),
+            d
+            @ (ast::Definition::EnumTypeDefinition(_) | ast::Definition::EnumTypeExtension(_)) => {
+                self.enum_type_defs.push(d)
             }
+            d @ (ast::Definition::InputObjectTypeDefinition(_)
+            | ast::Definition::InputObjectTypeExtension(_)) => self.input_object_type_defs.push(d),
+            _ => {}
         }
-        let mut builder = Self {
-            u,
-            object_type_defs: document.object_type_definitions,
-            interface_type_defs: document.interface_type_definitions,
-            enum_type_defs: document.enum_type_definitions,
-            schema_def: document.schema_definition,
-            directive_defs: document.directive_definitions,
-            operation_defs: document.operation_definitions,
-            fragment_defs: document.fragment_definitions,
-            scalar_type_defs: document.scalar_type_definitions,
-            union_type_defs: document.union_type_definitions,
-            input_object_type_defs: document.input_object_type_definitions,
-            implements_graph,
-            stack: Vec::new(),
-            chosen_arguments: IndexMap::new(),
-            operation_variables: None,
-            merge_tracking: Vec::new(),
-            fragment_selections: IndexMap::new(),
-            fragment_depths: IndexMap::new(),
-            selection_depth: 0,
-            used_type_names: HashSet::new(),
-        };
-        for def in &builder.object_type_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.interface_type_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.enum_type_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.directive_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.union_type_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.input_object_type_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.scalar_type_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.fragment_defs {
-            builder.used_type_names.insert(def.name.name.clone());
-        }
-        for def in &builder.operation_defs {
-            if let Some(name) = &def.name {
-                builder.used_type_names.insert(name.name.clone());
-            }
-        }
-        // A fragment's selections include those of the fragments it spreads,
-        // so resolve them in passes until none are left that can be resolved.
+    }
+
+    fn resolve_fragments(&mut self) {
         loop {
-            let resolved: Vec<_> = builder
+            let resolved: Vec<_> = self
                 .fragment_defs
                 .iter()
-                .filter(|f| !builder.fragment_selections.contains_key(&f.name))
+                .filter(|f| !self.fragment_selections.contains_key(&f.name))
                 .filter_map(|f| {
-                    let selections = builder.selections_of_fragment(f)?;
-                    let depth = builder.nesting_depth(&f.selection_set)?;
-                    Some((f.name.clone(), selections, depth))
+                    Some((
+                        f.name.clone(),
+                        self.selections_of_fragment(f)?,
+                        self.nesting_depth(&f.selection_set)?,
+                    ))
                 })
                 .collect();
             if resolved.is_empty() {
                 break;
             }
             for (name, selections, depth) in resolved {
-                builder.fragment_selections.insert(name.clone(), selections);
-                builder.fragment_depths.insert(name, depth);
+                self.fragment_selections.insert(name.clone(), selections);
+                self.fragment_depths.insert(name, depth);
             }
         }
+    }
 
-        Ok(builder)
+    pub(crate) fn operation_roots(&self) -> Vec<(ast::OperationType, Name)> {
+        let mut roots = self
+            .schema_def
+            .as_ref()
+            .map(|schema| {
+                schema
+                    .root_operations
+                    .iter()
+                    .map(|root| (**root).clone())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        if self.schema_def.is_none() {
+            for (operation, name) in [
+                (ast::OperationType::Query, "Query"),
+                (ast::OperationType::Mutation, "Mutation"),
+                (ast::OperationType::Subscription, "Subscription"),
+            ] {
+                if let Some(definition) = self.object_type_defs.iter().find(|definition| {
+                    definition.type_name() == name && !definition.is_extension_definition()
+                }) {
+                    roots.push((operation, definition.type_name().clone()));
+                }
+            }
+        }
+        for definition in &self.definitions {
+            if let ast::Definition::SchemaExtension(extension) = definition {
+                roots.extend(
+                    extension
+                        .root_operations
+                        .iter()
+                        .map(|root| (**root).clone()),
+                );
+            }
+        }
+        roots
     }
 
     fn available_definition_kinds(&self) -> Vec<DefinitionKind> {
@@ -331,49 +347,18 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     fn definition(&mut self, kind: DefinitionKind) -> Result<()> {
-        match kind {
-            DefinitionKind::Scalar => {
-                let def = self.scalar_type_definition()?;
-                self.scalar_type_defs.push(def);
-            }
-            DefinitionKind::Enum => {
-                let def = self.enum_type_definition()?;
-                self.enum_type_defs.push(def);
-            }
-            DefinitionKind::Interface => {
-                let def = self.interface_type_definition()?;
-                self.implements_graph.node_for(&def.name);
-                for parent in &def.interfaces {
-                    self.implements_graph.add_edge(&def.name, parent);
-                }
-                self.interface_type_defs.push(def);
-            }
-            DefinitionKind::Object => {
-                let def = self.object_type_definition()?;
-                self.implements_graph.node_for(&def.name);
-                for parent in &def.implements_interfaces {
-                    self.implements_graph.add_edge(&def.name, parent);
-                }
-                self.object_type_defs.push(def);
-            }
-            DefinitionKind::Union => {
-                let def = self.union_type_definition()?;
-                self.union_type_defs.push(def);
-            }
-            DefinitionKind::InputObject => {
-                let def = self.input_object_type_definition()?;
-                self.input_object_type_defs.push(def);
-            }
-            DefinitionKind::Directive => {
-                let def = self.directive_def()?;
-                self.directive_defs.push(def);
-            }
-            DefinitionKind::Fragment => {
-                let def = self.fragment_definition()?;
-                self.fragment_defs.push(def);
-            }
-            DefinitionKind::Operation => self.document_operation()?,
-        }
+        let definition = match kind {
+            DefinitionKind::Scalar => self.scalar_type_definition()?,
+            DefinitionKind::Enum => self.enum_type_definition()?,
+            DefinitionKind::Interface => self.interface_type_definition()?,
+            DefinitionKind::Object => self.object_type_definition()?,
+            DefinitionKind::Union => self.union_type_definition()?,
+            DefinitionKind::InputObject => self.input_object_type_definition()?,
+            DefinitionKind::Directive => self.directive_def()?.into(),
+            DefinitionKind::Fragment => self.fragment_definition()?.into(),
+            DefinitionKind::Operation => return self.document_operation(),
+        };
+        self.add_definition(definition);
         Ok(())
     }
 
@@ -382,8 +367,9 @@ impl<'a> DocumentBuilder<'a> {
     /// document, so an anonymous first operation is named once a second one
     /// is added.
     fn document_operation(&mut self) -> Result<()> {
-        if self.schema_def.is_none() {
-            self.schema_def = Some(self.schema_definition()?);
+        if self.operation_roots().is_empty() {
+            let schema = self.schema_definition()?;
+            self.add_definition(schema.into());
         }
         let require_named = !self.operation_defs.is_empty();
         let Some(operation) = self.operation_definition_in_document(require_named)? else {
@@ -392,10 +378,10 @@ impl<'a> DocumentBuilder<'a> {
         if let [first] = self.operation_defs.as_slice() {
             if first.name.is_none() {
                 let name = self.type_name()?;
-                self.operation_defs[0].name = Some(name);
+                self.operation_defs[0].make_mut().name = Some(name);
             }
         }
-        self.operation_defs.push(operation);
+        self.add_definition(operation.into());
         Ok(())
     }
 
@@ -404,39 +390,51 @@ impl<'a> DocumentBuilder<'a> {
         self.u.is_empty()
     }
 
-    pub(crate) fn stack_ty(&mut self, ty: &Ty) -> bool {
-        if ty.is_builtin() {
+    pub(crate) fn stack_ty(&mut self, ty: &Type) -> bool {
+        if crate::ty::is_builtin(ty) {
             return false;
         }
-        let type_name = ty.name();
+        let type_name = ty.inner_named_type();
 
         if let Some(object_ty) = self
             .object_type_defs
             .iter()
-            .find(|object_ty_def| &object_ty_def.name == type_name)
+            .find(|object_ty_def| object_ty_def.type_name() == type_name)
             .cloned()
         {
-            self.stack.push(Box::new(object_ty));
+            self.stack.push(object_ty);
             true
         } else if let Some(itf_type) = self
             .interface_type_defs
             .iter()
-            .find(|itf_type_def| &itf_type_def.name == type_name)
+            .find(|itf_type_def| itf_type_def.type_name() == type_name)
             .cloned()
         {
-            self.stack.push(Box::new(itf_type));
+            self.stack.push(itf_type);
             true
-        } else if self.union_type_defs.iter().any(|u| &u.name == type_name) {
-            self.stack.push(Box::new(UnionTypeDef {
-                name: type_name.clone(),
-                description: None,
-                members: self.union_members(type_name),
-                directives: IndexMap::new(),
-                extend: false,
-            }));
+        } else if self
+            .union_type_defs
+            .iter()
+            .any(|u| u.type_name() == type_name)
+        {
+            self.stack.push(
+                ast::UnionTypeDefinition {
+                    name: type_name.clone(),
+                    description: None,
+                    members: self.union_members(type_name).into_iter().collect(),
+                    directives: ast::DirectiveList::new(),
+                }
+                .into(),
+            );
             true
-        } else if self.enum_type_defs.iter().any(|e| &e.name == type_name)
-            || self.scalar_type_defs.iter().any(|s| &s.name == type_name)
+        } else if self
+            .enum_type_defs
+            .iter()
+            .any(|e| e.type_name() == type_name)
+            || self
+                .scalar_type_defs
+                .iter()
+                .any(|s| s.type_name() == type_name)
         {
             false
         } else {
@@ -455,21 +453,85 @@ impl<'a> DocumentBuilder<'a> {
         let reachable =
             fragment::reachable_fragment_names(&self.operation_defs, &self.fragment_defs);
         self.fragment_defs.retain(|f| reachable.contains(&f.name));
+        self.definitions.retain(|definition| match definition {
+            ast::Definition::FragmentDefinition(fragment) => reachable.contains(&fragment.name),
+            _ => true,
+        });
     }
-}
-
-pub(crate) trait StackedEntity {
-    fn name(&self) -> &Name;
-    fn fields_def(&self) -> &[FieldDef];
 }
 
 #[cfg(test)]
 mod tests {
     use crate::test_support::documents;
     use crate::test_support::prop_assert_valid;
+    use crate::DefinitionKind;
     use crate::DocumentBuilder;
     use arbitrary::Unstructured;
     use proptest::prelude::*;
+
+    #[test]
+    fn definitions_keep_generation_order() {
+        let mut u = Unstructured::new(&[]);
+        let mut builder = DocumentBuilder::new(&mut u);
+        for kind in [
+            DefinitionKind::Enum,
+            DefinitionKind::Object,
+            DefinitionKind::Scalar,
+        ] {
+            builder.definition(kind).expect("generate definition");
+        }
+        let document = builder.build().expect("build document");
+        assert!(document.definitions[0].as_enum_type_definition().is_some());
+        assert!(document.definitions[1]
+            .as_object_type_definition()
+            .is_some());
+        assert!(document.definitions[2]
+            .as_scalar_type_definition()
+            .is_some());
+        document.to_mixed_validate().expect("valid mixed ordering");
+    }
+
+    #[test]
+    fn compiler_input_preserves_extensions_and_operation_variables() {
+        let source = "schema { query: Query }
+            extend schema { mutation: Mutation }
+            directive @tag on SCALAR
+            scalar S
+            extend scalar S @tag
+            type Query { f(arg: Int): O }
+            extend type Query { s: S }
+            type Mutation { f: O }
+            interface I { id: ID }
+            extend interface I { other: Int }
+            type O implements I { id: ID, other: Int }
+            extend type O { extra: String }
+            type P { id: ID }
+            union U = O
+            extend union U = P
+            enum E { A }
+            extend enum E { B }
+            input In { a: Int }
+            extend input In { b: String }
+            query Keep($x: Int) { f(arg: $x) { id } }";
+        let document = apollo_compiler::ast::Document::parse(source, "input.graphql")
+            .expect("parse compiler document");
+        document.to_mixed_validate().expect("valid input");
+        let expected = document.definitions.clone();
+        let mut u = arbitrary::Unstructured::new(&[]);
+        let generated: apollo_compiler::ast::Document =
+            crate::DocumentBuilder::with_document(&mut u, document)
+                .expect("seed builder")
+                .build()
+                .expect("build seeded document");
+        assert_eq!(generated.definitions.len(), expected.len());
+        assert_eq!(generated.definitions, expected);
+        for (definition, original) in generated.definitions.iter().zip(&expected) {
+            assert_eq!(definition.location(), original.location(), "{definition}");
+        }
+        generated
+            .to_mixed_validate()
+            .expect("valid seeded document");
+    }
 
     proptest! {
         #[test]
@@ -489,10 +551,25 @@ mod tests {
         let doc = DocumentBuilder::new(&mut Unstructured::new(&[]))
             .build()
             .expect("document from exhausted input");
-        assert_eq!(doc.object_type_definitions.len(), 1);
-        assert!(doc.schema_definition.is_some());
-        assert_eq!(doc.operation_definitions.len(), 1);
-        let doc = String::from(doc);
+        assert_eq!(
+            doc.definitions
+                .iter()
+                .filter(|d| d.as_object_type_definition().is_some())
+                .count(),
+            1
+        );
+        assert!(doc
+            .definitions
+            .iter()
+            .any(|d| d.as_schema_definition().is_some()));
+        assert_eq!(
+            doc.definitions
+                .iter()
+                .filter(|d| d.as_operation_definition().is_some())
+                .count(),
+            1
+        );
+        let doc = doc.to_string();
         let errors = apollo_compiler::ast::Document::parse(&doc, "smith.graphql")
             .expect("smith output must parse")
             .to_mixed_validate();
@@ -502,16 +579,27 @@ mod tests {
     // An anonymous operation must be the only one in a document.
     #[test]
     fn anonymous_operation_is_named_once_another_is_added() {
-        let schema = apollo_parser::Parser::new("schema { query: Query } type Query { a: Int }")
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
+        let schema = apollo_compiler::ast::Document::parse(
+            "schema { query: Query } type Query { a: Int }",
+            "schema.graphql",
+        )
+        .expect("parse compiler document");
         let mut u = Unstructured::new(&[]);
         let mut builder = DocumentBuilder::with_document(&mut u, schema).expect("builder");
         builder.document_operation().expect("first operation");
         assert!(builder.operation_defs[0].name.is_none());
         builder.document_operation().expect("second operation");
         assert!(builder.operation_defs.iter().all(|op| op.name.is_some()));
+        let document = builder
+            .build()
+            .expect("build document with named operations");
+        assert!(document
+            .definitions
+            .iter()
+            .filter_map(|definition| { definition.as_operation_definition() })
+            .all(|operation| operation.name.is_some()));
+        document
+            .to_mixed_validate()
+            .expect("valid named operations");
     }
 }
