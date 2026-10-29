@@ -1,126 +1,24 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::field::FieldDef;
-use crate::name::Name;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
-use crate::StackedEntity;
 use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::Name;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
 
-/// UnionDefs are an abstract type where no common fields are declared.
-///
-/// *UnionDefTypeDefinition*:
-///     Description? **union** Name Directives? UnionDefMemberTypes?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Unions).
-#[derive(Debug, Clone)]
-pub struct UnionTypeDef {
-    pub(crate) name: Name,
-    pub(crate) description: Option<Description>,
-    pub(crate) members: IndexSet<Name>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) extend: bool,
-}
-
-impl From<UnionTypeDef> for ast::Definition {
-    fn from(x: UnionTypeDef) -> Self {
-        if x.extend {
-            ast::UnionTypeExtension {
-                name: x.name.into(),
-                directives: Directive::to_ast(x.directives),
-                members: x.members.into_iter().map(Into::into).collect(),
-            }
-            .into()
-        } else {
-            ast::UnionTypeDefinition {
-                description: x.description.map(Into::into),
-                name: x.name.into(),
-                directives: Directive::to_ast(x.directives),
-                members: x.members.into_iter().map(Into::into).collect(),
-            }
-            .into()
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::UnionTypeDefinition> for UnionTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(union_def: apollo_parser::cst::UnionTypeDefinition) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: union_def
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: union_def.description().map(Description::from),
-            directives: union_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: false,
-            members: union_def
-                .union_member_types()
-                .map(|members| {
-                    members
-                        .named_types()
-                        .map(|n| n.name().unwrap().into())
-                        .collect()
-                })
-                .unwrap_or_default(),
-        })
-    }
-}
-
-impl TryFrom<apollo_parser::cst::UnionTypeExtension> for UnionTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(union_def: apollo_parser::cst::UnionTypeExtension) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: union_def
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: None,
-            directives: union_def
-                .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| Ok((d.name().unwrap().into(), Directive::try_from(d)?)))
-                        .collect::<Result<_, crate::FromError>>()
-                })
-                .transpose()?
-                .unwrap_or_default(),
-            extend: true,
-            members: union_def
-                .union_member_types()
-                .map(|members| {
-                    members
-                        .named_types()
-                        .map(|n| n.name().unwrap().into())
-                        .collect()
-                })
-                .unwrap_or_default(),
-        })
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `UnionTypeDef`
-    pub fn union_type_definition(&mut self) -> ArbitraryResult<UnionTypeDef> {
+    /// Generate an union definition or extension.
+    pub fn union_type_definition(&mut self) -> ArbitraryResult<ast::Definition> {
         let extend = !self.union_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let name = if extend {
             let available_unions: Vec<&Name> = self
                 .union_type_defs
                 .iter()
                 .filter_map(|union| {
-                    if union.extend {
+                    if union.is_extension_definition() {
                         None
                     } else {
-                        Some(&union.name)
+                        Some(union.type_name())
                     }
                 })
                 .collect();
@@ -132,8 +30,12 @@ impl DocumentBuilder<'_> {
         let applied: IndexSet<Name> = self
             .union_type_defs
             .iter()
-            .filter(|def| def.name == name)
-            .flat_map(|def| def.directives.keys().cloned())
+            .filter(|def| def.type_name() == &name)
+            .flat_map(|def| {
+                def.directives()
+                    .iter()
+                    .map(|directive| directive.name.clone())
+            })
             .collect();
         let directives = self.type_directives(DirectiveLocation::Union, &applied)?;
         // Union members must be Object base types — built-in scalars,
@@ -145,25 +47,34 @@ impl DocumentBuilder<'_> {
         let object_types: Vec<_> = self
             .list_existing_object_types()
             .into_iter()
-            .filter(|o| !existing_members.contains(o.name()))
+            .filter(|o| !existing_members.contains(o.inner_named_type()))
             .collect();
         if object_types.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);
         }
         let members = (0..self.u.int_in_range(2..=10)?)
-            .map(|_| Ok(self.u.choose(&object_types)?.name().clone()))
+            .map(|_| Ok(self.u.choose(&object_types)?.inner_named_type().clone()))
             .collect::<ArbitraryResult<IndexSet<_>>>()?;
 
         if extend && directives.is_empty() && members.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);
         }
 
-        Ok(UnionTypeDef {
-            name,
-            description,
-            members,
-            directives,
-            extend,
+        Ok(if extend {
+            ast::UnionTypeExtension {
+                name,
+                directives,
+                members: members.into_iter().collect(),
+            }
+            .into()
+        } else {
+            ast::UnionTypeDefinition {
+                description,
+                name,
+                directives,
+                members: members.into_iter().collect(),
+            }
+            .into()
         })
     }
 
@@ -173,23 +84,14 @@ impl DocumentBuilder<'_> {
     pub(crate) fn union_members(&self, name: &Name) -> IndexSet<Name> {
         self.union_type_defs
             .iter()
-            .filter(|u| &u.name == name)
-            .flat_map(|u| u.members.iter().cloned())
+            .filter(|u| u.type_name() == name)
+            .flat_map(|u| u.members().iter().cloned())
             .collect()
     }
 }
 
 // Unions declare no fields, so selections on them are limited to
 // `__typename` and fragments on their members.
-impl StackedEntity for UnionTypeDef {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-
-    fn fields_def(&self) -> &[FieldDef] {
-        &[]
-    }
-}
 
 #[cfg(test)]
 mod tests {

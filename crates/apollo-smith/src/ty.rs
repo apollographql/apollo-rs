@@ -1,114 +1,34 @@
-use crate::name::Name;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
-use apollo_compiler::ast;
+use apollo_compiler::ast::Type;
+use apollo_compiler::ty;
 use arbitrary::Result as ArbitraryResult;
 use once_cell::sync::Lazy;
 
-static BUILTIN_SCALAR_NAMES: Lazy<[Ty; 5]> = Lazy::new(|| {
-    [
-        Ty::Named(Name::new(String::from("Int"))),
-        Ty::Named(Name::new(String::from("Float"))),
-        Ty::Named(Name::new(String::from("String"))),
-        Ty::Named(Name::new(String::from("Boolean"))),
-        Ty::Named(Name::new(String::from("ID"))),
-    ]
-});
+static BUILTIN_SCALAR_NAMES: Lazy<[Type; 5]> =
+    Lazy::new(|| [ty!(Int), ty!(Float), ty!(String), ty!(Boolean), ty!(ID)]);
 
-/// Convenience Type_ implementation used when creating a Field.
-/// Can be a `NamedType`, a `NonNull` or a `List`.
-///
-/// This enum is resposible for encoding creating values such as `String!`, `[[[[String]!]!]!]!`, etc.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Ty {
-    /// The Non-Null field type.
-    Named(Name),
-    /// The List field type.
-    List(Box<Ty>),
-    /// The Named field type.
-    NonNull(Box<Ty>),
-}
-
-impl From<Ty> for ast::Type {
-    fn from(val: Ty) -> Self {
-        match val {
-            Ty::Named(name) => Self::Named(name.into()),
-            Ty::List(ty) => Self::from(*ty).list(),
-            Ty::NonNull(ty) => Self::from(*ty).non_null(),
-        }
-    }
-}
-
-impl From<apollo_parser::cst::Type> for Ty {
-    fn from(ty: apollo_parser::cst::Type) -> Self {
-        match ty {
-            apollo_parser::cst::Type::NamedType(named_ty) => named_ty.into(),
-            apollo_parser::cst::Type::ListType(list_type) => {
-                Self::List(Box::new(list_type.ty().unwrap().into()))
-            }
-            apollo_parser::cst::Type::NonNullType(non_null) => {
-                if let Some(named_ty) = non_null.named_type() {
-                    Self::NonNull(Box::new(named_ty.into()))
-                } else if let Some(list_type) = non_null.list_type() {
-                    Self::NonNull(Box::new(Self::List(Box::new(
-                        list_type.ty().unwrap().into(),
-                    ))))
-                } else {
-                    panic!("a non null type must have a type")
-                }
-            }
-        }
-    }
-}
-
-impl From<apollo_parser::cst::NamedType> for Ty {
-    fn from(ty: apollo_parser::cst::NamedType) -> Self {
-        Self::Named(ty.name().unwrap().into())
-    }
-}
-
-impl Ty {
-    pub(crate) fn name(&self) -> &Name {
-        match self {
-            Ty::Named(name) => name,
-            Ty::List(list) => list.name(),
-            Ty::NonNull(non_null) => non_null.name(),
-        }
-    }
-
-    /// Returns `true` if the ty is [`Named`].
-    ///
-    /// [`Named`]: Ty::Named
-    pub fn is_named(&self) -> bool {
-        matches!(self, Self::Named(..))
-    }
-
-    pub(crate) fn is_builtin(&self) -> bool {
-        BUILTIN_SCALAR_NAMES.contains(&Ty::Named(self.name().clone()))
-    }
-
-    /// Strip the outermost `NonNull` wrapper, if present, making this type nullable.
-    pub(crate) fn into_nullable(self) -> Self {
-        match self {
-            Ty::NonNull(inner) => *inner,
-            other => other,
-        }
-    }
+pub(crate) fn is_builtin(ty: &Type) -> bool {
+    matches!(
+        ty.inner_named_type().as_str(),
+        "Int" | "Float" | "String" | "Boolean" | "ID"
+    )
 }
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `Ty`
-    pub fn ty(&mut self) -> ArbitraryResult<Ty> {
+    /// Create an arbitrary `Type`
+    pub fn ty(&mut self) -> ArbitraryResult<Type> {
         self.generate_ty(true)
     }
 
-    /// Choose an arbitrary existing `Ty` given a slice of existing types
-    pub fn choose_ty(&mut self, existing_types: &[Ty]) -> ArbitraryResult<Ty> {
+    /// Choose an arbitrary existing `Type` given a slice of existing types
+    pub fn choose_ty(&mut self, existing_types: &[Type]) -> ArbitraryResult<Type> {
         self.choose_ty_given_nullable(existing_types, true)
     }
 
-    /// Choose an arbitrary existing named `Ty` given a slice of existing types
-    pub fn choose_named_ty(&mut self, existing_types: &[Ty]) -> ArbitraryResult<Ty> {
-        let used_type_names: Vec<&Ty> = existing_types
+    /// Choose an arbitrary existing named `Type` given a slice of existing types
+    pub fn choose_named_ty(&mut self, existing_types: &[Type]) -> ArbitraryResult<Type> {
+        let used_type_names: Vec<&Type> = existing_types
             .iter()
             .chain(BUILTIN_SCALAR_NAMES.iter())
             .collect();
@@ -118,13 +38,13 @@ impl DocumentBuilder<'_> {
 
     fn choose_ty_given_nullable(
         &mut self,
-        existing_types: &[Ty],
+        existing_types: &[Type],
         is_nullable: bool,
-    ) -> ArbitraryResult<Ty> {
-        let ty: Ty = match self.u.int_in_range(0..=2usize)? {
+    ) -> ArbitraryResult<Type> {
+        let ty: Type = match self.u.int_in_range(0..=2usize)? {
             // Named type
             0 => {
-                let used_type_names: Vec<&Ty> = existing_types
+                let used_type_names: Vec<&Type> = existing_types
                     .iter()
                     .chain(BUILTIN_SCALAR_NAMES.iter())
                     .collect();
@@ -132,15 +52,14 @@ impl DocumentBuilder<'_> {
                 self.u.choose(&used_type_names)?.to_owned().clone()
             }
             // List type
-            1 => Ty::List(Box::new(
+            1 => Type::List(Box::new(
                 self.choose_ty_given_nullable(existing_types, true)?,
             )),
             // Non Null type
             2 => {
                 if is_nullable {
-                    Ty::NonNull(Box::new(
-                        self.choose_ty_given_nullable(existing_types, false)?,
-                    ))
+                    self.choose_ty_given_nullable(existing_types, false)?
+                        .non_null()
                 } else {
                     self.choose_ty_given_nullable(existing_types, is_nullable)?
                 }
@@ -151,16 +70,16 @@ impl DocumentBuilder<'_> {
         Ok(ty)
     }
 
-    fn generate_ty(&mut self, is_nullable: bool) -> ArbitraryResult<Ty> {
+    fn generate_ty(&mut self, is_nullable: bool) -> ArbitraryResult<Type> {
         let ty = match self.u.int_in_range(0..=2usize)? {
             // Named type
-            0 => Ty::Named(self.name()?),
+            0 => Type::Named(self.name()?),
             // List type
-            1 => Ty::List(Box::new(self.generate_ty(true)?)),
+            1 => Type::List(Box::new(self.generate_ty(true)?)),
             // Non Null type
             2 => {
                 if is_nullable {
-                    Ty::NonNull(Box::new(self.generate_ty(false)?))
+                    self.generate_ty(false)?.non_null()
                 } else {
                     self.generate_ty(is_nullable)?
                 }
@@ -173,29 +92,29 @@ impl DocumentBuilder<'_> {
 
     /// List the existing types that are valid in output positions (field
     /// types). Built-in scalars are added separately by `choose_ty`.
-    pub(crate) fn list_existing_types(&self) -> Vec<Ty> {
+    pub(crate) fn list_existing_types(&self) -> Vec<Type> {
         self.object_type_defs
             .iter()
-            .map(|o| Ty::Named(o.name.clone()))
+            .map(|o| Type::Named(o.type_name().clone()))
             .chain(
                 self.interface_type_defs
                     .iter()
-                    .map(|i| Ty::Named(i.name.clone())),
+                    .map(|i| Type::Named(i.type_name().clone())),
             )
             .chain(
                 self.union_type_defs
                     .iter()
-                    .map(|u| Ty::Named(u.name.clone())),
+                    .map(|u| Type::Named(u.type_name().clone())),
             )
             .chain(
                 self.enum_type_defs
                     .iter()
-                    .map(|e| Ty::Named(e.name.clone())),
+                    .map(|e| Type::Named(e.type_name().clone())),
             )
             .chain(
                 self.scalar_type_defs
                     .iter()
-                    .map(|s| Ty::Named(s.name.clone())),
+                    .map(|s| Type::Named(s.type_name().clone())),
             )
             .collect()
     }
@@ -204,28 +123,28 @@ impl DocumentBuilder<'_> {
     /// types, input-object fields, variable definitions). Per the GraphQL
     /// spec, only scalars, enums, and input objects qualify. Built-in
     /// scalars are added separately by `choose_ty`.
-    pub(crate) fn list_existing_input_types(&self) -> Vec<Ty> {
+    pub(crate) fn list_existing_input_types(&self) -> Vec<Type> {
         self.scalar_type_defs
             .iter()
-            .map(|s| Ty::Named(s.name.clone()))
+            .map(|s| Type::Named(s.type_name().clone()))
             .chain(
                 self.enum_type_defs
                     .iter()
-                    .map(|e| Ty::Named(e.name.clone())),
+                    .map(|e| Type::Named(e.type_name().clone())),
             )
             .chain(
                 self.input_object_type_defs
                     .iter()
-                    .map(|io| Ty::Named(io.name.clone())),
+                    .map(|io| Type::Named(io.type_name().clone())),
             )
             .collect()
     }
 
-    /// List all existing object (already created) `Ty`
-    pub(crate) fn list_existing_object_types(&self) -> Vec<Ty> {
+    /// List all existing object (already created) `Type`
+    pub(crate) fn list_existing_object_types(&self) -> Vec<Type> {
         self.object_type_defs
             .iter()
-            .map(|o| Ty::Named(o.name.clone()))
+            .map(|o| Type::Named(o.type_name().clone()))
             .collect()
     }
 }

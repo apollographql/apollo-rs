@@ -1,13 +1,12 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::name::Name;
-use crate::ty::Ty;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
-use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::InputValueDefinition;
+use apollo_compiler::ast::Type;
+use apollo_compiler::ast::Value;
+use apollo_compiler::Name;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
 
 // Long strings and lists don't add coverage, and used to consume most of
@@ -15,170 +14,22 @@ use indexmap::IndexSet;
 const MAX_STRING_VALUE_LEN: usize = 32;
 const MAX_LIST_VALUE_LEN: usize = 3;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum InputValue {
-    Variable(Name),
-    Int(i32),
-    Float(f64),
-    String(String),
-    Boolean(bool),
-    Null,
-    Enum(Name),
-    List(Vec<InputValue>),
-    Object(Vec<(Name, InputValue)>),
-}
-
-impl From<InputValue> for ast::Value {
-    fn from(input_value: InputValue) -> Self {
-        match input_value {
-            InputValue::Variable(v) => Self::Variable(v.into()),
-            InputValue::Int(i) => Self::Int(i.into()),
-            InputValue::Float(f) => Self::Float(f.into()),
-            InputValue::String(s) => Self::String(s),
-            InputValue::Boolean(b) => Self::Boolean(b),
-            InputValue::Null => Self::Null,
-            InputValue::Enum(enm) => Self::Enum(enm.into()),
-            InputValue::List(l) => Self::List(l.into_iter().map(|v| Node::new(v.into())).collect()),
-            InputValue::Object(o) => Self::Object(
-                o.into_iter()
-                    .map(|(n, i)| (n.into(), Node::new(i.into())))
-                    .collect(),
-            ),
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::DefaultValue> for InputValue {
-    type Error = crate::FromError;
-
-    fn try_from(default_val: apollo_parser::cst::DefaultValue) -> Result<Self, Self::Error> {
-        default_val.value().unwrap().try_into()
-    }
-}
-
-impl TryFrom<apollo_parser::cst::Value> for InputValue {
-    type Error = crate::FromError;
-
-    fn try_from(value: apollo_parser::cst::Value) -> Result<Self, Self::Error> {
-        let smith_value = match value {
-            apollo_parser::cst::Value::Variable(variable) => {
-                Self::Variable(variable.name().unwrap().into())
-            }
-            apollo_parser::cst::Value::StringValue(val) => Self::String(val.into()),
-            apollo_parser::cst::Value::FloatValue(val) => Self::Float(val.try_into()?),
-            apollo_parser::cst::Value::IntValue(val) => Self::Int(val.try_into()?),
-            apollo_parser::cst::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
-            apollo_parser::cst::Value::NullValue(_val) => Self::Null,
-            apollo_parser::cst::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
-            apollo_parser::cst::Value::ListValue(val) => Self::List(
-                val.values()
-                    .map(Self::try_from)
-                    .collect::<Result<Vec<_>, _>>()?,
-            ),
-            apollo_parser::cst::Value::ObjectValue(val) => Self::Object(
-                val.object_fields()
-                    .map(|of| Ok((of.name().unwrap().into(), of.value().unwrap().try_into()?)))
-                    .collect::<Result<Vec<_>, crate::FromError>>()?,
-            ),
-        };
-        Ok(smith_value)
-    }
-}
-
-impl From<InputValue> for String {
-    fn from(input_val: InputValue) -> Self {
-        match input_val {
-            InputValue::Variable(v) => format!("${}", String::from(v)),
-            InputValue::Int(i) => format!("{i}"),
-            InputValue::Float(f) => format!("{f}"),
-            InputValue::String(s) => s,
-            InputValue::Boolean(b) => format!("{b}"),
-            InputValue::Null => String::from("null"),
-            InputValue::Enum(val) => val.into(),
-            InputValue::List(list) => format!(
-                "[{}]",
-                list.into_iter()
-                    .map(String::from)
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            ),
-            InputValue::Object(obj) => format!(
-                "{{ {} }}",
-                obj.into_iter()
-                    .map(|(k, v)| format!("{}: {}", String::from(k), String::from(v)))
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            ),
-        }
-    }
-}
-
-/// The __InputValueDef type represents field and directive arguments.
-///
-/// *InputValueDefinition*:
-///     Description? Name **:** Type DefaultValue? Directives?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-The-__InputValue-Type).
-#[derive(Debug, Clone, PartialEq)]
-pub struct InputValueDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) name: Name,
-    pub(crate) ty: Ty,
-    pub(crate) default_value: Option<InputValue>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-}
-
-impl From<InputValueDef> for ast::InputValueDefinition {
-    fn from(x: InputValueDef) -> Self {
-        Self {
-            description: x.description.map(Into::into),
-            name: x.name.into(),
-            ty: Node::new(x.ty.into()),
-            default_value: x.default_value.map(|x| Node::new(x.into())),
-            directives: Directive::to_ast(x.directives),
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
-    type Error = crate::FromError;
-
-    fn try_from(
-        input_val_def: apollo_parser::cst::InputValueDefinition,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            description: input_val_def.description().map(Description::from),
-            name: input_val_def.name().unwrap().into(),
-            ty: input_val_def.ty().unwrap().into(),
-            default_value: input_val_def
-                .default_value()
-                .map(InputValue::try_from)
-                .transpose()?,
-            directives: input_val_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-        })
-    }
-}
-
 impl DocumentBuilder<'_> {
-    pub fn input_value_for_type(&mut self, ty: &Ty) -> ArbitraryResult<InputValue> {
+    pub fn input_value_for_type(&mut self, ty: &Type) -> ArbitraryResult<Value> {
         self.input_value_at_depth(ty, 0)
     }
 
-    fn input_value_at_depth(&mut self, ty: &Ty, depth: usize) -> ArbitraryResult<InputValue> {
-        let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> ArbitraryResult<InputValue> {
-            if ty.is_builtin() {
-                match ty.name().name.as_str() {
-                    "String" => Ok(InputValue::String(
+    fn input_value_at_depth(&mut self, ty: &Type, depth: usize) -> ArbitraryResult<Value> {
+        let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> ArbitraryResult<Value> {
+            if crate::ty::is_builtin(ty) {
+                match ty.inner_named_type().as_str() {
+                    "String" => Ok(Value::String(
                         doc_builder.limited_string(MAX_STRING_VALUE_LEN)?,
                     )),
-                    "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
-                    "Float" => Ok(InputValue::Float(doc_builder.finite_f64()?)),
-                    "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
-                    "ID" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
+                    "Int" => Ok(Value::Int(doc_builder.u.arbitrary::<i32>()?.into())),
+                    "Float" => Ok(Value::Float(doc_builder.finite_f64()?.into())),
+                    "Boolean" => Ok(Value::Boolean(doc_builder.u.arbitrary()?)),
+                    "ID" => Ok(Value::Int(doc_builder.u.arbitrary::<i32>()?.into())),
                     other => {
                         unreachable!("{} is not a builtin", other);
                     }
@@ -186,40 +37,40 @@ impl DocumentBuilder<'_> {
             } else if let Some(enum_index) = doc_builder
                 .enum_type_defs
                 .iter()
-                .position(|e| &e.name == ty.name())
+                .position(|e| e.type_name() == ty.inner_named_type())
             {
-                Ok(InputValue::Enum(
+                Ok(Value::Enum(
                     doc_builder.arbitrary_value_of_enum(enum_index)?,
                 ))
             } else if doc_builder
                 .input_object_type_defs
                 .iter()
-                .any(|io| &io.name == ty.name())
+                .any(|io| io.type_name() == ty.inner_named_type())
             {
-                doc_builder.input_object_value(ty.name(), depth)
+                doc_builder.input_object_value(ty.inner_named_type(), depth)
             } else if doc_builder
                 .scalar_type_defs
                 .iter()
-                .any(|s| &s.name == ty.name())
+                .any(|s| s.type_name() == ty.inner_named_type())
             {
                 // Custom scalars accept any literal value; generate an Int to be entropy-efficient
-                Ok(InputValue::Int(doc_builder.u.arbitrary()?))
+                Ok(Value::Int(doc_builder.u.arbitrary::<i32>()?.into()))
             } else {
-                panic!("Type {} is not a valid input type", ty.name().name);
+                panic!("Type {} is not a valid input type", ty.inner_named_type());
             }
         };
 
         let val = match ty {
-            Ty::Named(_) => gen_val(self)?,
-            Ty::List(_) => {
+            Type::Named(_) | Type::NonNullNamed(_) => gen_val(self)?,
+            Type::List(_) => {
                 let nb_elt = self.u.int_in_range(0..=MAX_LIST_VALUE_LEN)?;
-                InputValue::List(
+                Value::List(
                     (0..nb_elt)
-                        .map(|_| gen_val(self))
-                        .collect::<ArbitraryResult<Vec<InputValue>>>()?,
+                        .map(|_| gen_val(self).map(Node::new))
+                        .collect::<ArbitraryResult<Vec<_>>>()?,
                 )
             }
-            Ty::NonNull(_) => gen_val(self)?,
+            Type::NonNullList(_) => gen_val(self)?,
         };
 
         Ok(val)
@@ -232,34 +83,34 @@ impl DocumentBuilder<'_> {
     /// their fields can't form a cycle, but extension fields can. Extensions
     /// only add nullable fields, so dropping them past a small depth keeps
     /// the value valid and finite.
-    fn input_object_value(&mut self, name: &Name, depth: usize) -> ArbitraryResult<InputValue> {
+    fn input_object_value(&mut self, name: &Name, depth: usize) -> ArbitraryResult<Value> {
         const MAX_DEPTH_WITH_EXTENSIONS: usize = 3;
-        let fields: Vec<InputValueDef> = self
+        let fields: Vec<InputValueDefinition> = self
             .input_object_type_defs
             .iter()
-            .filter(|io| &io.name == name)
-            .filter(|io| !io.extend || depth < MAX_DEPTH_WITH_EXTENSIONS)
-            .flat_map(|io| io.fields.iter().cloned())
+            .filter(|io| io.type_name() == name)
+            .filter(|io| !io.is_extension_definition() || depth < MAX_DEPTH_WITH_EXTENSIONS)
+            .flat_map(|io| io.input_fields().iter().map(|field| (**field).clone()))
             .collect();
         let fields = if self.is_one_of_input(name) {
             vec![self.u.choose(&fields)?.clone()]
         } else {
             fields
         };
-        Ok(InputValue::Object(
+        Ok(Value::Object(
             fields
                 .iter()
                 .map(|field_def| {
                     Ok((
                         field_def.name.clone(),
-                        self.input_value_at_depth(&field_def.ty, depth + 1)?,
+                        Node::new(self.input_value_at_depth(&field_def.ty, depth + 1)?),
                     ))
                 })
                 .collect::<ArbitraryResult<Vec<_>>>()?,
         ))
     }
 
-    /// Create an arbitrary list of `InputValueDef`. The caller passes
+    /// Create an arbitrary list of `InputValueDefinition`. The caller passes
     /// `directive_location` so directives applied to each value are
     /// filtered against the right context — `InputFieldDefinition` for
     /// input-object fields, `ArgumentDefinition` for argument lists on
@@ -269,12 +120,13 @@ impl DocumentBuilder<'_> {
         directive_location: DirectiveLocation,
         exclude: &IndexSet<Name>,
         self_name: Option<&Name>,
-    ) -> ArbitraryResult<Vec<InputValueDef>> {
+    ) -> ArbitraryResult<Vec<InputValueDefinition>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
         let mut available_types = self.list_existing_input_types();
         if let Some(owner) = self_name {
-            available_types.retain(|ty| !self.input_field_type_would_cycle(owner, ty.name()));
+            available_types
+                .retain(|ty| !self.input_field_type_would_cycle(owner, ty.inner_named_type()));
         }
 
         for i in 0..arbitrary_iv_num {
@@ -283,10 +135,8 @@ impl DocumentBuilder<'_> {
             let mut ty = self.choose_ty(&available_types)?;
             // Prevent required self-referential input object fields, which
             // would make the type impossible to construct.
-            if self_name.is_some_and(|n| ty.name() == n) {
-                if let Ty::NonNull(inner) = ty {
-                    ty = *inner;
-                }
+            if self_name.is_some_and(|n| ty.inner_named_type() == n) {
+                ty = ty.nullable();
             }
             let directives = self.directives(directive_location)?;
             let default_value = self
@@ -297,11 +147,11 @@ impl DocumentBuilder<'_> {
                 .transpose()?;
 
             if !exclude.contains(&name) {
-                input_values.push(InputValueDef {
+                input_values.push(InputValueDefinition {
                     description,
                     name,
-                    ty,
-                    default_value,
+                    ty: Node::new(ty),
+                    default_value: default_value.map(Node::new),
                     directives,
                 });
             }
@@ -309,13 +159,13 @@ impl DocumentBuilder<'_> {
 
         Ok(input_values)
     }
-    /// Create an arbitrary `InputValueDef`. The caller passes
+    /// Create an arbitrary `InputValueDefinition`. The caller passes
     /// `directive_location` for the same reason as
     /// [`input_values_def`](Self::input_values_def).
     pub fn input_value_def(
         &mut self,
         directive_location: DirectiveLocation,
-    ) -> ArbitraryResult<InputValueDef> {
+    ) -> ArbitraryResult<InputValueDefinition> {
         let description = self.optional_description()?;
         let name = self.name()?;
         let ty = self.choose_ty(&self.list_existing_input_types())?;
@@ -327,11 +177,11 @@ impl DocumentBuilder<'_> {
             .then(|| self.input_value_for_type(&ty))
             .transpose()?;
 
-        Ok(InputValueDef {
+        Ok(InputValueDefinition {
             description,
             name,
-            ty,
-            default_value,
+            ty: Node::new(ty),
+            default_value: default_value.map(Node::new),
             directives,
         })
     }
@@ -352,15 +202,16 @@ mod tests {
     use crate::test_support::generated_against_any;
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
+    use apollo_compiler::ty;
     use arbitrary::Unstructured;
     use proptest::prelude::*;
 
-    fn longest_string_and_list(value: &InputValue) -> (usize, usize) {
+    fn longest_string_and_list(value: &Value) -> (usize, usize) {
         match value {
-            InputValue::String(s) => (s.len(), 0),
-            InputValue::List(items) => items
+            Value::String(s) => (s.len(), 0),
+            Value::List(items) => items
                 .iter()
-                .map(longest_string_and_list)
+                .map(|value| longest_string_and_list(value))
                 .fold((0, items.len()), |(s, l), (si, li)| (s.max(si), l.max(li))),
             _ => (0, 0),
         }
@@ -399,8 +250,8 @@ mod tests {
         fn string_and_list_values_stay_short(data in input()) {
             let mut u = Unstructured::new(&data);
             let mut builder = DocumentBuilder::new(&mut u);
-            let string = Ty::Named(Name::new("String".to_string()));
-            let ty = Ty::List(Box::new(Ty::List(Box::new(string))));
+            let string = ty!(String);
+            let ty = Type::List(Box::new(Type::List(Box::new(string))));
             let value = builder.input_value_for_type(&ty).expect("value for a builtin type");
             let (string_len, list_len) = longest_string_and_list(&value);
             prop_assert!(string_len <= MAX_STRING_VALUE_LEN, "{value:?}");

@@ -1,107 +1,32 @@
-use crate::argument::Argument;
-use crate::field::Field;
-use crate::fragment::FragmentDef;
-use crate::fragment::FragmentSpread;
-use crate::fragment::InlineFragment;
-use crate::name::Name;
-use crate::ty::Ty;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
+use apollo_compiler::ast::Argument;
+use apollo_compiler::ast::Field;
+use apollo_compiler::ast::FragmentDefinition;
+use apollo_compiler::ast::Selection;
+use apollo_compiler::ast::Type;
+use apollo_compiler::name;
+use apollo_compiler::ty;
+use apollo_compiler::Name;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 
-/// The __selectionSet type represents a selection_set type in a fragment spread, an operation or a field
-///
-/// *SelectionSet*:
-///     Selection*
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Selection-Sets).
-#[derive(Debug, Clone)]
-pub struct SelectionSet {
-    pub(crate) selections: Vec<Selection>,
-}
-
-impl From<SelectionSet> for Vec<ast::Selection> {
-    fn from(sel_set: SelectionSet) -> Self {
-        sel_set.selections.into_iter().map(Into::into).collect()
-    }
-}
-
-impl SelectionSet {
-    pub(crate) fn collect_fragment_spreads(&self, into: &mut IndexSet<Name>) {
-        for selection in &self.selections {
-            match selection {
-                Selection::Field(field) => {
-                    if let Some(inner) = &field.selection_set {
-                        inner.collect_fragment_spreads(into);
-                    }
-                }
-                Selection::FragmentSpread(spread) => {
-                    into.insert(spread.name.clone());
-                }
-                Selection::InlineFragment(inline) => {
-                    inline.selection_set.collect_fragment_spreads(into);
-                }
-            }
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::SelectionSet> for SelectionSet {
-    type Error = crate::FromError;
-
-    fn try_from(selection_set: apollo_parser::cst::SelectionSet) -> Result<Self, Self::Error> {
-        Ok(Self {
-            selections: selection_set
-                .selections()
-                .map(Selection::try_from)
-                .collect::<Result<_, _>>()?,
-        })
-    }
-}
-
-/// The __selection type represents a selection in a selection set
-/// *Selection*:
-///     Field | FragmentSpread | InlineFragment
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#Selection).
-#[derive(Debug, Clone)]
-pub enum Selection {
-    /// Represents a field
-    Field(Field),
-    /// Represents a fragment spread
-    FragmentSpread(FragmentSpread),
-    /// Represents an inline fragment
-    InlineFragment(InlineFragment),
-}
-
-impl From<Selection> for ast::Selection {
-    fn from(selection: Selection) -> Self {
+pub(crate) fn collect_fragment_spreads(selections: &[Selection], into: &mut IndexSet<Name>) {
+    for selection in selections {
         match selection {
-            Selection::Field(field) => Self::Field(Node::new(field.into())),
-            Selection::FragmentSpread(fragment_spread) => {
-                Self::FragmentSpread(Node::new(fragment_spread.into()))
+            Selection::Field(field) => {
+                if let Some(inner) = &field.selection_set {
+                    collect_fragment_spreads(inner, into);
+                }
             }
-            Selection::InlineFragment(inline_fragment) => {
-                Self::InlineFragment(Node::new(inline_fragment.into()))
+            Selection::FragmentSpread(spread) => {
+                into.insert(spread.fragment_name.clone());
             }
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::Selection> for Selection {
-    type Error = crate::FromError;
-
-    fn try_from(selection: apollo_parser::cst::Selection) -> Result<Self, Self::Error> {
-        match selection {
-            apollo_parser::cst::Selection::Field(field) => field.try_into().map(Self::Field),
-            apollo_parser::cst::Selection::FragmentSpread(fragment_spread) => {
-                fragment_spread.try_into().map(Self::FragmentSpread)
-            }
-            apollo_parser::cst::Selection::InlineFragment(inline_fragment) => {
-                inline_fragment.try_into().map(Self::InlineFragment)
+            Selection::InlineFragment(inline) => {
+                collect_fragment_spreads(&inline.selection_set, into)
             }
         }
     }
@@ -109,11 +34,9 @@ impl TryFrom<apollo_parser::cst::Selection> for Selection {
 
 impl DocumentBuilder<'_> {
     /// Create an arbitrary `SelectionSet`
-    pub fn selection_set(&mut self) -> ArbitraryResult<SelectionSet> {
+    pub fn selection_set(&mut self) -> ArbitraryResult<Vec<Selection>> {
         if self.selection_depth >= MAX_SELECTION_DEPTH {
-            return Ok(SelectionSet {
-                selections: Vec::new(),
-            });
+            return Ok(Vec::new());
         }
         self.selection_depth += 1;
         let selection_set = self.selections();
@@ -121,9 +44,9 @@ impl DocumentBuilder<'_> {
         selection_set
     }
 
-    fn selections(&mut self) -> ArbitraryResult<SelectionSet> {
+    fn selections(&mut self) -> ArbitraryResult<Vec<Selection>> {
         let mut exclude_names = Vec::new();
-        let selection_nb = self.stack.last().map(|o| o.fields_def().len()).unwrap_or(0);
+        let selection_nb = self.stack.last().map(|o| o.fields().len()).unwrap_or(0);
 
         let selections = (0..self.u.int_in_range(0..=5)?)
             .map(|_| {
@@ -131,7 +54,7 @@ impl DocumentBuilder<'_> {
                 self.selection(index, &mut exclude_names)
             })
             .collect::<ArbitraryResult<Vec<_>>>()?;
-        Ok(SelectionSet { selections })
+        Ok(selections)
     }
 
     /// Create an arbitrary `Selection`
@@ -141,12 +64,12 @@ impl DocumentBuilder<'_> {
         excludes: &mut Vec<Name>,
     ) -> ArbitraryResult<Selection> {
         let selection = match self.u.int_in_range(0..=2usize)? {
-            0 => Selection::Field(self.field(index)?),
+            0 => Selection::Field(Node::new(self.field(index)?)),
             1 => match self.fragment_spread(excludes)? {
-                Some(frag_spread) => Selection::FragmentSpread(frag_spread),
-                None => Selection::Field(self.field(index)?),
+                Some(frag_spread) => Selection::FragmentSpread(Node::new(frag_spread)),
+                None => Selection::Field(Node::new(self.field(index)?)),
             },
-            2 => Selection::InlineFragment(self.inline_fragment()?),
+            2 => Selection::InlineFragment(Node::new(self.inline_fragment()?)),
             _ => unreachable!(),
         };
 
@@ -160,7 +83,7 @@ impl DocumentBuilder<'_> {
 pub(crate) struct SelectedField {
     pub(crate) parent: Name,
     pub(crate) field_name: Name,
-    pub(crate) ty: Ty,
+    pub(crate) ty: Type,
     pub(crate) args: Vec<Argument>,
 }
 
@@ -324,7 +247,7 @@ impl DocumentBuilder<'_> {
         response_name: &Name,
         parent: &Name,
         field_name: &Name,
-        ty: &Ty,
+        ty: &Type,
     ) -> bool {
         self.selections_here()
             .and_then(|selections| selections.by_name.get(response_name))
@@ -343,7 +266,7 @@ impl DocumentBuilder<'_> {
         other: &SelectedField,
         parent: &Name,
         field_name: &Name,
-        ty: &Ty,
+        ty: &Type,
         args: Option<&[Argument]>,
     ) -> bool {
         let distinct_objects = &other.parent != parent
@@ -369,7 +292,7 @@ impl DocumentBuilder<'_> {
                 selections
                     .by_name
                     .keys()
-                    .filter(|name| !name.name.starts_with("__"))
+                    .filter(|name| !name.starts_with("__"))
                     .cloned()
                     .collect()
             })
@@ -431,16 +354,18 @@ impl DocumentBuilder<'_> {
     /// How many selection sets deep `selection_set` nests, counting itself
     /// and those of the fragments it spreads. `None` if it spreads a
     /// fragment whose depth isn't known yet.
-    pub(crate) fn nesting_depth(&self, selection_set: &SelectionSet) -> Option<usize> {
+    pub(crate) fn nesting_depth(&self, selection_set: &[Selection]) -> Option<usize> {
         let mut deepest = 0;
-        for selection in &selection_set.selections {
+        for selection in selection_set {
             let depth = match selection {
                 Selection::Field(field) => match &field.selection_set {
                     Some(inner) => self.nesting_depth(inner)?,
                     None => 0,
                 },
                 Selection::InlineFragment(inline) => self.nesting_depth(&inline.selection_set)?,
-                Selection::FragmentSpread(spread) => *self.fragment_depths.get(&spread.name)?,
+                Selection::FragmentSpread(spread) => {
+                    *self.fragment_depths.get(&spread.fragment_name)?
+                }
             };
             deepest = deepest.max(depth);
         }
@@ -461,23 +386,23 @@ impl DocumentBuilder<'_> {
     /// it spreads are known.
     pub(crate) fn selections_of_fragment(
         &self,
-        fragment: &FragmentDef,
+        fragment: &FragmentDefinition,
     ) -> Option<SelectionsByResponseName> {
-        self.selections_of(&fragment.type_condition.name, &fragment.selection_set)
+        self.selections_of(&fragment.type_condition, &fragment.selection_set)
     }
 
     fn selections_of(
         &self,
         parent: &Name,
-        selection_set: &SelectionSet,
+        selection_set: &[Selection],
     ) -> Option<SelectionsByResponseName> {
         let mut selections = SelectionsByResponseName::default();
-        for selection in &selection_set.selections {
+        for selection in selection_set {
             match selection {
                 Selection::Field(field) => {
                     let ty = self.output_field_ty(parent, &field.name)?;
                     let subselections = match &field.selection_set {
-                        Some(inner) => self.selections_of(ty.name(), inner)?,
+                        Some(inner) => self.selections_of(ty.inner_named_type(), inner)?,
                         None => SelectionsByResponseName::default(),
                     };
                     let response_name = field.alias.clone().unwrap_or_else(|| field.name.clone());
@@ -486,36 +411,40 @@ impl DocumentBuilder<'_> {
                         parent: parent.clone(),
                         field_name: field.name.clone(),
                         ty,
-                        args: field.args.clone(),
+                        args: field
+                            .arguments
+                            .iter()
+                            .map(|argument| (**argument).clone())
+                            .collect(),
                     });
                     under_name.merged_subselections.merge(&subselections);
                 }
                 Selection::InlineFragment(inline) => {
-                    let parent = inline.type_condition.as_ref().map_or(parent, |tc| &tc.name);
+                    let parent = inline.type_condition.as_ref().unwrap_or(parent);
                     selections.merge(&self.selections_of(parent, &inline.selection_set)?);
                 }
                 Selection::FragmentSpread(spread) => {
-                    selections.merge(self.fragment_selections.get(&spread.name)?);
+                    selections.merge(self.fragment_selections.get(&spread.fragment_name)?);
                 }
             }
         }
         Some(selections)
     }
 
-    fn output_field_ty(&self, parent: &Name, field_name: &Name) -> Option<Ty> {
-        if field_name.name == TYPENAME {
+    fn output_field_ty(&self, parent: &Name, field_name: &Name) -> Option<Type> {
+        if field_name == TYPENAME {
             return Some(typename_ty());
         }
         let object_fields = self
             .object_type_defs
             .iter()
-            .filter(|o| &o.name == parent)
-            .flat_map(|o| &o.fields_def);
+            .filter(|o| o.type_name() == parent)
+            .flat_map(|o| o.fields());
         let interface_fields = self
             .interface_type_defs
             .iter()
-            .filter(|i| &i.name == parent)
-            .flat_map(|i| &i.fields_def);
+            .filter(|i| i.type_name() == parent)
+            .flat_map(|i| i.fields());
         object_fields
             .chain(interface_fields)
             .find(|f| &f.name == field_name)
@@ -523,18 +452,18 @@ impl DocumentBuilder<'_> {
     }
 
     fn is_object_type(&self, name: &Name) -> bool {
-        self.object_type_defs.iter().any(|o| &o.name == name)
+        self.object_type_defs.iter().any(|o| o.type_name() == name)
     }
 
     /// A `__typename` selection, valid on any composite type and always
     /// mergeable with other `__typename` selections.
     pub(crate) fn typename_field(&mut self) -> Field {
-        let name = Name::new(TYPENAME.to_string());
+        let name = name!(__typename);
         let parent = self
             .stack
             .last()
             .expect("a composite type must be on the stack")
-            .name()
+            .type_name()
             .clone();
         self.record_selection(
             name.clone(),
@@ -548,8 +477,8 @@ impl DocumentBuilder<'_> {
         Field {
             alias: None,
             name,
-            args: Vec::new(),
-            directives: IndexMap::new(),
+            arguments: Vec::new(),
+            directives: ast::DirectiveList::new(),
             selection_set: None,
         }
     }
@@ -562,8 +491,8 @@ const TYPENAME: &str = "__typename";
 // counts the operation's own selection set plus 128.
 const MAX_SELECTION_DEPTH: usize = 129;
 
-fn typename_ty() -> Ty {
-    Ty::NonNull(Box::new(Ty::Named(Name::new("String".to_string()))))
+fn typename_ty() -> Type {
+    ty!(String!)
 }
 
 #[cfg(test)]
@@ -581,11 +510,11 @@ mod tests {
     fn repeated_selections_are_recorded_once() {
         let mut u = Unstructured::new(&[]);
         let mut builder = DocumentBuilder::new(&mut u);
-        let name = Name::new(String::from("f"));
+        let name = name!(f);
         let field = SelectedField {
-            parent: Name::new(String::from("T")),
+            parent: name!(T),
             field_name: name.clone(),
-            ty: Ty::Named(Name::new(String::from("Int"))),
+            ty: ty!(Int),
             args: Vec::new(),
         };
         let (_, selections) = builder.tracking_merges(|b| {

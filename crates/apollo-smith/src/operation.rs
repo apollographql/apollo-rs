@@ -1,122 +1,15 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::name::Name;
-use crate::selection_set::Selection;
-use crate::selection_set::SelectionSet;
 use crate::variable::OperationVariables;
-use crate::variable::VariableDef;
 use crate::DocumentBuilder;
-use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::OperationDefinition;
+use apollo_compiler::ast::OperationType;
+use apollo_compiler::ast::Selection;
 use apollo_compiler::Node;
-use arbitrary::Arbitrary;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
-
-/// The __operationDef type represents an operation definition
-///
-/// *OperationDefinition*:
-///     Description? OperationType Name? VariablesDefinition? Directives? SelectionSet
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Operations).
-#[derive(Debug, Clone)]
-pub struct OperationDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) operation_type: OperationType,
-    pub(crate) name: Option<Name>,
-    pub(crate) variable_definitions: Vec<VariableDef>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) selection_set: SelectionSet,
-}
-
-impl From<OperationDef> for ast::Definition {
-    fn from(x: OperationDef) -> Self {
-        ast::OperationDefinition {
-            description: x.description.map(Into::into),
-            operation_type: x.operation_type.into(),
-            name: x.name.map(Into::into),
-            directives: Directive::to_ast(x.directives),
-            variables: x
-                .variable_definitions
-                .into_iter()
-                .map(|x| Node::new(x.into()))
-                .collect(),
-            selection_set: x.selection_set.into(),
-        }
-        .into()
-    }
-}
-
-impl From<OperationDef> for String {
-    fn from(op_def: OperationDef) -> Self {
-        ast::Definition::from(op_def).to_string()
-    }
-}
-
-impl TryFrom<apollo_parser::cst::OperationDefinition> for OperationDef {
-    type Error = crate::FromError;
-
-    fn try_from(
-        operation_def: apollo_parser::cst::OperationDefinition,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            description: operation_def.description().map(Description::from),
-            name: operation_def.name().map(Name::from),
-            directives: operation_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            operation_type: operation_def
-                .operation_type()
-                .map(OperationType::from)
-                .unwrap_or(OperationType::Query),
-            variable_definitions: Vec::new(),
-            selection_set: operation_def.selection_set().unwrap().try_into()?,
-        })
-    }
-}
-
-/// The __operationType type represents the kind of operation
-///
-/// *OperationType*:
-///     query | mutation | subscription
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#OperationType).
-#[derive(Debug, Arbitrary, Clone, Copy, PartialEq, Eq)]
-pub enum OperationType {
-    Query,
-    Mutation,
-    Subscription,
-}
-
-impl From<OperationType> for ast::OperationType {
-    fn from(op_type: OperationType) -> Self {
-        match op_type {
-            OperationType::Query => Self::Query,
-            OperationType::Mutation => Self::Mutation,
-            OperationType::Subscription => Self::Subscription,
-        }
-    }
-}
-
-impl From<apollo_parser::cst::OperationType> for OperationType {
-    fn from(op_type: apollo_parser::cst::OperationType) -> Self {
-        if op_type.query_token().is_some() {
-            Self::Query
-        } else if op_type.mutation_token().is_some() {
-            Self::Mutation
-        } else if op_type.subscription_token().is_some() {
-            Self::Subscription
-        } else {
-            Self::Query
-        }
-    }
-}
 
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`.
-    pub fn operation_definition(&mut self) -> ArbitraryResult<Option<OperationDef>> {
+    /// Generate an operation using the document's schema roots.
+    pub fn operation_definition(&mut self) -> ArbitraryResult<Option<OperationDefinition>> {
         self.operation_definition_in_document(false)
     }
 
@@ -135,32 +28,17 @@ impl DocumentBuilder<'_> {
     pub(crate) fn operation_definition_in_document(
         &mut self,
         require_named: bool,
-    ) -> ArbitraryResult<Option<OperationDef>> {
-        let schema = match self.schema_def.clone() {
-            Some(schema_def) => schema_def,
-            None => return Ok(None),
-        };
+    ) -> ArbitraryResult<Option<OperationDefinition>> {
+        let available_operations = self.operation_roots();
+        if available_operations.is_empty() {
+            return Ok(None);
+        }
 
         let want_name = require_named || self.u.arbitrary().unwrap_or(false);
         let name = if want_name {
             Some(self.type_name()?)
         } else {
             None
-        };
-
-        let available_operations = {
-            let mut ops = vec![];
-            if let Some(query) = &schema.query {
-                ops.push((OperationType::Query, query));
-            }
-            if let Some(mutation) = &schema.mutation {
-                ops.push((OperationType::Mutation, mutation));
-            }
-            if let Some(subscription) = &schema.subscription {
-                ops.push((OperationType::Subscription, subscription));
-            }
-
-            ops
         };
 
         let (operation_type, chosen_ty) = self.u.choose(&available_operations)?;
@@ -172,7 +50,7 @@ impl DocumentBuilder<'_> {
         let directives = self.directives(directive_location)?;
 
         // Stack
-        self.stack_ty(chosen_ty);
+        self.stack_ty(&apollo_compiler::ast::Type::Named(chosen_ty.clone()));
         self.operation_variables = Some(OperationVariables::default());
 
         let (selection_set, _) = self.tracking_merges(|b| {
@@ -181,9 +59,9 @@ impl DocumentBuilder<'_> {
                 // per <https://spec.graphql.org/September2025/#sec-Single-Root-Field>.
                 // We generate exactly one field to satisfy that condition. The 0-index
                 // is sometimes used to create an alias for the field.
-                Ok(SelectionSet {
-                    selections: vec![Selection::Field(b.field_with_conditions(0, false)?)],
-                })
+                Ok(vec![Selection::Field(Node::new(
+                    b.field_with_conditions(0, false)?,
+                ))])
             } else {
                 b.selection_set()
             }
@@ -199,11 +77,11 @@ impl DocumentBuilder<'_> {
 
         let variable_definitions = variables.definitions;
 
-        Ok(Some(OperationDef {
+        Ok(Some(OperationDefinition {
             description: None,
             operation_type: *operation_type,
             name,
-            variable_definitions,
+            variables: variable_definitions.into_iter().map(Node::new).collect(),
             directives,
             selection_set,
         }))
@@ -217,11 +95,44 @@ mod tests {
     use crate::test_support::input;
     use crate::test_support::prop_assert_valid;
     use crate::test_support::Generated;
-    use crate::Document;
+    use crate::ArbitraryDocument;
+    use crate::DocumentBuilder;
     use apollo_compiler::ast;
     use arbitrary::Arbitrary;
     use arbitrary::Unstructured;
     use proptest::prelude::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn generates_operations_for_extended_schema_roots() {
+        let schema = ast::Document::parse(
+            "schema { query: Q }
+             extend schema { mutation: M, subscription: S }
+             type Q { queryField: Int }
+             type M { mutationField: Int }
+             type S { subscriptionField: Int }",
+            "schema.graphql",
+        )
+        .expect("parse extended schema");
+        let mut generated = HashSet::new();
+        for seed in 0..64 {
+            let data: Vec<u8> = (0..512).map(|index| (index + seed) as u8).collect();
+            let mut u = Unstructured::new(&data);
+            let mut builder =
+                DocumentBuilder::with_document(&mut u, schema.clone()).expect("seed builder");
+            let operation = builder
+                .operation_definition()
+                .expect("generate operation")
+                .expect("schema has roots");
+            generated.insert(operation.operation_type);
+            let mut document = schema.clone();
+            document.definitions.push(operation.into());
+            document
+                .to_mixed_validate()
+                .expect("valid operation for extended schema");
+        }
+        assert_eq!(generated.len(), 3);
+    }
 
     const SCHEMA: &str = "schema { query: Query, mutation: Mutation, subscription: Subscription }
         directive @d(x: Int, y: [String!]!) on QUERY | MUTATION | SUBSCRIPTION | FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT | VARIABLE_DEFINITION
@@ -233,10 +144,10 @@ mod tests {
     // `schema_data`, without the schema's own operations. Shown with the
     // schema, since it differs between cases.
     fn operation_against_generated_schema(schema_data: &[u8], data: &[u8]) -> Generated {
-        let schema = Document::arbitrary_take_rest(Unstructured::new(schema_data))
+        let schema = ArbitraryDocument::arbitrary_take_rest(Unstructured::new(schema_data))
             .ok()
             .map(|doc| {
-                let mut ast = ast::Document::from(doc);
+                let mut ast = doc.0;
                 ast.definitions
                     .retain(|d| d.as_operation_definition().is_none());
                 ast.to_string()

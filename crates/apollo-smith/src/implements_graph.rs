@@ -1,4 +1,4 @@
-use crate::name::Name;
+use apollo_compiler::Name;
 use indexmap::IndexSet;
 use petgraph::graph::DiGraph;
 use petgraph::graph::NodeIndex;
