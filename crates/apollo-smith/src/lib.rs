@@ -325,7 +325,12 @@ impl<'a> DocumentBuilder<'a> {
                 );
             }
         }
-        roots
+        // Mutation and subscription roots alone do not form a valid schema.
+        if roots.iter().any(|(operation, _)| operation.is_query()) {
+            roots
+        } else {
+            Vec::new()
+        }
     }
 
     fn available_definition_kinds(&self) -> Vec<DefinitionKind> {
@@ -466,8 +471,79 @@ mod tests {
     use crate::test_support::prop_assert_valid;
     use crate::DefinitionKind;
     use crate::DocumentBuilder;
+    use apollo_compiler::ast;
+    use apollo_compiler::name;
     use arbitrary::Unstructured;
     use proptest::prelude::*;
+
+    #[test]
+    fn conventional_mutation_and_subscription_types_still_get_a_query_root() {
+        for root in ["Mutation", "Subscription"] {
+            let seed = ast::Document::parse(format!("type {root} {{ a: Int }}"), "schema.graphql")
+                .expect("parse seed");
+            let mut u = Unstructured::new(&[]);
+            let document = DocumentBuilder::with_document(&mut u, seed)
+                .expect("seed builder")
+                .build()
+                .expect("build document");
+            document
+                .to_mixed_validate()
+                .expect("generated schema has a query root");
+        }
+    }
+
+    #[test]
+    fn implicit_schema_keeps_all_conventional_roots() {
+        let seed = ast::Document::parse(
+            "type Query { q: Int } type Mutation { m: Int } type Subscription { s: Int }",
+            "schema.graphql",
+        )
+        .expect("parse implicit schema");
+        seed.to_schema_validate().expect("valid implicit schema");
+        let mut u = Unstructured::new(&[]);
+        let builder = DocumentBuilder::with_document(&mut u, seed).expect("seed builder");
+        assert_eq!(
+            builder.operation_roots(),
+            vec![
+                (ast::OperationType::Query, name!(Query)),
+                (ast::OperationType::Mutation, name!(Mutation)),
+                (ast::OperationType::Subscription, name!(Subscription)),
+            ]
+        );
+        let document = builder.build().expect("build document");
+        assert!(document
+            .definitions
+            .iter()
+            .all(|definition| definition.as_schema_definition().is_none()));
+        document
+            .to_mixed_validate()
+            .expect("valid implicit schema output");
+    }
+
+    #[test]
+    fn schema_extension_can_supply_the_query_root() {
+        let seed = ast::Document::parse(
+            "extend schema { query: Q } type Q { q: Int } type Mutation { m: Int }",
+            "schema.graphql",
+        )
+        .expect("parse extended implicit schema");
+        seed.to_schema_validate()
+            .expect("valid extended implicit schema");
+        let mut u = Unstructured::new(&[]);
+        let builder = DocumentBuilder::with_document(&mut u, seed).expect("seed builder");
+        assert_eq!(
+            builder.operation_roots(),
+            vec![
+                (ast::OperationType::Mutation, name!(Mutation)),
+                (ast::OperationType::Query, name!(Q)),
+            ]
+        );
+        builder
+            .build()
+            .expect("build document")
+            .to_mixed_validate()
+            .expect("valid extended schema output");
+    }
 
     #[test]
     fn definitions_keep_generation_order() {

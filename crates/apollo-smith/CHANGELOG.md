@@ -34,6 +34,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Generate repeated applications of repeatable directives and keep definitions in
   generation order. Seeded definitions retain their source locations and ordering.
 
+## Fixes
+
+- Generate a query root even when a document only defines conventional
+  `Mutation` or `Subscription` object types.
+
 # [0.17.0-beta.2](https://crates.io/crates/apollo-smith/0.17.0-beta.2) - 2026-10-21
 
 ## BREAKING
