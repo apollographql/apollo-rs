@@ -420,8 +420,6 @@ impl ExecutableDocument {
         path: impl AsRef<Path>,
     ) -> Result<Valid<Self>, WithErrors<Self>> {
         let (doc, mut errors) = Parser::new().parse_executable_inner(schema, source_text, path);
-        Arc::make_mut(&mut errors.sources)
-            .extend(schema.sources.iter().map(|(k, v)| (*k, v.clone())));
         validation::validate_executable_document(&mut errors, schema, &doc);
         errors.into_valid_result(doc)
     }
