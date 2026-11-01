@@ -1,0 +1,7 @@
+COMMENT@0:54 "# comment with control characters \u{1}\u{8}\u{b}\u{c}\u{1f} and emoji 💩"
+WHITESPACE@54:55 "\n"
+STRING_VALUE@55:95 "\"string with control characters \0\u{1}\u{8}\u{b}\u{c}\u{e}\u{1f}\""
+WHITESPACE@95:96 "\n"
+STRING_VALUE@96:141 "\"\"\"block string with control characters \u{1}\u{1f}\"\"\""
+WHITESPACE@141:142 "\n"
+EOF@142:142
