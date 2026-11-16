@@ -623,3 +623,24 @@ fn builder_accumulates_diagnostics_from_multiple_sources() {
         "Errors should come from 3 different source files"
     );
 }
+
+#[test]
+fn parse_errors_can_render_labels_pointing_into_the_schema() {
+    let schema = Schema::parse_and_validate(
+        "type Query { user: User }\ntype User { id: ID! }",
+        "schema.graphql",
+    )
+    .unwrap();
+
+    let errors = ExecutableDocument::parse(
+        &schema,
+        "query GetUser { user { id nonExistentField } }",
+        "query.graphql",
+    )
+    .unwrap_err()
+    .errors
+    .to_string();
+
+    assert!(errors.contains("query.graphql"), "{errors}");
+    assert!(errors.contains("schema.graphql"), "{errors}");
+}

@@ -65,3 +65,24 @@ fn test_invalid_field_sets() {
         "{errors}"
     );
 }
+
+#[test]
+fn test_field_set_errors_can_render_labels_pointing_into_the_schema() {
+    let schema = common_schema();
+
+    let input = "organization { name }";
+    let parse_errors = FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql")
+        .unwrap_err()
+        .errors
+        .to_string();
+    let parse_and_validate_errors =
+        FieldSet::parse_and_validate(&schema, name!("Query"), input, "field_set.graphql")
+            .unwrap_err()
+            .errors
+            .to_string();
+
+    for errors in [parse_errors, parse_and_validate_errors] {
+        assert!(errors.contains("field_set.graphql"), "{errors}");
+        assert!(errors.contains("schema.graphql"), "{errors}");
+    }
+}
