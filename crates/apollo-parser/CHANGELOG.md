@@ -16,6 +16,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Features
+
+- **September 2026 directives on directive definitions**
+
+  Parses `Directives[Const]` in directive definitions and the
+  `DIRECTIVE_DEFINITION` directive location, as in the
+  [September 2026 spec](https://spec.graphql.org/September2026/#DirectiveDefinition).
+  Adds `cst::DirectiveDefinition::directives()`,
+  `cst::DirectiveLocation::directive_definition_token()`, and
+  `SyntaxKind::DIRECTIVE_DEFINITION_KW`.
+
 # [0.8.7](https://crates.io/crates/apollo-parser/0.8.7) - 2026-10-15
 
 ## Features

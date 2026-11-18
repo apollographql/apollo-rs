@@ -30,6 +30,7 @@ Schema {
             description: None,
             name: "A",
             arguments: [],
+            directives: [],
             repeatable: false,
             locations: [
                 "OBJECT",

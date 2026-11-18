@@ -44,6 +44,7 @@ Schema {
             description: None,
             name: "dir",
             arguments: [],
+            directives: [],
             repeatable: false,
             locations: [
                 "SCHEMA",

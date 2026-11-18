@@ -17,6 +17,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+> Important: 2 breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+
+- **New `directives` field on `ast::DirectiveDefinition`**
+
+  Directive definitions can now have directives applied to them, as in the
+  [September 2026 spec](https://spec.graphql.org/September2026/#DirectiveDefinition):
+  ```graphql
+  directive @old @deprecated(reason: "Use @new") on FIELD_DEFINITION
+  ```
+  Code that constructs `DirectiveDefinition` with a struct literal must add
+  `directives: Default::default()`.
+
+- **New `DirectiveLocation::DirectiveDefinition` variant**
+
+  Exhaustive `match`es on `DirectiveLocation` need a new arm.
+
+## Features
+
+- **Directives on directive definitions**
+
+  - Directives applied to directive definitions are parsed, serialized, and
+    validated against the new `DIRECTIVE_DEFINITION` location.
+  - The built-in `@deprecated` directive can now be applied to directive definitions.
+  - Introspection: `__Directive` has new `isDeprecated` and `deprecationReason` fields,
+    and `__DirectiveLocation` has a new `DIRECTIVE_DEFINITION` value.
+
 # [1.33.1](https://crates.io/crates/apollo-compiler/1.33.1) - 2026-10-15
 
 ## Maintenance

@@ -782,6 +782,34 @@
               },
               "isDeprecated": false,
               "deprecationReason": null
+            },
+            {
+              "name": "isDeprecated",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deprecationReason",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "inputFields": null,
@@ -908,6 +936,12 @@
             {
               "name": "INPUT_FIELD_DEFINITION",
               "description": "Location adjacent to an input object field definition.",
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "DIRECTIVE_DEFINITION",
+              "description": "Location adjacent to a directive definition.",
               "isDeprecated": false,
               "deprecationReason": null
             }
@@ -1264,7 +1298,8 @@
             "FIELD_DEFINITION",
             "ARGUMENT_DEFINITION",
             "INPUT_FIELD_DEFINITION",
-            "ENUM_VALUE"
+            "ENUM_VALUE",
+            "DIRECTIVE_DEFINITION"
           ],
           "args": [
             {

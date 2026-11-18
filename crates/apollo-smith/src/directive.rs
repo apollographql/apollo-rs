@@ -13,14 +13,15 @@ use indexmap::IndexSet;
 /// The `__DirectiveDef` type represents a Directive definition.
 ///
 /// *DirectiveDefinition*:
-///     Description? **directive @** Name Arguments Definition? **repeatable**? **on** DirectiveLocations
+///     Description? **directive @** Name Arguments Definition? Directives? **repeatable**? **on** DirectiveLocations
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Type-System.Directives).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Type-System.Directives).
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectiveDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
     pub(crate) arguments_definition: Option<ArgumentsDef>,
+    pub(crate) directives: IndexMap<Name, Directive>,
     pub(crate) repeatable: bool,
     pub(crate) directive_locations: IndexSet<DirectiveLocation>,
 }
@@ -34,6 +35,7 @@ impl From<DirectiveDef> for ast::Definition {
                 .arguments_definition
                 .map(Into::into)
                 .unwrap_or_default(),
+            directives: Directive::to_ast(dir_def.directives),
             repeatable: dir_def.repeatable,
             locations: dir_def
                 .directive_locations
@@ -61,6 +63,11 @@ impl TryFrom<apollo_parser::cst::DirectiveDefinition> for DirectiveDef {
                 .arguments_definition()
                 .map(ArgumentsDef::try_from)
                 .transpose()?,
+            directives: directive_def
+                .directives()
+                .map(Directive::convert_directives)
+                .transpose()?
+                .unwrap_or_default(),
             repeatable: directive_def.repeatable_token().is_some(),
             directive_locations: directive_def
                 .directive_locations()
@@ -204,6 +211,10 @@ impl DocumentBuilder<'_> {
             description,
             name,
             arguments_definition,
+            // Directives on directive definitions are not generated yet: doing so
+            // could introduce (possibly indirect) recursive directive definitions,
+            // which are invalid.
+            directives: IndexMap::new(),
             repeatable,
             directive_locations,
         })
@@ -239,6 +250,7 @@ pub enum DirectiveLocation {
     EnumValue,
     InputObject,
     InputFieldDefinition,
+    DirectiveDefinition,
 }
 
 impl From<DirectiveLocation> for ast::DirectiveLocation {
@@ -263,6 +275,7 @@ impl From<DirectiveLocation> for ast::DirectiveLocation {
             DirectiveLocation::EnumValue => Self::EnumValue,
             DirectiveLocation::InputObject => Self::InputObject,
             DirectiveLocation::InputFieldDefinition => Self::InputFieldDefinition,
+            DirectiveLocation::DirectiveDefinition => Self::DirectiveDefinition,
         }
     }
 }
@@ -289,6 +302,7 @@ impl From<DirectiveLocation> for String {
             DirectiveLocation::EnumValue => String::from("ENUM_VALUE"),
             DirectiveLocation::InputObject => String::from("INPUT_OBJECT"),
             DirectiveLocation::InputFieldDefinition => String::from("INPUT_FIELD_DEFINITION"),
+            DirectiveLocation::DirectiveDefinition => String::from("DIRECTIVE_DEFINITION"),
         }
     }
 }
@@ -315,6 +329,7 @@ impl From<String> for DirectiveLocation {
             "ENUM_VALUE" => DirectiveLocation::EnumValue,
             "INPUT_OBJECT" => DirectiveLocation::InputObject,
             "INPUT_FIELD_DEFINITION" => DirectiveLocation::InputFieldDefinition,
+            "DIRECTIVE_DEFINITION" => DirectiveLocation::DirectiveDefinition,
             other => unreachable!(
                 "cannot have {} as a directive location. Documentation: https://spec.graphql.org/October2021/#DirectiveLocation",
                 other

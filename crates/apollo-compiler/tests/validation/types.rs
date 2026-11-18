@@ -1738,9 +1738,9 @@ mod directive_arguments {
                      │                    ──┬──  
                      │                      ╰──── provided value is a string
                      │
-                     ├─[ built_in.graphql:146:7 ]
+                     ├─[ built_in.graphql:150:7 ]
                      │
-                 146 │   if: Boolean!
+                 150 │   if: Boolean!
                      │       ────┬───  
                      │           ╰───── expected type declared here as Boolean!
                 ─────╯
@@ -1751,9 +1751,9 @@ mod directive_arguments {
                      │                    ──┬─  
                      │                      ╰─── provided value is an enum
                      │
-                     ├─[ built_in.graphql:140:7 ]
+                     ├─[ built_in.graphql:144:7 ]
                      │
-                 140 │   if: Boolean!
+                 144 │   if: Boolean!
                      │       ────┬───  
                      │           ╰───── expected type declared here as Boolean!
                 ─────╯

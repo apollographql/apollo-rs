@@ -53,6 +53,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "FRAGMENT_SPREAD",

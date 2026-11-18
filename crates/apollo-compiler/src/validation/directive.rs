@@ -161,6 +161,9 @@ impl FindRecursiveDirective<'_> {
         type_guard: &mut RecursionGuard<'_>,
         def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), CycleError<ast::Directive>> {
+        for directive in &def.directives {
+            self.directive(directive_guard, type_guard, directive)?;
+        }
         for input_value in &def.arguments {
             self.input_value(directive_guard, type_guard, input_value)?;
         }
@@ -197,6 +200,14 @@ pub(crate) fn validate_directive_definition(
         built_in_scalars,
         &def.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
+    );
+    validate_directives(
+        diagnostics,
+        Some(schema),
+        def.directives.iter(),
+        ast::DirectiveLocation::DirectiveDefinition,
+        // directives on directive definitions cannot use variables
+        &[],
     );
 
     let head_location = SourceSpan::recompose(def.location(), def.name.location());

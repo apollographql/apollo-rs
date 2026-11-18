@@ -74,6 +74,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: true,
             locations: [
                 "SCHEMA",
@@ -111,6 +112,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "FIELD_DEFINITION",
@@ -139,6 +141,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: true,
             locations: [
                 "OBJECT",
@@ -159,6 +162,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "OBJECT",
@@ -188,6 +192,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "ENUM_VALUE",
@@ -197,6 +202,7 @@ Schema {
             description: None,
             name: "stream",
             arguments: [],
+            directives: [],
             repeatable: false,
             locations: [
                 "FIELD",
@@ -216,6 +222,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "FIELD",

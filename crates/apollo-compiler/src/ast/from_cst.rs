@@ -175,6 +175,9 @@ impl Convert for cst::DirectiveDefinition {
             arguments: collect_opt(file_id, self.arguments_definition(), |x| {
                 x.input_value_definitions()
             }),
+            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             repeatable: self.repeatable_token().is_some(),
             locations: self
                 .directive_locations()
@@ -494,6 +497,7 @@ impl Convert for cst::DirectiveLocation {
             S![ENUM_VALUE] => Some(ast::DirectiveLocation::EnumValue),
             S![INPUT_OBJECT] => Some(ast::DirectiveLocation::InputObject),
             S![INPUT_FIELD_DEFINITION] => Some(ast::DirectiveLocation::InputFieldDefinition),
+            S![DIRECTIVE_DEFINITION] => Some(ast::DirectiveLocation::DirectiveDefinition),
             _ => None, // TODO: unreachable?
         }
     }

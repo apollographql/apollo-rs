@@ -50,6 +50,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "QUERY",
@@ -71,6 +72,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "FRAGMENT_DEFINITION",

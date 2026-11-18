@@ -30,6 +30,7 @@ Schema {
             description: None,
             name: "repeatable",
             arguments: [],
+            directives: [],
             repeatable: true,
             locations: [
                 "FIELD",
@@ -39,6 +40,7 @@ Schema {
             description: None,
             name: "unique",
             arguments: [],
+            directives: [],
             repeatable: false,
             locations: [
                 "FIELD",

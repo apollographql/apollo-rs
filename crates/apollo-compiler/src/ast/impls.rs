@@ -268,9 +268,8 @@ impl Definition {
     }
 
     pub fn directives(&self) -> &DirectiveList {
-        static EMPTY: DirectiveList = DirectiveList(Vec::new());
         match self {
-            Self::DirectiveDefinition(_) => &EMPTY,
+            Self::DirectiveDefinition(def) => &def.directives,
             Self::OperationDefinition(def) => &def.directives,
             Self::FragmentDefinition(def) => &def.directives,
             Self::SchemaDefinition(def) => &def.directives,
@@ -790,6 +789,7 @@ impl DirectiveLocation {
             DirectiveLocation::EnumValue => "ENUM_VALUE",
             DirectiveLocation::InputObject => "INPUT_OBJECT",
             DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION",
+            DirectiveLocation::DirectiveDefinition => "DIRECTIVE_DEFINITION",
         }
     }
 }

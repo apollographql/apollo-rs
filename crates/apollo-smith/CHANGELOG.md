@@ -18,6 +18,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **New `DirectiveLocation::DirectiveDefinition` variant**
+
+  Directives applied to directive definitions are preserved when converting
+  from apollo-parser CSTs. They are not generated yet.
+
 # [0.16.1](https://crates.io/crates/apollo-smith/0.16.1) - 2026-10-19
 
 ## Maintenance

@@ -10,10 +10,10 @@ use crate::S;
 use crate::T;
 use std::ops::ControlFlow;
 
-/// See: https://spec.graphql.org/October2021/#DirectiveDefinition
+/// See: https://spec.graphql.org/September2026/#DirectiveDefinition
 ///
 /// *DirectiveDefinition*:
-///     Description? **directive @** Name ArgumentsDefinition? **repeatable**? **on** DirectiveLocations
+///     Description? **directive @** Name ArgumentsDefinition? Directives[Const]? **repeatable**? **on** DirectiveLocations
 pub(crate) fn directive_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
 
@@ -47,6 +47,10 @@ pub(crate) fn directive_definition(p: &mut Parser) {
             _ => ControlFlow::Break(()),
         });
         p.expect(T![')'], S![')']);
+    }
+
+    if let Some(T![@]) = p.peek() {
+        directives(p, Constness::Const);
     }
 
     if let Some(node) = p.peek_data() {
@@ -161,6 +165,10 @@ fn directive_location(p: &mut Parser) {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::INPUT_FIELD_DEFINITION_KW);
             }
+            "DIRECTIVE_DEFINITION" => {
+                let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
+                p.bump(SyntaxKind::DIRECTIVE_DEFINITION_KW);
+            }
             _ => {
                 p.err("expected valid Directive Location");
             }
@@ -209,6 +217,48 @@ pub(crate) fn directives(p: &mut Parser, constness: Constness) {
 mod tests {
     use super::*;
     use crate::cst;
+
+    #[test]
+    fn it_can_access_directives_on_directive_definition() {
+        let schema = r#"
+directive @example(arg: String) @deprecated(reason: "use @other") @meta repeatable on FIELD | DIRECTIVE_DEFINITION
+        "#;
+        let parser = Parser::new(schema);
+        let cst = parser.parse();
+        assert!(cst.errors.is_empty(), "{:?}", cst.errors);
+
+        let document = cst.document();
+        for definition in document.definitions() {
+            if let cst::Definition::DirectiveDefinition(dir_def) = definition {
+                let names: Vec<String> = dir_def
+                    .directives()
+                    .unwrap()
+                    .directives()
+                    .map(|d| d.name().unwrap().text().to_string())
+                    .collect();
+                assert_eq!(names, ["deprecated", "meta"]);
+                assert!(dir_def.repeatable_token().is_some());
+                let dir_locations: Vec<String> = dir_def
+                    .directive_locations()
+                    .unwrap()
+                    .directive_locations()
+                    .map(|loc| loc.text().unwrap().to_string())
+                    .collect();
+                assert_eq!(dir_locations, ["FIELD", "DIRECTIVE_DEFINITION"]);
+                return;
+            }
+        }
+        panic!("Expected CST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_rejects_variables_in_directives_on_directive_definition() {
+        let schema = r#"
+directive @example @meta(arg: $var) on FIELD
+        "#;
+        let cst = Parser::new(schema).parse();
+        assert!(!cst.errors.is_empty());
+    }
 
     #[test]
     fn it_can_access_repeatable_kw_on_directive_definition() {

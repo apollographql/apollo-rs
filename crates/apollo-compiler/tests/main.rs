@@ -1,3 +1,4 @@
+mod directive_definition_directives;
 mod error_formatting;
 mod executable;
 mod extensions;

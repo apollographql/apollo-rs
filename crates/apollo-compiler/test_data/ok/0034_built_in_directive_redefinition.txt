@@ -57,6 +57,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: false,
             locations: [
                 "FIELD_DEFINITION",

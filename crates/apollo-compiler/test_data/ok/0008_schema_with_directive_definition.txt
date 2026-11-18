@@ -40,6 +40,7 @@ Schema {
                     directives: [],
                 },
             ],
+            directives: [],
             repeatable: true,
             locations: [
                 "OBJECT",

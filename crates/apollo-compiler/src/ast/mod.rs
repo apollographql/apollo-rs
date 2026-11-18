@@ -140,6 +140,7 @@ pub struct DirectiveDefinition {
     pub description: Option<Node<str>>,
     pub name: Name,
     pub arguments: Vec<Node<InputValueDefinition>>,
+    pub directives: DirectiveList,
     pub repeatable: bool,
     pub locations: Vec<DirectiveLocation>,
 }
@@ -329,6 +330,7 @@ pub enum DirectiveLocation {
     EnumValue,
     InputObject,
     InputFieldDefinition,
+    DirectiveDefinition,
 }
 
 /// Executable AST for a [_VariableDefinition_](https://spec.graphql.org/draft/#VariableDefinition)

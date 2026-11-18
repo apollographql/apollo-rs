@@ -297,6 +297,13 @@ impl ObjectValue for DirectiveResolver<'_> {
                     .map(|loc| ResolvedValue::leaf(loc.name())),
             )),
             "isRepeatable" => Ok(ResolvedValue::leaf(self.def.repeatable)),
+            "isDeprecated" => Ok(ResolvedValue::leaf(
+                self.def.directives.get("deprecated").is_some(),
+            )),
+            "deprecationReason" => Ok(deprecation_reason(
+                info,
+                self.def.directives.get("deprecated"),
+            )),
             _ => Err(self.unknown_field_error(info)),
         }
     }

@@ -69,6 +69,8 @@ impl cst::DirectiveLocation {
             Some("INPUT_OBJECT")
         } else if self.input_field_definition_token().is_some() {
             Some("INPUT_FIELD_DEFINITION")
+        } else if self.directive_definition_token().is_some() {
+            Some("DIRECTIVE_DEFINITION")
         } else {
             None
         };
