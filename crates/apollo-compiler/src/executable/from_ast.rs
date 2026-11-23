@@ -212,8 +212,22 @@ impl<'schema, 'errors> ExecutableDocumentBuilder<'schema, 'errors> {
 
     pub(crate) fn build_inner(mut self) -> ExecutableDocument {
         self.document.sources = self.errors.sources.clone();
+        if let Some(schema) = self.schema {
+            extend_with_schema_sources(self.errors, schema);
+        }
         self.document
     }
+}
+
+/// Build errors can carry labels that point into the schema, such as the
+/// definition of a type a selection does not match, and those are only
+/// renderable if the schema's sources are reachable from the diagnostic list.
+///
+/// Call this after the parsed value has copied `errors.sources`, rather than
+/// seeding the list at construction: the parsed value's `sources` field is
+/// public, so seeding would make it report the schema's files as its own.
+pub(crate) fn extend_with_schema_sources(errors: &mut DiagnosticList, schema: &Schema) {
+    Arc::make_mut(&mut errors.sources).extend(schema.sources.iter().map(|(k, v)| (*k, v.clone())));
 }
 
 pub(crate) fn document_from_ast(

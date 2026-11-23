@@ -644,3 +644,32 @@ fn parse_errors_can_render_labels_pointing_into_the_schema() {
     assert!(errors.contains("query.graphql"), "{errors}");
     assert!(errors.contains("schema.graphql"), "{errors}");
 }
+
+#[test]
+fn ast_and_builder_errors_can_render_labels_pointing_into_the_schema() {
+    let schema = Schema::parse_and_validate(
+        "type Query { user: User }\ntype User { id: ID! }",
+        "schema.graphql",
+    )
+    .unwrap();
+    let query = "query GetUser { user { id nonExistentField } }";
+    let ast = apollo_compiler::ast::Document::parse(query, "query.graphql").unwrap();
+
+    let to_executable_errors = ast.to_executable(&schema).unwrap_err().errors;
+    let to_executable_validate_errors = ast.to_executable_validate(&schema).unwrap_err().errors;
+    let mut builder_errors = DiagnosticList::new(Default::default());
+    let doc = ExecutableDocument::builder(Some(&schema), &mut builder_errors)
+        .parse(query, "query.graphql")
+        .build();
+
+    for errors in [
+        to_executable_errors,
+        to_executable_validate_errors,
+        builder_errors,
+    ] {
+        let errors = errors.to_string();
+        assert!(errors.contains("query.graphql"), "{errors}");
+        assert!(errors.contains("schema.graphql"), "{errors}");
+    }
+    assert_eq!(doc.sources.len(), 1);
+}

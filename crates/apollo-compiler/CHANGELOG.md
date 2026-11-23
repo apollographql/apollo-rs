@@ -21,15 +21,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Show schema labels in errors from `ExecutableDocument::parse` and `FieldSet::parse` - [Pajn], [pull/1158]**
+- **Show schema labels in errors from building executable documents and field sets - [Pajn], [pull/1158]**
 
-  Errors from parsing can point into the schema, for example to the definition
-  of a type that a selection does not match. The diagnostic list returned by
-  `ExecutableDocument::parse`, `FieldSet::parse` and `FieldSet::parse_and_validate`
-  did not contain the schema's sources, so that label was dropped when rendering
-  and ariadne printed "Unable to fetch source" to stderr. These now render the
-  same as `ExecutableDocument::parse_and_validate`. The parsed value's own
-  `sources` field still contains only the parsed file.
+  Errors from building an executable document or field set can point into the
+  schema, for example to the definition of a type that a selection does not
+  match. The diagnostic list returned by `ExecutableDocument::parse`,
+  `ast::Document::to_executable`, `ast::Document::to_executable_validate`,
+  `ExecutableDocumentBuilder::build` with a schema, `FieldSet::parse` and
+  `FieldSet::parse_and_validate` did not contain the schema's sources, so that
+  label was dropped when rendering and ariadne printed "Unable to fetch source"
+  to stderr. These now render the same as `ExecutableDocument::parse_and_validate`.
+  The built document's or field set's own `sources` field still contains only
+  its own files.
 
 [Pajn]: https://github.com/Pajn
 [pull/1158]: https://github.com/apollographql/apollo-rs/pull/1158
