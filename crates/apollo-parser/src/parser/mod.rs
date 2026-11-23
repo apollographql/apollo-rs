@@ -242,8 +242,10 @@ impl<'input> Parser<'input> {
 
     /// Push pending tokens (ignored + errors) to the current node.
     pub(crate) fn push_ignored(&mut self) {
-        let pending = std::mem::take(&mut self.pending);
-        for item in pending {
+        // Drain instead of taking the Vec so its buffer is reused. This runs
+        // for every node, and reallocating it each time showed up in profiles.
+        let mut builder = self.builder.borrow_mut();
+        for item in self.pending.drain(..) {
             match item {
                 PendingToken::Ignored(token) => {
                     let syntax_kind = match token.kind {
@@ -252,10 +254,10 @@ impl<'input> Parser<'input> {
                         TokenKind::Comma => SyntaxKind::COMMA,
                         _ => unreachable!(),
                     };
-                    self.push_token(syntax_kind, token);
+                    builder.token(syntax_kind, token.data());
                 }
                 PendingToken::Error(data) => {
-                    self.builder.borrow_mut().token(SyntaxKind::ERROR, &data);
+                    builder.token(SyntaxKind::ERROR, &data);
                 }
             }
         }
