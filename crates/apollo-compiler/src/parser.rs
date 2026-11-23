@@ -375,6 +375,7 @@ impl Parser {
             sources: errors.sources.clone(),
             selection_set,
         };
+        executable::from_ast::extend_with_schema_sources(&mut errors, schema);
         (field_set, errors)
     }
 
