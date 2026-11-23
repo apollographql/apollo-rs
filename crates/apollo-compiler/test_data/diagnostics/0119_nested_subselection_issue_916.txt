@@ -1,0 +1,10 @@
+Error: field selection of scalar type `String` must not have subselections
+   ╭─[0119_nested_subselection_issue_916.graphql:8:22]
+   │
+ 8 │ query Invalid { me { name { reviews { body } } } }
+   │                      ────────────┬────────────  
+   │                                  ╰────────────── remove subselections here
+   │ 
+   │ Note: path to the field: `query Invalid → me → name`
+───╯
+
