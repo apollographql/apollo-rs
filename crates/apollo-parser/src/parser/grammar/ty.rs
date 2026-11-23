@@ -63,7 +63,6 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Option<Token<'a>>> {
             let _name_node_guard = p.start_node(SyntaxKind::NAME);
 
             let token = p.pop();
-            name::validate_name(token.data(), p);
             p.push_token(SyntaxKind::IDENT, token);
         }
         Some(_) => return Err(Some(p.pop())),
