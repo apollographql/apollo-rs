@@ -14,6 +14,7 @@ pub use crate::lexer::Lexer;
 pub use crate::lexer::Token;
 pub use crate::lexer::TokenKind;
 pub use crate::limit::LimitTracker;
+pub use crate::parser::GraphQLLanguage;
 pub use crate::parser::Parser;
 pub use crate::parser::SyntaxElement;
 pub use crate::parser::SyntaxKind;

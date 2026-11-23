@@ -388,13 +388,21 @@ fn unescape_block_string(raw_value: &str) -> String {
 // TODO(@goto-bus-stop) As this handles escaping, which can fail in theory, it should be TryFrom
 impl From<&'_ cst::StringValue> for String {
     fn from(val: &'_ cst::StringValue) -> Self {
-        let text = text_of_first_token(val.syntax());
-        // These slices would panic if the contents are invalid, but the lexer already guarantees that the
-        // string is valid.
-        if is_block_string(&text) {
-            unescape_block_string(&text[3..text.len() - 3])
+        cst::StringValue::unescape(&text_of_first_token(val.syntax()))
+    }
+}
+
+impl cst::StringValue {
+    /// Returns the value of a string token given its source text, including
+    /// the surrounding quotes. This lets callers that read tokens without a
+    /// `StringValue` node, such as a green tree walk, share the unescaping.
+    ///
+    /// Panics if `token_text` is not a string token accepted by the lexer.
+    pub fn unescape(token_text: &str) -> String {
+        if is_block_string(token_text) {
+            unescape_block_string(&token_text[3..token_text.len() - 3])
         } else {
-            unescape_string(&text[1..text.len() - 1])
+            unescape_string(&token_text[1..token_text.len() - 1])
         }
     }
 }

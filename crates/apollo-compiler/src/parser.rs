@@ -12,7 +12,6 @@
 //! If not, create a [`Parser`] and use its builder methods to change configuration.
 
 use crate::ast;
-use crate::ast::from_cst::Convert;
 use crate::ast::Document;
 use crate::collections::IndexMap;
 use crate::executable;
@@ -23,7 +22,6 @@ use crate::validation::Valid;
 use crate::validation::WithErrors;
 use crate::ExecutableDocument;
 use crate::Schema;
-use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use serde::Deserialize;
 use serde::Serialize;
@@ -397,8 +395,7 @@ impl Parser {
             |parser| parser.parse_type(),
         );
         errors.into_result().map(|()| {
-            tree.ty()
-                .convert(file_id)
+            ast::from_cst::convert_type(&tree.ty(), file_id)
                 .expect("conversion should be infallible if there were no syntax errors")
         })
     }
@@ -574,10 +571,10 @@ impl TaggedFileId {
 }
 
 impl SourceSpan {
-    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
+    pub(crate) fn new(file_id: FileId, text_range: TextRange) -> Self {
         Self {
             file_id,
-            text_range: node.text_range(),
+            text_range,
         }
     }
 

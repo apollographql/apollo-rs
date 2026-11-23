@@ -6,658 +6,29 @@ use crate::parser::SourceSpan;
 use crate::Node;
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
+use apollo_parser::GraphQLLanguage;
+use apollo_parser::SyntaxKind as K;
 use apollo_parser::SyntaxNode;
 use apollo_parser::S;
+use rowan::GreenNodeData;
+use rowan::GreenTokenData;
+use rowan::Language;
+use rowan::NodeOrToken;
+use rowan::TextRange;
+use rowan::TextSize;
 
 impl Document {
     pub(crate) fn from_cst(document: cst::Document, file_id: FileId, sources: SourceMap) -> Self {
+        let syntax = document.syntax();
+        let green = syntax.green();
+        let cx = Cx { file_id };
         Self {
             sources,
-            definitions: document
-                .definitions()
-                .filter_map(|def| def.convert(file_id))
+            definitions: Green::root(syntax, &green)
+                .children()
+                .filter_map(|def| cx.definition(def))
                 .collect(),
         }
-    }
-}
-
-/// Similar to `TryFrom`, but with an `Option` return type because AST uses Option a lot.
-pub(crate) trait Convert {
-    type Target;
-    fn convert(&self, file_id: FileId) -> Option<Self::Target>;
-}
-
-fn with_location<T>(file_id: FileId, syntax_node: &SyntaxNode, node: T) -> Node<T> {
-    Node::new_parsed(node, SourceSpan::new(file_id, syntax_node))
-}
-
-/// Convert and collect, silently skipping entries with conversion errors
-/// as they have corresponding parse errors in `SyntaxTree::errors`
-#[inline]
-fn collect<CstType, AstType>(
-    file_id: FileId,
-    iter: impl IntoIterator<Item = CstType>,
-) -> Vec<Node<AstType>>
-where
-    CstType: CstNode + Convert<Target = AstType>,
-{
-    iter.into_iter()
-        .filter_map(|value| {
-            Some(with_location(
-                file_id,
-                value.syntax(),
-                value.convert(file_id)?,
-            ))
-        })
-        .collect()
-}
-
-#[inline]
-fn collect_opt<CstType1, CstType2, AstType, F, I>(
-    file_id: FileId,
-    opt: Option<CstType1>,
-    convert: F,
-) -> Vec<Node<AstType>>
-where
-    F: FnOnce(CstType1) -> I,
-    I: IntoIterator<Item = CstType2>,
-    CstType2: CstNode + Convert<Target = AstType>,
-{
-    if let Some(cst) = opt {
-        collect(file_id, convert(cst))
-    } else {
-        Vec::new()
-    }
-}
-
-impl<T: Convert> Convert for Option<T> {
-    type Target = Option<T::Target>;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(if let Some(inner) = self {
-            Some(inner.convert(file_id)?)
-        } else {
-            None
-        })
-    }
-}
-
-impl Convert for cst::Definition {
-    type Target = ast::Definition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        use ast::Definition as A;
-        use cst::Definition as C;
-        macro_rules! r {
-            ($def: ident) => {
-                with_location(file_id, $def.syntax(), $def.convert(file_id)?)
-            };
-        }
-        Some(match self {
-            C::OperationDefinition(def) => A::OperationDefinition(r!(def)),
-            C::FragmentDefinition(def) => A::FragmentDefinition(r!(def)),
-            C::DirectiveDefinition(def) => A::DirectiveDefinition(r!(def)),
-            C::SchemaDefinition(def) => A::SchemaDefinition(r!(def)),
-            C::ScalarTypeDefinition(def) => A::ScalarTypeDefinition(r!(def)),
-            C::ObjectTypeDefinition(def) => A::ObjectTypeDefinition(r!(def)),
-            C::InterfaceTypeDefinition(def) => A::InterfaceTypeDefinition(r!(def)),
-            C::UnionTypeDefinition(def) => A::UnionTypeDefinition(r!(def)),
-            C::EnumTypeDefinition(def) => A::EnumTypeDefinition(r!(def)),
-            C::InputObjectTypeDefinition(def) => A::InputObjectTypeDefinition(r!(def)),
-            C::SchemaExtension(def) => A::SchemaExtension(r!(def)),
-            C::DirectiveExtension(def) => A::DirectiveExtension(r!(def)),
-            C::ScalarTypeExtension(def) => A::ScalarTypeExtension(r!(def)),
-            C::ObjectTypeExtension(def) => A::ObjectTypeExtension(r!(def)),
-            C::InterfaceTypeExtension(def) => A::InterfaceTypeExtension(r!(def)),
-            C::UnionTypeExtension(def) => A::UnionTypeExtension(r!(def)),
-            C::EnumTypeExtension(def) => A::EnumTypeExtension(r!(def)),
-            C::InputObjectTypeExtension(def) => A::InputObjectTypeExtension(r!(def)),
-        })
-    }
-}
-
-impl Convert for cst::OperationDefinition {
-    type Target = ast::OperationDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let operation_type = if let Some(ty) = self.operation_type() {
-            ty.convert(file_id)?
-        } else {
-            ast::OperationType::Query
-        };
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            operation_type,
-            name: self.name().convert(file_id)?,
-            variables: collect_opt(file_id, self.variables_definition(), |x| {
-                x.variable_definitions()
-            }),
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            selection_set: self
-                .selection_set()?
-                .selections()
-                .filter_map(|sel| sel.convert(file_id))
-                .collect(),
-        })
-    }
-}
-
-impl Convert for cst::FragmentDefinition {
-    type Target = ast::FragmentDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.fragment_name()?.name()?.convert(file_id)?,
-            type_condition: self.type_condition()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            selection_set: self.selection_set().convert(file_id)??,
-        })
-    }
-}
-
-impl Convert for cst::TypeCondition {
-    type Target = ast::NamedType;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        self.named_type()?.name()?.convert(file_id)
-    }
-}
-
-impl Convert for cst::DirectiveDefinition {
-    type Target = ast::DirectiveDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            arguments: collect_opt(file_id, self.arguments_definition(), |x| {
-                x.input_value_definitions()
-            }),
-            repeatable: self.repeatable_token().is_some(),
-            locations: self
-                .directive_locations()
-                .map(|x| {
-                    x.directive_locations()
-                        .filter_map(|location| location.convert(file_id))
-                        .collect()
-                })
-                .unwrap_or_default(),
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::SchemaDefinition {
-    type Target = ast::SchemaDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            // This may represent a syntactically invalid thing: a schema without any root
-            // operation definitions. However the presence of a broken schema definition does
-            // affect whether a default schema definition should be inserted, so we bubble up the
-            // potentially invalid definition.
-            root_operations: self
-                .root_operation_type_definitions()
-                .filter_map(|x| x.convert(file_id))
-                .collect(),
-        })
-    }
-}
-
-impl Convert for cst::ScalarTypeDefinition {
-    type Target = ast::ScalarTypeDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::ObjectTypeDefinition {
-    type Target = ast::ObjectTypeDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
-        })
-    }
-}
-
-impl Convert for cst::InterfaceTypeDefinition {
-    type Target = ast::InterfaceTypeDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
-        })
-    }
-}
-
-impl Convert for cst::UnionTypeDefinition {
-    type Target = ast::UnionTypeDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            members: self
-                .union_member_types()
-                .map_or_else(Default::default, |member_types| {
-                    member_types
-                        .named_types()
-                        .filter_map(|n| n.name()?.convert(file_id))
-                        .collect()
-                }),
-        })
-    }
-}
-
-impl Convert for cst::EnumTypeDefinition {
-    type Target = ast::EnumTypeDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            values: collect_opt(file_id, self.enum_values_definition(), |x| {
-                x.enum_value_definitions()
-            }),
-        })
-    }
-}
-
-impl Convert for cst::InputObjectTypeDefinition {
-    type Target = ast::InputObjectTypeDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            fields: collect_opt(file_id, self.input_fields_definition(), |x| {
-                x.input_value_definitions()
-            }),
-        })
-    }
-}
-
-impl Convert for cst::SchemaExtension {
-    type Target = ast::SchemaExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            root_operations: self
-                .root_operation_type_definitions()
-                .filter_map(|x| x.convert(file_id))
-                .collect(),
-        })
-    }
-}
-
-impl Convert for cst::DirectiveExtension {
-    type Target = ast::DirectiveExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::ScalarTypeExtension {
-    type Target = ast::ScalarTypeExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::ObjectTypeExtension {
-    type Target = ast::ObjectTypeExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
-        })
-    }
-}
-
-impl Convert for cst::InterfaceTypeExtension {
-    type Target = ast::InterfaceTypeExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
-        })
-    }
-}
-
-impl Convert for cst::UnionTypeExtension {
-    type Target = ast::UnionTypeExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            members: self
-                .union_member_types()
-                .map_or_else(Default::default, |member_types| {
-                    member_types
-                        .named_types()
-                        .filter_map(|n| n.name()?.convert(file_id))
-                        .collect()
-                }),
-        })
-    }
-}
-
-impl Convert for cst::EnumTypeExtension {
-    type Target = ast::EnumTypeExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            values: collect_opt(file_id, self.enum_values_definition(), |x| {
-                x.enum_value_definitions()
-            }),
-        })
-    }
-}
-
-impl Convert for cst::InputObjectTypeExtension {
-    type Target = ast::InputObjectTypeExtension;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            fields: collect_opt(file_id, self.input_fields_definition(), |x| {
-                x.input_value_definitions()
-            }),
-        })
-    }
-}
-
-impl Convert for cst::Description {
-    type Target = Node<str>;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Node::new_str_parsed(
-            &String::from(self.string_value()?),
-            SourceSpan::new(file_id, self.syntax()),
-        ))
-    }
-}
-
-impl Convert for cst::Directive {
-    type Target = ast::Directive;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            name: self.name()?.convert(file_id)?,
-            arguments: collect_opt(file_id, self.arguments(), |x| x.arguments()),
-        })
-    }
-}
-
-impl Convert for cst::OperationType {
-    type Target = ast::OperationType;
-
-    fn convert(&self, _file_id: FileId) -> Option<Self::Target> {
-        let token = self.syntax().first_token()?;
-        match token.kind() {
-            S![query] => Some(ast::OperationType::Query),
-            S![mutation] => Some(ast::OperationType::Mutation),
-            S![subscription] => Some(ast::OperationType::Subscription),
-            _ => None, // TODO: unreachable?
-        }
-    }
-}
-
-impl Convert for cst::RootOperationTypeDefinition {
-    type Target = Node<(ast::OperationType, ast::NamedType)>;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let ty = self.operation_type()?.convert(file_id)?;
-        let name = self.named_type()?.name()?.convert(file_id)?;
-        Some(with_location(file_id, self.syntax(), (ty, name)))
-    }
-}
-
-impl Convert for cst::DirectiveLocation {
-    type Target = ast::DirectiveLocation;
-
-    fn convert(&self, _file_id: FileId) -> Option<Self::Target> {
-        let token = self.syntax().first_token()?;
-        match token.kind() {
-            S![QUERY] => Some(ast::DirectiveLocation::Query),
-            S![MUTATION] => Some(ast::DirectiveLocation::Mutation),
-            S![SUBSCRIPTION] => Some(ast::DirectiveLocation::Subscription),
-            S![FIELD] => Some(ast::DirectiveLocation::Field),
-            S![FRAGMENT_DEFINITION] => Some(ast::DirectiveLocation::FragmentDefinition),
-            S![FRAGMENT_SPREAD] => Some(ast::DirectiveLocation::FragmentSpread),
-            S![INLINE_FRAGMENT] => Some(ast::DirectiveLocation::InlineFragment),
-            S![VARIABLE_DEFINITION] => Some(ast::DirectiveLocation::VariableDefinition),
-            S![SCHEMA] => Some(ast::DirectiveLocation::Schema),
-            S![SCALAR] => Some(ast::DirectiveLocation::Scalar),
-            S![OBJECT] => Some(ast::DirectiveLocation::Object),
-            S![FIELD_DEFINITION] => Some(ast::DirectiveLocation::FieldDefinition),
-            S![ARGUMENT_DEFINITION] => Some(ast::DirectiveLocation::ArgumentDefinition),
-            S![INTERFACE] => Some(ast::DirectiveLocation::Interface),
-            S![UNION] => Some(ast::DirectiveLocation::Union),
-            S![ENUM] => Some(ast::DirectiveLocation::Enum),
-            S![ENUM_VALUE] => Some(ast::DirectiveLocation::EnumValue),
-            S![INPUT_OBJECT] => Some(ast::DirectiveLocation::InputObject),
-            S![INPUT_FIELD_DEFINITION] => Some(ast::DirectiveLocation::InputFieldDefinition),
-            S![DIRECTIVE_DEFINITION] => Some(ast::DirectiveLocation::DirectiveDefinition),
-            _ => None, // TODO: unreachable?
-        }
-    }
-}
-
-impl Convert for Option<cst::ImplementsInterfaces> {
-    type Target = Vec<ast::NamedType>;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(if let Some(inner) = self {
-            inner
-                .named_types()
-                .filter_map(|n| n.name()?.convert(file_id))
-                .collect()
-        } else {
-            Vec::new()
-        })
-    }
-}
-
-impl Convert for cst::VariableDefinition {
-    type Target = ast::VariableDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let default_value = if let Some(default) = self.default_value() {
-            let value = default.value()?;
-            Some(with_location(
-                file_id,
-                value.syntax(),
-                value.convert(file_id)?,
-            ))
-        } else {
-            None
-        };
-        let ty = &self.ty()?;
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.variable()?.name()?.convert(file_id)?,
-            ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
-            default_value,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::Type {
-    type Target = ast::Type;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        use ast::Type as A;
-        use cst::Type as C;
-        match self {
-            C::NamedType(name) => Some(A::Named(name.name()?.convert(file_id)?)),
-            C::ListType(inner) => Some(A::List(Box::new(inner.ty()?.convert(file_id)?))),
-            C::NonNullType(inner) => {
-                if let Some(named) = inner.named_type() {
-                    Some(A::NonNullNamed(named.name()?.convert(file_id)?))
-                } else if let Some(list) = inner.list_type() {
-                    Some(A::NonNullList(Box::new(list.ty()?.convert(file_id)?)))
-                } else {
-                    None
-                }
-            }
-        }
-    }
-}
-
-impl Convert for cst::FieldDefinition {
-    type Target = ast::FieldDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            arguments: collect_opt(file_id, self.arguments_definition(), |x| {
-                x.input_value_definitions()
-            }),
-            ty: self.ty()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::Argument {
-    type Target = ast::Argument;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let name = self.name()?.convert(file_id)?;
-        let value = self.value()?;
-        let value = with_location(file_id, value.syntax(), value.convert(file_id)?);
-        Some(ast::Argument { name, value })
-    }
-}
-
-impl Convert for cst::InputValueDefinition {
-    type Target = ast::InputValueDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let default_value = if let Some(default) = self.default_value() {
-            let value = default.value()?;
-            Some(with_location(
-                file_id,
-                value.syntax(),
-                value.convert(file_id)?,
-            ))
-        } else {
-            None
-        };
-        let ty = &self.ty()?;
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
-            default_value,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::EnumValueDefinition {
-    type Target = ast::EnumValueDefinition;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            description: self.description().convert(file_id)?,
-            value: self.enum_value()?.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-        })
-    }
-}
-
-impl Convert for cst::SelectionSet {
-    type Target = Vec<ast::Selection>;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(convert_selection_set(self, file_id))
     }
 }
 
@@ -665,128 +36,667 @@ pub(crate) fn convert_selection_set(
     selection_set: &cst::SelectionSet,
     file_id: FileId,
 ) -> Vec<ast::Selection> {
-    selection_set
-        .selections()
-        .filter_map(|selection| selection.convert(file_id))
-        .collect()
+    let syntax = selection_set.syntax();
+    let green = syntax.green();
+    Cx { file_id }.selection_set(Green::root(syntax, &green))
 }
 
-impl Convert for cst::Selection {
-    type Target = ast::Selection;
+pub(crate) fn convert_type(ty: &cst::Type, file_id: FileId) -> Option<ast::Type> {
+    let syntax = ty.syntax();
+    let green = syntax.green();
+    Cx { file_id }.ty(Green::root(syntax, &green))
+}
 
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
+/// A CST node read straight from the green tree.
+///
+/// Navigating with rowan's `SyntaxNode` allocates a cursor for every node it
+/// visits, and the typed CST accessors rescan children from the start on
+/// every call. That made up most of the conversion time. Green nodes can be
+/// walked without allocating, as long as we track text offsets ourselves.
+#[derive(Clone, Copy)]
+struct Green<'a> {
+    node: &'a GreenNodeData,
+    offset: TextSize,
+}
+
+impl<'a> Green<'a> {
+    fn root(syntax: &SyntaxNode, green: &'a GreenNodeData) -> Self {
+        Self {
+            node: green,
+            offset: syntax.text_range().start(),
+        }
+    }
+
+    fn kind(self) -> K {
+        GraphQLLanguage::kind_from_raw(self.node.kind())
+    }
+
+    fn range(self) -> TextRange {
+        TextRange::at(self.offset, self.node.text_len())
+    }
+
+    fn children(self) -> impl Iterator<Item = Green<'a>> {
+        let mut offset = self.offset;
+        self.node.children().filter_map(move |element| {
+            let start = offset;
+            offset += element.text_len();
+            match element {
+                NodeOrToken::Node(node) => Some(Green {
+                    node,
+                    offset: start,
+                }),
+                NodeOrToken::Token(_) => None,
+            }
+        })
+    }
+
+    /// The first child node of `kind`, like the typed CST accessors.
+    fn child(self, kind: K) -> Option<Green<'a>> {
+        self.children().find(|child| child.kind() == kind)
+    }
+
+    fn child_where(self, pred: impl Fn(K) -> bool) -> Option<Green<'a>> {
+        self.children().find(|child| pred(child.kind()))
+    }
+
+    fn children_of(self, kind: K) -> impl Iterator<Item = Green<'a>> {
+        self.children().filter(move |child| child.kind() == kind)
+    }
+
+    fn has_token(self, kind: K) -> bool {
+        self.node.children().any(|element| match element {
+            NodeOrToken::Token(token) => GraphQLLanguage::kind_from_raw(token.kind()) == kind,
+            NodeOrToken::Node(_) => false,
+        })
+    }
+
+    /// Follows the first child down to a token, matching `SyntaxNode::first_token`.
+    fn first_token(self) -> Option<&'a GreenTokenData> {
+        let mut node = self.node;
+        loop {
+            match node.children().next()? {
+                NodeOrToken::Token(token) => return Some(token),
+                NodeOrToken::Node(child) => node = child,
+            }
+        }
+    }
+
+    fn first_token_kind(self) -> Option<K> {
+        Some(GraphQLLanguage::kind_from_raw(self.first_token()?.kind()))
+    }
+}
+
+fn is_type(kind: K) -> bool {
+    matches!(kind, K::NAMED_TYPE | K::LIST_TYPE | K::NON_NULL_TYPE)
+}
+
+fn is_value(kind: K) -> bool {
+    matches!(
+        kind,
+        K::VARIABLE
+            | K::STRING_VALUE
+            | K::FLOAT_VALUE
+            | K::INT_VALUE
+            | K::BOOLEAN_VALUE
+            | K::NULL_VALUE
+            | K::ENUM_VALUE
+            | K::LIST_VALUE
+            | K::OBJECT_VALUE
+    )
+}
+
+/// Conversion functions return `None` for nodes with syntax errors. Those
+/// nodes are silently skipped, as they have corresponding parse errors in
+/// `SyntaxTree::errors`.
+#[derive(Clone, Copy)]
+struct Cx {
+    file_id: FileId,
+}
+
+impl Cx {
+    fn location(self, node: Green<'_>) -> SourceSpan {
+        SourceSpan::new(self.file_id, node.range())
+    }
+
+    fn with_location<T>(self, node: Green<'_>, value: T) -> Node<T> {
+        Node::new_parsed(value, self.location(node))
+    }
+
+    /// Converts every child of `kind` inside the optional `list` node.
+    fn collect<T>(
+        self,
+        list: Option<Green<'_>>,
+        kind: K,
+        convert: impl Fn(Self, Green<'_>) -> Option<T>,
+    ) -> Vec<Node<T>> {
+        let Some(list) = list else {
+            return Vec::new();
+        };
+        list.children_of(kind)
+            .filter_map(|item| Some(self.with_location(item, convert(self, item)?)))
+            .collect()
+    }
+
+    fn directives(self, parent: Green<'_>) -> ast::DirectiveList {
+        ast::DirectiveList(self.collect(parent.child(K::DIRECTIVES), K::DIRECTIVE, Self::directive))
+    }
+
+    fn description(self, parent: Green<'_>) -> Option<Option<Node<str>>> {
+        let Some(description) = parent.child(K::DESCRIPTION) else {
+            return Some(None);
+        };
+        let token = description.child(K::STRING_VALUE)?.first_token()?;
+        Some(Some(Node::new_str_parsed(
+            &cst::StringValue::unescape(token.text()),
+            self.location(description),
+        )))
+    }
+
+    fn name(self, node: Green<'_>) -> Option<crate::Name> {
+        let text = node.first_token()?.text();
+        debug_assert!(crate::Name::is_valid_syntax(text));
+        Some(
+            crate::Name::new(text)
+                .ok()?
+                .with_location(self.location(node)),
+        )
+    }
+
+    fn child_name(self, parent: Green<'_>) -> Option<crate::Name> {
+        self.name(parent.child(K::NAME)?)
+    }
+
+    fn opt_child_name(self, parent: Green<'_>) -> Option<Option<crate::Name>> {
+        match parent.child(K::NAME) {
+            Some(name) => Some(Some(self.name(name)?)),
+            None => Some(None),
+        }
+    }
+
+    /// The name inside a `NamedType`, `FragmentName`, `Variable` or similar wrapper node.
+    fn wrapped_name(self, parent: Green<'_>, wrapper: K) -> Option<crate::Name> {
+        self.child_name(parent.child(wrapper)?)
+    }
+
+    fn named_types(self, list: Option<Green<'_>>) -> Vec<ast::NamedType> {
+        let Some(list) = list else {
+            return Vec::new();
+        };
+        list.children_of(K::NAMED_TYPE)
+            .filter_map(|named| self.child_name(named))
+            .collect()
+    }
+
+    fn definition(self, node: Green<'_>) -> Option<ast::Definition> {
+        use ast::Definition as A;
+        macro_rules! r {
+            ($convert: ident) => {
+                self.with_location(node, self.$convert(node)?)
+            };
+        }
+        Some(match node.kind() {
+            K::OPERATION_DEFINITION => A::OperationDefinition(r!(operation_definition)),
+            K::FRAGMENT_DEFINITION => A::FragmentDefinition(r!(fragment_definition)),
+            K::DIRECTIVE_DEFINITION => A::DirectiveDefinition(r!(directive_definition)),
+            K::SCHEMA_DEFINITION => A::SchemaDefinition(r!(schema_definition)),
+            K::SCALAR_TYPE_DEFINITION => A::ScalarTypeDefinition(r!(scalar_type_definition)),
+            K::OBJECT_TYPE_DEFINITION => A::ObjectTypeDefinition(r!(object_type_definition)),
+            K::INTERFACE_TYPE_DEFINITION => {
+                A::InterfaceTypeDefinition(r!(interface_type_definition))
+            }
+            K::UNION_TYPE_DEFINITION => A::UnionTypeDefinition(r!(union_type_definition)),
+            K::ENUM_TYPE_DEFINITION => A::EnumTypeDefinition(r!(enum_type_definition)),
+            K::INPUT_OBJECT_TYPE_DEFINITION => {
+                A::InputObjectTypeDefinition(r!(input_object_type_definition))
+            }
+            K::SCHEMA_EXTENSION => A::SchemaExtension(r!(schema_extension)),
+            K::DIRECTIVE_EXTENSION => A::DirectiveExtension(r!(directive_extension)),
+            K::SCALAR_TYPE_EXTENSION => A::ScalarTypeExtension(r!(scalar_type_extension)),
+            K::OBJECT_TYPE_EXTENSION => A::ObjectTypeExtension(r!(object_type_extension)),
+            K::INTERFACE_TYPE_EXTENSION => A::InterfaceTypeExtension(r!(interface_type_extension)),
+            K::UNION_TYPE_EXTENSION => A::UnionTypeExtension(r!(union_type_extension)),
+            K::ENUM_TYPE_EXTENSION => A::EnumTypeExtension(r!(enum_type_extension)),
+            K::INPUT_OBJECT_TYPE_EXTENSION => {
+                A::InputObjectTypeExtension(r!(input_object_type_extension))
+            }
+            _ => return None,
+        })
+    }
+
+    fn operation_definition(self, node: Green<'_>) -> Option<ast::OperationDefinition> {
+        let operation_type = if let Some(ty) = node.child(K::OPERATION_TYPE) {
+            self.operation_type(ty)?
+        } else {
+            ast::OperationType::Query
+        };
+        Some(ast::OperationDefinition {
+            description: self.description(node)?,
+            operation_type,
+            name: self.opt_child_name(node)?,
+            variables: self.collect(
+                node.child(K::VARIABLES_DEFINITION),
+                K::VARIABLE_DEFINITION,
+                Self::variable_definition,
+            ),
+            directives: self.directives(node),
+            selection_set: self.selection_set(node.child(K::SELECTION_SET)?),
+        })
+    }
+
+    fn fragment_definition(self, node: Green<'_>) -> Option<ast::FragmentDefinition> {
+        Some(ast::FragmentDefinition {
+            description: self.description(node)?,
+            name: self.wrapped_name(node, K::FRAGMENT_NAME)?,
+            type_condition: self.type_condition(node.child(K::TYPE_CONDITION)?)?,
+            directives: self.directives(node),
+            selection_set: self.selection_set(node.child(K::SELECTION_SET)?),
+        })
+    }
+
+    fn type_condition(self, node: Green<'_>) -> Option<ast::NamedType> {
+        self.wrapped_name(node, K::NAMED_TYPE)
+    }
+
+    fn directive_definition(self, node: Green<'_>) -> Option<ast::DirectiveDefinition> {
+        Some(ast::DirectiveDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            arguments: self.collect(
+                node.child(K::ARGUMENTS_DEFINITION),
+                K::INPUT_VALUE_DEFINITION,
+                Self::input_value_definition,
+            ),
+            repeatable: node.has_token(S![repeatable]),
+            locations: node
+                .child(K::DIRECTIVE_LOCATIONS)
+                .map(|locations| {
+                    locations
+                        .children_of(K::DIRECTIVE_LOCATION)
+                        .filter_map(directive_location)
+                        .collect()
+                })
+                .unwrap_or_default(),
+            directives: self.directives(node),
+        })
+    }
+
+    fn schema_definition(self, node: Green<'_>) -> Option<ast::SchemaDefinition> {
+        Some(ast::SchemaDefinition {
+            description: self.description(node)?,
+            directives: self.directives(node),
+            // This may represent a syntactically invalid thing: a schema without any root
+            // operation definitions. However the presence of a broken schema definition does
+            // affect whether a default schema definition should be inserted, so we bubble up the
+            // potentially invalid definition.
+            root_operations: self.root_operations(node),
+        })
+    }
+
+    fn scalar_type_definition(self, node: Green<'_>) -> Option<ast::ScalarTypeDefinition> {
+        Some(ast::ScalarTypeDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+        })
+    }
+
+    fn object_type_definition(self, node: Green<'_>) -> Option<ast::ObjectTypeDefinition> {
+        Some(ast::ObjectTypeDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            implements_interfaces: self.named_types(node.child(K::IMPLEMENTS_INTERFACES)),
+            directives: self.directives(node),
+            fields: self.field_definitions(node),
+        })
+    }
+
+    fn interface_type_definition(self, node: Green<'_>) -> Option<ast::InterfaceTypeDefinition> {
+        Some(ast::InterfaceTypeDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            implements_interfaces: self.named_types(node.child(K::IMPLEMENTS_INTERFACES)),
+            directives: self.directives(node),
+            fields: self.field_definitions(node),
+        })
+    }
+
+    fn union_type_definition(self, node: Green<'_>) -> Option<ast::UnionTypeDefinition> {
+        Some(ast::UnionTypeDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+            members: self.named_types(node.child(K::UNION_MEMBER_TYPES)),
+        })
+    }
+
+    fn enum_type_definition(self, node: Green<'_>) -> Option<ast::EnumTypeDefinition> {
+        Some(ast::EnumTypeDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+            values: self.enum_value_definitions(node),
+        })
+    }
+
+    fn input_object_type_definition(
+        self,
+        node: Green<'_>,
+    ) -> Option<ast::InputObjectTypeDefinition> {
+        Some(ast::InputObjectTypeDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+            fields: self.input_field_definitions(node),
+        })
+    }
+
+    fn schema_extension(self, node: Green<'_>) -> Option<ast::SchemaExtension> {
+        Some(ast::SchemaExtension {
+            directives: self.directives(node),
+            root_operations: self.root_operations(node),
+        })
+    }
+
+    fn directive_extension(self, node: Green<'_>) -> Option<ast::DirectiveExtension> {
+        Some(ast::DirectiveExtension {
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+        })
+    }
+
+    fn scalar_type_extension(self, node: Green<'_>) -> Option<ast::ScalarTypeExtension> {
+        Some(ast::ScalarTypeExtension {
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+        })
+    }
+
+    fn object_type_extension(self, node: Green<'_>) -> Option<ast::ObjectTypeExtension> {
+        Some(ast::ObjectTypeExtension {
+            name: self.child_name(node)?,
+            implements_interfaces: self.named_types(node.child(K::IMPLEMENTS_INTERFACES)),
+            directives: self.directives(node),
+            fields: self.field_definitions(node),
+        })
+    }
+
+    fn interface_type_extension(self, node: Green<'_>) -> Option<ast::InterfaceTypeExtension> {
+        Some(ast::InterfaceTypeExtension {
+            name: self.child_name(node)?,
+            implements_interfaces: self.named_types(node.child(K::IMPLEMENTS_INTERFACES)),
+            directives: self.directives(node),
+            fields: self.field_definitions(node),
+        })
+    }
+
+    fn union_type_extension(self, node: Green<'_>) -> Option<ast::UnionTypeExtension> {
+        Some(ast::UnionTypeExtension {
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+            members: self.named_types(node.child(K::UNION_MEMBER_TYPES)),
+        })
+    }
+
+    fn enum_type_extension(self, node: Green<'_>) -> Option<ast::EnumTypeExtension> {
+        Some(ast::EnumTypeExtension {
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+            values: self.enum_value_definitions(node),
+        })
+    }
+
+    fn input_object_type_extension(self, node: Green<'_>) -> Option<ast::InputObjectTypeExtension> {
+        Some(ast::InputObjectTypeExtension {
+            name: self.child_name(node)?,
+            directives: self.directives(node),
+            fields: self.input_field_definitions(node),
+        })
+    }
+
+    fn field_definitions(self, parent: Green<'_>) -> Vec<Node<ast::FieldDefinition>> {
+        self.collect(
+            parent.child(K::FIELDS_DEFINITION),
+            K::FIELD_DEFINITION,
+            Self::field_definition,
+        )
+    }
+
+    fn input_field_definitions(self, parent: Green<'_>) -> Vec<Node<ast::InputValueDefinition>> {
+        self.collect(
+            parent.child(K::INPUT_FIELDS_DEFINITION),
+            K::INPUT_VALUE_DEFINITION,
+            Self::input_value_definition,
+        )
+    }
+
+    fn enum_value_definitions(self, parent: Green<'_>) -> Vec<Node<ast::EnumValueDefinition>> {
+        self.collect(
+            parent.child(K::ENUM_VALUES_DEFINITION),
+            K::ENUM_VALUE_DEFINITION,
+            Self::enum_value_definition,
+        )
+    }
+
+    fn root_operations(self, parent: Green<'_>) -> Vec<Node<(ast::OperationType, ast::NamedType)>> {
+        parent
+            .children_of(K::ROOT_OPERATION_TYPE_DEFINITION)
+            .filter_map(|node| {
+                let ty = self.operation_type(node.child(K::OPERATION_TYPE)?)?;
+                let name = self.wrapped_name(node, K::NAMED_TYPE)?;
+                Some(self.with_location(node, (ty, name)))
+            })
+            .collect()
+    }
+
+    fn directive(self, node: Green<'_>) -> Option<ast::Directive> {
+        Some(ast::Directive {
+            name: self.child_name(node)?,
+            arguments: self.arguments(node),
+        })
+    }
+
+    fn arguments(self, parent: Green<'_>) -> Vec<Node<ast::Argument>> {
+        self.collect(parent.child(K::ARGUMENTS), K::ARGUMENT, Self::argument)
+    }
+
+    fn operation_type(self, node: Green<'_>) -> Option<ast::OperationType> {
+        match node.first_token_kind()? {
+            S![query] => Some(ast::OperationType::Query),
+            S![mutation] => Some(ast::OperationType::Mutation),
+            S![subscription] => Some(ast::OperationType::Subscription),
+            _ => None,
+        }
+    }
+
+    fn variable_definition(self, node: Green<'_>) -> Option<ast::VariableDefinition> {
+        let default_value = self.default_value(node)?;
+        let ty = node.child_where(is_type)?;
+        Some(ast::VariableDefinition {
+            description: self.description(node)?,
+            name: self.wrapped_name(node, K::VARIABLE)?,
+            ty: self.with_location(ty, self.ty(ty)?),
+            default_value,
+            directives: self.directives(node),
+        })
+    }
+
+    fn default_value(self, parent: Green<'_>) -> Option<Option<Node<ast::Value>>> {
+        let Some(default) = parent.child(K::DEFAULT_VALUE) else {
+            return Some(None);
+        };
+        let value = default.child_where(is_value)?;
+        Some(Some(self.with_location(value, self.value(value)?)))
+    }
+
+    fn ty(self, node: Green<'_>) -> Option<ast::Type> {
+        use ast::Type as A;
+        match node.kind() {
+            K::NAMED_TYPE => Some(A::Named(self.child_name(node)?)),
+            K::LIST_TYPE => Some(A::List(Box::new(self.ty(node.child_where(is_type)?)?))),
+            K::NON_NULL_TYPE => {
+                if let Some(named) = node.child(K::NAMED_TYPE) {
+                    Some(A::NonNullNamed(self.child_name(named)?))
+                } else if let Some(list) = node.child(K::LIST_TYPE) {
+                    Some(A::NonNullList(Box::new(
+                        self.ty(list.child_where(is_type)?)?,
+                    )))
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn field_definition(self, node: Green<'_>) -> Option<ast::FieldDefinition> {
+        Some(ast::FieldDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            arguments: self.collect(
+                node.child(K::ARGUMENTS_DEFINITION),
+                K::INPUT_VALUE_DEFINITION,
+                Self::input_value_definition,
+            ),
+            ty: self.ty(node.child_where(is_type)?)?,
+            directives: self.directives(node),
+        })
+    }
+
+    fn argument(self, node: Green<'_>) -> Option<ast::Argument> {
+        let name = self.child_name(node)?;
+        let value = node.child_where(is_value)?;
+        let value = self.with_location(value, self.value(value)?);
+        Some(ast::Argument { name, value })
+    }
+
+    fn input_value_definition(self, node: Green<'_>) -> Option<ast::InputValueDefinition> {
+        let default_value = self.default_value(node)?;
+        let ty = node.child_where(is_type)?;
+        Some(ast::InputValueDefinition {
+            description: self.description(node)?,
+            name: self.child_name(node)?,
+            ty: self.with_location(ty, self.ty(ty)?),
+            default_value,
+            directives: self.directives(node),
+        })
+    }
+
+    fn enum_value_definition(self, node: Green<'_>) -> Option<ast::EnumValueDefinition> {
+        Some(ast::EnumValueDefinition {
+            description: self.description(node)?,
+            value: self.wrapped_name(node, K::ENUM_VALUE)?,
+            directives: self.directives(node),
+        })
+    }
+
+    fn selection_set(self, node: Green<'_>) -> Vec<ast::Selection> {
+        node.children()
+            .filter_map(|selection| self.selection(selection))
+            .collect()
+    }
+
+    fn selection(self, node: Green<'_>) -> Option<ast::Selection> {
         use ast::Selection as A;
-        use cst::Selection as C;
-
-        Some(match self {
-            C::Field(x) => A::Field(with_location(file_id, x.syntax(), x.convert(file_id)?)),
-            C::FragmentSpread(x) => {
-                A::FragmentSpread(with_location(file_id, x.syntax(), x.convert(file_id)?))
+        Some(match node.kind() {
+            K::FIELD => A::Field(self.with_location(node, self.field(node)?)),
+            K::FRAGMENT_SPREAD => {
+                A::FragmentSpread(self.with_location(node, self.fragment_spread(node)?))
             }
-            C::InlineFragment(x) => {
-                A::InlineFragment(with_location(file_id, x.syntax(), x.convert(file_id)?))
+            K::INLINE_FRAGMENT => {
+                A::InlineFragment(self.with_location(node, self.inline_fragment(node)?))
             }
+            _ => return None,
         })
     }
-}
 
-impl Convert for cst::Field {
-    type Target = ast::Field;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            alias: self.alias().convert(file_id)?,
-            name: self.name()?.convert(file_id)?,
-            arguments: collect_opt(file_id, self.arguments(), |x| x.arguments()),
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            selection_set: self.selection_set().convert(file_id)?,
+    fn field(self, node: Green<'_>) -> Option<ast::Field> {
+        let alias = match node.child(K::ALIAS) {
+            Some(alias) => Some(self.child_name(alias)?),
+            None => None,
+        };
+        Some(ast::Field {
+            alias,
+            name: self.child_name(node)?,
+            arguments: self.arguments(node),
+            directives: self.directives(node),
+            selection_set: node
+                .child(K::SELECTION_SET)
+                .map(|set| self.selection_set(set)),
         })
     }
-}
 
-impl Convert for cst::FragmentSpread {
-    type Target = ast::FragmentSpread;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            fragment_name: self.fragment_name()?.name()?.convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
+    fn fragment_spread(self, node: Green<'_>) -> Option<ast::FragmentSpread> {
+        Some(ast::FragmentSpread {
+            fragment_name: self.wrapped_name(node, K::FRAGMENT_NAME)?,
+            directives: self.directives(node),
         })
     }
-}
 
-impl Convert for cst::InlineFragment {
-    type Target = ast::InlineFragment;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(Self::Target {
-            type_condition: self.type_condition().convert(file_id)?,
-            directives: ast::DirectiveList(collect_opt(file_id, self.directives(), |x| {
-                x.directives()
-            })),
-            selection_set: self.selection_set().convert(file_id)??,
+    fn inline_fragment(self, node: Green<'_>) -> Option<ast::InlineFragment> {
+        let type_condition = match node.child(K::TYPE_CONDITION) {
+            Some(condition) => Some(self.type_condition(condition)?),
+            None => None,
+        };
+        Some(ast::InlineFragment {
+            type_condition,
+            directives: self.directives(node),
+            selection_set: self.selection_set(node.child(K::SELECTION_SET)?),
         })
     }
-}
 
-impl Convert for cst::Value {
-    type Target = ast::Value;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
+    fn value(self, node: Green<'_>) -> Option<ast::Value> {
         use ast::Value as A;
-        use cst::Value as C;
-
-        Some(match self {
-            C::Variable(v) => A::Variable(v.name()?.convert(file_id)?),
-            C::StringValue(v) => A::String(String::from(v)),
-            C::FloatValue(v) => A::Float(ast::FloatValue::new_parsed(
-                v.syntax().first_token()?.text(),
-            )),
-            C::IntValue(v) => A::Int(ast::IntValue::new_parsed(v.syntax().first_token()?.text())),
-            C::BooleanValue(v) => A::Boolean(bool::try_from(v).ok()?),
-            C::NullValue(_) => A::Null,
-            C::EnumValue(v) => A::Enum(v.name()?.convert(file_id)?),
-            C::ListValue(v) => A::List(collect(file_id, v.values())),
-            C::ObjectValue(v) => A::Object(
-                v.object_fields()
-                    .filter_map(|x| x.convert(file_id))
+        Some(match node.kind() {
+            K::VARIABLE => A::Variable(self.child_name(node)?),
+            K::STRING_VALUE => A::String(cst::StringValue::unescape(node.first_token()?.text())),
+            K::FLOAT_VALUE => A::Float(ast::FloatValue::new_parsed(node.first_token()?.text())),
+            K::INT_VALUE => A::Int(ast::IntValue::new_parsed(node.first_token()?.text())),
+            K::BOOLEAN_VALUE => A::Boolean(node.first_token()?.text().parse().ok()?),
+            K::NULL_VALUE => A::Null,
+            K::ENUM_VALUE => A::Enum(self.child_name(node)?),
+            K::LIST_VALUE => A::List(
+                node.children()
+                    .filter(|item| is_value(item.kind()))
+                    .filter_map(|item| Some(self.with_location(item, self.value(item)?)))
                     .collect(),
             ),
+            K::OBJECT_VALUE => A::Object(
+                node.children_of(K::OBJECT_FIELD)
+                    .filter_map(|field| {
+                        let name = self.child_name(field)?;
+                        let value = field.child_where(is_value)?;
+                        Some((name, self.with_location(value, self.value(value)?)))
+                    })
+                    .collect(),
+            ),
+            _ => return None,
         })
     }
 }
 
-impl Convert for cst::ObjectField {
-    type Target = (crate::Name, Node<ast::Value>);
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let name = self.name()?.convert(file_id)?;
-        let value = self.value()?;
-        let value = with_location(file_id, value.syntax(), value.convert(file_id)?);
-        Some((name, value))
-    }
-}
-
-impl Convert for cst::Alias {
-    type Target = crate::Name;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        self.name()?.convert(file_id)
-    }
-}
-
-impl Convert for cst::Name {
-    type Target = crate::Name;
-
-    fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        let loc = SourceSpan::new(file_id, self.syntax());
-        let token = &self.syntax().first_token()?;
-        let str = token.text();
-        debug_assert!(crate::Name::is_valid_syntax(str));
-        Some(crate::Name::new(str).ok()?.with_location(loc))
-    }
+fn directive_location(node: Green<'_>) -> Option<ast::DirectiveLocation> {
+    use ast::DirectiveLocation as L;
+    Some(match node.first_token_kind()? {
+        S![QUERY] => L::Query,
+        S![MUTATION] => L::Mutation,
+        S![SUBSCRIPTION] => L::Subscription,
+        S![FIELD] => L::Field,
+        S![FRAGMENT_DEFINITION] => L::FragmentDefinition,
+        S![FRAGMENT_SPREAD] => L::FragmentSpread,
+        S![INLINE_FRAGMENT] => L::InlineFragment,
+        S![VARIABLE_DEFINITION] => L::VariableDefinition,
+        S![SCHEMA] => L::Schema,
+        S![SCALAR] => L::Scalar,
+        S![OBJECT] => L::Object,
+        S![FIELD_DEFINITION] => L::FieldDefinition,
+        S![ARGUMENT_DEFINITION] => L::ArgumentDefinition,
+        S![INTERFACE] => L::Interface,
+        S![UNION] => L::Union,
+        S![ENUM] => L::Enum,
+        S![ENUM_VALUE] => L::EnumValue,
+        S![INPUT_OBJECT] => L::InputObject,
+        S![INPUT_FIELD_DEFINITION] => L::InputFieldDefinition,
+        S![DIRECTIVE_DEFINITION] => L::DirectiveDefinition,
+        _ => return None,
+    })
 }
