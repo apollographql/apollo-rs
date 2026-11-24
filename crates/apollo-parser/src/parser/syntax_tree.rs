@@ -183,6 +183,7 @@ impl<T: CstNode> fmt::Debug for SyntaxTree<T> {
 #[derive(Debug)]
 pub(crate) struct SyntaxTreeBuilder {
     builder: GreenNodeBuilder<'static>,
+    root_started: bool,
 }
 
 impl SyntaxTreeBuilder {
@@ -190,7 +191,14 @@ impl SyntaxTreeBuilder {
     pub(crate) fn new() -> Self {
         Self {
             builder: GreenNodeBuilder::new(),
+            root_started: false,
         }
+    }
+
+    /// Whether the root node has been started. A token added before it would
+    /// become a second root and make rowan panic in `finish`.
+    pub(crate) fn root_started(&self) -> bool {
+        self.root_started
     }
 
     pub(crate) fn checkpoint(&self) -> rowan::Checkpoint {
@@ -200,6 +208,7 @@ impl SyntaxTreeBuilder {
     /// Start new node and make it current.
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) {
         self.builder.start_node(rowan::SyntaxKind(kind as u16));
+        self.root_started = true;
     }
 
     /// Finish current branch and restore previous branch as current.
@@ -210,6 +219,7 @@ impl SyntaxTreeBuilder {
     pub(crate) fn wrap_node(&mut self, checkpoint: rowan::Checkpoint, kind: SyntaxKind) {
         self.builder
             .start_node_at(checkpoint, rowan::SyntaxKind(kind as u16));
+        self.root_started = true;
     }
 
     /// Adds new token to the current branch.

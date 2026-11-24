@@ -111,3 +111,12 @@ fn test_field_set_with_leftover_tokens() {
     "#]]
     .assert_eq(&errors(":id"));
 }
+
+#[test]
+fn test_field_set_with_lexer_errors() {
+    let schema = common_schema();
+    for input in [".", "+1, +", "2.", "\"\\", "\"\"\""] {
+        FieldSet::parse(&schema, name!("Query"), input, "field_set.graphql")
+            .expect_err("lexer errors should be reported");
+    }
+}

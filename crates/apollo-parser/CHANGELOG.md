@@ -16,6 +16,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Fixes
+
+- **Fix panic on lexer errors in field sets and types - [tninesling]**
+
+  `Parser::parse_selection_set` and `Parser::parse_type` panicked inside rowan
+  when the input started with a lexer error, such as `.` or `+1`, because the
+  error token was added to the tree before the root node. The error token is
+  now placed inside the root node and the error is reported.
+
+[tninesling]: https://github.com/tninesling
+
 # [0.9.0-beta.2](https://crates.io/crates/apollo-parser/0.9.0-beta.2) - 2026-10-22
 
 ## Fixes
