@@ -14,6 +14,7 @@ use crate::LimitTracker;
 use crate::Token;
 use crate::TokenKind;
 pub use generated::syntax_kind::SyntaxKind;
+pub use language::GraphQLLanguage;
 pub use language::SyntaxElement;
 pub use language::SyntaxNode;
 pub use language::SyntaxNodeChildren;
