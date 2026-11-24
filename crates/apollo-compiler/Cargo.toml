@@ -61,6 +61,11 @@ name = "fragments-validation"
 path = "benches/fragments_validation.rs"
 harness = false
 
+[[bench]]
+name = "schema-lookups"
+path = "benches/schema_lookups.rs"
+harness = false
+
 [[test]]
 name = "main"
 
