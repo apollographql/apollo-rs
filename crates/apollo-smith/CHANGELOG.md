@@ -18,6 +18,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# Unreleased
+
+## BREAKING
+
+- Generate `apollo_compiler::ast` nodes directly. `DocumentBuilder::build` and
+  `with_document` now use compiler documents. Type generators that may return
+  extensions return `ast::Definition`. The smith syntax types and CST conversions
+  have been removed; serialize compiler nodes with `to_string()`.
+- Use `ArbitraryDocument` for `arbitrary` input generation and access its compiler
+  document through `.0`.
+
+## Features
+
+- Generate repeated applications of repeatable directives and keep definitions in
+  generation order. Seeded definitions retain their source locations and ordering.
+
+## Fixes
+
+- Generate a query root even when a document only defines conventional
+  `Mutation` or `Subscription` object types.
+
 # [0.17.0-beta.2](https://crates.io/crates/apollo-smith/0.17.0-beta.2) - 2026-10-21
 
 ## BREAKING

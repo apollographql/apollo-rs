@@ -1,194 +1,20 @@
-use crate::directive::DirectiveDef;
-use crate::enum_::EnumTypeDef;
-use crate::fragment::FragmentDef;
-use crate::input_object::InputObjectTypeDef;
-use crate::interface::InterfaceTypeDef;
-use crate::object::ObjectTypeDef;
-use crate::operation::OperationDef;
-use crate::scalar::ScalarTypeDef;
-use crate::schema::SchemaDef;
-use crate::union::UnionTypeDef;
 use apollo_compiler::ast;
 use arbitrary::Arbitrary;
 use arbitrary::Unstructured;
 
-/// The `__Document` type represents a GraphQL document.A GraphQL Document describes a complete file or request string operated on by a GraphQL service or client.
-/// A document contains multiple definitions, either executable or representative of a GraphQL type system.
-///
-/// *Document*:
-///     OperationDefinition*
-///     FragmentDefinition*
-///     SchemaDefinition*
-///     ScalarTypeDefinition*
-///     ObjectTypeDefinition*
-///     InterfaceTypeDefinition*
-///     UnionTypeDefinition*
-///     EnumTypeDefinition*
-///     InputObjectDefinition*
-///     DirectiveDefinition*
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Document).
+/// A compiler document generated from arbitrary bytes.
 #[derive(Debug, Clone)]
-pub struct Document {
-    pub(crate) operation_definitions: Vec<OperationDef>,
-    pub(crate) fragment_definitions: Vec<FragmentDef>,
-    pub(crate) schema_definition: Option<SchemaDef>,
-    // Type definitions
-    pub(crate) scalar_type_definitions: Vec<ScalarTypeDef>,
-    pub(crate) object_type_definitions: Vec<ObjectTypeDef>,
-    pub(crate) interface_type_definitions: Vec<InterfaceTypeDef>,
-    pub(crate) union_type_definitions: Vec<UnionTypeDef>,
-    pub(crate) enum_type_definitions: Vec<EnumTypeDef>,
-    pub(crate) input_object_type_definitions: Vec<InputObjectTypeDef>,
-    pub(crate) directive_definitions: Vec<DirectiveDef>,
-}
+pub struct ArbitraryDocument(pub ast::Document);
 
-impl From<Document> for ast::Document {
-    fn from(doc: Document) -> Self {
-        fn extend(
-            new_doc: &mut ast::Document,
-            items: impl IntoIterator<Item = impl Into<ast::Definition>>,
-        ) {
-            new_doc
-                .definitions
-                .extend(items.into_iter().map(|x| x.into()));
-        }
-
-        let Document {
-            operation_definitions,
-            fragment_definitions,
-            schema_definition,
-            scalar_type_definitions,
-            object_type_definitions,
-            interface_type_definitions,
-            union_type_definitions,
-            enum_type_definitions,
-            input_object_type_definitions,
-            directive_definitions,
-        } = doc;
-        let mut new_doc = Self::new();
-        extend(&mut new_doc, operation_definitions);
-        extend(&mut new_doc, fragment_definitions);
-        extend(&mut new_doc, schema_definition);
-        extend(&mut new_doc, scalar_type_definitions);
-        extend(&mut new_doc, object_type_definitions);
-        extend(&mut new_doc, interface_type_definitions);
-        extend(&mut new_doc, union_type_definitions);
-        extend(&mut new_doc, enum_type_definitions);
-        extend(&mut new_doc, input_object_type_definitions);
-        extend(&mut new_doc, directive_definitions);
-        new_doc
-    }
-}
-
-impl TryFrom<apollo_parser::cst::Document> for Document {
-    type Error = crate::FromError;
-
-    fn try_from(doc: apollo_parser::cst::Document) -> Result<Self, Self::Error> {
-        let mut enum_defs = Vec::new();
-        let mut object_defs = Vec::new();
-        let mut schema_def = None;
-        let mut directive_defs = Vec::new();
-        let mut scalar_defs = Vec::new();
-        let mut operation_defs = Vec::new();
-        let mut interface_defs = Vec::new();
-        let mut union_defs = Vec::new();
-        let mut input_object_defs = Vec::new();
-        let mut fragment_defs = Vec::new();
-
-        for definition in doc.definitions() {
-            match definition {
-                apollo_parser::cst::Definition::EnumTypeDefinition(enum_def) => {
-                    enum_defs.push(EnumTypeDef::try_from(enum_def)?);
-                }
-                apollo_parser::cst::Definition::EnumTypeExtension(enum_def) => {
-                    enum_defs.push(EnumTypeDef::try_from(enum_def)?);
-                }
-                apollo_parser::cst::Definition::ObjectTypeDefinition(obj_def) => {
-                    object_defs.push(ObjectTypeDef::try_from(obj_def)?);
-                }
-                apollo_parser::cst::Definition::ObjectTypeExtension(obj_def) => {
-                    object_defs.push(ObjectTypeDef::try_from(obj_def)?);
-                }
-                apollo_parser::cst::Definition::SchemaDefinition(schema_definition) => {
-                    schema_def = Some(SchemaDef::try_from(schema_definition)?);
-                }
-                apollo_parser::cst::Definition::SchemaExtension(schema_definition) => {
-                    schema_def = Some(SchemaDef::try_from(schema_definition)?);
-                }
-                apollo_parser::cst::Definition::DirectiveDefinition(dir_def) => {
-                    directive_defs.push(DirectiveDef::try_from(dir_def)?);
-                }
-                apollo_parser::cst::Definition::ScalarTypeDefinition(scalar_def) => {
-                    scalar_defs.push(ScalarTypeDef::try_from(scalar_def)?)
-                }
-                apollo_parser::cst::Definition::ScalarTypeExtension(scalar_def) => {
-                    scalar_defs.push(ScalarTypeDef::try_from(scalar_def)?)
-                }
-                apollo_parser::cst::Definition::OperationDefinition(operation_def) => {
-                    operation_defs.push(OperationDef::try_from(operation_def)?)
-                }
-                apollo_parser::cst::Definition::InterfaceTypeDefinition(interface_def) => {
-                    interface_defs.push(InterfaceTypeDef::try_from(interface_def)?)
-                }
-                apollo_parser::cst::Definition::InterfaceTypeExtension(interface_def) => {
-                    interface_defs.push(InterfaceTypeDef::try_from(interface_def)?)
-                }
-                apollo_parser::cst::Definition::UnionTypeDefinition(union_def) => {
-                    union_defs.push(UnionTypeDef::try_from(union_def)?)
-                }
-                apollo_parser::cst::Definition::UnionTypeExtension(union_def) => {
-                    union_defs.push(UnionTypeDef::try_from(union_def)?)
-                }
-                apollo_parser::cst::Definition::InputObjectTypeDefinition(input_object_def) => {
-                    input_object_defs.push(InputObjectTypeDef::try_from(input_object_def)?)
-                }
-                apollo_parser::cst::Definition::InputObjectTypeExtension(input_object_def) => {
-                    input_object_defs.push(InputObjectTypeDef::try_from(input_object_def)?)
-                }
-                apollo_parser::cst::Definition::FragmentDefinition(fragment_def) => {
-                    fragment_defs.push(FragmentDef::try_from(fragment_def)?)
-                }
-                // apollo-smith does not generate or model `extend directive`, so there is
-                // nothing to fuzz-round-trip it into; skip it if encountered in input.
-                apollo_parser::cst::Definition::DirectiveExtension(_) => {}
-            }
-        }
-
-        Ok(Self {
-            operation_definitions: operation_defs,
-            fragment_definitions: fragment_defs,
-            schema_definition: schema_def,
-            scalar_type_definitions: scalar_defs,
-            object_type_definitions: object_defs,
-            interface_type_definitions: interface_defs,
-            union_type_definitions: union_defs,
-            enum_type_definitions: enum_defs,
-            input_object_type_definitions: input_object_defs,
-            directive_definitions: directive_defs,
-        })
-    }
-}
-
-/// A document generated by [`DocumentBuilder::build`](crate::DocumentBuilder::build)
-/// from the rest of the input, since its length sets the document's size.
-impl<'a> Arbitrary<'a> for Document {
+impl<'a> Arbitrary<'a> for ArbitraryDocument {
     fn arbitrary(u: &mut Unstructured<'a>) -> arbitrary::Result<Self> {
         let rest = u.bytes(u.len())?;
         Self::arbitrary_take_rest(Unstructured::new(rest))
     }
 
     fn arbitrary_take_rest(u: Unstructured<'a>) -> arbitrary::Result<Self> {
-        // The builder borrows its input for as long as the input's own
-        // lifetime, which a local copy can satisfy and `u` can't.
         let mut u = Unstructured::new(u.take_rest());
-        crate::DocumentBuilder::new(&mut u).build()
-    }
-}
-
-impl From<Document> for String {
-    fn from(doc: Document) -> Self {
-        ast::Document::from(doc).to_string()
+        crate::DocumentBuilder::new(&mut u).build().map(Self)
     }
 }
 
@@ -202,12 +28,9 @@ mod tests {
     proptest! {
         #[test]
         fn arbitrary_documents_match_build_and_use_all_input(data in input()) {
-            let built = DocumentBuilder::new(&mut Unstructured::new(&data))
-                .build()
-                .ok()
-                .map(String::from);
+            let built = DocumentBuilder::new(&mut Unstructured::new(&data)).build().ok().map(|doc| doc.to_string());
             let mut u = Unstructured::new(&data);
-            let arbitrary = Document::arbitrary(&mut u).ok().map(String::from);
+            let arbitrary = ArbitraryDocument::arbitrary(&mut u).ok().map(|doc| doc.0.to_string());
             prop_assert_eq!(built, arbitrary);
             prop_assert!(u.is_empty());
         }

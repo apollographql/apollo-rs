@@ -1,4 +1,5 @@
 use crate::DocumentBuilder;
+use apollo_compiler::Name;
 use arbitrary::Result as ArbitraryResult;
 use std::fmt::Write as _;
 
@@ -26,58 +27,10 @@ const RESERVED_KEYWORDS: &[&str] = &[
     "interface",
 ];
 
-/// Name is useful to name different elements.
-///
-/// GraphQL Documents are full of named things: operations, fields, arguments, types, directives, fragments, and variables.
-/// All names must follow the same grammatical form.
-/// Names in GraphQL are case-sensitive. That is to say name, Name, and NAME all refer to different names.
-/// Underscores are significant, which means other_name and othername are two different names
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#Name).
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Name {
-    pub(crate) name: String,
-}
-
-impl From<Name> for String {
-    fn from(val: Name) -> Self {
-        val.name
-    }
-}
-
-impl From<Name> for apollo_compiler::Name {
-    fn from(value: Name) -> Self {
-        (&value).into()
-    }
-}
-
-impl From<&'_ Name> for apollo_compiler::Name {
-    fn from(value: &'_ Name) -> Self {
-        // `Name::new` accepts any string, but `DocumentBuilder` only creates
-        // names with valid syntax, and names parsed from a document were
-        // already valid there.
-        apollo_compiler::Name::new(&value.name).expect("smith names have valid GraphQL syntax")
-    }
-}
-
-impl From<apollo_parser::cst::Name> for Name {
-    fn from(name: apollo_parser::cst::Name) -> Self {
-        Self {
-            name: name.ident_token().unwrap().to_string(),
-        }
-    }
-}
-
-impl Name {
-    pub const fn new(name: String) -> Self {
-        Self { name }
-    }
-}
-
 impl DocumentBuilder<'_> {
     /// Create an arbitrary `Name`
     pub fn name(&mut self) -> ArbitraryResult<Name> {
-        Ok(Name::new(self.limited_string(30)?))
+        Name::new(&self.limited_string(30)?).map_err(|_| arbitrary::Error::IncorrectFormat)
     }
 
     /// Create an arbitrary type `Name` that does not yet exist in the document.
@@ -90,8 +43,9 @@ impl DocumentBuilder<'_> {
             let _ = write!(new_name, "{base}{suffix}");
             suffix += 1;
         }
-        self.used_type_names.insert(new_name.clone());
-        Ok(Name::new(new_name))
+        let name = Name::new(&new_name).map_err(|_| arbitrary::Error::IncorrectFormat)?;
+        self.used_type_names.insert(new_name);
+        Ok(name)
     }
 
     /// Create an arbitrary `Name` with an index included in the name (to avoid name conflict)
@@ -99,7 +53,7 @@ impl DocumentBuilder<'_> {
         let mut name = self.limited_string(30)?;
         let _ = write!(name, "{index}");
 
-        Ok(Name::new(name))
+        Name::new(&name).map_err(|_| arbitrary::Error::IncorrectFormat)
     }
 
     // Mirror what happens in `Arbitrary for String`, but do so with a clamped size.

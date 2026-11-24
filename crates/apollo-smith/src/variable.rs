@@ -1,50 +1,21 @@
-use crate::argument::Argument;
-use crate::argument::ArgumentsDef;
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::input_value::InputValue;
-use crate::name::Name;
-use crate::ty::Ty;
 use crate::DocumentBuilder;
-use apollo_compiler::ast;
+use apollo_compiler::ast::Argument;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::InputValueDefinition;
+use apollo_compiler::ast::Type;
+use apollo_compiler::ast::Value;
+use apollo_compiler::ast::VariableDefinition;
 use apollo_compiler::coordinate::TypeAttributeCoordinate;
+use apollo_compiler::Name;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
 use indexmap::IndexMap;
-
-/// The __variableDef type represents a variable definition
-///
-/// *VariableDefinition*:
-///     Description? Variable : Type DefaultValue? Directives[Const]?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Language.Variables).
-#[derive(Debug, Clone)]
-pub struct VariableDef {
-    description: Option<Description>,
-    pub(crate) name: Name,
-    pub(crate) ty: Ty,
-    default_value: Option<InputValue>,
-    directives: IndexMap<Name, Directive>,
-}
-
-impl From<VariableDef> for ast::VariableDefinition {
-    fn from(x: VariableDef) -> Self {
-        Self {
-            description: x.description.map(Into::into),
-            name: x.name.into(),
-            ty: Node::new(x.ty.into()),
-            default_value: x.default_value.map(|x| Node::new(x.into())),
-            directives: Directive::to_ast(x.directives),
-        }
-    }
-}
 
 /// Variables defined so far in the operation being generated, and the
 /// arguments chosen for fields within it that use them.
 #[derive(Debug, Default)]
 pub(crate) struct OperationVariables {
-    pub(crate) definitions: Vec<VariableDef>,
+    pub(crate) definitions: Vec<VariableDefinition>,
     pub(crate) arguments: IndexMap<TypeAttributeCoordinate, Vec<Argument>>,
 }
 
@@ -54,16 +25,15 @@ impl DocumentBuilder<'_> {
     /// variable is both defined and used.
     pub(crate) fn field_arguments(
         &mut self,
-        args_def: &ArgumentsDef,
+        args_def: &[Node<InputValueDefinition>],
     ) -> ArbitraryResult<Vec<Argument>> {
         args_def
-            .input_value_definitions
             .iter()
             .map(|def| {
                 if self.operation_variables.is_some() && self.u.ratio(1, 3)? {
                     Ok(Argument {
                         name: def.name.clone(),
-                        value: InputValue::Variable(self.variable_for(&def.ty)?),
+                        value: Node::new(Value::Variable(self.variable_for(&def.ty)?)),
                     })
                 } else {
                     self.argument_with_def(def)
@@ -73,15 +43,15 @@ impl DocumentBuilder<'_> {
     }
 
     /// Pick or define a variable that can be passed where `ty` is expected.
-    pub(crate) fn variable_for(&mut self, ty: &Ty) -> ArbitraryResult<Name> {
+    pub(crate) fn variable_for(&mut self, ty: &Type) -> ArbitraryResult<Name> {
         // A variable can be passed where its own type, or the nullable form
         // of it, is expected.
-        let non_null = Ty::NonNull(Box::new(ty.clone()));
+        let non_null = (ty.clone()).non_null();
         let compatible: Vec<Name> = self
             .operation_variables
             .iter()
             .flat_map(|vars| &vars.definitions)
-            .filter(|v| &v.ty == ty || v.ty == non_null)
+            .filter(|v| &*v.ty == ty || *v.ty == non_null)
             .map(|v| v.name.clone())
             .collect();
         if !compatible.is_empty() && self.u.arbitrary()? {
@@ -97,11 +67,11 @@ impl DocumentBuilder<'_> {
             .transpose()?;
         let directives = self.directives(DirectiveLocation::VariableDefinition)?;
         if let Some(vars) = &mut self.operation_variables {
-            vars.definitions.push(VariableDef {
+            vars.definitions.push(VariableDefinition {
                 description: None,
                 name: name.clone(),
-                ty: ty.clone(),
-                default_value,
+                ty: Node::new(ty.clone()),
+                default_value: default_value.map(Node::new),
                 directives,
             });
         }
@@ -141,7 +111,7 @@ impl DocumentBuilder<'_> {
     pub(crate) fn cache_arguments(&mut self, coord: TypeAttributeCoordinate, args: Vec<Argument>) {
         let uses_variables = args
             .iter()
-            .any(|arg| matches!(arg.value, InputValue::Variable(_)));
+            .any(|arg| matches!(*arg.value, Value::Variable(_)));
         match &mut self.operation_variables {
             Some(vars) if uses_variables => {
                 vars.arguments.insert(coord, args);
@@ -152,15 +122,15 @@ impl DocumentBuilder<'_> {
         }
     }
 
-    /// Create an arbitrary list of `VariableDef`
-    pub fn variable_definitions(&mut self) -> ArbitraryResult<Vec<VariableDef>> {
+    /// Create an arbitrary list of `VariableDefinition`
+    pub fn variable_definitions(&mut self) -> ArbitraryResult<Vec<VariableDefinition>> {
         (0..self.u.int_in_range(0..=7usize)?)
             .map(|_| self.variable_definition())
             .collect()
     }
 
-    /// Create an arbitrary `VariableDef`
-    pub fn variable_definition(&mut self) -> ArbitraryResult<VariableDef> {
+    /// Create an arbitrary `VariableDefinition`
+    pub fn variable_definition(&mut self) -> ArbitraryResult<VariableDefinition> {
         let name = self.type_name()?;
         let ty = self.choose_ty(&self.list_existing_input_types())?;
         let default_value = self
@@ -171,11 +141,11 @@ impl DocumentBuilder<'_> {
             .transpose()?;
         let directives = self.directives(DirectiveLocation::VariableDefinition)?;
 
-        Ok(VariableDef {
+        Ok(VariableDefinition {
             description: None,
             name,
-            ty,
-            default_value,
+            ty: Node::new(ty),
+            default_value: default_value.map(Node::new),
             directives,
         })
     }

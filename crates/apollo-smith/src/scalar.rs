@@ -1,97 +1,24 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::name::Name;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::Name;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
 
-/// Represents scalar types such as Int, String, and Boolean.
-/// Scalars cannot have fields.
-///
-/// *ScalarTypeDefinition*:
-///     Description? **scalar** Name Directives?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Scalars).
-#[derive(Debug, Clone)]
-pub struct ScalarTypeDef {
-    pub(crate) name: Name,
-    pub(crate) description: Option<Description>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) extend: bool,
-}
-
-impl From<ScalarTypeDef> for ast::Definition {
-    fn from(x: ScalarTypeDef) -> Self {
-        if x.extend {
-            ast::ScalarTypeExtension {
-                name: x.name.into(),
-                directives: Directive::to_ast(x.directives),
-            }
-            .into()
-        } else {
-            ast::ScalarTypeDefinition {
-                description: x.description.map(Into::into),
-                name: x.name.into(),
-                directives: Directive::to_ast(x.directives),
-            }
-            .into()
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::ScalarTypeDefinition> for ScalarTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(scalar_def: apollo_parser::cst::ScalarTypeDefinition) -> Result<Self, Self::Error> {
-        Ok(Self {
-            description: scalar_def
-                .description()
-                .and_then(|d| d.string_value())
-                .map(|s| Description::from(Into::<String>::into(s))),
-            name: scalar_def.name().unwrap().into(),
-            directives: scalar_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: false,
-        })
-    }
-}
-
-impl TryFrom<apollo_parser::cst::ScalarTypeExtension> for ScalarTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(scalar_def: apollo_parser::cst::ScalarTypeExtension) -> Result<Self, Self::Error> {
-        Ok(Self {
-            description: None,
-            name: scalar_def.name().unwrap().into(),
-            directives: scalar_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: true,
-        })
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `ScalarTypeDef`
-    pub fn scalar_type_definition(&mut self) -> ArbitraryResult<ScalarTypeDef> {
+    /// Generate a scalar definition or extension.
+    pub fn scalar_type_definition(&mut self) -> ArbitraryResult<ast::Definition> {
         let mut extend = !self.scalar_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let mut name = if extend {
             let available_scalars: Vec<&Name> = self
                 .scalar_type_defs
                 .iter()
                 .filter_map(|scalar| {
-                    if scalar.extend {
+                    if scalar.is_extension_definition() {
                         None
                     } else {
-                        Some(&scalar.name)
+                        Some(scalar.type_name())
                     }
                 })
                 .collect();
@@ -103,8 +30,12 @@ impl DocumentBuilder<'_> {
         let applied: IndexSet<Name> = self
             .scalar_type_defs
             .iter()
-            .filter(|def| def.name == name)
-            .flat_map(|def| def.directives.keys().cloned())
+            .filter(|def| def.type_name() == &name)
+            .flat_map(|def| {
+                def.directives()
+                    .iter()
+                    .map(|directive| directive.name.clone())
+            })
             .collect();
         let mut directives = self.type_directives(DirectiveLocation::Scalar, &applied)?;
         self.drop_directives_reaching(&mut directives, &name);
@@ -117,11 +48,15 @@ impl DocumentBuilder<'_> {
             name = self.type_name()?;
         }
 
-        Ok(ScalarTypeDef {
-            name,
-            description,
-            directives,
-            extend,
+        Ok(if extend {
+            ast::ScalarTypeExtension { name, directives }.into()
+        } else {
+            ast::ScalarTypeDefinition {
+                description,
+                name,
+                directives,
+            }
+            .into()
         })
     }
 }

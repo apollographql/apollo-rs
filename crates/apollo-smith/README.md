@@ -55,7 +55,7 @@ apollo-smith = "0.17.0-beta.2"
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
 
-```rust,compile_fail
+```rust,ignore
 // fuzz/fuzz_targets/my_apollo_smith_fuzz_target.rs
 
 #![no_main]
@@ -66,10 +66,10 @@ use apollo_smith::DocumentBuilder;
 
 fuzz_target!(|input: &[u8]| {
     let mut u = Unstructured::new(input);
-    let document = DocumentBuilder::new(&mut u).build()?;
-    let document_str = String::from(document);
-
-
+    let Ok(document) = DocumentBuilder::new(&mut u).build() else {
+        return;
+    };
+    let document_str = document.to_string();
 });
 ```
 
@@ -79,38 +79,59 @@ and fuzzed with the following command:
 $ cargo +nightly fuzz run my_apollo_smith_fuzz_target
 ```
 
-## Using `apollo-smith` with `apollo-parser`
+## Generating compiler documents
 
-You can use `apollo-parser` to generate valid operations in `apollo-smith`.
+`DocumentBuilder::build` returns an `apollo_compiler::ast::Document` containing
+schema and executable definitions. Definition generators construct compiler AST
+nodes directly. Generators that can produce a definition or an extension return
+`ast::Definition`.
 
-```rust,compile_fail
-use std::fs;
+Use `to_string()` to serialize a generated node. To obtain a compiler `Schema`
+and `ExecutableDocument` directly, validate the generated AST:
 
-use apollo_parser::Parser;
-use apollo_smith::{Document, DocumentBuilder};
+```rust
+use apollo_smith::{DocumentBuilder, Unstructured};
 
-use libfuzzer_sys::arbitrary::{Result, Unstructured};
+let mut u = Unstructured::new(&[]);
+let document = DocumentBuilder::new(&mut u).build().unwrap();
+let (schema, executable) = document.to_mixed_validate().unwrap();
+```
 
-/// This generate an arbitrary valid GraphQL operation
-pub fn generate_valid_operation(input: &[u8]) -> Result<String> {
-    let parser = Parser::new(&fs::read_to_string("supergraph.graphql").expect("cannot read file"));
+For `arbitrary`-based fuzz inputs, use `ArbitraryDocument`, a wrapper containing
+the compiler document. Its `Arbitrary` implementation consumes the remaining
+input:
 
-    let tree = parser.parse();
-    if tree.errors().next().is_some() {
-        panic!("cannot parse the graphql file");
-    }
+```rust
+use apollo_smith::{ArbitraryDocument, Unstructured};
+use arbitrary::Arbitrary;
 
+let mut u = Unstructured::new(&[]);
+let document = ArbitraryDocument::arbitrary(&mut u).unwrap().0;
+document.to_mixed_validate().unwrap();
+```
+
+## Generating operations for an existing schema
+
+Pass a compiler AST document to `DocumentBuilder::with_document`. Schema
+extensions and existing executable definitions are preserved. Seeded fragments
+that use variables are not suitable for generating additional operations, since
+their variable requirements are not copied into the new operation. Schemas can use
+explicit root operations or the conventional `Query`, `Mutation`, and
+`Subscription` names.
+
+```rust
+use apollo_compiler::ast::{Document, OperationDefinition};
+use apollo_smith::{DocumentBuilder, Result, Unstructured};
+
+pub fn generate_valid_operation(input: &[u8], schema: &str) -> Result<OperationDefinition> {
+    let document = Document::parse(schema, "schema.graphql").expect("parse schema");
     let mut u = Unstructured::new(input);
-
-    // Convert `apollo_parser::Document` into `apollo_smith::Document`.
-    let apollo_smith_doc = Document::try_from(tree.document()).unwrap();
-
-    // Create a `DocumentBuilder` given an existing document to match a schema.
-    let mut gql_doc = DocumentBuilder::with_document(&mut u, apollo_smith_doc)?;
-    let operation_def = gql_doc.operation_definition()?.unwrap();
-
-    Ok(operation_def.into())
+    let mut builder = DocumentBuilder::with_document(&mut u, document)?;
+    builder.operation_definition()?.ok_or(arbitrary::Error::IncorrectFormat)
 }
+
+let operation = generate_valid_operation(&[], "type Query { field: Int }").unwrap();
+assert_eq!(operation.operation_type, apollo_compiler::ast::OperationType::Query);
 ```
 
 ## Generating responses using `apollo-smith` with `apollo-compiler`

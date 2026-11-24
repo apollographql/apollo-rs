@@ -1,5 +1,4 @@
-use apollo_parser::Parser;
-use apollo_smith::Document;
+use apollo_compiler::ast::Document;
 use apollo_smith::DocumentBuilder;
 use arbitrary::Result;
 use arbitrary::Unstructured;
@@ -12,17 +11,7 @@ use std::fs;
 /// This generate an arbitrary valid GraphQL operation
 pub fn generate_valid_operation(schema_path: &str, seed_arg: Option<String>) -> Result<String> {
     let contents = fs::read_to_string(schema_path).expect("cannot read file");
-    let parser = Parser::new(&contents);
-
-    let tree = parser.parse();
-    if tree.errors().len() > 0 {
-        let errors = tree
-            .errors()
-            .map(|err| err.message())
-            .collect::<Vec<&str>>()
-            .join("\n");
-        panic!("cannot parse the supergraph:\n{errors}");
-    }
+    let document = Document::parse(contents, schema_path).expect("parse schema");
 
     let seed: u64 = match seed_arg {
         Some(s) => s.parse().unwrap(),
@@ -39,11 +28,8 @@ pub fn generate_valid_operation(schema_path: &str, seed_arg: Option<String>) -> 
         .collect();
 
     let mut u = Unstructured::new(data.as_bytes());
-    let mut gql_doc = DocumentBuilder::with_document(
-        &mut u,
-        Document::try_from(tree.document()).expect("tree should not have errors"),
-    )?;
-    let operation_def: String = gql_doc.operation_definition()?.unwrap().into();
+    let mut gql_doc = DocumentBuilder::with_document(&mut u, document)?;
+    let operation_def: String = gql_doc.operation_definition()?.unwrap().to_string();
 
     Ok(operation_def)
 }

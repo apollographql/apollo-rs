@@ -1,148 +1,15 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::field::FieldDef;
+use crate::definition::TypeDefinition;
 use crate::interface::field_signatures_for;
-use crate::name::Name;
 use crate::DocumentBuilder;
-use crate::StackedEntity;
 use apollo_compiler::ast;
-use apollo_compiler::Node;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::Name;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
 
-/// Object types represent concrete instantiations of sets of fields.
-///
-/// The introspection types (e.g. `__Type`, `__Field`, etc) are examples of
-/// objects.
-///
-/// *ObjectTypeDefinition*:
-///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Objects).
-#[derive(Debug, Clone)]
-pub struct ObjectTypeDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) name: Name,
-    pub(crate) implements_interfaces: IndexSet<Name>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) fields_def: Vec<FieldDef>,
-    pub(crate) extend: bool,
-}
-
-impl From<ObjectTypeDef> for ast::Definition {
-    fn from(x: ObjectTypeDef) -> Self {
-        if x.extend {
-            ast::ObjectTypeExtension {
-                name: x.name.into(),
-                implements_interfaces: x
-                    .implements_interfaces
-                    .into_iter()
-                    .map(Into::into)
-                    .collect(),
-                directives: Directive::to_ast(x.directives),
-                fields: x
-                    .fields_def
-                    .into_iter()
-                    .map(|x| Node::new(x.into()))
-                    .collect(),
-            }
-            .into()
-        } else {
-            ast::ObjectTypeDefinition {
-                description: x.description.map(Into::into),
-                name: x.name.into(),
-                implements_interfaces: x
-                    .implements_interfaces
-                    .into_iter()
-                    .map(Into::into)
-                    .collect(),
-                directives: Directive::to_ast(x.directives),
-                fields: x
-                    .fields_def
-                    .into_iter()
-                    .map(|x| Node::new(x.into()))
-                    .collect(),
-            }
-            .into()
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::ObjectTypeDefinition> for ObjectTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(object_def: apollo_parser::cst::ObjectTypeDefinition) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: object_def
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: object_def.description().map(Description::from),
-            directives: object_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            implements_interfaces: object_def
-                .implements_interfaces()
-                .map(|impl_int| {
-                    impl_int
-                        .named_types()
-                        .map(|n| n.name().unwrap().into())
-                        .collect()
-                })
-                .unwrap_or_default(),
-            extend: false,
-            fields_def: object_def
-                .fields_definition()
-                .expect("object type definition must have fields definition")
-                .field_definitions()
-                .map(FieldDef::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-        })
-    }
-}
-
-impl TryFrom<apollo_parser::cst::ObjectTypeExtension> for ObjectTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(object_def: apollo_parser::cst::ObjectTypeExtension) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: object_def
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: None,
-            directives: object_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            implements_interfaces: object_def
-                .implements_interfaces()
-                .map(|impl_int| {
-                    impl_int
-                        .named_types()
-                        .map(|n| n.name().unwrap().into())
-                        .collect()
-                })
-                .unwrap_or_default(),
-            extend: true,
-            fields_def: object_def
-                .fields_definition()
-                .expect("object type definition must have fields definition")
-                .field_definitions()
-                .map(FieldDef::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-        })
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `ObjectTypeDef`
-    pub fn object_type_definition(&mut self) -> ArbitraryResult<ObjectTypeDef> {
+    /// Generate an object definition or extension.
+    pub fn object_type_definition(&mut self) -> ArbitraryResult<ast::Definition> {
         let extend = !self.object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self.optional_description()?;
         let name = if extend {
@@ -150,10 +17,10 @@ impl DocumentBuilder<'_> {
                 .object_type_defs
                 .iter()
                 .filter_map(|object| {
-                    if object.extend {
+                    if object.is_extension_definition() {
                         None
                     } else {
-                        Some(&object.name)
+                        Some(object.type_name())
                     }
                 })
                 .collect();
@@ -173,8 +40,12 @@ impl DocumentBuilder<'_> {
         let applied: IndexSet<Name> = self
             .object_type_defs
             .iter()
-            .filter(|def| def.name == name)
-            .flat_map(|def| def.directives.keys().cloned())
+            .filter(|def| def.type_name() == &name)
+            .flat_map(|def| {
+                def.directives()
+                    .iter()
+                    .map(|directive| directive.name.clone())
+            })
             .collect();
         let directives = self.type_directives(DirectiveLocation::Object, &applied)?;
 
@@ -186,24 +57,24 @@ impl DocumentBuilder<'_> {
             return Err(arbitrary::Error::IncorrectFormat);
         }
 
-        Ok(ObjectTypeDef {
-            description,
-            directives,
-            implements_interfaces,
-            name,
-            fields_def,
-            extend,
+        Ok(if extend {
+            ast::ObjectTypeExtension {
+                name,
+                directives,
+                implements_interfaces: implements_interfaces.into_iter().collect(),
+                fields: fields_def,
+            }
+            .into()
+        } else {
+            ast::ObjectTypeDefinition {
+                description,
+                name,
+                directives,
+                implements_interfaces: implements_interfaces.into_iter().collect(),
+                fields: fields_def,
+            }
+            .into()
         })
-    }
-}
-
-impl StackedEntity for ObjectTypeDef {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-
-    fn fields_def(&self) -> &[FieldDef] {
-        &self.fields_def
     }
 }
 

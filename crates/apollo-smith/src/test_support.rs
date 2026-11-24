@@ -1,6 +1,6 @@
 //! Helpers for the property tests in each generator module.
 
-use crate::Document;
+use crate::ArbitraryDocument;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
 use arbitrary::Arbitrary;
@@ -31,11 +31,8 @@ pub(crate) fn generate_definition<D: Into<ast::Definition>>(
     generate: impl FnOnce(&mut DocumentBuilder<'_>) -> Result<Option<D>>,
 ) -> Option<String> {
     let mut u = Unstructured::new(data);
-    let doc = apollo_parser::Parser::new(schema)
-        .parse()
-        .document()
-        .try_into()
-        .expect("schema converts to a smith document");
+    let doc = apollo_compiler::ast::Document::parse(schema, "schema.graphql")
+        .expect("parse compiler document");
     let mut builder = DocumentBuilder::with_document(&mut u, doc).expect("builder from schema");
     let definition = generate(&mut builder).ok()??;
     let mut generated = ast::Document::new();
@@ -113,9 +110,9 @@ pub(crate) fn generated_against_any<D: Into<ast::Definition> + 'static>(
 /// Whole documents from `build()`, through their `Arbitrary` implementation.
 pub(crate) fn documents(bytes: impl Strategy<Value = Vec<u8>>) -> impl Strategy<Value = Generated> {
     bytes.prop_map(|data| {
-        let document = Document::arbitrary_take_rest(Unstructured::new(&data))
+        let document = ArbitraryDocument::arbitrary_take_rest(Unstructured::new(&data))
             .ok()
-            .map(String::from);
+            .map(|doc| doc.0.to_string());
         Generated::new(document.clone(), document)
     })
 }

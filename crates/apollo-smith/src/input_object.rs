@@ -1,140 +1,33 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::input_value::InputValueDef;
-use crate::name::Name;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
 use apollo_compiler::ast;
+use apollo_compiler::ast::Directive;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::name;
+use apollo_compiler::Name;
 use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
-
-/// Input objects are composite types used as inputs into queries defined as a list of named input values..
-///
-/// InputObjectTypeDefinition
-///     Description? **input** Name Directives? FieldsDefinition?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Input-Objects).
-///
-/// **Note**: At the moment InputObjectTypeDefinition differs slightly from the
-/// spec. Instead of accepting InputValues as `field` parameter, we accept
-/// InputField.
-#[derive(Debug, Clone)]
-pub struct InputObjectTypeDef {
-    pub(crate) name: Name,
-    pub(crate) description: Option<Description>,
-    // A vector of fields
-    pub(crate) fields: Vec<InputValueDef>,
-    /// Contains all directives.
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) extend: bool,
-}
-
-impl From<InputObjectTypeDef> for ast::Definition {
-    fn from(x: InputObjectTypeDef) -> Self {
-        if x.extend {
-            ast::InputObjectTypeExtension {
-                name: x.name.into(),
-                directives: Directive::to_ast(x.directives),
-                fields: x.fields.into_iter().map(|x| Node::new(x.into())).collect(),
-            }
-            .into()
-        } else {
-            ast::InputObjectTypeDefinition {
-                description: x.description.map(Into::into),
-                name: x.name.into(),
-                directives: Directive::to_ast(x.directives),
-                fields: x.fields.into_iter().map(|x| Node::new(x.into())).collect(),
-            }
-            .into()
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::InputObjectTypeDefinition> for InputObjectTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(
-        input_object: apollo_parser::cst::InputObjectTypeDefinition,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: input_object
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            description: input_object.description().map(Description::from),
-            directives: input_object
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: false,
-            fields: input_object
-                .input_fields_definition()
-                .map(|input_fields| {
-                    input_fields
-                        .input_value_definitions()
-                        .map(InputValueDef::try_from)
-                        .collect::<Result<_, _>>()
-                })
-                .transpose()?
-                .unwrap_or_default(),
-        })
-    }
-}
-
-impl TryFrom<apollo_parser::cst::InputObjectTypeExtension> for InputObjectTypeDef {
-    type Error = crate::FromError;
-
-    fn try_from(
-        input_object: apollo_parser::cst::InputObjectTypeExtension,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: input_object
-                .name()
-                .expect("object type definition must have a name")
-                .into(),
-            directives: input_object
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            extend: true,
-            fields: input_object
-                .input_fields_definition()
-                .map(|input_fields| {
-                    input_fields
-                        .input_value_definitions()
-                        .map(InputValueDef::try_from)
-                        .collect::<Result<Vec<_>, crate::FromError>>()
-                })
-                .transpose()?
-                .unwrap_or_default(),
-            description: None,
-        })
-    }
-}
 
 impl DocumentBuilder<'_> {
     pub(crate) fn is_one_of_input(&self, name: &Name) -> bool {
         self.input_object_type_defs
             .iter()
-            .any(|io| &io.name == name && io.directives.keys().any(|d| d.name == "oneOf"))
+            .any(|io| io.type_name() == name && io.directives().iter().any(|d| d.name == "oneOf"))
     }
 
-    /// Create an arbitrary `InputObjectTypeDef`
-    pub fn input_object_type_definition(&mut self) -> ArbitraryResult<InputObjectTypeDef> {
+    /// Generate an input object definition or extension.
+    pub fn input_object_type_definition(&mut self) -> ArbitraryResult<ast::Definition> {
         let extend = !self.input_object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let name = if extend {
             let available_input_objects: Vec<&Name> = self
                 .input_object_type_defs
                 .iter()
                 .filter_map(|input_object| {
-                    if input_object.extend {
+                    if input_object.is_extension_definition() {
                         None
                     } else {
-                        Some(&input_object.name)
+                        Some(input_object.type_name())
                     }
                 })
                 .collect();
@@ -146,8 +39,8 @@ impl DocumentBuilder<'_> {
         let exclude_fields: IndexSet<Name> = self
             .input_object_type_defs
             .iter()
-            .filter(|io| io.name == name)
-            .flat_map(|io| io.fields.iter().map(|f| f.name.clone()))
+            .filter(|io| io.type_name() == &name)
+            .flat_map(|io| io.input_fields().iter().map(|f| f.name.clone()))
             .collect();
 
         // Randomly apply @oneOf to a base definition (~1-in-5 chance). When
@@ -165,7 +58,7 @@ impl DocumentBuilder<'_> {
             // Values of this type may already have been generated from
             // earlier definitions, so extensions only add nullable fields.
             if is_one_of || extend {
-                field.ty = field.ty.clone().into_nullable();
+                field.ty = Node::new((*field.ty).clone().nullable());
             }
             if is_one_of || extends_one_of {
                 field.default_value = None;
@@ -176,31 +69,41 @@ impl DocumentBuilder<'_> {
         let applied: IndexSet<Name> = self
             .input_object_type_defs
             .iter()
-            .filter(|def| def.name == name)
-            .flat_map(|def| def.directives.keys().cloned())
+            .filter(|def| def.type_name() == &name)
+            .flat_map(|def| {
+                def.directives()
+                    .iter()
+                    .map(|directive| directive.name.clone())
+            })
             .collect();
         let mut directives = self.type_directives(DirectiveLocation::InputObject, &applied)?;
         self.drop_directives_reaching(&mut directives, &name);
         if is_one_of {
-            directives.insert(
-                Name::new(String::from("oneOf")),
-                Directive {
-                    name: Name::new(String::from("oneOf")),
-                    arguments: Vec::new(),
-                },
-            );
+            directives.push(Node::new(Directive {
+                name: name!(oneOf),
+                arguments: Vec::new(),
+            }));
         }
 
         if extend && directives.is_empty() && fields.is_empty() {
             return Err(arbitrary::Error::IncorrectFormat);
         }
 
-        Ok(InputObjectTypeDef {
-            description,
-            directives,
-            name,
-            extend,
-            fields,
+        Ok(if extend {
+            ast::InputObjectTypeExtension {
+                name,
+                directives,
+                fields: fields.into_iter().map(Node::new).collect(),
+            }
+            .into()
+        } else {
+            ast::InputObjectTypeDefinition {
+                description,
+                name,
+                directives,
+                fields: fields.into_iter().map(Node::new).collect(),
+            }
+            .into()
         })
     }
 }

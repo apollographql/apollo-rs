@@ -1,168 +1,23 @@
-use crate::description::Description;
-use crate::directive::Directive;
-use crate::directive::DirectiveLocation;
-use crate::name::Name;
-use crate::operation::OperationDef;
-use crate::selection_set::SelectionSet;
-use crate::ty::Ty;
+use crate::definition::TypeDefinition;
 use crate::DocumentBuilder;
-use apollo_compiler::ast;
+use apollo_compiler::ast::DirectiveLocation;
+use apollo_compiler::ast::FragmentDefinition;
+use apollo_compiler::ast::FragmentSpread;
+use apollo_compiler::ast::InlineFragment;
+use apollo_compiler::ast::OperationDefinition;
+use apollo_compiler::ast::Type;
+use apollo_compiler::Name;
+use apollo_compiler::Node;
 use arbitrary::Result as ArbitraryResult;
-use indexmap::IndexMap;
 use indexmap::IndexSet;
 use itertools::Itertools;
 
-/// The __fragmentDef type represents a fragment definition
-///
-/// *FragmentDefinition*:
-///     Description? fragment FragmentName TypeCondition Directives? SelectionSet
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#FragmentDefinition).
-#[derive(Debug, Clone)]
-pub struct FragmentDef {
-    pub(crate) description: Option<Description>,
-    pub(crate) name: Name,
-    pub(crate) type_condition: TypeCondition,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) selection_set: SelectionSet,
-}
-
-impl From<FragmentDef> for ast::Definition {
-    fn from(x: FragmentDef) -> Self {
-        ast::FragmentDefinition {
-            description: x.description.map(Into::into),
-            name: x.name.into(),
-            type_condition: x.type_condition.name.into(),
-            directives: Directive::to_ast(x.directives),
-            selection_set: x.selection_set.into(),
-        }
-        .into()
-    }
-}
-
-impl TryFrom<apollo_parser::cst::FragmentDefinition> for FragmentDef {
-    type Error = crate::FromError;
-
-    fn try_from(fragment_def: apollo_parser::cst::FragmentDefinition) -> Result<Self, Self::Error> {
-        Ok(Self {
-            description: fragment_def.description().map(Description::from),
-            name: fragment_def.fragment_name().unwrap().name().unwrap().into(),
-            directives: fragment_def
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            type_condition: fragment_def.type_condition().unwrap().into(),
-            selection_set: fragment_def.selection_set().unwrap().try_into()?,
-        })
-    }
-}
-
-/// The __fragmentSpread type represents a named fragment used in a selection set.
-///
-/// *FragmentSpread*:
-///     ... FragmentName Directives?
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#FragmentSpread).
-#[derive(Debug, Clone)]
-pub struct FragmentSpread {
-    pub(crate) name: Name,
-    pub(crate) directives: IndexMap<Name, Directive>,
-}
-
-impl From<FragmentSpread> for ast::FragmentSpread {
-    fn from(x: FragmentSpread) -> Self {
-        Self {
-            fragment_name: x.name.into(),
-            directives: Directive::to_ast(x.directives),
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::FragmentSpread> for FragmentSpread {
-    type Error = crate::FromError;
-
-    fn try_from(fragment_spread: apollo_parser::cst::FragmentSpread) -> Result<Self, Self::Error> {
-        Ok(Self {
-            name: fragment_spread
-                .fragment_name()
-                .unwrap()
-                .name()
-                .unwrap()
-                .into(),
-            directives: fragment_spread
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-        })
-    }
-}
-
-/// The __inlineFragment type represents an inline fragment in a selection set that could be used as a field
-///
-/// *InlineFragment*:
-///     ... TypeCondition? Directives? SelectionSet
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#sec-Inline-Fragments).
-#[derive(Debug, Clone)]
-pub struct InlineFragment {
-    pub(crate) type_condition: Option<TypeCondition>,
-    pub(crate) directives: IndexMap<Name, Directive>,
-    pub(crate) selection_set: SelectionSet,
-}
-
-impl From<InlineFragment> for ast::InlineFragment {
-    fn from(x: InlineFragment) -> Self {
-        Self {
-            type_condition: x.type_condition.map(|t| t.name.into()),
-            directives: Directive::to_ast(x.directives),
-            selection_set: x.selection_set.into(),
-        }
-    }
-}
-
-impl TryFrom<apollo_parser::cst::InlineFragment> for InlineFragment {
-    type Error = crate::FromError;
-
-    fn try_from(inline_fragment: apollo_parser::cst::InlineFragment) -> Result<Self, Self::Error> {
-        Ok(Self {
-            directives: inline_fragment
-                .directives()
-                .map(Directive::convert_directives)
-                .transpose()?
-                .unwrap_or_default(),
-            selection_set: inline_fragment.selection_set().unwrap().try_into()?,
-            type_condition: inline_fragment.type_condition().map(TypeCondition::from),
-        })
-    }
-}
-
-/// The __typeCondition type represents where a fragment could be applied
-///
-/// *TypeCondition*:
-///     on NamedType
-///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/September2025/#TypeCondition).
-#[derive(Debug, Clone)]
-pub struct TypeCondition {
-    pub(crate) name: Name,
-}
-
-impl From<apollo_parser::cst::TypeCondition> for TypeCondition {
-    fn from(type_condition: apollo_parser::cst::TypeCondition) -> Self {
-        Self {
-            name: type_condition.named_type().unwrap().name().unwrap().into(),
-        }
-    }
-}
-
 impl DocumentBuilder<'_> {
-    /// Create an arbitrary `FragmentDef`
-    pub fn fragment_definition(&mut self) -> ArbitraryResult<FragmentDef> {
+    /// Create an arbitrary `FragmentDefinition`
+    pub fn fragment_definition(&mut self) -> ArbitraryResult<FragmentDefinition> {
         let type_conditions = self.fragment_type_conditions();
         let type_condition = self.u.choose(&type_conditions)?.clone();
-        let _ = self.stack_ty(&Ty::Named(type_condition));
+        let _ = self.stack_ty(&Type::Named(type_condition));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
         let (selection_set, selections) = self.tracking_merges(|b| b.selection_set());
@@ -174,7 +29,7 @@ impl DocumentBuilder<'_> {
         let type_condition = self.type_condition()?;
         self.stack.pop();
 
-        Ok(FragmentDef {
+        Ok(FragmentDefinition {
             description: None,
             name,
             type_condition,
@@ -186,9 +41,9 @@ impl DocumentBuilder<'_> {
     /// Types a fragment can be defined on. Fragments select fields, so leaf
     /// types are left out.
     pub(crate) fn fragment_type_conditions(&self) -> Vec<Name> {
-        let objects = self.object_type_defs.iter().map(|o| &o.name);
-        let interfaces = self.interface_type_defs.iter().map(|i| &i.name);
-        let unions = self.union_type_defs.iter().map(|u| &u.name);
+        let objects = self.object_type_defs.iter().map(|o| o.type_name());
+        let interfaces = self.interface_type_defs.iter().map(|i| i.type_name());
+        let unions = self.union_type_defs.iter().map(|u| u.type_name());
         objects
             .chain(interfaces)
             .chain(unions)
@@ -202,13 +57,13 @@ impl DocumentBuilder<'_> {
         &mut self,
         excludes: &mut Vec<Name>,
     ) -> ArbitraryResult<Option<FragmentSpread>> {
-        let current_type = self.stack.last().map(|e| e.name().clone());
-        let available_fragment: Vec<&FragmentDef> = self
+        let current_type = self.stack.last().map(|e| e.type_name().clone());
+        let available_fragment: Vec<&Node<FragmentDefinition>> = self
             .fragment_defs
             .iter()
             .filter(|f| {
                 !excludes.contains(&f.name)
-                    && self.fragment_spread_possible(&f.type_condition.name, current_type.as_ref())
+                    && self.fragment_spread_possible(&f.type_condition, current_type.as_ref())
                     && self.can_merge_fragment(&f.name)
                     && self.fragment_fits_depth(&f.name)
             })
@@ -223,16 +78,17 @@ impl DocumentBuilder<'_> {
         self.record_fragment(&name);
         excludes.push(name.clone());
 
-        Ok(Some(FragmentSpread { name, directives }))
+        Ok(Some(FragmentSpread {
+            fragment_name: name,
+            directives,
+        }))
     }
 
     /// Create an arbitrary `InlineFragment`
     pub fn inline_fragment(&mut self) -> ArbitraryResult<InlineFragment> {
         if let Some(member) = self.choose_union_member()? {
-            let type_condition = TypeCondition {
-                name: member.clone(),
-            };
-            self.stack_ty(&Ty::Named(member));
+            let type_condition = member.clone();
+            self.stack_ty(&Type::Named(member));
             let selection_set = self.selection_set();
             self.stack.pop();
             let directives = self.selection_directives(DirectiveLocation::InlineFragment, true)?;
@@ -262,10 +118,14 @@ impl DocumentBuilder<'_> {
     /// When selecting on a union, usually pick one of its members to narrow
     /// to, since `__typename` is the only field a union itself offers.
     fn choose_union_member(&mut self) -> ArbitraryResult<Option<Name>> {
-        let Some(current) = self.stack.last().map(|e| e.name().clone()) else {
+        let Some(current) = self.stack.last().map(|e| e.type_name().clone()) else {
             return Ok(None);
         };
-        if !self.union_type_defs.iter().any(|u| u.name == current) {
+        if !self
+            .union_type_defs
+            .iter()
+            .any(|u| u.type_name() == &current)
+        {
             return Ok(None);
         }
         let members: Vec<Name> = self.union_members(&current).into_iter().collect();
@@ -291,38 +151,40 @@ impl DocumentBuilder<'_> {
 
     /// The set of object types that `type_name` can resolve to at runtime.
     fn possible_object_types(&self, type_name: &Name) -> IndexSet<Name> {
-        if self.object_type_defs.iter().any(|o| &o.name == type_name) {
+        if self
+            .object_type_defs
+            .iter()
+            .any(|o| o.type_name() == type_name)
+        {
             return IndexSet::from([type_name.clone()]);
         }
-        if self.union_type_defs.iter().any(|u| &u.name == type_name) {
+        if self
+            .union_type_defs
+            .iter()
+            .any(|u| u.type_name() == type_name)
+        {
             return self.union_members(type_name);
         }
         // Interface: collect every object whose implements closure includes it
         self.object_type_defs
             .iter()
-            .filter(|o| self.implements_graph.closure(&o.name).contains(type_name))
-            .map(|o| o.name.clone())
+            .filter(|o| {
+                self.implements_graph
+                    .closure(o.type_name())
+                    .contains(type_name)
+            })
+            .map(|o| o.type_name().clone())
             .collect()
     }
 
-    /// Create an arbitrary `TypeCondition`
-    pub fn type_condition(&mut self) -> ArbitraryResult<TypeCondition> {
-        let last_element = self.stack.last();
-        match last_element {
-            Some(last_element) => Ok(TypeCondition {
-                name: last_element.name().clone(),
-            }),
-            None => {
-                let named_types: Vec<Ty> = self
-                    .list_existing_object_types()
-                    .into_iter()
-                    .filter(Ty::is_named)
-                    .collect();
-
-                Ok(TypeCondition {
-                    name: self.choose_named_ty(&named_types)?.name().clone(),
-                })
-            }
+    /// Choose a type condition for the current selection.
+    pub fn type_condition(&mut self) -> ArbitraryResult<Name> {
+        match self.stack.last() {
+            Some(parent) => Ok(parent.type_name().clone()),
+            None => Ok(self
+                .choose_named_ty(&self.list_existing_object_types())?
+                .inner_named_type()
+                .clone()),
         }
     }
 }
@@ -335,18 +197,18 @@ impl DocumentBuilder<'_> {
 /// `A -> B` with no operation referencing A produce no reachable names, even
 /// though `A` syntactically references `B`.
 pub(crate) fn reachable_fragment_names(
-    operations: &[OperationDef],
-    fragments: &[FragmentDef],
+    operations: &[Node<OperationDefinition>],
+    fragments: &[Node<FragmentDefinition>],
 ) -> IndexSet<Name> {
     let mut reachable: IndexSet<Name> = IndexSet::new();
     for op in operations {
-        op.selection_set.collect_fragment_spreads(&mut reachable);
+        crate::selection_set::collect_fragment_spreads(&op.selection_set, &mut reachable);
     }
     let mut frontier: Vec<Name> = reachable.iter().cloned().collect();
     while let Some(name) = frontier.pop() {
         if let Some(frag) = fragments.iter().find(|f| f.name == name) {
             let mut nested: IndexSet<Name> = IndexSet::new();
-            frag.selection_set.collect_fragment_spreads(&mut nested);
+            crate::selection_set::collect_fragment_spreads(&frag.selection_set, &mut nested);
             for n in nested {
                 if reachable.insert(n.clone()) {
                     frontier.push(n);
@@ -364,18 +226,23 @@ mod tests {
     use crate::test_support::prop_assert_valid;
     use proptest::prelude::*;
 
-    fn parse(src: &str) -> (Vec<OperationDef>, Vec<FragmentDef>) {
-        let cst = apollo_parser::Parser::new(src).parse();
-        assert!(cst.errors().next().is_none(), "parse errors: {src}");
-        let mut ops = vec![];
-        let mut frags = vec![];
-        for def in cst.document().definitions() {
-            match def {
-                apollo_parser::cst::Definition::OperationDefinition(o) => {
-                    ops.push(o.try_into().unwrap())
+    fn parse(
+        src: &str,
+    ) -> (
+        Vec<Node<OperationDefinition>>,
+        Vec<Node<FragmentDefinition>>,
+    ) {
+        let document = apollo_compiler::ast::Document::parse(src, "fragments.graphql")
+            .expect("parse fragments");
+        let mut ops = Vec::new();
+        let mut frags = Vec::new();
+        for definition in document.definitions {
+            match definition {
+                apollo_compiler::ast::Definition::OperationDefinition(operation) => {
+                    ops.push(operation)
                 }
-                apollo_parser::cst::Definition::FragmentDefinition(f) => {
-                    frags.push(f.try_into().unwrap())
+                apollo_compiler::ast::Definition::FragmentDefinition(fragment) => {
+                    frags.push(fragment)
                 }
                 _ => panic!("unexpected definition in test input"),
             }
@@ -384,7 +251,10 @@ mod tests {
     }
 
     fn names(items: &[&str]) -> IndexSet<Name> {
-        items.iter().map(|s| Name::new(s.to_string())).collect()
+        items
+            .iter()
+            .map(|s| Name::new(s).expect("valid generated name"))
+            .collect()
     }
 
     #[test]
@@ -480,16 +350,13 @@ mod tests {
 
     #[test]
     fn fragments_can_be_defined_on_objects_interfaces_and_unions() {
-        let schema = apollo_parser::Parser::new(SCHEMA)
-            .parse()
-            .document()
-            .try_into()
-            .expect("schema converts to a smith document");
+        let schema = apollo_compiler::ast::Document::parse(SCHEMA, "schema.graphql")
+            .expect("parse compiler document");
         let mut u = arbitrary::Unstructured::new(&[]);
         let builder =
             crate::DocumentBuilder::with_document(&mut u, schema).expect("builder from schema");
         let candidates = builder.fragment_type_conditions();
-        let names: Vec<&str> = candidates.iter().map(|n| n.name.as_str()).collect();
+        let names: Vec<&str> = candidates.iter().map(|n| n.as_str()).collect();
         assert_eq!(names, ["Query", "A", "B", "I", "U"]);
     }
 }

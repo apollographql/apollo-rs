@@ -9,7 +9,7 @@ pub fn generate_valid_document(input: &[u8]) -> Result<String> {
     let mut u = Unstructured::new(input);
     let document = DocumentBuilder::new(&mut u).build()?;
 
-    Ok(document.into())
+    Ok(document.to_string())
 }
 
 /// Log the error and the document generated for these errors
