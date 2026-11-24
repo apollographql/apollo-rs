@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Keep ahash below 0.8.13 - [tninesling]**
+- **Keep ahash below 0.8.13 - [tninesling], [pull/1162]**
 
   On nightly Rust, ahash 0.8.13 hashes a `str` differently from a key type
   whose `Hash` implementation hashes it as a `str`. Maps keyed by `Name` are
@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   could not be found by name and used variables were reported as unused.
   The dependency is now capped below 0.8.13.
 
+[pull/1162]: https://github.com/apollographql/apollo-rs/pull/1162
 [tninesling]: https://github.com/tninesling
 
 # [2.0.0-beta.2](https://crates.io/crates/apollo-compiler/2.0.0-beta.2) - 2026-10-21
