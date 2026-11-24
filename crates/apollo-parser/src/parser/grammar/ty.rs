@@ -32,6 +32,29 @@ pub(crate) fn ty(p: &mut Parser) {
     }
 }
 
+/// Parse a type that is the whole input. The type node is the root of the tree
+/// here, so one is created even when the input has no type, and the leading
+/// ignored tokens are kept inside it.
+pub(crate) fn root_ty(p: &mut Parser) {
+    p.skip_ignored();
+    let checkpoint = p.checkpoint_node();
+    let Err(token) = parse(p) else {
+        return;
+    };
+
+    let _guard = checkpoint.wrap_node(SyntaxKind::NAMED_TYPE);
+    p.push_ignored();
+    match token {
+        Some(token) => {
+            p.err_at_token(&token, "expected a type");
+            if token.kind() != TokenKind::Eof {
+                p.push_token(SyntaxKind::ERROR, token);
+            }
+        }
+        None => p.err("expected a type"),
+    }
+}
+
 /// Returns the type on success, or the TokenKind that caused an error.
 ///
 /// When errors occur deeper inside nested types like lists, this function

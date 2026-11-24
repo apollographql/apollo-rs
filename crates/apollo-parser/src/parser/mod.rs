@@ -196,7 +196,7 @@ impl<'input> Parser<'input> {
     /// This is the expected format of the string value of the `type` argument
     /// of some directives like [`@field`](https://specs.apollo.dev/join/v0.3/#@field).
     pub fn parse_type(mut self) -> SyntaxTree<Type> {
-        grammar::ty::ty(&mut self);
+        grammar::ty::root_ty(&mut self);
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
@@ -1045,6 +1045,24 @@ mod tests {
         for source in [".Int", "+Int", "2.Int", "[.Int]", "Int.", "Int!."] {
             let cst = Parser::new(source).parse_type();
             assert!(cst.errors().len() > 0, "expected errors for {source:?}");
+        }
+    }
+
+    #[test]
+    fn type_without_a_type_reports_errors() {
+        for source in ["", " ", "1", "!", "{", "\"\\", "#c"] {
+            let cst = Parser::new(source).parse_type();
+            assert!(cst.errors().len() > 0, "expected errors for {source:?}");
+            assert_eq!(cst::CstNode::source_string(&cst.ty()), source);
+        }
+    }
+
+    #[test]
+    fn type_with_leading_ignored_tokens() {
+        for source in [" Int", "# c\nInt", ", [Int]!"] {
+            let cst = Parser::new(source).parse_type();
+            assert_eq!(cst.errors().len(), 0, "unexpected errors for {source:?}");
+            assert_eq!(cst::CstNode::source_string(&cst.ty()), source);
         }
     }
 

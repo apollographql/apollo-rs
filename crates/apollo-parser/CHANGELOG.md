@@ -20,12 +20,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Fix panic on lexer errors in field sets and types - [tninesling]**
+- **Fix panics when parsing field sets and types - [tninesling]**
 
   `Parser::parse_selection_set` and `Parser::parse_type` panicked inside rowan
   when the input started with a lexer error, such as `.` or `+1`, because the
   error token was added to the tree before the root node. The error token is
   now placed inside the root node and the error is reported.
+
+  `Parser::parse_type` also panicked when the input had no type at all, such
+  as `""`, `"1"`, or a type with leading whitespace like `" Int"`. It now
+  reports "expected a type", and leading whitespace and comments are accepted.
 
 [tninesling]: https://github.com/tninesling
 
