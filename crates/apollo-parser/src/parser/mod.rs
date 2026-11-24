@@ -196,7 +196,7 @@ impl<'input> Parser<'input> {
     /// This is the expected format of the string value of the `type` argument
     /// of some directives like [`@field`](https://specs.apollo.dev/join/v0.3/#@field).
     pub fn parse_type(mut self) -> SyntaxTree<Type> {
-        grammar::ty::ty(&mut self);
+        grammar::ty::root_ty(&mut self);
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
@@ -258,6 +258,15 @@ impl<'input> Parser<'input> {
                     self.builder.borrow_mut().token(SyntaxKind::ERROR, &data);
                 }
             }
+        }
+    }
+
+    /// Like `push_ignored`, but keeps tokens queued until the root node is
+    /// started. The selection set and type entry points may queue lexer errors
+    /// before their root node exists, and those must end up inside the root.
+    fn push_ignored_after_root(&mut self) {
+        if self.builder.borrow().root_started() {
+            self.push_ignored();
         }
     }
 
@@ -434,7 +443,7 @@ impl<'input> Parser<'input> {
     /// This allows for us to not have to always close nodes when we are parsing
     /// tokens.
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
-        self.push_ignored();
+        self.push_ignored_after_root();
 
         self.builder.borrow_mut().start_node(kind);
         let guard = NodeGuard::new(self.builder.clone());
@@ -448,7 +457,7 @@ impl<'input> Parser<'input> {
     pub(crate) fn checkpoint_node(&mut self) -> Checkpoint {
         // We may start a new node here in the future, so let's process
         // our preceding whitespace first
-        self.push_ignored();
+        self.push_ignored_after_root();
 
         let checkpoint = self.builder.borrow().checkpoint();
         Checkpoint::new(self.builder.clone(), checkpoint)
@@ -1019,6 +1028,42 @@ mod tests {
         };
         assert_eq!(field.alias().unwrap().name().unwrap().text(), "f");
         assert_eq!(field.name().unwrap().text(), "g");
+    }
+
+    #[test]
+    fn field_set_with_lexer_errors_does_not_panic() {
+        for source in [
+            ".", "+1, +", "2.", "\"\\", "\"\"\"", "{ a } .", "a .", " . a",
+        ] {
+            let cst = Parser::new(source).parse_selection_set();
+            assert!(cst.errors().len() > 0, "expected errors for {source:?}");
+        }
+    }
+
+    #[test]
+    fn type_with_lexer_errors_does_not_panic() {
+        for source in [".Int", "+Int", "2.Int", "[.Int]", "Int.", "Int!."] {
+            let cst = Parser::new(source).parse_type();
+            assert!(cst.errors().len() > 0, "expected errors for {source:?}");
+        }
+    }
+
+    #[test]
+    fn type_without_a_type_reports_errors() {
+        for source in ["", " ", "1", "!", "{", "\"\\", "#c"] {
+            let cst = Parser::new(source).parse_type();
+            assert!(cst.errors().len() > 0, "expected errors for {source:?}");
+            assert_eq!(cst::CstNode::source_string(&cst.ty()), source);
+        }
+    }
+
+    #[test]
+    fn type_with_leading_ignored_tokens() {
+        for source in [" Int", "# c\nInt", ", [Int]!"] {
+            let cst = Parser::new(source).parse_type();
+            assert_eq!(cst.errors().len(), 0, "unexpected errors for {source:?}");
+            assert_eq!(cst::CstNode::source_string(&cst.ty()), source);
+        }
     }
 
     #[test]

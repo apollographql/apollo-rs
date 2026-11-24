@@ -35,3 +35,19 @@ fn test_invalid_field_type() {
         }
     }
 }
+
+#[test]
+fn test_field_type_without_a_type() {
+    for input in ["", " ", "1", "!", ".Int"] {
+        let errors = Type::parse(input, "field_type.graphql")
+            .expect_err("input without a type should not parse")
+            .to_string();
+        assert!(errors.contains("syntax error"), "{errors}");
+    }
+}
+
+#[test]
+fn test_field_type_with_leading_whitespace() {
+    let field_type = Type::parse(" [Int]!", "field_type.graphql").expect("expected a field type");
+    assert_eq!(field_type.to_string(), "[Int]!");
+}

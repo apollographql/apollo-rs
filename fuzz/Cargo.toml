@@ -76,3 +76,15 @@ name = "validate"
 path = "fuzz_targets/validate.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "field_set"
+path = "fuzz_targets/field_set.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "field_type"
+path = "fuzz_targets/field_type.rs"
+test = false
+doc = false
