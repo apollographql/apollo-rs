@@ -18,7 +18,9 @@ edition = "2021"
 autotests = false # Most tests/*.rs files are modules of tests/main.rs
 
 [dependencies]
-ahash = "0.8.11"
+# On nightly, ahash 0.8.13 hashes a `str` differently from a type that hashes as
+# one, so looking up a `Name` key with a `&str` misses.
+ahash = ">=0.8.11, <0.8.13"
 apollo-parser = { path = "../apollo-parser", version = "0.9.0-beta.2" }
 ariadne = { version = "0.6.0", features = ["auto-color"] }
 futures = "0.3"
