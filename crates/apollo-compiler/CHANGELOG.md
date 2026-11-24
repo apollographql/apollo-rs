@@ -4,6 +4,22 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+## Maintenance
+
+- **Convert the CST to the AST from rowan green nodes - [tninesling]**
+
+  Parsing a document into the AST no longer allocates a rowan cursor for every
+  CST node it visits. On the supergraph benchmark, `ast::Document::parse` is
+  ~22% faster with jemalloc and makes ~43% fewer allocations.
+
+  This uses new apollo-parser APIs, so this release requires the apollo-parser
+  release that adds `GraphQLLanguage` and `cst::StringValue::unescape`. The
+  `apollo-parser` version requirement must be raised to it before publishing.
+
+[tninesling]: https://github.com/tninesling
+
 # [2.0.0-beta.2](https://crates.io/crates/apollo-compiler/2.0.0-beta.2) - 2026-10-21
 
 > Important: 3 breaking changes below, indicated by **BREAKING**
