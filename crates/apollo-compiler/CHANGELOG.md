@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 
-- **Convert the CST to the AST from rowan green nodes - [tninesling]**
+- **Convert the CST to the AST from rowan green nodes - [tninesling], [pull/1165]**
 
   Parsing a document into the AST no longer allocates a rowan cursor for every
   CST node it visits. On the supergraph benchmark, `ast::Document::parse` is
@@ -18,6 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   release that adds `GraphQLLanguage` and `cst::StringValue::unescape`. The
   `apollo-parser` version requirement must be raised to it before publishing.
 
+[pull/1165]: https://github.com/apollographql/apollo-rs/pull/1165
 [tninesling]: https://github.com/tninesling
 
 # [2.0.0-beta.2](https://crates.io/crates/apollo-compiler/2.0.0-beta.2) - 2026-10-21

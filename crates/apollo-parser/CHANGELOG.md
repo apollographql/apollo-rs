@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 
-- **Expose `GraphQLLanguage` and `cst::StringValue::unescape` - [tninesling]**
+- **Expose `GraphQLLanguage` and `cst::StringValue::unescape` - [tninesling], [pull/1165]**
 
   `GraphQLLanguage` is the `rowan::Language` implementation for the CST. With
   it, code that walks rowan green nodes can convert raw node kinds to
@@ -28,6 +28,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   token from its source text, so such code can read string values without a
   `StringValue` node. apollo-compiler uses both to convert the CST to its AST.
 
+[pull/1165]: https://github.com/apollographql/apollo-rs/pull/1165
 [tninesling]: https://github.com/tninesling
 
 # [0.9.0-beta.2](https://crates.io/crates/apollo-parser/0.9.0-beta.2) - 2026-10-22
