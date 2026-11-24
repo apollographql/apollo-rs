@@ -75,14 +75,23 @@ impl<'a> Cursor<'a> {
     /// Skips string content that needs no special handling, stopping before a
     /// quote, a backslash or a line terminator.
     pub(crate) fn skip_string_body(&mut self) {
+        // memchr searches for at most three bytes, so a carriage return gets
+        // its own search. Both run over a bounded window. Otherwise every
+        // carriage return would make the first search scan to the end of the
+        // input, which is quadratic for a string with many of them.
+        const WINDOW: usize = 256;
         let rest = &self.source.as_bytes()[self.next..];
-        let mut len = memchr::memchr3(b'"', b'\\', b'\n', rest).unwrap_or(rest.len());
-        // A carriage return is rare in single-line strings, so it gets its own
-        // scan over the already narrowed range instead of slowing down the
-        // main search.
-        if let Some(cr) = memchr::memchr(b'\r', &rest[..len]) {
-            len = cr;
-        }
+        let mut start = 0;
+        let len = loop {
+            let end = rest.len().min(start + WINDOW);
+            let window = &rest[start..end];
+            let stop = memchr::memchr3(b'"', b'\\', b'\n', window).unwrap_or(window.len());
+            let stop = memchr::memchr(b'\r', &window[..stop]).unwrap_or(stop);
+            if stop < window.len() || end == rest.len() {
+                break start + stop;
+            }
+            start = end;
+        };
         self.skip_to(self.next + len);
     }
 

@@ -948,4 +948,29 @@ type Query {
             }
         }
     }
+
+    #[test]
+    fn string_with_carriage_returns_lexes_in_linear_time() {
+        // Each bare carriage return interrupts the fast string scan. The scan
+        // must not look past it, or lexing becomes quadratic in the input size.
+        fn lex_time(repetitions: usize) -> std::time::Duration {
+            let input = format!("\"{}\"", "a\r".repeat(repetitions));
+            (0..3)
+                .map(|_| {
+                    let start = std::time::Instant::now();
+                    let token = Lexer::new(&input).next().expect("one token");
+                    assert!(token.is_err());
+                    start.elapsed()
+                })
+                .min()
+                .expect("three runs")
+        }
+        let small = lex_time(16 * 1024);
+        let large = lex_time(64 * 1024);
+        assert!(
+            large < small * 8,
+            "4x the input took {:.1}x as long",
+            large.as_secs_f64() / small.as_secs_f64()
+        );
+    }
 }
