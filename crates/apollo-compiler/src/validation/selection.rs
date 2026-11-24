@@ -19,6 +19,7 @@ use crate::Node;
 use apollo_parser::LimitTracker;
 use std::cell::OnceCell;
 use std::collections::VecDeque;
+use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::rc::Rc;
 use std::sync::OnceLock;
@@ -44,7 +45,7 @@ impl Hash for FieldSelection<'_> {
 
 impl<'a> FieldSelection<'a> {
     fn new(parent_type: &'a NamedType, field: &'a Node<executable::Field>) -> Self {
-        static SHARED_RANDOM: OnceLock<ahash::RandomState> = OnceLock::new();
+        static SHARED_RANDOM: OnceLock<foldhash::fast::RandomState> = OnceLock::new();
         let hash = SHARED_RANDOM
             .get_or_init(Default::default)
             .hash_one((parent_type, field));
@@ -70,7 +71,7 @@ fn expand_selections<'doc>(
 ) -> Vec<FieldSelection<'doc>> {
     let mut selections = vec![];
     let mut queue: VecDeque<&executable::SelectionSet> = selection_sets.collect();
-    let mut seen_fragments = HashSet::with_hasher(ahash::RandomState::new());
+    let mut seen_fragments = HashSet::default();
 
     while let Some(next_set) = queue.pop_front() {
         for selection in &next_set.selections {

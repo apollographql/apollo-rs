@@ -10,3 +10,16 @@ fn smoke_test() {
     assert_eq!(heap_2.as_str(), static_2.as_str());
     assert_eq!(heap_2, static_2);
 }
+
+/// Maps keyed by `Name` are looked up by `&str` throughout the API, so both
+/// must hash the same way with the hasher the collections use.
+#[test]
+fn collections_find_name_keys_by_str() {
+    let mut map = apollo_compiler::collections::IndexMap::default();
+    map.insert(Name::new("getName").unwrap(), 1);
+    assert_eq!(map.get("getName"), Some(&1));
+
+    let mut set = apollo_compiler::collections::HashSet::default();
+    set.insert(Name::new("getName").unwrap());
+    assert!(set.contains("getName"));
+}
