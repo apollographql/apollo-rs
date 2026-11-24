@@ -118,6 +118,12 @@ enum PendingToken<'input> {
 /// Defaulting to around a quarter of that, to keep a comfortable safety margin.
 const DEFAULT_RECURSION_LIMIT: usize = 500;
 
+/// The most pending tokens whose buffer is kept for reuse between nodes.
+/// Ignored token runs are usually a few tokens long, so a larger buffer only
+/// comes from an unusual run and is released instead of held for the rest of
+/// the parse.
+const RETAINED_PENDING_CAPACITY: usize = 64;
+
 impl<'input> Parser<'input> {
     /// Create a new instance of a parser given an input string.
     pub fn new(input: &'input str) -> Self {
@@ -242,8 +248,10 @@ impl<'input> Parser<'input> {
 
     /// Push pending tokens (ignored + errors) to the current node.
     pub(crate) fn push_ignored(&mut self) {
-        let pending = std::mem::take(&mut self.pending);
-        for item in pending {
+        // Drain instead of taking the Vec so its buffer is reused. This runs
+        // for every node, and reallocating it each time showed up in profiles.
+        let mut builder = self.builder.borrow_mut();
+        for item in self.pending.drain(..) {
             match item {
                 PendingToken::Ignored(token) => {
                     let syntax_kind = match token.kind {
@@ -252,13 +260,14 @@ impl<'input> Parser<'input> {
                         TokenKind::Comma => SyntaxKind::COMMA,
                         _ => unreachable!(),
                     };
-                    self.push_token(syntax_kind, token);
+                    builder.token(syntax_kind, token.data());
                 }
                 PendingToken::Error(data) => {
-                    self.builder.borrow_mut().token(SyntaxKind::ERROR, &data);
+                    builder.token(SyntaxKind::ERROR, &data);
                 }
             }
         }
+        self.pending.shrink_to(RETAINED_PENDING_CAPACITY);
     }
 
     /// Get current token's data.
@@ -613,6 +622,20 @@ mod tests {
     use crate::Parser;
     use crate::SyntaxTree;
     use expect_test::expect;
+
+    #[test]
+    fn push_ignored_releases_large_pending_buffer() {
+        let source = ",".repeat(10_000);
+        let mut parser = Parser::new(&source);
+        parser.skip_ignored();
+        assert_eq!(parser.pending.len(), 10_000);
+        parser.push_ignored();
+        assert!(
+            parser.pending.capacity() <= super::RETAINED_PENDING_CAPACITY,
+            "kept capacity for {} pending tokens",
+            parser.pending.capacity()
+        );
+    }
 
     #[test]
     fn limited_mid_node() {
