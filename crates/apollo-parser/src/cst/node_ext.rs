@@ -14,19 +14,26 @@ impl cst::Name {
 }
 
 impl cst::Variable {
+    /// Returns the variable's name, without the `$`. The name can be missing
+    /// when the document has syntax errors, and then this returns an empty string.
     pub fn text(&self) -> TokenText {
-        self.name()
-            .expect("Cannot get variable's NAME token")
-            .text()
+        self.name().map_or_else(empty_text, |name| name.text())
     }
 }
 
 impl cst::EnumValue {
+    /// Returns the enum value's name. The name can be missing when the document
+    /// has syntax errors, and then this returns an empty string.
     pub fn text(&self) -> TokenText {
-        self.name()
-            .expect("Cannot get enum value's NAME token")
-            .text()
+        self.name().map_or_else(empty_text, |name| name.text())
     }
+}
+
+fn empty_text() -> TokenText {
+    TokenText(GreenToken::new(
+        SyntaxKind(crate::SyntaxKind::IDENT as u16),
+        "",
+    ))
 }
 
 impl cst::DirectiveLocation {
@@ -619,5 +626,38 @@ quite a lot"
   multiple
     lines"
         );
+    }
+}
+
+#[cfg(test)]
+mod missing_name_tests {
+    use crate::cst;
+    use crate::cst::CstNode;
+    use crate::Parser;
+
+    #[test]
+    fn variable_without_a_name_has_empty_text() {
+        let cst = Parser::new("query($").parse();
+        assert!(cst.errors().len() > 0);
+        let variable = cst
+            .document()
+            .syntax()
+            .descendants()
+            .find_map(cst::Variable::cast)
+            .expect("the document has a variable node");
+        assert_eq!(variable.text().as_str(), "");
+    }
+
+    #[test]
+    fn enum_value_without_a_name_has_empty_text() {
+        let cst = Parser::new("enum E { \"description\" }").parse();
+        assert!(cst.errors().len() > 0);
+        let value = cst
+            .document()
+            .syntax()
+            .descendants()
+            .find_map(cst::EnumValue::cast)
+            .expect("the document has an enum value node");
+        assert_eq!(value.text().as_str(), "");
     }
 }

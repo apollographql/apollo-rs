@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 
-- **Fix panics when parsing field sets and types - [tninesling]**
+- **Fix panics on invalid field sets, types, and documents - [tninesling]**
 
   `Parser::parse_selection_set` and `Parser::parse_type` panicked inside rowan
   when the input started with a lexer error, such as `.` or `+1`, because the
@@ -30,6 +30,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `Parser::parse_type` also panicked when the input had no type at all, such
   as `""`, `"1"`, or a type with leading whitespace like `" Int"`. It now
   reports "expected a type", and leading whitespace and comments are accepted.
+
+  `cst::Variable::text` and `cst::EnumValue::text` panicked when the name was
+  missing from a document with syntax errors, such as `query($`. They now
+  return an empty string.
 
 [tninesling]: https://github.com/tninesling
 
