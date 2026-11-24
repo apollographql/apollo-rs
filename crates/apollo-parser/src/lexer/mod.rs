@@ -174,6 +174,7 @@ impl<'a> Cursor<'a> {
                     if lookup::is_namestart(c) {
                         token.kind = TokenKind::Name;
                         state = State::Ident;
+                        self.skip_name_continue();
 
                         continue;
                     }
@@ -193,6 +194,7 @@ impl<'a> Cursor<'a> {
                         '#' => {
                             token.kind = TokenKind::Comment;
                             state = State::Comment;
+                            self.skip_comment_body();
                         }
                         '.' => {
                             token.kind = TokenKind::Spread;
@@ -209,6 +211,7 @@ impl<'a> Cursor<'a> {
                         c if is_whitespace_assimilated(c) => {
                             token.kind = TokenKind::Whitespace;
                             state = State::Whitespace;
+                            self.skip_ascii_whitespace();
                         }
                         c => {
                             return Err(Error::with_loc(
@@ -227,7 +230,7 @@ impl<'a> Cursor<'a> {
                     }
                 },
                 State::Whitespace => match c {
-                    curr if is_whitespace_assimilated(curr) => {}
+                    curr if is_whitespace_assimilated(curr) => self.skip_ascii_whitespace(),
                     _ => {
                         token.data = self.prev_str();
                         return self.done(token);
@@ -243,7 +246,7 @@ impl<'a> Cursor<'a> {
                             token.data = self.current_str();
                             return self.done(token);
                         }
-                    _ => {}
+                    _ => self.skip_block_string_body(),
                 },
                 State::StringLiteralStart => match c {
                     '"' => {
@@ -442,7 +445,7 @@ impl<'a> Cursor<'a> {
                     '\\' => {
                         state = State::StringLiteralBackslash;
                     }
-                    _ => {}
+                    _ => self.skip_string_body(),
                 },
                 State::BlockStringLiteralBackslash => match c {
                     '"' => {
@@ -913,6 +916,61 @@ type Query {
                 "/".to_string(),
                 33,
             )]
+        );
+    }
+
+    #[test]
+    fn name_tokens_match_name_grammar() {
+        // The parser relies on this to skip re-validating Name tokens.
+        let inputs = [
+            "abc _a1 A_9 éa aé a\u{FEFF}b 1a a1. a-b a$b",
+            "{ fïeld(ärg: 1) @dïr }",
+            "type Ünïcode { a: [B!]! }",
+            "0abc 1.5e3x a\u{0301}b",
+        ];
+        for input in inputs {
+            for token in Lexer::new(input).flatten() {
+                if token.kind() != TokenKind::Name {
+                    continue;
+                }
+                let mut chars = token.data().chars();
+                let first = chars.next().expect("Name token is never empty");
+                assert!(
+                    first == '_' || first.is_ascii_alphabetic(),
+                    "bad NameStart in {:?}",
+                    token.data()
+                );
+                assert!(
+                    chars.all(|c| c == '_' || c.is_ascii_alphanumeric()),
+                    "bad NameContinue in {:?}",
+                    token.data()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn string_with_carriage_returns_lexes_in_linear_time() {
+        // Each bare carriage return interrupts the fast string scan. The scan
+        // must not look past it, or lexing becomes quadratic in the input size.
+        fn lex_time(repetitions: usize) -> std::time::Duration {
+            let input = format!("\"{}\"", "a\r".repeat(repetitions));
+            (0..3)
+                .map(|_| {
+                    let start = std::time::Instant::now();
+                    let token = Lexer::new(&input).next().expect("one token");
+                    assert!(token.is_err());
+                    start.elapsed()
+                })
+                .min()
+                .expect("three runs")
+        }
+        let small = lex_time(16 * 1024);
+        let large = lex_time(64 * 1024);
+        assert!(
+            large < small * 8,
+            "4x the input took {:.1}x as long",
+            large.as_secs_f64() / small.as_secs_f64()
         );
     }
 }
