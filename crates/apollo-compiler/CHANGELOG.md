@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-- **Use foldhash instead of ahash for hash-based collections - [tninesling]**
+- **Use foldhash instead of ahash for hash-based collections - [tninesling], [pull/1166]**
 
   The collection aliases in `apollo_compiler::collections` now use
   `foldhash::fast::RandomState` as their hasher instead of
@@ -23,6 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   missed, so operations weren't found by name. foldhash hashes both the same
   way on every toolchain.
 
+[pull/1166]: https://github.com/apollographql/apollo-rs/pull/1166
 [tninesling]: https://github.com/tninesling
 
 # [2.0.0-beta.2](https://crates.io/crates/apollo-compiler/2.0.0-beta.2) - 2026-10-21
