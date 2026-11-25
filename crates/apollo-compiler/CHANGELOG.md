@@ -4,6 +4,27 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [x.x.x] (unreleased) - 2026-mm-dd
+
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **Use foldhash instead of ahash for hash-based collections - [tninesling], [pull/1166]**
+
+  The collection aliases in `apollo_compiler::collections` now use
+  `foldhash::fast::RandomState` as their hasher instead of
+  `ahash::RandomState`. Code that names the hasher type, or builds these
+  collections with `with_hasher(ahash::RandomState::new())`, must switch to
+  `foldhash::fast::RandomState` or use `Default::default()`.
+
+  foldhash is faster for the short keys GraphQL names produce. Hash-heavy
+  work, like overlapping field validation and field lookups in large schemas,
+  is about 20% faster.
+
+[pull/1166]: https://github.com/apollographql/apollo-rs/pull/1166
+[tninesling]: https://github.com/tninesling
+
 # [2.0.0-beta.2](https://crates.io/crates/apollo-compiler/2.0.0-beta.2) - 2026-10-21
 
 > Important: 3 breaking changes below, indicated by **BREAKING**

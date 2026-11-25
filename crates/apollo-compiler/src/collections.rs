@@ -6,16 +6,16 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 /// [`indexmap::IndexMap`] configured with a specific hasher
-pub type IndexMap<K, V> = indexmap::IndexMap<K, V, ahash::RandomState>;
+pub type IndexMap<K, V> = indexmap::IndexMap<K, V, foldhash::fast::RandomState>;
 
 /// [`indexmap::IndexSet`] configured with a specific hasher
-pub type IndexSet<T> = indexmap::IndexSet<T, ahash::RandomState>;
+pub type IndexSet<T> = indexmap::IndexSet<T, foldhash::fast::RandomState>;
 
 /// [`std::collections::HashMap`] configured with a specific hasher
-pub type HashMap<K, V> = std::collections::HashMap<K, V, ahash::RandomState>;
+pub type HashMap<K, V> = std::collections::HashMap<K, V, foldhash::fast::RandomState>;
 
 /// [`std::collections::HashSet`] configured with a specific hasher
-pub type HashSet<T> = std::collections::HashSet<T, ahash::RandomState>;
+pub type HashSet<T> = std::collections::HashSet<T, foldhash::fast::RandomState>;
 
 /// Order-independent equality for collections of uniquely-named items
 /// (e.g. arguments, input value definitions). Assumes names are unique per the
